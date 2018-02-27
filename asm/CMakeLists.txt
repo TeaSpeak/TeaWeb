@@ -3,7 +3,7 @@ project(TeaWeb-Native)
 set(CMAKE_CXX_COMPILER "emcc")
 set(CMAKE_C_COMPILER "emcc")
 set(CMAKE_C_LINK_EXECUTABLE "emcc")
-#set(CMAKE_CXX_FLAGS "-s WASM=1")
+set(CMAKE_CXX_FLAGS "-O2") #-s WASM=1
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXE_LINKER_FLAGS "-s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]'") #
 
