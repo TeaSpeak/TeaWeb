@@ -52,7 +52,7 @@ extern "C" {
     int codec_opus_changeApplication(OpusHandle* handle, int type) {
         if(type != OPUS_APPLICATION_VOIP && type != OPUS_APPLICATION_AUDIO && type != OPUS_APPLICATION_RESTRICTED_LOWDELAY)
            return 1;
-        return opus_encoder_ctl(handle->encoder, OPUS_SET_APPLICATION(&type));
+        return opus_encoder_ctl(handle->encoder, OPUS_SET_APPLICATION(type));
     }
 
 /*

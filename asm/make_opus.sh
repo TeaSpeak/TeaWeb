@@ -1,5 +1,6 @@
 OPUS_FN="'_free','_malloc','_opus_strerror','_opus_get_version_string','_opus_encoder_get_size','_opus_encoder_init','_opus_encode','_opus_encode_float','_opus_encoder_ctl','_opus_decoder_get_size','_opus_decoder_init','_opus_decode','_opus_decode_float','_opus_decoder_ctl','_opus_packet_get_nb_samples'"
 cd libs/opus/
+
 ./autogen.sh
 emconfigure ./configure --disable-extra-programs --disable-doc --disable-rtcd
 emmake make
