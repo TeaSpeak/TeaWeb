@@ -1,0 +1,64 @@
+x-tab { display:none }
+
+.tab {
+    font-family: Arial;
+    font-size: 12px;
+    /*white-space: pre;*/
+    line-height: 1;
+    padding: 2px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab div * {
+    vertical-align: middle;
+}
+
+.tab .tab-content {
+    border-color: #6f6f6f;
+    border-radius: 0px 2px 2px 2px;
+    border-style: solid;
+    overflow-y: auto;
+    height: calc(100% - 2 * 18px);
+    padding: 2px;
+}
+
+/*
+#chat .tab-content {
+    flex-wrap: wrap;
+    display: flex;
+    align-items: flex-start;
+    height: auto;
+}
+*/
+
+.tab .tab-header {
+    max-width: 100%;
+    overflow: auto;
+    /*height: 24px;*/
+    overflow: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    margin-bottom: -1px;
+    display: flex;
+    user-select: none;
+}
+
+.tab .tab-header .entry {
+    background: #5f5f5f5f;
+    display: inline-block;
+    border: #6f6f6f;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 2px 2px 0px 0px;
+    vertical-align: middle;
+    padding: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+    cursor: pointer;
+}
+
+.tab .selected {
+    background: #11111111!important;
+}
