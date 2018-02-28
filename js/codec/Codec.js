@@ -10,10 +10,10 @@ class OpusCodec extends Codec {
         return "Opus";
     }
     initialise() {
-        this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "pointer", []);
-        this.fn_decode = Module.cwrap("codec_opus_encode", "number", ["pointer", "pointer", "length"]);
+        this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "pointer", ["number"]);
         this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["pointer", "pointer", "number", "number"]); /* codec_opus_decode(handle, buffer, length, maxlength) */
-        this.nativeHandle = this.fn_newHandle();
+        this.fn_encode = Module.cwrap("codec_opus_encode", "number", ["pointer", "pointer", "number", "number"]);
+        this.nativeHandle = this.fn_newHandle(1);
     }
     deinitialise() {
     }
@@ -25,22 +25,27 @@ class OpusCodec extends Codec {
         let result = this.fn_decode(this.nativeHandle, heapBytes.byteOffset, data.byteLength, maxBytes);
         if (result < 0) {
             Module._free(buffer);
-            return "invalid result (" + result + ")";
+            return "invalid result on decode (" + result + ")";
         }
         let buf = Module.HEAPF32.slice(heapBytes.byteOffset / 4, (heapBytes.byteOffset / 4) + (result * 4 * this.channelCount));
         Module._free(buffer);
         return buf;
     }
-    convertBlock(incomingData, length) {
-        var i, l = length;
-        var outputData = new Float32Array(length);
-        for (i = 0; i < l; i++) {
-            outputData[i] = (incomingData[i] - 128) / 128.0;
-        }
-        return outputData;
-    }
     encode(data) {
-        return undefined;
+        let maxBytes = 4096 * 1 + 4;
+        let buffer = Module._malloc(maxBytes);
+        console.log("X");
+        let heapBytes = new Uint8Array(Module.HEAPU8.buffer, buffer, maxBytes);
+        //heapBytes.set(data);
+        let result = this.fn_encode(this.nativeHandle, heapBytes.byteOffset, 960, maxBytes);
+        if (result < 0) {
+            Module._free(buffer);
+            return "invalid result on encode (" + result + ")";
+        }
+        console.log("Bytes: " + result);
+        let buf = Module.HEAP8.slice(heapBytes.byteOffset, heapBytes.byteOffset + result);
+        Module._free(buffer);
+        return Uint8Array.from(buf);
     }
     _arrayToHeap(typedArray) {
         let numBytes = typedArray.length * typedArray.BYTES_PER_ELEMENT;

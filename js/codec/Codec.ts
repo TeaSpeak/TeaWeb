@@ -7,7 +7,7 @@ abstract class Codec {
 
 
     abstract decode(data: Uint8Array) : Float32Array | string;
-    abstract encode(data: Float32Array) : Uint8Array;
+    abstract encode(data: Float32Array) : Uint8Array | string;
 }
 
 class OpusCodec extends Codec {
@@ -16,6 +16,7 @@ class OpusCodec extends Codec {
 
     private fn_newHandle: any;
     private fn_decode: any;
+    private fn_encode: any;
 
     constructor() {
         super();
@@ -26,11 +27,11 @@ class OpusCodec extends Codec {
     }
 
     initialise() {
-        this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "pointer", []);
-        this.fn_decode = Module.cwrap("codec_opus_encode", "number", ["pointer", "pointer", "length"]);
+        this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "pointer", ["number"]);
         this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["pointer", "pointer", "number", "number"]); /* codec_opus_decode(handle, buffer, length, maxlength) */
+        this.fn_encode = Module.cwrap("codec_opus_encode", "number", ["pointer", "pointer", "number", "number"]);
 
-        this.nativeHandle = this.fn_newHandle();
+        this.nativeHandle = this.fn_newHandle(1);
     }
 
     deinitialise() {
@@ -45,24 +46,28 @@ class OpusCodec extends Codec {
         let result = this.fn_decode(this.nativeHandle, heapBytes.byteOffset, data.byteLength, maxBytes);
         if(result < 0) {
             Module._free(buffer);
-            return "invalid result (" + result + ")";
+            return "invalid result on decode (" + result + ")";
         }
         let buf = Module.HEAPF32.slice(heapBytes.byteOffset / 4, (heapBytes.byteOffset / 4) + (result * 4 * this.channelCount));
         Module._free(buffer);
         return buf;
     }
 
-    convertBlock(incomingData, length: number) { // incoming data is a UInt8Array
-        var i, l = length;
-        var outputData = new Float32Array(length);
-        for (i = 0; i < l; i++) {
-            outputData[i] = (incomingData[i] - 128) / 128.0;
+    encode(data: Float32Array): Uint8Array | string {
+        let maxBytes = 4096 * 1 + 4;
+        let buffer = Module._malloc(maxBytes);
+        console.log("X");
+        let heapBytes = new Uint8Array(Module.HEAPU8.buffer, buffer, maxBytes);
+        //heapBytes.set(data);
+        let result = this.fn_encode(this.nativeHandle, heapBytes.byteOffset, 960, maxBytes);
+        if(result < 0) {
+            Module._free(buffer);
+            return "invalid result on encode (" + result + ")";
         }
-        return outputData;
-    }
-
-    encode(data: Float32Array): Uint8Array {
-        return undefined;
+        console.log("Bytes: " + result);
+        let buf = Module.HEAP8.slice(heapBytes.byteOffset, heapBytes.byteOffset + result);
+        Module._free(buffer);
+        return Uint8Array.from(buf);
     }
 
     private _arrayToHeap(typedArray: any){

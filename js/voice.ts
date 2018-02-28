@@ -80,18 +80,6 @@ class VoiceConnection {
     }
 
     onDataChannelMessage(message) {
-        /*
-        let bin = new Uint8Array(message.data);
-        let clientId = bin[0] << 8 | bin[1];
-        console.log("Client id " + clientId);
-        let client = this.client.channelTree.findClient(clientId);
-        if(!client) {
-            console.error("Having  voice from unknown client? (ClientID: " + clientId + ")");
-            return;
-        }
-        var pcm = new Float32Array(message.data, 4);
-        client.getAudioController().play(pcm);
-        */
         let bin = new Uint8Array(message.data);
         let clientId = bin[0] << 8 | bin[1];
         console.log("Client id " + clientId);
@@ -110,8 +98,15 @@ class VoiceConnection {
     private sendPCMData(data: any) {
         console.log("SEND DATA!");
         //console.log(data);
-        if(this.dataChannel) //FIXME just for debug
-            this.dataChannel.send(data);
+        //FIXME just for debug
+        if(this.dataChannel) {
+            console.log("XXX");
+            let enbcoded = this.codec.encode(data);
+            if(enbcoded instanceof Uint8Array)
+                this.dataChannel.send(enbcoded);
+            else console.log("Invalid decode " + enbcoded);
+
+        }
     }
 }
 
