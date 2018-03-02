@@ -8,7 +8,7 @@ class VoiceConnection {
     voiceRecorder: VoiceRecorder;
     start: number;
 
-    codec: OpusCodec;
+    codec: Codec;
 
     constructor(client) {
         this.client = client;
@@ -16,6 +16,12 @@ class VoiceConnection {
         this.voiceRecorder.on_data = data => this.sendPCMData(data);
         this.codec = new OpusCodec();
         this.codec.initialise();
+        this.codec.on_encoded_data = buffer => {
+            if(this.dataChannel) {
+                console.log("Send buffer");
+                this.dataChannel.send(buffer);
+            }
+        };
     }
 
 
@@ -96,17 +102,11 @@ class VoiceConnection {
     }
 
     private sendPCMData(data: any) {
-        console.log("SEND DATA!");
-        //console.log(data);
-        //FIXME just for debug
-        if(this.dataChannel) {
-            console.log("XXX");
-            let enbcoded = this.codec.encode(data);
-            if(enbcoded instanceof Uint8Array)
-                this.dataChannel.send(enbcoded);
-            else console.log("Invalid decode " + enbcoded);
-
-        }
+        /*
+        let result = this.codec.encodeSamples(data);
+        if(!result) console.error("Could not encode audio: " + result);
+        */
+        this.client.getClient().getAudioController().play(data);
     }
 }
 
@@ -212,6 +212,7 @@ class AudioController {
     init: boolean;
     stimeout: NodeJS.Timer;
 
+    resambler: Resampler = new Resampler();
     //Events
     onSpeaking: () => void;
     onSilence: () => void;
@@ -229,9 +230,17 @@ class AudioController {
     }
 
     play(pcm: Float32Array) {
-        let buffer = this.speakerContext.createBuffer(1, 960, 48000);
-        buffer.copyToChannel(pcm, 0);
+        //let buffer = this.speakerContext.createBuffer(1, 960, 48000);
+        //buffer.copyToChannel(pcm, 0);
+        this.resambler.resample(pcm, (buffer: AudioBuffer) => this.play0(buffer));
+        //this.play0(buffer);
+    }
 
+    play0(buffer: AudioBuffer) {
+        //960
+        console.log(buffer);
+        //let buffer = this.speakerContext.createBuffer(1, 960, 44100);
+        //buffer.copyToChannel(pcm, 0);
         this.audioCache.push(buffer);
 
         let currentTime = new Date().getTime();
@@ -258,6 +267,7 @@ class AudioController {
         while (cache.length) {
             var buffer = cache.shift();
             var source = this.speakerContext.createBufferSource();
+
             source.buffer = buffer;
             source.connect(this.speakerContext.destination);
             if (this.nextTime == 0) {
@@ -280,5 +290,36 @@ class AudioController {
 
     close(){
         clearTimeout(this.stimeout);
+    }
+}
+
+class Resampler {
+    context: OfflineAudioContext;
+
+    constructor(){
+    }
+
+    resample(pcm: Float32Array, callback: (AudioBuffer) => void) {
+        /*
+        let buffer = AudioController.globalContext.createBuffer(1, pcm.length, 48000);
+        buffer.copyToChannel(pcm, 0);
+        callback(buffer);
+        */
+
+        this.context = new OfflineAudioContext(1, 882, 44100);
+        let buffer = this.context.createBuffer(1, pcm.length, 48000);
+        buffer.copyToChannel(pcm, 0);
+
+        let source = this.context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.context.destination);
+        source.start(0);
+        //console.log(source.buffer.getChannelData(0));
+
+        this.context.startRendering().then(e => callback(e)).catch(error => {
+            console.error("Could not resample audio");
+            console.error(error);
+        });
+
     }
 }

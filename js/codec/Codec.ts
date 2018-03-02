@@ -1,4 +1,19 @@
+class SampleBuffer {
+    buffer: Float32Array;
+    index: number;
+
+    constructor(buffer) {
+        this.buffer = buffer;
+        this.index = 0;
+    }
+}
+
 abstract class Codec {
+    on_encoded_data: (Uint8Array) => void = ($) => {};
+
+    protected _sampleBuffer: SampleBuffer[] = [];
+    sampleRate: number = 120;
+
     constructor(){}
 
     abstract name() : string;
@@ -7,7 +22,41 @@ abstract class Codec {
 
 
     abstract decode(data: Uint8Array) : Float32Array | string;
-    abstract encode(data: Float32Array) : Uint8Array | string;
+
+    protected abstract encode(data: Float32Array) : Uint8Array | string;
+
+    protected bufferedSamples(max: number = 0) : number {
+        let value = 0;
+        for(let i = 0; i < this._sampleBuffer.length && value < max; i++)
+            value += this._sampleBuffer[i].buffer.length - this._sampleBuffer[i].index;
+        console.log(value + " / " + max);
+        return value;
+    }
+
+    encodeSamples(array: Float32Array) : boolean | string {
+        console.log("encode");
+        this._sampleBuffer.push(new SampleBuffer(array));
+
+        while(this.bufferedSamples(this.sampleRate) >= this.sampleRate) {
+            let buffer = new Float32Array(this.sampleRate);
+            let index = 0;
+            while(index < this.sampleRate) {
+                let buf = this._sampleBuffer[0];
+                let len = Math.min(buf.buffer.length - buf.index, this.sampleRate - index);
+                buffer.set(buf.buffer.subarray(buf.index, buf.index + len));
+                index += len;
+                buf.index += len;
+                console.log(buf.index + " - " + buf.buffer.length);
+                if(buf.index == buf.buffer.length)
+                    this._sampleBuffer.pop_front();
+            }
+
+            let result = this.encode(buffer);
+            if(result instanceof Uint8Array) this.on_encoded_data(result);
+            else return result;
+        }
+        return true;
+    }
 }
 
 class OpusCodec extends Codec {
@@ -48,32 +97,21 @@ class OpusCodec extends Codec {
             Module._free(buffer);
             return "invalid result on decode (" + result + ")";
         }
-        let buf = Module.HEAPF32.slice(heapBytes.byteOffset / 4, (heapBytes.byteOffset / 4) + (result * 4 * this.channelCount));
+        let buf = Module.HEAPF32.slice(heapBytes.byteOffset / 4, (heapBytes.byteOffset / 4) + (result * this.channelCount));
         Module._free(buffer);
         return buf;
     }
 
     encode(data: Float32Array): Uint8Array | string {
-        this.encoderBufferLength = this.encoderSamplesPerChannel * this.config.numberOfChannels;
-        this.encoderBufferPointer = this._malloc( this.encoderBufferLength * 4 ); // 4 bytes per sample
-        this.encoderBuffer = this.HEAPF32.subarray( this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength );
-
-        this.encoderOutputMaxLength = 4000;
-        this.encoderOutputPointer = this._malloc( this.encoderOutputMaxLength );
-        this.encoderOutputBuffer = this.HEAPU8.subarray( this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength );
-
-        Module.HEAP8.subarray(2, 3, 4);
-        let maxBytes = 4096 * 1 + 4;
+        let maxBytes = data.byteLength;
         let buffer = Module._malloc(maxBytes);
-        console.log("X");
         let heapBytes = new Uint8Array(Module.HEAPU8.buffer, buffer, maxBytes);
-        //heapBytes.set(data);
-        let result = this.fn_encode(this.nativeHandle, heapBytes.byteOffset, 960, maxBytes);
+        heapBytes.set(new Uint8Array(data.buffer));
+        let result = this.fn_encode(this.nativeHandle, heapBytes.byteOffset, data.length, maxBytes);
         if(result < 0) {
             Module._free(buffer);
             return "invalid result on encode (" + result + ")";
         }
-        console.log("Bytes: " + result);
         let buf = Module.HEAP8.slice(heapBytes.byteOffset, heapBytes.byteOffset + result);
         Module._free(buffer);
         return Uint8Array.from(buf);

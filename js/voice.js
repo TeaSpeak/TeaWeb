@@ -6,6 +6,12 @@ class VoiceConnection {
         this.voiceRecorder.on_data = data => this.sendPCMData(data);
         this.codec = new OpusCodec();
         this.codec.initialise();
+        this.codec.on_encoded_data = buffer => {
+            if (this.dataChannel) {
+                console.log("Send buffer");
+                this.dataChannel.send(buffer);
+            }
+        };
     }
     createSession() {
         const config = {};
@@ -75,17 +81,11 @@ class VoiceConnection {
             console.log("Invalid decode " + result);
     }
     sendPCMData(data) {
-        console.log("SEND DATA!");
-        //console.log(data);
-        //FIXME just for debug
-        if (this.dataChannel) {
-            console.log("XXX");
-            let enbcoded = this.codec.encode(data);
-            if (enbcoded instanceof Uint8Array)
-                this.dataChannel.send(enbcoded);
-            else
-                console.log("Invalid decode " + enbcoded);
-        }
+        /*
+        let result = this.codec.encodeSamples(data);
+        if(!result) console.error("Could not encode audio: " + result);
+        */
+        this.client.getClient().getAudioController().play(data);
     }
 }
 class VoiceRecorder {
@@ -158,13 +158,8 @@ VoiceRecorder.CHANNEL = 0;
 VoiceRecorder.CHANNELS = 1;
 VoiceRecorder.BUFFER_SIZE = 4096;
 class AudioController {
-    static get globalContext() {
-        if (this._globalContext)
-            return this._globalContext;
-        this._globalContext = new AudioContext();
-        return this._globalContext;
-    }
     constructor() {
+        this.resambler = new Resampler();
         this.speakerContext = AudioController.globalContext;
         this.nextTime = 0;
         this.last = 0;
@@ -174,9 +169,23 @@ class AudioController {
         this.onSpeaking = function () { };
         this.onSilence = function () { };
     }
+    static get globalContext() {
+        if (this._globalContext)
+            return this._globalContext;
+        this._globalContext = new AudioContext();
+        return this._globalContext;
+    }
     play(pcm) {
-        let buffer = this.speakerContext.createBuffer(1, 960, 48000);
-        buffer.copyToChannel(pcm, 0);
+        //let buffer = this.speakerContext.createBuffer(1, 960, 48000);
+        //buffer.copyToChannel(pcm, 0);
+        this.resambler.resample(pcm, (buffer) => this.play0(buffer));
+        //this.play0(buffer);
+    }
+    play0(buffer) {
+        //960
+        console.log(buffer);
+        //let buffer = this.speakerContext.createBuffer(1, 960, 44100);
+        //buffer.copyToChannel(pcm, 0);
         this.audioCache.push(buffer);
         let currentTime = new Date().getTime();
         if ((currentTime - this.last) > 50) {
@@ -222,6 +231,29 @@ class AudioController {
     }
     close() {
         clearTimeout(this.stimeout);
+    }
+}
+class Resampler {
+    constructor() {
+    }
+    resample(pcm, callback) {
+        /*
+        let buffer = AudioController.globalContext.createBuffer(1, pcm.length, 48000);
+        buffer.copyToChannel(pcm, 0);
+        callback(buffer);
+        */
+        this.context = new OfflineAudioContext(1, 882, 44100);
+        let buffer = this.context.createBuffer(1, pcm.length, 48000);
+        buffer.copyToChannel(pcm, 0);
+        let source = this.context.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.context.destination);
+        source.start(0);
+        //console.log(source.buffer.getChannelData(0));
+        this.context.startRendering().then(e => callback(e)).catch(error => {
+            console.error("Could not resample audio");
+            console.error(error);
+        });
     }
 }
 //# sourceMappingURL=voice.js.map
