@@ -11,19 +11,26 @@ class SampleBuffer {
 abstract class Codec {
     on_encoded_data: (Uint8Array) => void = ($) => {};
 
+    protected _decodeResampler: Resampler;
+    protected _encodeResampler: Resampler;
+    protected _codecSampleRate: number;
     protected _sampleBuffer: SampleBuffer[] = [];
-    sampleRate: number = 120;
 
-    constructor(){}
+    samplesPerUnit: number = 960;
+
+    protected constructor(codecSampleRate: number){
+        this._codecSampleRate = codecSampleRate;
+        this._decodeResampler = new Resampler();
+        this._encodeResampler = new Resampler(codecSampleRate);
+    }
 
     abstract name() : string;
     abstract initialise();
     abstract deinitialise();
 
-
-    abstract decode(data: Uint8Array) : Float32Array | string;
-
+    protected abstract decode(data: Uint8Array) : Promise<AudioBuffer>;
     protected abstract encode(data: Float32Array) : Uint8Array | string;
+
 
     protected bufferedSamples(max: number = 0) : number {
         let value = 0;
@@ -33,16 +40,21 @@ abstract class Codec {
         return value;
     }
 
-    encodeSamples(array: Float32Array) : boolean | string {
-        console.log("encode");
-        this._sampleBuffer.push(new SampleBuffer(array));
+    encodeSamples(pcm: AudioBuffer) {
+        this._encodeResampler.resample(pcm).then(buffer => this.encodeSamples0(buffer))
+            .catch(error => console.error("Could not resample PCM data for codec. Error:" + error));
+    }
 
-        while(this.bufferedSamples(this.sampleRate) >= this.sampleRate) {
-            let buffer = new Float32Array(this.sampleRate);
+    private encodeSamples0(buffer: AudioBuffer) {
+        console.log(buffer);
+        this._sampleBuffer.push(new SampleBuffer(buffer.getChannelData(0))); //TODO multi channel!
+
+        while(this.bufferedSamples(this.samplesPerUnit) >= this.samplesPerUnit) {
+            let buffer = new Float32Array(this.samplesPerUnit);
             let index = 0;
-            while(index < this.sampleRate) {
+            while(index < this.samplesPerUnit) {
                 let buf = this._sampleBuffer[0];
-                let len = Math.min(buf.buffer.length - buf.index, this.sampleRate - index);
+                let len = Math.min(buf.buffer.length - buf.index, this.samplesPerUnit - index);
                 buffer.set(buf.buffer.subarray(buf.index, buf.index + len));
                 index += len;
                 buf.index += len;
@@ -53,9 +65,13 @@ abstract class Codec {
 
             let result = this.encode(buffer);
             if(result instanceof Uint8Array) this.on_encoded_data(result);
-            else return result;
+            else console.error("[Codec][" + this.name() + "] Could not encode buffer. Result: " + result);
         }
         return true;
+    }
+
+    decodeSamples(data: Uint8Array) : Promise<AudioBuffer> {
+        return this.decode(data).then(buffer => this._decodeResampler.resample(buffer));
     }
 }
 
@@ -68,7 +84,7 @@ class OpusCodec extends Codec {
     private fn_encode: any;
 
     constructor() {
-        super();
+        super(48000);
     }
 
     name(): string {
@@ -83,23 +99,27 @@ class OpusCodec extends Codec {
         this.nativeHandle = this.fn_newHandle(1);
     }
 
-    deinitialise() {
+    deinitialise() {  } //TODO
 
-    }
-
-    decode(data: Uint8Array): Float32Array | string {
-        let maxBytes = 4096;
-        let buffer = Module._malloc(maxBytes);
-        let heapBytes = new Uint8Array(Module.HEAPU8.buffer, buffer, maxBytes);
-        heapBytes.set(data);
-        let result = this.fn_decode(this.nativeHandle, heapBytes.byteOffset, data.byteLength, maxBytes);
-        if(result < 0) {
+    decode(data: Uint8Array): Promise<AudioBuffer> {
+        return new Promise<AudioBuffer>((resolve, reject) => {
+            let maxBytes = 4096;
+            let buffer = Module._malloc(maxBytes);
+            let heapBytes = new Uint8Array(Module.HEAPU8.buffer, buffer, maxBytes);
+            heapBytes.set(data);
+            let result = this.fn_decode(this.nativeHandle, heapBytes.byteOffset, data.byteLength, maxBytes);
+            if(result < 0) {
+                Module._free(buffer);
+                reject("invalid result on decode (" + result + ")");
+                return;
+            }
+            let buf = Module.HEAPF32.slice(heapBytes.byteOffset / 4, (heapBytes.byteOffset / 4) + (result * this.channelCount));
             Module._free(buffer);
-            return "invalid result on decode (" + result + ")";
-        }
-        let buf = Module.HEAPF32.slice(heapBytes.byteOffset / 4, (heapBytes.byteOffset / 4) + (result * this.channelCount));
-        Module._free(buffer);
-        return buf;
+
+            let audioBuf = AudioController.globalContext.createBuffer(this.channelCount, result, this._codecSampleRate);
+            audioBuf.copyToChannel(buf, 0);
+            resolve(audioBuf);
+        });
     }
 
     encode(data: Float32Array): Uint8Array | string {

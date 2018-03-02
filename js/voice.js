@@ -1,17 +1,44 @@
 /// <reference path="client.ts" />
 class VoiceConnection {
+    /*
+    private _voicePacketBuffer: Uint8Array[] = [];
+    private _voicePacketSender: NodeJS.Timer;
+    private _triggered = false;
+    */
     constructor(client) {
+        this.vpacketId = 0;
         this.client = client;
         this.voiceRecorder = new VoiceRecorder(this);
-        this.voiceRecorder.on_data = data => this.sendPCMData(data);
+        this.voiceRecorder.on_data = data => this.handleVoiceData(data);
         this.codec = new OpusCodec();
         this.codec.initialise();
         this.codec.on_encoded_data = buffer => {
             if (this.dataChannel) {
-                console.log("Send buffer");
-                this.dataChannel.send(buffer);
+                this.vpacketId++;
+                if (this.vpacketId > 65535)
+                    this.vpacketId = 0;
+                let packet = new Uint8Array(buffer.byteLength + 2 + 3);
+                packet[0] = this.vpacketId < 6 ? 1 : 0; //Flag header
+                packet[1] = 0; //Flag fragmented
+                packet[2] = (this.vpacketId >> 8) & 0xFF; //HIGHT(voiceID)
+                packet[3] = (this.vpacketId >> 0) & 0xFF; //LOW  (voiceID)
+                packet[4] = 4; //Codec
+                packet.set(buffer, 5);
+                //this._voicePacketBuffer.push(packet);
+                this.dataChannel.send(packet);
             }
         };
+        /*
+        this._voicePacketSender = setInterval(() => {
+            if(this._voicePacketBuffer.length > 5 || this._triggered) {
+                let packet = this._voicePacketBuffer.pop_front();
+                if (packet) {
+                    this.dataChannel.send(packet);
+                }
+                this._triggered = this._voicePacketBuffer.length > 0;
+            }
+        }, 20);
+        */
     }
     createSession() {
         const config = {};
@@ -66,26 +93,24 @@ class VoiceConnection {
     }
     onDataChannelMessage(message) {
         let bin = new Uint8Array(message.data);
-        let clientId = bin[0] << 8 | bin[1];
-        console.log("Client id " + clientId);
+        let clientId = bin[2] << 8 | bin[3];
+        let packetId = bin[0] << 8 | bin[1];
+        let codec = bin[4];
+        console.log("Client id " + clientId + " PacketID " + packetId + " Codec: " + codec);
         let client = this.client.channelTree.findClient(clientId);
         if (!client) {
             console.error("Having  voice from unknown client? (ClientID: " + clientId + ")");
             return;
         }
-        var encodedData = new Uint8Array(message.data, 4);
-        let result = this.codec.decode(encodedData);
-        if (result instanceof Float32Array)
-            client.getAudioController().play(result);
-        else
-            console.log("Invalid decode " + result);
+        var encodedData = new Uint8Array(message.data, 5);
+        this.codec.decodeSamples(encodedData).then(buffer => client.getAudioController().play(buffer)).catch(error => {
+            console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
+        });
     }
-    sendPCMData(data) {
-        /*
-        let result = this.codec.encodeSamples(data);
-        if(!result) console.error("Could not encode audio: " + result);
-        */
-        this.client.getClient().getAudioController().play(data);
+    handleVoiceData(data) {
+        setTimeout(() => {
+            this.codec.encodeSamples(data);
+        }, 1);
     }
 }
 class VoiceRecorder {
@@ -100,8 +125,9 @@ class VoiceRecorder {
         this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
         const _this = this;
         this.processor.addEventListener('audioprocess', ev => {
+            console.log(ev.inputBuffer);
             if (_this.microphoneStream)
-                this.on_data(ev.inputBuffer.getChannelData(VoiceRecorder.CHANNEL));
+                this.on_data(ev.inputBuffer);
         });
         //Not needed but make sure we have data for the preprocessor
         this.mute = this.audioContext.createGain();
@@ -156,10 +182,15 @@ class VoiceRecorder {
 }
 VoiceRecorder.CHANNEL = 0;
 VoiceRecorder.CHANNELS = 1;
-VoiceRecorder.BUFFER_SIZE = 4096;
+VoiceRecorder.BUFFER_SIZE = 16384 / 2;
 class AudioController {
+    static get globalContext() {
+        if (this._globalContext)
+            return this._globalContext;
+        this._globalContext = new AudioContext();
+        return this._globalContext;
+    }
     constructor() {
-        this.resambler = new Resampler();
         this.speakerContext = AudioController.globalContext;
         this.nextTime = 0;
         this.last = 0;
@@ -169,23 +200,9 @@ class AudioController {
         this.onSpeaking = function () { };
         this.onSilence = function () { };
     }
-    static get globalContext() {
-        if (this._globalContext)
-            return this._globalContext;
-        this._globalContext = new AudioContext();
-        return this._globalContext;
-    }
-    play(pcm) {
-        //let buffer = this.speakerContext.createBuffer(1, 960, 48000);
-        //buffer.copyToChannel(pcm, 0);
-        this.resambler.resample(pcm, (buffer) => this.play0(buffer));
-        //this.play0(buffer);
-    }
-    play0(buffer) {
-        //960
-        console.log(buffer);
-        //let buffer = this.speakerContext.createBuffer(1, 960, 44100);
-        //buffer.copyToChannel(pcm, 0);
+    play(buffer) {
+        if (buffer.sampleRate != this.speakerContext.sampleRate)
+            console.warn("[AudioController] Source sample rate isnt equal to playback sample rate!");
         this.audioCache.push(buffer);
         let currentTime = new Date().getTime();
         if ((currentTime - this.last) > 50) {
@@ -207,8 +224,8 @@ class AudioController {
     ;
     playCache(cache) {
         while (cache.length) {
-            var buffer = cache.shift();
-            var source = this.speakerContext.createBufferSource();
+            let buffer = cache.shift();
+            let source = this.speakerContext.createBufferSource();
             source.buffer = buffer;
             source.connect(this.speakerContext.destination);
             if (this.nextTime == 0) {
@@ -234,26 +251,19 @@ class AudioController {
     }
 }
 class Resampler {
-    constructor() {
+    constructor(targetSampleRate = 44100) {
+        this.targetSampleRate = targetSampleRate;
     }
-    resample(pcm, callback) {
-        /*
-        let buffer = AudioController.globalContext.createBuffer(1, pcm.length, 48000);
-        buffer.copyToChannel(pcm, 0);
-        callback(buffer);
-        */
-        this.context = new OfflineAudioContext(1, 882, 44100);
-        let buffer = this.context.createBuffer(1, pcm.length, 48000);
-        buffer.copyToChannel(pcm, 0);
-        let source = this.context.createBufferSource();
+    resample(buffer) {
+        if (buffer.sampleRate == this.targetSampleRate)
+            return new Promise(resolve => resolve(buffer));
+        console.log(this.targetSampleRate);
+        let context = new OfflineAudioContext(1, Math.ceil(buffer.length * this.targetSampleRate / buffer.sampleRate), this.targetSampleRate);
+        let source = context.createBufferSource();
         source.buffer = buffer;
-        source.connect(this.context.destination);
+        source.connect(context.destination);
         source.start(0);
-        //console.log(source.buffer.getChannelData(0));
-        this.context.startRendering().then(e => callback(e)).catch(error => {
-            console.error("Could not resample audio");
-            console.error(error);
-        });
+        return context.startRendering();
     }
 }
 //# sourceMappingURL=voice.js.map
