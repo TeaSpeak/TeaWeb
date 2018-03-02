@@ -32,6 +32,13 @@ class OpusCodec extends Codec {
         return buf;
     }
     encode(data) {
+        this.encoderBufferLength = this.encoderSamplesPerChannel * this.config.numberOfChannels;
+        this.encoderBufferPointer = this._malloc(this.encoderBufferLength * 4); // 4 bytes per sample
+        this.encoderBuffer = this.HEAPF32.subarray(this.encoderBufferPointer >> 2, (this.encoderBufferPointer >> 2) + this.encoderBufferLength);
+        this.encoderOutputMaxLength = 4000;
+        this.encoderOutputPointer = this._malloc(this.encoderOutputMaxLength);
+        this.encoderOutputBuffer = this.HEAPU8.subarray(this.encoderOutputPointer, this.encoderOutputPointer + this.encoderOutputMaxLength);
+        Module.HEAP8.subarray(2, 3, 4);
         let maxBytes = 4096 * 1 + 4;
         let buffer = Module._malloc(maxBytes);
         console.log("X");

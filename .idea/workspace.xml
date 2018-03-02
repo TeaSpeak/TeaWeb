@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="978d055d-27d3-431a-bd34-e5e79bb273b3" name="Default" comment="" />
+    <list default="true" id="978d055d-27d3-431a-bd34-e5e79bb273b3" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/js/codec/Codec.js" afterPath="$PROJECT_DIR$/js/codec/Codec.js" />
+      <change beforePath="$PROJECT_DIR$/js/codec/Codec.js.map" afterPath="$PROJECT_DIR$/js/codec/Codec.js.map" />
+      <change beforePath="$PROJECT_DIR$/js/codec/Codec.ts" afterPath="$PROJECT_DIR$/js/codec/Codec.ts" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -33,11 +37,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Codec.ts" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Codec.ts" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/codec/Codec.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1224">
-              <caret line="68" column="29" lean-forward="true" selection-start-line="68" selection-start-column="29" selection-end-line="68" selection-end-column="29" />
+            <state relative-caret-position="1152">
+              <caret line="64" column="27" lean-forward="false" selection-start-line="64" selection-start-column="27" selection-end-line="64" selection-end-column="27" />
               <folding />
             </state>
           </provider>
@@ -53,11 +57,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="lib.es6.d.ts" pinned="false" current-in-tab="false">
+      <file leaf-file-name="lib.es6.d.ts" pinned="false" current-in-tab="true">
         <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es6.d.ts">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="668">
-              <caret line="2024" column="4" lean-forward="false" selection-start-line="2024" selection-start-column="4" selection-end-line="2024" selection-end-column="4" />
+              <caret line="1755" column="4" lean-forward="false" selection-start-line="1755" selection-start-column="4" selection-end-line="1755" selection-end-column="4" />
               <folding />
             </state>
           </provider>
@@ -120,10 +124,10 @@
   </component>
   <component name="PhpWorkspaceProjectConfiguration" backward_compatibility_performed="true" />
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1985" />
-    <option name="y" value="-4" />
-    <option name="width" value="3775" />
-    <option name="height" value="2164" />
+    <option name="x" value="2028" />
+    <option name="y" value="357" />
+    <option name="width" value="1855" />
+    <option name="height" value="1084" />
   </component>
   <component name="ProjectView">
     <navigator currentView="ProjectPane" proportions="" version="1">
@@ -216,12 +220,12 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1519749313999</updated>
-      <workItem from="1519749316100" duration="6342000" />
+      <workItem from="1519749316100" duration="6405000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="6342000" />
+    <option name="totallyTimeSpent" value="6405000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1985" y="-4" width="3775" height="2164" extended-state="6" />
@@ -346,14 +350,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es6.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="668">
-          <caret line="2024" column="4" lean-forward="false" selection-start-line="2024" selection-start-column="4" selection-end-line="2024" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/@types/emscripten/index.d.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="947">
@@ -364,8 +360,16 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/codec/Codec.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1224">
-          <caret line="68" column="29" lean-forward="true" selection-start-line="68" selection-start-column="29" selection-end-line="68" selection-end-column="29" />
+        <state relative-caret-position="1152">
+          <caret line="64" column="27" lean-forward="false" selection-start-line="64" selection-start-column="27" selection-end-line="64" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es6.d.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="668">
+          <caret line="1755" column="4" lean-forward="false" selection-start-line="1755" selection-start-column="4" selection-end-line="1755" selection-end-column="4" />
           <folding />
         </state>
       </provider>
