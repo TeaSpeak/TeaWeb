@@ -18,7 +18,7 @@
     border-radius: 2px 2px 2px 0px;
     border-style: solid;
     overflow-y: auto;
-    height: calc(100% - 2 * 18px);
+    flex-grow: 1;
 }
 
 #chat .message_box {
@@ -99,4 +99,5 @@
     min-height: 16px;
     max-height: 80px;
     overflow-y: auto;
+    resize: vertical;
 }

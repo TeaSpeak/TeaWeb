@@ -81,6 +81,7 @@ class InfoBar {
 
             this._htmlTag.append($.spawn("div").css("height", "100%"));
             let requestUpdate = $.spawn("button");
+            requestUpdate.css("min-height", "16px");
             requestUpdate.css("bottom", 0);
             requestUpdate.text("update info");
             if(this._currentSelected.shouldUpdateProperties())

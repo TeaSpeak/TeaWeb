@@ -3,19 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="978d055d-27d3-431a-bd34-e5e79bb273b3" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/js/chat.js" afterPath="$PROJECT_DIR$/js/chat.js" />
-      <change beforePath="$PROJECT_DIR$/js/chat.js.map" afterPath="$PROJECT_DIR$/js/chat.js.map" />
-      <change beforePath="$PROJECT_DIR$/js/chat.ts" afterPath="$PROJECT_DIR$/js/chat.ts" />
-      <change beforePath="$PROJECT_DIR$/js/client.js" afterPath="$PROJECT_DIR$/js/client.js" />
-      <change beforePath="$PROJECT_DIR$/js/client.js.map" afterPath="$PROJECT_DIR$/js/client.js.map" />
-      <change beforePath="$PROJECT_DIR$/js/client.ts" afterPath="$PROJECT_DIR$/js/client.ts" />
-      <change beforePath="$PROJECT_DIR$/js/connection.js" afterPath="$PROJECT_DIR$/js/connection.js" />
-      <change beforePath="$PROJECT_DIR$/js/connection.js.map" afterPath="$PROJECT_DIR$/js/connection.js.map" />
-      <change beforePath="$PROJECT_DIR$/js/connection.ts" afterPath="$PROJECT_DIR$/js/connection.ts" />
-      <change beforePath="$PROJECT_DIR$/js/voice/AudioController.ts" afterPath="$PROJECT_DIR$/js/voice/AudioController.ts" />
-      <change beforePath="$PROJECT_DIR$/js/voice/VoiceHandler.js" afterPath="$PROJECT_DIR$/js/voice/VoiceHandler.js" />
-      <change beforePath="$PROJECT_DIR$/js/voice/VoiceHandler.js.map" afterPath="$PROJECT_DIR$/js/voice/VoiceHandler.js.map" />
-      <change beforePath="$PROJECT_DIR$/js/voice/VoiceHandler.ts" afterPath="$PROJECT_DIR$/js/voice/VoiceHandler.ts" />
+      <change beforePath="$PROJECT_DIR$/css/ts/chat.css" afterPath="$PROJECT_DIR$/css/ts/chat.css" />
+      <change beforePath="$PROJECT_DIR$/js/InfoBar.js" afterPath="$PROJECT_DIR$/js/InfoBar.js" />
+      <change beforePath="$PROJECT_DIR$/js/InfoBar.js.map" afterPath="$PROJECT_DIR$/js/InfoBar.js.map" />
+      <change beforePath="$PROJECT_DIR$/js/InfoBar.ts" afterPath="$PROJECT_DIR$/js/InfoBar.ts" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -48,11 +39,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="chat.css" pinned="false" current-in-tab="false">
+      <file leaf-file-name="chat.css" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/css/ts/chat.css">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1056">
-              <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+            <state relative-caret-position="834">
+              <caret line="101" column="21" lean-forward="false" selection-start-line="101" selection-start-column="21" selection-end-line="101" selection-end-column="21" />
               <folding />
             </state>
           </provider>
@@ -88,24 +79,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ControlBar.ts" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/ui/ControlBar.ts">
+      <file leaf-file-name="connection.ts" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/connection.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="298">
-              <caret line="27" column="4" lean-forward="false" selection-start-line="27" selection-start-column="4" selection-end-line="27" selection-end-column="4" />
-              <folding />
+            <state relative-caret-position="182">
+              <caret line="480" column="30" lean-forward="false" selection-start-line="480" selection-start-column="30" selection-end-line="480" selection-end-column="30" />
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="connection.ts" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/js/connection.ts">
+      <file leaf-file-name="InfoBar.ts" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/InfoBar.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="326">
-              <caret line="488" column="25" lean-forward="false" selection-start-line="488" selection-start-column="25" selection-end-line="488" selection-end-column="25" />
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
+            <state relative-caret-position="532">
+              <caret line="83" column="52" lean-forward="false" selection-start-line="83" selection-start-column="52" selection-end-line="83" selection-end-column="52" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -188,13 +179,14 @@
         <option value="$PROJECT_DIR$/js/ui/modal/ModalCreateChannel.ts" />
         <option value="$PROJECT_DIR$/css/general.css" />
         <option value="$PROJECT_DIR$/index.html" />
-        <option value="$PROJECT_DIR$/js/InfoBar.ts" />
         <option value="$PROJECT_DIR$/js/codec/Codec.ts" />
         <option value="$PROJECT_DIR$/js/voice/VoiceHandler.ts" />
         <option value="$PROJECT_DIR$/js/voice/AudioController.ts" />
         <option value="$PROJECT_DIR$/js/chat.ts" />
         <option value="$PROJECT_DIR$/js/connection.ts" />
         <option value="$PROJECT_DIR$/js/client.ts" />
+        <option value="$PROJECT_DIR$/js/InfoBar.ts" />
+        <option value="$PROJECT_DIR$/css/ts/chat.css" />
       </list>
     </option>
   </component>
@@ -360,7 +352,7 @@
       <updated>1519749313999</updated>
       <workItem from="1519749316100" duration="9698000" />
       <workItem from="1520012895408" duration="13944000" />
-      <workItem from="1520175420796" duration="55488000" />
+      <workItem from="1520175420796" duration="57014000" />
     </task>
     <task id="LOCAL-00001" summary="A lot of updates :)">
       <created>1520446012318</created>
@@ -369,11 +361,18 @@
       <option name="project" value="LOCAL" />
       <updated>1520446012319</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Fixing some stuff">
+      <created>1520450076159</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1520450076160</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="79130000" />
+    <option name="totallyTimeSpent" value="80656000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1215" height="1028" extended-state="6" />
@@ -464,7 +463,8 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <MESSAGE value="A lot of updates :)" />
-    <option name="LAST_COMMIT_MESSAGE" value="A lot of updates :)" />
+    <MESSAGE value="Fixing some stuff" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fixing some stuff" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -748,14 +748,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/InfoBar.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-262">
-          <caret line="57" column="25" lean-forward="false" selection-start-line="57" selection-start-column="25" selection-end-line="57" selection-end-column="25" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-90">
@@ -827,26 +819,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/css/ts/chat.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1056">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/css/general.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1854">
           <caret line="103" column="0" lean-forward="true" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/css/ts/tab.css">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="666">
-          <caret line="37" column="14" lean-forward="true" selection-start-line="37" selection-start-column="14" selection-end-line="37" selection-end-column="14" />
           <folding />
         </state>
       </provider>
@@ -879,11 +855,35 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/js/connection.ts">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="326">
-          <caret line="488" column="25" lean-forward="false" selection-start-line="488" selection-start-column="25" selection-end-line="488" selection-end-column="25" />
+        <state relative-caret-position="182">
+          <caret line="480" column="30" lean-forward="false" selection-start-line="480" selection-start-column="30" selection-end-line="480" selection-end-column="30" />
           <folding>
             <element signature="n#!!doc" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/InfoBar.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="532">
+          <caret line="83" column="52" lean-forward="false" selection-start-line="83" selection-start-column="52" selection-end-line="83" selection-end-column="52" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/css/ts/tab.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="666">
+          <caret line="37" column="14" lean-forward="true" selection-start-line="37" selection-start-column="14" selection-end-line="37" selection-end-column="14" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/css/ts/chat.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="834">
+          <caret line="101" column="21" lean-forward="false" selection-start-line="101" selection-start-column="21" selection-end-line="101" selection-end-column="21" />
+          <folding />
         </state>
       </provider>
     </entry>
