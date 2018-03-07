@@ -1,4 +1,4 @@
-/// <reference path="../voice.ts" />
+/// <reference path="../voice/VoiceHandler.ts" />
 /// <reference path="../client.ts" />
 /// <reference path="../contextMenu.ts" />
 /// <reference path="../proto.ts" />
@@ -15,13 +15,12 @@ class ChannelTree {
     constructor(client, htmlTree) {
         this.client = client;
         this.htmlTree = htmlTree;
-        this.server = new ServerEntry(this, "undefined");
-        this.channels = [];
-        this.clients = [];
+        this.reset();
+    }
 
-        let jhtml = $(this.htmlTree);
-        jhtml.empty();
-        this.server.htmlTag.appendTo(jhtml);
+    initialiseHead(serverName: string) {
+        this.server = new ServerEntry(this, serverName);
+        this.server.htmlTag.appendTo(this.htmlTree);
         this.server.initializeListener();
     }
 
@@ -66,8 +65,8 @@ class ChannelTree {
         let tag = this.htmlTree;
         let prevChannel = null;
         if(channel.hasParent()) {
-            var parent = channel.parentChannel();
-            var siblings = parent.siblings();
+            let parent = channel.parentChannel();
+            let siblings = parent.siblings();
             if(siblings.length == 0) {
                 elm = parent.htmlTag;
                 prevChannel = null;
@@ -95,12 +94,7 @@ class ChannelTree {
         return undefined;
     }
 
-    /**
-     * @param {ChannelEntry} channel
-     * @param {ChannelEntry} prevChannel
-     * @param {ChannelEntry} parent
-     */
-    moveChannel(channel, prevChannel, parent) {
+    moveChannel(channel: ChannelEntry, prevChannel: ChannelEntry, parent: ChannelEntry) {
         if(prevChannel != null && prevChannel.parent != parent) {
             console.error("Invalid channel move (different parents! (" + prevChannel.parent + "|" + parent + ")");
             return;
@@ -144,7 +138,7 @@ class ChannelTree {
         client.channelTree = this;
         client["_channel"] = channel;
 
-        var tag = client.htmlTag.css({display: "none"}).fadeIn("slow");
+        let tag = client.htmlTag.css({display: "none"}).fadeIn("slow");
         tag.appendTo(channel.clientTag());
         channel.adjustSize(true);
         client.initializeListener();
@@ -209,5 +203,12 @@ class ChannelTree {
         }
 
         return result;
+    }
+
+    reset(){
+        this.server = null;
+        this.clients = [];
+        this.channels = [];
+        this.htmlTree.empty();
     }
 }

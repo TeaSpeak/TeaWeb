@@ -7,6 +7,25 @@
 /// <reference path="permission/PermissionManager.ts" />
 /// <reference path="permission/GroupManager.ts" />
 /// <reference path="ui/ControlBar.ts" />
+var DisconnectReason;
+(function (DisconnectReason) {
+    DisconnectReason[DisconnectReason["CONNECT_FAILURE"] = 0] = "CONNECT_FAILURE";
+    DisconnectReason[DisconnectReason["CONNECTION_CLOSED"] = 1] = "CONNECTION_CLOSED";
+    DisconnectReason[DisconnectReason["CONNECTION_FATAL_ERROR"] = 2] = "CONNECTION_FATAL_ERROR";
+    DisconnectReason[DisconnectReason["CONNECTION_PING_TIMEOUT"] = 3] = "CONNECTION_PING_TIMEOUT";
+    DisconnectReason[DisconnectReason["CLIENT_KICKED"] = 4] = "CLIENT_KICKED";
+    DisconnectReason[DisconnectReason["CLIENT_BANNED"] = 5] = "CLIENT_BANNED";
+    DisconnectReason[DisconnectReason["SERVER_CLOSED"] = 6] = "SERVER_CLOSED";
+    DisconnectReason[DisconnectReason["UNKNOWN"] = 7] = "UNKNOWN";
+})(DisconnectReason || (DisconnectReason = {}));
+var ConnectionState;
+(function (ConnectionState) {
+    ConnectionState[ConnectionState["UNCONNECTED"] = 0] = "UNCONNECTED";
+    ConnectionState[ConnectionState["CONNECTING"] = 1] = "CONNECTING";
+    ConnectionState[ConnectionState["INITIALISING"] = 2] = "INITIALISING";
+    ConnectionState[ConnectionState["CONNECTED"] = 3] = "CONNECTED";
+    ConnectionState[ConnectionState["DISCONNECTING"] = 4] = "DISCONNECTING";
+})(ConnectionState || (ConnectionState = {}));
 var ViewReasonId;
 (function (ViewReasonId) {
     ViewReasonId[ViewReasonId["VREASON_USER_ACTION"] = 0] = "VREASON_USER_ACTION";
@@ -28,7 +47,7 @@ class TSClient {
         this.settings = new Settings(this);
         this.selectInfo = new InfoBar(this, $("#select_info"));
         this.channelTree = new ChannelTree(this, $("#channelTree"));
-        this.serverConnection = new ServerConnection(this); //87.106.252.164
+        this.serverConnection = new ServerConnection(this);
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
         this.groups = new GroupManager(this);
@@ -38,17 +57,8 @@ class TSClient {
         this.channelTree.registerClient(this._ownEntry);
     }
     setup() {
-        const self = this;
-        this.serverConnection.on_connected = function () {
-            console.log("Client connected!");
-            self.settings.loadServer();
-            chat.serverChat().appendMessage("Connected");
-            self.serverConnection.sendCommand("channelsubscribeall");
-            self.permissions.requestPermissionList();
-            if (self.groups.serverGroups.length == 0)
-                self.groups.requestGroups();
-        };
         this.controlBar.initialise();
+        this.serverConnection.on_connected = this.onConnected.bind(this);
     }
     startConnection(addr) {
         let idx = addr.lastIndexOf(':');
@@ -60,8 +70,10 @@ class TSClient {
         }
         else {
             host = addr;
-            port = 19978;
+            port = 19974;
         }
+        console.log("Start connection to " + host + ":" + port);
+        this.channelTree.initialiseHead(addr);
         this.serverConnection.startConnection(host, port);
     }
     getClient() { return this._ownEntry; }
@@ -70,14 +82,54 @@ class TSClient {
         this._clientId = id;
         this._ownEntry["_clientId"] = id;
     }
+    get clientId() {
+        return this._clientId;
+    }
     getServerConnection() { return this.serverConnection; }
     /**
      * LISTENER
      */
     onConnected() {
+        console.log("Client connected!");
+        this.settings.loadServer();
+        chat.serverChat().appendMessage("Connected");
+        this.serverConnection.sendCommand("channelsubscribeall");
+        this.permissions.requestPermissionList();
+        if (this.groups.serverGroups.length == 0)
+            this.groups.requestGroups();
+        this.controlBar.updateProperties();
     }
     //Sould be triggered by `notifyclientleftview`
-    handleOwnDisconnect(json) {
+    handleDisconnect(type, data = {}) {
+        switch (type) {
+            case DisconnectReason.CONNECT_FAILURE:
+                console.error("Could not connect to remote host! Exception");
+                console.error(data);
+                createErrorModal("Could not connect", "Could not connect to remote host (Connection refused)").open();
+                break;
+            case DisconnectReason.CONNECTION_CLOSED:
+                console.error("Lost connection to remote server!");
+                createErrorModal("Connection closed", "The connection was closed by remote host").open();
+                break;
+            case DisconnectReason.CONNECTION_PING_TIMEOUT:
+                console.error("Connection ping timeout");
+                createErrorModal("Connection lost", "Lost connection to remote host (Ping timeout)<br>Even possible?").open();
+                break;
+            case DisconnectReason.SERVER_CLOSED:
+                chat.serverChat().appendError("Server closed ({})", data.reasonmsg);
+                createErrorModal("Server closed", "The server is closed.<br>" +
+                    "Reason: " + data.reasonmsg).open();
+                break;
+            default:
+                console.error("Got uncaught disconnect!");
+                console.error("Type: " + type + " Data:");
+                console.error(data);
+                break;
+        }
+        this.selectInfo.currentSelected = null;
+        this.channelTree.reset();
+        this.voiceConnection.dropSession();
+        this.serverConnection.disconnect();
     }
 }
 //# sourceMappingURL=client.js.map

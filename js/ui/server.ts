@@ -28,7 +28,7 @@ class ServerEntry {
     get htmlTag() {
         if(this._htmlTag) return this._htmlTag;
 
-        var tag = $("<div></div>")
+        let tag = $.spawn("div");
 
         tag.attr("id", "server");
         tag.addClass("server");

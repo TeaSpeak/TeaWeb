@@ -13,20 +13,22 @@
     <body>
         TeaSpeak-Web<br>
 
-        <div style="width: 1200px; height: 1050px; display: flex; flex-direction: column; resize: both; margin: 20px"> <!-- Container -->
+        <div style="width: 600px; height: 450px; display: flex; flex-direction: column; resize: both; margin: 20px"> <!-- Container -->
             <div style="height: 45px; width: 100%; border-radius: 2px 0px 0px 0px; border-bottom-width: 0px; background-color: lightgrey" class="main_container">
                 <div id="control_bar" class="control_bar">
+                    <div class="button btn_connect"><div class="icon_x32 client-connect"></div></div>
+                    <div style="border-left:2px solid gray;height: auto; margin-left: 5px; margin-right: 5px"></div>
                     <div class="button btn_client_away"><div class="icon_x32 client-away"></div></div>
                     <div class="button btn_mute_input"><div class="icon_x32 client-input_muted"></div></div>
                     <div class="button btn_mute_output"><div class="icon_x32 client-output_muted"></div></div>
                     <div style="width: 100%"></div>
-                    <div class="button"><div class="icon_x32 client-settings"></div></div>
+                    <div class="button btn_open_settings"><div class="icon_x32 client-settings"></div></div>
                 </div>
             </div>
 
             <div style="flex-direction: row; height: 100%; width: 100%; display: flex">
                 <div style="width: 60%; flex-direction: column;">
-                    <div style="height: 60%; border-radius: 0px 0px 0px 0px; border-right-width: 0px;" class="main_container">
+                    <div style="height: 60%; border-radius: 0px 0px 0px 0px; border-right-width: 0px; overflow: auto; overflow-x: visible" class="main_container">
                         <div class="channelTree" id="channelTree">
                             <div class="server l"><div class="icon client-server_green"></div> TeaSpeak web!</div>
                         </div>
@@ -102,7 +104,6 @@
                                 </div>
                             </div>
                         </div>
-
                     </x-content>
                 </x-entry>
                 <x-entry>
@@ -160,6 +161,48 @@
                 </div>
             </div>
         </template>
+        <template id="tmpl_settings">
+            <x-tab>
+                <x-entry>
+                    <x-tag>General</x-tag>
+                    <x-content>Didnt setuped yet!</x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Voice</x-tag>
+                    <x-content>
+                        <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly" class="settings_voice">
+                            <div style="vertical-align: center; margin: 20px; min-width: 175px">
+                                <a>Voice Activity Detection</a>
+                                <div>
+                                    <fieldset class="GroupBox">
+                                        <div><input type="radio" name="vad_type" value="pt" display="Always active"> Always active</div>
+                                        <div><input type="radio" name="vad_type" value="vad" display="Voice activity detection"> Voice activity detection</div>
+                                        <div><input type="radio" name="vad_type" value="ppt" display="Push to talk"> Push to talk</div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                            <div style="border-left:1px solid #000;height: auto;"></div>
+                            <div style="flex-direction: column; align-content: stretch; vertical-align: center; margin: 20px;">
+                                <div class="vad_settings">
+                                    <div style="font-size: 14px; text-align: center"><a class="vad_type">Type[Unknown]</a> settings</div>
+                                    <div class="vad_type_settings vad_type_pt">There are no setting entries for an <b>always</b> online voice detection.</div>
+                                    <div class="vad_type_settings vad_type_ppt">
+                                        <a>Push to talk key:</a>
+                                        <button class="vat_ppt_key">Uninitialised</button>
+                                    </div>
+                                    <div class="vad_type_settings vad_type_vad">
+                                        <a>Voice activity threshold</a>
+                                        <div class="vad_threshold_selector">
+                                            <input type="range" min="0" max="100" value="50" class="vad_slider">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
+                </x-entry>
+            </x-tab>
+        </template>
 
         <script src="vendor/jquery/jquery.min.js"></script>
         <!--
@@ -173,6 +216,9 @@
         <script src="vendor/aurora/aurora.js"></script>
 
         <script src="js/utils/modal.js"></script>
+        <script src="js/ui/modal/ModalConnect.js"></script>
+        <script src="js/ui/modal/ModalSettings.js"></script>
+        <script src="js/ui/modal/ModalCreateChannel.js"></script>
         <script src="js/utils/tab.js"></script>
 
         <script src="js/proto.js"></script>
@@ -180,10 +226,15 @@
         <script src="js/contextMenu.js"></script>
         <script src="js/connection.js"></script>
         <script src="js/FileManager.js"></script>
-        <script src="js/voice.js"></script>
         <script src="js/client.js"></script>
         <script src="js/chat.js"></script>
         <script src="js/InfoBar.js"></script>
+
+
+        <script src="js/voice/VoiceHandler.js"></script>
+        <script src="js/voice/VoiceRecorder.js"></script>
+        <script src="js/voice/AudioResampler.js"></script>
+        <script src="js/voice/AudioController.js"></script>
 
         <script src="js/permission/PermissionManager.js"></script>
         <script src="js/permission/GroupManager.js"></script>

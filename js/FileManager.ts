@@ -311,7 +311,7 @@ class IconManager {
         let tag = $("<div></div>");
         tag.addClass("icon_empty");
 
-        let img = $("<img/>");
+        let img = $.spawn("img");
         img.attr("width", 16).attr("height", 16).attr("alt", "");
 
         let icon = this.resolveCached(id);

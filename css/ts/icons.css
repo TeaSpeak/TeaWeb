@@ -925,7 +925,7 @@
     background-position: calc(-128px * 2) calc(-192px * 2);
 }
 .icon_x32.client-message_info {
-    background-position: calc(-160px * 2) calc(-192px * 2);
+    background-position: calc(-160px * 2)pe the key you wish calc(-192px * 2);
 }
 .icon_x32.client-message_outgoing {
     background-position: calc(-192px * 2) calc(-192px * 2);
@@ -966,7 +966,7 @@
 .icon_x32.client-permission_overview {
     background-position: calc(-64px * 2) calc(-224px * 2);
 }
-.icon_x32.client-permission_server_groups {
+.icon_x32.client-permission_server_groups pe the key you wish{
     background-position: calc(-96px * 2) calc(-224px * 2);
 }
 .icon_x32.client-phoneticsnickname {
@@ -1028,7 +1028,7 @@
 }
 .icon_x32.client-refresh {
     background-position: calc(-224px * 2) calc(-256px * 2);
-}
+}pe the key you wish
 .icon_x32.client-register {
     background-position: calc(-256px * 2) calc(-256px * 2);
 }

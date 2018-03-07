@@ -446,7 +446,7 @@ var OpusWorker = function (_Event) {
         var _this = possibleConstructorReturn(this, (OpusWorker.__proto__ || Object.getPrototypeOf(OpusWorker)).call(this, 'worker'));
 
         _this.worker = new Worker('libopus/opus.min.js');
-        _this.worker.addEventListener('message', _this.onMessage.bind(_this));
+        _this.worker.addEventListener('message', _this.handleWebSocketMessage.bind(_this));
         _this.worker.postMessage({
             type: 'init',
             config: {
@@ -472,7 +472,7 @@ var OpusWorker = function (_Event) {
             this.worker.postMessage(workerData);
         }
     }, {
-        key: 'onMessage',
+        key: 'handleWebSocketMessage',
         value: function onMessage(event) {
             var data = event.data;
             this.dispatch('data', data.buffer);

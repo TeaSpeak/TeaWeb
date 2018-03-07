@@ -20,8 +20,6 @@ class InfoBar {
     set currentSelected(entry) {
         if (this._currentSelected == entry)
             return;
-        if (!entry)
-            return;
         this._currentSelected = entry;
         this.buildBar();
     }
@@ -38,7 +36,9 @@ class InfoBar {
         this._htmlTag.find(".online").text(formatDate(this._currentSelected.calculateOnlineTime()));
     }
     buildBar() {
-        this._htmlTag.html("");
+        this._htmlTag.empty();
+        if (!this._currentSelected)
+            return;
         for (let timer of this.timers)
             clearTimeout(timer);
         for (let timer of this.intervals)

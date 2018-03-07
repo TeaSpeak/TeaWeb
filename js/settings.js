@@ -14,25 +14,35 @@ class Settings {
                 _this.save();
         }, 5 * 1000);
     }
-    global(key) {
-        return this.cacheGlobal[key];
+    global(key, _default) {
+        let result = this.cacheGlobal[key];
+        return result ? result : _default;
     }
     server(key) {
         return this.cacheServer[key];
     }
     changeGlobal(key, value) {
+        if (this.cacheGlobal[key] == value)
+            return;
         this.updated = true;
         this.cacheGlobal[key] = value;
         if (Settings.UPDATE_DIRECT)
             this.save();
     }
     changeServer(key, value) {
+        if (this.cacheServer[key] == value)
+            return;
         this.updated = true;
         this.cacheServer[key] = value;
         if (Settings.UPDATE_DIRECT)
             this.save();
     }
     loadServer() {
+        if (this.handle.channelTree.server) {
+            this.cacheServer = {};
+            console.warn("[Settings] tried to load settings for unknown server");
+            return;
+        }
         let serverId = this.handle.channelTree.server.properties.virtualserver_unique_identifier;
         this.cacheServer = JSON.parse(localStorage.getItem("settings.server_" + serverId));
         if (!this.cacheServer)
@@ -40,11 +50,13 @@ class Settings {
     }
     save() {
         this.updated = false;
-        let serverId = this.handle.channelTree.server.properties.virtualserver_unique_identifier;
+        if (this.handle.channelTree.server) {
+            let serverId = this.handle.channelTree.server.properties.virtualserver_unique_identifier;
+            let server = JSON.stringify(this.cacheServer);
+            localStorage.setItem("settings.server_" + serverId, server);
+        }
         let global = JSON.stringify(this.cacheGlobal);
-        let server = JSON.stringify(this.cacheServer);
         localStorage.setItem("settings.global", global);
-        localStorage.setItem("settings.server_" + serverId, server);
     }
 }
 Settings.UPDATE_DIRECT = true;

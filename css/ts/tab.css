@@ -37,7 +37,6 @@ x-tab { display:none }
     max-width: 100%;
     overflow: auto;
     /*height: 24px;*/
-    overflow: auto;
     overflow-y: hidden;
     white-space: nowrap;
     margin-bottom: -1px;
@@ -57,6 +56,10 @@ x-tab { display:none }
     padding-left: 5px;
     padding-right: 5px;
     cursor: pointer;
+}
+
+.tab .tab-content-invisible {
+    display: none;
 }
 
 .tab .selected {

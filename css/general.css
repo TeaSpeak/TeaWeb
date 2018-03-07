@@ -106,10 +106,10 @@
 }
 
 /* Modal Body */
-.modal-body {padding: 2px 16px;}
+.modal-body:not(:empty) {padding: 2px 16px;}
 
 /* Modal Footer */
-.modal-footer {
+.modal-footer:not(:empty) {
     padding: 2px 16px;
 }
 
@@ -132,7 +132,7 @@
 }
 
 /* Modal Content */
-.modal-content {
+.modal-content:not(:empty) {
     position: absolute;
     display: inline-flex;
     flex-direction: column;
@@ -240,4 +240,10 @@ html {
     background-color: rgba(0,0,0,0.4);
     border: rgba(255,255,255,.75) solid;
     border-width: 2px;
+}
+
+.GroupBox {
+    border: gray solid;
+    border-width: 2px;
+    border-radius: 0px 6px 6px 6px;
 }

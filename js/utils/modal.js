@@ -15,6 +15,9 @@ const ModalFunctions = {
         switch (typeof val) {
             case "string": return $("<div>" + val + "</div>");
             case "object": return val;
+            case "undefined":
+                console.warn("Got undefined type!");
+                return $.spawn("div");
             default:
                 console.error("Invalid type " + typeof val);
                 return $();

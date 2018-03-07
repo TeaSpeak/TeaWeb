@@ -172,6 +172,8 @@ class ClientEntry {
         tag.css("cursor", "pointer");
         tag.css("font-weight", "bold");
         tag.css("color", "darkblue");
+        tag.css("display", "table");
+
         if(braces)
             tag.text("\"" + name + "\"");
         else

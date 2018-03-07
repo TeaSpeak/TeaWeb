@@ -29,18 +29,28 @@ var TabFunctions = {
         let content = $.spawn("div");
         content.addClass("tab-content");
 
+        let silentContent = $.spawn("div");
+        silentContent.addClass("tab-content-invisible");
+
         template.find("x-entry").each(function () {
             let hentry = $.spawn("div");
             hentry.addClass("entry");
-            hentry.append($(this).find("x-tag").clone());
+            hentry.append($(this).find("x-tag").clone(true, true));
 
             const _this = $(this);
+            const _entryContent = _this.find("x-content").clone(true, true);
+            silentContent.append(_entryContent);
             hentry.on("click", function () {
+                if(hentry.hasClass("selected")) return;
                 tag.find(".tab-header .selected").removeClass("selected");
                 hentry.addClass("selected");
 
+                content.children().appendTo(silentContent);
+                console.log(silentContent);
                 content.empty();
-                content.append(_this.find("x-content").clone());
+                content.append(_entryContent);
+                //console.log(_this.find("x-content"));
+                //content.append(_this.find("x-content"));
             });
 
             console.log(this);
@@ -51,6 +61,7 @@ var TabFunctions = {
 
         tag.append(header);
         tag.append(content);
+        tag.append(silentContent);
         return tag;
     }
 }

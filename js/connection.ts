@@ -34,7 +34,10 @@ class ServerConnection {
     _remoteHost: string;
     _remotePort: number;
     _socket: WebSocket;
+    _connectionState: ConnectionState = ConnectionState.UNCONNECTED;
     commandHandler: ConnectionCommandHandler;
+
+    private _connectTimeoutHandler: NodeJS.Timer = undefined;
 
     private _retCodeIdx: number;
     private _retListener: ReturnListener<CommandResult>[];
@@ -54,28 +57,40 @@ class ServerConnection {
     };
 
     on_connected: () => void = () => {};
-    on_disconnect: (reason: string | any) => void = (reason: string | any) => {
-        console.error("Client disconnected!");
-        chat.serverChat().appendError("Client disconnected. Reason " + reason);
-    };
 
     private generateReturnCode() : string {
         return (this._retCodeIdx++).toString();
     }
 
-    startConnection(host : string, port : number) {
+    startConnection(host : string, port : number, timeout: number = 1000) {
+        if(this._connectTimeoutHandler) {
+            clearTimeout(this._connectTimeoutHandler);
+            this._connectTimeoutHandler = null;
+            this.disconnect();
+        }
+        this.updateConnectionState(ConnectionState.CONNECTING);
         this._remoteHost = host;
         this._remotePort = port;
 
         const self = this;
         try {
+            this._connectTimeoutHandler = setTimeout(() => {
+                this.disconnect();
+                this._client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
+            }, timeout);
             this._socket = new WebSocket('ws:' + this._remoteHost + ":" + this._remotePort);
+            clearTimeout(this._connectTimeoutHandler);
+            this._connectTimeoutHandler = null;
             this._socket.onopen = function () {
                 self.on_connect();
             };
 
-            this._socket.onclose = function () {
-                self.on_disconnect("remote closed");
+            this._socket.onclose = event => {
+                this._client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
+                    code: event.code,
+                    reason: event.reason,
+                    event: event
+                });
             };
 
             this._socket.onerror = function (e) {
@@ -84,22 +99,34 @@ class ServerConnection {
             };
 
             this._socket.onmessage = function (msg) {
-                self.onMessage(msg.data);
+                self.handleWebSocketMessage(msg.data);
             };
+            this.updateConnectionState(ConnectionState.INITIALISING);
         } catch (e) {
-            console.log("Got exception:");
-            console.log(e);
+            this.disconnect();
+            this._client.handleDisconnect(DisconnectReason.CONNECT_FAILURE, e);
         }
     }
 
-    disconnect() {
-        this._socket.close();
-        this._socket = null;
+    updateConnectionState(state: ConnectionState) {
+        this._connectionState = state;
     }
 
-    private onMessage(data) {
+    disconnect() {
+        if(this._connectionState == ConnectionState.UNCONNECTED) return;
+
+        if(this._socket) this._socket.close();
+        this._socket = null;
+        this.updateConnectionState(ConnectionState.UNCONNECTED);
+        for(let future of this._retListener)
+            future.reject("Connection closed");
+        this._retListener = [];
+        this._retCodeIdx = 0;
+    }
+
+    private handleWebSocketMessage(data) {
         if(typeof(data) === "string") {
-            var json;
+            let json;
             try {
                 json = JSON.parse(data);
             } catch(e) {
@@ -130,8 +157,8 @@ class ServerConnection {
         fn.call(this.commandHandler, json["data"]);
     }
 
-    send(json) {
-        this._socket.send(json);
+    sendData(data: any) { //TODO check stuff?
+        this._socket.send(data);
     }
 
     sendCommand(command: string, data: any = {}, logResult: boolean = true) : Promise<CommandResult> {
@@ -184,7 +211,6 @@ class ServerConnection {
     /**
      *   HELPER METHODS
      */
-
     joinChannel(channel: ChannelEntry, password: string = "") : Promise<CommandResult> {
         return this.sendCommand("clientmove", [{
             "clid": this._client.getClientId(),
@@ -203,14 +229,14 @@ class ServerConnection {
     }
 
     updateClient(key: string, value: string) : Promise<CommandResult> {
-        var data = {};
+        let data = {};
         data[key] = value;
         return this.sendCommand("clientupdate", data);
     }
 }
 
 class ConnectionCommandHandler {
-    connection: ServerConnection;
+    readonly connection: ServerConnection;
 
     constructor(connection) {
         this.connection = connection;
@@ -257,9 +283,7 @@ class ConnectionCommandHandler {
 
     handleCommandServerInit(json){
         //We could setup the voice channel
-        console.log(this.connection);
-        console.log(this.connection._client);
-        console.log(this.connection._client.voiceConnection);
+        console.log("Setting up voice ");
         this.connection._client.voiceConnection.createSession();
 
 
@@ -394,8 +418,12 @@ class ConnectionCommandHandler {
             return 0;
         }
         if(client == this.connection._client.getClient()) {
-            this.connection.on_disconnect(json["reasonmsg"]);
-            this.connection.disconnect();
+            if(json["reasonid"] == ViewReasonId.VREASON_BAN)
+                this.connection._client.handleDisconnect(DisconnectReason.CLIENT_BANNED, json);
+            else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK)
+                this.connection._client.handleDisconnect(DisconnectReason.CLIENT_KICKED, json);
+            else
+                this.connection._client.handleDisconnect(DisconnectReason.UNKNOWN, json);
             return;
         }
 

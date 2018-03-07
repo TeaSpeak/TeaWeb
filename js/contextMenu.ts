@@ -9,8 +9,9 @@ $(document).bind("mousedown", function (e) {
 
 let contextMenuCloseFn = undefined;
 function despawnContextMenu() {
-    if(!$(".contextMenu").is(":visible")) return;
-    $(".contextMenu").hide(100);
+    let menue = $(".contextMenu");
+    if(!menue.is(":visible")) return;
+    menue.hide(100);
     if(contextMenuCloseFn) contextMenuCloseFn();
 }
 

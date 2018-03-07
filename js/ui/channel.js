@@ -86,7 +86,7 @@ class ChannelEntry {
     get htmlTag() {
         if (this._htmlTag)
             return this._htmlTag;
-        let tag = $("<div></div>");
+        let tag = $.spawn("div");
         tag.attr("id", "channel_" + this.getChannelId());
         tag.addClass("channel");
         tag.append("<div class=\"icon_empty\"></div>");
@@ -279,7 +279,8 @@ class ChannelEntry {
         }
     }
     createChatTag(braces = false) {
-        var tag = $("<div></div>");
+        let tag = $.spawn("div");
+        tag.css("display", "table");
         tag.css("cursor", "pointer");
         tag.css("font-weight", "bold");
         tag.css("color", "darkblue");

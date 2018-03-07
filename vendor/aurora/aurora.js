@@ -2990,7 +2990,7 @@ MozillaAudioDevice = (function(_super) {
  * Planned to be replaced with src.js, eventually: https://github.com/jussi-kalliokoski/src.js
  */
 
-//JavaScript Audio Resampler (c) 2011 - Grant Galitz
+//JavaScript Audio AudioResampler (c) 2011 - Grant Galitz
 function Resampler(fromSampleRate, toSampleRate, channels, outputBufferSize, noReturn) {
 	this.fromSampleRate = fromSampleRate;
 	this.toSampleRate = toSampleRate;
@@ -3005,7 +3005,7 @@ Resampler.prototype.initialize = function () {
 	if (this.fromSampleRate > 0 && this.toSampleRate > 0 && this.channels > 0) {
 		if (this.fromSampleRate == this.toSampleRate) {
 			//Setup a resampler bypass:
-			this.resampler = this.bypassResampler;		//Resampler just returns what was passed through.
+			this.resampler = this.bypassResampler;		//AudioResampler just returns what was passed through.
 			this.ratioWeight = 1;
 		}
 		else {

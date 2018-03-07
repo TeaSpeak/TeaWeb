@@ -12,14 +12,14 @@ extern "C" {
     };
 
     EMSCRIPTEN_KEEPALIVE
-    OpusHandle* codec_opus_createNativeHandle(size_t channelCount) {
-        printf("inizalisized (%d)!\n", channelCount);
-        auto codec = new OpusHandle;
+    OpusHandle* codec_opus_createNativeHandle(size_t channelCount, int type) {
+        printf("Inizalisize opus. (Channel count: %d Sample rate: %d Type: %d)!\n", channelCount, 48000, type);
+        auto codec = new OpusHandle{};
         int error = 0;
         codec->decoder = opus_decoder_create(48000, channelCount, &error);
         printf("Status %d\n", error);
-        codec->encoder = opus_encoder_create(48000, channelCount, OPUS_APPLICATION_AUDIO, &error);
-        printf("Status %d\n", error);
+        codec->encoder = opus_encoder_create(48000, channelCount, type, &error);
+        printf("Status %d Channel %d\n", error, codec->channelCount);
         return codec;
     }
 
@@ -38,7 +38,6 @@ extern "C" {
 
     EMSCRIPTEN_KEEPALIVE
     int codec_opus_encode(OpusHandle* handle, uint8_t* buffer, size_t length, size_t maxLength) {
-        printf("codec_opus_encode(%p,%p,%d, %d)\n", handle->encoder, (void*) buffer, length, maxLength);
         auto result = opus_encode_float(handle->encoder, (float*) buffer, length / handle->channelCount, buffer, maxLength);
         if(result < 0) return result;
         return result;
