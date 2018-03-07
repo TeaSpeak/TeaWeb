@@ -1,3 +1,10 @@
+enum PlayerState {
+    PREBUFFERING,
+    PLAYING,
+    BUFFERING,
+    STOPPED
+}
+
 class AudioController {
     private static _globalContext;
     static get globalContext() : AudioContext {
@@ -7,52 +14,62 @@ class AudioController {
     }
 
     speakerContext: AudioContext;
-    nextTime: number;
-    last: number;
-    audioCache: AudioBuffer[];
-    init: boolean;
-    private _audioStopped: boolean = true;
+    private timeIndex: number = 0;
+    private playerState: PlayerState = PlayerState.STOPPED;
+    private audioCache: AudioBuffer[];
+    private _playingSources: AudioBufferSourceNode[] = [];
+    allowBuffering: boolean = false;
+
     //Events
     onSpeaking: () => void;
     onSilence: () => void;
 
     constructor() {
         this.speakerContext = AudioController.globalContext;
-        this.nextTime = 0;
-        this.last = 0;
         this.audioCache = [];
-        this.init = false;
 
         this.onSpeaking = function () { };
         this.onSilence = function () { };
     }
 
-    play(buffer: AudioBuffer) {
+    playBuffer(buffer: AudioBuffer) {
         if (buffer.sampleRate != this.speakerContext.sampleRate)
             console.warn("[AudioController] Source sample rate isn't equal to playback sample rate!");
         this.audioCache.push(buffer);
 
-        let currentTime = new Date().getTime();
-        if (this._audioStopped && !this.init) {
-            this.nextTime = 0;
-            this.init = true;
-            console.log("[Audio] New data");
+        if(this.playerState == PlayerState.STOPPED) {
+            console.log("[Audio] Starting new playback");
+            this.playerState = PlayerState.PREBUFFERING;
+            //New audio
         }
-        this.last = currentTime;
 
 
-        if (this.init && this.audioCache.length > 5) {
-            this.onSpeaking();
-            this.playCache(this.audioCache);
-            this.init = false;
-            console.log("[Audio] Prebuffering succeeded (Replaying now)");
-        } else if (!this.init) {
-            this.playCache(this.audioCache);
+        switch (this.playerState) {
+            case PlayerState.PREBUFFERING:
+            case PlayerState.BUFFERING:
+                if(this.audioCache.length < 5) {
+                    if(this.playerState == PlayerState.BUFFERING) {
+                        if(this.allowBuffering) break;
+                    } else break;
+                }
+                if(this.playerState == PlayerState.PREBUFFERING) {
+                    console.log("[Audio] Prebuffering succeeded (Replaying now)");
+                    this.onSpeaking();
+                } else {
+                    if(this.allowBuffering)
+                        console.log("[Audio] Buffering succeeded (Replaying now)");
+                }
+                this.timeIndex = 0; //Instant replay
+                this.playerState = PlayerState.PLAYING;
+            case PlayerState.PLAYING:
+                this.playCache(this.audioCache);
+                break;
+            default:
+                break;
         }
     }
 
-    private _playingSources: AudioBufferSourceNode[] = [];
-    playCache(cache) {
+    private playCache(cache) {
         while (cache.length) {
             let buffer = cache.shift();
             let source = this.speakerContext.createBufferSource();
@@ -61,32 +78,37 @@ class AudioController {
             source.connect(this.speakerContext.destination);
             source.onended = () => {
                 this._playingSources.remove(source);
-                this.testPlayback();
+                this.testBufferQueue();
             };
-            if (this.nextTime == 0) {
-                this._audioStopped = false;
-                this.nextTime = this.speakerContext.currentTime;
+            if (this.timeIndex == 0) {
+                this.timeIndex = this.speakerContext.currentTime;
                 console.log("New next time!");
             }
-            source.start(this.nextTime);
-            this.nextTime += source.buffer.duration;
+            source.start(this.timeIndex);
+            this.timeIndex += source.buffer.duration;
             this._playingSources.push(source);
         }
     };
 
     stopAudio(now: boolean = false) {
+        this.playerState = PlayerState.STOPPED;
         if(now) {
             for(let e of this._playingSources)
                 e.stop();
             this._playingSources = [];
-            this.testPlayback();
         }
     }
 
-    private testPlayback() {
+    private testBufferQueue() {
         if(this._playingSources.length == 0) {
             this.onSilence();
-            this._audioStopped = true;
+
+
+            if(this.playerState != PlayerState.STOPPED) {
+                this.playerState = PlayerState.BUFFERING;
+                if(!this.allowBuffering)
+                    console.warn("[Audi] Detected a buffer underflow!");
+            }
         }
     }
 

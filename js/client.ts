@@ -9,6 +9,7 @@
 /// <reference path="ui/ControlBar.ts" />
 
 enum DisconnectReason {
+    REQUESTED,
     CONNECT_FAILURE,
     CONNECTION_CLOSED,
     CONNECTION_FATAL_ERROR,
@@ -77,6 +78,9 @@ class TSClient {
     }
 
     startConnection(addr: string) {
+        if(this.serverConnection)
+            this.handleDisconnect(DisconnectReason.REQUESTED);
+
         let idx = addr.lastIndexOf(':');
 
         let port: number;
@@ -114,6 +118,7 @@ class TSClient {
      */
     onConnected() {
         console.log("Client connected!");
+        this.channelTree.registerClient(this._ownEntry);
         this.settings.loadServer();
         chat.serverChat().appendMessage("Connected");
         this.serverConnection.sendCommand("channelsubscribeall");
@@ -126,6 +131,8 @@ class TSClient {
     //Sould be triggered by `notifyclientleftview`
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         switch (type) {
+            case DisconnectReason.REQUESTED:
+                break;
             case DisconnectReason.CONNECT_FAILURE:
                 console.error("Could not connect to remote host! Exception");
                 console.error(data);
@@ -167,6 +174,6 @@ class TSClient {
         this.selectInfo.currentSelected = null;
         this.channelTree.reset();
         this.voiceConnection.dropSession();
-        this.serverConnection.disconnect();
+        if(this.serverConnection) this.serverConnection.disconnect();
     }
 }

@@ -136,11 +136,16 @@ class VoiceConnection {
         if(message.data.subarray)
             encodedData = message.data.subarray(5);
         else encodedData = new Uint8Array(message.data, 5);
-        this.codecs[codec].decodeSamples(encodedData).then(buffer => {
-            client.getAudioController().play(buffer);
-        }).catch(error => {
-           console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
-        });
+
+        if(encodedData.length == 0) {
+            client.getAudioController().stopAudio();
+        } else {
+            this.codecs[codec].decodeSamples(encodedData).then(buffer => {
+                client.getAudioController().playBuffer(buffer);
+            }).catch(error => {
+                console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
+            });
+        }
     }
 
     private handleVoiceData(data: AudioBuffer, head: boolean) {
@@ -155,6 +160,6 @@ class VoiceConnection {
     private handleVoiceEnded() {
         console.log("Voice ended");
         this.client.getClient().speaking = false;
-        //TODO!
+        this.sendVoicePacket(new Uint8Array(0), 4); //TODO Use channel codec!
     }
 }

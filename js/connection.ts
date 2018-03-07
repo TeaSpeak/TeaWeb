@@ -81,11 +81,15 @@ class ServerConnection {
             this._socket = new WebSocket('ws:' + this._remoteHost + ":" + this._remotePort);
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
-            this._socket.onopen = function () {
-                self.on_connect();
+
+            const _socketCpy = this._socket;
+            this._socket.onopen = () => {
+                if(this._socket != _socketCpy) return;
+                this.on_connect();
             };
 
             this._socket.onclose = event => {
+                if(this._socket != _socketCpy) return;
                 this._client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
                     code: event.code,
                     reason: event.reason,
@@ -93,12 +97,14 @@ class ServerConnection {
                 });
             };
 
-            this._socket.onerror = function (e) {
+            this._socket.onerror = e => {
+                if(this._socket != _socketCpy) return;
                 console.log("Got error: (" + self._socket.readyState + ")");
                 console.log(e);
             };
 
-            this._socket.onmessage = function (msg) {
+            this._socket.onmessage = msg => {
+                if(this._socket != _socketCpy) return;
                 self.handleWebSocketMessage(msg.data);
             };
             this.updateConnectionState(ConnectionState.INITIALISING);
@@ -112,16 +118,17 @@ class ServerConnection {
         this._connectionState = state;
     }
 
-    disconnect() {
-        if(this._connectionState == ConnectionState.UNCONNECTED) return;
-
-        if(this._socket) this._socket.close();
-        this._socket = null;
+    disconnect() : boolean {
+        if(this._connectionState == ConnectionState.UNCONNECTED) return false;
         this.updateConnectionState(ConnectionState.UNCONNECTED);
+
+        if(this._socket) this._socket.close(3000 + 0xFF, "request disconnect");
+        this._socket = null;
         for(let future of this._retListener)
             future.reject("Connection closed");
         this._retListener = [];
         this._retCodeIdx = 0;
+        return true;
     }
 
     private handleWebSocketMessage(data) {
@@ -382,9 +389,8 @@ class ConnectionCommandHandler {
             client = new ClientEntry(json["clid"], json["client_nickname"]);
             client = tree.insertClient(client, channel);
         } else {
-            if(client === this.connection._client.getClient()) {
+            if(client == this.connection._client.getClient())
                 chat.channelChat().name = channel.channelName();
-            }
             tree.moveClient(client, channel);
         }
 
@@ -479,6 +485,9 @@ class ConnectionCommandHandler {
             console.error("Unknown client move (Channel from)!");
 
         tree.moveClient(client, channel_to);
+
+        if(client instanceof LocalClientEntry)
+            chat.channelChat().name = channel_to.channelName();
 
         if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
             chat.serverChat().appendMessage("{0} was moved from channel {1} to {2} by {3}", true,

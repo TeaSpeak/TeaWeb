@@ -49,21 +49,30 @@ class ServerConnection {
             this._socket = new WebSocket('ws:' + this._remoteHost + ":" + this._remotePort);
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
-            this._socket.onopen = function () {
-                self.on_connect();
+            const _socketCpy = this._socket;
+            this._socket.onopen = () => {
+                if (this._socket != _socketCpy)
+                    return;
+                this.on_connect();
             };
             this._socket.onclose = event => {
+                if (this._socket != _socketCpy)
+                    return;
                 this._client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
                     code: event.code,
                     reason: event.reason,
                     event: event
                 });
             };
-            this._socket.onerror = function (e) {
+            this._socket.onerror = e => {
+                if (this._socket != _socketCpy)
+                    return;
                 console.log("Got error: (" + self._socket.readyState + ")");
                 console.log(e);
             };
-            this._socket.onmessage = function (msg) {
+            this._socket.onmessage = msg => {
+                if (this._socket != _socketCpy)
+                    return;
                 self.handleWebSocketMessage(msg.data);
             };
             this.updateConnectionState(ConnectionState.INITIALISING);
@@ -78,15 +87,16 @@ class ServerConnection {
     }
     disconnect() {
         if (this._connectionState == ConnectionState.UNCONNECTED)
-            return;
-        if (this._socket)
-            this._socket.close();
-        this._socket = null;
+            return false;
         this.updateConnectionState(ConnectionState.UNCONNECTED);
+        if (this._socket)
+            this._socket.close(3000 + 0xFF, "request disconnect");
+        this._socket = null;
         for (let future of this._retListener)
             future.reject("Connection closed");
         this._retListener = [];
         this._retCodeIdx = 0;
+        return true;
     }
     handleWebSocketMessage(data) {
         if (typeof (data) === "string") {
@@ -323,9 +333,8 @@ class ConnectionCommandHandler {
             client = tree.insertClient(client, channel);
         }
         else {
-            if (client === this.connection._client.getClient()) {
+            if (client == this.connection._client.getClient())
                 chat.channelChat().name = channel.channelName();
-            }
             tree.moveClient(client, channel);
         }
         if (json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
@@ -409,6 +418,8 @@ class ConnectionCommandHandler {
         if (!channel_from)
             console.error("Unknown client move (Channel from)!");
         tree.moveClient(client, channel_to);
+        if (client instanceof LocalClientEntry)
+            chat.channelChat().name = channel_to.channelName();
         if (json["reasonid"] == ViewReasonId.VREASON_MOVED) {
             chat.serverChat().appendMessage("{0} was moved from channel {1} to {2} by {3}", true, client.createChatTag(true), channel_from ? channel_from.createChatTag(true) : undefined, channel_to.createChatTag(true), ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]));
         }

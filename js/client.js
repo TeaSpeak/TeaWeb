@@ -9,14 +9,15 @@
 /// <reference path="ui/ControlBar.ts" />
 var DisconnectReason;
 (function (DisconnectReason) {
-    DisconnectReason[DisconnectReason["CONNECT_FAILURE"] = 0] = "CONNECT_FAILURE";
-    DisconnectReason[DisconnectReason["CONNECTION_CLOSED"] = 1] = "CONNECTION_CLOSED";
-    DisconnectReason[DisconnectReason["CONNECTION_FATAL_ERROR"] = 2] = "CONNECTION_FATAL_ERROR";
-    DisconnectReason[DisconnectReason["CONNECTION_PING_TIMEOUT"] = 3] = "CONNECTION_PING_TIMEOUT";
-    DisconnectReason[DisconnectReason["CLIENT_KICKED"] = 4] = "CLIENT_KICKED";
-    DisconnectReason[DisconnectReason["CLIENT_BANNED"] = 5] = "CLIENT_BANNED";
-    DisconnectReason[DisconnectReason["SERVER_CLOSED"] = 6] = "SERVER_CLOSED";
-    DisconnectReason[DisconnectReason["UNKNOWN"] = 7] = "UNKNOWN";
+    DisconnectReason[DisconnectReason["REQUESTED"] = 0] = "REQUESTED";
+    DisconnectReason[DisconnectReason["CONNECT_FAILURE"] = 1] = "CONNECT_FAILURE";
+    DisconnectReason[DisconnectReason["CONNECTION_CLOSED"] = 2] = "CONNECTION_CLOSED";
+    DisconnectReason[DisconnectReason["CONNECTION_FATAL_ERROR"] = 3] = "CONNECTION_FATAL_ERROR";
+    DisconnectReason[DisconnectReason["CONNECTION_PING_TIMEOUT"] = 4] = "CONNECTION_PING_TIMEOUT";
+    DisconnectReason[DisconnectReason["CLIENT_KICKED"] = 5] = "CLIENT_KICKED";
+    DisconnectReason[DisconnectReason["CLIENT_BANNED"] = 6] = "CLIENT_BANNED";
+    DisconnectReason[DisconnectReason["SERVER_CLOSED"] = 7] = "SERVER_CLOSED";
+    DisconnectReason[DisconnectReason["UNKNOWN"] = 8] = "UNKNOWN";
 })(DisconnectReason || (DisconnectReason = {}));
 var ConnectionState;
 (function (ConnectionState) {
@@ -61,6 +62,8 @@ class TSClient {
         this.serverConnection.on_connected = this.onConnected.bind(this);
     }
     startConnection(addr) {
+        if (this.serverConnection)
+            this.handleDisconnect(DisconnectReason.REQUESTED);
         let idx = addr.lastIndexOf(':');
         let port;
         let host;
@@ -91,6 +94,7 @@ class TSClient {
      */
     onConnected() {
         console.log("Client connected!");
+        this.channelTree.registerClient(this._ownEntry);
         this.settings.loadServer();
         chat.serverChat().appendMessage("Connected");
         this.serverConnection.sendCommand("channelsubscribeall");
@@ -102,6 +106,8 @@ class TSClient {
     //Sould be triggered by `notifyclientleftview`
     handleDisconnect(type, data = {}) {
         switch (type) {
+            case DisconnectReason.REQUESTED:
+                break;
             case DisconnectReason.CONNECT_FAILURE:
                 console.error("Could not connect to remote host! Exception");
                 console.error(data);
@@ -129,7 +135,8 @@ class TSClient {
         this.selectInfo.currentSelected = null;
         this.channelTree.reset();
         this.voiceConnection.dropSession();
-        this.serverConnection.disconnect();
+        if (this.serverConnection)
+            this.serverConnection.disconnect();
     }
 }
 //# sourceMappingURL=client.js.map

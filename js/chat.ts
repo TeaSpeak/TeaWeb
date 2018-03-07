@@ -26,15 +26,15 @@ class ChatMessage {
     get htmlTag() {
         if(this._htmlTag) return this._htmlTag;
 
-        var tag = $("<div></div>") as JQuery<HTMLElement>;
+        let tag = $.spawn("div");
         tag.addClass("message");
 
-        var dateTag = $("<div></div>") as JQuery<HTMLElement>;
+        let dateTag = $.spawn("div");
         dateTag.text("<" + this.num(this.date.getUTCHours()) + ":" + this.num(this.date.getUTCMinutes()) + ":" + this.num(this.date.getUTCSeconds()) + "> ");
         dateTag.css("margin-right", "4px");
         dateTag.css("color", "dodgerblue");
 
-        var messageTag = $("<div></div>") as JQuery<HTMLElement>;
+        let messageTag = $.spawn("div");
         messageTag.html(this.message);
         messageTag.css("color", "blue");
 
@@ -179,6 +179,7 @@ class ChatEntry {
     }
 
     set name(newName : string) {
+        console.log("Change name!");
         this._name = newName;
         this.htmlTag.find(".name").text(this._name);
     }
