@@ -41,12 +41,28 @@ class ModalProperties {
     body: BodyCreator = ()    => "BODY";
     footer: BodyCreator = ()  => "FOOTER";
 
-    closeListener: () => void = () => {};
-
+    closeListener: (() => void) | (() => void)[] = () => {};
+    registerCloseListener(listener: () => void) : this {
+        if(this.closeListener) {
+            if($.isArray(this.closeListener))
+                this.closeListener.push(listener);
+            else
+                this.closeListener = [this.closeListener, listener];
+        } else this.closeListener = listener;
+        return this;
+    }
     width: number | string = "60%";
     hight: number | string = "auto";
 
     closeable: boolean = true;
+
+    triggerClose(){
+        if($.isArray(this.closeListener))
+            for(let listener of this.closeListener)
+                listener();
+        else
+            this.closeListener();
+    }
 }
 
 class Modal {
@@ -55,10 +71,10 @@ class Modal {
 
     constructor(props: ModalProperties) {
         this.properties = props;
-        this._create();
     }
 
     private _create() {
+        if(this.htmlTag) return;
         let modal = $.spawn("div");
         modal.addClass("modal");
 
@@ -87,6 +103,7 @@ class Modal {
     }
 
     open() {
+        this._create();
         this.htmlTag.appendTo($("body"));
         this.htmlTag.show();
     }
@@ -96,7 +113,7 @@ class Modal {
         this.htmlTag.animate({opacity: 0}, () => {
             _this.htmlTag.detach();
         });
-        this.properties.closeListener();
+        this.properties.triggerClose();
     }
 }
 

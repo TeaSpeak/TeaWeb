@@ -2,9 +2,19 @@
 /// <reference path="../utils/modal.ts" />
 
 abstract class VoiceActivityDetector {
+    protected handle: VoiceRecorder;
+
     abstract shouldRecord(buffer: AudioBuffer) : boolean;
-    initialise(handle: VoiceRecorder) {}
+    initialise() {}
     finalize() {}
+
+    initialiseNewStream(old: MediaStreamAudioSourceNode, _new: MediaStreamAudioSourceNode) : void {}
+
+    changeHandle(handle: VoiceRecorder, triggerNewStream: boolean) {
+        const oldStream = !this.handle ? undefined : this.handle.getMicrophoneStream();
+        this.handle = handle;
+        if(triggerNewStream) this.initialiseNewStream(oldStream, !handle ? undefined : handle.getMicrophoneStream());
+    }
 }
 
 class VoiceRecorder {
@@ -24,7 +34,7 @@ class VoiceRecorder {
 
     private audioContext: AudioContext;
     private processor: any;
-    private mute: any;
+    private mute: GainNode;
 
     private vadHandler: VoiceActivityDetector;
     private _chunkCount: number = 0;
@@ -33,7 +43,7 @@ class VoiceRecorder {
         this.handle = handle;
         this.userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
-        this.audioContext = new AudioContext();
+        this.audioContext = AudioController.globalContext;
         this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
 
         const _this = this;
@@ -43,11 +53,12 @@ class VoiceRecorder {
             else {
                 if(this._chunkCount != 0) this.on_end();
                 this._chunkCount = 0
-            };
+            }
         });
 
         //Not needed but make sure we have data for the preprocessor
         this.mute = this.audioContext.createGain();
+        this.mute.gain.setValueAtTime(0, 0);
 
         this.processor.connect(this.mute);
         this.mute.connect(this.audioContext.destination);
@@ -60,6 +71,18 @@ class VoiceRecorder {
         return !!this.userMedia;
     }
 
+    getMediaStream() : MediaStream {
+        return this.mediaStream;
+    }
+
+    getDestinationContext() : AudioNode {
+        return this.mute;
+    }
+
+    getMicrophoneStream() : MediaStreamAudioSourceNode {
+        return this.microphoneStream;
+    }
+
     reinizaliszeVAD() {
         let type = this.handle.client.settings.global("vad_type", "ppt");
         if(type == "ppt") {
@@ -70,15 +93,25 @@ class VoiceRecorder {
         } else if(type == "pt") {
             if(!(this.getVADHandler() instanceof PassThroughVAD))
                 this.setVADHander(new PassThroughVAD());
+        } else if(type == "vad") {
+            if(!(this.getVADHandler() instanceof VoiceActivityDetectorVAD))
+                this.setVADHander(new VoiceActivityDetectorVAD());
+            let threshold = Number.parseInt(globalClient.settings.global("vad_threshold", "50"));
+            (this.getVADHandler() as VoiceActivityDetectorVAD).percentageThreshold = threshold;
         } else {
             console.warn("Invalid VAD handler! (" + type + ")");
         }
     }
 
     setVADHander(handler: VoiceActivityDetector) {
-        if(this.vadHandler) this.vadHandler.finalize();
+        if(this.vadHandler) {
+            this.vadHandler.changeHandle(null, true);
+            this.vadHandler.finalize();
+        }
         this.vadHandler = handler;
-        this.vadHandler.initialise(this);
+        this.vadHandler.changeHandle(this, false);
+        this.vadHandler.initialise();
+        this.vadHandler.initialiseNewStream(undefined, this.microphoneStream);
     }
 
     getVADHandler() : VoiceActivityDetector {
@@ -125,8 +158,10 @@ class VoiceRecorder {
         console.log("Start recording!");
 
         this.mediaStream = stream as MediaStream;
+        const oldStream = this.microphoneStream;
         this.microphoneStream = this.audioContext.createMediaStreamSource(stream);
         this.microphoneStream.connect(this.processor);
+        this.vadHandler.initialiseNewStream(oldStream, this.microphoneStream);
     }
 }
 
@@ -139,6 +174,58 @@ class MuteVAD extends VoiceActivityDetector {
 class PassThroughVAD extends VoiceActivityDetector {
     shouldRecord(buffer: AudioBuffer): boolean {
         return true;
+    }
+}
+
+class VoiceActivityDetectorVAD extends VoiceActivityDetector {
+    analyzer: AnalyserNode;
+    buffer: Uint8Array;
+
+    continuesCount: number = 0;
+    maxContinuesCount: number = 12;
+
+    percentageThreshold: number = 50;
+
+    percentage_listener: (per: number) => void = ($) => {};
+
+    initialise() {
+        this.analyzer = AudioController.globalContext.createAnalyser();
+        this.analyzer.smoothingTimeConstant = 1; //TODO test
+        this.buffer = new Uint8Array(this.analyzer.fftSize);
+        return super.initialise();
+    }
+
+    initialiseNewStream(old: MediaStreamAudioSourceNode, _new: MediaStreamAudioSourceNode): void {
+        if(this.analyzer)
+            this.analyzer.disconnect();
+        if(_new)
+            _new.connect(this.analyzer);
+    }
+
+    shouldRecord(buffer: AudioBuffer): boolean {
+        let usage = this.calculateUsage();
+        if($.isFunction(this.percentage_listener)) this.percentage_listener(usage);
+        if(usage >= this.percentageThreshold) {
+            this.continuesCount = 0;
+        } else this.continuesCount++;
+        return this.continuesCount < this.maxContinuesCount;
+    }
+
+    calculateUsage() : number {
+        let total = 0
+            ,float
+            ,rms;
+        this.analyzer.getByteTimeDomainData(this.buffer);
+        for(let index = 0; index < this.analyzer.fftSize; index++) {
+            float = ( this.buffer[index++] / 0x7f ) - 1;
+            total += (float * float);
+        }
+        rms = Math.sqrt(total / this.analyzer.fftSize);
+        let db  = 20 * ( Math.log(rms) / Math.log(10) );
+        // sanity check
+        db = Math.max(-192, Math.min(db, 0));
+        let percentage = 100 + ( db * 1.92 );
+        return percentage;
     }
 }
 
@@ -162,10 +249,10 @@ class PushToTalkVAD extends VoiceActivityDetector {
     }
 
 
-    initialise(handle: VoiceRecorder) {
+    initialise() {
         document.addEventListener("keydown", this._evListenerDown);
         document.addEventListener("keyup", this._evListenerUp);
-        return super.initialise(handle);
+        return super.initialise();
     }
 
     finalize() {

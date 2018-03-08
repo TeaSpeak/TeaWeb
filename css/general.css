@@ -247,3 +247,46 @@ html {
     border-width: 2px;
     border-radius: 0px 6px 6px 6px;
 }
+
+.vad_vad_bar {
+    position: relative;
+    width: 100%;
+    height: 20px;
+}
+
+.vad_vad_bar .vad_vad_bar_filler {
+    background-color: green;
+    width: 50%;
+    height: 100%;
+}
+
+/* The slider itself */
+.vad_vad_slider {
+    margin: 0px;
+    background-color: gray;
+    -webkit-appearance: none;  /* Override default CSS styles */
+    appearance: none;
+    width: 100%;
+    height: 100%;
+    outline: none;
+    opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+    transition: opacity .2s;
+}
+
+/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+.vad_vad_slider::-webkit-slider-thumb {
+    -webkit-appearance: none; /* Override default look */
+    appearance: none;
+    width: 2px; /* Set a specific slider handle width */
+    height: 20px; /* Slider handle height */
+    background: #000000; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}
+
+.vad_vad_slider::-moz-range-thumb {
+    width: 2px; /* Set a specific slider handle width */
+    height: 100%; /* Slider handle height */
+    background: #000000; /* Green background */
+    cursor: pointer; /* Cursor on hover */
+}

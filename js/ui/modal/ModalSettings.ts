@@ -4,12 +4,13 @@
 
 namespace Modals {
     export function spawnSettingsModal() {
-        const modal = createModal({
+        let modal;
+        modal = createModal({
             header: "Settings",
             body: () => {
                 let template = $("#tmpl_settings").tmpl();
                 template = $.spawn("div").append(template);
-                initialiseSettingListeners(template = template.tabify());
+                initialiseSettingListeners(modal,template = template.tabify());
                 return template;
             },
             footer: () => {
@@ -31,16 +32,15 @@ namespace Modals {
         modal.open();
     }
 
-    function initialiseSettingListeners(tag: JQuery) {
+    function initialiseSettingListeners(modal: Modal, tag: JQuery) {
         //Voice
-        initialiseVoiceListeners(tag.find(".settings_voice"));
+        initialiseVoiceListeners(modal, tag.find(".settings_voice"));
     }
 
-    function initialiseVoiceListeners(tag: JQuery) {
+    function initialiseVoiceListeners(modal: Modal, tag: JQuery) {
         let currentVAD = globalClient.settings.global("vad_type");
 
         tag.find("input[type=radio][name=\"vad_type\"]").change(function (this: HTMLButtonElement) {
-            console.log(this.value + " => " + $(this).attr("display"));
             tag.find(".vad_settings .vad_type").text($(this).attr("display"));
             tag.find(".vad_settings .vad_type_settings").hide();
             tag.find(".vad_settings .vad_type_" + this.value).show();
@@ -51,6 +51,17 @@ namespace Modals {
                 case "ppt":
                     let keyCode: number = Number.parseInt(globalClient.settings.global("vad_ppt_key", Key.T.toString()));
                     tag.find(".vat_ppt_key").text(String.fromCharCode(keyCode));
+                    break;
+                case "vad":
+                    let slider = tag.find(".vad_vad_slider");
+                    let vad: VoiceActivityDetectorVAD = globalClient.voiceConnection.voiceRecorder.getVADHandler() as VoiceActivityDetectorVAD;
+                    slider.val(vad.percentageThreshold);
+                    slider.trigger("change");
+                    vad.percentage_listener = per => {
+                        tag.find(".vad_vad_bar_filler")
+                            .css("width", per + "%");
+                    };
+                    break;
             }
         });
 
@@ -58,7 +69,6 @@ namespace Modals {
             currentVAD = "ppt";
         let elm = tag.find("input[type=radio][name=\"vad_type\"][value=\"" + currentVAD + "\"]");
         elm.attr("checked", "true");
-        elm.trigger("change");
 
 
         tag.find(".vat_ppt_key").click(function () {
@@ -68,7 +78,6 @@ namespace Modals {
                     let head = $.spawn("div");
                     head.text("Type the key you wish");
                     head.css("background-color", "blue");
-                    console.log("SPAWNED!");
                     return head;
                 },
                 footer: ""
@@ -82,5 +91,26 @@ namespace Modals {
             });
             modal.open();
         });
+
+
+        //VAD VAD
+        let slider = tag.find(".vad_vad_slider");
+        slider.on("input change", () => {
+            globalClient.settings.changeGlobal("vad_threshold", slider.val().toString());
+            let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
+            if(vad instanceof  VoiceActivityDetectorVAD)
+                vad.percentageThreshold = slider.val() as number;
+            tag.find(".vad_vad_slider_value").text(slider.val().toString());
+        });
+        modal.properties.registerCloseListener(() => {
+            let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
+            if(vad instanceof  VoiceActivityDetectorVAD)
+                vad.percentage_listener = undefined;
+
+        });
+
+
+        //Trigger radio button select for VAD setting setup
+        elm.trigger("change");
    }
 }

@@ -191,9 +191,14 @@
                                         <button class="vat_ppt_key">Uninitialised</button>
                                     </div>
                                     <div class="vad_type_settings vad_type_vad">
-                                        <a>Voice activity threshold</a>
-                                        <div class="vad_threshold_selector">
-                                            <input type="range" min="0" max="100" value="50" class="vad_slider">
+                                        <div>Voice activity threshold (<a class="vad_vad_slider_value">20</a>%)</div>
+                                        <div class="vad_vad_threshold_selector">
+                                            <div class="vad_vad_bar">
+                                                <div style="width: 100%; height: 100%; position: absolute">
+                                                    <div class="vad_vad_bar_filler"></div>
+                                                </div>
+                                                <input type="range" min="0" max="100" value="50" class="vad_vad_slider">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

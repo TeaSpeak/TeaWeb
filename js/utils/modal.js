@@ -44,13 +44,32 @@ class ModalProperties {
         this.hight = "auto";
         this.closeable = true;
     }
+    registerCloseListener(listener) {
+        if (this.closeListener) {
+            if ($.isArray(this.closeListener))
+                this.closeListener.push(listener);
+            else
+                this.closeListener = [this.closeListener, listener];
+        }
+        else
+            this.closeListener = listener;
+        return this;
+    }
+    triggerClose() {
+        if ($.isArray(this.closeListener))
+            for (let listener of this.closeListener)
+                listener();
+        else
+            this.closeListener();
+    }
 }
 class Modal {
     constructor(props) {
         this.properties = props;
-        this._create();
     }
     _create() {
+        if (this.htmlTag)
+            return;
         let modal = $.spawn("div");
         modal.addClass("modal");
         let content = $.spawn("div");
@@ -72,6 +91,7 @@ class Modal {
         this.htmlTag = modal;
     }
     open() {
+        this._create();
         this.htmlTag.appendTo($("body"));
         this.htmlTag.show();
     }
@@ -80,7 +100,7 @@ class Modal {
         this.htmlTag.animate({ opacity: 0 }, () => {
             _this.htmlTag.detach();
         });
-        this.properties.closeListener();
+        this.properties.triggerClose();
     }
 }
 function createModal(data) {
