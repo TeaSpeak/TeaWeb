@@ -3,13 +3,14 @@
   <component name="ChangeListManager">
     <list default="true" id="978d055d-27d3-431a-bd34-e5e79bb273b3" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/css/general.css" afterPath="$PROJECT_DIR$/css/general.css" />
+      <change beforePath="$PROJECT_DIR$/asm/src/WebASMTest.cpp" afterPath="$PROJECT_DIR$/asm/src/WebASMTest.cpp" />
       <change beforePath="$PROJECT_DIR$/index.html" afterPath="$PROJECT_DIR$/index.html" />
-      <change beforePath="$PROJECT_DIR$/js/ui/modal/ModalSettings.ts" afterPath="$PROJECT_DIR$/js/ui/modal/ModalSettings.ts" />
-      <change beforePath="$PROJECT_DIR$/js/utils/modal.js" afterPath="$PROJECT_DIR$/js/utils/modal.js" />
-      <change beforePath="$PROJECT_DIR$/js/utils/modal.js.map" afterPath="$PROJECT_DIR$/js/utils/modal.js.map" />
-      <change beforePath="$PROJECT_DIR$/js/utils/modal.ts" afterPath="$PROJECT_DIR$/js/utils/modal.ts" />
-      <change beforePath="$PROJECT_DIR$/js/voice/VoiceRecorder.ts" afterPath="$PROJECT_DIR$/js/voice/VoiceRecorder.ts" />
+      <change beforePath="$PROJECT_DIR$/js/codec/Codec.js" afterPath="$PROJECT_DIR$/js/codec/Codec.js" />
+      <change beforePath="$PROJECT_DIR$/js/codec/Codec.js.map" afterPath="$PROJECT_DIR$/js/codec/Codec.js.map" />
+      <change beforePath="$PROJECT_DIR$/js/codec/Codec.ts" afterPath="$PROJECT_DIR$/js/codec/Codec.ts" />
+      <change beforePath="$PROJECT_DIR$/js/main.js" afterPath="$PROJECT_DIR$/js/main.js" />
+      <change beforePath="$PROJECT_DIR$/js/main.js.map" afterPath="$PROJECT_DIR$/js/main.js.map" />
+      <change beforePath="$PROJECT_DIR$/js/main.ts" afterPath="$PROJECT_DIR$/js/main.ts" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -20,23 +21,51 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="VoiceHandler.ts" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/voice/VoiceHandler.ts">
+      <file leaf-file-name="Codec.ts" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/codec/Codec.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="330">
-              <caret line="140" column="44" lean-forward="false" selection-start-line="140" selection-start-column="44" selection-end-line="140" selection-end-column="44" />
-              <folding>
-                <element signature="n#!!doc" expanded="true" />
-              </folding>
+            <state relative-caret-position="173">
+              <caret line="150" column="5" lean-forward="true" selection-start-line="150" selection-start-column="5" selection-end-line="150" selection-end-column="5" />
+              <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="AudioController.ts" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/voice/AudioController.ts">
+      <file leaf-file-name="TeaWeb-Native.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/asm/generated/TeaWeb-Native.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="424">
-              <caret line="99" column="5" lean-forward="true" selection-start-line="99" selection-start-column="5" selection-end-line="99" selection-end-column="5" />
+            <state relative-caret-position="273">
+              <caret line="23832" column="12" lean-forward="true" selection-start-line="23832" selection-start-column="12" selection-end-line="23832" selection-end-column="12" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="WebASMTest.cpp" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/asm/src/WebASMTest.cpp">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="526">
+              <caret line="63" column="3" lean-forward="false" selection-start-line="63" selection-start-column="3" selection-end-line="63" selection-end-column="3" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="tab.ts" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/utils/tab.ts">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="316">
+              <caret line="47" column="59" lean-forward="false" selection-start-line="47" selection-start-column="59" selection-end-line="47" selection-end-column="59" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.ts" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/js/main.ts">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="396">
+              <caret line="25" column="9" lean-forward="true" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="9" />
               <folding />
             </state>
           </provider>
@@ -45,41 +74,29 @@
       <file leaf-file-name="VoiceRecorder.ts" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/voice/VoiceRecorder.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="424">
-              <caret line="109" column="9" lean-forward="true" selection-start-line="109" selection-start-column="9" selection-end-line="109" selection-end-column="9" />
+            <state relative-caret-position="141">
+              <caret line="118" column="5" lean-forward="true" selection-start-line="118" selection-start-column="5" selection-end-line="118" selection-end-column="5" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ModalSettings.ts" pinned="false" current-in-tab="true">
+      <file leaf-file-name="settings.js" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/js/settings.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="522">
+              <caret line="29" column="14" lean-forward="false" selection-start-line="29" selection-start-column="14" selection-end-line="29" selection-end-column="14" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ModalSettings.ts" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/js/ui/modal/ModalSettings.ts">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="352">
-              <caret line="43" column="27" lean-forward="false" selection-start-line="43" selection-start-column="27" selection-end-line="43" selection-end-column="27" />
+            <state relative-caret-position="-846">
+              <caret line="24" column="31" lean-forward="false" selection-start-line="24" selection-start-column="31" selection-end-line="24" selection-end-column="31" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="index.d.ts" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/node_modules/@types/jquery/index.d.ts">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="290">
-              <caret line="608" column="4" lean-forward="false" selection-start-line="608" selection-start-column="4" selection-end-line="608" selection-end-column="4" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="modal.ts" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/js/utils/modal.ts">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="524">
-              <caret line="105" column="23" lean-forward="true" selection-start-line="105" selection-start-column="23" selection-end-line="105" selection-end-column="23" />
-              <folding>
-                <marker date="1520516687898" expanded="true" signature="2648:2655" ph="×" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -87,21 +104,12 @@
       <file leaf-file-name="index.html" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="215">
-              <caret line="193" column="101" lean-forward="false" selection-start-line="193" selection-start-column="81" selection-end-line="193" selection-end-column="101" />
+            <state relative-caret-position="71">
+              <caret line="173" column="33" lean-forward="true" selection-start-line="173" selection-start-column="33" selection-end-line="173" selection-end-column="33" />
               <folding>
+                <element signature="n#style#0;n#div#0;n#x-content#0;n#x-entry#1;n#x-tab#0;n#template#2;n#body#0;n#html#0;n#!!top" expanded="true" />
                 <element signature="n#style#0;n#div#0;n#div#0;n#div#1;n#div#3;n#div#0;n#div#2;n#div#0;n#x-content#0;n#x-entry#1;n#x-tab#0;n#template#2;n#body#0;n#html#0;n#!!top" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="general.css" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/css/general.css">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="614">
-              <caret line="274" column="1" lean-forward="false" selection-start-line="274" selection-start-column="1" selection-end-line="274" selection-end-column="1" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -154,7 +162,6 @@
         <option value="$PROJECT_DIR$/js/voice.ts" />
         <option value="$PROJECT_DIR$/js/voice/AudioResampler.ts" />
         <option value="$PROJECT_DIR$/js/voice/VoiceRecoder.ts" />
-        <option value="$PROJECT_DIR$/js/main.ts" />
         <option value="$PROJECT_DIR$/css/ts/tab.css" />
         <option value="$PROJECT_DIR$/css/ts/client.css" />
         <option value="$PROJECT_DIR$/js/ui/ControlBar.ts" />
@@ -168,7 +175,6 @@
         <option value="$PROJECT_DIR$/css/ts/icons.css" />
         <option value="$PROJECT_DIR$/js/FileManager.ts" />
         <option value="$PROJECT_DIR$/js/ui/modal/ModalCreateChannel.ts" />
-        <option value="$PROJECT_DIR$/js/codec/Codec.ts" />
         <option value="$PROJECT_DIR$/js/voice/VoiceHandler.ts" />
         <option value="$PROJECT_DIR$/js/voice/AudioController.ts" />
         <option value="$PROJECT_DIR$/js/chat.ts" />
@@ -178,10 +184,13 @@
         <option value="$PROJECT_DIR$/css/ts/chat.css" />
         <option value="$PROJECT_DIR$/js/utils/modal.ts" />
         <option value="$PROJECT_DIR$/css/general.css" />
-        <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/js/voice/VoiceRecorder.js" />
-        <option value="$PROJECT_DIR$/js/voice/VoiceRecorder.ts" />
         <option value="$PROJECT_DIR$/js/ui/modal/ModalSettings.ts" />
+        <option value="$PROJECT_DIR$/js/voice/VoiceRecorder.ts" />
+        <option value="$PROJECT_DIR$/js/main.ts" />
+        <option value="$PROJECT_DIR$/index.html" />
+        <option value="$PROJECT_DIR$/js/codec/Codec.ts" />
+        <option value="$PROJECT_DIR$/asm/src/WebASMTest.cpp" />
       </list>
     </option>
   </component>
@@ -347,7 +356,7 @@
       <updated>1519749313999</updated>
       <workItem from="1519749316100" duration="9698000" />
       <workItem from="1520012895408" duration="13944000" />
-      <workItem from="1520175420796" duration="67767000" />
+      <workItem from="1520175420796" duration="75324000" />
     </task>
     <task id="LOCAL-00001" summary="A lot of updates :)">
       <created>1520446012318</created>
@@ -370,11 +379,18 @@
       <option name="project" value="LOCAL" />
       <updated>1520452384034</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Finished VAD VAD impl">
+      <created>1520520031705</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1520520031705</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="91409000" />
+    <option name="totallyTimeSpent" value="98966000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="65" y="-4" width="1215" height="1028" extended-state="6" />
@@ -386,7 +402,7 @@
       <window_info id="npm" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="TypeScript" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2483731" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="TypeScript" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2483731" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.23045267" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16049382" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Docker" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -456,6 +472,7 @@
         <option value="$PROJECT_DIR$/js/ui/modal/ModalCreateChannel.js" />
         <option value="$PROJECT_DIR$/js/ui/modal/ModalSettings.js.map" />
         <option value="$PROJECT_DIR$/js/ui/modal/ModalSettings.js" />
+        <option value="$PROJECT_DIR$/js/voice/VoiceRecorder.js" />
       </list>
     </option>
   </component>
@@ -468,7 +485,8 @@
     <MESSAGE value="A lot of updates :)" />
     <MESSAGE value="Fixing some stuff" />
     <MESSAGE value="Fixed another stuff" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed another stuff" />
+    <MESSAGE value="Finished VAD VAD impl" />
+    <option name="LAST_COMMIT_MESSAGE" value="Finished VAD VAD impl" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -477,21 +495,13 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external/lib.es6.d.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="35856">
-          <caret line="1992" column="4" lean-forward="false" selection-start-line="1992" selection-start-column="4" selection-end-line="1992" selection-end-column="4" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/vendor/libopus.js/lib/encoder.js" />
     <entry file="file://$PROJECT_DIR$/js/voice/VoiceHandler.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1818">
           <caret line="101" column="40" lean-forward="true" selection-start-line="101" selection-start-column="40" selection-end-line="101" selection-end-column="40" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
+            <element signature="n#!!doc" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -590,14 +600,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/utils/tab.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="316">
-          <caret line="47" column="59" lean-forward="false" selection-start-line="47" selection-start-column="59" selection-end-line="47" selection-end-column="59" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/ui/client.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="234">
@@ -638,11 +640,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/img/client_icon_sprite.svg">
-      <provider selected="true" editor-type-id="images">
-        <state />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/js/FileManager.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="213">
@@ -667,22 +664,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/asm/generated/TeaWeb-Native.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="48" column="21" lean-forward="false" selection-start-line="48" selection-start-column="21" selection-end-line="48" selection-end-column="21" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/asm/src/WebASMTest.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="8" column="39" lean-forward="false" selection-start-line="8" selection-start-column="39" selection-end-line="8" selection-end-column="39" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/css/ts/icons.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
@@ -699,22 +680,6 @@
             <marker date="1520366277688" expanded="true" signature="3766:3823" ph="..." />
             <marker date="1520366277688" expanded="true" signature="3897:3954" ph="..." />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/codec/Codec.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="501">
-          <caret line="204" column="34" lean-forward="true" selection-start-line="204" selection-start-column="34" selection-end-line="204" selection-end-column="34" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/js/main.ts">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="16" column="24" lean-forward="true" selection-start-line="16" selection-start-column="24" selection-end-line="16" selection-end-column="24" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -765,7 +730,7 @@
         <state relative-caret-position="182">
           <caret line="480" column="30" lean-forward="false" selection-start-line="480" selection-start-column="30" selection-end-line="480" selection-end-column="30" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
+            <element signature="n#!!doc" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -815,7 +780,7 @@
         <state relative-caret-position="330">
           <caret line="140" column="44" lean-forward="false" selection-start-line="140" selection-start-column="44" selection-end-line="140" selection-end-column="44" />
           <folding>
-            <element signature="n#!!doc" expanded="true" />
+            <element signature="n#!!doc" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -823,7 +788,7 @@
     <entry file="file://$PROJECT_DIR$/js/utils/modal.ts">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="524">
-          <caret line="105" column="23" lean-forward="true" selection-start-line="105" selection-start-column="23" selection-end-line="105" selection-end-column="23" />
+          <caret line="105" column="23" lean-forward="false" selection-start-line="105" selection-start-column="23" selection-end-line="105" selection-end-column="23" />
           <folding>
             <marker date="1520516687898" expanded="true" signature="2648:2655" ph="×" />
           </folding>
@@ -835,16 +800,6 @@
         <state relative-caret-position="614">
           <caret line="274" column="1" lean-forward="false" selection-start-line="274" selection-start-column="1" selection-end-line="274" selection-end-column="1" />
           <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/index.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="215">
-          <caret line="193" column="101" lean-forward="false" selection-start-line="193" selection-start-column="81" selection-end-line="193" selection-end-column="101" />
-          <folding>
-            <element signature="n#style#0;n#div#0;n#div#0;n#div#1;n#div#3;n#div#0;n#div#2;n#div#0;n#x-content#0;n#x-entry#1;n#x-tab#0;n#template#2;n#body#0;n#html#0;n#!!top" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -864,6 +819,14 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/js/ui/modal/ModalSettings.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-846">
+          <caret line="24" column="31" lean-forward="false" selection-start-line="24" selection-start-column="31" selection-end-line="24" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/js/voice/VoiceRecorder.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="290">
@@ -872,18 +835,74 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/voice/VoiceRecorder.ts">
+    <entry file="file://$PROJECT_DIR$/js/settings.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="424">
-          <caret line="109" column="9" lean-forward="true" selection-start-line="109" selection-start-column="9" selection-end-line="109" selection-end-column="9" />
+        <state relative-caret-position="522">
+          <caret line="29" column="14" lean-forward="false" selection-start-line="29" selection-start-column="14" selection-end-line="29" selection-end-column="14" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/js/ui/modal/ModalSettings.ts">
+    <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="43" column="27" lean-forward="false" selection-start-line="43" selection-start-column="27" selection-end-line="43" selection-end-column="27" />
+        <state relative-caret-position="71">
+          <caret line="173" column="33" lean-forward="true" selection-start-line="173" selection-start-column="33" selection-end-line="173" selection-end-column="33" />
+          <folding>
+            <element signature="n#style#0;n#div#0;n#x-content#0;n#x-entry#1;n#x-tab#0;n#template#2;n#body#0;n#html#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#div#1;n#div#3;n#div#0;n#div#2;n#div#0;n#x-content#0;n#x-entry#1;n#x-tab#0;n#template#2;n#body#0;n#html#0;n#!!top" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/voice/VoiceRecorder.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="141">
+          <caret line="118" column="5" lean-forward="true" selection-start-line="118" selection-start-column="5" selection-end-line="118" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/img/client_icon_sprite.svg">
+      <provider selected="true" editor-type-id="images">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/codec/Codec.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="173">
+          <caret line="150" column="5" lean-forward="true" selection-start-line="150" selection-start-column="5" selection-end-line="150" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asm/generated/TeaWeb-Native.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="273">
+          <caret line="23832" column="12" lean-forward="true" selection-start-line="23832" selection-start-column="12" selection-end-line="23832" selection-end-column="12" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/asm/src/WebASMTest.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="526">
+          <caret line="63" column="3" lean-forward="false" selection-start-line="63" selection-start-column="3" selection-end-line="63" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/utils/tab.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="316">
+          <caret line="47" column="59" lean-forward="false" selection-start-line="47" selection-start-column="59" selection-end-line="47" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/js/main.ts">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="25" column="9" lean-forward="true" selection-start-line="25" selection-start-column="9" selection-end-line="25" selection-end-column="9" />
           <folding />
         </state>
       </provider>

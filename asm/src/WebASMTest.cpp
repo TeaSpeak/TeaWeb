@@ -62,5 +62,4 @@ opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
 opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(complexity));
 opus_encoder_ctl(enc, OPUS_SET_SIGNAL(signal_type));
  */
-
 }

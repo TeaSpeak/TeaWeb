@@ -13,11 +13,9 @@ let modal = 0;
 $("#test").click(function () {
     console.log("Executing test function");
 });
-//$("#test").trigger("click");
-$("#test_tab").tabify();
 
 //Modals.spawnConnectModal();
-Modals.spawnSettingsModal();
+//Modals.spawnSettingsModal();
 /*
 createErrorModal("Could not connect to remote host",() => {
     let tag = $.spawn("div");
@@ -28,3 +26,9 @@ createErrorModal("Could not connect to remote host",() => {
     footer: ""
 }).open();
 */
+
+window.addEventListener("beforeunload", function (event) {
+    if(globalClient.serverConnection && globalClient.serverConnection.connected)
+        event.returnValue = "Are you really sure?<br>You're still connected!";
+    //event.preventDefault();
+});

@@ -110,7 +110,8 @@ class OpusCodec extends Codec {
     }
     initialise() {
         this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "pointer", ["number", "number"]);
-        this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["pointer", "pointer", "number", "number"]); /* codec_opus_decode(handle, buffer, length, maxlength) */
+        this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["pointer", "pointer", "number", "number"]);
+        /* codec_opus_decode(handle, buffer, length, maxlength) */
         this.fn_encode = Module.cwrap("codec_opus_encode", "number", ["pointer", "pointer", "number", "number"]);
         this.nativeHandle = this.fn_newHandle(this.channelCount, this.type);
         this.encodeBufferRaw = Module._malloc(this.bufferSize);

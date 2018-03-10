@@ -152,7 +152,8 @@ class OpusCodec extends Codec {
 
     initialise() {
         this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "pointer", ["number", "number"]);
-        this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["pointer", "pointer", "number", "number"]); /* codec_opus_decode(handle, buffer, length, maxlength) */
+        this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["pointer", "pointer", "number", "number"]);
+        /* codec_opus_decode(handle, buffer, length, maxlength) */
         this.fn_encode = Module.cwrap("codec_opus_encode", "number", ["pointer", "pointer", "number", "number"]);
 
         this.nativeHandle = this.fn_newHandle(this.channelCount, this.type);
@@ -164,16 +165,16 @@ class OpusCodec extends Codec {
         this.decodeBuffer = new Uint8Array(Module.HEAPU8.buffer, this.decodeBufferRaw, this.bufferSize);
     }
 
-    deinitialise() {  } //TODO
+    deinitialise() { } //TODO
 
     decode(data: Uint8Array): Promise<AudioBuffer> {
         return new Promise<AudioBuffer>((resolve, reject) => {
-            if(data.byteLength > this.decodeBuffer.byteLength) throw "Data to long!";
+            if (data.byteLength > this.decodeBuffer.byteLength) throw "Data to long!";
             this.decodeBuffer.set(data);
             //console.log("decode(" + data.length + ")");
             //console.log(data);
             let result = this.fn_decode(this.nativeHandle, this.decodeBuffer.byteOffset, data.byteLength, this.decodeBuffer.byteLength);
-            if(result < 0) {
+            if (result < 0) {
                 reject("invalid result on decode (" + result + ")");
                 return;
             }
@@ -181,8 +182,8 @@ class OpusCodec extends Codec {
             let buf = Module.HEAPF32.slice(this.decodeBuffer.byteOffset / 4, (this.decodeBuffer.byteOffset / 4) + (result * this.channelCount));
             let audioBuf = AudioController.globalContext.createBuffer(this.channelCount, result, this._codecSampleRate);
 
-            for(let offset = 0; offset < result; offset++) {
-                for(let channel = 0; channel < this.channelCount; channel++)
+            for (let offset = 0; offset < result; offset++) {
+                for (let channel = 0; channel < this.channelCount; channel++)
                     audioBuf.getChannelData(channel)[offset] = buf[offset * this.channelCount + this.channelCount];
             }
 
@@ -191,17 +192,18 @@ class OpusCodec extends Codec {
     }
 
     encode(data: AudioBuffer): Uint8Array | string {
-        if(data.length * this.channelCount > this.encodeBuffer.length) throw "Data to long!";
+        if (data.length * this.channelCount > this.encodeBuffer.length) throw "Data to long!";
 
-        for(let offset = 0; offset < data.length; offset++) {
-            for(let channel = 0; channel < this.channelCount; channel++)
+        for (let offset = 0; offset < data.length; offset++) {
+            for (let channel = 0; channel < this.channelCount; channel++)
                 this.encodeBuffer[offset * this.channelCount + channel] = data.getChannelData(channel)[offset];
         }
 
         let result = this.fn_encode(this.nativeHandle, this.encodeBuffer.byteOffset, data.length, this.encodeBuffer.byteLength);
-        if(result < 0) {
+        if (result < 0) {
             return "invalid result on encode (" + result + ")";
         }
-        let buf = Module.HEAP8.slice(this.encodeBuffer.byteOffset , this.encodeBuffer.byteOffset + result);
+        let buf = Module.HEAP8.slice(this.encodeBuffer.byteOffset, this.encodeBuffer.byteOffset + result);
         return Uint8Array.from(buf);
     }
+}
