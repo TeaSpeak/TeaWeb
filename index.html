@@ -53,7 +53,6 @@
                 </div> <!-- Selection info -->
             </div>
         </div>
-        <button id="test">Test Stuff</button>
         <div id="contextMenu" class="contextMenu"></div>
 
         <template id="tmpl_channel_edit">
@@ -170,11 +169,13 @@
                 <x-entry>
                     <x-tag>Voice</x-tag>
                     <x-content>
-                        <a>Microphone:</a>
-                        select me
-                        <hr>
-                        <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly" class="settings_voice">
-                            <div style="vertical-align: center; margin: 20px; min-width: 175px">
+                        <div style="display: flex; flex-direction: column;" class="settings_voice">
+                            <div>
+                                <a>Microphone:</a>
+                                <select class="voice_microphone_select"></select>
+                                <hr>
+                            </div>
+                            <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly"><div style="vertical-align: center; margin: 20px; min-width: 175px">
                                 <a>Voice Activity Detection</a>
                                 <div>
                                     <fieldset class="GroupBox">
@@ -184,23 +185,24 @@
                                     </fieldset>
                                 </div>
                             </div>
-                            <div style="border-left:1px solid #000;height: auto;"></div>
-                            <div style="flex-direction: column; align-content: stretch; vertical-align: center; margin: 20px;">
-                                <div class="vad_settings">
-                                    <div style="font-size: 14px; text-align: center"><a class="vad_type">Type[Unknown]</a> settings</div>
-                                    <div class="vad_type_settings vad_type_pt">There are no setting entries for an <b>always</b> online voice detection.</div>
-                                    <div class="vad_type_settings vad_type_ppt">
-                                        <a>Push to talk key:</a>
-                                        <button class="vat_ppt_key">Uninitialised</button>
-                                    </div>
-                                    <div class="vad_type_settings vad_type_vad">
-                                        <div>Voice activity threshold (<a class="vad_vad_slider_value">20</a>%)</div>
-                                        <div class="vad_vad_threshold_selector">
-                                            <div class="vad_vad_bar">
-                                                <div style="width: 100%; height: 100%; position: absolute">
-                                                    <div class="vad_vad_bar_filler"></div>
+                                <div style="border-left:1px solid #000;height: auto;"></div>
+                                <div style="flex-direction: column; align-content: stretch; vertical-align: center; margin: 20px;">
+                                    <div class="vad_settings">
+                                        <div style="font-size: 14px; text-align: center"><a class="vad_type">Type[Unknown]</a> settings</div>
+                                        <div class="vad_type_settings vad_type_pt">There are no setting entries for an <b>always</b> online voice detection.</div>
+                                        <div class="vad_type_settings vad_type_ppt">
+                                            <a>Push to talk key:</a>
+                                            <button class="vat_ppt_key">Uninitialised</button>
+                                        </div>
+                                        <div class="vad_type_settings vad_type_vad">
+                                            <div>Voice activity threshold (<a class="vad_vad_slider_value">20</a>%)</div>
+                                            <div class="vad_vad_threshold_selector">
+                                                <div class="vad_vad_bar">
+                                                    <div style="width: 100%; height: 100%; position: absolute">
+                                                        <div class="vad_vad_bar_filler"></div>
+                                                    </div>
+                                                    <input type="range" min="0" max="100" value="50" class="vad_vad_slider">
                                                 </div>
-                                                <input type="range" min="0" max="100" value="50" class="vad_vad_slider">
                                             </div>
                                         </div>
                                     </div>

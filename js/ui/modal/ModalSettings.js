@@ -1,16 +1,16 @@
 /// <reference path="../../utils/modal.ts" />
 /// <reference path="../../utils/tab.ts" />
 /// <reference path="../../proto.ts" />
-
-namespace Modals {
-    export function spawnSettingsModal() {
+var Modals;
+(function (Modals) {
+    function spawnSettingsModal() {
         let modal;
         modal = createModal({
             header: "Settings",
             body: () => {
                 let template = $("#tmpl_settings").tmpl();
                 template = $.spawn("div").append(template);
-                initialiseSettingListeners(modal,template = template.tabify());
+                initialiseSettingListeners(modal, template = template.tabify());
                 return template;
             },
             footer: () => {
@@ -19,42 +19,37 @@ namespace Modals {
                 footer.css("margin-top", "5px");
                 footer.css("margin-bottom", "5px");
                 footer.css("text-align", "right");
-
                 let buttonOk = $.spawn("button");
                 buttonOk.text("Ok");
                 buttonOk.click(() => modal.close());
                 footer.append(buttonOk);
-
                 return footer;
             },
             width: 750
         });
         modal.open();
     }
-
-    function initialiseSettingListeners(modal: Modal, tag: JQuery) {
+    Modals.spawnSettingsModal = spawnSettingsModal;
+    function initialiseSettingListeners(modal, tag) {
         //Voice
         initialiseVoiceListeners(modal, tag.find(".settings_voice"));
     }
-
-    function initialiseVoiceListeners(modal: Modal, tag: JQuery) {
+    function initialiseVoiceListeners(modal, tag) {
         let currentVAD = globalClient.settings.global("vad_type");
-
-        tag.find("input[type=radio][name=\"vad_type\"]").change(function (this: HTMLButtonElement) {
+        tag.find("input[type=radio][name=\"vad_type\"]").change(function () {
             tag.find(".vad_settings .vad_type").text($(this).attr("display"));
             tag.find(".vad_settings .vad_type_settings").hide();
             tag.find(".vad_settings .vad_type_" + this.value).show();
             globalClient.settings.changeGlobal("vad_type", this.value);
             globalClient.voiceConnection.voiceRecorder.reinizaliszeVAD();
-
             switch (this.value) {
                 case "ppt":
-                    let keyCode: number = Number.parseInt(globalClient.settings.global("vad_ppt_key", Key.T.toString()));
+                    let keyCode = Number.parseInt(globalClient.settings.global("vad_ppt_key", 84 /* T */.toString()));
                     tag.find(".vat_ppt_key").text(String.fromCharCode(keyCode));
                     break;
                 case "vad":
                     let slider = tag.find(".vad_vad_slider");
-                    let vad: VoiceActivityDetectorVAD = globalClient.voiceConnection.voiceRecorder.getVADHandler() as VoiceActivityDetectorVAD;
+                    let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
                     slider.val(vad.percentageThreshold);
                     slider.trigger("change");
                     globalClient.voiceConnection.voiceRecorder.update(true);
@@ -65,13 +60,10 @@ namespace Modals {
                     break;
             }
         });
-
-        if(!currentVAD)
+        if (!currentVAD)
             currentVAD = "ppt";
         let elm = tag.find("input[type=radio][name=\"vad_type\"][value=\"" + currentVAD + "\"]");
         elm.attr("checked", "true");
-
-
         tag.find(".vat_ppt_key").click(function () {
             let modal = createModal({
                 body: "",
@@ -92,28 +84,22 @@ namespace Modals {
             });
             modal.open();
         });
-
-
         //VAD VAD
         let slider = tag.find(".vad_vad_slider");
         slider.on("input change", () => {
             globalClient.settings.changeGlobal("vad_threshold", slider.val().toString());
             let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
-            if(vad instanceof  VoiceActivityDetectorVAD)
-                vad.percentageThreshold = slider.val() as number;
+            if (vad instanceof VoiceActivityDetectorVAD)
+                vad.percentageThreshold = slider.val();
             tag.find(".vad_vad_slider_value").text(slider.val().toString());
         });
         modal.properties.registerCloseListener(() => {
             let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
-            if(vad instanceof  VoiceActivityDetectorVAD)
+            if (vad instanceof VoiceActivityDetectorVAD)
                 vad.percentage_listener = undefined;
-
         });
-
-
         //Trigger radio button select for VAD setting setup
         elm.trigger("change");
-
         //Initialise microphones
         console.log(tag);
         let mselect = tag.find(".voice_microphone_select");
@@ -122,21 +108,20 @@ namespace Modals {
         navigator.mediaDevices.enumerateDevices().then(devices => {
             let currentStream = globalClient.voiceConnection.voiceRecorder.getMediaStream();
             let currentDeviceId;
-            if(currentStream) {
+            if (currentStream) {
                 let audio = currentStream.getAudioTracks()[0];
                 currentDeviceId = audio.getSettings().deviceId;
             }
             console.log("Got " + devices.length + " devices:");
-            for(let device of devices) {
+            for (let device of devices) {
                 console.log(device);
-                if(device.kind == "audioinput") {
+                if (device.kind == "audioinput") {
                     let dtag = $.spawn("option");
                     dtag.attr("device-id", device.deviceId);
                     dtag.attr("device-group", device.groupId);
                     dtag.text(device.label);
                     mselect.append(dtag);
-
-                    if(currentDeviceId && device.deviceId == currentDeviceId)
+                    if (currentDeviceId && device.deviceId == currentDeviceId)
                         mselect.attr("selected", "");
                 }
             }
@@ -145,12 +130,12 @@ namespace Modals {
             console.error(error);
             mselectError.text("Could not get device list!").show();
         });
-
         mselect.change(event => {
             let deviceSelected = mselect.find("option:selected");
             let deviceId = deviceSelected.attr("device-id");
             console.log("Selected device: " + deviceId);
             globalClient.voiceConnection.voiceRecorder.changeDevice(deviceId);
         });
-   }
-}
+    }
+})(Modals || (Modals = {}));
+//# sourceMappingURL=ModalSettings.js.map
