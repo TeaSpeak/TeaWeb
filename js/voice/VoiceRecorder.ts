@@ -48,9 +48,8 @@ class VoiceRecorder {
         this.audioContext = AudioController.globalContext;
         this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
 
-        const _this = this;
         this.processor.addEventListener('audioprocess', ev => {
-            if(_this.microphoneStream && this.vadHandler.shouldRecord(ev.inputBuffer))
+            if(this.microphoneStream && this.vadHandler.shouldRecord(ev.inputBuffer))
                 this.on_data(ev.inputBuffer, this._chunkCount++ == 0);
             else {
                 if(this._chunkCount != 0) this.on_end();
@@ -92,7 +91,7 @@ class VoiceRecorder {
     reinizaliszeVAD() {
         let type = this.handle.client.settings.global("vad_type", "ppt");
         if(type == "ppt") {
-            let keyCode: number = Number.parseInt(globalClient.settings.global("vad_ppt_key", Key.T.toString()));
+            let keyCode: number = parseInt(globalClient.settings.global("vad_ppt_key", Key.T.toString()));
             if(!(this.getVADHandler() instanceof PushToTalkVAD))
                 this.setVADHander(new PushToTalkVAD(keyCode));
             else (this.getVADHandler() as PushToTalkVAD).key = keyCode;
@@ -102,7 +101,7 @@ class VoiceRecorder {
         } else if(type == "vad") {
             if(!(this.getVADHandler() instanceof VoiceActivityDetectorVAD))
                 this.setVADHander(new VoiceActivityDetectorVAD());
-            let threshold = Number.parseInt(globalClient.settings.global("vad_threshold", "50"));
+            let threshold = parseInt(globalClient.settings.global("vad_threshold", "50"));
             (this.getVADHandler() as VoiceActivityDetectorVAD).percentageThreshold = threshold;
         } else {
             console.warn("Invalid VAD handler! (" + type + ")");

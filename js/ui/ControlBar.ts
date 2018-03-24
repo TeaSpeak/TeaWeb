@@ -145,6 +145,6 @@ class ControlBar {
     }
 
     private onConnect() {
-        Modals.spawnConnectModal("localhost");
+        Modals.spawnConnectModal(this.handle.settings.static("connect_default_host"));
     }
 }

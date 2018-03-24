@@ -290,3 +290,8 @@ html {
     background: #000000; /* Green background */
     cursor: pointer; /* Cursor on hover */
 }
+
+code {
+    background-color: lightgray;
+    padding: 2px;
+}

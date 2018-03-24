@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig_base.json",
+  "compilerOptions": {
+    "outFile": "../generated/js/client.js"
+  },
+  "exclude": [
+    "../js/load.ts"
+  ]
+}

@@ -78,7 +78,7 @@ class ServerConnection {
                 this.disconnect();
                 this._client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
             }, timeout);
-            this._socket = new WebSocket('ws:' + this._remoteHost + ":" + this._remotePort);
+            this._socket = new WebSocket('wss:' + this._remoteHost + ":" + this._remotePort);
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
 
@@ -428,6 +428,10 @@ class ConnectionCommandHandler {
                 this.connection._client.handleDisconnect(DisconnectReason.CLIENT_BANNED, json);
             else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK)
                 this.connection._client.handleDisconnect(DisconnectReason.CLIENT_KICKED, json);
+            else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_SHUTDOWN)
+                this.connection._client.handleDisconnect(DisconnectReason.SERVER_CLOSED, json);
+            else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_STOPPED)
+                this.connection._client.handleDisconnect(DisconnectReason.SERVER_CLOSED, json);
             else
                 this.connection._client.handleDisconnect(DisconnectReason.UNKNOWN, json);
             return;
@@ -484,10 +488,12 @@ class ConnectionCommandHandler {
         if(!channel_from) //Not critical
             console.error("Unknown client move (Channel from)!");
 
-        tree.moveClient(client, channel_to);
-
-        if(client instanceof LocalClientEntry)
+        if(client instanceof LocalClientEntry) {
             chat.channelChat().name = channel_to.channelName();
+            for(let entry of client.channelTree.clientsByChannel(client.currentChannel()))
+                if(entry !== client) entry.getAudioController().stopAudio(true);
+        }
+        tree.moveClient(client, channel_to);
 
         if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
             chat.serverChat().appendMessage("{0} was moved from channel {1} to {2} by {3}", true,

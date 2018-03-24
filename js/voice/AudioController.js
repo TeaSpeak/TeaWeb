@@ -10,7 +10,7 @@ class AudioController {
         this.timeIndex = 0;
         this.playerState = PlayerState.STOPPED;
         this._playingSources = [];
-        this.allowBuffering = false;
+        this.allowBuffering = true;
         this.speakerContext = AudioController.globalContext;
         this.audioCache = [];
         this.onSpeaking = function () { };
@@ -89,12 +89,13 @@ class AudioController {
     }
     testBufferQueue() {
         if (this._playingSources.length == 0) {
-            this.onSilence();
             if (this.playerState != PlayerState.STOPPED) {
                 this.playerState = PlayerState.BUFFERING;
                 if (!this.allowBuffering)
-                    console.warn("[Audi] Detected a buffer underflow!");
+                    console.warn("[Audio] Detected a buffer underflow!");
             }
+            else
+                this.onSilence();
         }
     }
     close() {

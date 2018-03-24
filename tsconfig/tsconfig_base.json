@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "module": "none",
+    "target": "es6",
+    "sourceMap": true
+  },
+  "exclude": [
+    "../node_modules"
+  ]
+}

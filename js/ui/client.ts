@@ -191,6 +191,7 @@ class ClientEntry {
 
     set speaking(flag) {
         if(flag == this._speaking) return;
+        console.log("SPeakig " + flag);
         this._speaking = flag;
         this.updateClientIcon();
     }

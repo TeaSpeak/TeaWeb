@@ -1,6 +1,6 @@
 if (!Array.prototype.remove) {
     Array.prototype.remove = function (elem) {
-        var index = this.indexOf(elem, 0);
+        const index = this.indexOf(elem, 0);
         if (index > -1) {
             this.splice(index, 1);
             return true;
@@ -29,7 +29,7 @@ if (!$.spawn) {
 }
 if (!String.prototype.format) {
     String.prototype.format = function () {
-        var args = arguments;
+        const args = arguments;
         return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
             if (m == "{{") {
                 return "{";

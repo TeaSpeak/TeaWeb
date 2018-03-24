@@ -1,3 +1,5 @@
+/// <reference path="../voice/AudioResampler.ts" />
+
 class BufferChunk {
     buffer: AudioBuffer;
     index: number;
@@ -142,7 +144,7 @@ class OpusCodec extends Codec {
 
     constructor(channelCount: number, type: OpusType) {
         super(48000);
-        super.channelCount = channelCount;
+        this.channelCount = channelCount;
         this.type = type;
     }
 
@@ -184,7 +186,7 @@ class OpusCodec extends Codec {
 
             for (let offset = 0; offset < result; offset++) {
                 for (let channel = 0; channel < this.channelCount; channel++)
-                    audioBuf.getChannelData(channel)[offset] = buf[offset * this.channelCount + this.channelCount];
+                    audioBuf.getChannelData(channel)[offset] = buf[offset * this.channelCount + channel];
             }
 
             resolve(audioBuf);

@@ -123,7 +123,7 @@ class ControlBar {
         Modals.spawnSettingsModal();
     }
     onConnect() {
-        Modals.spawnConnectModal("localhost");
+        Modals.spawnConnectModal(this.handle.settings.static("connect_default_host"));
     }
 }
 //# sourceMappingURL=ControlBar.js.map

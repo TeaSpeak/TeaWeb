@@ -39,6 +39,8 @@
 
 #chat .chats {
     max-width: 100%;
+    flex-shrink: 0;
+    flex-grow: 0;
     /*height: 24px;*/
     overflow: auto;
     overflow-y: hidden;
@@ -96,7 +98,7 @@
     display:inline-block;
     border: solid 1px #000;
     height: 18px;
-    min-height: 16px;
+    min-height: 18px;
     max-height: 80px;
     overflow-y: auto;
     resize: vertical;

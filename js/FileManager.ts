@@ -50,7 +50,7 @@ class DownloadFileTransfer {
 
         console.debug("Create new file download to " + this.remoteHost + ":" + this.remotePort + " (Key: " + this.transferKey + ", Expect " + this.totalSize + " bytes)");
         this._active = true;
-        this._socket = new WebSocket("ws://" + this.remoteHost + ":" + this.remotePort);
+        this._socket = new WebSocket("wss://" + this.remoteHost + ":" + this.remotePort);
         this._socket.onopen = this.onOpen.bind(this);
         this._socket.onclose = this.onClose.bind(this);
         this._socket.onmessage = this.onMessage.bind(this);
@@ -71,12 +71,11 @@ class DownloadFileTransfer {
         }
         this._parseActive = true;
 
-        const _this = this;
-        var fileReader = new FileReader();
-        fileReader.onload = function(event: any) {
-            _this.onBinaryData(new Uint8Array(event.target.result));
-            if(_this._socket.readyState !== WebSocket.OPEN && !_this._succeed) _this.on_fail("unexpected close");
-            _this._parseActive = false;
+        let fileReader = new FileReader();
+        fileReader.onload = (event: any) => {
+            this.onBinaryData(new Uint8Array(event.target.result));
+            if(this._socket.readyState !== WebSocket.OPEN && !this._succeed) this.on_fail("unexpected close");
+            this._parseActive = false;
         };
         fileReader.readAsArrayBuffer(data.data);
     }
@@ -295,7 +294,7 @@ class IconManager {
 
                 ft.startTransfer();
             }).catch(reason => {
-                console.error("Error while downloading icon! (" + reason + ")");
+                console.error("Error while downloading icon! (" + JSON.stringify(reason) + ")");
                 reject(reason);
             });
         });

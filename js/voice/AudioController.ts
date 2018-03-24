@@ -18,7 +18,7 @@ class AudioController {
     private playerState: PlayerState = PlayerState.STOPPED;
     private audioCache: AudioBuffer[];
     private _playingSources: AudioBufferSourceNode[] = [];
-    allowBuffering: boolean = false;
+    allowBuffering: boolean = true;
 
     //Events
     onSpeaking: () => void;
@@ -101,14 +101,11 @@ class AudioController {
 
     private testBufferQueue() {
         if(this._playingSources.length == 0) {
-            this.onSilence();
-
-
             if(this.playerState != PlayerState.STOPPED) {
                 this.playerState = PlayerState.BUFFERING;
                 if(!this.allowBuffering)
-                    console.warn("[Audi] Detected a buffer underflow!");
-            }
+                    console.warn("[Audio] Detected a buffer underflow!");
+            } else this.onSilence();
         }
     }
 

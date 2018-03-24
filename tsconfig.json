@@ -1,11 +1,3 @@
 {
-  "compilerOptions": {
-    "module": "none",
-    "target": "es6",
-    "sourceMap": true
-    //"outFile": "generated/js/client.js"
-  },
-  "exclude": [
-    "node_modules"
-  ]
+  "extends": "./tsconfig/tsconfig_debug.json"
 }

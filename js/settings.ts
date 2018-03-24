@@ -1,5 +1,11 @@
 /// <reference path="client.ts" />
 
+class X_Properties extends HTMLElement {}
+class X_Property extends HTMLElement {}
+
+customElements.define('x-properties', X_Properties, { extends: 'div' });
+customElements.define('x-property', X_Property, { extends: 'div' });
+
 class Settings {
     handle: TSClient;
 
@@ -8,9 +14,11 @@ class Settings {
     private cacheServer = {};
     private saveWorker: NodeJS.Timer;
     private updated: boolean = false;
+    private _staticPropsTag: JQuery;
 
     constructor(handle: TSClient) {
         this.handle = handle;
+        this._staticPropsTag = $("#properties");
 
         this.cacheGlobal = JSON.parse(localStorage.getItem("settings.global"));
         if(!this.cacheGlobal) this.cacheGlobal = {};
@@ -73,5 +81,11 @@ class Settings {
 
         let global = JSON.stringify(this.cacheGlobal);
         localStorage.setItem("settings.global", global);
+    }
+
+    static?(key: string, _default: string = undefined) : string {
+        let result = this._staticPropsTag.find("[key='" + key + "']");
+        if(result.length == 0) return _default;
+        return result.attr("value");
     }
 }

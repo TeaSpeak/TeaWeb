@@ -1,4 +1,5 @@
 /// <reference path="../client.ts" />
+/// <reference path="../codec/Codec.ts" />
 /// <reference path="VoiceRecorder.ts" />
 
 class VoiceConnection {

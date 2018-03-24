@@ -1,3 +1,4 @@
+/// <reference path="../voice/AudioResampler.ts" />
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -102,7 +103,7 @@ class OpusCodec extends Codec {
     constructor(channelCount, type) {
         super(48000);
         this.bufferSize = 4096 * 2;
-        super.channelCount = channelCount;
+        this.channelCount = channelCount;
         this.type = type;
     }
     name() {
@@ -137,7 +138,7 @@ class OpusCodec extends Codec {
             let audioBuf = AudioController.globalContext.createBuffer(this.channelCount, result, this._codecSampleRate);
             for (let offset = 0; offset < result; offset++) {
                 for (let channel = 0; channel < this.channelCount; channel++)
-                    audioBuf.getChannelData(channel)[offset] = buf[offset * this.channelCount + this.channelCount];
+                    audioBuf.getChannelData(channel)[offset] = buf[offset * this.channelCount + channel];
             }
             resolve(audioBuf);
         });

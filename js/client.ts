@@ -1,3 +1,4 @@
+/// <reference path="voice/AudioController.ts" />
 /// <reference path="proto.ts" />
 /// <reference path="ui/view.ts" />
 /// <reference path="connection.ts" />
@@ -86,7 +87,7 @@ class TSClient {
         let port: number;
         let host: string;
         if(idx != -1) {
-            port = Number.parseInt(addr.substr(idx + 1));
+            port = parseInt(addr.substr(idx + 1));
             host = addr.substr(0, idx);
         } else {
             host = addr;
@@ -128,7 +129,6 @@ class TSClient {
         this.controlBar.updateProperties();
     }
 
-    //Sould be triggered by `notifyclientleftview`
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         switch (type) {
             case DisconnectReason.REQUESTED:
@@ -157,7 +157,7 @@ class TSClient {
                 ).open();
                 break;
             case DisconnectReason.SERVER_CLOSED:
-                chat.serverChat().appendError("Server closed ({})", data.reasonmsg);
+                chat.serverChat().appendError("Server closed ({0})", data.reasonmsg);
                 createErrorModal(
                     "Server closed",
                     "The server is closed.<br>" +

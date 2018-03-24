@@ -1,10 +1,17 @@
 /// <reference path="client.ts" />
+class X_Properties extends HTMLElement {
+}
+class X_Property extends HTMLElement {
+}
+customElements.define('x-properties', X_Properties, { extends: 'div' });
+customElements.define('x-property', X_Property, { extends: 'div' });
 class Settings {
     constructor(handle) {
         this.cacheGlobal = {};
         this.cacheServer = {};
         this.updated = false;
         this.handle = handle;
+        this._staticPropsTag = $("#properties");
         this.cacheGlobal = JSON.parse(localStorage.getItem("settings.global"));
         if (!this.cacheGlobal)
             this.cacheGlobal = {};
@@ -57,6 +64,12 @@ class Settings {
         }
         let global = JSON.stringify(this.cacheGlobal);
         localStorage.setItem("settings.global", global);
+    }
+    static(key, _default = undefined) {
+        let result = this._staticPropsTag.find("[key='" + key + "']");
+        if (result.length == 0)
+            return _default;
+        return result.attr("value");
     }
 }
 Settings.UPDATE_DIRECT = true;
