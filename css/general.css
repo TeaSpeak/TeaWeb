@@ -295,3 +295,23 @@ code {
     background-color: lightgray;
     padding: 2px;
 }
+
+footer {
+    position: fixed;
+    width: 100%;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    height: 25px;
+    background-color: lightgray;
+
+    display: flex;
+}
+
+footer .container {
+    width: 100%;
+    display: flex;
+    position: relative;
+    vertical-align: center;
+    justify-content: center;
+}

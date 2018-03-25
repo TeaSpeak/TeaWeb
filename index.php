@@ -1,7 +1,7 @@
 <?php
 	$host = gethostname();
 	$localhost = false;
-	$testXF = false;
+	$testXF = true;
 
 	if($host == "WolverinDEV")
 	    $localhost = true;
@@ -13,6 +13,8 @@
 			include_once('auth/auth.php');
 		else die("Could not resolve auth.php!");
 		redirectOnInvalidSession();
+    } else {
+	    function webPath() { return "auth/"; }
     }
 ?>
 
@@ -39,6 +41,16 @@
                 }
             ?>
         </x-properties>
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'UA-113151733-4');
+        </script>
     </head>
     <body>
         <!-- No javascript error -->
@@ -68,44 +80,46 @@
         <!-- -->
         TeaSpeak-Web<br>
 
-        <div style="width: 1200px; height: 900px; display: flex; flex-direction: column; resize: both; margin: 20px"> <!-- Container -->
-            <div style="height: 45px; width: 100%; border-radius: 2px 0px 0px 0px; border-bottom-width: 0px; background-color: lightgrey" class="main_container">
-                <div id="control_bar" class="control_bar">
-                    <div class="button btn_connect"><div class="icon_x32 client-connect"></div></div>
-                    <div style="border-left:2px solid gray;height: auto; margin-left: 5px; margin-right: 5px"></div>
-                    <div class="button btn_client_away"><div class="icon_x32 client-away"></div></div>
-                    <div class="button btn_mute_input"><div class="icon_x32 client-input_muted"></div></div>
-                    <div class="button btn_mute_output"><div class="icon_x32 client-output_muted"></div></div>
-                    <div style="width: 100%"></div>
-                    <div class="button btn_open_settings"><div class="icon_x32 client-settings"></div></div>
-                </div>
-            </div>
-
-            <div style="flex-direction: row; height: 100%; width: 100%; display: flex">
-                <div style="width: 60%; flex-direction: column;">
-                    <div style="height: 60%; border-radius: 0px 0px 0px 0px; border-right-width: 0px; overflow: auto; overflow-x: visible" class="main_container">
-                        <div class="channelTree" id="channelTree">
-                            <div class="server l"><div class="icon client-server_green"></div> TeaSpeak web!</div>
-                        </div>
-                    </div> <!-- Channel tree -->
-                    <div style="height: 40%; border-radius: 0px 0px 0px 2px; border-top-width: 0px; border-right-width: 0px;" class="main_container">
-                        <div id="chat">
-                            <div class="messages">
-                                <div class="message_box"></div>
-                            </div>
-                            <div class="chats"></div>
-                            <div class="input">
-                                <!--<div contentEditable="true" class="input_box"></div>-->
-                                <textarea class="input_box" title=""></textarea>
-                                <button>Send</button>
-                            </div>
-                        </div>
-                    </div> <!-- Chat window -->
-                </div>
-                <div style="width: 40%; border-radius: 0px 0px 2px 0px;" class="main_container">
-                    <div id="select_info" class="select_info">
+        <div style="width: 100%; display: flex; justify-content: center">
+            <div style="width: 1200px; height: 900px; display: flex; flex-direction: column; resize: both; margin: 20px"> <!-- Container -->
+                <div style="height: 45px; width: 100%; border-radius: 2px 0px 0px 0px; border-bottom-width: 0px; background-color: lightgrey" class="main_container">
+                    <div id="control_bar" class="control_bar">
+                        <div class="button btn_connect"><div class="icon_x32 client-connect"></div></div>
+                        <div style="border-left:2px solid gray;height: auto; margin-left: 5px; margin-right: 5px"></div>
+                        <div class="button btn_client_away"><div class="icon_x32 client-away"></div></div>
+                        <div class="button btn_mute_input"><div class="icon_x32 client-input_muted"></div></div>
+                        <div class="button btn_mute_output"><div class="icon_x32 client-output_muted"></div></div>
+                        <div style="width: 100%"></div>
+                        <div class="button btn_open_settings"><div class="icon_x32 client-settings"></div></div>
                     </div>
-                </div> <!-- Selection info -->
+                </div>
+
+                <div style="flex-direction: row; height: 100%; width: 100%; display: flex">
+                    <div style="width: 60%; flex-direction: column;">
+                        <div style="height: 60%; border-radius: 0px 0px 0px 0px; border-right-width: 0px; overflow: auto; overflow-x: visible" class="main_container">
+                            <div class="channelTree" id="channelTree">
+                                <div class="server l"><div class="icon client-server_green"></div> TeaSpeak web!</div>
+                            </div>
+                        </div> <!-- Channel tree -->
+                        <div style="height: 40%; border-radius: 0px 0px 0px 2px; border-top-width: 0px; border-right-width: 0px;" class="main_container">
+                            <div id="chat">
+                                <div class="messages">
+                                    <div class="message_box"></div>
+                                </div>
+                                <div class="chats"></div>
+                                <div class="input">
+                                    <!--<div contentEditable="true" class="input_box"></div>-->
+                                    <textarea class="input_box" title=""></textarea>
+                                    <button>Send</button>
+                                </div>
+                            </div>
+                        </div> <!-- Chat window -->
+                    </div>
+                    <div style="width: 40%; border-radius: 0px 0px 2px 0px;" class="main_container">
+                        <div id="select_info" class="select_info">
+                        </div>
+                    </div> <!-- Selection info -->
+                </div>
             </div>
         </div>
         <div id="contextMenu" class="contextMenu"></div>
@@ -115,4 +129,10 @@
             <script src="js/load.js"></script>
         </div>
     </body>
+    <footer>
+        <div class="container">
+            <div style="align-self: center;">TeaSpeak Web client by WolverinDEV</div>
+            <div style="align-self: center; position: fixed; right: 5px;"><a href="<?php echo webPath() . "auth.php?type=logout"; ?>">logout</a></div>
+        </div>
+    </footer>
 </html>

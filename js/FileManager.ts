@@ -224,6 +224,8 @@ class FileManager {
 
         transfer.remotePort = json["port"];
         transfer.remoteHost = json["ip"].replace(/,/g, "");
+        if(transfer.remoteHost == '0.0.0.0' || transfer.remoteHost == '127.168.0.0')
+            transfer.remoteHost = this.handle.serverConnection._remoteHost;
 
         (transfer["_promiseCallback"] as (val: DownloadFileTransfer) => void)(transfer);
         this.pendingDownloadTransfers.remove(transfer);

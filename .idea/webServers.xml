@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="6573db33-738c-4b72-8eff-a53004bf3223" name="web.teaspeak.de" url="http://dev.web.teaspeak.de/">
-        <fileTransfer host="mcgalaxy.de" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" rootFolder="/var/www/private_web.teaspeak" accessType="SFTP" keyPair="true">
+        <fileTransfer host="mcgalaxy.de" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" rootFolder="/var/www/web.teaspeak" accessType="SFTP" keyPair="true">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" />
           </advancedOptions>

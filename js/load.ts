@@ -164,10 +164,6 @@ function loadTemplates() {
     });
 }
 
-function test(x: any) {
-
-}
-
 function loadSide() {
     //Load the general scripts and required scripts
     awaitLoad(loadScripts([

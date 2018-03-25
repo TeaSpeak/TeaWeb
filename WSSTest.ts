@@ -1,3 +1,4 @@
+/*
 let oldError = console.error;
 console.error = function () {
     oldError("Got error:");
@@ -19,3 +20,4 @@ setTimeout(() => {
         win.close();
     }
 }, 1000);
+*/
