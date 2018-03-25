@@ -3,10 +3,10 @@
 ***Operating System*** (Linux|Windows|Mac):  
   
 ## Details  
-***Issue type***:  
-- [ ] Javascript  
-- [ ] Style  
-- [ ] System / backend  
+***Issue type***:
+- [ ] Javascript
+- [ ] Style
+- [ ] System / backend
 - [ ] Unknown  
   
 ## Issue  
