@@ -4,6 +4,12 @@
     box-sizing: border-box;
 }
 
+.group_box {
+    border: lightgray solid 1px;
+    border-radius: 2px;
+    padding: 2px;
+}
+
 .contextMenu {
     display: none;
     z-index: 1000;
@@ -42,8 +48,13 @@
     margin-right: 4px;
 }
 
-.contextMenu li:hover {
+.contextMenu li:hover:not(.disabled) {
     background-color: #DEF;
+}
+
+.contextMenu li.disabled {
+    background-color: lightgray;
+    cursor: not-allowed;
 }
 
 .icon_loading {

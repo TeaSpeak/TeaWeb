@@ -116,14 +116,14 @@ class ChannelEntry {
         return this.htmlTag.find(".clients").last(); //Here last because from the sibling tag client tags could be before
     }
     adjustSize(parent = true) {
-        var size = this.originalHeight;
-        var subSize = 0;
-        var clientSize = 0;
-        var sub = this.siblings(false);
+        const size = this.originalHeight;
+        let subSize = 0;
+        let clientSize = 0;
+        const sub = this.siblings(false);
         sub.forEach(function (e) {
             subSize += e.htmlTag.outerHeight(true);
         });
-        var clients = this.clients(false);
+        const clients = this.clients(false);
         clients.forEach(function (e) {
             clientSize += e.htmlTag.outerHeight(true);
         });
@@ -164,6 +164,7 @@ class ChannelEntry {
             type: MenuEntryType.ENTRY,
             icon: "client-channel_create_sub",
             name: "Create sub channel",
+            disabled: true,
             callback: () => {
                 //TODO here
             }
@@ -171,6 +172,7 @@ class ChannelEntry {
             type: MenuEntryType.ENTRY,
             icon: "client-channel_create",
             name: "Create channel",
+            disabled: true,
             callback: () => {
                 //TODO here
             }
@@ -291,7 +293,7 @@ class ChannelEntry {
         tag.attr("oncontextmenu", "chat_channel_contextmenu(this, ...arguments);");
         tag.attr("channelId", this.channelId);
         tag.attr("channelName", this.channelName());
-        return tag.wrap("<p/>").parent().html();
+        return tag.wrap("<p/>").parent();
     }
     channelType() {
         if (this.properties.channel_flag_permanent == "1")

@@ -60,9 +60,8 @@ class TSClient {
     }
     setup() {
         this.controlBar.initialise();
-        this.serverConnection.on_connected = this.onConnected.bind(this);
     }
-    startConnection(addr) {
+    startConnection(addr, identity, name) {
         if (this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
         let idx = addr.lastIndexOf(':');
@@ -78,7 +77,7 @@ class TSClient {
         }
         console.log("Start connection to " + host + ":" + port);
         this.channelTree.initialiseHead(addr);
-        this.serverConnection.startConnection(host, port);
+        this.serverConnection.startConnection(host, port, new HandshakeHandler(identity, name));
     }
     getClient() { return this._ownEntry; }
     getClientId() { return this._clientId; } //TODO here
@@ -97,7 +96,6 @@ class TSClient {
         console.log("Client connected!");
         this.channelTree.registerClient(this._ownEntry);
         this.settings.loadServer();
-        chat.serverChat().appendMessage("Connected");
         this.serverConnection.sendCommand("channelsubscribeall");
         this.permissions.requestPermissionList();
         if (this.groups.serverGroups.length == 0)

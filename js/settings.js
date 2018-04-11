@@ -25,8 +25,9 @@ class Settings {
         let result = this.cacheGlobal[key];
         return result ? result : _default;
     }
-    server(key) {
-        return this.cacheServer[key];
+    server(key, _default) {
+        let result = this.cacheServer[key];
+        return result ? result : _default;
     }
     changeGlobal(key, value) {
         if (this.cacheGlobal[key] == value)
@@ -45,7 +46,7 @@ class Settings {
             this.save();
     }
     loadServer() {
-        if (this.handle.channelTree.server) {
+        if (!this.handle.channelTree.server) {
             this.cacheServer = {};
             console.warn("[Settings] tried to load settings for unknown server");
             return;
@@ -69,7 +70,12 @@ class Settings {
         let result = this._staticPropsTag.find("[key='" + key + "']");
         if (result.length == 0)
             return _default;
-        return result.attr("value");
+        return decodeURIComponent(result.attr("value"));
+    }
+    deleteStatic(key) {
+        let result = this._staticPropsTag.find("[key='" + key + "']");
+        if (result.length != 0)
+            result.detach();
     }
 }
 Settings.UPDATE_DIRECT = true;

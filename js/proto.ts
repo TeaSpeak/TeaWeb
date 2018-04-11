@@ -13,8 +13,11 @@ interface JQueryStatic<TElement extends Node = HTMLElement> {
     spawn<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]>;
 }
 
+
+
 interface String {
     format(...fmt): string;
+    format(arguments: string[]): string;
 }
 
 if (!Array.prototype.remove) {
@@ -42,19 +45,22 @@ if (!Array.prototype.last){
     };
 }
 
-if(!$.spawn) {
-    $.spawn = function<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]> {
-        return $(document.createElement(tagName));
+if(typeof ($) !== "undefined") {
+    if(!$.spawn) {
+        $.spawn = function<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]> {
+            return $(document.createElement(tagName));
+        }
     }
 }
 
 if (!String.prototype.format) {
     String.prototype.format = function() {
         const args = arguments;
+        let array = args.length == 1 && $.isArray(args[0]);
         return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
             if (m == "{{") { return "{"; }
             if (m == "}}") { return "}"; }
-            return args[n];
+            return array ? args[0][n] : args[n];
         });
     };
 }

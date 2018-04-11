@@ -26,7 +26,7 @@ class ServerEntry {
         tag.addClass("server");
         tag.append("<div class=\"icon client-server_green\"></div>");
         tag.append("<a class='name'>" + this.properties.virtualserver_name + "</a>");
-        var serverIcon = $("<span/>");
+        const serverIcon = $("<span/>");
         //we cant spawn an icon on creation :)
         serverIcon.append("<div class='icon_property icon_empty'></div>");
         tag.append(serverIcon);
@@ -52,6 +52,7 @@ class ServerEntry {
         }, MenuEntry.CLOSE(on_close));
     }
     updateProperty(key, value) {
+        console.trace("Updating property " + key + " => '" + value + "' for the server");
         this.properties[key] = value;
         if (key == "virtualserver_name") {
             this.htmlTag.find(".name").text(value);

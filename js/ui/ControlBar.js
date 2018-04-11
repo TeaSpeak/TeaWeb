@@ -57,6 +57,7 @@ class ControlBar {
         this.handle.settings.changeGlobal("mute_input", this._muteInput ? "1" : "0");
         this.updateMicrophoneRecordState();
     }
+    get muteOutput() { return this._muteOutput; }
     set muteOutput(flag) {
         if (this._muteOutput == flag)
             return;

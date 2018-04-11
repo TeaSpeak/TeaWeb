@@ -22,14 +22,17 @@ if (!Array.prototype.last) {
         return this[this.length - 1];
     };
 }
-if (!$.spawn) {
-    $.spawn = function (tagName) {
-        return $(document.createElement(tagName));
-    };
+if (typeof ($) !== "undefined") {
+    if (!$.spawn) {
+        $.spawn = function (tagName) {
+            return $(document.createElement(tagName));
+        };
+    }
 }
 if (!String.prototype.format) {
     String.prototype.format = function () {
         const args = arguments;
+        let array = args.length == 1 && $.isArray(args[0]);
         return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
             if (m == "{{") {
                 return "{";
@@ -37,7 +40,7 @@ if (!String.prototype.format) {
             if (m == "}}") {
                 return "}";
             }
-            return args[n];
+            return array ? args[0][n] : args[n];
         });
     };
 }

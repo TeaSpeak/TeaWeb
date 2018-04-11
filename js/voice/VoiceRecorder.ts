@@ -39,11 +39,13 @@ class VoiceRecorder {
     private vadHandler: VoiceActivityDetector;
     private _chunkCount: number = 0;
 
-    private _deviceId: string = "default";
+    private _deviceId: string;
 
     constructor(handle: VoiceConnection) {
         this.handle = handle;
         this.userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+
+        this._deviceId = handle.client.settings.global("microphone_id", "default");
 
         this.audioContext = AudioController.globalContext;
         this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
@@ -88,10 +90,10 @@ class VoiceRecorder {
         return this.microphoneStream;
     }
 
-    reinizaliszeVAD() {
-        let type = this.handle.client.settings.global("vad_type", "ppt");
+    reinitialiseVAD() {
+        let type = this.handle.client.settings.global("vad_type", "vad");
         if(type == "ppt") {
-            let keyCode: number = parseInt(globalClient.settings.global("vad_ppt_key", Key.T.toString()));
+            let keyCode: number = parseInt(this.handle.client.settings.global("vad_ppt_key", Key.T.toString()));
             if(!(this.getVADHandler() instanceof PushToTalkVAD))
                 this.setVADHander(new PushToTalkVAD(keyCode));
             else (this.getVADHandler() as PushToTalkVAD).key = keyCode;
@@ -101,7 +103,7 @@ class VoiceRecorder {
         } else if(type == "vad") {
             if(!(this.getVADHandler() instanceof VoiceActivityDetectorVAD))
                 this.setVADHander(new VoiceActivityDetectorVAD());
-            let threshold = parseInt(globalClient.settings.global("vad_threshold", "50"));
+            let threshold = parseInt(this.handle.client.settings.global("vad_threshold", "50"));
             (this.getVADHandler() as VoiceActivityDetectorVAD).percentageThreshold = threshold;
         } else {
             console.warn("Invalid VAD handler! (" + type + ")");
@@ -132,6 +134,7 @@ class VoiceRecorder {
     changeDevice(device: string) {
         if(this._deviceId == device) return;
         this._deviceId = device;
+        this.handle.client.settings.changeGlobal("microphone_id", device);
         if(this._recording) {
             this.stop();
             this.start(device);

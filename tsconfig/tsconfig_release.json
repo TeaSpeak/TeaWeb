@@ -4,6 +4,11 @@
     "outFile": "../generated/js/client.js"
   },
   "exclude": [
-    "../js/load.ts"
+    "../js/load.ts",
+    "../node_modules",
+    "../js/codec/workers"
+  ],
+  "include": [
+    "../js/**/*"
   ]
 }

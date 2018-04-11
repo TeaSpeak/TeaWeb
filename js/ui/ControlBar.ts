@@ -75,6 +75,8 @@ class ControlBar {
         this.updateMicrophoneRecordState();
     }
 
+    get muteOutput() : boolean { return this._muteOutput; }
+
     set muteOutput(flag: boolean) {
         if(this._muteOutput == flag) return;
         this._muteOutput = flag;

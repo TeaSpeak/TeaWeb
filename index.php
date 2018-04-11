@@ -1,20 +1,14 @@
 <?php
-	$host = gethostname();
-	$localhost = false;
 	$testXF = true;
 
-	if($host == "WolverinDEV")
-	    $localhost = true;
 
+	if(file_exists('auth.php'))
+		include_once('auth.php');
+	else if(file_exists('auth/auth.php'))
+		include_once('auth/auth.php');
+	else die("Could not resolve auth.php!");
 	if(!$localhost || $testXF){
-		if(file_exists('auth.php'))
-			include_once('auth.php');
-		else if(file_exists('auth/auth.php'))
-			include_once('auth/auth.php');
-		else die("Could not resolve auth.php!");
 		redirectOnInvalidSession();
-    } else {
-	    function webPath() { return "auth/"; }
     }
 ?>
 
@@ -34,11 +28,13 @@
         <x-properties id="properties">
             <!-- <x-property key="" value=""/> -->
             <?php
-                if($localhost) {
-                    echo '<x-property key="connect_default_host" value="localhost"/>';
-                } else {
-					echo '<x-property key="connect_default_host" value="ts.TeaSpeak.de"/>';
+                function spawnProperty($name, $value) {
+					echo '<x-property key="' . $name . '" value="' . urlencode($value) . '"/>';
                 }
+
+				spawnProperty('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
+				spawnProperty('forum_user_data', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]]);
+				spawnProperty('forum_user_sign', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]]);
             ?>
         </x-properties>
 
@@ -132,7 +128,7 @@
     <footer>
         <div class="container">
             <div style="align-self: center;">TeaSpeak Web client by WolverinDEV</div>
-            <div style="align-self: center; position: fixed; right: 5px;"><a href="<?php echo webPath() . "auth.php?type=logout"; ?>">logout</a></div>
+            <div style="align-self: center; position: fixed; right: 5px;"><a href="<?php echo authPath() . "auth.php?type=logout"; ?>">logout</a></div>
         </div>
     </footer>
 </html>

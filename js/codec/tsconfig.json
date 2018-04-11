@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "none",
+    "target": "es6",
+    "sourceMap": true,
+    "outFile": "CompiledCodecWorker.js"
+  },
+  "files": [
+    "workers/CodecWorker.ts",
+    "workers/CodecWorker.ts",
+    "workers/OpusCodec.ts",
+    "../proto.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

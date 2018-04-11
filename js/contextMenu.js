@@ -50,13 +50,11 @@ class MenuEntry {
         };
     }
 }
-;
 function spawnMenu(x, y, ...entries) {
-    var menu = $("#contextMenu");
+    const menu = $("#contextMenu");
     menu.empty();
     menu.hide();
     contextMenuCloseFn = undefined;
-    console.log(" -> " + ($.isArray(entries) ? "yes" : "no"));
     let index = 0;
     for (let entry of entries) {
         if (entry.type == MenuEntryType.HR) {
@@ -75,11 +73,15 @@ function spawnMenu(x, y, ...entries) {
             tag.append("<div class='" + icon + "'></div>");
             tag.append("<div>" + ($.isFunction(entry.name) ? entry.name() : entry.name) + "</div>");
             menu.append(tag);
-            tag.click(function () {
-                if ($.isFunction(entry.callback))
-                    entry.callback();
-                despawnContextMenu();
-            });
+            if (entry.disabled)
+                tag.addClass("disabled");
+            else {
+                tag.click(function () {
+                    if ($.isFunction(entry.callback))
+                        entry.callback();
+                    despawnContextMenu();
+                });
+            }
         }
     }
     menu.show(100);

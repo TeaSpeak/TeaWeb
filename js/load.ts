@@ -77,6 +77,7 @@ function loadDebug() {
         "js/ui/modal/ModalSettings.js",
         "js/ui/modal/ModalCreateChannel.js",
         "js/ui/modal/ModalConnect.js",
+        "js/ui/modal/ModalChangeVolume.js",
         "js/ui/channel.js",
         "js/ui/client.js",
         "js/ui/server.js",
@@ -95,6 +96,8 @@ function loadDebug() {
 
         //Load codec
         "js/codec/Codec.js",
+        "js/codec/BasicCodec.js",
+        "js/codec/CodecWrapper.js",
 
         //Load general stuff
         "js/settings.js",
@@ -103,7 +106,8 @@ function loadDebug() {
         "js/FileManager.js",
         "js/client.js",
         "js/chat.js",
-        "js/InfoBar.js"
+        "js/InfoBar.js",
+        "js/Identity.js"
     ])).then(() => {
         awaitLoad(loadScripts(["js/main.js"])).then(() => {
             console.log("Loaded successfully all scripts!");
@@ -120,7 +124,14 @@ function awaitLoad(promises: {path: string, promise: Promise<Boolean>}[]) : Prom
                 awaiting--;
                 if(awaiting == 0) resolve();
             }).catch(error => {
-                console.error("Failed to load script " + entry.path);
+                if(error instanceof TypeError) {
+                    console.error(error);
+                    let name = (error as any).fileName + "@" + (error as any).lineNumber + ":" + (error as any).columnNumber;
+                    displayCriticalError("Failed to execute script <code>" + name + "</code>.<hr>If you believe that it isn't you're mistake<br>then please contact an administrator!", false);
+                    return;
+                } else {
+                    console.error("Failed to load script " + entry.path);
+                }
                 displayCriticalError("Failed to load script " + formatPath(entry.path) + ".<hr>If you believe that it isn't you're mistake<br>then please contact an administrator!", false);
             })
         }
@@ -170,8 +181,8 @@ function loadSide() {
         ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => awaitLoad(loadScripts([
-        ["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"],
-        ["js/TeaWeb-Native.js", "asm/generated/TeaWeb-Native.js"]
+        ["asm/generated/TeaWeb-Native.js", "js/TeaWeb-Native.js"],
+        ["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
     ]))).then(() => {
         //Load the teaweb scripts
         loadScript("js/proto.js").then(loadDebug).catch(error => {

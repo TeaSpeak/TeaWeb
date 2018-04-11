@@ -18,10 +18,10 @@ class ServerConnection {
         this._connectionState = ConnectionState.UNCONNECTED;
         this._connectTimeoutHandler = undefined;
         this.on_connect = () => {
-            console.log("Client connected!");
-            chat.serverChat().appendMessage("Client connected");
+            console.log("Socket connected");
+            chat.serverChat().appendMessage("Logging in...");
+            this._handshakeHandler.startHandshake();
         };
-        this.on_connected = () => { };
         this._client = client;
         this._socket = null;
         this.commandHandler = new ConnectionCommandHandler(this);
@@ -31,7 +31,7 @@ class ServerConnection {
     generateReturnCode() {
         return (this._retCodeIdx++).toString();
     }
-    startConnection(host, port, timeout = 1000) {
+    startConnection(host, port, handshake, timeout = 1000) {
         if (this._connectTimeoutHandler) {
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
@@ -40,23 +40,28 @@ class ServerConnection {
         this.updateConnectionState(ConnectionState.CONNECTING);
         this._remoteHost = host;
         this._remotePort = port;
+        this._handshakeHandler = handshake;
+        this._handshakeHandler.setConnection(this);
+        chat.serverChat().appendMessage("Connecting to " + host + ":" + port);
         const self = this;
         try {
             this._connectTimeoutHandler = setTimeout(() => {
                 this.disconnect();
                 this._client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
             }, timeout);
-            this._socket = new WebSocket('wss:' + this._remoteHost + ":" + this._remotePort);
+            let sockCpy;
+            this._socket = (sockCpy = new WebSocket('wss:' + this._remoteHost + ":" + this._remotePort));
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
-            const _socketCpy = this._socket;
+            if (this._socket != sockCpy)
+                return; //Connect timeouted
             this._socket.onopen = () => {
-                if (this._socket != _socketCpy)
+                if (this._socket != sockCpy)
                     return;
                 this.on_connect();
             };
             this._socket.onclose = event => {
-                if (this._socket != _socketCpy)
+                if (this._socket != sockCpy)
                     return;
                 this._client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
                     code: event.code,
@@ -65,13 +70,13 @@ class ServerConnection {
                 });
             };
             this._socket.onerror = e => {
-                if (this._socket != _socketCpy)
+                if (this._socket != sockCpy)
                     return;
                 console.log("Got error: (" + self._socket.readyState + ")");
                 console.log(e);
             };
             this._socket.onmessage = msg => {
-                if (this._socket != _socketCpy)
+                if (this._socket != sockCpy)
                     return;
                 self.handleWebSocketMessage(msg.data);
             };
@@ -203,6 +208,53 @@ class ServerConnection {
         return this.sendCommand("clientupdate", data);
     }
 }
+class HandshakeHandler {
+    constructor(identity, name) {
+        this.identity = identity;
+        this.name = name;
+    }
+    setConnection(con) {
+        this.connection = con;
+        this.connection.commandHandler["handshakeidentityproof"] = this.handleCommandHandshakeIdentityProof.bind(this);
+    }
+    startHandshake() {
+        let data = {
+            intention: 0,
+            authentication_method: this.identity.type()
+        };
+        if (this.identity.type() == IdentitifyType.TEAMSPEAK) {
+            data.publicKey = this.identity.publicKey();
+        }
+        else if (this.identity.type() == IdentitifyType.TEAFORO) {
+            data.data = this.identity.identityDataJson;
+        }
+        this.connection.sendCommand("handshakebegin", data).catch(error => {
+            console.log(error);
+            //TODO here
+        });
+    }
+    handleCommandHandshakeIdentityProof(json) {
+        let proof;
+        if (this.identity.type() == IdentitifyType.TEAMSPEAK) {
+            proof = this.identity.signMessage(json[0]["message"]);
+        }
+        else if (this.identity.type() == IdentitifyType.TEAFORO) {
+            proof = this.identity.identitySign;
+        }
+        this.connection.sendCommand("handshakeindentityproof", { proof: proof }).then(() => {
+            this.connection.sendCommand("clientinit", {
+                //TODO variables!
+                client_nickname: this.name ? this.name : this.identity.name(),
+                client_platform: navigator.platform,
+                client_version: navigator.userAgent,
+                client_browser_engine: navigator.product
+            });
+        }).catch(error => {
+            console.error("Got login error");
+            console.log(error);
+        }); //TODO handle error
+    }
+}
 class ConnectionCommandHandler {
     constructor(connection) {
         this.connection = connection;
@@ -257,7 +309,7 @@ class ConnectionCommandHandler {
         }
         chat.serverChat().name = this.connection._client.channelTree.server.properties["virtualserver_name"];
         chat.serverChat().appendMessage("Connected as {0}", true, this.connection._client.getClient().createChatTag(true));
-        this.connection.on_connected();
+        globalClient.onConnected();
     }
     createChannelFromJson(json, ignoreOrder = false) {
         let tree = this.connection._client.channelTree;
@@ -483,14 +535,18 @@ class ConnectionCommandHandler {
         json = json[0]; //Only one bulk
         //TODO chat format?
         let mode = json["targetmode"];
-        let invoker = this.connection._client.channelTree.findClient(json["invokerid"]);
-        if (!invoker) {
-            console.error("Invalid chat message!");
-            return;
-        }
         if (mode == 1) {
+            let invoker = this.connection._client.channelTree.findClient(json["invokerid"]);
+            let target = this.connection._client.channelTree.findClient(json["target"]);
+            if (!invoker) {
+                console.error("Got private message from invalid client!");
+                return;
+            }
+            if (!target) {
+                console.error("Got private message from invalid client!");
+                return;
+            }
             if (invoker == this.connection._client.getClient()) {
-                let target = this.connection._client.channelTree.findClient(json["target"]);
                 target.chat(true).appendMessage("<< " + json["msg"]);
             }
             else {
@@ -498,10 +554,10 @@ class ConnectionCommandHandler {
             }
         }
         else if (mode == 2) {
-            chat.channelChat().appendMessage("{0} >> " + json["msg"], true, invoker.createChatTag(true));
+            chat.channelChat().appendMessage("{0} >> {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), json["msg"]);
         }
         else if (mode == 3) {
-            chat.serverChat().appendMessage("{0} >> " + json["msg"], true, invoker.createChatTag(true));
+            chat.serverChat().appendMessage("{0} >> {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), json["msg"]);
         }
     }
     handleNotifyClientUpdated(json) {

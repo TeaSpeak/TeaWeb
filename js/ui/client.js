@@ -1,4 +1,5 @@
 /// <reference path="channel.ts" />
+/// <reference path="modal/ModalChangeVolume.ts" />
 class ClientEntry {
     constructor(clientId, clientName) {
         this.properties = {
@@ -22,6 +23,7 @@ class ClientEntry {
         this.audioController.onSilence = function () {
             _this.speaking = false;
         };
+        this.audioController.initialize();
     }
     currentChannel() { return this._channel; }
     clientNickName() { return this.properties.client_nickname; }
@@ -86,6 +88,16 @@ class ClientEntry {
             }
         }, MenuEntry.HR(), {
             type: MenuEntryType.ENTRY,
+            icon: "client-move_client_to_own_channel",
+            name: "Move client to your channel",
+            callback: () => {
+                this.channelTree.client.serverConnection.sendCommand("clientmove", {
+                    clid: this.clientId(),
+                    cid: this.channelTree.client.getClient().currentChannel().getChannelId()
+                });
+            }
+        }, {
+            type: MenuEntryType.ENTRY,
             icon: "client-kick_channel",
             name: "Kick client from channel",
             callback: function () {
@@ -115,6 +127,24 @@ class ClientEntry {
                         });
                     }
                 }, { width: 400, maxLength: 255 }).open();
+            }
+        }, {
+            type: MenuEntryType.ENTRY,
+            icon: "client-ban_client",
+            name: "Ban client",
+            disabled: true,
+            callback: () => { }
+        }, MenuEntry.HR(), {
+            type: MenuEntryType.ENTRY,
+            icon: "client-volume",
+            name: "Change Volume",
+            callback: () => {
+                Modals.spawnChangeVolume(this.audioController.volume, volume => {
+                    globalClient.settings.changeServer("volume_client_" + this.clientUid(), volume);
+                    this.audioController.volume = volume;
+                    if (globalClient.selectInfo.currentSelected == this)
+                        globalClient.selectInfo.update();
+                });
             }
         }, MenuEntry.CLOSE(on_close));
     }
@@ -148,7 +178,7 @@ class ClientEntry {
         tag.attr("clientId", id);
         tag.attr("clientUid", uid);
         tag.attr("clientName", name);
-        return tag.wrap("<p/>").parent().html();
+        return tag.wrap("<p/>").parent();
     }
     createChatTag(braces = false) {
         return ClientEntry.chatTag(this.clientId(), this.clientNickName(), this.clientUid(), braces);
@@ -156,7 +186,6 @@ class ClientEntry {
     set speaking(flag) {
         if (flag == this._speaking)
             return;
-        console.log("SPeakig " + flag);
         this._speaking = flag;
         this.updateClientIcon();
     }
@@ -220,6 +249,10 @@ class ClientEntry {
         }
         if (key == "client_away_message" || key == "client_away") {
             this.updateAwayMessage();
+        }
+        if (key == "client_unique_identifier") {
+            this.audioController.volume = parseFloat(globalClient.settings.server("volume_client_" + this.clientUid(), "1"));
+            console.error("Updated volume from config " + this.audioController.volume + " - " + "volume_client_" + this.clientUid() + " - " + globalClient.settings.server("volume_client_" + this.clientUid(), "1"));
         }
     }
     updateVariables() {

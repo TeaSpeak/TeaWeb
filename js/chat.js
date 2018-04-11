@@ -35,9 +35,16 @@ class ChatMessage {
         return tag;
     }
     static formatMessage(message) {
-        return message
-            .replace(/ /g, '&nbsp;')
-            .replace(/\n/g, "<br/>");
+        /*
+        message = message
+                    .replace(/ /g, '&nbsp;')
+                    .replace(/\n/g, "<br/>");
+        */
+        const div = document.createElement('div');
+        div.innerText = message;
+        message = div.innerHTML;
+        console.log(message + "->" + div.innerHTML);
+        return message;
     }
 }
 class ChatEntry {
@@ -49,12 +56,26 @@ class ChatEntry {
         this.history = [];
         this.onClose = function () { return true; };
     }
+    static tagify(message, ...args) {
+    }
     appendError(message, ...args) {
         this.appendMessage("<a style='color: red'>{0}</a>".format(ChatMessage.formatMessage(message).format(...args)), false);
     }
     appendMessage(message, fmt = true, ...args) {
+        let parms = [];
+        for (let index = 2; index < arguments.length; index++) {
+            if (typeof arguments[index] == "string")
+                arguments[index] = ChatMessage.formatMessage(arguments[index]);
+            else if (arguments[index] instanceof jQuery)
+                arguments[index] = arguments[index].html();
+            else {
+                console.error("Invalid type " + typeof arguments[index] + "|" + arguments[index].prototype);
+                arguments[index] = arguments[index].toString();
+            }
+            parms.push(arguments[index]);
+        }
         let msg = fmt ? ChatMessage.formatMessage(message) : message;
-        msg = msg.format(...args);
+        msg = msg.format(parms);
         let elm = new ChatMessage(msg);
         this.history.push(elm);
         while (this.history.length > 100) {
@@ -91,7 +112,7 @@ class ChatEntry {
     get htmlTag() {
         if (this._htmlTag)
             return this._htmlTag;
-        var tag = $.spawn("div");
+        let tag = $.spawn("div");
         tag.addClass("chat");
         tag.append("<div class=\"chatIcon icon clicon " + this.chatIcon() + "\"></div>");
         tag.append("<a class='name'>" + this._name + "</a>");

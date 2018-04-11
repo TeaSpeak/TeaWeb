@@ -2,6 +2,62 @@
 /// <reference path="../codec/Codec.ts" />
 /// <reference path="VoiceRecorder.ts" />
 
+class CodecPoolEntry {
+    instance: BasicCodec;
+    owner: number;
+
+    last_access: number;
+}
+
+class CodecPool {
+    handle: VoiceConnection;
+    codecIndex: number;
+    creator: () => BasicCodec;
+
+    entries: CodecPoolEntry[] = [];
+    maxInstances: number = 2;
+
+    ownCodec?(clientId: number, create: boolean = true) : BasicCodec {
+        if(!this.creator) return null;
+
+        let free = 0;
+        for(let index = 0; index < this.entries.length; index++) {
+            if(this.entries[index].owner == clientId) {
+                this.entries[index].last_access = new Date().getTime();
+                return this.entries[index].instance;
+            } else if(free == 0 && this.entries[index].owner == 0) {
+                free = index;
+            }
+        }
+
+        if(!create) return null;
+        if(free == 0){
+            free = this.entries.length;
+            let entry = new CodecPoolEntry();
+            entry.instance = this.creator();
+            entry.instance.initialise();
+            entry.instance.on_encoded_data = buffer => this.handle.sendVoicePacket(buffer, this.codecIndex);
+            this.entries.push(entry);
+        }
+        this.entries[free].owner = clientId;
+        this.entries[free].last_access = new Date().getTime();
+        this.entries[free].instance.reset();
+        return this.entries[free].instance;
+    }
+
+    releaseCodec(clientId: number) {
+        for(let index = 0; index < this.entries.length; index++) {
+            if(this.entries[index].owner == clientId) this.entries[index].owner = 0;
+        }
+    }
+
+    constructor(handle: VoiceConnection, index: number, creator: () => BasicCodec){
+        this.creator = creator;
+        this.handle = handle;
+        this.codecIndex = index;
+    }
+}
+
 class VoiceConnection {
     client: TSClient;
     rtcPeerConnection: RTCPeerConnection;
@@ -9,13 +65,14 @@ class VoiceConnection {
 
     voiceRecorder: VoiceRecorder;
 
-    private codecs: Codec[] = [
-        undefined, //Spex
-        undefined, //Spex
-        undefined, //Spex
-        undefined, //CELT Mono
-        undefined, //opus voice
-        undefined  //opus music
+    private codecPool: CodecPool[] = [
+        new CodecPool(this,0,undefined), //Spex
+        new CodecPool(this,1,undefined), //Spex
+        new CodecPool(this,2,undefined), //Spex
+        new CodecPool(this,3,undefined), //CELT Mono
+        new CodecPool(this,4,() => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 1) }), //opus voice
+        new CodecPool(this,5,() => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 2) })  //opus music
+        //FIXME Why is it at index 5 currently only 1?
     ];
 
     private vpacketId: number = 0;
@@ -26,18 +83,7 @@ class VoiceConnection {
         this.voiceRecorder = new VoiceRecorder(this);
         this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
         this.voiceRecorder.on_end = this.handleVoiceEnded.bind(this);
-
-        this.codecs[4] = new OpusCodec(1, OpusType.VOIP);
-        this.codecs[5] = new OpusCodec(2, OpusType.AUDIO);
-
-        for(let index = 0; index < this.codecs.length; index++) {
-            if(!this.codecs[index]) continue;
-
-            let codec = this.codecs[index];
-            console.log("Got codec " + codec.name());
-            codec.initialise();
-            codec.on_encoded_data = buffer => this.sendVoicePacket(buffer, index);
-        }
+        this.voiceRecorder.reinitialiseVAD();
     }
 
     sendVoicePacket(data: Uint8Array, codec: number) {
@@ -46,9 +92,9 @@ class VoiceConnection {
             if(this.vpacketId > 65535) this.vpacketId = 0;
             let packet = new Uint8Array(data.byteLength + 2 + 3);
             packet[0] = this.chunkVPacketId++ < 5 ? 1 : 0; //Flag header
-            packet[1] = 0; //Flag frag  mented
-            packet[2] = (this.vpacketId >> 8) & 0xFF; //HIGHT(voiceID)
-            packet[3] = (this.vpacketId >> 0) & 0xFF; //LOW  (voiceID)
+            packet[1] = 0; //Flag fragmented
+            packet[2] = (this.vpacketId >> 8) & 0xFF; //HIGHT (voiceID)
+            packet[3] = (this.vpacketId >> 0) & 0xFF; //LOW   (voiceID)
             packet[4] = codec; //Codec
             packet.set(data, 5);
             this.dataChannel.send(packet);
@@ -119,6 +165,8 @@ class VoiceConnection {
     }
 
     onDataChannelMessage(message) {
+        if(this.client.controlBar.muteOutput) return;
+
         let bin = new Uint8Array(message.data);
         let clientId = bin[2] << 8 | bin[3];
         let packetId = bin[0] << 8 | bin[1];
@@ -129,10 +177,13 @@ class VoiceConnection {
             console.error("Having  voice from unknown client? (ClientID: " + clientId + ")");
             return;
         }
-        if(!this.codecs[codec]) {
+
+        let codecPool = this.codecPool[codec];
+        if(!codecPool) {
             console.error("Could not playback codec " + codec);
             return;
         }
+
         let encodedData;
         if(message.data.subarray)
             encodedData = message.data.subarray(5);
@@ -140,8 +191,10 @@ class VoiceConnection {
 
         if(encodedData.length == 0) {
             client.getAudioController().stopAudio();
+            codecPool.releaseCodec(clientId);
         } else {
-            this.codecs[codec].decodeSamples(encodedData).then(buffer => {
+            let decoder = codecPool.ownCodec(clientId);
+            decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData).then(buffer => {
                 client.getAudioController().playBuffer(buffer);
             }).catch(error => {
                 console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
@@ -150,15 +203,24 @@ class VoiceConnection {
     }
 
     private handleVoiceData(data: AudioBuffer, head: boolean) {
+        if(!this.voiceRecorder) return;
+
         if(head) {
             this.chunkVPacketId = 0;
             this.client.getClient().speaking = true;
         }
-        this.codecs[4].encodeSamples(data); //TODO Use channel codec!
+        let encoder = this.codecPool[4].ownCodec(this.client.getClientId());
+        if(!encoder) {
+            console.error("Could not reserve encoder!");
+            return;
+        }
+        encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4),data); //TODO Use channel codec!
         //this.client.getClient().getAudioController().play(data);
     }
 
     private handleVoiceEnded() {
+        if(!this.voiceRecorder) return;
+
         console.log("Voice ended");
         this.client.getClient().speaking = false;
         this.sendVoicePacket(new Uint8Array(0), 4); //TODO Use channel codec!

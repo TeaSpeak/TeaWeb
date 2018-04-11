@@ -86,7 +86,7 @@ class InfoBar {
         else if (this._currentSelected instanceof ChannelEntry) {
             let props = this._currentSelected.properties;
             this._htmlTag.append(this.createInfoTable({
-                "Name": this._currentSelected.createChatTag(),
+                "Name": this._currentSelected.createChatTag().html(),
                 "Topic": this._currentSelected.properties.channel_topic,
                 "Codec": this._currentSelected.properties.channel_codec,
                 "Codec Quality": this._currentSelected.properties.channel_codec_quality,
@@ -98,12 +98,20 @@ class InfoBar {
         }
         else if (this._currentSelected instanceof ClientEntry) {
             this._currentSelected.updateVariables();
-            this._htmlTag.append(this.createInfoTable({
-                "Name": this._currentSelected.createChatTag(),
+            let version = this._currentSelected.properties.client_version;
+            if (!version)
+                version = "";
+            let infos = {
+                "Name": this._currentSelected.createChatTag().html(),
                 "Description": this._currentSelected.properties.client_description,
-                "Version": this._currentSelected.properties.client_version + " on " + this._currentSelected.properties.client_platform,
-                "Online since": "<a class='online'>" + formatDate(this._currentSelected.calculateOnlineTime()) + "</a>"
-            }));
+                "Version": "<a title='" + ChatMessage.formatMessage(version) + "'>" + version.split(" ")[0] + "</a>" + " on " + this._currentSelected.properties.client_platform,
+                "Online since": "<a class='online'>" + formatDate(this._currentSelected.calculateOnlineTime()) + "</a>",
+                "Volume": this._currentSelected.audioController.volume * 100 + " %"
+            };
+            if (this._currentSelected.properties["client_teaforum_id"] > 0) {
+                infos["TeaSpeak Account"] = "<a href='//forum.teaspeak.de/index.php?members/{1}/' target='_blank'>{0}</a>".format(this._currentSelected.properties["client_teaforum_name"], this._currentSelected.properties["client_teaforum_id"]);
+            }
+            this._htmlTag.append(this.createInfoTable(infos));
             {
                 let serverGroups = $.spawn("div");
                 serverGroups

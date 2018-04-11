@@ -49,21 +49,21 @@ class MenuEntry {
             icon: ""
         };
     }
-};
+}
 
 function spawnMenu(x, y, ...entries: {
     callback:   () => void;
     type:       MenuEntryType;
     name:       (() => string) | string;
     icon:       (() => string) | string;
+    disabled?:  boolean;
 }[]) {
-    var menu = $("#contextMenu");
+    const menu = $("#contextMenu");
     menu.empty();
     menu.hide();
 
     contextMenuCloseFn = undefined;
 
-    console.log(" -> " + ($.isArray(entries) ? "yes" : "no"));
     let index = 0;
 
     for(let entry of entries){
@@ -79,12 +79,16 @@ function spawnMenu(x, y, ...entries: {
             let tag = $.spawn("li");
             tag.append("<div class='" + icon + "'></div>");
             tag.append("<div>" + ($.isFunction(entry.name) ? entry.name() : entry.name) + "</div>");
+
             menu.append(tag);
 
-            tag.click(function () {
-                if($.isFunction(entry.callback)) entry.callback();
-                despawnContextMenu();
-            });
+            if(entry.disabled) tag.addClass("disabled");
+            else {
+                tag.click(function () {
+                    if($.isFunction(entry.callback)) entry.callback();
+                    despawnContextMenu();
+                });
+            }
         }
     }
 

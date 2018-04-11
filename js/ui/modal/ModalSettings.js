@@ -41,10 +41,10 @@ var Modals;
             tag.find(".vad_settings .vad_type_settings").hide();
             tag.find(".vad_settings .vad_type_" + this.value).show();
             globalClient.settings.changeGlobal("vad_type", this.value);
-            globalClient.voiceConnection.voiceRecorder.reinizaliszeVAD();
+            globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
             switch (this.value) {
                 case "ppt":
-                    let keyCode = Number.parseInt(globalClient.settings.global("vad_ppt_key", 84 /* T */.toString()));
+                    let keyCode = parseInt(globalClient.settings.global("vad_ppt_key", 84 /* T */.toString()));
                     tag.find(".vat_ppt_key").text(String.fromCharCode(keyCode));
                     break;
                 case "vad":
@@ -79,7 +79,7 @@ var Modals;
                 console.log("Got key " + e.keyCode);
                 modal.close();
                 globalClient.settings.changeGlobal("vad_ppt_key", e.keyCode.toString());
-                globalClient.voiceConnection.voiceRecorder.reinizaliszeVAD();
+                globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
                 tag.find(".vat_ppt_key").text(String.fromCharCode(e.keyCode));
             });
             modal.open();
