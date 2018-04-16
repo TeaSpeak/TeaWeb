@@ -1,0 +1,1 @@
+../../../js/codec/CompiledCodecWorker.js
