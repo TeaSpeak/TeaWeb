@@ -46,7 +46,6 @@ var ViewReasonId;
 class TSClient {
     constructor() {
         this._clientId = 0;
-        this.settings = new Settings(this);
         this.selectInfo = new InfoBar(this, $("#select_info"));
         this.channelTree = new ChannelTree(this, $("#channelTree"));
         this.serverConnection = new ServerConnection(this);
@@ -73,7 +72,7 @@ class TSClient {
         }
         else {
             host = addr;
-            port = 19974;
+            port = 9987;
         }
         console.log("Start connection to " + host + ":" + port);
         this.channelTree.initialiseHead(addr);
@@ -95,9 +94,9 @@ class TSClient {
     onConnected() {
         console.log("Client connected!");
         this.channelTree.registerClient(this._ownEntry);
-        this.settings.loadServer();
-        this.serverConnection.sendCommand("channelsubscribeall");
+        settings.setServer(this.channelTree.server);
         this.permissions.requestPermissionList();
+        this.serverConnection.sendCommand("channelsubscribeall");
         if (this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
         this.controlBar.updateProperties();

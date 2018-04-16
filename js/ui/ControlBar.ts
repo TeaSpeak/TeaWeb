@@ -34,8 +34,8 @@ class ControlBar {
 
 
         //Need an initialise
-        this.muteInput = this.handle.settings.global("mute_input") == "1";
-        this.muteOutput = this.handle.settings.global("mute_output") == "1";
+        this.muteInput = settings.global("mute_input") == "1";
+        this.muteOutput = settings.global("mute_output") == "1";
     }
 
 
@@ -69,9 +69,9 @@ class ControlBar {
 
         if(this.handle.serverConnection.connected)
             this.handle.serverConnection.sendCommand("clientupdate", {
-                client_input_muted: this._muteInput ? 1 : 0
+                client_input_muted: this._muteInput
             });
-        this.handle.settings.changeGlobal("mute_input", this._muteInput ? "1" : "0");
+        settings.changeGlobal("mute_input", this._muteInput);
         this.updateMicrophoneRecordState();
     }
 
@@ -94,9 +94,9 @@ class ControlBar {
 
         if(this.handle.serverConnection.connected)
             this.handle.serverConnection.sendCommand("clientupdate", {
-                client_output_muted: this._muteOutput ? 1 : 0
+                client_output_muted: this._muteOutput
             });
-        this.handle.settings.changeGlobal("mute_output", this._muteOutput ? "1" : "0");
+        settings.changeGlobal("mute_output", this._muteOutput);
         this.updateMicrophoneRecordState();
     }
 
@@ -121,7 +121,7 @@ class ControlBar {
 
         if(this.handle.serverConnection.connected)
             this.handle.serverConnection.sendCommand("clientupdate", {
-                client_away: this._away ? 1 : 0,
+                client_away: this._away,
                 client_away_message: this._awayMessage
             });
         this.updateMicrophoneRecordState();
@@ -135,9 +135,9 @@ class ControlBar {
     updateProperties() {
         if(this.handle.serverConnection.connected)
             this.handle.serverConnection.sendCommand("clientupdate", {
-                client_input_muted: this._muteInput ? 1 : 0,
-                client_output_muted: this._muteOutput ? 1 : 0,
-                client_away: this._away ? 1 : 0,
+                client_input_muted: this._muteInput,
+                client_output_muted: this._muteOutput,
+                client_away: this._away,
                 client_away_message: this._awayMessage,
             });
     }
@@ -147,6 +147,6 @@ class ControlBar {
     }
 
     private onConnect() {
-        Modals.spawnConnectModal(this.handle.settings.static("connect_default_host"));
+        Modals.spawnConnectModal(settings.static("connect_default_host", "ts.TeaSpeak.de"));
     }
 }

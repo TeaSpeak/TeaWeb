@@ -13,8 +13,6 @@ interface JQueryStatic<TElement extends Node = HTMLElement> {
     spawn<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]>;
 }
 
-
-
 interface String {
     format(...fmt): string;
     format(arguments: string[]): string;
@@ -37,6 +35,7 @@ if (!Array.prototype.pop_front) {
         return this.splice(0, 1)[0];
     }
 }
+
 
 if (!Array.prototype.last){
     Array.prototype.last = function(){

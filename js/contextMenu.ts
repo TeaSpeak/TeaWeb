@@ -57,6 +57,7 @@ function spawnMenu(x, y, ...entries: {
     name:       (() => string) | string;
     icon:       (() => string) | string;
     disabled?:  boolean;
+    invalidPermission?:  boolean;
 }[]) {
     const menu = $("#contextMenu");
     menu.empty();
@@ -82,7 +83,7 @@ function spawnMenu(x, y, ...entries: {
 
             menu.append(tag);
 
-            if(entry.disabled) tag.addClass("disabled");
+            if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
             else {
                 tag.click(function () {
                     if($.isFunction(entry.callback)) entry.callback();

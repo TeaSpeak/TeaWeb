@@ -90,6 +90,7 @@
     display: flex;
     height: auto;
     position: relative;
+    flex-shrink: 0;
 }
 
 #chat .input .input_box {

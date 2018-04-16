@@ -50,12 +50,12 @@ var Modals;
                 tag.find(".connect_address").on("keyup", () => updateFields());
                 tag.find(".connect_nickname").on("keyup", () => updateFields());
                 tag.find(".identity_select").on('change', function () {
-                    globalClient.settings.changeGlobal("connect_identity_type", this.value);
+                    settings.changeGlobal("connect_identity_type", this.value);
                     tag.find(".error_message").hide();
                     tag.find(".identity_config:not(" + ".identity_config_" + this.value + ")").hide();
                     tag.find(".identity_config_" + this.value).show().trigger('shown');
                 });
-                tag.find(".identity_select").val(globalClient.settings.global("connect_identity_type", "forum"));
+                tag.find(".identity_select").val(settings.global("connect_identity_type", "forum"));
                 setTimeout(() => tag.find(".identity_select").trigger('change'), 0); //For some reason could not be run instantly
                 tag.find(".identity_file").change(function () {
                     const reader = new FileReader();
@@ -66,7 +66,7 @@ var Modals;
                             tag.find(".error_message").text("Could not read identity! " + TSIdentityHelper.last_error());
                         else {
                             tag.find(".identity_string").val(connectIdentity.exported());
-                            globalClient.settings.changeGlobal("connect_identity_teamspeak_identity", connectIdentity.exported());
+                            settings.changeGlobal("connect_identity_teamspeak_identity", connectIdentity.exported());
                         }
                         (!!connectIdentity ? tag.hide : tag.show).apply(tag.find(".error_message"));
                         updateFields();
@@ -86,13 +86,13 @@ var Modals;
                         if (!connectIdentity)
                             tag.find(".error_message").text("Could not parse identity! " + TSIdentityHelper.last_error());
                         else
-                            globalClient.settings.changeGlobal("connect_identity_teamspeak_identity", this.value);
+                            settings.changeGlobal("connect_identity_teamspeak_identity", this.value);
                     }
                     (!!connectIdentity ? tag.hide : tag.show).apply(tag.find(".error_message"));
                     tag.find(".identity_file").val("");
                     updateFields();
                 });
-                tag.find(".identity_string").val(globalClient.settings.global("connect_identity_teamspeak_identity", ""));
+                tag.find(".identity_string").val(settings.global("connect_identity_teamspeak_identity", ""));
                 tag.find(".identity_config_teamspeak").on('shown', ev => { tag.find(".identity_string").trigger('change'); });
                 if (!forumIdentity)
                     tag.find(".identity_config_forum").html("You cant use your TeaSpeak forum account.<br>You're not connected!");

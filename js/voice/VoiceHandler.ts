@@ -17,6 +17,15 @@ class CodecPool {
     entries: CodecPoolEntry[] = [];
     maxInstances: number = 2;
 
+    initialize(cached: number) {
+        for(let i = 0; i < cached; i++)
+            this.ownCodec(i);
+        for(let i = 0; i < cached; i++)
+            this.releaseCodec(i);
+    }
+
+    supported() { return this.creator != undefined; }
+
     ownCodec?(clientId: number, create: boolean = true) : BasicCodec {
         if(!this.creator) return null;
 
@@ -72,6 +81,7 @@ class VoiceConnection {
         new CodecPool(this,3,undefined), //CELT Mono
         new CodecPool(this,4,() => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 1) }), //opus voice
         new CodecPool(this,5,() => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 2) })  //opus music
+
         //FIXME Why is it at index 5 currently only 1?
     ];
 
@@ -84,6 +94,13 @@ class VoiceConnection {
         this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
         this.voiceRecorder.on_end = this.handleVoiceEnded.bind(this);
         this.voiceRecorder.reinitialiseVAD();
+
+        this.codecPool[4].initialize(2);
+        this.codecPool[5].initialize(2);
+    }
+
+    codecSupported(type: number) : boolean {
+        return this.codecPool.length > type && this.codecPool[type].supported();
     }
 
     sendVoicePacket(data: Uint8Array, codec: number) {

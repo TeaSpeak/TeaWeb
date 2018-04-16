@@ -73,7 +73,7 @@ function spawnMenu(x, y, ...entries) {
             tag.append("<div class='" + icon + "'></div>");
             tag.append("<div>" + ($.isFunction(entry.name) ? entry.name() : entry.name) + "</div>");
             menu.append(tag);
-            if (entry.disabled)
+            if (entry.disabled || entry.invalidPermission)
                 tag.addClass("disabled");
             else {
                 tag.click(function () {

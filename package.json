@@ -18,6 +18,7 @@
   "dependencies": {
     "@types/emscripten": "0.0.31",
     "@types/jquery": "^3.3.0",
+    "@types/text-encoding": "0.0.32",
     "@types/websocket": "0.0.38"
   }
 }

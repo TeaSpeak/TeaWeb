@@ -1,4 +1,5 @@
 /// <reference path="view.ts" />
+/// <reference path="../utils/helpers.ts" />
 var ChannelType;
 (function (ChannelType) {
     ChannelType[ChannelType["PERMANENT"] = 0] = "PERMANENT";
@@ -13,29 +14,45 @@ var ChannelType;
     }
     ChannelType.normalize = normalize;
 })(ChannelType || (ChannelType = {}));
+class ChannelProperties {
+    constructor() {
+        this.channel_order = 0;
+        this.channel_name = "";
+        this.channel_topic = "";
+        this.channel_password = "";
+        this.channel_description = "";
+        this.channel_codec = 4;
+        this.channel_codec_quality = 0;
+        this.channel_codec_is_unencrypted = false;
+        this.channel_maxclients = -1;
+        this.channel_maxfamilyclients = -1;
+        this.channel_needed_talk_power = 1;
+        this.channel_flag_permanent = false;
+        this.channel_flag_semi_permanent = false;
+        this.channel_flag_default = false;
+        this.channel_flag_password = false;
+        this.channel_flag_maxclients_unlimited = false;
+        this.channel_flag_maxfamilyclients_inherited = false;
+        this.channel_flag_maxfamilyclients_unlimited = false;
+    }
+}
 class ChannelEntry {
     constructor(channelId, channelName, parent = null, prevChannel = null) {
-        this.properties = {
-            channel_order: 0,
-            channel_name: "undefined",
-            channel_flag_permanent: 0,
-            channel_flag_semi_permanent: 0,
-            channel_flag_default: 0,
-            channel_flag_password: 0
-        };
-        this.properties = {};
+        this.properties = new ChannelProperties();
+        this.properties = new ChannelProperties();
         this.channelId = channelId;
-        this._rawChannelName = channelName;
+        this._formatedChannelName = channelName;
         this.parent = parent;
         this.prevChannel = prevChannel;
         this.channelTree = null;
-        this.__updateChannelPropertiesFromName();
+        this.initializeTag();
+        this.__updateChannelName();
     }
     channelName() {
-        return this.properties["channel_name"];
+        return this.properties.channel_name;
     }
-    rawChannelName() {
-        return this._rawChannelName;
+    formatedChannelName() {
+        return this._formatedChannelName ? this._formatedChannelName : this.properties.channel_name;
     }
     parentChannel() { return this.parent; }
     hasParent() { return this.parent != null; }
@@ -83,37 +100,73 @@ class ChannelEntry {
         });
         return result;
     }
-    get htmlTag() {
-        if (this._htmlTag)
-            return this._htmlTag;
-        let tag = $.spawn("div");
-        tag.attr("id", "channel_" + this.getChannelId());
-        tag.addClass("channel");
-        tag.append("<div class=\"icon_empty\"></div>");
-        let channelTag = $("<div></div>");
-        channelTag.addClass("channelLine");
-        channelTag.addClass(this._channelAlign); //For left
-        let channelType = $("<div/>");
-        channelType.addClass("channel_only_normal channel_type");
-        channelType.addClass("icon");
-        channelType.addClass("client-channel_green_subscribed");
-        channelTag.append(channelType);
-        channelTag.append("<a class='channel_name'>" + this.channelName() + "</a>");
-        let channelIcon = $("<span class='channel_only_normal'/>");
-        channelTag.append(channelIcon);
-        tag.append("<div style='position: absolute; width: calc(100% - 16px); margin: 0px'><div class=\"siblings\"></div></div>");
-        tag.append("<div style='position: absolute; width: calc(100% - 16px); margin: 0px'><div class=\"clients\"></div></div>");
-        tag.append(channelTag);
-        return this._htmlTag = tag;
+    initializeTag() {
+        let rootTag = $.spawn("div");
+        rootTag.attr("id", "channel_" + this.getChannelId());
+        rootTag.addClass("channel");
+        //rootTag.append($.spawn("div").addClass("icon_empty"));
+        //Tag channel
+        this._tag_channel = $.spawn("div");
+        this._tag_channel.addClass("channelLine");
+        this._tag_channel.addClass(this._channelAlign); //For left
+        let channelType = $.spawn("div");
+        channelType.addClass("channel_only_normal channel_type icon client-channel_green_subscribed");
+        this._tag_channel.append(channelType);
+        this._tag_channel.append($.spawn("div").addClass("channel_name_container").append($.spawn("a").addClass("channel_name").text(this.channelName())));
+        //Icons
+        let iconTag = $.spawn("span").addClass("icons");
+        iconTag.appendTo(this._tag_channel);
+        //Default icon (4)
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_default icon client-channel_default").attr("title", "Default channel")));
+        //Password icon (3)
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_password icon client-register").attr("title", "The channel is password protected")));
+        //Music icon (2)
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_music icon client-music").attr("title", "Music quality")));
+        //Channel Icon (1)
+        iconTag.append($.spawn("div").addClass("channel_only_normal").addClass("icon_entry channel_icon").attr("title", "Channel icon"));
+        //Default no sound (0)
+        let container = $.spawn("div");
+        let noSound = $.spawn("div").addClass("icon_entry icon_no_sound icon client-conflict-icon").attr("title", "You don't support the channel codec");
+        let bg = $.spawn("div")
+            .width(10)
+            .height(14)
+            .css("background", "red")
+            .css("position", "absolute")
+            .css("top", "1px")
+            .css("left", "3px");
+        bg.appendTo(container);
+        noSound.appendTo(container);
+        iconTag.append(container);
+        /*
+        setInterval(() => {
+            let color = (Math.random() * 10000000).toString(16).substr(0, 6);
+            bg.css("background", "#" + color);
+        }, 150);
+        */
+        //Build siblings
+        this._tag_siblings = $.spawn("div").addClass("siblings");
+        let tag_siblings_box = $.spawn("div").css("position", "absolute").css("width", "calc(100% - 16px)").css("margin", "0px");
+        this._tag_siblings.appendTo(tag_siblings_box);
+        //Build clients
+        this._tag_clients = $.spawn("div").addClass("clients");
+        let tag_clients_box = $.spawn("div").css("position", "absolute").css("width", "calc(100% - 16px)").css("margin", "0px");
+        this._tag_clients.appendTo(tag_clients_box);
+        this._tag_root = rootTag;
+        tag_clients_box.appendTo(this._tag_root);
+        tag_siblings_box.appendTo(this._tag_root);
+        this._tag_channel.appendTo(this._tag_root);
     }
-    get channelTag() {
-        return this.htmlTag.find(".channelLine").last();
+    rootTag() {
+        return this._tag_root;
+    }
+    channelTag() {
+        return this._tag_channel;
     }
     siblingTag() {
-        return this.htmlTag.find(".siblings").first(); //Here the first because first comes the siblings tag than all other sibling comes
+        return this._tag_siblings;
     }
     clientTag() {
-        return this.htmlTag.find(".clients").last(); //Here last because from the sibling tag client tags could be before
+        return this._tag_clients;
     }
     adjustSize(parent = true) {
         const size = this.originalHeight;
@@ -121,164 +174,207 @@ class ChannelEntry {
         let clientSize = 0;
         const sub = this.siblings(false);
         sub.forEach(function (e) {
-            subSize += e.htmlTag.outerHeight(true);
+            subSize += e.rootTag().outerHeight(true);
         });
         const clients = this.clients(false);
         clients.forEach(function (e) {
-            clientSize += e.htmlTag.outerHeight(true);
+            clientSize += e.tag.outerHeight(true);
         });
-        if (sub.length >= 1)
-            subSize -= 1;
-        if (clients.length >= 1)
-            clientSize -= 1;
-        this.htmlTag.css({ height: size + subSize + clientSize });
-        this.siblingTag().css("margin-top", (clientSize + 16) + "px");
-        this.clientTag().css({ height: clientSize });
+        this._tag_root.css({ height: size + subSize + clientSize });
+        this._tag_siblings.css("margin-top", (clientSize + 16) + "px");
+        this._tag_clients.css({ height: clientSize });
         if (parent && this.parentChannel())
             this.parentChannel().adjustSize(parent);
     }
     initializeListener() {
         const _this = this;
-        this.channelTag.click(function () {
+        this.channelTag().click(function () {
             _this.channelTree.onSelect(_this);
         });
-        this.channelTag.dblclick(function () {
-            _this.channelTree.client.serverConnection.joinChannel(_this); //TODO may ask for password
-        });
-        this.channelTag.on("contextmenu", function (event) {
-            event.preventDefault();
-            _this.channelTree.onSelect(_this);
-            _this.showContextMenu(event.pageX, event.pageY, () => { _this.channelTree.onSelect(undefined); });
-        });
+        this.channelTag().dblclick(() => this.joinChannel());
+        if (!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
+            this.channelTag().on("contextmenu", function (event) {
+                event.preventDefault();
+                _this.channelTree.onSelect(_this);
+                _this.showContextMenu(event.pageX, event.pageY, () => {
+                    _this.channelTree.onSelect(undefined);
+                });
+            });
+        }
     }
     showContextMenu(x, y, on_close = undefined) {
-        const _this = this;
+        let channelCreate = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_TEMPORARY).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_PERMANENT).granted(1);
+        let channelModify = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_DEFAULT).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_SEMI_PERMANENT).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_TEMPORARY).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NAME).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_TOPIC).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_DESCRIPTION).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_PASSWORD).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_CODEC).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_CODEC_QUALITY).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_CODEC_LATENCY_FACTOR).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAXCLIENTS).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAXFAMILYCLIENTS).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_SORTORDER).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NEEDED_TALK_POWER).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_CODEC_ENCRYPTED).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_TEMP_DELETE_DELAY).granted(1) ||
+            this.channelTree.client.permissions.neededPermission(PermissionType.B_ICON_MANAGE).granted(1);
+        let flagDelete = true;
+        if (this.clients(true).length > 0)
+            flagDelete = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_DELETE_FLAG_FORCE).granted(1);
+        if (flagDelete) {
+            if (this.properties.channel_flag_permanent)
+                flagDelete = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_DELETE_PERMANENT).granted(1);
+            else if (this.properties.channel_flag_semi_permanent)
+                flagDelete = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_DELETE_PERMANENT).granted(1);
+            else
+                flagDelete = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_DELETE_TEMPORARY).granted(1);
+        }
         spawnMenu(x, y, {
             type: MenuEntryType.ENTRY,
             icon: "client-channel_switch",
             name: "<b>Switch to channel</b>",
             callback: () => {
-                _this.channelTree.client.getServerConnection().joinChannel(_this); //TODO ask for password if required
+                this.joinChannel();
             }
+        }, MenuEntry.HR(), {
+            type: MenuEntryType.ENTRY,
+            icon: "client-channel_edit",
+            name: "Edit channel",
+            invalidPermission: !channelModify,
+            callback: () => {
+                Modals.createChannelModal(this, undefined, (changes) => {
+                    if (!changes)
+                        return;
+                    changes["cid"] = this.channelId;
+                    log.info(LogCategory.CHANNEL, "Changed channel properties of channel %s: %o", this.channelName(), changes);
+                });
+            }
+        }, {
+            type: MenuEntryType.ENTRY,
+            icon: "client-channel_delete",
+            name: "Delete channel",
+            invalidPermission: !flagDelete,
+            callback: () => this.channelTree.client.serverConnection.sendCommand("channeldelete", { cid: this.channelId })
         }, MenuEntry.HR(), {
             type: MenuEntryType.ENTRY,
             icon: "client-channel_create_sub",
             name: "Create sub channel",
-            disabled: true,
-            callback: () => {
-                //TODO here
-            }
+            invalidPermission: !(channelCreate && this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_CHILD).granted(1)),
+            callback: () => this.channelTree.spawnCreateChannel(this)
         }, {
             type: MenuEntryType.ENTRY,
             icon: "client-channel_create",
             name: "Create channel",
-            disabled: true,
-            callback: () => {
-                //TODO here
-            }
+            invalidPermission: !channelCreate,
+            callback: () => this.channelTree.spawnCreateChannel()
         }, MenuEntry.CLOSE(on_close));
     }
-    __updateChannelPropertiesFromName() {
-        parseType: if (this.parentChannel() == null && this._rawChannelName.charAt(0) == '[' && this._rawChannelName.indexOf(']') != -1) {
-            let typeData = this._rawChannelName.substr(1, this._rawChannelName.indexOf(']') - 1);
-            //console.log("Having spacer etc? -> " + typeData);
-            if (typeData.indexOf("spacer") == -1)
+    __updateChannelName() {
+        this._formatedChannelName = undefined;
+        parseType: if (this.parentChannel() == null && this.properties.channel_name.charAt(0) == '[') {
+            let end = this.properties.channel_name.indexOf(']');
+            if (end == -1)
                 break parseType;
-            let strAlign = typeData.substr(0, typeData.indexOf("spacer"));
-            if (strAlign.length > 0) {
-                if (strAlign.length != 1) {
-                    if (strAlign.length != 2 || strAlign[0] != '*')
-                        break parseType;
-                    strAlign = strAlign.substr(1);
-                    //TODO support repeating pattern!
+            let options = this.properties.channel_name.substr(1, end - 1);
+            if (options.indexOf("spacer") == -1)
+                break parseType;
+            options = options.substr(0, options.indexOf("spacer"));
+            console.log("Channel options: '" + options + "'");
+            if (options.length == 0)
+                options = "l";
+            else if (options.length > 1)
+                options = options[0];
+            if (options == "r" || options == "l" || options == "c" || options == "*")
+                this._channelAlign = options;
+            else
+                break parseType;
+            this._formatedChannelName = this.properties.channel_name.substr(end + 1);
+            console.log("Got channel name: " + this._formatedChannelName);
+        }
+        let self = this.channelTag();
+        let channelName = self.find(".channel_name");
+        channelName.text(this.formatedChannelName());
+        channelName.parent().removeClass("l r c *"); //Alignments
+        (this._formatedChannelName ? $.fn.hide : $.fn.show).apply(self.find(".channel_only_normal"));
+        if (this._formatedChannelName) {
+            channelName.parent().addClass(this._channelAlign);
+            if (this._channelAlign == "*") {
+                let lastSuccess = "";
+                let index = 0;
+                do {
+                    channelName.text((lastSuccess = channelName.text()) + this.formatedChannelName());
+                    console.log(channelName.parent().width() + " : " + channelName.width() + " : " + channelName.innerWidth() + " : " + channelName.outerWidth());
+                } while (channelName.parent().width() >= channelName.width() && ++index < 255);
+                if (index == 255)
+                    console.warn(LogCategory.CHANNEL, "Repeating spacer took too much repeats!");
+                if (lastSuccess.length > 0) {
+                    channelName.text(lastSuccess);
+                    self.addClass("c");
                 }
             }
-            if (strAlign == "")
-                this._channelAlign = "l";
-            else
-                this._channelAlign = strAlign;
-            var repeatData = typeData.substr(typeData.indexOf("spacer") + 6);
-            //console.log("Repeat data: " + repeatData);
-            this.properties["channel_name"] = this._rawChannelName.substr(this._rawChannelName.indexOf(']') + 1);
         }
-        if (this.properties.channel_name == undefined) {
-            this.properties.channel_name = this._rawChannelName;
-            this._channelAlign = "l";
-        }
-        let self = this.channelTag;
-        if (this.properties.channel_name == this._rawChannelName) {
-            self.find(".channel_only_normal").show();
-        }
-        else
-            self.find(".channel_only_normal").hide();
-        self.find(".channel_name").text(this.channelName());
-        self.removeClass("l r c"); //Alignments
-        self.addClass(this._channelAlign);
         console.log("Align: " + this._channelAlign);
     }
-    updateProperty(key, value) {
-        this.properties[key] = value;
-        console.debug("Updating channel " + this.channelId + ". Key: " + key + " Value: " + value);
-        if (key == "channel_name") {
-            this._rawChannelName = value;
-            this.properties.channel_name = undefined;
-            this.__updateChannelPropertiesFromName();
-        }
-        else if (key == "channel_order") {
-            var order = this.channelTree.findChannel(value);
-            this.channelTree.moveChannel(this, order, this.parent);
-        }
-        else if (key == "channel_icon_id") {
-            let icons = this.channelTag.find("span");
-            icons.find(".icon_property").detach();
-            if (value > 0) {
-                let tag = this.channelTree.client.fileManager.icons.generateTag(value);
-                if (icons.children().length > 0) {
-                    icons.children().last().after(tag);
-                }
-                else
-                    icons.append(tag);
-                console.log("Channel icon: " + value);
-            }
-        }
-        else if (key == "channel_codec") {
-            this.displayMusicIcon = value == 5 || value == 3;
-        }
-        else if (key == "channel_flag_default") {
-            let icons = this.channelTag.find("span");
-            icons.find(".icon_default").detach();
-            if (value == "1") {
-                console.log("Default: '" + value + "'");
-                let icon = $.spawn("div");
-                icon.addClass("icon_default icon client-channel_default");
-                icon.attr("title", "Default channel");
-                if (icons.children().length > 0) {
-                    icons.children().first().before(icon);
-                }
-                else
-                    icons.append(icon);
-            }
-        }
-    }
-    set displayMusicIcon(flag) {
-        if (this._displayMusicIcon == flag)
-            return;
-        this._displayMusicIcon = flag;
-        let icons = this.channelTag.find("span");
-        icons.find(".icon_music").detach();
-        if (flag) {
-            let icon = $("<div/>");
-            icon.addClass("icon_music icon client-music");
-            icon.attr("title", "Music quality");
-            if (icons.children(".icon_default").length > 0) {
-                icons.children(".icon_default").first().before(icon);
-            }
-            else if (icons.children().length > 0) {
-                icons.children().first().before(icon);
-            }
+    updateVariables(...variables) {
+        let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL, "Update properties (%i) of %s (%i)", variables.length, this.channelName(), this.getChannelId());
+        for (let variable of variables) {
+            let key = variable.key;
+            let value = variable.value;
+            if (typeof (this.properties[key]) == "number")
+                this.properties[key] = parseInt(value);
+            if (typeof (this.properties[key]) == "boolean")
+                this.properties[key] = value == "true" || value == "1";
             else
-                icons.append(icon);
+                this.properties[key] = value;
+            group.log("Updating property " + key + " = '%s' -> %o", value, this.properties[key]);
+            if (key == "channel_name") {
+                this.__updateChannelName();
+            }
+            else if (key == "channel_order") {
+                let order = this.channelTree.findChannel(this.properties.channel_order);
+                this.channelTree.moveChannel(this, order, this.parent);
+            }
+            else if (key == "channel_icon_id") {
+                let tag = this.channelTag().find(".icons .channel_icon");
+                (this.properties.channel_icon_id > 0 ? $.fn.show : $.fn.hide).apply(tag);
+                if (this.properties.channel_icon_id > 0) {
+                    tag.children().detach();
+                    this.channelTree.client.fileManager.icons.generateTag(this.properties.channel_icon_id).appendTo(tag);
+                }
+            }
+            else if (key == "channel_codec") {
+                (this.properties.channel_codec == 5 || this.properties.channel_codec == 3 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_music"));
+                (this.channelTree.client.voiceConnection.codecSupported(this.properties.channel_codec) ? $.fn.hide : $.fn.show).apply(this.channelTag().find(".icons .icon_no_sound"));
+            }
+            else if (key == "channel_flag_default") {
+                (this.properties.channel_flag_default ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_default"));
+            }
+            else if (key == "channel_flag_password")
+                (this.properties.channel_flag_password ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_password"));
+            if (key == "channel_maxclients" || key == "channel_maxfamilyclients" || key == "channel_flag_private" || key == "channel_flag_password")
+                this.updateChannelTypeIcon();
         }
+        group.end();
+    }
+    updateChannelTypeIcon() {
+        let tag = this.channelTag().find(".channel_type");
+        tag.removeAttr('class');
+        tag.addClass("channel_only_normal channel_type icon");
+        let type;
+        if (this.properties.channel_flag_password == true && !this._cachedPassword)
+            type = "yellow";
+        else if ((!this.properties.channel_flag_maxclients_unlimited && this.clients().length >= this.properties.channel_maxclients) ||
+            (!this.properties.channel_flag_maxfamilyclients_unlimited && this.properties.channel_maxfamilyclients >= 0 && this.clients(true).length >= this.properties.channel_maxfamilyclients))
+            type = "red";
+        else
+            type = "green";
+        tag.addClass("client-channel_" + type + "_subscribed");
     }
     createChatTag(braces = false) {
         let tag = $.spawn("div");
@@ -296,11 +392,35 @@ class ChannelEntry {
         return tag.wrap("<p/>").parent();
     }
     channelType() {
-        if (this.properties.channel_flag_permanent == "1")
+        if (this.properties.channel_flag_permanent == true)
             return ChannelType.PERMANENT;
-        if (this.properties.channel_flag_semi_permanent == "1")
+        if (this.properties.channel_flag_semi_permanent == true)
             return ChannelType.SEMI_PERMANENT;
         return ChannelType.TEMPORARY;
+    }
+    joinChannel() {
+        if (this.properties.channel_flag_password == true &&
+            !this._cachedPassword &&
+            !this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).granted(1)) {
+            createInputModal("Channel password", "Channel password:", () => true, text => {
+                if (typeof (text) == typeof (true))
+                    return;
+                helpers.hashPassword(text).then(result => {
+                    this._cachedPassword = result;
+                    this.joinChannel();
+                    this.updateChannelTypeIcon();
+                });
+            }).open();
+        }
+        else
+            this.channelTree.client.getServerConnection().joinChannel(this, this._cachedPassword).catch(error => {
+                if (error instanceof CommandResult) {
+                    if (error.id == 781) {
+                        this._cachedPassword = undefined;
+                        this.updateChannelTypeIcon();
+                    }
+                }
+            });
     }
 }
 //Global functions

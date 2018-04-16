@@ -1,0 +1,21 @@
+.channel_general_properties .value {
+    width: 100%;
+}
+
+.channel_general_properties .key {
+    width: 150px;
+}
+
+.channel_general_properties .property_entry {
+    margin: 2px;
+}
+
+.channel_perm_tbl .value {
+    width: 60px;
+}
+
+.input_error {
+    border-radius: 1px;
+    border-style: solid;
+    border-color: red;
+}

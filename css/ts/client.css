@@ -7,18 +7,42 @@
     -ms-user-select: none;
     user-select: none;
     vertical-align: center;
+    outline: none;
 }
-.channelTree *{ font-family: Arial; font-size: 12px; white-space: pre; line-height: 1; }
-.channelTree div{ max-width: 100%;height: 16px;position: relative;margin-right:4px;}
+.channelTree * {
+    font-family: Arial;
+    font-size: 12px;
+    white-space: pre;
+    line-height: 1;
+}
+.channelTree div {
+    max-width: 100%;
+    height: 16px;
+    position: relative;
+}
+
+.channelTree .channel_type {
+    margin-right: 4px;
+}
+.channelTree .icon_client_state {
+    margin-right: 4px;
+}
+.channelTree .server_type {
+    margin-right: 4px;
+}
+
+.channelTree .icons .icon_entry {
+    margin-left: 2px;
+}
 
 .channelTree img.loading {width: 50px;height: 50px;-webkit-animation:spin 2s linear infinite;-moz-animation:spin 2s linear infinite;animation:spin 2s linear infinite;}
 @-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
 @-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
 @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
 
-.channelTree div.l{text-align: left;}
-.channelTree div.c{text-align: center;}
-.channelTree div.r{text-align: right;}
+.channelTree div.l {justify-content: flex-start; }
+.channelTree div.c {justify-content: center;}
+.channelTree div.r {justify-content: flex-end;}
 
 .channelTree div.solidline{ background: url('../images/viewer/spacer_solidline.gif') repeat-x left center;margin: 0px; }
 .channelTree div.dashline{ background: url('../images/viewer/spacer_dashline.gif') repeat-x left center;margin: 0px; }
@@ -29,8 +53,26 @@
 .channelTree div * {vertical-align: middle;display:inline-block;height: 16px;padding: 0px;}
 .channelTree div img  {border: 0;}
 .channelTree div span {position: absolute; right: 0;}
-.channelTree .name {vertical-align: middle; margin-top: 1px; height: 14px;}
-.channelTree .own_name {font-weight: bold;}
+.channelTree .name {
+    vertical-align: middle;
+    margin-top: 1px;
+    height: 14px;
+    display: inline;
+}
+.channelTree .own_name {
+    font-weight: bold;
+    display: inline;
+}
+.channelTree .channel_name {
+    display: flex;
+    align-items: center;
+}
+
+.channelTree .channel_name_container {
+    display: inline-flex;
+    width: 100%;
+    overflow-x: hidden;
+}
 
 .channelTree .country {width:16px;height:11px;}
 
@@ -40,6 +82,7 @@
     margin-bottom: -2px;
     display: grid;
     width: 100%;
+    left: 16px;
 }
 
 .channelTree .channel {
@@ -53,6 +96,7 @@
     margin-bottom: -2px;
     display: grid;
     width: 100%;
+    left: 16px;
 }
 
 .channelTree .client {
@@ -70,6 +114,10 @@
 .channelTree .channelLine {
     position: absolute;
     width: calc(100% - 16px);
+    display: flex;
+    flex-direction: row;
+    top:    0px;
+    left:   16px;
 }
 
 

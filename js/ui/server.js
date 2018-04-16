@@ -24,7 +24,7 @@ class ServerEntry {
         let tag = $.spawn("div");
         tag.attr("id", "server");
         tag.addClass("server");
-        tag.append("<div class=\"icon client-server_green\"></div>");
+        tag.append($.spawn("div").addClass("server_type icon client-server_green"));
         tag.append("<a class='name'>" + this.properties.virtualserver_name + "</a>");
         const serverIcon = $("<span/>");
         //we cant spawn an icon on creation :)
@@ -37,13 +37,15 @@ class ServerEntry {
         this._htmlTag.click(function () {
             _this.channelTree.onSelect(_this);
         });
-        this.htmlTag.on("contextmenu", function (event) {
-            _this.channelTree.onSelect(_this);
-            event.preventDefault();
-            _this.spawnContextMenue(event.pageY, event.pageY, () => { _this.channelTree.onSelect(undefined); });
-        });
+        if (!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
+            this.htmlTag.on("contextmenu", function (event) {
+                event.preventDefault();
+                _this.channelTree.onSelect(_this);
+                _this.spawnContextMenu(event.pageX, event.pageY, () => { _this.channelTree.onSelect(undefined); });
+            });
+        }
     }
-    spawnContextMenue(x, y, on_close = () => { }) {
+    spawnContextMenu(x, y, on_close = () => { }) {
         spawnMenu(x, y, {
             type: MenuEntryType.ENTRY,
             icon: "",
@@ -52,7 +54,7 @@ class ServerEntry {
         }, MenuEntry.CLOSE(on_close));
     }
     updateProperty(key, value) {
-        console.trace("Updating property " + key + " => '" + value + "' for the server");
+        console.log("Updating property " + key + " => '" + value + "' for the server");
         this.properties[key] = value;
         if (key == "virtualserver_name") {
             this.htmlTag.find(".name").text(value);

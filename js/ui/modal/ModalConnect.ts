@@ -53,12 +53,12 @@ namespace Modals {
                 tag.find(".connect_nickname").on("keyup", () => updateFields());
 
                 tag.find(".identity_select").on('change', function (this: HTMLSelectElement) {
-                    globalClient.settings.changeGlobal("connect_identity_type", this.value);
+                    settings.changeGlobal("connect_identity_type", this.value);
                     tag.find(".error_message").hide();
                     tag.find(".identity_config:not(" + ".identity_config_" + this.value + ")").hide();
                     tag.find(".identity_config_" + this.value).show().trigger('shown');
                 });
-                tag.find(".identity_select").val(globalClient.settings.global("connect_identity_type", "forum"));
+                tag.find(".identity_select").val(settings.global("connect_identity_type", "forum"));
                 setTimeout(() =>  tag.find(".identity_select").trigger('change'), 0); //For some reason could not be run instantly
 
                 tag.find(".identity_file").change(function (this: HTMLInputElement) {
@@ -70,7 +70,7 @@ namespace Modals {
                         if(!connectIdentity) tag.find(".error_message").text("Could not read identity! " + TSIdentityHelper.last_error());
                         else {
                             tag.find(".identity_string").val((connectIdentity as TeamSpeakIdentity).exported());
-                            globalClient.settings.changeGlobal("connect_identity_teamspeak_identity", (connectIdentity as TeamSpeakIdentity).exported());
+                            settings.changeGlobal("connect_identity_teamspeak_identity", (connectIdentity as TeamSpeakIdentity).exported());
                         }
 
                         (!!connectIdentity ? tag.hide : tag.show).apply(tag.find(".error_message"));
@@ -89,13 +89,13 @@ namespace Modals {
                     } else {
                         connectIdentity = TSIdentityHelper.loadIdentity(this.value);
                         if(!connectIdentity) tag.find(".error_message").text("Could not parse identity! " + TSIdentityHelper.last_error());
-                        else globalClient.settings.changeGlobal("connect_identity_teamspeak_identity", this.value);
+                        else settings.changeGlobal("connect_identity_teamspeak_identity", this.value);
                     }
                     (!!connectIdentity ? tag.hide : tag.show).apply(tag.find(".error_message"));
                     tag.find(".identity_file").val("");
                     updateFields();
                 });
-                tag.find(".identity_string").val(globalClient.settings.global("connect_identity_teamspeak_identity", ""));
+                tag.find(".identity_string").val(settings.global("connect_identity_teamspeak_identity", ""));
                 tag.find(".identity_config_teamspeak").on('shown', ev => {  tag.find(".identity_string").trigger('change'); });
 
                 if(!forumIdentity)

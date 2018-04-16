@@ -82,10 +82,6 @@ class ChatEntry {
         this.onClose = function () { return true; }
     }
 
-    static tagify(message: string, ...args) {
-
-    }
-
     appendError(message: string, ...args) {
         this.appendMessage("<a style='color: red'>{0}</a>".format(ChatMessage.formatMessage(message).format(...args)), false);
     }
@@ -248,30 +244,26 @@ class ChatEntry {
 
 
 class ChatBox {
-    htmlTag: any;
+    htmlTag: JQuery;
     chats: ChatEntry[];
     private _activeChat: ChatEntry;
 
-    constructor(htmlTag) {
+    constructor(htmlTag: JQuery) {
         this.htmlTag = htmlTag;
 
-        const _this = this;
-        $(this.htmlTag).find(".input button").click(this.onSend.bind(this));
-        let chatBox = $(this.htmlTag).find(".input_box");
-        chatBox.keypress(function (e) {
-            if(e.keyCode == Key.Enter && !e.shiftKey) {
-                _this.onSend();
+        this.htmlTag.find(".input button").click(this.onSend.bind(this));
+        this.htmlTag.find(".input_box").keypress(event => {
+            if(event.keyCode == Key.Enter && !event.shiftKey) {
+                this.onSend();
                 return false;
             }
-        });
-        chatBox.on('input', function (e) {
-            let text = $(this).val().toString();
-            if(_this.testMessage(text))
-                $(_this.htmlTag).find(".input button").removeAttr("disabled");
+        }).on('input', (event) => {
+            let text = $(event.target).val().toString();
+            if(this.testMessage(text))
+                this.htmlTag.find(".input button").removeAttr("disabled");
             else
-                $(_this.htmlTag).find(".input button").attr("disabled", "true");
-        });
-        chatBox.trigger("input");
+                this.htmlTag.find(".input button").attr("disabled", "true");
+        }).trigger("input");
 
         this.chats = [];
         this._activeChat = undefined;
@@ -291,12 +283,16 @@ class ChatBox {
 
             globalClient.serverConnection.sendMessage(text, ChatType.CHANNEL, globalClient.getClient().currentChannel());
         };
+
+        globalClient.permissions.initializedListener.push(flag => {
+            if(flag) this.activeChat0(this._activeChat);
+        });
     }
 
     createChat(key, type : ChatType = ChatType.CLIENT) : ChatEntry {
         let chat = new ChatEntry(this, type, key);
         this.chats.push(chat);
-        $(this.htmlTag).find(".chats").append(chat.htmlTag);
+        this.htmlTag.find(".chats").append(chat.htmlTag);
         if(!this._activeChat) this.activeChat = chat;
         return chat;
     }
@@ -333,14 +329,33 @@ class ChatBox {
     set activeChat(chat : ChatEntry) {
         if(this.chats.indexOf(chat) === -1) return;
         if(this._activeChat == chat) return;
+        this.activeChat0(chat);
+    }
 
+    private activeChat0(chat: ChatEntry) {
         this._activeChat = chat;
         for(let e of this.chats)
             e.htmlTag.removeClass("active");
+
+        let flagAllowSend = false;
         if(this._activeChat) {
             this._activeChat.htmlTag.addClass("active");
             this._activeChat.displayHistory();
+
+            if(globalClient && globalClient.permissions && globalClient.permissions.initialized())
+                switch (this._activeChat.type) {
+                    case ChatType.CLIENT:
+                        flagAllowSend = true;
+                        break;
+                    case ChatType.SERVER:
+                        flagAllowSend = globalClient.permissions.neededPermission(PermissionType.B_CLIENT_SERVER_TEXTMESSAGE_SEND).granted(1);
+                        break;
+                    case ChatType.CHANNEL:
+                        flagAllowSend = globalClient.permissions.neededPermission(PermissionType.B_CLIENT_CHANNEL_TEXTMESSAGE_SEND).granted(1);
+                        break;
+                }
         }
+        this.htmlTag.find(".input_box").prop("disabled", !flagAllowSend);
     }
 
     get activeChat(){ return this._activeChat; }

@@ -11,6 +11,13 @@ class CodecPool {
         this.handle = handle;
         this.codecIndex = index;
     }
+    initialize(cached) {
+        for (let i = 0; i < cached; i++)
+            this.ownCodec(i);
+        for (let i = 0; i < cached; i++)
+            this.releaseCodec(i);
+    }
+    supported() { return this.creator != undefined; }
     ownCodec(clientId, create = true) {
         if (!this.creator)
             return null;
@@ -64,6 +71,11 @@ class VoiceConnection {
         this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
         this.voiceRecorder.on_end = this.handleVoiceEnded.bind(this);
         this.voiceRecorder.reinitialiseVAD();
+        this.codecPool[4].initialize(2);
+        this.codecPool[5].initialize(2);
+    }
+    codecSupported(type) {
+        return this.codecPool.length > type && this.codecPool[type].supported();
     }
     sendVoicePacket(data, codec) {
         if (this.dataChannel) {

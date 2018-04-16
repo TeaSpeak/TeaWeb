@@ -38,18 +38,18 @@ namespace Modals {
     }
 
     function initialiseVoiceListeners(modal: Modal, tag: JQuery) {
-        let currentVAD = globalClient.settings.global("vad_type");
+        let currentVAD = settings.global("vad_type");
 
         tag.find("input[type=radio][name=\"vad_type\"]").change(function (this: HTMLButtonElement) {
             tag.find(".vad_settings .vad_type").text($(this).attr("display"));
             tag.find(".vad_settings .vad_type_settings").hide();
             tag.find(".vad_settings .vad_type_" + this.value).show();
-            globalClient.settings.changeGlobal("vad_type", this.value);
+            settings.changeGlobal("vad_type", this.value);
             globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
 
             switch (this.value) {
                 case "ppt":
-                    let keyCode: number = parseInt(globalClient.settings.global("vad_ppt_key", Key.T.toString()));
+                    let keyCode: number = parseInt(settings.global("vad_ppt_key", Key.T.toString()));
                     tag.find(".vat_ppt_key").text(String.fromCharCode(keyCode));
                     break;
                 case "vad":
@@ -86,7 +86,7 @@ namespace Modals {
             $(document).one("keypress", function (e) {
                 console.log("Got key " + e.keyCode);
                 modal.close();
-                globalClient.settings.changeGlobal("vad_ppt_key", e.keyCode.toString());
+                settings.changeGlobal("vad_ppt_key", e.keyCode.toString());
                 globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
                 tag.find(".vat_ppt_key").text(String.fromCharCode(e.keyCode));
             });
@@ -97,7 +97,7 @@ namespace Modals {
         //VAD VAD
         let slider = tag.find(".vad_vad_slider");
         slider.on("input change", () => {
-            globalClient.settings.changeGlobal("vad_threshold", slider.val().toString());
+            settings.changeGlobal("vad_threshold", slider.val().toString());
             let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
             if(vad instanceof  VoiceActivityDetectorVAD)
                 vad.percentageThreshold = slider.val() as number;

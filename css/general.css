@@ -57,7 +57,27 @@
     cursor: not-allowed;
 }
 
+.align_row {
+    display: flex;
+    flex-direction: row;
+}
+
+.align_column {
+    display: flex;
+    flex-direction: column;
+}
+
 .icon_loading {
+    border: 2px solid #f3f3f3; /* Light grey */
+    border-top: 2px solid #3498db; /* Blue */
+    border-radius: 50%;
+    animation: spin 2s linear infinite;
+
+    width: 14px!important;
+    height: 14px!important;
+}
+
+.avatar_loading {
     border: 2px solid #f3f3f3; /* Light grey */
     border-top: 2px solid #3498db; /* Blue */
     border-radius: 50%;
@@ -175,6 +195,10 @@
 
 .channel_perm_tbl .key {
     width: 120px;
+}
+
+.channel_general_properties .value {
+    width: 100%;
 }
 
 .main_container {

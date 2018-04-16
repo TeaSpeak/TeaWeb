@@ -1,18 +1,36 @@
 /// <reference path="channel.ts" />
 /// <reference path="modal/ModalChangeVolume.ts" />
 
+class ClientProperties {
+    client_version: string = "";
+    client_platform: string = "";
+    client_nickname: string = "unknown";
+    client_unique_identifier: string = "unknown";
+    client_description: string = "";
+    client_servergroups: string = "";
+
+    client_channel_group_id: number = 0;
+    client_lastconnected: number = 0;
+
+    client_flag_avatar: string = "";
+
+    client_output_muted: boolean = false;
+
+    client_away_message: string = "";
+    client_away: boolean = false;
+
+
+    client_input_hardware: boolean = false;
+    client_input_muted: boolean = false;
+    client_is_channel_commander: boolean = false;
+}
+
 class ClientEntry {
     private _clientId: number;
     private _channel: ChannelEntry;
-    private _htmlTag: JQuery<HTMLElement>;
+    private _tag: JQuery<HTMLElement>;
 
-    properties: any = {
-        client_nickname: "",
-        client_unique_identifier: "",
-        client_servergroups: "0",
-        client_channel_group_id: "0",
-        client_lastconnected: "0"
-    };
+    properties: ClientProperties = new ClientProperties();
     private lastVariableUpdate: number = 0;
     private _speaking: boolean = false;
 
@@ -48,17 +66,20 @@ class ClientEntry {
 
     initializeListener(){
         const _this = this;
-        this.htmlTag.click(event => {
+        this.tag.click(event => {
             _this.channelTree.onSelect(_this);
         });
-        this.htmlTag.on("contextmenu", function (event) {
-            event.preventDefault();
-            _this.channelTree.onSelect(_this);
-            _this.showContextMenu(event.pageX, event.pageY, () => {
-                _this.channelTree.onSelect(undefined);
+
+        if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
+            this.tag.on("contextmenu", function (event) {
+                event.preventDefault();
+                _this.channelTree.onSelect(_this);
+                _this.showContextMenu(event.pageX, event.pageY, () => {
+                    _this.channelTree.onSelect(undefined);
+                });
+                return false;
             });
-            return false;
-        });
+        }
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
@@ -164,7 +185,7 @@ class ClientEntry {
                 name: "Change Volume",
                 callback: () => {
                     Modals.spawnChangeVolume(this.audioController.volume, volume => {
-                        globalClient.settings.changeServer("volume_client_" + this.clientUid(), volume);
+                        settings.changeServer("volume_client_" + this.clientUid(), volume);
                         this.audioController.volume = volume;
                         if(globalClient.selectInfo.currentSelected == this)
                             globalClient.selectInfo.update();
@@ -175,26 +196,24 @@ class ClientEntry {
         );
     }
 
-    get htmlTag() : JQuery<HTMLElement> {
-        if(this._htmlTag) return this._htmlTag;
+    get tag() : JQuery<HTMLElement> {
+        if(this._tag) return this._tag;
 
-        let tag = $.spawn("div")
+        let tag = $.spawn("div");
 
         tag.attr("id", "client_" + this.clientId());
         tag.addClass("client");
-        tag.append("<div class=\"icon_empty\"></div>");
+        tag.append($.spawn("div").addClass("icon_empty"));
 
-        let clientIcon = $.spawn("div");
-        clientIcon.addClass("icon_client_state");
-        tag.append(clientIcon);
+        tag.append($.spawn("div").addClass("icon_client_state").attr("title", "Client state"));
 
-        tag.append("<div class='name'>" + this.clientNickName() + "</div>");
-        tag.append("<div class='away'>" + this.clientNickName() + "</div>");
+        tag.append($.spawn("div").addClass("name").text(this.clientNickName()));
+        tag.append($.spawn("div").addClass("away").text(this.clientNickName()));
 
         let clientIcons = $.spawn("span");
         tag.append(clientIcons);
 
-        return this._htmlTag = tag;
+        return this._tag = tag;
     }
 
     static chatTag(id: number, name: string, uid: string, braces: boolean = false) : JQuery {
@@ -229,38 +248,38 @@ class ClientEntry {
     updateClientIcon() {
         let icon: string = "";
         let clicon: string = "";
-        if(this.properties.client_away == "1") {
+        if(this.properties.client_away) {
             icon = "client-away";
-        } else if(this.properties.client_output_muted == "1") {
+        } else if(this.properties.client_output_muted) {
             icon = "client-hardware_output_muted";
-        } else if(this.properties.client_input_hardware == "0") {
+        } else if(!this.properties.client_input_hardware) {
             icon = "client-hardware_input_muted";
-        } else if(this.properties.client_input_muted == "1") {
+        } else if(this.properties.client_input_muted) {
             icon = "client-input_muted";
         } else {
             if(this._speaking) {
-                if(this.properties.client_is_channel_commander == 1)
+                if(this.properties.client_is_channel_commander)
                     clicon = "client_cc_talk";
                 else
                     clicon = "client_talk";
             } else {
-                if(this.properties.client_is_channel_commander == 1)
+                if(this.properties.client_is_channel_commander)
                     clicon = "client_cc_idle";
                 else
                     clicon = "client_idle";
             }
         }
         if(clicon.length > 0)
-            this.htmlTag.find(".icon_client_state").attr('class', 'icon_client_state clicon ' + clicon);
+            this.tag.find(".icon_client_state").attr('class', 'icon_client_state clicon ' + clicon);
         else if(icon.length > 0)
-            this.htmlTag.find(".icon_client_state").attr('class', 'icon_client_state icon ' + icon);
+            this.tag.find(".icon_client_state").attr('class', 'icon_client_state icon ' + icon);
         else
-            this.htmlTag.find(".icon_client_state").attr('class', 'icon_client_state icon_empty');
+            this.tag.find(".icon_client_state").attr('class', 'icon_client_state icon_empty');
     }
 
     updateAwayMessage() {
-        let tag = this.htmlTag.find(".away");
-        if(this.properties.client_away == 1 && this.properties.client_away_message){
+        let tag = this.tag.find(".away");
+        if(this.properties.client_away == true && this.properties.client_away_message){
             tag.text("[" + this.properties.client_away_message + "]");
             tag.show();
         } else {
@@ -268,28 +287,39 @@ class ClientEntry {
         }
     }
 
-    updateVariable(key: string, value: string) {
-        this.properties[key] = value;
+    updateVariables(...variables: {key: string, value: string}[]) {
+        let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, "Update properties (%i) of %s (%i)", variables.length, this.clientNickName(), this.clientId());
 
-        console.debug("Updating client " + this.clientId() + ". Key " + key + " Value: '" + value + "'");
-        if(key == "client_nickname") {
-            this.htmlTag.find(".name").text(value);
-            let chat = this.chat(false);
-            if(chat) chat.name = value;
+        for(let variable of variables) {
+            if(typeof(this.properties[variable.key]) === "boolean")
+                this.properties[variable.key] = variable.value == "true" || variable.value == "1";
+            else if(typeof (this.properties[variable.key]) === "number")
+                this.properties[variable.key] = parseInt(variable.value);
+            else
+                this.properties[variable.key] = variable.value;
+            group.log("Updating client " + this.clientId() + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
+            if(variable.key == "client_nickname") {
+                this.tag.find(".name").text(variable.value);
+                let chat = this.chat(false);
+                if(chat) chat.name = variable.value;
+            }
+            if(variable.key == "client_away" || variable.key == "client_output_muted" || variable.key == "client_input_hardware" || variable.key == "client_input_muted" || variable.key == "client_is_channel_commander"){
+                this.updateClientIcon();
+            }
+            if(variable.key == "client_away_message" || variable.key == "client_away") {
+                this.updateAwayMessage();
+            }
+            if(variable.key == "client_unique_identifier") {
+                this.audioController.volume = parseFloat(settings.server("volume_client_" + this.clientUid(), "1"));
+                console.error("Updated volume from config " + this.audioController.volume + " - " + "volume_client_" + this.clientUid() + " - " + settings.server("volume_client_" + this.clientUid(), "1"));
+                console.log(this.avatarId());
+            }
         }
-        if(key == "client_away" || key == "client_output_muted" || key == "client_input_hardware" || key == "client_input_muted" || key == "client_is_channel_commander"){
-            this.updateClientIcon();
-        }
-        if(key == "client_away_message" || key == "client_away") {
-            this.updateAwayMessage();
-        }
-        if(key == "client_unique_identifier") {
-            this.audioController.volume = parseFloat(globalClient.settings.server("volume_client_" + this.clientUid(), "1"));
-            console.error("Updated volume from config " + this.audioController.volume + " - " + "volume_client_" + this.clientUid() + " - " + globalClient.settings.server("volume_client_" + this.clientUid(), "1"));
-        }
+
+        group.end();
     }
 
-    updateVariables(){
+    updateClientVariables(){
         if(this.lastVariableUpdate == 0 || new Date().getTime() - 10 * 60 * 1000 > this.lastVariableUpdate){ //Cache these only 10 min
             this.lastVariableUpdate = new Date().getTime();
             this.channelTree.client.serverConnection.sendCommand("clientgetvariables", {clid: this.clientId()});
@@ -318,13 +348,13 @@ class ClientEntry {
         return c;
     }
 
+
     updateGroupIcon(group: Group) {
         //TODO group icon order
-        this.htmlTag.find(".icon_group_" + group.id).detach();
+        this.tag.find(".icon_group_" + group.id).detach();
 
-        if(group.properties.iconid > 0){
-            this.htmlTag.find("span").append(this.channelTree.client.fileManager.icons.generateTag(group.properties.iconid).addClass("icon_group_" + group.id));
-        }
+        if(group.properties.iconid > 0)
+            this.tag.find("span").append(this.channelTree.client.fileManager.icons.generateTag(group.properties.iconid).addClass("icon_group_" + group.id));
     }
 
     assignedServerGroupIds() : number[] {
@@ -337,7 +367,7 @@ class ClientEntry {
     }
 
     assignedChannelGroup() : number {
-        return Number.parseInt(this.properties.client_channel_group_id);
+        return this.properties.client_channel_group_id;
     }
 
     groupAssigned(group: Group) : boolean {
@@ -354,7 +384,39 @@ class ClientEntry {
     }
 
     calculateOnlineTime() : number {
-        return new Date().getTime() / 1000 - Number.parseInt(this.properties.client_lastconnected);
+        return new Date().getTime() / 1000 - this.properties.client_lastconnected;
+    }
+
+    avatarId?() : string {
+        function str2ab(str) {
+            let buf = new ArrayBuffer(str.length); // 2 bytes for each char
+            let bufView = new Uint8Array(buf);
+            for (let i=0, strLen=str.length; i<strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        }
+
+        try {
+            let raw = atob(this.properties.client_unique_identifier);
+            let input = hex.encode(str2ab(raw));
+
+            let result: string = "";
+            for(let index = 0; index < input.length; index++) {
+                let c = input.charAt(index);
+                let offset: number = 0;
+                if(c >= '0' && c <= '9')
+                    offset = c.charCodeAt(0) - '0'.charCodeAt(0);
+                else if(c >= 'A' && c <= 'F')
+                    offset = c.charCodeAt(0) - 'A'.charCodeAt(0) + 0x0A;
+                else if(c >= 'a' && c <= 'f')
+                    offset = c.charCodeAt(0) - 'a'.charCodeAt(0) + 0x0A;
+                result += String.fromCharCode('a'.charCodeAt(0) + offset);
+            }
+            return result;
+        } catch (e) { //invalid base 64 (like music bot etc)
+            return undefined;
+        }
     }
 }
 
@@ -367,12 +429,6 @@ class LocalClientEntry extends ClientEntry {
         super(0, "local client");
         this.handle = handle;
     }
-
-
-    updateVariable(key: string, value: string): void {
-        super.updateVariable(key, value);
-    }
-
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
         const _self = this;
@@ -406,10 +462,10 @@ class LocalClientEntry extends ClientEntry {
 
     initializeListener(): void {
         super.initializeListener();
-        this.htmlTag.find(".name").addClass("own_name");
+        this.tag.find(".name").addClass("own_name");
 
         const _self = this;
-        this.htmlTag.dblclick(function () {
+        this.tag.dblclick(function () {
             _self.openRename();
         });
     }
@@ -417,7 +473,7 @@ class LocalClientEntry extends ClientEntry {
     openRename() : void {
         const _self = this;
 
-        const elm = this.htmlTag.find(".name");
+        const elm = this.tag.find(".name");
         elm.attr("contenteditable", "true");
         elm.removeClass("own_name");
         elm.css("background-color", "white");
@@ -449,7 +505,6 @@ class LocalClientEntry extends ClientEntry {
                 _self.openRename();
             });
         });
-
     }
 }
 //Global functions

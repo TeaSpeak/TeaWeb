@@ -128,16 +128,33 @@ class ServerConnection {
         }
     }
     handleCommand(json) {
-        console.log("Handling command '" + json["command"] + "'");
-        let fn = this.commandHandler[json["command"]];
-        if (fn === undefined) {
-            console.log("Missing command '" + json["command"] + "'");
-            return;
+        let group = log.group(log.LogType.DEBUG, LogCategory.NETWORKING, "Handling command '%s'", json["command"]);
+        group.log("Handling command '" + json["command"] + "'");
+        group.group(log.LogType.TRACE, "Json:").collapsed(true).log("%o", json).end();
+        try {
+            let fn = this.commandHandler[json["command"]];
+            if (fn === undefined) {
+                group.log("Missing command '" + json["command"] + "'");
+                return;
+            }
+            fn.call(this.commandHandler, json["data"]);
         }
-        fn.call(this.commandHandler, json["data"]);
+        finally {
+            group.end();
+        }
     }
     sendData(data) {
         this._socket.send(data);
+    }
+    commandiefy(input) {
+        return JSON.stringify(input, (key, value) => {
+            switch (typeof value) {
+                case "boolean": return value == true ? "1" : "0";
+                case "function": return value();
+                default:
+                    return value;
+            }
+        });
     }
     sendCommand(command, data = {}, logResult = true) {
         const _this = this;
@@ -154,7 +171,7 @@ class ServerConnection {
                 listener.reject("timeout");
             }, 1500);
             this._retListener.push(listener);
-            this._socket.send(JSON.stringify({
+            this._socket.send(this.commandiefy({
                 "type": "command",
                 "command": command,
                 "data": _data
@@ -298,8 +315,8 @@ class ConnectionCommandHandler {
         console.log("Setting up voice ");
         this.connection._client.voiceConnection.createSession();
         json = json[0]; //Only one bulk
-        this.connection._client.clientId = json["aclid"];
-        this.connection._client.getClient().updateVariable("client_nickname", json["acn"]);
+        this.connection._client.clientId = parseInt(json["aclid"]);
+        this.connection._client.getClient().updateVariables({ key: "client_nickname", value: json["acn"] });
         for (let key in json) {
             if (key === "aclid")
                 continue;
@@ -313,7 +330,7 @@ class ConnectionCommandHandler {
     }
     createChannelFromJson(json, ignoreOrder = false) {
         let tree = this.connection._client.channelTree;
-        let channel = new ChannelEntry(json["cid"], json["channel_name"], tree.findChannel(json["cpid"]));
+        let channel = new ChannelEntry(parseInt(json["cid"]), json["channel_name"], tree.findChannel(json["cpid"]));
         tree.insertChannel(channel);
         if (json["channel_order"] !== "0") {
             let prev = tree.findChannel(json["channel_order"]);
@@ -337,6 +354,7 @@ class ConnectionCommandHandler {
                 }
             }
         }
+        let updates = [];
         for (let key in json) {
             if (key === "cid")
                 continue;
@@ -350,8 +368,9 @@ class ConnectionCommandHandler {
                 continue;
             if (key === "reasonid")
                 continue;
-            channel.updateProperty(key, json[key]);
+            updates.push({ key: key, value: json[key] });
         }
+        channel.updateVariables(...updates);
     }
     handleCommandChannelList(json) {
         console.log("Got " + json.length + " new channels");
@@ -381,7 +400,7 @@ class ConnectionCommandHandler {
         let old_channel = tree.findChannel(json["cfid"]);
         client = tree.findClient(json["clid"]);
         if (!client) {
-            client = new ClientEntry(json["clid"], json["client_nickname"]);
+            client = new ClientEntry(parseInt(json["clid"]), json["client_nickname"]);
             client = tree.insertClient(client, channel);
         }
         else {
@@ -397,6 +416,7 @@ class ConnectionCommandHandler {
                 chat.serverChat().appendMessage("{0} connected to channel {1}", true, client.createChatTag(true), channel.createChatTag(true));
             }
         }
+        let updates = [];
         for (let key in json) {
             if (key == "cfid")
                 continue;
@@ -410,8 +430,9 @@ class ConnectionCommandHandler {
                 continue;
             if (key === "reasonid")
                 continue;
-            client.updateVariable(key, json[key]);
+            updates.push({ key: key, value: json[key] });
         }
+        client.updateVariables(...updates);
     }
     handleCommandClientLeftView(json) {
         json = json[0]; //Only one bulk
@@ -517,6 +538,7 @@ class ConnectionCommandHandler {
             console.error("Unknown channel edit (Channel)!");
             return 0;
         }
+        let updates = [];
         for (let key in json) {
             if (key === "cid")
                 continue;
@@ -528,8 +550,9 @@ class ConnectionCommandHandler {
                 continue;
             if (key === "reasonid")
                 continue;
-            channel.updateProperty(key, json[key]);
+            updates.push({ key: key, value: json[key] });
         }
+        channel.updateVariables(...updates);
     }
     handleNotifyTextMessage(json) {
         json = json[0]; //Only one bulk
@@ -567,11 +590,13 @@ class ConnectionCommandHandler {
             console.error("Tried to update an non existing client");
             return;
         }
+        let updates = [];
         for (let key in json) {
             if (key == "clid")
                 continue;
-            client.updateVariable(key, json[key]);
+            updates.push({ key: key, value: json[key] });
         }
+        client.updateVariables(...updates);
         if (this.connection._client.selectInfo.currentSelected == client)
             this.connection._client.selectInfo.update();
     }

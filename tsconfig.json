@@ -1,4 +1,11 @@
 {
-  "extends": "./tsconfig/tsconfig_debug.json"
-  //"extends": "./tsconfig/tsconfig_release.json"
+  "compilerOptions": {
+    "module": "none",
+    "target": "es6",
+    "sourceMap": true
+  },
+  "exclude": [
+    "node_modules",
+    "js/codec/workers"
+  ]
 }

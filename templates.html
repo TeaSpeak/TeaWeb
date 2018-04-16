@@ -15,35 +15,40 @@
     <body>
         <!-- Template for chennel create & edit-->
         <template id="tmpl_channel_edit">
-            <table style="margin-bottom: 20px">
-                <tr>
-                    <td>Name:</td>
-                    <td><input value="${channel_name}"/></td>
-                </tr>
-                <tr>
-                    <td>Password:</td>
-                    <td><input/></td>
-                </tr>
-                <tr>
-                    <td>Topic:</td>
-                    <td><input/></td>
-                </tr>
-                <tr>
-                    <td>Description:</td>
-                    <td><input/></td>
-                </tr>
-            </table>
+            <div class="align_column channel_general_properties">
+                <div class="align_row property_entry">
+                    <a class="key">Name:</a>
+                    <input class="value channel_name" value="${channel_name}"/>
+                </div>
+                <div class="align_row property_entry">
+                    <a class="key">Password:</a>
+                    {{if channel_flag_password == "1"}}
+                        <input class="value channel_password" type="password" value="WolverinDEV">
+                    {{else}}
+                        <input class="value channel_password" type="password">
+                    {{/if}}
+                </div>
+                <div class="align_row property_entry">
+                    <a class="key">Topic:</a>
+                    <input class="value channel_topic" value="${channel_topic}"/>
+                </div>
+                <div class="align_row property_entry">
+                    <a class="key">Description:</a>
+                    <textarea class="value channel_description" style="height: 150px; resize: none">${channel_description}</textarea>
+                </div>
+            </div>
+            <div style="margin-bottom: 5px"></div>
             <x-tab>
                 <x-entry>
                     <x-tag>Standard</x-tag>
                     <x-content>
-                        <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly">
+                        <div class="settings_standard" style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly">
                             <div style="vertical-align: center; margin: 20px;">
                                 <a>Channel Type</a><br>
                                 <fieldset style="border: gray solid; border-width: 2px; border-radius: 0px 6px 6px 6px;">
-                                    <div><input type="radio" name="channel_type" id="temp" value="temp" checked> Temporary</div>
-                                    <div><input type="radio" name="channel_type" id="semi" value="semiperm"> Semi-Permanent</div>
-                                    <div><input type="radio" name="channel_type" id="perm" value="perm"> Permanent</div>
+                                    <div><input type="radio" name="channel_type" value="temp"> Temporary</div>
+                                    <div><input type="radio" name="channel_type" value="semi"> Semi-Permanent</div>
+                                    <div><input type="radio" name="channel_type" value="perm"> Permanent</div>
                                     <hr style="width: 100%;">
                                     <div><input type="checkbox" name="channel_default" id="default" value="def"> Default Channel</div>
                                 </fieldset>
@@ -53,12 +58,11 @@
                                 <div>
                                     <div>Sort this channel after:</div>
                                     <select class="order_id" style="width: 150px">
-                                        <option value="channel_3">Audi</option>
                                     </select>
                                 </div>
                                 <div style="margin-top: 20px">
                                     <div>Needed Talk Power:</div>
-                                    <input type="number" min="0" value="0" style="width: 150px">
+                                    <input type="number" min="0" value="0" name="talk_power" style="width: 150px">
                                 </div>
                             </div>
                         </div>
@@ -71,28 +75,31 @@
                 <x-entry>
                     <x-tag>Permissions</x-tag>
                     <x-content>
+                        <!--
                         <div style="display: flex; justify-content: space-evenly">
                             <div>
                                 Regular needed powers:
                                 <table class="channel_perm_tbl">
-                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0"></td></tr>
+                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
                                 </table>
                             </div>
                             <div>
                                 File transfare needed powers:
                                 <table class="channel_perm_tbl">
-                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0"></td></tr>
-                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0"></td></tr>
+                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
                                 </table>
                             </div>
                         </div>
+                        -->
+                        TODO Implement!
                     </x-content>
                 </x-entry>
                 <x-entry>
@@ -113,7 +120,9 @@
                     </div>
                     <div style="width: 20%">
                         <div>Server password:</div>
-                        <input type="password" style="width: 100%" class="connect_password">
+                        <form name="server_password_form" onsubmit="return false;">
+                            <input type="password" autocomplete="off" style="width: 100%" class="connect_password">
+                        </form>
                     </div>
                 </div>
                 <div>
@@ -141,9 +150,7 @@
                         You're using your forum account as verification
                     </div>
 
-                    <div style="background-color: red; border-radius: 1px; display: none" class="error_message">
-                        Identity isnt valid!
-                    </div>
+                    <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>
                 </div>
             </div>
         </template>

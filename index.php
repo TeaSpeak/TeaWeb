@@ -1,5 +1,5 @@
 <?php
-	$testXF = true;
+	$testXF = false;
 
 
 	if(file_exists('auth.php'))
@@ -23,13 +23,14 @@
         <link rel="stylesheet" href="css/ts/client.css" type="text/css">
         <link rel="stylesheet" href="css/ts/icons.css" type="text/css">
         <link rel="stylesheet" href="css/general.css" type="text/css">
+        <link rel="stylesheet" href="css/modals.css" type="text/css">
 
         <!-- PHP generated properies -->
         <x-properties id="properties">
             <!-- <x-property key="" value=""/> -->
             <?php
                 function spawnProperty($name, $value) {
-					echo '<x-property key="' . $name . '" value="' . urlencode($value) . '"/>';
+					echo '<x-property key="' . $name . '" value="' . urlencode($value) . '"></x-property>';
                 }
 
 				spawnProperty('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
@@ -44,7 +45,6 @@
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-
             gtag('config', 'UA-113151733-4');
         </script>
     </head>

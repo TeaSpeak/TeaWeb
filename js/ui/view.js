@@ -4,11 +4,34 @@
 /// <reference path="../proto.ts" />
 /// <reference path="channel.ts" />
 /// <reference path="client.ts" />
+/// <reference path="modal/ModalCreateChannel.ts" />
 class ChannelTree {
     constructor(client, htmlTree) {
         this.client = client;
         this.htmlTree = htmlTree;
         this.reset();
+        if (!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
+            let _this = this;
+            this.htmlTree.parent().on("contextmenu", function (event) {
+                if (event.isDefaultPrevented())
+                    return;
+                event.preventDefault();
+                _this.onSelect(undefined);
+                _this.showContextMenu(event.pageX, event.pageY);
+            });
+        }
+    }
+    showContextMenu(x, y, on_close = undefined) {
+        let channelCreate = this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_TEMPORARY).granted(1) ||
+            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT).granted(1) ||
+            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_PERMANENT).granted(1);
+        spawnMenu(x, y, {
+            type: MenuEntryType.ENTRY,
+            icon: "client-channel_create",
+            name: "Create channel",
+            invalidPermission: !channelCreate,
+            callback: () => this.spawnCreateChannel()
+        }, MenuEntry.CLOSE(on_close));
     }
     initialiseHead(serverName) {
         this.server = new ServerEntry(this, serverName);
@@ -16,8 +39,9 @@ class ChannelTree {
         this.server.initializeListener();
     }
     __deleteAnimation(element) {
-        $(this.htmlTree).find(element.htmlTag).fadeOut("slow", function () {
-            $(this).remove();
+        let tag = element instanceof ChannelEntry ? element.rootTag() : element.tag;
+        this.htmlTree.find(tag).fadeOut("slow", () => {
+            tag.remove();
             if (element instanceof ChannelEntry) {
                 if (element.parentChannel())
                     element.parentChannel().adjustSize(true);
@@ -26,6 +50,9 @@ class ChannelTree {
                 element.currentChannel().adjustSize(true);
             }
         });
+    }
+    rootChannel() {
+        return this.channels.filter(e => e.parent == undefined);
     }
     deleteChannel(channel) {
         const _this = this;
@@ -58,19 +85,19 @@ class ChannelTree {
             let parent = channel.parentChannel();
             let siblings = parent.siblings();
             if (siblings.length == 0) {
-                elm = parent.htmlTag;
+                elm = parent.rootTag();
                 prevChannel = null;
             }
             else {
                 prevChannel = siblings.last();
-                elm = prevChannel.htmlTag;
+                elm = prevChannel.tag;
             }
             tag = parent.siblingTag();
         }
         channel.prevChannel = prevChannel;
-        let entry = channel.htmlTag.css({ display: "none" }).fadeIn("slow");
+        let entry = channel.rootTag().css({ display: "none" }).fadeIn("slow");
         entry.appendTo(tag);
-        channel.originalHeight = entry.outerHeight(true);
+        channel.originalHeight = entry.outerHeight(false);
         if (elm != undefined)
             elm.after(entry);
         channel.adjustSize(true);
@@ -91,21 +118,21 @@ class ChannelTree {
         channel.prevChannel = prevChannel;
         channel.parent = parent;
         if (prevChannel)
-            prevChannel.htmlTag.after(channel.htmlTag);
+            prevChannel.rootTag().after(channel.rootTag());
         else {
             if (parent) {
-                var siblings = parent.siblings();
+                let siblings = parent.siblings();
                 if (siblings.length <= 1) {
-                    var left = channel.htmlTag;
+                    let left = channel.rootTag();
                     left.appendTo($(parent.siblingTag()));
                 }
                 else {
                     channel.prevChannel = siblings[siblings.length - 2];
-                    channel.prevChannel.htmlTag.after(channel.htmlTag);
+                    channel.prevChannel.rootTag().after(channel.rootTag());
                 }
             }
             else
-                this.htmlTree.find(".server").after(channel.htmlTag);
+                this.htmlTree.find(".server").after(channel.rootTag());
         }
         if (oldParent)
             oldParent.adjustSize();
@@ -125,10 +152,11 @@ class ChannelTree {
             this.clients.push(client);
         client.channelTree = this;
         client["_channel"] = channel;
-        let tag = client.htmlTag.css({ display: "none" }).fadeIn("slow");
+        let tag = client.tag.css({ display: "none" }).fadeIn("slow");
         tag.appendTo(channel.clientTag());
         channel.adjustSize(true);
         client.initializeListener();
+        channel.updateChannelTypeIcon();
         return client;
     }
     registerClient(client) {
@@ -139,13 +167,17 @@ class ChannelTree {
     moveClient(client, channel) {
         let oldChannel = client.currentChannel();
         client["_channel"] = channel;
-        let tag = client.htmlTag;
+        let tag = client.tag;
         tag.detach();
         tag.appendTo(client.currentChannel().clientTag());
-        if (oldChannel)
+        if (oldChannel) {
             oldChannel.adjustSize();
-        if (client.currentChannel())
+            oldChannel.updateChannelTypeIcon();
+        }
+        if (client.currentChannel()) {
             client.currentChannel().adjustSize();
+            client.currentChannel().updateChannelTypeIcon();
+        }
     }
     findClient(clientId) {
         for (let index = 0; index < this.clients.length; index++)
@@ -154,13 +186,13 @@ class ChannelTree {
         return null;
     }
     onSelect(entry) {
-        $(this.htmlTree).find(".selected").each(function (idx, e) {
+        this.htmlTree.find(".selected").each(function (idx, e) {
             $(e).removeClass("selected");
         });
         if (entry instanceof ChannelEntry)
-            entry.htmlTag.find("> .channelLine").addClass("selected");
+            entry.rootTag().find("> .channelLine").addClass("selected");
         else if (entry instanceof ClientEntry)
-            entry.htmlTag.addClass("selected");
+            entry.tag.addClass("selected");
         else if (entry instanceof ServerEntry)
             entry.htmlTag.addClass("selected");
         this.client.selectInfo.currentSelected = entry;
@@ -186,6 +218,15 @@ class ChannelTree {
         this.clients = [];
         this.channels = [];
         this.htmlTree.empty();
+    }
+    spawnCreateChannel(parent) {
+        Modals.createChannelModal(undefined, parent, (properties) => {
+            if (!properties)
+                return;
+            properties["cpid"] = parent ? parent.channelId : 0;
+            log.debug(LogCategory.CHANNEL, "Creating new channel with properties: %o", properties);
+            this.client.serverConnection.sendCommand("channelcreate", properties);
+        });
     }
 }
 //# sourceMappingURL=view.js.map

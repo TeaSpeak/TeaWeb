@@ -69,8 +69,14 @@ function loadDebug() {
 
     awaitLoad(loadScripts([
         //Load general API's
+        "js/log.js",
+
         "js/utils/modal.js",
         "js/utils/tab.js",
+        "js/utils/helpers.js",
+
+        "js/crypto/sha.js",
+        "js/crypto/hex.js",
 
         //Load UI
         "js/ui/modal/ModalConnect.js",

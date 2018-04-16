@@ -168,7 +168,8 @@ class InfoBar {
                 }
                 this._htmlTag.append(channelGroup);
             }
-            const _this = this;
+            if (this._currentSelected.properties.client_flag_avatar.length > 0)
+                this.handle.fileManager.avatars.generateTag(this._currentSelected).appendTo(this._htmlTag);
             this.intervals.push(setInterval(this.updateClientTimings.bind(this), 1000));
         }
     }

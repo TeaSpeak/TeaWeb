@@ -294,9 +294,12 @@ class GrantedPermission {
         this.value = value;
     }
     granted(requiredValue, required = true) {
+        let result = false;
         if (this.value == -2)
-            return !required;
-        return this.value == -1 || this.value > requiredValue;
+            result = !required;
+        result = this.value == -1 || this.value >= requiredValue;
+        log.trace(LogCategory.PERMISSIONS, "Test needed required: %o | %i | %o => " + result, this, requiredValue, required);
+        return result;
     }
     hasValue() {
         return this.value != -2;
@@ -312,41 +315,78 @@ class PermissionManager {
     constructor(client) {
         this.permissionList = [];
         this.neededPermissions = [];
+        this.initializedListener = [];
         this.handle = client;
         this.handle.serverConnection.commandHandler["notifyclientneededpermissions"] = this.onNeededPermissions.bind(this);
         this.handle.serverConnection.commandHandler["notifypermissionlist"] = this.onPermissionList.bind(this);
+    }
+    initialized() {
+        return this.permissionList.length > 0;
     }
     requestPermissionList() {
         this.handle.serverConnection.sendCommand("permissionlist");
     }
     onPermissionList(json) {
         this.permissionList = [];
-        for (let e in json) {
+        let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, "Permission mapping");
+        for (let e of json) {
             if (e["group_id_end"])
                 continue; //Skip all group ids (may use later?)
             let perm = new PermissionInfo();
             perm.name = e["permname"];
-            perm.id = e["permid"];
+            perm.id = parseInt(e["permid"]);
             perm.description = e["permdesc"];
+            group.log("%i <> %s -> %s", perm.id, perm.name, perm.description);
             this.permissionList.push(perm);
         }
-        console.log("Got " + this.permissionList.length + " permissions");
+        group.end();
+        log.info(LogCategory.PERMISSIONS, "Got %i permissions", this.permissionList.length);
+        if (this._cacheNeededPermissions)
+            this.onNeededPermissions(this._cacheNeededPermissions);
+        for (let listener of this.initializedListener)
+            listener(true);
     }
     onNeededPermissions(json) {
-        let copy = this.neededPermissions;
-        console.debug("[Permissions] Got " + json.length + " needed permissions.");
-        for (let e in json) {
-            for (let p of copy)
-                if (p.type.id == e["permid"]) {
-                    copy.remove(p);
-                    p.value = e["permvalue"];
-                    for (let listener of p.changeListener)
-                        listener(p.value);
-                }
+        if (this.permissionList.length == 0) {
+            log.warn(LogCategory.PERMISSIONS, "Got needed permissions but don't have a permission list!");
+            this._cacheNeededPermissions = json;
+            return;
         }
-        console.debug("[Permissions] Dropping " + copy.length + " needed permissions");
+        this._cacheNeededPermissions = undefined;
+        let copy = this.neededPermissions.slice();
+        let addcount = 0;
+        let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, "Got " + json.length + " needed permissions.");
+        for (let e of json) {
+            let entry = undefined;
+            for (let p of copy) {
+                if (p.type.id == e["permid"]) {
+                    entry = p;
+                    copy.remove(p);
+                    break;
+                }
+            }
+            if (!entry) {
+                let info = this.resolveInfo(e["permid"]);
+                if (info) {
+                    entry = new NeededGrantedPermission(info, -2);
+                    this.neededPermissions.push(entry);
+                }
+                else {
+                    log.warn(LogCategory.PERMISSIONS, "Could not resolve perm for id %s (%o|%o)", e["permid"], e, info);
+                    continue;
+                }
+                addcount++;
+            }
+            if (entry.value == parseInt(e["permvalue"]))
+                continue;
+            entry.value = parseInt(e["permvalue"]);
+            group.log("Update needed permission " + entry.type.name + " to " + entry.value);
+            for (let listener of entry.changeListener)
+                listener(entry.value);
+        }
+        group.end();
+        log.debug(LogCategory.PERMISSIONS, "Dropping " + copy.length + " needed permissions and added " + addcount + " permissions.");
         for (let e of copy) {
-            this.neededPermissions.remove(e);
             e.value = -2;
             for (let listener of e.changeListener)
                 listener(e.value);
@@ -362,7 +402,15 @@ class PermissionManager {
         for (let perm of this.neededPermissions)
             if (perm.type.id == key || perm.type.name == key || perm.type == key)
                 return perm;
-        return new GrantedPermission(key instanceof PermissionInfo ? key : this.resolveInfo(key), -2);
+        log.debug(LogCategory.PERMISSIONS, "Could not resolve grant permission %o. Creating a new one.", key);
+        let info = key instanceof PermissionInfo ? key : this.resolveInfo(key);
+        if (!info) {
+            log.warn(LogCategory.PERMISSIONS, "Requested needed permission with invalid key! (%o)", key);
+            return undefined;
+        }
+        let result = new NeededGrantedPermission(info, -2);
+        this.neededPermissions.push(result);
+        return result;
     }
 }
 //# sourceMappingURL=PermissionManager.js.map

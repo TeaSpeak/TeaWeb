@@ -1,15 +1,20 @@
-class X_Tab extends HTMLElement {
+if (typeof (customElements) !== "undefined") {
+    class X_Tab extends HTMLElement {
+    }
+    class X_Entry extends HTMLElement {
+    }
+    class X_Tag extends HTMLElement {
+    }
+    class X_Content extends HTMLElement {
+    }
+    customElements.define('x-tab', X_Tab, { extends: 'div' });
+    customElements.define('x-entry', X_Entry, { extends: 'div' });
+    customElements.define('x-tag', X_Tag, { extends: 'div' });
+    customElements.define('x-content', X_Content, { extends: 'div' });
 }
-class X_Entry extends HTMLElement {
+else {
+    console.warn("Could not defied tab customElements!");
 }
-class X_Tag extends HTMLElement {
-}
-class X_Content extends HTMLElement {
-}
-customElements.define('x-tab', X_Tab, { extends: 'div' });
-customElements.define('x-entry', X_Entry, { extends: 'div' });
-customElements.define('x-tag', X_Tag, { extends: 'div' });
-customElements.define('x-content', X_Content, { extends: 'div' });
 var TabFunctions = {
     tabify(template) {
         console.log("Tabify:");

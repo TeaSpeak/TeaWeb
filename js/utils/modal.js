@@ -67,9 +67,12 @@ class Modal {
     constructor(props) {
         this.properties = props;
     }
+    get htmlTag() {
+        if (!this._htmlTag)
+            this._create();
+        return this._htmlTag;
+    }
     _create() {
-        if (this.htmlTag)
-            return;
         let modal = $.spawn("div");
         modal.addClass("modal");
         let content = $.spawn("div");
@@ -88,10 +91,9 @@ class Modal {
             if (this.properties.closeable)
                 this.close();
         }.bind(this));
-        this.htmlTag = modal;
+        this._htmlTag = modal;
     }
     open() {
-        this._create();
         this.htmlTag.appendTo($("body"));
         this.htmlTag.show();
     }
@@ -117,10 +119,9 @@ function createInputModal(headMessage, question, validator, callback, props = {}
     let body = $.spawn("div");
     ModalFunctions.divify(ModalFunctions.jqueriefy(question)).appendTo(body);
     let input = $.spawn("input");
-    input.width("100%");
-    if (props.maxLength)
-        input.attr("maxlength", props.maxLength);
+    input.css("width", "100%");
     input.appendTo(body);
+    console.log(input);
     let footer = $.spawn("div");
     footer.addClass("modal-button-group");
     footer.css("margin-top", "5px");
