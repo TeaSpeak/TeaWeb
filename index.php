@@ -6,7 +6,12 @@
 		include_once('auth.php');
 	else if(file_exists('auth/auth.php'))
 		include_once('auth/auth.php');
-	else die("Could not resolve auth.php!");
+	else {
+	    //die("Could not resolve auth.php!");
+        function authPath() { return ""; }
+        function redirectOnInvalidSession() {}
+        $localhost = true;
+    }
 	if(!$localhost || $testXF){
 		redirectOnInvalidSession();
     }
