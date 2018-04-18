@@ -37,7 +37,7 @@ class Settings {
     private initializeStatic() {
         location.search.substr(1).split("&").forEach(part => {
             let item = part.split("=");
-            $.spawn("div")
+            $("<x-property></x-property>")
                 .attr("key", item[0])
                 .attr("value", item[1])
                 .appendTo(this._staticPropsTag);
@@ -72,7 +72,7 @@ class Settings {
 
     static?<T>(key: string, _default?: T) : T {
         let result = this._staticPropsTag.find("[key='" + key + "']");
-        return Settings.transformStO(result.length > 0 ? decodeURIComponent(result.attr("value")) : undefined, _default);
+        return Settings.transformStO(result.length > 0 ? decodeURIComponent(result.last().attr("value")) : undefined, _default);
     }
 
 

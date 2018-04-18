@@ -39,7 +39,7 @@ class ServerConnection {
     commandHandler: ConnectionCommandHandler;
 
     private _connectTimeoutHandler: NodeJS.Timer = undefined;
-
+    private _connected: boolean = false;
     private _retCodeIdx: number;
     private _retListener: ReturnListener<CommandResult>[];
 
@@ -73,6 +73,7 @@ class ServerConnection {
         this._remotePort = port;
         this._handshakeHandler = handshake;
         this._handshakeHandler.setConnection(this);
+        this._connected = false;
         chat.serverChat().appendMessage("Connecting to " + host + ":" + port);
 
         const self = this;
@@ -89,12 +90,13 @@ class ServerConnection {
 
             this._socket.onopen = () => {
                 if(this._socket != sockCpy) return;
+                this._connected = true;
                 this.on_connect();
             };
 
             this._socket.onclose = event => {
                 if(this._socket != sockCpy) return;
-                this._client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
+                this._client.handleDisconnect(this._connected ? DisconnectReason.CONNECTION_CLOSED : DisconnectReason.CONNECT_FAILURE, {
                     code: event.code,
                     reason: event.reason,
                     event: event
@@ -132,6 +134,7 @@ class ServerConnection {
             future.reject("Connection closed");
         this._retListener = [];
         this._retCodeIdx = 0;
+        this._connected = false;
         return true;
     }
 

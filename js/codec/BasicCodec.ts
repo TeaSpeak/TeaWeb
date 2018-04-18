@@ -15,7 +15,7 @@ abstract class BasicCodec implements Codec {
         this.samplesPerUnit = 960;
         this._audioContext = new OfflineAudioContext(1, 1024,44100 );
         this._codecSampleRate = codecSampleRate;
-        this._decodeResampler = new AudioResampler();
+        this._decodeResampler = new AudioResampler(AudioController.globalContext.sampleRate);
         this._encodeResampler = new AudioResampler(codecSampleRate);
     }
 
@@ -49,8 +49,13 @@ abstract class BasicCodec implements Codec {
                     cache._chunks.pop_front();
             }
 
+            let encodeBegin = new Date().getTime();
             this.encode(buffer).then(result => {
-                if(result instanceof Uint8Array) this.on_encoded_data(result);
+                if(result instanceof Uint8Array) {
+                    if(new Date().getTime() - 20 > encodeBegin)
+                        console.error("Required time: %d", new Date().getTime() - encodeBegin);
+                    this.on_encoded_data(result);
+                }
                 else console.error("[Codec][" + this.name() + "] Could not encode buffer. Result: " + result);
             });
         }

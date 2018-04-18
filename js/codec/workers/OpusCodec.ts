@@ -7,8 +7,12 @@ try {
     try {
         importScripts("../../asm/generated/TeaWeb-Native.js");
     } catch (e) {
-        console.error("Could not load native script!");
-        console.log(e);
+        try {
+            importScripts("../../../asm/generated/TeaWeb-Native.js");
+        } catch (e) {
+            console.error("Could not load native script!");
+            console.log(e);
+        }
     }
 }
 

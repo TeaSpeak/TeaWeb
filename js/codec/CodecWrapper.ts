@@ -139,7 +139,7 @@ class CodecWrapper extends BasicCodec {
     }
 
     private spawnWorker() {
-        this._worker = new Worker("js/codec/CompiledCodecWorker.js");
+        this._worker = new Worker("js/codec/workers/CompiledCodecWorker.js");
         this._worker.onmessage = event => this.onWorkerMessage(JSON.parse(event.data));
     }
 }

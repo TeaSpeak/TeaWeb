@@ -31,6 +31,7 @@
         <link rel="stylesheet" href="css/modals.css" type="text/css">
 
         <!-- PHP generated properies -->
+        <!-- localhost:63342/TeaSpeak-Web/index.php?_ijt=o48hmliefjoa8cer8v7mpl98pj&connect_default_host=192.168.43.141 -->
         <x-properties id="properties">
             <!-- <x-property key="" value=""/> -->
             <?php

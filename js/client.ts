@@ -124,6 +124,10 @@ class TSClient {
         this.controlBar.updateProperties();
     }
 
+    get connected() : boolean {
+        return !!this.serverConnection && this.serverConnection.connected;
+    }
+
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         switch (type) {
             case DisconnectReason.REQUESTED:
@@ -132,9 +136,12 @@ class TSClient {
                 console.error("Could not connect to remote host! Exception");
                 console.error(data);
 
+                //TODO test for status 1006
                 createErrorModal(
                     "Could not connect",
-                    "Could not connect to remote host (Connection refused)"
+                    "Could not connect to remote host (Connection refused)<br>" +
+                    "If you're shure that the remot host is up, than you may not allow unsigned certificates.<br>" +
+                    "Click <a href='https://" + this.serverConnection._remoteHost + ":" + this.serverConnection._remotePort + "'>here</a> to accept the remote certificate"
                 ).open();
                 break;
             case DisconnectReason.CONNECTION_CLOSED:

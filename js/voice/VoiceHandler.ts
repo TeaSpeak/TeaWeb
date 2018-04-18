@@ -221,6 +221,8 @@ class VoiceConnection {
 
     private handleVoiceData(data: AudioBuffer, head: boolean) {
         if(!this.voiceRecorder) return;
+        if(!this.client.connected) return false;
+        if(this.client.controlBar.muteInput) return;
 
         if(head) {
             this.chunkVPacketId = 0;
