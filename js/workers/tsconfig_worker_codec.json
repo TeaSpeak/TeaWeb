@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "module": "none",
+    "target": "es6",
+    "sourceMap": true,
+    "outFile": "WorkerCodec.js"
+  },
+  "files": [
+    "codec/CodecWorker.ts",
+    "codec/OpusCodec.ts"
+  ]
+}
