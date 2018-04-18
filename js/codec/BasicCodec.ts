@@ -20,7 +20,8 @@ abstract class BasicCodec implements Codec {
     }
 
     abstract name() : string;
-    abstract initialise();
+    abstract initialise() : Promise<Boolean>;
+    abstract initialized() : boolean;
     abstract deinitialise();
     abstract reset() : boolean;
 

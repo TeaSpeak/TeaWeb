@@ -7,6 +7,8 @@ class CodecPoolEntry {
     owner: number;
 
     last_access: number;
+
+    private _initializePromise: Promise<Boolean>;
 }
 
 class CodecPool {
@@ -19,39 +21,63 @@ class CodecPool {
 
     initialize(cached: number) {
         for(let i = 0; i < cached; i++)
-            this.ownCodec(i);
-        for(let i = 0; i < cached; i++)
-            this.releaseCodec(i);
+            this.ownCodec(i + 1).then(codec => {
+                console.log("Release again! (%o)", codec);
+                this.releaseCodec(i + 1);
+            }).catch(errror => {
+                console.error(errror);
+            });
     }
 
     supported() { return this.creator != undefined; }
 
-    ownCodec?(clientId: number, create: boolean = true) : BasicCodec {
-        if(!this.creator) return null;
-
-        let free = 0;
-        for(let index = 0; index < this.entries.length; index++) {
-            if(this.entries[index].owner == clientId) {
-                this.entries[index].last_access = new Date().getTime();
-                return this.entries[index].instance;
-            } else if(free == 0 && this.entries[index].owner == 0) {
-                free = index;
+    ownCodec?(clientId: number, create: boolean = true) : Promise<BasicCodec | undefined> {
+        return new Promise<BasicCodec>((resolve, reject) => {
+            if(!this.creator) {
+                reject("unsupported codec!");
+                return;
             }
-        }
 
-        if(!create) return null;
-        if(free == 0){
-            free = this.entries.length;
-            let entry = new CodecPoolEntry();
-            entry.instance = this.creator();
-            entry.instance.initialise();
-            entry.instance.on_encoded_data = buffer => this.handle.sendVoicePacket(buffer, this.codecIndex);
-            this.entries.push(entry);
-        }
-        this.entries[free].owner = clientId;
-        this.entries[free].last_access = new Date().getTime();
-        this.entries[free].instance.reset();
-        return this.entries[free].instance;
+            let freeSlot = 0;
+            for(let index = 0; index < this.entries.length; index++) {
+                if(this.entries[index].owner == clientId) {
+                    this.entries[index].last_access = new Date().getTime();
+                    if(this.entries[index].instance.initialized()) resolve(this.entries[index].instance);
+                    else resolve(this.entries[index].instance.initialise().catch(error => {
+                        console.error("Could not initialize codec!\nError: %o", error);
+                        reject("Could not initialize codec!");
+                    }).then((flag) => {
+                        //TODO test success flag
+                        return this.ownCodec(clientId, false);
+                    }));
+                    return;
+                } else if(freeSlot == 0 && this.entries[index].owner == 0) {
+                    freeSlot = index;
+                }
+            }
+
+            if(!create) {
+                resolve(undefined);
+                return;
+            }
+
+            if(freeSlot == 0){
+                freeSlot = this.entries.length;
+                let entry = new CodecPoolEntry();
+                entry.instance = this.creator();
+                entry.instance.on_encoded_data = buffer => this.handle.sendVoicePacket(buffer, this.codecIndex);
+                this.entries.push(entry);
+            }
+            this.entries[freeSlot].owner = clientId;
+            this.entries[freeSlot].last_access = new Date().getTime();
+            if(this.entries[freeSlot].instance.initialized())
+                this.entries[freeSlot].instance.reset();
+            else {
+                resolve(this.ownCodec(clientId, false));
+                return;
+            }
+            resolve(this.entries[freeSlot].instance);
+        });
     }
 
     releaseCodec(clientId: number) {
@@ -210,12 +236,18 @@ class VoiceConnection {
             client.getAudioController().stopAudio();
             codecPool.releaseCodec(clientId);
         } else {
+            codecPool.ownCodec(clientId)
+                .then(decoder => decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData))
+                .then(buffer => client.getAudioController().playBuffer(buffer)).catch(error => {
+                console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
+            });
+            /*
             let decoder = codecPool.ownCodec(clientId);
             decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData).then(buffer => {
                 client.getAudioController().playBuffer(buffer);
             }).catch(error => {
-                console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
             });
+            */
         }
     }
 
@@ -228,12 +260,10 @@ class VoiceConnection {
             this.chunkVPacketId = 0;
             this.client.getClient().speaking = true;
         }
-        let encoder = this.codecPool[4].ownCodec(this.client.getClientId());
-        if(!encoder) {
-            console.error("Could not reserve encoder!");
-            return;
-        }
-        encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4),data); //TODO Use channel codec!
+
+        //TODO Use channel codec!
+        this.codecPool[4].ownCodec(this.client.getClientId())
+            .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4),data));
         //this.client.getClient().getAudioController().play(data);
     }
 

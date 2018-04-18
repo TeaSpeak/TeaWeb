@@ -14,8 +14,14 @@ let chat: ChatBox;
 
 let forumIdentity: TeaForumIdentity;
 
-
 function invokeMain() {
+    Module['onRuntimeInitialized'] = function() {
+        console.log("Runtime ready!");
+        main();
+    };
+}
+
+function main() {
     //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
     AudioController.initializeAudioController();
     if(!TSIdentityHelper.setup()) { console.error("Could not setup the TeamSpeak identity parser!"); return; }

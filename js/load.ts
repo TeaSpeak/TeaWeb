@@ -181,13 +181,14 @@ function loadTemplates() {
     });
 }
 
+//TODO release config!
 function loadSide() {
     //Load the general scripts and required scripts
     awaitLoad(loadScripts([
         ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => awaitLoad(loadScripts([
-        ["asm/generated/TeaWeb-Native.js", "js/TeaWeb-Native.js"],
+        ["asm/generated/TeaWeb-Identity.js", "js/TeaWeb-Native.js"],
         ["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
     ]))).then(() => {
         //Load the teaweb scripts

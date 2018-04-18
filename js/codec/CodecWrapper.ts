@@ -11,17 +11,43 @@ class CodecWrapper extends BasicCodec {
     private _workerTokeIndex: number = 0;
     type: CodecWorkerType;
 
+    private _initialized: boolean = false;
+    private _workerCallbackResolve: () => any;
+    private _workerCallbackReject: ($: any) => any;
+
+    private _initializePromise: Promise<Boolean>;
     name(): string {
         return "Worker for " + CodecWorkerType[this.type] + " Channels " + this.channelCount;
     }
 
-    initialise() {
-        this.spawnWorker();
-        this.sendWorkerMessage({
-            command: "initialise",
-            type: this.type,
-            channelCount: this.channelCount
-        });
+    initialise() : Promise<Boolean> {
+        if(this._initializePromise) return this._initializePromise;
+        console.log("INIT!");
+        return this._initializePromise = this.spawnWorker().then(() => new Promise<Boolean>((resolve, reject) => {
+            const token = this.generateToken();
+            this.sendWorkerMessage({
+                command: "initialise",
+                type: this.type,
+                channelCount: this.channelCount,
+                token: token
+            });
+
+            this._workerListener.push({
+                token: token,
+                resolve: data => {
+                    console.log("Init result: %o", data);
+                    this._initialized = data["success"] == true;
+                    if(data["success"] == true)
+                        resolve();
+                    else
+                        reject(data.message);
+                }
+            })
+        }));
+    }
+
+    initialized() : boolean {
+        return this._initialized;
     }
 
     deinitialise() {
@@ -31,7 +57,7 @@ class CodecWrapper extends BasicCodec {
     }
 
     decode(data: Uint8Array): Promise<AudioBuffer> {
-        let token = this._workerTokeIndex++ + "_token";
+        let token = this.generateToken();
         let result = new Promise<AudioBuffer>((resolve, reject) => {
             this._workerListener.push(
                 {
@@ -64,7 +90,8 @@ class CodecWrapper extends BasicCodec {
     }
 
     encode(data: AudioBuffer) : Promise<Uint8Array> {
-        let token = this._workerTokeIndex++ + "_token";
+        console.log(data);
+        let token = this.generateToken();
         let result = new Promise<Uint8Array>((resolve, reject) => {
             this._workerListener.push(
                 {
@@ -112,6 +139,10 @@ class CodecWrapper extends BasicCodec {
         this.channelCount = channelCount;
     }
 
+    private generateToken() {
+        return this._workerTokeIndex++ + "_token";
+    }
+
     private sendWorkerMessage(message: any, transfare?: any[]) {
         this._worker.postMessage(JSON.stringify(message), transfare);
     }
@@ -123,6 +154,17 @@ class CodecWrapper extends BasicCodec {
         }
 
         if(message["token"] == this._workerCallbackToken) {
+            if(message["type"] == "loaded") {
+                console.log("Got loaded result: %o", message);
+                if(message["success"]) {
+                    if(this._workerCallbackResolve)
+                        this._workerCallbackResolve();
+                } else {
+                    if(this._workerCallbackReject)
+                        this._workerCallbackReject(message["message"]);
+                }
+                console.log("Worker initialized!");
+            }
             console.log("Callback data!");
             return;
         }
@@ -138,8 +180,12 @@ class CodecWrapper extends BasicCodec {
         console.error("Could not find worker token entry! (" + message["token"] + ")");
     }
 
-    private spawnWorker() {
-        this._worker = new Worker("js/codec/workers/CompiledCodecWorker.js");
-        this._worker.onmessage = event => this.onWorkerMessage(JSON.parse(event.data));
+    private spawnWorker() : Promise<Boolean> {
+        return new Promise<Boolean>((resolve, reject) => {
+            this._workerCallbackReject = reject;
+            this._workerCallbackResolve = resolve;
+            this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerCodec.js");
+            this._worker.onmessage = event => this.onWorkerMessage(JSON.parse(event.data));
+        });
     }
 }

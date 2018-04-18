@@ -44,11 +44,12 @@ class Settings {
         });
     }
 
-    private static transformStO?<T>(input: string, _default?: T) : T {
+    private static transformStO?<T>(input?: string, _default?: T) : T {
+        if      (typeof input === "undefined") return _default;
         if      (typeof _default === "string")     return input as any;
         else if (typeof _default === "number")     return parseInt(input) as any;
         else if (typeof _default === "boolean")    return (input == "1" || input == "true") as any;
-        else if (typeof _default == "undefined")   return input as any;
+        else if (typeof _default === "undefined")   return input as any;
         return JSON.parse(input) as any;
     }
 
@@ -72,6 +73,7 @@ class Settings {
 
     static?<T>(key: string, _default?: T) : T {
         let result = this._staticPropsTag.find("[key='" + key + "']");
+        console.log("%d | %o", result.length, result);
         return Settings.transformStO(result.length > 0 ? decodeURIComponent(result.last().attr("value")) : undefined, _default);
     }
 

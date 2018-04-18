@@ -4189,7 +4189,7 @@ class TSClient {
         }
         else {
             host = addr;
-            port = 19974;
+            port = 9987;
         }
         console.log("Start connection to " + host + ":" + port);
         this.channelTree.initialiseHead(addr);

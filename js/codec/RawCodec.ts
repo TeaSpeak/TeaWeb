@@ -13,9 +13,14 @@ class RawCodec extends BasicCodec {
         return "raw";
     }
 
-    initialise() {
+    initialise() : Promise<Boolean> {
         this.converterRaw = Module._malloc(this.bufferSize);
         this.converter = new Uint8Array(Module.HEAPU8.buffer, this.converterRaw, this.bufferSize);
+        return new Promise<Boolean>(resolve => resolve());
+    }
+
+    initialized(): boolean {
+        return true;
     }
 
     deinitialise() { }
