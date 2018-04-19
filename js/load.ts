@@ -1,3 +1,13 @@
+let moduleInitliaized = false;
+let moduleInitliaizeListener: (() => any)[] = [];
+if(typeof Module == "undefined")
+    this["Module"] = {};
+Module['onRuntimeInitialized'] = function() {
+    moduleInitliaized = true;
+    for(let l of moduleInitliaizeListener)
+        l();
+};
+
 function loadScripts(paths: (string | string[])[]) : {path: string, promise: Promise<Boolean>}[] {
     let result = [];
     for(let path of paths)

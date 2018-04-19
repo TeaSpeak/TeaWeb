@@ -15,10 +15,8 @@ let chat: ChatBox;
 let forumIdentity: TeaForumIdentity;
 
 function invokeMain() {
-    Module['onRuntimeInitialized'] = function() {
-        console.log("Runtime ready!");
-        main();
-    };
+    if(moduleInitliaized) main();
+    else moduleInitliaizeListener.push(main);
 }
 
 function main() {
