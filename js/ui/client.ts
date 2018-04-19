@@ -481,7 +481,7 @@ class LocalClientEntry extends ClientEntry {
         _self.renaming = true;
 
         elm.keypress(function (e) {
-            if(e.keyCode == Key.Enter) {
+            if(e.keyCode == JQuery.Key.Enter) {
                 $(this).trigger("focusout");
                 return false;
             }

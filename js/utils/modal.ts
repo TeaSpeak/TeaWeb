@@ -158,7 +158,7 @@ function createInputModal(headMessage: BodyCreator, question: BodyCreator, valid
     footer.append(buttonOk);
 
     input.on("keydown", function (event) {
-        if(event.keyCode == Key.Enter) {
+        if(event.keyCode == JQuery.Key.Enter) {
             buttonOk.trigger("click");
         }
     });

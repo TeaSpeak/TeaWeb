@@ -1,12 +1,65 @@
-let moduleInitliaized = false;
-let moduleInitliaizeListener: (() => any)[] = [];
-if(typeof Module == "undefined")
+namespace app {
+    export enum Type {
+        UNDEFINED,
+        RELEASE,
+        DEBUG
+    }
+
+    let moduleInitialized: boolean;
+    let applicationLoaded: boolean;
+    export let type: Type = Type.UNDEFINED;
+    export let loadedListener: (() => any)[];
+
+    export function initialized() : boolean {
+        return moduleInitialized && applicationLoaded;
+    }
+
+    export function callbackApp(errorMessage?: string) {
+        if(errorMessage) {
+            console.error("Could not load application!");
+        } else {
+            applicationLoaded = true;
+            testInitialisation();
+        }
+    }
+
+    export function initialize() {
+        moduleInitialized = false;
+        applicationLoaded = false;
+        loadedListener = [];
+
+        Module['onRuntimeInitialized'] = function() {
+            console.log("Runtime init!");
+            moduleInitialized = true;
+            testInitialisation();
+        };
+
+        Module['onAbort'] = message => {
+            Module['onAbort'] = undefined;
+            displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>", false);
+        };
+
+        Module['locateFile'] = file => {
+            console.log(file + "|" + type);
+            switch (type) {
+                case Type.RELEASE:
+                    return "js/assembly/" + file;
+                case Type.DEBUG:
+                    return "asm/generated/" + file;
+            }
+        };
+    }
+
+    function testInitialisation() {
+        if(moduleInitialized && applicationLoaded)
+            for(let l of loadedListener)
+                l();
+    }
+}
+if(typeof Module === "undefined")
     this["Module"] = {};
-Module['onRuntimeInitialized'] = function() {
-    moduleInitliaized = true;
-    for(let l of moduleInitliaizeListener)
-        l();
-};
+app.initialize();
+
 
 function loadScripts(paths: (string | string[])[]) : {path: string, promise: Promise<Boolean>}[] {
     let result = [];
@@ -52,32 +105,28 @@ function formatPath(path: string | string[]) {
     } else return "<code>" + path + "</code>";
 }
 
-function runApp() {
-    if(typeof(invokeMain) !== 'undefined') {
-        invokeMain();
-    } else {
-        console.error("Could not resolve main function!");
-        displayCriticalError("Could not resolve main function!");
-    }
-}
-
 function loadRelease() {
+    app.type = app.Type.RELEASE;
     console.log("Load for release!");
     awaitLoad(loadScripts([
         //Load general API's
+        ["js/assembly/TeaWeb-Identity.js"],
         ["js/client.min.js", "js/client.js", "generated/js/client.min.js", "generated/js/client.js"]
     ])).then(() => {
         console.log("Loaded successfully all scripts!");
-        runApp();
+        app.callbackApp();
     }).catch((error) => {
         console.error("Could not load " + error.path);
     });
 }
 /** Only possible for developers! **/
 function loadDebug() {
+    app.type = app.Type.DEBUG;
     console.log("Load for debug!");
 
     awaitLoad(loadScripts([
+        ["asm/generated/TeaWeb-Identity.js"],
+
         //Load general API's
         "js/log.js",
 
@@ -127,7 +176,7 @@ function loadDebug() {
     ])).then(() => {
         awaitLoad(loadScripts(["js/main.js"])).then(() => {
             console.log("Loaded successfully all scripts!");
-            runApp();
+            app.callbackApp();
         });
     });
 }
@@ -178,8 +227,6 @@ function loadTemplates() {
             tags = node.getElementsByTagName("body")[0].children;
         else
             tags = node.children;
-        console.log("Templates:");
-        console.log(tags);
 
         let root = document.getElementById("templates");
         while(tags.length > 0)
@@ -198,13 +245,10 @@ function loadSide() {
         ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => awaitLoad(loadScripts([
-        ["asm/generated/TeaWeb-Identity.js", "js/TeaWeb-Native.js"],
         ["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
     ]))).then(() => {
         //Load the teaweb scripts
-        loadScript("js/proto.js").then(loadDebug).catch(error => {
-            loadRelease();
-        });
+        loadScript("js/proto.js").then(loadDebug).catch(loadRelease);
         //Load the teaweb templates
         loadTemplates();
     });

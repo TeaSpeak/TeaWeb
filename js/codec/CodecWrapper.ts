@@ -22,7 +22,6 @@ class CodecWrapper extends BasicCodec {
 
     initialise() : Promise<Boolean> {
         if(this._initializePromise) return this._initializePromise;
-        console.log("INIT!");
         return this._initializePromise = this.spawnWorker().then(() => new Promise<Boolean>((resolve, reject) => {
             const token = this.generateToken();
             this.sendWorkerMessage({
@@ -90,7 +89,6 @@ class CodecWrapper extends BasicCodec {
     }
 
     encode(data: AudioBuffer) : Promise<Uint8Array> {
-        console.log(data);
         let token = this.generateToken();
         let result = new Promise<Uint8Array>((resolve, reject) => {
             this._workerListener.push(
@@ -144,10 +142,12 @@ class CodecWrapper extends BasicCodec {
     }
 
     private sendWorkerMessage(message: any, transfare?: any[]) {
+        //console.log("Send worker: %o", message);
         this._worker.postMessage(JSON.stringify(message), transfare);
     }
 
     private onWorkerMessage(message: any) {
+        //console.log("Worker message: %o", message);
         if(!message["token"]) {
             console.error("Invalid worker token!");
             return;
@@ -155,7 +155,7 @@ class CodecWrapper extends BasicCodec {
 
         if(message["token"] == this._workerCallbackToken) {
             if(message["type"] == "loaded") {
-                console.log("Got loaded result: %o", message);
+                console.log("[Codec] Got worker init response: Success: %o Message: %o", message["success"], message["message"]);
                 if(message["success"]) {
                     if(this._workerCallbackResolve)
                         this._workerCallbackResolve();
@@ -163,9 +163,11 @@ class CodecWrapper extends BasicCodec {
                     if(this._workerCallbackReject)
                         this._workerCallbackReject(message["message"]);
                 }
-                console.log("Worker initialized!");
+                this._workerCallbackReject = undefined;
+                this._workerCallbackResolve = undefined;
+                return;
             }
-            console.log("Callback data!");
+            console.log("Costume callback! (%o)", message);
             return;
         }
 
@@ -184,6 +186,7 @@ class CodecWrapper extends BasicCodec {
         return new Promise<Boolean>((resolve, reject) => {
             this._workerCallbackReject = reject;
             this._workerCallbackResolve = resolve;
+
             this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerCodec.js");
             this._worker.onmessage = event => this.onWorkerMessage(JSON.parse(event.data));
         });

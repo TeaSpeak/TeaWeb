@@ -14,11 +14,6 @@ let chat: ChatBox;
 
 let forumIdentity: TeaForumIdentity;
 
-function invokeMain() {
-    if(moduleInitliaized) main();
-    else moduleInitliaizeListener.push(main);
-}
-
 function main() {
     //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
     AudioController.initializeAudioController();
@@ -54,3 +49,5 @@ function main() {
             Modals.spawnConnectModal(settings.static("default_connect_url"));
     }
 }
+
+app.loadedListener.push(() => main());

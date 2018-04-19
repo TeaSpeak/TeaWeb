@@ -10,6 +10,7 @@ onmessage = function (e) {
     let res = {};
     res.token = data.token;
     res.success = false;
+    //console.log(prefix + " Got from main: %o", data);
     switch (data.command) {
         case "initialise":
             console.log(prefix + "Got initialize for type " + CodecWorkerType[data.type]);
@@ -22,8 +23,11 @@ onmessage = function (e) {
                     console.error("Could not resolve opus type!");
                     return;
             }
-            codecInstance.initialise();
-            res["success"] = true;
+            let error = codecInstance.initialise();
+            if (error)
+                res["message"] = error;
+            else
+                res["success"] = true;
             break;
         case "encodeSamples":
             let encodeArray = new Float32Array(data.dataLength);
@@ -63,6 +67,7 @@ onmessage = function (e) {
         sendMessage(res, e.origin);
 };
 function sendMessage(message, origin) {
+    //console.log(prefix + " Send to main: %o", message);
     postMessage(JSON.stringify(message));
 }
 //# sourceMappingURL=CodecWorker.js.map

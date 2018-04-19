@@ -105,7 +105,6 @@ class AudioController {
         if (buffer.sampleRate != this.speakerContext.sampleRate)
             console.warn("[AudioController] Source sample rate isn't equal to playback sample rate! (" + buffer.sampleRate + " | " + this.speakerContext.sampleRate + ")");
 
-        console.log("%o", buffer);
         this.applayVolume(buffer);
         this.audioCache.push(buffer);
         if(this.playerState == PlayerState.STOPPED || this.playerState == PlayerState.STOPPING) {

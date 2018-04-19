@@ -7,7 +7,7 @@ class AudioResampler {
     }
 
     resample(buffer: AudioBuffer) : Promise<AudioBuffer> {
-        console.log("Encode from %i to %i", buffer.sampleRate, this.targetSampleRate);
+        //console.log("Encode from %i to %i", buffer.sampleRate, this.targetSampleRate);
         if(buffer.sampleRate == this.targetSampleRate)
             return new Promise<AudioBuffer>(resolve => resolve(buffer));
 

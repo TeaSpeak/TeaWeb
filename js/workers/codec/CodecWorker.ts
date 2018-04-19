@@ -3,7 +3,7 @@ const workerCallbackToken = "callback_token";
 
 interface CodecWorker {
     name();
-    initialise();
+    initialise?() : string;
     deinitialise();
     decode(data: Uint8Array);
     encode(data: Float32Array) : Uint8Array | string;
@@ -24,6 +24,7 @@ onmessage = function(e) {
     res.token = data.token;
     res.success = false;
 
+    //console.log(prefix + " Got from main: %o", data);
     switch (data.command) {
         case "initialise":
             console.log(prefix + "Got initialize for type " + CodecWorkerType[data.type as CodecWorkerType]);
@@ -38,8 +39,11 @@ onmessage = function(e) {
                     return;
             }
 
-            codecInstance.initialise();
-            res["success"] = true;
+            let error = codecInstance.initialise();
+            if(error)
+                res["message"] = error;
+            else
+                res["success"] = true;
             break;
         case "encodeSamples":
             let encodeArray = new Float32Array(data.dataLength);
@@ -83,5 +87,6 @@ onmessage = function(e) {
 
 declare function postMessage(message: any): void;
 function sendMessage(message: any, origin?: string){
+    //console.log(prefix + " Send to main: %o", message);
     postMessage(JSON.stringify(message));
 }

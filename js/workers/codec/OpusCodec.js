@@ -10,15 +10,30 @@ Module['onRuntimeInitialized'] = function () {
         success: true
     });
 };
-//let Module = typeof Module !== 'undefined' ? Module : {};
+Module['onAbort'] = message => {
+    Module['onAbort'] = undefined;
+    sendMessage({
+        token: workerCallbackToken,
+        type: "loaded",
+        success: false,
+        message: message
+    });
+};
 try {
     Module['locateFile'] = file => "../../asm/generated/" + file;
     importScripts("../../asm/generated/TeaWeb-Worker-Codec-Opus.js");
 }
 catch (e) {
-    console.error("Could not load native script!");
-    console.log(e);
+    try {
+        Module['locateFile'] = file => "../assembly/" + file;
+        importScripts("../assembly/TeaWeb-Worker-Codec-Opus.js");
+    }
+    catch (e) {
+        console.log(e);
+        Module['onAbort']("Cloud not load native script!");
+    }
 }
+//let Module = typeof Module !== 'undefined' ? Module : {};
 var OpusType;
 (function (OpusType) {
     OpusType[OpusType["VOIP"] = 2048] = "VOIP";
@@ -45,6 +60,7 @@ class OpusWorker {
         this.encodeBuffer = new Float32Array(Module.HEAPF32.buffer, this.encodeBufferRaw, this.bufferSize / 4);
         this.decodeBufferRaw = Module._malloc(this.bufferSize);
         this.decodeBuffer = new Uint8Array(Module.HEAPU8.buffer, this.decodeBufferRaw, this.bufferSize);
+        return undefined;
     }
     deinitialise() { } //TODO
     decode(data) {

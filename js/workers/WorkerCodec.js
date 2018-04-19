@@ -10,6 +10,7 @@ onmessage = function (e) {
     let res = {};
     res.token = data.token;
     res.success = false;
+    //console.log(prefix + " Got from main: %o", data);
     switch (data.command) {
         case "initialise":
             console.log(prefix + "Got initialize for type " + CodecWorkerType[data.type]);
@@ -22,8 +23,11 @@ onmessage = function (e) {
                     console.error("Could not resolve opus type!");
                     return;
             }
-            codecInstance.initialise();
-            res["success"] = true;
+            let error = codecInstance.initialise();
+            if (error)
+                res["message"] = error;
+            else
+                res["success"] = true;
             break;
         case "encodeSamples":
             let encodeArray = new Float32Array(data.dataLength);
@@ -63,6 +67,7 @@ onmessage = function (e) {
         sendMessage(res, e.origin);
 };
 function sendMessage(message, origin) {
+    //console.log(prefix + " Send to main: %o", message);
     postMessage(JSON.stringify(message));
 }
 /// <reference path="CodecWorker.ts" />
@@ -77,15 +82,30 @@ Module['onRuntimeInitialized'] = function () {
         success: true
     });
 };
-//let Module = typeof Module !== 'undefined' ? Module : {};
+Module['onAbort'] = message => {
+    Module['onAbort'] = undefined;
+    sendMessage({
+        token: workerCallbackToken,
+        type: "loaded",
+        success: false,
+        message: message
+    });
+};
 try {
     Module['locateFile'] = file => "../../asm/generated/" + file;
     importScripts("../../asm/generated/TeaWeb-Worker-Codec-Opus.js");
 }
 catch (e) {
-    console.error("Could not load native script!");
-    console.log(e);
+    try {
+        Module['locateFile'] = file => "../assembly/" + file;
+        importScripts("../assembly/TeaWeb-Worker-Codec-Opus.js");
+    }
+    catch (e) {
+        console.log(e);
+        Module['onAbort']("Cloud not load native script!");
+    }
 }
+//let Module = typeof Module !== 'undefined' ? Module : {};
 var OpusType;
 (function (OpusType) {
     OpusType[OpusType["VOIP"] = 2048] = "VOIP";
@@ -112,6 +132,7 @@ class OpusWorker {
         this.encodeBuffer = new Float32Array(Module.HEAPF32.buffer, this.encodeBufferRaw, this.bufferSize / 4);
         this.decodeBufferRaw = Module._malloc(this.bufferSize);
         this.decodeBuffer = new Uint8Array(Module.HEAPU8.buffer, this.decodeBufferRaw, this.bufferSize);
+        return undefined;
     }
     deinitialise() { } //TODO
     decode(data) {

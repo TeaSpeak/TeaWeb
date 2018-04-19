@@ -12,15 +12,30 @@ Module['onRuntimeInitialized'] = function() {
         success: true
     })
 };
+Module['onAbort'] = message => {
+    Module['onAbort'] = undefined;
 
-//let Module = typeof Module !== 'undefined' ? Module : {};
+    sendMessage({
+        token: workerCallbackToken,
+        type: "loaded",
+        success: false,
+        message: message
+    });
+};
+
 try {
     Module['locateFile'] = file => "../../asm/generated/" + file;
     importScripts("../../asm/generated/TeaWeb-Worker-Codec-Opus.js");
 } catch (e) {
-    console.error("Could not load native script!");
-    console.log(e);
+    try {
+        Module['locateFile'] = file => "../assembly/" + file;
+        importScripts("../assembly/TeaWeb-Worker-Codec-Opus.js");
+    } catch (e) {
+        console.log(e);
+        Module['onAbort']("Cloud not load native script!");
+    }
 }
+//let Module = typeof Module !== 'undefined' ? Module : {};
 
 enum OpusType {
     VOIP = 2048,
@@ -53,7 +68,7 @@ class OpusWorker implements CodecWorker {
         return "Opus (Type: " + OpusWorker[this.type] + " Channels: " + this.channelCount + ")";
     }
 
-    initialise() {
+    initialise?() : string {
         this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "pointer", ["number", "number"]);
         this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["pointer", "pointer", "number", "number"]);
         /* codec_opus_decode(handle, buffer, length, maxlength) */
@@ -67,6 +82,7 @@ class OpusWorker implements CodecWorker {
 
         this.decodeBufferRaw = Module._malloc(this.bufferSize);
         this.decodeBuffer = new Uint8Array(Module.HEAPU8.buffer, this.decodeBufferRaw, this.bufferSize);
+        return undefined;
     }
 
     deinitialise() { } //TODO

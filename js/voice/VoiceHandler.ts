@@ -7,33 +7,39 @@ class CodecPoolEntry {
     owner: number;
 
     last_access: number;
-
-    private _initializePromise: Promise<Boolean>;
 }
 
 class CodecPool {
     handle: VoiceConnection;
     codecIndex: number;
+    name: string;
     creator: () => BasicCodec;
 
     entries: CodecPoolEntry[] = [];
     maxInstances: number = 2;
+
+    private _supported: boolean = true;
 
     initialize(cached: number) {
         for(let i = 0; i < cached; i++)
             this.ownCodec(i + 1).then(codec => {
                 console.log("Release again! (%o)", codec);
                 this.releaseCodec(i + 1);
-            }).catch(errror => {
-                console.error(errror);
+            }).catch(error => {
+                if(this._supported) {
+                    createErrorModal("Could not load codec driver", "Could not load or initialize codec " + this.name + "<br>" +
+                        "Error: <code>" + JSON.stringify(error) + "</code>").open();
+                }
+                this._supported = false;
+                console.error(error);
             });
     }
 
-    supported() { return this.creator != undefined; }
+    supported() { return this.creator != undefined && this._supported; }
 
     ownCodec?(clientId: number, create: boolean = true) : Promise<BasicCodec | undefined> {
         return new Promise<BasicCodec>((resolve, reject) => {
-            if(!this.creator) {
+            if(!this.creator || !this._supported) {
                 reject("unsupported codec!");
                 return;
             }
@@ -43,13 +49,16 @@ class CodecPool {
                 if(this.entries[index].owner == clientId) {
                     this.entries[index].last_access = new Date().getTime();
                     if(this.entries[index].instance.initialized()) resolve(this.entries[index].instance);
-                    else resolve(this.entries[index].instance.initialise().catch(error => {
-                        console.error("Could not initialize codec!\nError: %o", error);
-                        reject("Could not initialize codec!");
-                    }).then((flag) => {
-                        //TODO test success flag
-                        return this.ownCodec(clientId, false);
-                    }));
+                    else {
+                        this.entries[index].instance.initialise().then((flag) => {
+                            //TODO test success flag
+                            console.error(flag);
+                            this.ownCodec(clientId, false).then(resolve).catch(reject);
+                        }).catch(error => {
+                            console.error("Could not initialize codec!\nError: %o", error);
+                            reject("Could not initialize codec!");
+                        });
+                    }
                     return;
                 } else if(freeSlot == 0 && this.entries[index].owner == 0) {
                     freeSlot = index;
@@ -73,7 +82,7 @@ class CodecPool {
             if(this.entries[freeSlot].instance.initialized())
                 this.entries[freeSlot].instance.reset();
             else {
-                resolve(this.ownCodec(clientId, false));
+                this.ownCodec(clientId, false).then(resolve).catch(reject);
                 return;
             }
             resolve(this.entries[freeSlot].instance);
@@ -81,15 +90,15 @@ class CodecPool {
     }
 
     releaseCodec(clientId: number) {
-        for(let index = 0; index < this.entries.length; index++) {
+        for(let index = 0; index < this.entries.length; index++)
             if(this.entries[index].owner == clientId) this.entries[index].owner = 0;
-        }
     }
 
-    constructor(handle: VoiceConnection, index: number, creator: () => BasicCodec){
+    constructor(handle: VoiceConnection, index: number, name: string, creator: () => BasicCodec){
         this.creator = creator;
         this.handle = handle;
         this.codecIndex = index;
+        this.name = name;
     }
 }
 
@@ -101,14 +110,12 @@ class VoiceConnection {
     voiceRecorder: VoiceRecorder;
 
     private codecPool: CodecPool[] = [
-        new CodecPool(this,0,undefined), //Spex
-        new CodecPool(this,1,undefined), //Spex
-        new CodecPool(this,2,undefined), //Spex
-        new CodecPool(this,3,undefined), //CELT Mono
-        new CodecPool(this,4,() => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 1) }), //opus voice
-        new CodecPool(this,5,() => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 2) })  //opus music
-
-        //FIXME Why is it at index 5 currently only 1?
+        new CodecPool(this,0,"Spex A", undefined), //Spex
+        new CodecPool(this,1,"Spex B", undefined), //Spex
+        new CodecPool(this,2,"Spex C", undefined), //Spex
+        new CodecPool(this,3,"CELT Mono", undefined), //CELT Mono
+        new CodecPool(this,4,"Opus Voice", () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 1) }), //opus voice
+        new CodecPool(this,5,"Opus Music", () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 2) })  //opus music
     ];
 
     private vpacketId: number = 0;
@@ -241,13 +248,6 @@ class VoiceConnection {
                 .then(buffer => client.getAudioController().playBuffer(buffer)).catch(error => {
                 console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
             });
-            /*
-            let decoder = codecPool.ownCodec(clientId);
-            decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData).then(buffer => {
-                client.getAudioController().playBuffer(buffer);
-            }).catch(error => {
-            });
-            */
         }
     }
 
