@@ -6,6 +6,7 @@
   },
   "exclude": [
     "../node_modules",
-    "../js/codec/workers"
+    "../js/codec/workers",
+    "../js/workers"
   ]
 }

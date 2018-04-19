@@ -682,65 +682,95 @@ class PushToTalkVAD extends VoiceActivityDetector {
 class CodecPoolEntry {
 }
 class CodecPool {
-    constructor(handle, index, creator) {
+    constructor(handle, index, name, creator) {
         this.entries = [];
         this.maxInstances = 2;
+        this._supported = true;
         this.creator = creator;
         this.handle = handle;
         this.codecIndex = index;
+        this.name = name;
     }
     initialize(cached) {
         for (let i = 0; i < cached; i++)
-            this.ownCodec(i);
-        for (let i = 0; i < cached; i++)
-            this.releaseCodec(i);
+            this.ownCodec(i + 1).then(codec => {
+                console.log("Release again! (%o)", codec);
+                this.releaseCodec(i + 1);
+            }).catch(error => {
+                if (this._supported) {
+                    createErrorModal("Could not load codec driver", "Could not load or initialize codec " + this.name + "<br>" +
+                        "Error: <code>" + JSON.stringify(error) + "</code>").open();
+                }
+                this._supported = false;
+                console.error(error);
+            });
     }
-    supported() { return this.creator != undefined; }
+    supported() { return this.creator != undefined && this._supported; }
     ownCodec(clientId, create = true) {
-        if (!this.creator)
-            return null;
-        let free = 0;
-        for (let index = 0; index < this.entries.length; index++) {
-            if (this.entries[index].owner == clientId) {
-                this.entries[index].last_access = new Date().getTime();
-                return this.entries[index].instance;
+        return new Promise((resolve, reject) => {
+            if (!this.creator || !this._supported) {
+                reject("unsupported codec!");
+                return;
             }
-            else if (free == 0 && this.entries[index].owner == 0) {
-                free = index;
+            let freeSlot = 0;
+            for (let index = 0; index < this.entries.length; index++) {
+                if (this.entries[index].owner == clientId) {
+                    this.entries[index].last_access = new Date().getTime();
+                    if (this.entries[index].instance.initialized())
+                        resolve(this.entries[index].instance);
+                    else {
+                        this.entries[index].instance.initialise().then((flag) => {
+                            //TODO test success flag
+                            console.error(flag);
+                            this.ownCodec(clientId, false).then(resolve).catch(reject);
+                        }).catch(error => {
+                            console.error("Could not initialize codec!\nError: %o", error);
+                            reject("Could not initialize codec!");
+                        });
+                    }
+                    return;
+                }
+                else if (freeSlot == 0 && this.entries[index].owner == 0) {
+                    freeSlot = index;
+                }
             }
-        }
-        if (!create)
-            return null;
-        if (free == 0) {
-            free = this.entries.length;
-            let entry = new CodecPoolEntry();
-            entry.instance = this.creator();
-            entry.instance.initialise();
-            entry.instance.on_encoded_data = buffer => this.handle.sendVoicePacket(buffer, this.codecIndex);
-            this.entries.push(entry);
-        }
-        this.entries[free].owner = clientId;
-        this.entries[free].last_access = new Date().getTime();
-        this.entries[free].instance.reset();
-        return this.entries[free].instance;
+            if (!create) {
+                resolve(undefined);
+                return;
+            }
+            if (freeSlot == 0) {
+                freeSlot = this.entries.length;
+                let entry = new CodecPoolEntry();
+                entry.instance = this.creator();
+                entry.instance.on_encoded_data = buffer => this.handle.sendVoicePacket(buffer, this.codecIndex);
+                this.entries.push(entry);
+            }
+            this.entries[freeSlot].owner = clientId;
+            this.entries[freeSlot].last_access = new Date().getTime();
+            if (this.entries[freeSlot].instance.initialized())
+                this.entries[freeSlot].instance.reset();
+            else {
+                this.ownCodec(clientId, false).then(resolve).catch(reject);
+                return;
+            }
+            resolve(this.entries[freeSlot].instance);
+        });
     }
     releaseCodec(clientId) {
-        for (let index = 0; index < this.entries.length; index++) {
+        for (let index = 0; index < this.entries.length; index++)
             if (this.entries[index].owner == clientId)
                 this.entries[index].owner = 0;
-        }
     }
 }
 class VoiceConnection {
     constructor(client) {
         this.codecPool = [
-            new CodecPool(this, 0, undefined),
-            new CodecPool(this, 1, undefined),
-            new CodecPool(this, 2, undefined),
-            new CodecPool(this, 3, undefined),
-            new CodecPool(this, 4, () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 1); }),
-            new CodecPool(this, 5, () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 2); }) //opus music
-            //FIXME Why is it at index 5 currently only 1?
+            new CodecPool(this, 0, "Spex A", undefined),
+            new CodecPool(this, 1, "Spex B", undefined),
+            new CodecPool(this, 2, "Spex C", undefined),
+            new CodecPool(this, 3, "CELT Mono", undefined),
+            new CodecPool(this, 4, "Opus Voice", () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 1); }),
+            new CodecPool(this, 5, "Opus Music", () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 2); }) //opus music
         ];
         this.vpacketId = 0;
         this.chunkVPacketId = 0;
@@ -854,10 +884,9 @@ class VoiceConnection {
             codecPool.releaseCodec(clientId);
         }
         else {
-            let decoder = codecPool.ownCodec(clientId);
-            decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData).then(buffer => {
-                client.getAudioController().playBuffer(buffer);
-            }).catch(error => {
+            codecPool.ownCodec(clientId)
+                .then(decoder => decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData))
+                .then(buffer => client.getAudioController().playBuffer(buffer)).catch(error => {
                 console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
             });
         }
@@ -865,16 +894,17 @@ class VoiceConnection {
     handleVoiceData(data, head) {
         if (!this.voiceRecorder)
             return;
+        if (!this.client.connected)
+            return false;
+        if (this.client.controlBar.muteInput)
+            return;
         if (head) {
             this.chunkVPacketId = 0;
             this.client.getClient().speaking = true;
         }
-        let encoder = this.codecPool[4].ownCodec(this.client.getClientId());
-        if (!encoder) {
-            console.error("Could not reserve encoder!");
-            return;
-        }
-        encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4), data); //TODO Use channel codec!
+        //TODO Use channel codec!
+        this.codecPool[4].ownCodec(this.client.getClientId())
+            .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4), data));
         //this.client.getClient().getAudioController().play(data);
     }
     handleVoiceEnded() {
@@ -982,7 +1012,7 @@ function spawnMenu(x, y, ...entries) {
 var sha;
 (function (sha) {
     function sha1(message) {
-        let buffer = message instanceof ArrayBuffer ? message : new TextEncoder("utf-8").encode(message);
+        let buffer = message instanceof ArrayBuffer ? message : new TextEncoder().encode(message);
         return crypto.subtle.digest("SHA-1", buffer);
     }
     sha.sha1 = sha1;
@@ -2330,6 +2360,7 @@ class ServerConnection {
     constructor(client) {
         this._connectionState = ConnectionState.UNCONNECTED;
         this._connectTimeoutHandler = undefined;
+        this._connected = false;
         this.on_connect = () => {
             console.log("Socket connected");
             chat.serverChat().appendMessage("Logging in...");
@@ -2355,6 +2386,7 @@ class ServerConnection {
         this._remotePort = port;
         this._handshakeHandler = handshake;
         this._handshakeHandler.setConnection(this);
+        this._connected = false;
         chat.serverChat().appendMessage("Connecting to " + host + ":" + port);
         const self = this;
         try {
@@ -2371,12 +2403,13 @@ class ServerConnection {
             this._socket.onopen = () => {
                 if (this._socket != sockCpy)
                     return;
+                this._connected = true;
                 this.on_connect();
             };
             this._socket.onclose = event => {
                 if (this._socket != sockCpy)
                     return;
-                this._client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
+                this._client.handleDisconnect(this._connected ? DisconnectReason.CONNECTION_CLOSED : DisconnectReason.CONNECT_FAILURE, {
                     code: event.code,
                     reason: event.reason,
                     event: event
@@ -2414,6 +2447,7 @@ class ServerConnection {
             future.reject("Connection closed");
         this._retListener = [];
         this._retCodeIdx = 0;
+        this._connected = false;
         return true;
     }
     handleWebSocketMessage(data) {
@@ -2973,20 +3007,22 @@ class Settings {
     initializeStatic() {
         location.search.substr(1).split("&").forEach(part => {
             let item = part.split("=");
-            $.spawn("div")
+            $("<x-property></x-property>")
                 .attr("key", item[0])
                 .attr("value", item[1])
                 .appendTo(this._staticPropsTag);
         });
     }
     static transformStO(input, _default) {
+        if (typeof input === "undefined")
+            return _default;
         if (typeof _default === "string")
             return input;
         else if (typeof _default === "number")
             return parseInt(input);
         else if (typeof _default === "boolean")
             return (input == "1" || input == "true");
-        else if (typeof _default == "undefined")
+        else if (typeof _default === "undefined")
             return input;
         return JSON.parse(input);
     }
@@ -3011,7 +3047,8 @@ class Settings {
     }
     static(key, _default) {
         let result = this._staticPropsTag.find("[key='" + key + "']");
-        return Settings.transformStO(result.length > 0 ? decodeURIComponent(result.attr("value")) : undefined, _default);
+        console.log("%d | %o", result.length, result);
+        return Settings.transformStO(result.length > 0 ? decodeURIComponent(result.last().attr("value")) : undefined, _default);
     }
     changeGlobal(key, value) {
         if (this.cacheGlobal[key] == value)
@@ -4218,6 +4255,9 @@ class TSClient {
             this.groups.requestGroups();
         this.controlBar.updateProperties();
     }
+    get connected() {
+        return !!this.serverConnection && this.serverConnection.connected;
+    }
     handleDisconnect(type, data = {}) {
         switch (type) {
             case DisconnectReason.REQUESTED:
@@ -4225,7 +4265,10 @@ class TSClient {
             case DisconnectReason.CONNECT_FAILURE:
                 console.error("Could not connect to remote host! Exception");
                 console.error(data);
-                createErrorModal("Could not connect", "Could not connect to remote host (Connection refused)").open();
+                //TODO test for status 1006
+                createErrorModal("Could not connect", "Could not connect to remote host (Connection refused)<br>" +
+                    "If you're shure that the remot host is up, than you may not allow unsigned certificates.<br>" +
+                    "Click <a href='https://" + this.serverConnection._remoteHost + ":" + this.serverConnection._remotePort + "'>here</a> to accept the remote certificate").open();
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 console.error("Lost connection to remote server!");
@@ -5308,7 +5351,7 @@ class BasicCodec {
         this.samplesPerUnit = 960;
         this._audioContext = new OfflineAudioContext(1, 1024, 44100);
         this._codecSampleRate = codecSampleRate;
-        this._decodeResampler = new AudioResampler();
+        this._decodeResampler = new AudioResampler(AudioController.globalContext.sampleRate);
         this._encodeResampler = new AudioResampler(codecSampleRate);
     }
     encodeSamples(cache, pcm) {
@@ -5328,9 +5371,13 @@ class BasicCodec {
                 if (buf.index == buf.buffer.length)
                     cache._chunks.pop_front();
             }
+            let encodeBegin = new Date().getTime();
             this.encode(buffer).then(result => {
-                if (result instanceof Uint8Array)
+                if (result instanceof Uint8Array) {
+                    if (new Date().getTime() - 20 > encodeBegin)
+                        console.error("Required time: %d", new Date().getTime() - encodeBegin);
                     this.on_encoded_data(result);
+                }
                 else
                     console.error("[Codec][" + this.name() + "] Could not encode buffer. Result: " + result);
             });
@@ -5352,6 +5399,7 @@ class CodecWrapper extends BasicCodec {
         this._workerListener = [];
         this._workerCallbackToken = "callback_token";
         this._workerTokeIndex = 0;
+        this._initialized = false;
         this.type = type;
         this.channelCount = channelCount;
     }
@@ -5359,12 +5407,31 @@ class CodecWrapper extends BasicCodec {
         return "Worker for " + CodecWorkerType[this.type] + " Channels " + this.channelCount;
     }
     initialise() {
-        this.spawnWorker();
-        this.sendWorkerMessage({
-            command: "initialise",
-            type: this.type,
-            channelCount: this.channelCount
-        });
+        if (this._initializePromise)
+            return this._initializePromise;
+        return this._initializePromise = this.spawnWorker().then(() => new Promise((resolve, reject) => {
+            const token = this.generateToken();
+            this.sendWorkerMessage({
+                command: "initialise",
+                type: this.type,
+                channelCount: this.channelCount,
+                token: token
+            });
+            this._workerListener.push({
+                token: token,
+                resolve: data => {
+                    console.log("Init result: %o", data);
+                    this._initialized = data["success"] == true;
+                    if (data["success"] == true)
+                        resolve();
+                    else
+                        reject(data.message);
+                }
+            });
+        }));
+    }
+    initialized() {
+        return this._initialized;
     }
     deinitialise() {
         this.sendWorkerMessage({
@@ -5372,7 +5439,7 @@ class CodecWrapper extends BasicCodec {
         });
     }
     decode(data) {
-        let token = this._workerTokeIndex++ + "_token";
+        let token = this.generateToken();
         let result = new Promise((resolve, reject) => {
             this._workerListener.push({
                 token: token,
@@ -5402,7 +5469,7 @@ class CodecWrapper extends BasicCodec {
         return result;
     }
     encode(data) {
-        let token = this._workerTokeIndex++ + "_token";
+        let token = this.generateToken();
         let result = new Promise((resolve, reject) => {
             this._workerListener.push({
                 token: token,
@@ -5439,16 +5506,35 @@ class CodecWrapper extends BasicCodec {
         });
         return true;
     }
+    generateToken() {
+        return this._workerTokeIndex++ + "_token";
+    }
     sendWorkerMessage(message, transfare) {
+        //console.log("Send worker: %o", message);
         this._worker.postMessage(JSON.stringify(message), transfare);
     }
     onWorkerMessage(message) {
+        //console.log("Worker message: %o", message);
         if (!message["token"]) {
             console.error("Invalid worker token!");
             return;
         }
         if (message["token"] == this._workerCallbackToken) {
-            console.log("Callback data!");
+            if (message["type"] == "loaded") {
+                console.log("[Codec] Got worker init response: Success: %o Message: %o", message["success"], message["message"]);
+                if (message["success"]) {
+                    if (this._workerCallbackResolve)
+                        this._workerCallbackResolve();
+                }
+                else {
+                    if (this._workerCallbackReject)
+                        this._workerCallbackReject(message["message"]);
+                }
+                this._workerCallbackReject = undefined;
+                this._workerCallbackResolve = undefined;
+                return;
+            }
+            console.log("Costume callback! (%o)", message);
             return;
         }
         for (let entry of this._workerListener) {
@@ -5461,8 +5547,12 @@ class CodecWrapper extends BasicCodec {
         console.error("Could not find worker token entry! (" + message["token"] + ")");
     }
     spawnWorker() {
-        this._worker = new Worker("js/codec/CompiledCodecWorker.js");
-        this._worker.onmessage = event => this.onWorkerMessage(JSON.parse(event.data));
+        return new Promise((resolve, reject) => {
+            this._workerCallbackReject = reject;
+            this._workerCallbackResolve = resolve;
+            this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerCodec.js");
+            this._worker.onmessage = event => this.onWorkerMessage(JSON.parse(event.data));
+        });
     }
 }
 /// <reference path="chat.ts" />
@@ -5478,7 +5568,7 @@ let settings;
 let globalClient;
 let chat;
 let forumIdentity;
-function invokeMain() {
+function main() {
     //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
     AudioController.initializeAudioController();
     if (!TSIdentityHelper.setup()) {
@@ -5512,6 +5602,7 @@ function invokeMain() {
             Modals.spawnConnectModal(settings.static("default_connect_url"));
     }
 }
+app.loadedListener.push(() => main());
 /// <reference path="BasicCodec.ts"/>
 class RawCodec extends BasicCodec {
     constructor(codecSampleRate) {
@@ -5524,6 +5615,10 @@ class RawCodec extends BasicCodec {
     initialise() {
         this.converterRaw = Module._malloc(this.bufferSize);
         this.converter = new Uint8Array(Module.HEAPU8.buffer, this.converterRaw, this.bufferSize);
+        return new Promise(resolve => resolve());
+    }
+    initialized() {
+        return true;
     }
     deinitialise() { }
     decode(data) {
@@ -5648,10 +5743,11 @@ class AudioResampler {
             throw "The target sample rate is outside the range [3000, 384000].";
     }
     resample(buffer) {
+        //console.log("Encode from %i to %i", buffer.sampleRate, this.targetSampleRate);
         if (buffer.sampleRate == this.targetSampleRate)
             return new Promise(resolve => resolve(buffer));
         let context;
-        context = new OfflineAudioContext(buffer.numberOfChannels, Math.floor(buffer.length * this.targetSampleRate / buffer.sampleRate), this.targetSampleRate);
+        context = new OfflineAudioContext(buffer.numberOfChannels, Math.ceil(buffer.length * this.targetSampleRate / buffer.sampleRate), this.targetSampleRate);
         let source = context.createBufferSource();
         source.buffer = buffer;
         source.connect(context.destination);

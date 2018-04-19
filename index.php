@@ -29,6 +29,7 @@
         <link rel="stylesheet" href="css/ts/icons.css" type="text/css">
         <link rel="stylesheet" href="css/general.css" type="text/css">
         <link rel="stylesheet" href="css/modals.css" type="text/css">
+        <link rel="stylesheet" href="css/loader.css" type="text/css">
 
         <!-- PHP generated properies -->
         <!-- localhost:63342/TeaSpeak-Web/index.php?_ijt=o48hmliefjoa8cer8v7mpl98pj&connect_default_host=192.168.43.141 -->
@@ -69,6 +70,23 @@
             while(elements.length > 0) //Removing these elements (even self)
                 elements.item(0).remove();
         </script>
+
+        <!-- Loading screen -->
+        <div class="loader">
+            <div class="half right"></div>
+            <div class="half left"></div>
+            <div class="bookshelf_wrapper">
+                <ul class="books_list">
+                    <li class="book_item first"></li>
+                    <li class="book_item second"></li>
+                    <li class="book_item third"></li>
+                    <li class="book_item fourth"></li>
+                    <li class="book_item fifth"></li>
+                    <li class="book_item sixth"></li>
+                </ul>
+                <div class="shelf"></div>
+            </div>
+        </div>
 
         <!-- Critical load error -->
         <div style="display: none; position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; background-color: gray; z-index: 1000; text-align: center;" id="critical-load">

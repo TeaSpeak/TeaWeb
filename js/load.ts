@@ -9,6 +9,7 @@ namespace app {
     let applicationLoaded: boolean;
     export let type: Type = Type.UNDEFINED;
     export let loadedListener: (() => any)[];
+    export const appLoaded = Date.now();
 
     export function initialized() : boolean {
         return moduleInitialized && applicationLoaded;
@@ -59,6 +60,7 @@ namespace app {
 if(typeof Module === "undefined")
     this["Module"] = {};
 app.initialize();
+app.loadedListener.push(fadeoutLoader);
 
 
 function loadScripts(paths: (string | string[])[]) : {path: string, promise: Promise<Boolean>}[] {
@@ -213,6 +215,7 @@ function displayCriticalError(message: string, closeable: boolean = true) {
 
         tag.style.display = "block";
     }
+    fadeoutLoader();
 }
 
 function loadTemplates() {
@@ -240,6 +243,10 @@ function loadTemplates() {
 
 //TODO release config!
 function loadSide() {
+    if(typeof (WebAssembly) === "undefined" || typeof (WebAssembly.compile) === "undefined") {
+        displayCriticalError("You require WebAssembly for TeaSpeak-Web!");
+        return;
+    }
     //Load the general scripts and required scripts
     awaitLoad(loadScripts([
         ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
@@ -255,3 +262,33 @@ function loadSide() {
 }
 
 loadSide();
+
+//FUN: loader_ignore_age=0&loader_default_duration=1500&loader_default_age=5000
+function fadeoutLoader(duration = undefined, minAge = undefined, ignoreAge = undefined) {
+    let settingsDefined = typeof(StaticSettings) !== "undefined";
+    if(!duration) {
+        if(settingsDefined)
+            duration = StaticSettings.instance.static("loader_default_duration", 750);
+        else duration = 750;
+    }
+    if(!minAge) {
+        if(settingsDefined)
+            minAge = StaticSettings.instance.static("loader_default_age", 1750);
+        else minAge = 750;
+    }
+    if(!ignoreAge) {
+        if(settingsDefined)
+            ignoreAge = StaticSettings.instance.static("loader_ignore_age", false);
+        else ignoreAge = false;
+    }
+
+    let age = Date.now() - app.appLoaded;
+    if(age < minAge && !ignoreAge) {
+        setTimeout(() => fadeoutLoader(duration, 0, true), minAge - age);
+        return;
+    }
+    $(".loader .bookshelf_wrapper").animate({top: 0, opacity: 0}, duration);
+    $(".loader .half").animate({width: 0}, duration, () => {
+        $(".loader").detach();
+    });
+}

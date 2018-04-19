@@ -80,6 +80,7 @@ class AudioController {
     private _volume: number = 1;
     private _codecCache: CodecClientCache[] = [];
     private _timeIndex: number = 0;
+    private _latencyBufferLength: number = 3;
     allowBuffering: boolean = true;
 
     //Events
@@ -105,7 +106,7 @@ class AudioController {
         if (buffer.sampleRate != this.speakerContext.sampleRate)
             console.warn("[AudioController] Source sample rate isn't equal to playback sample rate! (" + buffer.sampleRate + " | " + this.speakerContext.sampleRate + ")");
 
-        this.applayVolume(buffer);
+        this.applyVolume(buffer);
         this.audioCache.push(buffer);
         if(this.playerState == PlayerState.STOPPED || this.playerState == PlayerState.STOPPING) {
             console.log("[Audio] Starting new playback");
@@ -117,7 +118,7 @@ class AudioController {
         switch (this.playerState) {
             case PlayerState.PREBUFFERING:
             case PlayerState.BUFFERING:
-                if(this.audioCache.length < 3) {
+                if(this.audioCache.length <= this._latencyBufferLength) {
                     if(this.playerState == PlayerState.BUFFERING) {
                         if(this.allowBuffering) break;
                     } else break;
@@ -192,10 +193,10 @@ class AudioController {
         if(this._volume == val) return;
         this._volume = val;
         for(let buffer of this.audioCache)
-            this.applayVolume(buffer);
+            this.applyVolume(buffer);
     }
 
-    private applayVolume(buffer: AudioBuffer) {
+    private applyVolume(buffer: AudioBuffer) {
         for(let channel = 0; channel < buffer.numberOfChannels; channel++) {
             let data = buffer.getChannelData(channel);
             for(let sample = 0; sample < data.length; sample++) {

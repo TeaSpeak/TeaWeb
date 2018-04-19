@@ -6,7 +6,7 @@
   "exclude": [
     "../js/load.ts",
     "../node_modules",
-    "../js/codec/workers"
+    "../js/workers"
   ],
   "include": [
     "../js/**/*"

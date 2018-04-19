@@ -52,7 +52,6 @@ class CodecPool {
                     else {
                         this.entries[index].instance.initialise().then((flag) => {
                             //TODO test success flag
-                            console.error(flag);
                             this.ownCodec(clientId, false).then(resolve).catch(reject);
                         }).catch(error => {
                             console.error("Could not initialize codec!\nError: %o", error);
