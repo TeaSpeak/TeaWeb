@@ -3,11 +3,7 @@
 ***Operating System*** (Linux|Windows|Mac):  
   
 ## Details  
-***Issue type***:
-- [ ] Javascript
-- [ ] Style
-- [ ] System / backend
-- [ ] Unknown  
+***Issue type*** (Javascript | Style | System / backend | Other | Unknown):
   
 ## Issue  
 ***Reason for reporting this issue***:  
