@@ -1,7 +1,18 @@
 /// <reference path="channel.ts" />
 /// <reference path="modal/ModalChangeVolume.ts" />
 
+enum ClientType {
+    CLIENT_VOICE,
+    CLIENT_QUERY,
+    CLIENT_INTERNAL,
+    CLIENT_WEB,
+    CLIENT_MUSIC,
+    CLIENT_UNDEFINED
+}
+
 class ClientProperties {
+    client_type: ClientType = ClientType.CLIENT_VOICE; //TeamSpeaks type
+    client_type_exact: ClientType = ClientType.CLIENT_VOICE;
     client_version: string = "";
     client_platform: string = "";
     client_nickname: string = "unknown";
@@ -14,32 +25,37 @@ class ClientProperties {
 
     client_flag_avatar: string = "";
 
-    client_output_muted: boolean = false;
 
     client_away_message: string = "";
     client_away: boolean = false;
 
 
     client_input_hardware: boolean = false;
+    client_output_hardware: boolean = false;
     client_input_muted: boolean = false;
+    client_output_muted: boolean = false;
     client_is_channel_commander: boolean = false;
+
+    client_teaforum_id: number = 0;
+    client_teaforum_name: string = "";
 }
 
 class ClientEntry {
-    private _clientId: number;
-    private _channel: ChannelEntry;
-    private _tag: JQuery<HTMLElement>;
+    protected _clientId: number;
+    protected _channel: ChannelEntry;
+    protected _tag: JQuery<HTMLElement>;
 
-    properties: ClientProperties = new ClientProperties();
-    private lastVariableUpdate: number = 0;
-    private _speaking: boolean = false;
+    protected _properties: ClientProperties;
+    protected lastVariableUpdate: number = 0;
+    protected _speaking: boolean = false;
 
     channelTree: ChannelTree;
     audioController: AudioController;
 
-    constructor(clientId, clientName) {
+    constructor(clientId, clientName, properties: ClientProperties = new ClientProperties()) {
+        this._properties = properties;
+        this._properties.client_nickname = clientName;
         this._clientId = clientId;
-        this.properties.client_nickname = clientName;
         this.channelTree = null;
         this._channel = null;
         this.audioController = new AudioController();
@@ -53,6 +69,10 @@ class ClientEntry {
             _this.speaking = false;
         };
         this.audioController.initialize();
+    }
+
+    get properties() : ClientProperties {
+        return this._properties;
     }
 
     currentChannel() { return this._channel; }
@@ -175,8 +195,16 @@ class ClientEntry {
                 type: MenuEntryType.ENTRY,
                 icon: "client-ban_client",
                 name: "Ban client",
-                disabled: true,
-                callback: () => {}
+                invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
+                callback: () => {
+                    Modals.spawnBanClient(this.properties.client_nickname, (duration, reason) => {
+                        this.channelTree.client.serverConnection.sendCommand("banclient", {
+                            uid: this.properties.client_unique_identifier,
+                            banreason: reason,
+                            time: duration
+                        });
+                    });
+                }
             },
             MenuEntry.HR(),
             {
@@ -219,20 +247,30 @@ class ClientEntry {
     static chatTag(id: number, name: string, uid: string, braces: boolean = false) : JQuery {
         let tag = $.spawn("div");
 
-        tag.css("cursor", "pointer");
-        tag.css("font-weight", "bold");
-        tag.css("color", "darkblue");
-        tag.css("display", "table");
+        tag.css("cursor", "pointer")
+            .css("font-weight", "bold")
+            .css("color", "darkblue")
+            .css("display", "inline-block")
+            .css("margin", 0);
 
         if(braces)
             tag.text("\"" + name + "\"");
         else
             tag.text(name);
-        tag.attr("oncontextmenu", "chat_client_contextmenu(this, ...arguments);");
+
+        tag.contextmenu(event => {
+            if(event.isDefaultPrevented()) return;
+
+            event.preventDefault();
+            let client = globalClient.channelTree.findClient(id);
+            if(!client) return;
+            if(client.properties.client_unique_identifier != uid) return;
+            client.showContextMenu(event.pageX, event.pageY);
+        });
         tag.attr("clientId", id);
         tag.attr("clientUid", uid);
         tag.attr("clientName", name);
-        return tag.wrap("<p/>").parent();
+        return tag;
     }
 
     createChatTag(braces: boolean = false) : JQuery {
@@ -384,7 +422,7 @@ class ClientEntry {
     }
 
     calculateOnlineTime() : number {
-        return new Date().getTime() / 1000 - this.properties.client_lastconnected;
+        return Date.now() / 1000 - this.properties.client_lastconnected;
     }
 
     avatarId?() : string {
@@ -506,23 +544,4 @@ class LocalClientEntry extends ClientEntry {
             });
         });
     }
-}
-//Global functions
-function chat_client_contextmenu(_element: any, event: any) {
-    event.preventDefault();
-
-    let element = $(_element);
-    console.log("Context menue for " + element.attr("clientName"));
-    let clid : number = Number.parseInt(element.attr("clientId"));
-    let client = globalClient.channelTree.findClient(clid);
-    if(!client) {
-        //TODO
-        return;
-    }
-    if(client.clientUid() != element.attr("clientUid")) {
-        //TODO
-        return;
-    }
-
-    client.showContextMenu(event.pageX, event.pageY);
 }

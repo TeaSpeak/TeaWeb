@@ -425,14 +425,13 @@ class AvatarManager {
         img.attr("alt", "");
 
         let avatar = this.resolveCached(client);
+        avatar = undefined;
         if(avatar) {
             img.attr("src", "data:image/png;base64," + avatar.base64);
             tag.append(img);
         } else {
-            img.attr("src", "file://null");
-
-            let loader = $.spawn("div");
-            loader.addClass("avatar_loading");
+            let loader = $.spawn("img");
+            loader.attr("src", "img/loading_image.svg").css("width", "75%");
             tag.append(loader);
 
             this.loadAvatar(client).then(avatar => {
@@ -448,7 +447,7 @@ class AvatarManager {
             }).catch(reason => {
                 console.error("Could not load avatar for " + client.clientNickName() + ". Reason: " + reason);
                 //TODO Broken image
-                loader.removeClass("avatar_loading").addClass("icon client-warning").attr("tag", "Could not load avatar " + client.clientNickName());
+                loader.addClass("icon client-warning").attr("tag", "Could not load avatar " + client.clientNickName());
             });
         }
 

@@ -4,6 +4,7 @@
 /// <reference path="utils/modal.ts" />
 /// <reference path="ui/modal/ModalConnect.ts" />
 /// <reference path="ui/modal/ModalCreateChannel.ts" />
+/// <reference path="ui/modal/ModalBanClient.ts" />
 /// <reference path="codec/CodecWrapper.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="log.ts" />
@@ -16,6 +17,7 @@ let forumIdentity: TeaForumIdentity;
 
 function main() {
     //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
+    //disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost&loader_ignore_age=1
     AudioController.initializeAudioController();
     if(!TSIdentityHelper.setup()) { console.error("Could not setup the TeamSpeak identity parser!"); return; }
 
@@ -43,11 +45,19 @@ function main() {
     //Modals.createChannelModal(undefined);
 
     if(settings.static("default_connect_url")) {
-        if(settings.static("default_connect_type", "forum")) {
+        if(settings.static("default_connect_type", "forum") == "forum") {
             globalClient.startConnection(settings.static("default_connect_url"), forumIdentity);
         } else
             Modals.spawnConnectModal(settings.static("default_connect_url"));
     }
+
+    /*
+    $("#music-test").replaceWith($("#tmpl_music_frame_empty").tmpl({
+        thumbnail: "img/loading_image.svg"
+    }));
+    */
+
+    Modals.spawnSettingsModal();
 }
 
 app.loadedListener.push(() => main());

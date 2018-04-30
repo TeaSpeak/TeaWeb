@@ -16,13 +16,17 @@ class InfoBar {
 
 
     private createInfoTable(infos: any) : JQuery<HTMLElement> {
-        let table = $("<table/>");
+        let table = $.spawn("table");
 
-        for(let e in infos) {
-            console.log("Display info " + e);
-            let entry = $("<tr/>");
-            entry.append("<td class='info_key'>" + e + ":</td>");
-            entry.append("<td>" + infos[e] + "</td>");
+        for(let key in infos) {
+            console.log("Display info " + key);
+            let entry = $.spawn("tr");
+            entry.append($.spawn("td").addClass("info_key").html(key + ":"));
+            let value = $.spawn("td");
+            console.log(infos[key]);
+            console.log( MessageHelper.formatElement(infos[key]));
+            MessageHelper.formatElement(infos[key]).forEach(e => e.appendTo(value));
+            entry.append(value);
             table.append(entry);
         }
 
@@ -106,7 +110,7 @@ class InfoBar {
         } else if(this._currentSelected instanceof ChannelEntry) {
             let props = this._currentSelected.properties;
             this._htmlTag.append(this.createInfoTable({
-                "Name": this._currentSelected.createChatTag().html(),
+                "Name": this._currentSelected.createChatTag(),
                 "Topic": this._currentSelected.properties.channel_topic,
                 "Codec": this._currentSelected.properties.channel_codec,
                 "Codec Quality": this._currentSelected.properties.channel_codec_quality,
@@ -115,20 +119,35 @@ class InfoBar {
                 "Subscription Status": "unknown",
                 "Voice Data Encryption": "unknown"
             }));
-        } else if(this._currentSelected instanceof ClientEntry) {
-            this._currentSelected.updateVariables();
+        } else if(this._currentSelected instanceof MusicClientEntry) {
+            this._htmlTag.append("Im a music bot!");
+            let frame = $("#tmpl_music_frame" + (this._currentSelected.properties.music_track_id == 0 ? "_empty" : "")).tmpl({
+                thumbnail: "img/loading_image.svg"
+            }).css("align-self", "center");
 
+            if(this._currentSelected.properties.music_track_id == 0) {
+
+            } else {
+
+            }
+
+            this._htmlTag.append(frame);
+            //TODO
+        } else if(this._currentSelected instanceof ClientEntry) { this._currentSelected.updateClientVariables();
             let version: string = this._currentSelected.properties.client_version;
             if(!version) version = "";
             let infos = {
-                "Name": this._currentSelected.createChatTag().html(),
+                "Name": this._currentSelected.createChatTag(),
                 "Description": this._currentSelected.properties.client_description,
-                "Version": "<a title='" + ChatMessage.formatMessage(version) + "'>" + version.split(" ")[0] + "</a>" + " on " + this._currentSelected.properties.client_platform,
-                "Online since": "<a class='online'>" + formatDate(this._currentSelected.calculateOnlineTime()) + "</a>",
+                "Version": MessageHelper.formatMessage("{0} on {1}", $.spawn("a").attr("title", version).text(version.split(" ")[0]), this._currentSelected.properties.client_platform),
+                "Online since": $.spawn("a").addClass("online").text(formatDate(this._currentSelected.calculateOnlineTime())),
                 "Volume": this._currentSelected.audioController.volume * 100 + " %"
             };
-            if(this._currentSelected.properties["client_teaforum_id"] > 0) {
-                infos["TeaSpeak Account"] = "<a href='//forum.teaspeak.de/index.php?members/{1}/' target='_blank'>{0}</a>".format(this._currentSelected.properties["client_teaforum_name"], this._currentSelected.properties["client_teaforum_id"]);
+            if(this._currentSelected.properties.client_teaforum_id > 0) {
+                infos["TeaSpeak Account"] = $.spawn("a")
+                    .attr("href", "//forum.teaspeak.de/index.php?members/" + this._currentSelected.properties.client_teaforum_id)
+                    .attr("target", "_blank")
+                    .text(this._currentSelected.properties.client_teaforum_id);
             }
             this._htmlTag.append(this.createInfoTable(infos));
 
@@ -169,7 +188,8 @@ class InfoBar {
                 let channelGroup = $.spawn("div");
                 channelGroup
                     .css("display", "flex")
-                    .css("flex-direction", "column");
+                    .css("flex-direction", "column")
+                    .css("margin-bottom", "20px");
 
                 let header = $.spawn("div");
                 header
@@ -189,15 +209,42 @@ class InfoBar {
                         .css("margin-left", "10px")
                         .css("align-items", "center");
                     this.handle.fileManager.icons.generateTag(group.properties.iconid).appendTo(groupTag);
-                    $.spawn("div").text(group.name).css("margin-left", "3px").appendTo(groupTag);
+                    $.spawn("div").text(group.name)
+                        .css("margin-left", "3px").appendTo(groupTag);
                     groupTag.appendTo(channelGroup);
 
                 }
                 this._htmlTag.append(channelGroup);
             }
 
-            if(this._currentSelected.properties.client_flag_avatar.length > 0)
-                this.handle.fileManager.avatars.generateTag(this._currentSelected).appendTo(this._htmlTag);
+            {
+                if(this._currentSelected.properties.client_flag_avatar.length > 0)
+                    this.handle.fileManager.avatars.generateTag(this._currentSelected)
+                        .css("max-height", "90%")
+                        .css("max-width", "100%").appendTo(this._htmlTag);
+            }
+
+            {
+                let spawnTag = (type: string, description: string) : JQuery => {
+                    return $.spawn("div").css("display", "inline-flex")
+                        .append($.spawn("div").addClass("icon_x32 client-" + type).css("margin-right", "5px"))
+                        .append($.spawn("a").text(description).css("align-self", "center"));
+                };
+
+                if(!this._currentSelected.properties.client_output_hardware)
+                    spawnTag("hardware_output_muted", "Speakers/Headphones disabled").appendTo(this._htmlTag);
+
+
+                if(!this._currentSelected.properties.client_input_hardware)
+                    spawnTag("hardware_input_muted", "Microphone disabled").appendTo(this._htmlTag);
+
+                if(this._currentSelected.properties.client_output_muted)
+                    spawnTag("output_muted", "Speakers/Headphones Muted").appendTo(this._htmlTag);
+
+                if(this._currentSelected.properties.client_input_muted)
+                    spawnTag("input_muted", "Microphone Muted").appendTo(this._htmlTag);
+            }
+
             this.intervals.push(setInterval(this.updateClientTimings.bind(this),1000));
         }
     }

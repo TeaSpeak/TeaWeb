@@ -447,7 +447,7 @@ class ChannelEntry {
     createChatTag(braces: boolean = false) : JQuery {
         let tag = $.spawn("div");
 
-        tag.css("display", "table");
+        tag.css("display", "inline-block");
         tag.css("cursor", "pointer");
         tag.css("font-weight", "bold");
         tag.css("color", "darkblue");
@@ -455,10 +455,15 @@ class ChannelEntry {
             tag.text("\"" + this.channelName() + "\"");
         else
             tag.text(this.channelName());
-        tag.attr("oncontextmenu", "chat_channel_contextmenu(this, ...arguments);");
+        tag.contextmenu(event => {
+            if(event.isDefaultPrevented()) return;
+            event.preventDefault();
+            this.showContextMenu(event.pageX, event.pageY);
+        });
+
         tag.attr("channelId", this.channelId);
         tag.attr("channelName", this.channelName());
-        return tag.wrap("<p/>").parent();
+        return tag;
     }
 
     channelType() : ChannelType {

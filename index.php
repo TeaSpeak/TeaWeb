@@ -30,6 +30,7 @@
         <link rel="stylesheet" href="css/general.css" type="text/css">
         <link rel="stylesheet" href="css/modals.css" type="text/css">
         <link rel="stylesheet" href="css/loader.css" type="text/css">
+        <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
 
         <!-- PHP generated properies -->
         <!-- localhost:63342/TeaSpeak-Web/index.php?_ijt=o48hmliefjoa8cer8v7mpl98pj&connect_default_host=192.168.43.141 -->
@@ -105,6 +106,7 @@
                 <div style="height: 45px; width: 100%; border-radius: 2px 0px 0px 0px; border-bottom-width: 0px; background-color: lightgrey" class="main_container">
                     <div id="control_bar" class="control_bar">
                         <div class="button btn_connect"><div class="icon_x32 client-connect"></div></div>
+                        <!--<div class="button btn_disconnect"><div class="icon_x32 client-disconnect"></div></div>-->
                         <div style="border-left:2px solid gray;height: auto; margin-left: 5px; margin-right: 5px"></div>
                         <div class="button btn_client_away"><div class="icon_x32 client-away"></div></div>
                         <div class="button btn_mute_input"><div class="icon_x32 client-input_muted"></div></div>
@@ -117,9 +119,7 @@
                 <div style="flex-direction: row; height: 100%; width: 100%; display: flex">
                     <div style="width: 60%; flex-direction: column;">
                         <div style="height: 60%; border-radius: 0px 0px 0px 0px; border-right-width: 0px; overflow: auto; overflow-x: visible" class="main_container">
-                            <div class="channelTree" id="channelTree">
-                                <div class="server l"><div class="icon client-server_green"></div> TeaSpeak web!</div>
-                            </div>
+                            <div class="channelTree" id="channelTree"></div>
                         </div> <!-- Channel tree -->
                         <div style="height: 40%; border-radius: 0px 0px 0px 2px; border-top-width: 0px; border-right-width: 0px;" class="main_container">
                             <div id="chat">
@@ -136,7 +136,7 @@
                         </div> <!-- Chat window -->
                     </div>
                     <div style="width: 40%; border-radius: 0px 0px 2px 0px;" class="main_container">
-                        <div id="select_info" class="select_info">
+                        <div id="select_info" class="select_info" style="width: 100%; max-width: 100%">
                         </div>
                     </div> <!-- Selection info -->
                 </div>
@@ -148,6 +148,9 @@
         <div id="scripts">
             <script src="js/load.js"></script>
         </div>
+
+        <div id="music-test"></div>
+        <div style="height: 100px"></div>
     </body>
     <footer>
         <div class="container">

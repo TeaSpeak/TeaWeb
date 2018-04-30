@@ -33,12 +33,11 @@ class ServerEntry {
         tag.attr("id", "server");
         tag.addClass("server");
         tag.append($.spawn("div").addClass("server_type icon client-server_green"));
-
-        tag.append("<a class='name'>" + this.properties.virtualserver_name + "</a>");
+        tag.append($.spawn("a").addClass("name").text(this.properties.virtualserver_name));
 
         const serverIcon = $("<span/>");
         //we cant spawn an icon on creation :)
-        serverIcon.append("<div class='icon_property icon_empty'></div>");
+        serverIcon.append($.spawn("div").addClass("icon_property icon_empty"));
         tag.append(serverIcon);
 
         return this._htmlTag = tag;
@@ -89,7 +88,7 @@ class ServerEntry {
     }
 
     shouldUpdateProperties() : boolean {
-        return this.nextInfoRequest < new Date().getTime();
+        return this.nextInfoRequest < Date.now();
     }
 
     calculateUptime() : number {

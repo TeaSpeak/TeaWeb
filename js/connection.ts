@@ -1,5 +1,6 @@
 /// <reference path="ui/channel.ts" />
 /// <reference path="client.ts" />
+/// <reference path="ui/MusicClient.ts" />
 
 class CommandResult {
     success: boolean;
@@ -466,7 +467,11 @@ class ConnectionCommandHandler {
         client = tree.findClient(json["clid"]);
 
         if(!client) {
-            client = new ClientEntry(parseInt(json["clid"]), json["client_nickname"]);
+            if(parseInt(json["client_type_exact"]) == ClientType.CLIENT_MUSIC) {
+                client = new MusicClientEntry(parseInt(json["clid"]), json["client_nickname"]);
+            } else {
+                client = new ClientEntry(parseInt(json["clid"]), json["client_nickname"]);
+            }
             client = tree.insertClient(client, channel);
         } else {
             if(client == this.connection._client.getClient())
@@ -500,6 +505,9 @@ class ConnectionCommandHandler {
         }
 
         client.updateVariables(...updates);
+
+        if(client instanceof LocalClientEntry)
+            this.connection._client.controlBar.updateVoice();
     }
 
     handleCommandClientLeftView(json) {
@@ -575,22 +583,24 @@ class ConnectionCommandHandler {
         if(!channel_from) //Not critical
             console.error("Unknown client move (Channel from)!");
 
-        if(client instanceof LocalClientEntry) {
+        let self = client instanceof LocalClientEntry;
+        if(self) {
             chat.channelChat().name = channel_to.channelName();
             for(let entry of client.channelTree.clientsByChannel(client.currentChannel()))
                 if(entry !== client) entry.getAudioController().stopAudio(true);
+            this.connection._client.controlBar.updateVoice(channel_to);
         }
         tree.moveClient(client, channel_to);
 
         if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
-            chat.serverChat().appendMessage("{0} was moved from channel {1} to {2} by {3}", true,
+            chat.serverChat().appendMessage(self ? "You was moved by {3} from channel {1} to {2}" : "{0} was moved from channel {1} to {2} by {3}", true,
                 client.createChatTag(true),
                 channel_from ? channel_from.createChatTag(true) : undefined,
                 channel_to.createChatTag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"])
             );
         } else if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-            chat.serverChat().appendMessage("{0} switched from channel {1} to {2}", true,
+            chat.serverChat().appendMessage(self ? "You switched from channel {1} to {2}" : "{0} switched from channel {1} to {2}", true,
                 client.createChatTag(true),
                 channel_from ? channel_from.createChatTag(true) : undefined,
                 channel_to.createChatTag(true)

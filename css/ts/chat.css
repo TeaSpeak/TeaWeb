@@ -30,11 +30,12 @@
 
 #chat .message {
     width: 100%;
-    display: inline-flex;
+    display: inline-block;
 }
 
 #chat .message *{
-    display: inline-flex;
+    display: inline-block;
+    vertical-align: top;
 }
 
 #chat .chats {

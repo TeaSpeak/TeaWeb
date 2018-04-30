@@ -166,9 +166,9 @@
                 <x-entry>
                     <x-tag>Voice</x-tag>
                     <x-content>
-                        <div style="display: flex; flex-direction: column;" class="settings_voice">
-                            <div>
-                                <a>Microphone:</a>
+                        <div class="settings_voice align_column">
+                            <div style="justify-content: right">
+                                <a style="margin-left: 20px">Microphone:</a>
                                 <select class="voice_microphone_select"></select>
                                 <hr>
                             </div>
@@ -215,6 +215,91 @@
             <div style="display: flex; justify-content: center; vertical-align: center">
                 <input type="range" min="0" max="200" value="100" class="volume_slider" style="width: 100%">
                 <div class="display_volume" style="width: 60px; align-self: center; text-align: center">&plusmn;0 %</div>
+            </div>
+        </template>
+
+        <template id="tmpl_client_ban">
+            <div class="align_column">
+                <div class="align_column" style="margin: 5px">
+                    <a>Name:</a>
+                    <input value="${client_name}" readonly>
+                </div>
+                <div class="align_column" style="margin: 5px">
+                    <a>Reason:</a>
+                    <textarea style="height: 32px; resize: vertical; max-height: 150px; min-height: 32px" maxlength="512" class="ban_reason"></textarea>
+                </div>
+                <div class="align_row" style="margin: 5px; justify-content: space-between">
+                    <a>Duration:</a>
+                    <div class="align_row">
+                        <input type="number" value="1" class="ban_duration" style="margin-right: 7px" min="1">
+                        <select class="ban_duration_type">
+                            <option value="sec">seconds</option>
+                            <option value="min">minutes</option>
+                            <option value="hours">hours</option>
+                            <option value="days">days</option>
+                            <option value="perm">permanent</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="tmpl_music_frame">
+            <div class="music-wrapper">
+                <div class="container">
+                    <div class="left">
+                        <div class="static-card">
+                            <img src="${thumbnail}" alt="Thumbnail" class="thumbnail">
+                        </div>
+                    </div>
+                    <div class="right">
+                        <div class="controls hover">
+                            <label class="btn-forward"><span></span></label>
+                            <label class="btn-rewind"><span></span></label>
+                            <label class="btn-settings"><span></span></label>
+                        </div>
+                        <div class="flip-card">
+                            <img src="${thumbnail}" alt="Thumbnail" class="thumbnail">
+                        </div>
+                    </div>
+                </div>
+                <div class="controls-overlay">
+                    <div class="timer">
+                        <div>
+                            <svg class="button" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
+                                <defs>
+                                    <filter id="shadow">
+                                        <feDropShadow dx="4" dy="8" stdDeviation="4"/>
+                                    </filter>
+                                </defs>
+                                <polyline style="filter:url(#shadow);" class="button" points="0.6,0.3 3.9,3.4 0.6,6.6 "></polyline>
+                            </svg>
+                            <svg class="button" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
+                                <defs>
+                                    <filter id="shadow">
+                                        <feDropShadow dx="4" dy="8" stdDeviation="4"/>
+                                    </filter>
+                                </defs>
+                                <g style="filter:url(#shadow);">
+                                    <line x1="0.4" y1="0.1" x2="0.4" y2="6.8"></line>
+                                    <line x1="4.1" y1="0.1" x2="4.1" y2="6.8"></line>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="timeline">
+                            <div class="buffered"></div>
+                            <div class="played"></div>
+                            <div class="slider"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <template id="tmpl_music_frame_empty">
+            <div class="music-wrapper empty">
+                <img src="img/music/empty_disk.svg">
+                <a>Not playing any music</a>
             </div>
         </template>
     </body>

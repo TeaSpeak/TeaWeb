@@ -14,6 +14,7 @@ class AudioController {
         this._volume = 1;
         this._codecCache = [];
         this._timeIndex = 0;
+        this._latencyBufferLength = 3;
         this.allowBuffering = true;
         this.speakerContext = AudioController.globalContext;
         this.onSpeaking = function () { };
@@ -37,7 +38,7 @@ class AudioController {
     playBuffer(buffer) {
         if (buffer.sampleRate != this.speakerContext.sampleRate)
             console.warn("[AudioController] Source sample rate isn't equal to playback sample rate! (" + buffer.sampleRate + " | " + this.speakerContext.sampleRate + ")");
-        this.applayVolume(buffer);
+        this.applyVolume(buffer);
         this.audioCache.push(buffer);
         if (this.playerState == PlayerState.STOPPED || this.playerState == PlayerState.STOPPING) {
             console.log("[Audio] Starting new playback");
@@ -47,7 +48,7 @@ class AudioController {
         switch (this.playerState) {
             case PlayerState.PREBUFFERING:
             case PlayerState.BUFFERING:
-                if (this.audioCache.length < 3) {
+                if (this.audioCache.length <= this._latencyBufferLength) {
                     if (this.playerState == PlayerState.BUFFERING) {
                         if (this.allowBuffering)
                             break;
@@ -119,9 +120,9 @@ class AudioController {
             return;
         this._volume = val;
         for (let buffer of this.audioCache)
-            this.applayVolume(buffer);
+            this.applyVolume(buffer);
     }
-    applayVolume(buffer) {
+    applyVolume(buffer) {
         for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
             let data = buffer.getChannelData(channel);
             for (let sample = 0; sample < data.length; sample++) {
@@ -721,7 +722,6 @@ class CodecPool {
                     else {
                         this.entries[index].instance.initialise().then((flag) => {
                             //TODO test success flag
-                            console.error(flag);
                             this.ownCodec(clientId, false).then(resolve).catch(reject);
                         }).catch(error => {
                             console.error("Could not initialize codec!\nError: %o", error);
@@ -1409,7 +1409,7 @@ class ChannelEntry {
     }
     createChatTag(braces = false) {
         let tag = $.spawn("div");
-        tag.css("display", "table");
+        tag.css("display", "inline-block");
         tag.css("cursor", "pointer");
         tag.css("font-weight", "bold");
         tag.css("color", "darkblue");
@@ -1417,10 +1417,15 @@ class ChannelEntry {
             tag.text("\"" + this.channelName() + "\"");
         else
             tag.text(this.channelName());
-        tag.attr("oncontextmenu", "chat_channel_contextmenu(this, ...arguments);");
+        tag.contextmenu(event => {
+            if (event.isDefaultPrevented())
+                return;
+            event.preventDefault();
+            this.showContextMenu(event.pageX, event.pageY);
+        });
         tag.attr("channelId", this.channelId);
         tag.attr("channelName", this.channelName());
-        return tag.wrap("<p/>").parent();
+        return tag;
     }
     channelType() {
         if (this.properties.channel_flag_permanent == true)
@@ -1546,6 +1551,8 @@ class ClientProperties {
         this.client_input_hardware = false;
         this.client_input_muted = false;
         this.client_is_channel_commander = false;
+        this.client_teaforum_id = 0;
+        this.client_teaforum_name = "";
     }
 }
 class ClientEntry {
@@ -1676,8 +1683,16 @@ class ClientEntry {
             type: MenuEntryType.ENTRY,
             icon: "client-ban_client",
             name: "Ban client",
-            disabled: true,
-            callback: () => { }
+            invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
+            callback: () => {
+                Modals.spawnBanClient(this.properties.client_nickname, (duration, reason) => {
+                    this.channelTree.client.serverConnection.sendCommand("banclient", {
+                        uid: this.properties.client_unique_identifier,
+                        banreason: reason,
+                        time: duration
+                    });
+                });
+            }
         }, MenuEntry.HR(), {
             type: MenuEntryType.ENTRY,
             icon: "client-volume",
@@ -1708,19 +1723,30 @@ class ClientEntry {
     }
     static chatTag(id, name, uid, braces = false) {
         let tag = $.spawn("div");
-        tag.css("cursor", "pointer");
-        tag.css("font-weight", "bold");
-        tag.css("color", "darkblue");
-        tag.css("display", "table");
+        tag.css("cursor", "pointer")
+            .css("font-weight", "bold")
+            .css("color", "darkblue")
+            .css("display", "inline-block")
+            .css("margin", 0);
         if (braces)
             tag.text("\"" + name + "\"");
         else
             tag.text(name);
-        tag.attr("oncontextmenu", "chat_client_contextmenu(this, ...arguments);");
+        tag.contextmenu(event => {
+            if (event.isDefaultPrevented())
+                return;
+            event.preventDefault();
+            let client = globalClient.channelTree.findClient(id);
+            if (!client)
+                return;
+            if (client.properties.client_unique_identifier != uid)
+                return;
+            client.showContextMenu(event.pageX, event.pageY);
+        });
         tag.attr("clientId", id);
         tag.attr("clientUid", uid);
         tag.attr("clientName", name);
-        return tag.wrap("<p/>").parent();
+        return tag;
     }
     createChatTag(braces = false) {
         return ClientEntry.chatTag(this.clientId(), this.clientNickName(), this.clientUid(), braces);
@@ -1865,7 +1891,7 @@ class ClientEntry {
         this.audioController = undefined;
     }
     calculateOnlineTime() {
-        return new Date().getTime() / 1000 - this.properties.client_lastconnected;
+        return Date.now() / 1000 - this.properties.client_lastconnected;
     }
     avatarId() {
         function str2ab(str) {
@@ -2988,30 +3014,11 @@ if (typeof (customElements) !== "undefined") {
     customElements.define('x-properties', X_Properties, { extends: 'div' });
     customElements.define('x-property', X_Property, { extends: 'div' });
 }
-class Settings {
-    constructor() {
-        this.cacheGlobal = {};
-        this.cacheServer = {};
-        this.updated = false;
-        this._staticPropsTag = $("#properties");
-        this.cacheGlobal = JSON.parse(localStorage.getItem("settings.global"));
-        if (!this.cacheGlobal)
-            this.cacheGlobal = {};
-        const _this = this;
-        this.saveWorker = setInterval(() => {
-            if (_this.updated)
-                _this.save();
-        }, 5 * 1000);
-        this.initializeStatic();
-    }
-    initializeStatic() {
-        location.search.substr(1).split("&").forEach(part => {
-            let item = part.split("=");
-            $("<x-property></x-property>")
-                .attr("key", item[0])
-                .attr("value", item[1])
-                .appendTo(this._staticPropsTag);
-        });
+class StaticSettings {
+    static get instance() {
+        if (!this._instance)
+            this._instance = new StaticSettings(true);
+        return this._instance;
     }
     static transformStO(input, _default) {
         if (typeof input === "undefined")
@@ -3037,24 +3044,68 @@ class Settings {
             return undefined;
         return JSON.stringify(input);
     }
+    constructor(_reserved = undefined) {
+        if (_reserved && !StaticSettings._instance) {
+            this._staticPropsTag = $("#properties");
+            this.initializeStatic();
+        }
+        else {
+            this._handle = StaticSettings.instance;
+        }
+    }
+    initializeStatic() {
+        location.search.substr(1).split("&").forEach(part => {
+            let item = part.split("=");
+            $("<x-property></x-property>")
+                .attr("key", item[0])
+                .attr("value", item[1])
+                .appendTo(this._staticPropsTag);
+        });
+    }
+    static(key, _default) {
+        if (this._handle)
+            return this._handle.static(key, _default);
+        let result = this._staticPropsTag.find("[key='" + key + "']");
+        console.log("%d | %o", result.length, result);
+        return StaticSettings.transformStO(result.length > 0 ? decodeURIComponent(result.last().attr("value")) : undefined, _default);
+    }
+    deleteStatic(key) {
+        if (this._handle) {
+            this._handle.deleteStatic(key);
+            return;
+        }
+        let result = this._staticPropsTag.find("[key='" + key + "']");
+        if (result.length != 0)
+            result.detach();
+    }
+}
+class Settings extends StaticSettings {
+    constructor() {
+        super();
+        this.cacheGlobal = {};
+        this.cacheServer = {};
+        this.updated = false;
+        this.cacheGlobal = JSON.parse(localStorage.getItem("settings.global"));
+        if (!this.cacheGlobal)
+            this.cacheGlobal = {};
+        this.saveWorker = setInterval(() => {
+            if (this.updated)
+                this.save();
+        }, 5 * 1000);
+    }
     global(key, _default) {
         let result = this.cacheGlobal[key];
-        return Settings.transformStO(result, _default);
+        return StaticSettings.transformStO(result, _default);
     }
     server(key, _default) {
         let result = this.cacheServer[key];
-        return Settings.transformStO(result, _default);
-    }
-    static(key, _default) {
-        let result = this._staticPropsTag.find("[key='" + key + "']");
-        console.log("%d | %o", result.length, result);
-        return Settings.transformStO(result.length > 0 ? decodeURIComponent(result.last().attr("value")) : undefined, _default);
+        return StaticSettings.transformStO(result, _default);
     }
     changeGlobal(key, value) {
         if (this.cacheGlobal[key] == value)
             return;
         this.updated = true;
-        this.cacheGlobal[key] = Settings.transformOtS(value);
+        this.cacheGlobal[key] = StaticSettings.transformOtS(value);
         if (Settings.UPDATE_DIRECT)
             this.save();
     }
@@ -3062,7 +3113,7 @@ class Settings {
         if (this.cacheServer[key] == value)
             return;
         this.updated = true;
-        this.cacheServer[key] = Settings.transformOtS(value);
+        this.cacheServer[key] = StaticSettings.transformOtS(value);
         if (Settings.UPDATE_DIRECT)
             this.save();
     }
@@ -3090,11 +3141,6 @@ class Settings {
         let global = JSON.stringify(this.cacheGlobal);
         localStorage.setItem("settings.global", global);
     }
-    deleteStatic(key) {
-        let result = this._staticPropsTag.find("[key='" + key + "']");
-        if (result.length != 0)
-            result.detach();
-    }
 }
 Settings.KEY_DISABLE_CONTEXT_MENU = "disableContextMenu";
 Settings.KEY_DISABLE_UNLOAD_DIALOG = "disableUnloadDialog";
@@ -3108,12 +3154,16 @@ class InfoBar {
         this._htmlTag = htmlTag;
     }
     createInfoTable(infos) {
-        let table = $("<table/>");
-        for (let e in infos) {
-            console.log("Display info " + e);
-            let entry = $("<tr/>");
-            entry.append("<td class='info_key'>" + e + ":</td>");
-            entry.append("<td>" + infos[e] + "</td>");
+        let table = $.spawn("table");
+        for (let key in infos) {
+            console.log("Display info " + key);
+            let entry = $.spawn("tr");
+            entry.append($.spawn("td").addClass("info_key").html(key + ":"));
+            let value = $.spawn("td");
+            console.log(infos[key]);
+            console.log(MessageHelper.formatElement(infos[key]));
+            MessageHelper.formatElement(infos[key]).forEach(e => e.appendTo(value));
+            entry.append(value);
             table.append(entry);
         }
         return table;
@@ -3187,7 +3237,7 @@ class InfoBar {
         else if (this._currentSelected instanceof ChannelEntry) {
             let props = this._currentSelected.properties;
             this._htmlTag.append(this.createInfoTable({
-                "Name": this._currentSelected.createChatTag().html(),
+                "Name": this._currentSelected.createChatTag(),
                 "Topic": this._currentSelected.properties.channel_topic,
                 "Codec": this._currentSelected.properties.channel_codec,
                 "Codec Quality": this._currentSelected.properties.channel_codec_quality,
@@ -3198,19 +3248,22 @@ class InfoBar {
             }));
         }
         else if (this._currentSelected instanceof ClientEntry) {
-            this._currentSelected.updateVariables();
+            this._currentSelected.updateClientVariables();
             let version = this._currentSelected.properties.client_version;
             if (!version)
                 version = "";
             let infos = {
-                "Name": this._currentSelected.createChatTag().html(),
+                "Name": this._currentSelected.createChatTag(),
                 "Description": this._currentSelected.properties.client_description,
-                "Version": "<a title='" + ChatMessage.formatMessage(version) + "'>" + version.split(" ")[0] + "</a>" + " on " + this._currentSelected.properties.client_platform,
-                "Online since": "<a class='online'>" + formatDate(this._currentSelected.calculateOnlineTime()) + "</a>",
+                "Version": MessageHelper.formatMessage("{0} on {1}", $.spawn("a").attr("title", version).text(version.split(" ")[0]), this._currentSelected.properties.client_platform),
+                "Online since": $.spawn("a").addClass("online").text(formatDate(this._currentSelected.calculateOnlineTime())),
                 "Volume": this._currentSelected.audioController.volume * 100 + " %"
             };
-            if (this._currentSelected.properties["client_teaforum_id"] > 0) {
-                infos["TeaSpeak Account"] = "<a href='//forum.teaspeak.de/index.php?members/{1}/' target='_blank'>{0}</a>".format(this._currentSelected.properties["client_teaforum_name"], this._currentSelected.properties["client_teaforum_id"]);
+            if (this._currentSelected.properties.client_teaforum_id > 0) {
+                infos["TeaSpeak Account"] = $.spawn("a")
+                    .attr("href", "//forum.teaspeak.de/index.php?members/" + this._currentSelected.properties.client_teaforum_id)
+                    .attr("target", "_blank")
+                    .text(this._currentSelected.properties.client_teaforum_id);
             }
             this._htmlTag.append(this.createInfoTable(infos));
             {
@@ -3264,13 +3317,17 @@ class InfoBar {
                         .css("margin-left", "10px")
                         .css("align-items", "center");
                     this.handle.fileManager.icons.generateTag(group.properties.iconid).appendTo(groupTag);
-                    $.spawn("div").text(group.name).css("margin-left", "3px").appendTo(groupTag);
+                    $.spawn("div").text(group.name)
+                        .css("margin-left", "3px").appendTo(groupTag);
                     groupTag.appendTo(channelGroup);
                 }
                 this._htmlTag.append(channelGroup);
             }
             if (this._currentSelected.properties.client_flag_avatar.length > 0)
-                this.handle.fileManager.avatars.generateTag(this._currentSelected).appendTo(this._htmlTag);
+                this.handle.fileManager.avatars.generateTag(this._currentSelected)
+                    .css("margin-top", "20px")
+                    .css("max-height", "90%")
+                    .css("max-width", "100%").appendTo(this._htmlTag);
             this.intervals.push(setInterval(this.updateClientTimings.bind(this), 1000));
         }
     }
@@ -4628,14 +4685,14 @@ class AvatarManager {
         let img = $.spawn("img");
         img.attr("alt", "");
         let avatar = this.resolveCached(client);
+        avatar = undefined;
         if (avatar) {
             img.attr("src", "data:image/png;base64," + avatar.base64);
             tag.append(img);
         }
         else {
-            img.attr("src", "file://null");
-            let loader = $.spawn("div");
-            loader.addClass("avatar_loading");
+            let loader = $.spawn("img");
+            loader.attr("src", "img/loading_image.svg").css("width", "75%");
             tag.append(loader);
             this.loadAvatar(client).then(avatar => {
                 img.attr("src", "data:image/png;base64," + avatar.base64);
@@ -4649,7 +4706,7 @@ class AvatarManager {
             }).catch(reason => {
                 console.error("Could not load avatar for " + client.clientNickName() + ". Reason: " + reason);
                 //TODO Broken image
-                loader.removeClass("avatar_loading").addClass("icon client-warning").attr("tag", "Could not load avatar " + client.clientNickName());
+                loader.addClass("icon client-warning").attr("tag", "Could not load avatar " + client.clientNickName());
             });
         }
         return tag;
@@ -4748,6 +4805,73 @@ var ChatType;
     ChatType[ChatType["CHANNEL"] = 2] = "CHANNEL";
     ChatType[ChatType["CLIENT"] = 3] = "CLIENT";
 })(ChatType || (ChatType = {}));
+var MessageHelper;
+(function (MessageHelper) {
+    function htmlEscape(message) {
+        const div = document.createElement('div');
+        div.innerText = message;
+        message = div.innerHTML;
+        return message.replace(/ /g, '&nbsp;');
+    }
+    MessageHelper.htmlEscape = htmlEscape;
+    function formatElement(object) {
+        if ($.isArray(object)) {
+            let result = [];
+            for (let element of object)
+                result.push(...this.formatElement(element));
+            return result;
+        }
+        else if (typeof (object) == "string") {
+            if (object.length == 0)
+                return [];
+            return [$.spawn("a").html(this.htmlEscape(object))];
+        }
+        else if (typeof (object) === "object") {
+            if (object instanceof jQuery)
+                return [object];
+            return this.formatElement("<unknwon object>");
+        }
+        else if (typeof (object) === "function")
+            return this.formatElement(object());
+        else if (typeof (object) === "undefined")
+            return this.formatElement("<undefined>");
+        return this.formatElement("<unknown object type " + typeof object + ">");
+    }
+    MessageHelper.formatElement = formatElement;
+    function formatMessage(pattern, ...objects) {
+        let begin = 0, found = 0;
+        let result = [];
+        do {
+            found = pattern.indexOf('{', found);
+            if (found == -1 || pattern.length <= found + 1) {
+                result.push(...this.formatElement(pattern.substr(begin)));
+                break;
+            }
+            if (found > 0 && pattern[found - 1] == '\\') {
+                //TODO remove the escape!
+                found++;
+                continue;
+            }
+            result.push(...this.formatElement(pattern.substr(begin, found - begin))); //Append the text
+            let number;
+            let offset = 0;
+            while ("0123456789".includes(pattern[found + 1 + offset]))
+                offset++;
+            number = parseInt(offset > 0 ? pattern.substr(found + 1, offset) : "0");
+            if (pattern[found + offset + 1] != '}') {
+                found++;
+                continue;
+            }
+            if (objects.length < number)
+                console.warn("Message to format contains invalid index (" + number + ")");
+            result.push(...this.formatElement(objects[number]));
+            begin = found = found + 2 + offset;
+            console.log("Offset: " + offset + " Number: " + number);
+        } while (found++);
+        return result;
+    }
+    MessageHelper.formatMessage = formatMessage;
+})(MessageHelper || (MessageHelper = {}));
 class ChatMessage {
     constructor(message) {
         this.date = new Date();
@@ -4768,26 +4892,11 @@ class ChatMessage {
         dateTag.text("<" + this.num(this.date.getUTCHours()) + ":" + this.num(this.date.getUTCMinutes()) + ":" + this.num(this.date.getUTCSeconds()) + "> ");
         dateTag.css("margin-right", "4px");
         dateTag.css("color", "dodgerblue");
-        let messageTag = $.spawn("div");
-        messageTag.html(this.message);
-        messageTag.css("color", "blue");
         this._htmlTag = tag;
         tag.append(dateTag);
-        tag.append(messageTag);
+        this.message.forEach(e => e.appendTo(tag));
         tag.hide();
         return tag;
-    }
-    static formatMessage(message) {
-        /*
-        message = message
-                    .replace(/ /g, '&nbsp;')
-                    .replace(/\n/g, "<br/>");
-        */
-        const div = document.createElement('div');
-        div.innerText = message;
-        message = div.innerHTML;
-        console.log(message + "->" + div.innerHTML);
-        return message;
     }
 }
 class ChatEntry {
@@ -4800,25 +4909,15 @@ class ChatEntry {
         this.onClose = function () { return true; };
     }
     appendError(message, ...args) {
-        this.appendMessage("<a style='color: red'>{0}</a>".format(ChatMessage.formatMessage(message).format(...args)), false);
+        let entries = MessageHelper.formatMessage(message, ...args);
+        entries.forEach(e => e.css("color", "red"));
+        this.pushChatMessage(new ChatMessage(entries));
     }
     appendMessage(message, fmt = true, ...args) {
-        let parms = [];
-        for (let index = 2; index < arguments.length; index++) {
-            if (typeof arguments[index] == "string")
-                arguments[index] = ChatMessage.formatMessage(arguments[index]);
-            else if (arguments[index] instanceof jQuery)
-                arguments[index] = arguments[index].html();
-            else {
-                console.error("Invalid type " + typeof arguments[index] + "|" + arguments[index].prototype);
-                arguments[index] = arguments[index].toString();
-            }
-            parms.push(arguments[index]);
-        }
-        let msg = fmt ? ChatMessage.formatMessage(message) : message;
-        msg = msg.format(parms);
-        let elm = new ChatMessage(msg);
-        this.history.push(elm);
+        this.pushChatMessage(new ChatMessage(MessageHelper.formatMessage(message, ...args)));
+    }
+    pushChatMessage(entry) {
+        this.history.push(entry);
         while (this.history.length > 100) {
             let elm = this.history.pop_front();
             elm.htmlTag.animate({ opacity: 0 }, 200, function () {
@@ -4829,8 +4928,8 @@ class ChatEntry {
             let box = $(this.handle.htmlTag).find(".messages");
             let mbox = $(this.handle.htmlTag).find(".message_box");
             let bottom = box.scrollTop() + box.height() + 1 >= mbox.height();
-            mbox.append(elm.htmlTag);
-            elm.htmlTag.show().css("opacity", "0").animate({ opacity: 1 }, 100);
+            mbox.append(entry.htmlTag);
+            entry.htmlTag.show().css("opacity", "0").animate({ opacity: 1 }, 100);
             if (bottom)
                 box.scrollTop(mbox.height());
         }
@@ -5341,6 +5440,88 @@ var Modals;
                         Identity isnt valid!
                     </div>
  */ 
+/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../proto.ts" />
+/// <reference path="../../client.ts" />
+var Modals;
+(function (Modals) {
+    function spawnBanClient(name, callback) {
+        const connectModal = createModal({
+            header: function () {
+                return "Ban client";
+            },
+            body: function () {
+                let tag = $("#tmpl_client_ban").tmpl({
+                    client_name: name
+                });
+                let maxTime = 0; //globalClient.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).value;
+                let unlimited = maxTime == 0 || maxTime == -1;
+                if (unlimited)
+                    maxTime = 0;
+                let banTag = tag.find(".ban_duration_type");
+                let durationTag = tag.find(".ban_duration");
+                banTag.find("option[value=\"sec\"]").prop("disabled", !unlimited && 1 > maxTime)
+                    .attr("duration-scale", 1)
+                    .attr("duration-max", maxTime);
+                banTag.find("option[value=\"min\"]").prop("disabled", !unlimited && 60 > maxTime)
+                    .attr("duration-scale", 60)
+                    .attr("duration-max", maxTime / 60);
+                banTag.find("option[value=\"hours\"]").prop("disabled", !unlimited && 60 * 60 > maxTime)
+                    .attr("duration-scale", 60 * 60)
+                    .attr("duration-max", maxTime / (60 * 60));
+                banTag.find("option[value=\"days\"]").prop("disabled", !unlimited && 60 * 60 * 24 > maxTime)
+                    .attr("duration-scale", 60 * 60 * 24)
+                    .attr("duration-max", maxTime / (60 * 60 * 24));
+                banTag.find("option[value=\"perm\"]").prop("disabled", !unlimited)
+                    .attr("duration-scale", 0);
+                durationTag.change(() => banTag.trigger('change'));
+                banTag.change(event => {
+                    let element = $(event.target.selectedOptions.item(0));
+                    if (element.val() !== "perm") {
+                        durationTag.prop("disabled", false);
+                        let current = durationTag.val();
+                        let max = parseInt(element.attr("duration-max"));
+                        if (max > 0 && current > max)
+                            durationTag.val(max);
+                        else if (current <= 0)
+                            durationTag.val(1);
+                        durationTag.attr("max", max);
+                    }
+                    else {
+                        durationTag.prop("disabled", true);
+                    }
+                });
+                return tag;
+            },
+            footer: function () {
+                let tag = $.spawn("div");
+                tag.css("text-align", "right");
+                tag.css("margin-top", "3px");
+                tag.css("margin-bottom", "6px");
+                tag.addClass("modal-button-group");
+                let buttonCancel = $.spawn("button");
+                buttonCancel.text("Cancel");
+                buttonCancel.on("click", () => connectModal.close());
+                tag.append(buttonCancel);
+                let buttonOk = $.spawn("button");
+                buttonOk.text("OK").addClass("btn_success");
+                tag.append(buttonOk);
+                return tag;
+            },
+            width: 450
+        });
+        connectModal.open();
+        connectModal.htmlTag.find(".btn_success").on('click', () => {
+            connectModal.close();
+            let length = connectModal.htmlTag.find(".ban_duration").val();
+            let duration = connectModal.htmlTag.find(".ban_duration_type option:selected");
+            console.log(duration);
+            console.log(length + "*" + duration.attr("duration-scale"));
+            callback(length * parseInt(duration.attr("duration-scale")), connectModal.htmlTag.find(".ban_reason").val());
+        });
+    }
+    Modals.spawnBanClient = spawnBanClient;
+})(Modals || (Modals = {}));
 /// <reference path="Codec.ts"/>
 class BasicCodec {
     constructor(codecSampleRate) {
@@ -5561,6 +5742,7 @@ class CodecWrapper extends BasicCodec {
 /// <reference path="utils/modal.ts" />
 /// <reference path="ui/modal/ModalConnect.ts" />
 /// <reference path="ui/modal/ModalCreateChannel.ts" />
+/// <reference path="ui/modal/ModalBanClient.ts" />
 /// <reference path="codec/CodecWrapper.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="log.ts" />
@@ -5569,7 +5751,9 @@ let globalClient;
 let chat;
 let forumIdentity;
 function main() {
+    //console.log(ChatEntry.formatMessage("Hello World '{0}' | '{1}' | {12} X", "XXX"));
     //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
+    //disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost&loader_ignore_age=1
     AudioController.initializeAudioController();
     if (!TSIdentityHelper.setup()) {
         console.error("Could not setup the TeamSpeak identity parser!");
@@ -5595,7 +5779,7 @@ function main() {
     //Modals.spawnSettingsModal();
     //Modals.createChannelModal(undefined);
     if (settings.static("default_connect_url")) {
-        if (settings.static("default_connect_type", "forum")) {
+        if (settings.static("default_connect_type", "forum") == "forum") {
             globalClient.startConnection(settings.static("default_connect_url"), forumIdentity);
         }
         else
@@ -5683,10 +5867,10 @@ class ServerEntry {
         tag.attr("id", "server");
         tag.addClass("server");
         tag.append($.spawn("div").addClass("server_type icon client-server_green"));
-        tag.append("<a class='name'>" + this.properties.virtualserver_name + "</a>");
+        tag.append($.spawn("a").addClass("name").text(this.properties.virtualserver_name));
         const serverIcon = $("<span/>");
         //we cant spawn an icon on creation :)
-        serverIcon.append("<div class='icon_property icon_empty'></div>");
+        serverIcon.append($.spawn("div").addClass("icon_property icon_empty"));
         tag.append(serverIcon);
         return this._htmlTag = tag;
     }
@@ -5728,7 +5912,7 @@ class ServerEntry {
         this.channelTree.client.serverConnection.sendCommand("servergetvariables");
     }
     shouldUpdateProperties() {
-        return this.nextInfoRequest < new Date().getTime();
+        return this.nextInfoRequest < Date.now();
     }
     calculateUptime() {
         if (this.properties.virtualserver_uptime == 0 || this.lastInfoRequest == 0)

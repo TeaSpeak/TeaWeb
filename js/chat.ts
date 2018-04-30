@@ -5,12 +5,79 @@ enum ChatType {
     CLIENT
 }
 
+namespace MessageHelper {
+    export function htmlEscape(message: string) : string {
+        const div = document.createElement('div');
+        div.innerText = message;
+        message =  div.innerHTML;
+        return message.replace(/ /g, '&nbsp;');
+    }
+
+    export function formatElement(object: any) : JQuery[] {
+        if($.isArray(object)) {
+            let result = [];
+            for(let element of object)
+                result.push(...this.formatElement(element));
+            return result;
+        } else if(typeof(object) == "string") {
+            if(object.length == 0) return [];
+            return [$.spawn("a").html(this.htmlEscape(object))];
+        } else if(typeof(object) === "object") {
+            if(object instanceof jQuery)
+                return [object];
+            return this.formatElement("<unknwon object>");
+        } else if(typeof(object) === "function") return this.formatElement(object());
+        else if(typeof(object) === "undefined") return this.formatElement("<undefined>");
+        return this.formatElement("<unknown object type " + typeof object + ">");
+    }
+
+    export function formatMessage(pattern: string, ...objects: any[]) : JQuery[] {
+        let begin = 0, found = 0;
+
+        let result: JQuery[] = [];
+        do {
+            found = pattern.indexOf('{', found);
+            if(found == -1 || pattern.length <= found + 1) {
+                result.push(...this.formatElement(pattern.substr(begin)));
+                break;
+            }
+
+            if(found > 0 && pattern[found - 1] == '\\') {
+                //TODO remove the escape!
+                found++;
+                continue;
+            }
+
+            result.push(...this.formatElement(pattern.substr(begin, found - begin))); //Append the text
+
+            let number;
+            let offset = 0;
+            while ("0123456789".includes(pattern[found + 1 + offset])) offset++;
+            number = parseInt(offset > 0 ? pattern.substr(found + 1, offset) : "0");
+
+            if(pattern[found + offset + 1] != '}') {
+                found++;
+                continue;
+            }
+
+            if(objects.length < number)
+                console.warn("Message to format contains invalid index (" + number + ")");
+
+            result.push(...this.formatElement(objects[number]));
+            begin = found = found + 2 + offset;
+            console.log("Offset: " + offset + " Number: " + number);
+        } while(found++);
+
+        return result;
+    }
+}
+
 class ChatMessage {
     date: Date;
-    message: string;
+    message: JQuery[];
     private _htmlTag: JQuery<HTMLElement>;
 
-    constructor(message) {
+    constructor(message: JQuery[]) {
         this.date = new Date();
         this.message = message;
     }
@@ -32,28 +99,11 @@ class ChatMessage {
         dateTag.css("margin-right", "4px");
         dateTag.css("color", "dodgerblue");
 
-        let messageTag = $.spawn("div");
-        messageTag.html(this.message);
-        messageTag.css("color", "blue");
-
         this._htmlTag = tag;
         tag.append(dateTag);
-        tag.append(messageTag);
+        this.message.forEach(e => e.appendTo(tag));
         tag.hide();
         return tag;
-    }
-
-    static formatMessage(message: string) : string {
-        /*
-        message = message
-                    .replace(/ /g, '&nbsp;')
-                    .replace(/\n/g, "<br/>");
-        */
-        const div = document.createElement('div');
-        div.innerText = message;
-        message =  div.innerHTML;
-        console.log(message + "->" + div.innerHTML);
-        return message;
     }
 }
 
@@ -81,24 +131,17 @@ class ChatEntry {
     }
 
     appendError(message: string, ...args) {
-        this.appendMessage("<a style='color: red'>{0}</a>".format(ChatMessage.formatMessage(message).format(...args)), false);
+        let entries = MessageHelper.formatMessage(message, ...args);
+        entries.forEach(e => e.css("color", "red"));
+        this.pushChatMessage(new ChatMessage(entries));
     }
 
     appendMessage(message : string, fmt: boolean = true, ...args) {
-        let parms: any[] = [];
-        for(let index = 2; index < arguments.length; index++) {
-            if(typeof arguments[index] == "string") arguments[index] = ChatMessage.formatMessage(arguments[index]);
-            else if(arguments[index] instanceof jQuery) arguments[index] = arguments[index].html();
-            else {
-                console.error("Invalid type " + typeof arguments[index] + "|" + arguments[index].prototype);
-                arguments[index] = arguments[index].toString();
-            }
-            parms.push(arguments[index]);
-        }
-        let msg : string = fmt ? ChatMessage.formatMessage(message) : message;
-        msg = msg.format(parms);
-        let elm = new ChatMessage(msg);
-        this.history.push(elm);
+       this.pushChatMessage(new ChatMessage(MessageHelper.formatMessage(message, ...args)));
+    }
+
+    private pushChatMessage(entry: ChatMessage) {
+        this.history.push(entry);
         while(this.history.length > 100) {
             let elm = this.history.pop_front();
             elm.htmlTag.animate({opacity: 0}, 200, function () {
@@ -109,8 +152,8 @@ class ChatEntry {
             let box = $(this.handle.htmlTag).find(".messages");
             let mbox = $(this.handle.htmlTag).find(".message_box");
             let bottom : boolean = box.scrollTop() + box.height() + 1 >= mbox.height();
-            mbox.append(elm.htmlTag);
-            elm.htmlTag.show().css("opacity", "0").animate({opacity: 1}, 100);
+            mbox.append(entry.htmlTag);
+            entry.htmlTag.show().css("opacity", "0").animate({opacity: 1}, 100);
             if(bottom) box.scrollTop(mbox.height());
         } else {
             this.unread = true;
