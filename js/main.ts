@@ -57,7 +57,7 @@ function main() {
     }));
     */
 
-    Modals.spawnSettingsModal();
+    //Modals.spawnSettingsModal();
 }
 
 app.loadedListener.push(() => main());

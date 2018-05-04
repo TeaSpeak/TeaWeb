@@ -312,7 +312,7 @@ class HandshakeHandler {
                 client_nickname: this.name ? this.name : this.identity.name(),
                 client_platform: navigator.platform,
                 client_version: navigator.userAgent,
-                client_browser_engine: navigator.product
+                //client_browser_engine: navigator.product
             });
         }).catch(error => {
             console.error("Got login error");

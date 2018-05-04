@@ -81,7 +81,7 @@ class AudioController {
             player.buffer = buffer;
             player.onended = () => this.removeNode(player);
             this.playingAudioCache.push(player);
-            player.connect(this.speakerContext.destination);
+            player.connect(AudioController.globalContext.destination);
             player.start(this._timeIndex);
             this._timeIndex += buffer.duration;
         }
@@ -138,6 +138,7 @@ class AudioController {
         return this._codecCache[codec];
     }
 }
+AudioController.userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 AudioController._audioInstances = [];
 AudioController._timeIndex = 0;
 if (!Array.prototype.remove) {
@@ -451,7 +452,6 @@ class VoiceRecorder {
         this.mediaStream = undefined;
         this._chunkCount = 0;
         this.handle = handle;
-        this.userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
         this._deviceId = settings.global("microphone_id", "default");
         this.audioContext = AudioController.globalContext;
         this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
@@ -473,7 +473,7 @@ class VoiceRecorder {
         this.setVADHander(new PassThroughVAD());
     }
     avariable() {
-        return !!this.userMedia;
+        return !!AudioController.userMedia;
     }
     recording() {
         return this._recording;
@@ -545,7 +545,7 @@ class VoiceRecorder {
         this._deviceId = device;
         console.log("Attempt recording!");
         this._recording = true;
-        this.userMedia({
+        AudioController.userMedia({
             audio: true,
             deviceId: device
         }, this.on_microphone.bind(this), error => {
@@ -912,7 +912,8 @@ class VoiceConnection {
             return;
         console.log("Voice ended");
         this.client.getClient().speaking = false;
-        this.sendVoicePacket(new Uint8Array(0), 4); //TODO Use channel codec!
+        if (this.dataChannel)
+            this.sendVoicePacket(new Uint8Array(0), 4); //TODO Use channel codec!
     }
 }
 // If the document is clicked somewhere
@@ -1534,8 +1535,19 @@ var Modals;
 })(Modals || (Modals = {}));
 /// <reference path="channel.ts" />
 /// <reference path="modal/ModalChangeVolume.ts" />
+var ClientType;
+(function (ClientType) {
+    ClientType[ClientType["CLIENT_VOICE"] = 0] = "CLIENT_VOICE";
+    ClientType[ClientType["CLIENT_QUERY"] = 1] = "CLIENT_QUERY";
+    ClientType[ClientType["CLIENT_INTERNAL"] = 2] = "CLIENT_INTERNAL";
+    ClientType[ClientType["CLIENT_WEB"] = 3] = "CLIENT_WEB";
+    ClientType[ClientType["CLIENT_MUSIC"] = 4] = "CLIENT_MUSIC";
+    ClientType[ClientType["CLIENT_UNDEFINED"] = 5] = "CLIENT_UNDEFINED";
+})(ClientType || (ClientType = {}));
 class ClientProperties {
     constructor() {
+        this.client_type = ClientType.CLIENT_VOICE; //TeamSpeaks type
+        this.client_type_exact = ClientType.CLIENT_VOICE;
         this.client_version = "";
         this.client_platform = "";
         this.client_nickname = "unknown";
@@ -1545,23 +1557,24 @@ class ClientProperties {
         this.client_channel_group_id = 0;
         this.client_lastconnected = 0;
         this.client_flag_avatar = "";
-        this.client_output_muted = false;
         this.client_away_message = "";
         this.client_away = false;
         this.client_input_hardware = false;
+        this.client_output_hardware = false;
         this.client_input_muted = false;
+        this.client_output_muted = false;
         this.client_is_channel_commander = false;
         this.client_teaforum_id = 0;
         this.client_teaforum_name = "";
     }
 }
 class ClientEntry {
-    constructor(clientId, clientName) {
-        this.properties = new ClientProperties();
+    constructor(clientId, clientName, properties = new ClientProperties()) {
         this.lastVariableUpdate = 0;
         this._speaking = false;
+        this._properties = properties;
+        this._properties.client_nickname = clientName;
         this._clientId = clientId;
-        this.properties.client_nickname = clientName;
         this.channelTree = null;
         this._channel = null;
         this.audioController = new AudioController();
@@ -1573,6 +1586,9 @@ class ClientEntry {
             _this.speaking = false;
         };
         this.audioController.initialize();
+    }
+    get properties() {
+        return this._properties;
     }
     currentChannel() { return this._channel; }
     clientNickName() { return this.properties.client_nickname; }
@@ -1995,23 +2011,6 @@ class LocalClientEntry extends ClientEntry {
         });
     }
 }
-//Global functions
-function chat_client_contextmenu(_element, event) {
-    event.preventDefault();
-    let element = $(_element);
-    console.log("Context menue for " + element.attr("clientName"));
-    let clid = Number.parseInt(element.attr("clientId"));
-    let client = globalClient.channelTree.findClient(clid);
-    if (!client) {
-        //TODO
-        return;
-    }
-    if (client.clientUid() != element.attr("clientUid")) {
-        //TODO
-        return;
-    }
-    client.showContextMenu(event.pageX, event.pageY);
-}
 /// <reference path="../../utils/modal.ts" />
 var Modals;
 (function (Modals) {
@@ -2367,8 +2366,55 @@ class ChannelTree {
         });
     }
 }
+/// <reference path="client.ts" />
+class MusicClientProperties extends ClientProperties {
+    constructor() {
+        super(...arguments);
+        this.music_volume = 0;
+        this.music_track_id = 0;
+    }
+}
+class MusicClientEntry extends ClientEntry {
+    constructor(clientId, clientName) {
+        super(clientId, clientName, new MusicClientProperties());
+    }
+    get properties() {
+        return this._properties;
+    }
+    showContextMenu(x, y, on_close = undefined) {
+        spawnMenu(x, y, {
+            name: "<b>Change bot name</b>",
+            icon: "client-change_nickname",
+            disabled: true,
+            callback: () => { },
+            type: MenuEntryType.ENTRY
+        }, {
+            name: "Change bot description",
+            icon: "client-edit",
+            disabled: true,
+            callback: () => { },
+            type: MenuEntryType.ENTRY
+        }, {
+            name: "Open music panel",
+            icon: "client-edit",
+            disabled: true,
+            callback: () => { },
+            type: MenuEntryType.ENTRY
+        }, MenuEntry.HR(), {
+            name: "Delete bot",
+            icon: "client-delete",
+            disabled: true,
+            callback: () => { },
+            type: MenuEntryType.ENTRY
+        }, MenuEntry.CLOSE(on_close));
+    }
+    initializeListener() {
+        super.initializeListener();
+    }
+}
 /// <reference path="ui/channel.ts" />
 /// <reference path="client.ts" />
+/// <reference path="ui/MusicClient.ts" />
 class CommandResult {
     constructor(json) {
         this.json = json;
@@ -2637,7 +2683,6 @@ class HandshakeHandler {
                 client_nickname: this.name ? this.name : this.identity.name(),
                 client_platform: navigator.platform,
                 client_version: navigator.userAgent,
-                client_browser_engine: navigator.product
             });
         }).catch(error => {
             console.error("Got login error");
@@ -2773,7 +2818,12 @@ class ConnectionCommandHandler {
         let old_channel = tree.findChannel(json["cfid"]);
         client = tree.findClient(json["clid"]);
         if (!client) {
-            client = new ClientEntry(parseInt(json["clid"]), json["client_nickname"]);
+            if (parseInt(json["client_type_exact"]) == ClientType.CLIENT_MUSIC) {
+                client = new MusicClientEntry(parseInt(json["clid"]), json["client_nickname"]);
+            }
+            else {
+                client = new ClientEntry(parseInt(json["clid"]), json["client_nickname"]);
+            }
             client = tree.insertClient(client, channel);
         }
         else {
@@ -2806,6 +2856,8 @@ class ConnectionCommandHandler {
             updates.push({ key: key, value: json[key] });
         }
         client.updateVariables(...updates);
+        if (client instanceof LocalClientEntry)
+            this.connection._client.controlBar.updateVoice();
     }
     handleCommandClientLeftView(json) {
         json = json[0]; //Only one bulk
@@ -2867,18 +2919,20 @@ class ConnectionCommandHandler {
         }
         if (!channel_from) //Not critical
             console.error("Unknown client move (Channel from)!");
-        if (client instanceof LocalClientEntry) {
+        let self = client instanceof LocalClientEntry;
+        if (self) {
             chat.channelChat().name = channel_to.channelName();
             for (let entry of client.channelTree.clientsByChannel(client.currentChannel()))
                 if (entry !== client)
                     entry.getAudioController().stopAudio(true);
+            this.connection._client.controlBar.updateVoice(channel_to);
         }
         tree.moveClient(client, channel_to);
         if (json["reasonid"] == ViewReasonId.VREASON_MOVED) {
-            chat.serverChat().appendMessage("{0} was moved from channel {1} to {2} by {3}", true, client.createChatTag(true), channel_from ? channel_from.createChatTag(true) : undefined, channel_to.createChatTag(true), ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]));
+            chat.serverChat().appendMessage(self ? "You was moved by {3} from channel {1} to {2}" : "{0} was moved from channel {1} to {2} by {3}", true, client.createChatTag(true), channel_from ? channel_from.createChatTag(true) : undefined, channel_to.createChatTag(true), ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]));
         }
         else if (json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-            chat.serverChat().appendMessage("{0} switched from channel {1} to {2}", true, client.createChatTag(true), channel_from ? channel_from.createChatTag(true) : undefined, channel_to.createChatTag(true));
+            chat.serverChat().appendMessage(self ? "You switched from channel {1} to {2}" : "{0} switched from channel {1} to {2}", true, client.createChatTag(true), channel_from ? channel_from.createChatTag(true) : undefined, channel_to.createChatTag(true));
         }
     }
     handleNotifyChannelMoved(json) {
@@ -3247,6 +3301,18 @@ class InfoBar {
                 "Voice Data Encryption": "unknown"
             }));
         }
+        else if (this._currentSelected instanceof MusicClientEntry) {
+            this._htmlTag.append("Im a music bot!");
+            let frame = $("#tmpl_music_frame" + (this._currentSelected.properties.music_track_id == 0 ? "_empty" : "")).tmpl({
+                thumbnail: "img/loading_image.svg"
+            }).css("align-self", "center");
+            if (this._currentSelected.properties.music_track_id == 0) {
+            }
+            else {
+            }
+            this._htmlTag.append(frame);
+            //TODO
+        }
         else if (this._currentSelected instanceof ClientEntry) {
             this._currentSelected.updateClientVariables();
             let version = this._currentSelected.properties.client_version;
@@ -3299,7 +3365,8 @@ class InfoBar {
                 let channelGroup = $.spawn("div");
                 channelGroup
                     .css("display", "flex")
-                    .css("flex-direction", "column");
+                    .css("flex-direction", "column")
+                    .css("margin-bottom", "20px");
                 let header = $.spawn("div");
                 header
                     .css("display", "flex")
@@ -3323,11 +3390,27 @@ class InfoBar {
                 }
                 this._htmlTag.append(channelGroup);
             }
-            if (this._currentSelected.properties.client_flag_avatar.length > 0)
-                this.handle.fileManager.avatars.generateTag(this._currentSelected)
-                    .css("margin-top", "20px")
-                    .css("max-height", "90%")
-                    .css("max-width", "100%").appendTo(this._htmlTag);
+            {
+                if (this._currentSelected.properties.client_flag_avatar.length > 0)
+                    this.handle.fileManager.avatars.generateTag(this._currentSelected)
+                        .css("max-height", "90%")
+                        .css("max-width", "100%").appendTo(this._htmlTag);
+            }
+            {
+                let spawnTag = (type, description) => {
+                    return $.spawn("div").css("display", "inline-flex")
+                        .append($.spawn("div").addClass("icon_x32 client-" + type).css("margin-right", "5px"))
+                        .append($.spawn("a").text(description).css("align-self", "center"));
+                };
+                if (!this._currentSelected.properties.client_output_hardware)
+                    spawnTag("hardware_output_muted", "Speakers/Headphones disabled").appendTo(this._htmlTag);
+                if (!this._currentSelected.properties.client_input_hardware)
+                    spawnTag("hardware_input_muted", "Microphone disabled").appendTo(this._htmlTag);
+                if (this._currentSelected.properties.client_output_muted)
+                    spawnTag("output_muted", "Speakers/Headphones Muted").appendTo(this._htmlTag);
+                if (this._currentSelected.properties.client_input_muted)
+                    spawnTag("input_muted", "Microphone Muted").appendTo(this._htmlTag);
+            }
             this.intervals.push(setInterval(this.updateClientTimings.bind(this), 1000));
         }
     }
@@ -3943,6 +4026,7 @@ if (!$.fn.tabify) {
 /// <reference path="../../utils/modal.ts" />
 /// <reference path="../../utils/tab.ts" />
 /// <reference path="../../proto.ts" />
+/// <reference path="../../voice/AudioController.ts" />
 var Modals;
 (function (Modals) {
     function spawnSettingsModal() {
@@ -4043,10 +4127,8 @@ var Modals;
         //Trigger radio button select for VAD setting setup
         elm.trigger("change");
         //Initialise microphones
-        console.log(tag);
-        let mselect = tag.find(".voice_microphone_select");
-        console.log(mselect);
-        let mselectError = tag.find(".voice_microphone_select_error");
+        let select_microphone = tag.find(".voice_microphone_select");
+        let select_error = tag.find(".voice_microphone_select_error");
         navigator.mediaDevices.enumerateDevices().then(devices => {
             let currentStream = globalClient.voiceConnection.voiceRecorder.getMediaStream();
             let currentDeviceId;
@@ -4062,22 +4144,22 @@ var Modals;
                     dtag.attr("device-id", device.deviceId);
                     dtag.attr("device-group", device.groupId);
                     dtag.text(device.label);
-                    mselect.append(dtag);
-                    if (currentDeviceId && device.deviceId == currentDeviceId)
-                        mselect.attr("selected", "");
+                    select_microphone.append(dtag);
+                    dtag.prop("selected", currentDeviceId && device.deviceId == currentDeviceId);
                 }
             }
         }).catch(error => {
             console.error("Could not enumerate over devices!");
             console.error(error);
-            mselectError.text("Could not get device list!").show();
+            select_error.text("Could not get device list!").show();
         });
-        mselect.change(event => {
-            let deviceSelected = mselect.find("option:selected");
+        select_microphone.change(event => {
+            let deviceSelected = select_microphone.find("option:selected");
             let deviceId = deviceSelected.attr("device-id");
-            console.log("Selected device: " + deviceId);
+            console.log("Selected microphone device: " + deviceId);
             globalClient.voiceConnection.voiceRecorder.changeDevice(deviceId);
         });
+        //Initialise speakers
     }
 })(Modals || (Modals = {}));
 /// <reference path="../client.ts" />
@@ -4095,6 +4177,7 @@ var Modals;
  */
 class ControlBar {
     constructor(handle, htmlTag) {
+        this._codecNotSupported = false;
         this.handle = handle;
         this.htmlTag = htmlTag;
     }
@@ -4200,7 +4283,25 @@ class ControlBar {
                 client_output_muted: this._muteOutput,
                 client_away: this._away,
                 client_away_message: this._awayMessage,
+                client_input_hardware: !this._codecNotSupported,
+                client_output_hardware: !this._codecNotSupported
             });
+    }
+    updateVoice(targetChannel) {
+        if (!targetChannel)
+            targetChannel = this.handle.getClient().currentChannel();
+        let voiceSupport = this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec);
+        if (voiceSupport == !this._codecNotSupported)
+            return;
+        this._codecNotSupported = !voiceSupport;
+        this.htmlTag.find(".btn_mute_input").prop("disabled", !this._codecNotSupported);
+        this.htmlTag.find(".btn_mute_output").prop("disabled", !this._codecNotSupported);
+        this.handle.serverConnection.sendCommand("clientupdate", {
+            client_input_hardware: this._codecNotSupported,
+            client_output_hardware: this._codecNotSupported
+        });
+        if (this._codecNotSupported)
+            createErrorModal("Channel codec unsupported", "This channel has an unsupported codec.<br>You cant speak or listen to anybody!").open();
     }
     onOpenSettings() {
         Modals.spawnSettingsModal();
@@ -5751,7 +5852,6 @@ let globalClient;
 let chat;
 let forumIdentity;
 function main() {
-    //console.log(ChatEntry.formatMessage("Hello World '{0}' | '{1}' | {12} X", "XXX"));
     //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
     //disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost&loader_ignore_age=1
     AudioController.initializeAudioController();
@@ -5785,6 +5885,12 @@ function main() {
         else
             Modals.spawnConnectModal(settings.static("default_connect_url"));
     }
+    /*
+    $("#music-test").replaceWith($("#tmpl_music_frame_empty").tmpl({
+        thumbnail: "img/loading_image.svg"
+    }));
+    */
+    //Modals.spawnSettingsModal();
 }
 app.loadedListener.push(() => main());
 /// <reference path="BasicCodec.ts"/>

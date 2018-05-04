@@ -17,7 +17,7 @@ class ControlBar {
     private _away: boolean;
     private _awayMessage: string;
 
-    private _codecNotSupported: boolean = true;
+    private _codecNotSupported: boolean = false;
 
     readonly handle: TSClient;
     htmlTag: JQuery;
@@ -141,6 +141,8 @@ class ControlBar {
                 client_output_muted: this._muteOutput,
                 client_away: this._away,
                 client_away_message: this._awayMessage,
+                client_input_hardware: !this._codecNotSupported,
+                client_output_hardware: !this._codecNotSupported
             });
     }
 
@@ -148,8 +150,8 @@ class ControlBar {
         if(!targetChannel)
             targetChannel = this.handle.getClient().currentChannel();
         let voiceSupport = this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec);
-        if(voiceSupport == this._codecNotSupported) return;
-        this._codecNotSupported = voiceSupport;
+        if(voiceSupport == !this._codecNotSupported) return;
+        this._codecNotSupported = !voiceSupport;
 
         this.htmlTag.find(".btn_mute_input").prop("disabled", !this._codecNotSupported);
         this.htmlTag.find(".btn_mute_output").prop("disabled", !this._codecNotSupported);
@@ -158,7 +160,7 @@ class ControlBar {
             client_output_hardware: this._codecNotSupported
         });
 
-        if(!this._codecNotSupported)
+        if(this._codecNotSupported)
             createErrorModal("Channel codec unsupported", "This channel has an unsupported codec.<br>You cant speak or listen to anybody!").open();
     }
 
