@@ -271,6 +271,7 @@ class VoiceConnection {
 
         console.log("Voice ended");
         this.client.getClient().speaking = false;
-        this.sendVoicePacket(new Uint8Array(0), 4); //TODO Use channel codec!
+        if(this.dataChannel)
+            this.sendVoicePacket(new Uint8Array(0), 4); //TODO Use channel codec!
     }
 }

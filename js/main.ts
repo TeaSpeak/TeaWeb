@@ -45,10 +45,25 @@ function main() {
     //Modals.createChannelModal(undefined);
 
     if(settings.static("default_connect_url")) {
-        if(settings.static("default_connect_type", "forum") == "forum") {
-            globalClient.startConnection(settings.static("default_connect_url"), forumIdentity);
-        } else
-            Modals.spawnConnectModal(settings.static("default_connect_url"));
+        switch (settings.static("default_connect_type")) {
+            case "teaforo":
+                if(forumIdentity)
+                    globalClient.startConnection(settings.static("default_connect_url"), forumIdentity);
+                else
+                    Modals.spawnConnectModal(settings.static("default_connect_url"), IdentitifyType.TEAFORO);
+                break;
+
+            case "teamspeak":
+                let connectIdentity = TSIdentityHelper.loadIdentity(settings.global("connect_identity_teamspeak_identity", ""));
+                if(!connectIdentity)
+                    Modals.spawnConnectModal(settings.static("default_connect_url"), IdentitifyType.TEAMSPEAK);
+                else
+                    globalClient.startConnection(settings.static("default_connect_url"), connectIdentity);
+                break;
+
+            default:
+                Modals.spawnConnectModal(settings.static("default_connect_url"));
+        }
     }
 
     /*

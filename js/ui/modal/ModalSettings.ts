@@ -1,6 +1,7 @@
 /// <reference path="../../utils/modal.ts" />
 /// <reference path="../../utils/tab.ts" />
 /// <reference path="../../proto.ts" />
+/// <reference path="../../voice/AudioController.ts" />
 
 namespace Modals {
     export function spawnSettingsModal() {
@@ -115,10 +116,9 @@ namespace Modals {
         elm.trigger("change");
 
         //Initialise microphones
-        console.log(tag);
-        let mselect = tag.find(".voice_microphone_select");
-        console.log(mselect);
-        let mselectError = tag.find(".voice_microphone_select_error");
+        let select_microphone = tag.find(".voice_microphone_select");
+        let select_error = tag.find(".voice_microphone_select_error");
+
         navigator.mediaDevices.enumerateDevices().then(devices => {
             let currentStream = globalClient.voiceConnection.voiceRecorder.getMediaStream();
             let currentDeviceId;
@@ -134,23 +134,24 @@ namespace Modals {
                     dtag.attr("device-id", device.deviceId);
                     dtag.attr("device-group", device.groupId);
                     dtag.text(device.label);
-                    mselect.append(dtag);
+                    select_microphone.append(dtag);
 
-                    if(currentDeviceId && device.deviceId == currentDeviceId)
-                        mselect.attr("selected", "");
+                    dtag.prop("selected", currentDeviceId && device.deviceId == currentDeviceId);
                 }
             }
         }).catch(error => {
             console.error("Could not enumerate over devices!");
             console.error(error);
-            mselectError.text("Could not get device list!").show();
+            select_error.text("Could not get device list!").show();
         });
 
-        mselect.change(event => {
-            let deviceSelected = mselect.find("option:selected");
+        select_microphone.change(event => {
+            let deviceSelected = select_microphone.find("option:selected");
             let deviceId = deviceSelected.attr("device-id");
-            console.log("Selected device: " + deviceId);
+            console.log("Selected microphone device: " + deviceId);
             globalClient.voiceConnection.voiceRecorder.changeDevice(deviceId);
         });
+        //Initialise speakers
+
    }
 }

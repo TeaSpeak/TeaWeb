@@ -1,6 +1,6 @@
 /// <reference path="../../utils/modal.ts" />
 namespace Modals {
-    export function spawnConnectModal(defaultHost: string = "ts.TeaSpeak.de") {
+    export function spawnConnectModal(defaultHost: string = "ts.TeaSpeak.de", def_connect_type?: IdentitifyType) {
         let connectIdentity: Identity;
         const connectModal = createModal({
             header: function() {
@@ -12,6 +12,7 @@ namespace Modals {
                 let tag = $("#tmpl_connect").contents().clone();
 
                 let updateFields = function () {
+                    console.log("UPDATE!");
                     if(connectIdentity) tag.find(".connect_nickname").attr("placeholder", connectIdentity.name());
                     else tag.find(".connect_nickname").attr("");
 
@@ -42,9 +43,9 @@ namespace Modals {
                     }
 
                     if(!flag_nickname || !flag_address || !connectIdentity) {
-                        button.attr("disabled", "true");
+                        button.prop("disabled", true);
                     } else {
-                        button.removeAttr("disabled");
+                        button.prop("disabled", false);
                     }
                 };
 
@@ -53,12 +54,12 @@ namespace Modals {
                 tag.find(".connect_nickname").on("keyup", () => updateFields());
 
                 tag.find(".identity_select").on('change', function (this: HTMLSelectElement) {
-                    settings.changeGlobal("connect_identity_type", this.value);
+                    settings.changeGlobal("connect_identity_type", IdentitifyType[this.value]);
                     tag.find(".error_message").hide();
                     tag.find(".identity_config:not(" + ".identity_config_" + this.value + ")").hide();
                     tag.find(".identity_config_" + this.value).show().trigger('shown');
                 });
-                tag.find(".identity_select").val(settings.global("connect_identity_type", "forum"));
+                tag.find(".identity_select").val(IdentitifyType[def_connect_type ? def_connect_type : settings.global("connect_identity_type", IdentitifyType.TEAFORO)]);
                 setTimeout(() =>  tag.find(".identity_select").trigger('change'), 0); //For some reason could not be run instantly
 
                 tag.find(".identity_file").change(function (this: HTMLInputElement) {
@@ -86,6 +87,7 @@ namespace Modals {
                 tag.find(".identity_string").on('change', function (this: HTMLInputElement) {
                     if(this.value.length == 0){
                         tag.find(".error_message").text("Please select an identity!");
+                        connectIdentity = undefined;
                     } else {
                         connectIdentity = TSIdentityHelper.loadIdentity(this.value);
                         if(!connectIdentity) tag.find(".error_message").text("Could not parse identity! " + TSIdentityHelper.last_error());
@@ -96,11 +98,11 @@ namespace Modals {
                     updateFields();
                 });
                 tag.find(".identity_string").val(settings.global("connect_identity_teamspeak_identity", ""));
-                tag.find(".identity_config_teamspeak").on('shown', ev => {  tag.find(".identity_string").trigger('change'); });
+                tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAMSPEAK]).on('shown', ev => {  tag.find(".identity_string").trigger('change'); });
 
                 if(!forumIdentity)
-                    tag.find(".identity_config_forum").html("You cant use your TeaSpeak forum account.<br>You're not connected!");
-                tag.find(".identity_config_forum").on('shown', ev => { connectIdentity = forumIdentity; updateFields(); });
+                    tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAFORO]).html("You cant use your TeaSpeak forum account.<br>You're not connected!");
+                tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAFORO]).on('shown', ev => { connectIdentity = forumIdentity; updateFields(); });
 
                 //connect_address
                 return tag;

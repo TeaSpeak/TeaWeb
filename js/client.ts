@@ -128,6 +128,27 @@ class TSClient {
         return !!this.serverConnection && this.serverConnection.connected;
     }
 
+    private certAcceptUrl() {
+        // document.URL
+        let callback = document.URL;
+        if(document.location.search.length == 0)
+            callback += "?default_connect_url=true";
+        else
+            callback += "&default_connect_url=true";
+        //
+        switch (this.serverConnection._handshakeHandler.identity.type()) {
+            case IdentitifyType.TEAFORO:
+                callback += "&default_connect_type=teaforo";
+                break;
+            case IdentitifyType.TEAMSPEAK:
+                callback += "&default_connect_type=teamspeak";
+                break;
+        }
+        callback += "&default_connect_url=" + encodeURIComponent(this.serverConnection._remoteHost + ":" + this.serverConnection._remotePort);
+
+        return "https://" + this.serverConnection._remoteHost + ":" + this.serverConnection._remotePort + "/?forward_url=" + encodeURIComponent(callback);
+    }
+
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         switch (type) {
             case DisconnectReason.REQUESTED:
@@ -140,8 +161,8 @@ class TSClient {
                 createErrorModal(
                     "Could not connect",
                     "Could not connect to remote host (Connection refused)<br>" +
-                    "If you're shure that the remot host is up, than you may not allow unsigned certificates.<br>" +
-                    "Click <a href='https://" + this.serverConnection._remoteHost + ":" + this.serverConnection._remotePort + "'>here</a> to accept the remote certificate"
+                    "If you're sure that the remote host is up, than you may not allow unsigned certificates.<br>" +
+                    "Click <a href='" + this.certAcceptUrl() + "'>here</a> to accept the remote certificate"
                 ).open();
                 break;
             case DisconnectReason.CONNECTION_CLOSED:

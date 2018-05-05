@@ -7,17 +7,18 @@ enum PlayerState {
 }
 
 class AudioController {
+    public static userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     private static _globalContext: AudioContext;
     private static _audioInstances: AudioController[] = [];
     private static _globalReplayScheduler: NodeJS.Timer;
     private static _timeIndex: number = 0;
+    private static _audioDestinationStream: MediaStream;
 
     static get globalContext() : AudioContext {
         if(this._globalContext) return this._globalContext;
         this._globalContext = new AudioContext();
         return this._globalContext;
     }
-
     static initializeAudioController() {
         //this._globalReplayScheduler = setInterval(() => { AudioController.invokeNextReplay(); }, 20); //Fix me
     }
@@ -150,7 +151,7 @@ class AudioController {
             player.onended = () => this.removeNode(player);
             this.playingAudioCache.push(player);
 
-            player.connect(this.speakerContext.destination);
+            player.connect(AudioController.globalContext.destination);
             player.start(this._timeIndex);
             this._timeIndex += buffer.duration;
          }

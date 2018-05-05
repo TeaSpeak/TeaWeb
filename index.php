@@ -32,6 +32,7 @@
         <link rel="stylesheet" href="css/loader.css" type="text/css">
         <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
 
+        <!-- https://localhost:9987/?forward_url=http%3A%2F%2Flocalhost%3A63344%2FWeb-Client%2Findex.php%3F_ijt%3D82b1uhmnh0a5l1n35nnjps5eid%26loader_ignore_age%3D1%26connect_default_host%3Dlocalhost%26default_connect_type%3Dforum%26default_connect_url%3Dtrue%26default_connect_type%3Dteamspeak%26default_connect_url%3Dlocalhost%253A9987 -->
         <!-- PHP generated properies -->
         <!-- localhost:63342/TeaSpeak-Web/index.php?_ijt=o48hmliefjoa8cer8v7mpl98pj&connect_default_host=192.168.43.141 -->
         <x-properties id="properties">

@@ -28,11 +28,11 @@ class ControlBar {
     }
 
     initialise() {
-        this.htmlTag.find(".btn_connect").click(this.onConnect.bind(this));
-        this.htmlTag.find(".btn_client_away").click(this.onAway.bind(this));
-        this.htmlTag.find(".btn_mute_input").click(this.onInputMute.bind(this));
-        this.htmlTag.find(".btn_mute_output").click(this.onOutputMute.bind(this));
-        this.htmlTag.find(".btn_open_settings").click(this.onOpenSettings.bind(this));
+        this.htmlTag.find(".btn_connect").on('click', this.onConnect.bind(this));
+        this.htmlTag.find(".btn_client_away").on('click', this.onAway.bind(this));
+        this.htmlTag.find(".btn_mute_input").on('click', this.onInputMute.bind(this));
+        this.htmlTag.find(".btn_mute_output").on('click', this.onOutputMute.bind(this));
+        this.htmlTag.find(".btn_open_settings").on('click', this.onOpenSettings.bind(this));
 
 
         //Need an initialise
@@ -161,7 +161,7 @@ class ControlBar {
         });
 
         if(this._codecNotSupported)
-            createErrorModal("Channel codec unsupported", "This channel has an unsupported codec.<br>You cant speak or listen to anybody!").open();
+            createErrorModal("Channel codec unsupported", "This channel has an unsupported codec.<br>You cant speak or listen to anybody within this channel!").open();
     }
 
     private onOpenSettings() {

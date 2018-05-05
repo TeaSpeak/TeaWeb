@@ -28,7 +28,6 @@ class VoiceRecorder {
 
     private _recording: boolean = false;
 
-    private userMedia: any;
     private microphoneStream: MediaStreamAudioSourceNode = undefined;
     private mediaStream: MediaStream = undefined;
 
@@ -43,7 +42,6 @@ class VoiceRecorder {
 
     constructor(handle: VoiceConnection) {
         this.handle = handle;
-        this.userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 
         this._deviceId = settings.global("microphone_id", "default");
 
@@ -71,7 +69,7 @@ class VoiceRecorder {
     }
 
     avariable() : boolean {
-        return !!this.userMedia;
+        return !!AudioController.userMedia;
     }
 
     recording() : boolean {
@@ -145,7 +143,7 @@ class VoiceRecorder {
         this._deviceId = device;
         console.log("Attempt recording!");
         this._recording = true;
-        this.userMedia({
+        AudioController.userMedia({
             audio: true,
             deviceId: device
         }, this.on_microphone.bind(this), error => {

@@ -1,2 +1,5 @@
 js/**/*.js*
+generated/
+node_modules/
+auth/certs/
 .idea/
