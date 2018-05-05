@@ -15,7 +15,7 @@ function submitLogin(user, pass) {
             user: user,
             pass: pass
         },
-        success: function (result) {
+        success: (result) => {
             setTimeout(() => {
                 let data;
                 try {

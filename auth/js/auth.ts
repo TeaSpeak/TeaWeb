@@ -5,10 +5,10 @@ btn_login.on('click', () => {
         .prop("disabled", true)
         .empty()
         .append($(document.createElement("i")).addClass("fa fa-circle-o-notch fa-spin"));
-    submitLogin($("#user").val(), $("#pass").val());
+    submitLogin($("#user").val() as string, $("#pass").val() as string);
 });
 
-function submitLogin(user, pass) {
+function submitLogin(user: string, pass: string) {
     $.ajax({
         url: "auth.php?type=login",
         type: "POST",
@@ -17,7 +17,7 @@ function submitLogin(user, pass) {
             user: user,
             pass: pass
         },
-        success: function(result){
+        success: (result: string) => {
             setTimeout(() => {
                 let data;
                 try {
@@ -53,7 +53,7 @@ function submitLogin(user, pass) {
     });
 }
 
-function loginFailed(err = "") {
+function loginFailed(err: string = "") {
     btn_login
         .prop("disabled", false)
         .empty()
