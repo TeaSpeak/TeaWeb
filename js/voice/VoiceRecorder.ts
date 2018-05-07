@@ -17,10 +17,15 @@ abstract class VoiceActivityDetector {
     }
 }
 
+//A small class extention
+interface MediaStreamConstraints {
+    deviceId?: string;
+}
+
 class VoiceRecorder {
     private static readonly CHANNEL = 0;
     private static readonly CHANNELS = 1;
-    private static readonly BUFFER_SIZE = 1024;
+    private static readonly BUFFER_SIZE = 1024 * 4;
 
     handle: VoiceConnection;
     on_data: (data: AudioBuffer, head: boolean) => void = (data) => {};
@@ -180,10 +185,13 @@ class VoiceRecorder {
         const oldStream = this.microphoneStream;
         this.microphoneStream = this.audioContext.createMediaStreamSource(stream);
         this.microphoneStream.connect(this.processor);
+        chat.serverChat().appendMessage("Mic channels " + this.microphoneStream.channelCount);
+        chat.serverChat().appendMessage("Mic channel mode " + this.microphoneStream.channelCountMode);
+        chat.serverChat().appendMessage("Max channel count " + this.audioContext.destination.maxChannelCount);
+        chat.serverChat().appendMessage("Sample rate " + this.audioContext.sampleRate);
         this.vadHandler.initialiseNewStream(oldStream, this.microphoneStream);
     }
 }
-
 class MuteVAD extends VoiceActivityDetector {
     shouldRecord(buffer: AudioBuffer): boolean {
         return false;

@@ -129,10 +129,27 @@ class VoiceConnection {
 
         this.codecPool[4].initialize(2);
         this.codecPool[5].initialize(2);
+
+        setTimeout(() => {
+            //if(Date.now() - this.last != 20)
+            //    chat.serverChat().appendError("INVALID LAST: " + (Date.now() - this.last));
+            this.last = Date.now();
+            if(this.encodedCache.length == 0){
+                //console.log("MISSING VOICE!");
+                //chat.serverChat().appendError("MISSING VOICE!");
+            } else this.sendVoicePacket(this.encodedCache[0].data, this.encodedCache[0].codec);
+            this.encodedCache.pop_front();
+        }, 20);
     }
 
     codecSupported(type: number) : boolean {
         return this.codecPool.length > type && this.codecPool[type].supported();
+    }
+
+    encodedCache: {data: Uint8Array, codec: number}[] = [];
+    last: number;
+    handleEncodedVoicePacket(data: Uint8Array, codec: number){
+        this.encodedCache.push({data: data, codec: codec});
     }
 
     sendVoicePacket(data: Uint8Array, codec: number) {

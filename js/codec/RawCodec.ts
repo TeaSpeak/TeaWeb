@@ -40,4 +40,8 @@ class RawCodec extends BasicCodec {
     }
 
     reset() : boolean { return true; }
+
+    processLatency(): number {
+        return 0;
+    }
 }
