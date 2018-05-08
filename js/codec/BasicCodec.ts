@@ -1,10 +1,29 @@
 /// <reference path="Codec.ts"/>
 
+class AVGCalculator {
+    history_size: number = 100;
+    history: number[] = [];
+
+    push(entry: number) {
+        while(this.history.length > this.history_size)
+            this.history.pop();
+        this.history.unshift(entry);
+    }
+
+    avg() : number {
+        let count = 0;
+        for(let entry of this.history)
+            count += entry;
+        return count / this.history.length;
+    }
+}
+
 abstract class BasicCodec implements Codec {
     protected _audioContext: OfflineAudioContext;
     protected _decodeResampler: AudioResampler;
     protected _encodeResampler: AudioResampler;
     protected _codecSampleRate: number;
+    protected _latenz: AVGCalculator = new AVGCalculator();
 
     on_encoded_data: (Uint8Array) => void = $ => {};
     channelCount: number = 1;
@@ -13,7 +32,7 @@ abstract class BasicCodec implements Codec {
     constructor(codecSampleRate: number) {
         this.channelCount = 1;
         this.samplesPerUnit = 960;
-        this._audioContext = new OfflineAudioContext(1, 1024,44100 );
+        this._audioContext = new OfflineAudioContext(AudioController.globalContext.destination.channelCount, 1024,AudioController.globalContext.sampleRate );
         this._codecSampleRate = codecSampleRate;
         this._decodeResampler = new AudioResampler(AudioController.globalContext.sampleRate);
         this._encodeResampler = new AudioResampler(codecSampleRate);
@@ -50,11 +69,14 @@ abstract class BasicCodec implements Codec {
                     cache._chunks.pop_front();
             }
 
-            let encodeBegin = new Date().getTime();
+            let encodeBegin = Date.now();
             this.encode(buffer).then(result => {
                 if(result instanceof Uint8Array) {
-                    if(new Date().getTime() - 20 > encodeBegin)
-                        console.error("Required time: %d", new Date().getTime() - encodeBegin);
+                    let time = Date.now() - encodeBegin;
+                    if(time > 20)
+                        console.error("Required time: %d", time);
+                    if(time > 20)
+                        chat.serverChat().appendError("Required decode time: " + time);
                     this.on_encoded_data(result);
                 }
                 else console.error("[Codec][" + this.name() + "] Could not encode buffer. Result: " + result);

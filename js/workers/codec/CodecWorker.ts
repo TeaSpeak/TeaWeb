@@ -19,6 +19,7 @@ let codecInstance: CodecWorker;
 
 onmessage = function(e) {
     let data = JSON.parse(e.data);
+    console.log(prefix + "Pipeline timestamp: %d");
 
     let res: any = {};
     res.token = data.token;
@@ -85,8 +86,19 @@ onmessage = function(e) {
     if(res.token && res.token.length > 0) sendMessage(res, e.origin);
 };
 
+function printMessageToServerTab(message: string) {
+    /*
+    sendMessage({
+        token: workerCallbackToken,
+        type: "chatmessage_server",
+        message: message
+    });
+    */
+}
+
 declare function postMessage(message: any): void;
 function sendMessage(message: any, origin?: string){
     //console.log(prefix + " Send to main: %o", message);
+    message["timestamp"] = Date.now();
     postMessage(JSON.stringify(message));
 }

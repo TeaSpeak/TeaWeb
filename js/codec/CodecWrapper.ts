@@ -143,11 +143,12 @@ class CodecWrapper extends BasicCodec {
 
     private sendWorkerMessage(message: any, transfare?: any[]) {
         //console.log("Send worker: %o", message);
+        message["timestamp"] = Date.now();
         this._worker.postMessage(JSON.stringify(message), transfare);
     }
 
     private onWorkerMessage(message: any) {
-        //console.log("Worker message: %o", message);
+        console.log("Worker message stock time: %d", Date.now() - message["timestamp"]);
         if(!message["token"]) {
             console.error("Invalid worker token!");
             return;
@@ -165,6 +166,9 @@ class CodecWrapper extends BasicCodec {
                 }
                 this._workerCallbackReject = undefined;
                 this._workerCallbackResolve = undefined;
+                return;
+            } else if(message["type"] == "chatmessage_server") {
+                chat.serverChat().appendMessage(message["message"]);
                 return;
             }
             console.log("Costume callback! (%o)", message);
