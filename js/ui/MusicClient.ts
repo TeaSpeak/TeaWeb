@@ -18,19 +18,19 @@ class MusicClientEntry extends ClientEntry {
         spawnMenu(x, y,
             {
                 name: "<b>Change bot name</b>",
-                icon: "client-change_nickname",
+                icon: "manager-change_nickname",
                 disabled: true,
                 callback: () => {},
                 type: MenuEntryType.ENTRY
             }, {
                 name: "Change bot description",
-                icon: "client-edit",
+                icon: "manager-edit",
                 disabled: true,
                 callback: () => {},
                 type: MenuEntryType.ENTRY
             }, {
                 name: "Open music panel",
-                icon: "client-edit",
+                icon: "manager-edit",
                 disabled: true,
                 callback: () => {},
                 type: MenuEntryType.ENTRY
@@ -38,7 +38,7 @@ class MusicClientEntry extends ClientEntry {
             MenuEntry.HR(),
             {
                 name: "Delete bot",
-                icon: "client-delete",
+                icon: "manager-delete",
                 disabled: true,
                 callback: () => {},
                 type: MenuEntryType.ENTRY

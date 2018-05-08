@@ -184,7 +184,7 @@ class ChatEntry {
         tag.append("<a class='name'>" + this._name + "</a>");
 
         let closeTag = $.spawn("div");
-        closeTag.addClass("btn_close icon client-tab_close_button");
+        closeTag.addClass("btn_close icon manager-tab_close_button");
         if(!this._closeable) closeTag.hide();
         tag.append(closeTag);
 
@@ -208,7 +208,7 @@ class ChatEntry {
             if(_this.closeable) {
                 actions.push({
                     type: MenuEntryType.ENTRY,
-                    icon: "client-tab_close_button",
+                    icon: "manager-tab_close_button",
                     name: "Close",
                     callback: () => {
                         chat.deleteChat(_this);
@@ -218,7 +218,7 @@ class ChatEntry {
 
             actions.push({
                 type: MenuEntryType.ENTRY,
-                icon: "client-tab_close_button",
+                icon: "manager-tab_close_button",
                 name: "Close all private tabs",
                 callback: () => {
                     //TODO Implement this?
@@ -266,18 +266,18 @@ class ChatEntry {
         if(this._unread) {
             switch (this.type) {
                 case ChatType.CLIENT:
-                    return "client-new_chat";
+                    return "manager-new_chat";
             }
         }
         switch (this.type) {
             case ChatType.SERVER:
-                return "client-server_log";
+                return "manager-server_log";
             case ChatType.CHANNEL:
-                return "client-channel_chat";
+                return "manager-channel_chat";
             case ChatType.CLIENT:
-                return "client-player_chat";
+                return "manager-player_chat";
             case ChatType.GENERAL:
-                return "client-channel_chat";
+                return "manager-channel_chat";
         }
         return "";
     }

@@ -113,7 +113,7 @@ function loadRelease() {
     awaitLoad(loadScripts([
         //Load general API's
         ["js/assembly/TeaWeb-Identity.js"],
-        ["js/client.min.js", "js/client.js", "generated/js/client.min.js", "generated/js/client.js"]
+        ["js/manager.min.js", "js/manager.js", "generated/js/manager.min.js", "generated/js/manager.js"]
     ])).then(() => {
         console.log("Loaded successfully all scripts!");
         app.callbackApp();
@@ -147,7 +147,7 @@ function loadDebug() {
         "js/ui/modal/ModalChangeVolume.js",
         "js/ui/modal/ModalBanClient.js",
         "js/ui/channel.js",
-        "js/ui/client.js",
+        "js/ui/manager.js",
         "js/ui/MusicClient.js",
         "js/ui/server.js",
         "js/ui/view.js",
@@ -173,7 +173,7 @@ function loadDebug() {
         "js/contextMenu.js",
         "js/connection.js",
         "js/FileManager.js",
-        "js/client.js",
+        "js/manager.js",
         "js/chat.js",
         "js/InfoBar.js",
         "js/Identity.js"
