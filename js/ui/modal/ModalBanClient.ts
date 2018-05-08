@@ -6,7 +6,7 @@ namespace Modals {
     export function spawnBanClient(name: string, callback: (length: number, reason: string) => void) {
         const connectModal = createModal({
             header: function() {
-                return "Ban client";
+                return "Ban manager";
             },
             body: function () {
                 let tag = $("#tmpl_client_ban").tmpl({
