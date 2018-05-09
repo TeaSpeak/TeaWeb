@@ -240,7 +240,7 @@ class VoiceConnection {
         //console.log("Client id " + clientId + " PacketID " + packetId + " Codec: " + codec);
         let client = this.client.channelTree.findClient(clientId);
         if(!client) {
-            console.error("Having  voice from unknown manager? (ClientID: " + clientId + ")");
+            console.error("Having  voice from unknown client? (ClientID: " + clientId + ")");
             return;
         }
 
@@ -262,7 +262,7 @@ class VoiceConnection {
             codecPool.ownCodec(clientId)
                 .then(decoder => decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData))
                 .then(buffer => client.getAudioController().playBuffer(buffer)).catch(error => {
-                console.error("Could not playback manager's (" + clientId + ") audio (" + error + ")");
+                console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
             });
         }
     }
@@ -280,7 +280,7 @@ class VoiceConnection {
         //TODO Use channel codec!
         this.codecPool[4].ownCodec(this.client.getClientId())
             .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4),data));
-        //this.manager.getClient().getAudioController().play(data);
+        //this.client.getClient().getAudioController().play(data);
     }
 
     private handleVoiceEnded() {

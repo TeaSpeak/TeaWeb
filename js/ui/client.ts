@@ -108,7 +108,7 @@ class ClientEntry {
         spawnMenu(x, y,
             {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-change_nickname",
+                icon: "client-change_nickname",
                 name: "<b>Open text chat</b>",
                 callback: function () {
                     chat.activeChat = _this.chat(true);
@@ -116,12 +116,12 @@ class ClientEntry {
                 }
             }, {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-poke",
-                name: "Poke manager",
+                icon: "client-poke",
+                name: "Poke client",
                 callback: function () {
-                    createInputModal("Poke manager", "Poke message:<br>", text => true, result => {
+                    createInputModal("Poke client", "Poke message:<br>", text => true, result => {
                         if(result) {
-                            console.log("Poking manager " + _this.clientNickName() + " with message " + result);
+                            console.log("Poking client " + _this.clientNickName() + " with message " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientpoke", {
                                 clid: _this.clientId(),
                                 msg: result
@@ -132,10 +132,10 @@ class ClientEntry {
                 }
             }, {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-edit",
+                icon: "client-edit",
                 name: "Change description",
                 callback: function () {
-                    createInputModal("Change manager description", "New description:<br>", text => true, result => {
+                    createInputModal("Change client description", "New description:<br>", text => true, result => {
                         if(result) {
                             console.log("Changing " + _this.clientNickName() + "'s description to " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientedit", {
@@ -149,8 +149,8 @@ class ClientEntry {
             },
             MenuEntry.HR(), {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-move_client_to_own_channel",
-                name: "Move manager to your channel",
+                icon: "client-move_client_to_own_channel",
+                name: "Move client to your channel",
                 callback: () => {
                     this.channelTree.client.serverConnection.sendCommand("clientmove", {
                         clid: this.clientId(),
@@ -159,12 +159,12 @@ class ClientEntry {
                 }
             }, {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-kick_channel",
-                name: "Kick manager from channel",
+                icon: "client-kick_channel",
+                name: "Kick client from channel",
                 callback: function () {
-                    createInputModal("Kick manager from channel", "Kick reason:<br>", text => true, result => {
+                    createInputModal("Kick client from channel", "Kick reason:<br>", text => true, result => {
                         if(result) {
-                            console.log("Kicking manager " + _this.clientNickName() + " from channel with reason " + result);
+                            console.log("Kicking client " + _this.clientNickName() + " from channel with reason " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientkick", {
                                 clid: _this.clientId(),
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
@@ -176,12 +176,12 @@ class ClientEntry {
                 }
             }, {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-kick_server",
-                name: "Kick manager fom server",
+                icon: "client-kick_server",
+                name: "Kick client fom server",
                 callback: function () {
-                    createInputModal("Kick manager from server", "Kick reason:<br>", text => true, result => {
+                    createInputModal("Kick client from server", "Kick reason:<br>", text => true, result => {
                         if(result) {
-                            console.log("Kicking manager " + _this.clientNickName() + " from server with reason " + result);
+                            console.log("Kicking client " + _this.clientNickName() + " from server with reason " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientkick", {
                                 clid: _this.clientId(),
                                 reasonid: ViewReasonId.VREASON_SERVER_KICK,
@@ -193,8 +193,8 @@ class ClientEntry {
                 }
             }, {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-ban_client",
-                name: "Ban manager",
+                icon: "client-ban_client",
+                name: "Ban client",
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
                     Modals.spawnBanClient(this.properties.client_nickname, (duration, reason) => {
@@ -209,7 +209,7 @@ class ClientEntry {
             MenuEntry.HR(),
             {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-volume",
+                icon: "client-volume",
                 name: "Change Volume",
                 callback: () => {
                     Modals.spawnChangeVolume(this.audioController.volume, volume => {
@@ -287,13 +287,13 @@ class ClientEntry {
         let icon: string = "";
         let clicon: string = "";
         if(this.properties.client_away) {
-            icon = "manager-away";
+            icon = "client-away";
         } else if(this.properties.client_output_muted) {
-            icon = "manager-hardware_output_muted";
+            icon = "client-hardware_output_muted";
         } else if(!this.properties.client_input_hardware) {
-            icon = "manager-hardware_input_muted";
+            icon = "client-hardware_input_muted";
         } else if(this.properties.client_input_muted) {
-            icon = "manager-input_muted";
+            icon = "client-input_muted";
         } else {
             if(this._speaking) {
                 if(this.properties.client_is_channel_commander)
@@ -335,7 +335,7 @@ class ClientEntry {
                 this.properties[variable.key] = parseInt(variable.value);
             else
                 this.properties[variable.key] = variable.value;
-            group.log("Updating manager " + this.clientId() + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
+            group.log("Updating client " + this.clientId() + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "client_nickname") {
                 this.tag.find(".name").text(variable.value);
                 let chat = this.chat(false);
@@ -464,7 +464,7 @@ class LocalClientEntry extends ClientEntry {
     private renaming: boolean;
 
     constructor(handle: TSClient) {
-        super(0, "local manager");
+        super(0, "local client");
         this.handle = handle;
     }
 
@@ -474,12 +474,12 @@ class LocalClientEntry extends ClientEntry {
         spawnMenu(x, y,
             {
                 name: "<b>Change name</b>",
-                icon: "manager-change_nickname",
+                icon: "client-change_nickname",
                 callback: () =>_self.openRename(),
                 type: MenuEntryType.ENTRY
             }, {
                 name: "Change description",
-                icon: "manager-edit",
+                icon: "client-edit",
                 callback: () => {
                     createInputModal("Change own description", "New description:<br>", text => true, result => {
                         if(result) {

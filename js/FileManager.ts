@@ -311,7 +311,7 @@ class IconManager {
         if(id == 0)
             return $("<div class='icon_empty'></div>");
         else if(id < 1000)
-            return $("<div class='icon manager-group_" + id + "'></div>");
+            return $("<div class='icon client-group_" + id + "'></div>");
 
         let tag = $.spawn("div");
         tag.addClass("icon_empty");
@@ -342,7 +342,7 @@ class IconManager {
                 });
             }).catch(reason => {
                 console.error("Could not load icon " + id + ". Reason: " + reason);
-                loader.removeClass("icon_loading").addClass("icon manager-warning").attr("tag", "Could not load icon " + id);
+                loader.removeClass("icon_loading").addClass("icon client-warning").attr("tag", "Could not load icon " + id);
             });
         }
 
@@ -447,7 +447,7 @@ class AvatarManager {
             }).catch(reason => {
                 console.error("Could not load avatar for " + client.clientNickName() + ". Reason: " + reason);
                 //TODO Broken image
-                loader.addClass("icon manager-warning").attr("tag", "Could not load avatar " + client.clientNickName());
+                loader.addClass("icon client-warning").attr("tag", "Could not load avatar " + client.clientNickName());
             });
         }
 

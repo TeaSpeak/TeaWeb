@@ -39,7 +39,7 @@ class ChannelTree {
         spawnMenu(x, y,
             {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-channel_create",
+                icon: "client-channel_create",
                 name: "Create channel",
                 invalidPermission: !channelCreate,
                 callback: () => this.spawnCreateChannel()
@@ -167,7 +167,7 @@ class ChannelTree {
 
     insertClient(client: ClientEntry, channel: ChannelEntry) : ClientEntry {
         let newClient = this.findClient(client.clientId());
-        if(newClient) client = newClient; //Got new manager :)
+        if(newClient) client = newClient; //Got new client :)
         else
             this.clients.push(client);
         client.channelTree = this;

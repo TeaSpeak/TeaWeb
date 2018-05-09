@@ -162,7 +162,7 @@ class InfoBar {
                     .css("display", "flex")
                     .css("margin-top", "5px")
                     .css("align-items", "center");
-                $.spawn("div").addClass("icon manager-permission_server_groups").appendTo(header);
+                $.spawn("div").addClass("icon client-permission_server_groups").appendTo(header);
                 $.spawn("div").text("Server groups:").css("margin-left", "3px").css("font-weight", "bold").appendTo(header);
                 header.appendTo(serverGroups);
 
@@ -196,7 +196,7 @@ class InfoBar {
                     .css("display", "flex")
                     .css("margin-top", "10px")
                     .css("align-items", "center");
-                $.spawn("div").addClass("icon manager-permission_channel").appendTo(header);
+                $.spawn("div").addClass("icon client-permission_channel").appendTo(header);
                 $.spawn("div").text("Channel group:").css("margin-left", "3px").css("font-weight", "bold").appendTo(header);
                 header.appendTo(channelGroup);
 
@@ -227,7 +227,7 @@ class InfoBar {
             {
                 let spawnTag = (type: string, description: string) : JQuery => {
                     return $.spawn("div").css("display", "inline-flex")
-                        .append($.spawn("div").addClass("icon_x32 manager-" + type).css("margin-right", "5px"))
+                        .append($.spawn("div").addClass("icon_x32 client-" + type).css("margin-right", "5px"))
                         .append($.spawn("a").text(description).css("align-self", "center"));
                 };
 

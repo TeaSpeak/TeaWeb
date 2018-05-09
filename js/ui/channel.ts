@@ -143,7 +143,7 @@ class ChannelEntry {
         this._tag_channel.addClass(this._channelAlign); //For left
 
         let channelType = $.spawn("div");
-        channelType.addClass("channel_only_normal channel_type icon manager-channel_green_subscribed");
+        channelType.addClass("channel_only_normal channel_type icon client-channel_green_subscribed");
         this._tag_channel.append(channelType);
 
         this._tag_channel.append($.spawn("div").addClass("channel_name_container").append($.spawn("a").addClass("channel_name").text(this.channelName())));
@@ -153,16 +153,16 @@ class ChannelEntry {
         iconTag.appendTo(this._tag_channel);
 
         //Default icon (4)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_default icon manager-channel_default").attr("title", "Default channel")));
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_default icon client-channel_default").attr("title", "Default channel")));
         //Password icon (3)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_password icon manager-register").attr("title", "The channel is password protected")));
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_password icon client-register").attr("title", "The channel is password protected")));
         //Music icon (2)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_music icon manager-music").attr("title", "Music quality")));
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_music icon client-music").attr("title", "Music quality")));
         //Channel Icon (1)
         iconTag.append($.spawn("div").addClass("channel_only_normal").addClass("icon_entry channel_icon").attr("title", "Channel icon"));
         //Default no sound (0)
         let container = $.spawn("div");
-        let noSound = $.spawn("div").addClass("icon_entry icon_no_sound icon manager-conflict-icon").attr("title", "You don't support the channel codec");
+        let noSound = $.spawn("div").addClass("icon_entry icon_no_sound icon client-conflict-icon").attr("title", "You don't support the channel codec");
         let bg = $.spawn("div")
             .width(10)
             .height(14)
@@ -290,7 +290,7 @@ class ChannelEntry {
 
         spawnMenu(x, y, {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-channel_switch",
+                icon: "client-channel_switch",
                 name: "<b>Switch to channel</b>",
                 callback: () => {
                     this.joinChannel();
@@ -299,7 +299,7 @@ class ChannelEntry {
             MenuEntry.HR(),
             {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-channel_edit",
+                icon: "client-channel_edit",
                 name: "Edit channel",
                 invalidPermission: !channelModify,
                 callback: () => {
@@ -312,7 +312,7 @@ class ChannelEntry {
             },
             {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-channel_delete",
+                icon: "client-channel_delete",
                 name: "Delete channel",
                 invalidPermission: !flagDelete,
                 callback: () => this.channelTree.client.serverConnection.sendCommand("channeldelete", {cid: this.channelId})
@@ -320,13 +320,13 @@ class ChannelEntry {
             MenuEntry.HR(),
             {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-channel_create_sub",
+                icon: "client-channel_create_sub",
                 name: "Create sub channel",
                 invalidPermission: !(channelCreate && this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_CHILD).granted(1)),
                 callback: () => this.channelTree.spawnCreateChannel(this)
             }, {
                 type: MenuEntryType.ENTRY,
-                icon: "manager-channel_create",
+                icon: "client-channel_create",
                 name: "Create channel",
                 invalidPermission: !channelCreate,
                 callback: () => this.channelTree.spawnCreateChannel()
@@ -441,7 +441,7 @@ class ChannelEntry {
         else
             type = "green";
 
-        tag.addClass("manager-channel_" + type + "_subscribed");
+        tag.addClass("client-channel_" + type + "_subscribed");
     }
 
     createChatTag(braces: boolean = false) : JQuery {

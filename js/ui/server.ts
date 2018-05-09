@@ -32,7 +32,7 @@ class ServerEntry {
 
         tag.attr("id", "server");
         tag.addClass("server");
-        tag.append($.spawn("div").addClass("server_type icon manager-server_green"));
+        tag.append($.spawn("div").addClass("server_type icon client-server_green"));
         tag.append($.spawn("a").addClass("name").text(this.properties.virtualserver_name));
 
         const serverIcon = $("<span/>");

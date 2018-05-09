@@ -61,11 +61,11 @@ class ControlBar {
         if(flag) {
             if(!tag.hasClass("activated"))
                 tag.addClass("activated");
-            tag.find(".icon_x32").attr("class", "icon_x32 manager-input_muted");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-input_muted");
         } else {
             if(tag.hasClass("activated"))
                 tag.removeClass("activated");
-            tag.find(".icon_x32").attr("class", "icon_x32 manager-capture");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-capture");
         }
 
 
@@ -87,11 +87,11 @@ class ControlBar {
         if(flag) {
             if(!tag.hasClass("activated"))
                 tag.addClass("activated");
-            tag.find(".icon_x32").attr("class", "icon_x32 manager-output_muted");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-output_muted");
         } else {
             if(tag.hasClass("activated"))
                 tag.removeClass("activated");
-            tag.find(".icon_x32").attr("class", "icon_x32 manager-volume");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-volume");
         }
 
         if(this.handle.serverConnection.connected)

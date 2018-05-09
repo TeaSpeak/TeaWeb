@@ -515,7 +515,7 @@ class ConnectionCommandHandler {
         let tree = this.connection._client.channelTree;
         let client = tree.findClient(json["clid"]);
         if(!client) {
-            console.error("Unknown manager left!");
+            console.error("Unknown client left!");
             return 0;
         }
         if(client == this.connection._client.getClient()) {
@@ -558,7 +558,7 @@ class ConnectionCommandHandler {
                 json["reasonmsg"]
             );
         } else {
-            console.error("Unknown manager left reason!");
+            console.error("Unknown client left reason!");
         }
 
         tree.deleteClient(client);
@@ -572,16 +572,16 @@ class ConnectionCommandHandler {
         let channel_from = tree.findChannel(json["cfid"]);
 
         if(!client) {
-            console.error("Unknown manager move (Client)!");
+            console.error("Unknown client move (Client)!");
             return 0;
         }
 
         if(!channel_to) {
-            console.error("Unknown manager move (Channel to)!");
+            console.error("Unknown client move (Channel to)!");
             return 0;
         }
         if(!channel_from) //Not critical
-            console.error("Unknown manager move (Channel from)!");
+            console.error("Unknown client move (Channel from)!");
 
         let self = client instanceof LocalClientEntry;
         if(self) {
@@ -669,11 +669,11 @@ class ConnectionCommandHandler {
             let invoker = this.connection._client.channelTree.findClient(json["invokerid"]);
             let target = this.connection._client.channelTree.findClient(json["target"]);
             if(!invoker) { //TODO spawn chat (Client is may invisible)
-                console.error("Got private message from invalid manager!");
+                console.error("Got private message from invalid client!");
                 return;
             }
             if(!target) { //TODO spawn chat (Client is may invisible)
-                console.error("Got private message from invalid manager!");
+                console.error("Got private message from invalid client!");
                 return;
             }
             if(invoker == this.connection._client.getClient()) {
@@ -693,7 +693,7 @@ class ConnectionCommandHandler {
 
         let client = this.connection._client.channelTree.findClient(json["clid"]);
         if(!client) {
-            console.error("Tried to update an non existing manager");
+            console.error("Tried to update an non existing client");
             return;
         }
 

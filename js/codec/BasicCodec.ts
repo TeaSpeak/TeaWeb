@@ -76,7 +76,7 @@ abstract class BasicCodec implements Codec {
                     if(time > 20)
                         console.error("Required time: %d", time);
                     if(time > 20)
-                        chat.serverChat().appendError("Required decode time: " + time);
+                        chat.serverChat().appendMessage("Required decode time: " + time);
                     this.on_encoded_data(result);
                 }
                 else console.error("[Codec][" + this.name() + "] Could not encode buffer. Result: " + result);
