@@ -2,5 +2,7 @@ js/**/*.js*
 generated/
 node_modules/
 auth/certs/
+auth/js/auth.js.map
 .idea/
-animates/ #This is just for me local (a nice animation which i may implement later)
+#This is just for me local (a nice animation which i may implement later)
+animates/
