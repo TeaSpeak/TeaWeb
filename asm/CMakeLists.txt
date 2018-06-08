@@ -1,5 +1,6 @@
 project(TeaWeb-Native)
 
+set(CMAKE_CXX_FLAGS_DEBUG "") #Override some config values from the parent project
 set(CMAKE_CXX_COMPILER "emcc")
 set(CMAKE_C_COMPILER "emcc")
 set(CMAKE_C_LINK_EXECUTABLE "emcc")
