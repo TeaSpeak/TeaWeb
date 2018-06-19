@@ -146,7 +146,6 @@ class VoiceConnection {
     private sendNextVoicePacket() {
         let buffer = this.voice_send_queue.pop_front();
         if(!buffer) return;
-        console.log("Sending packet!");
         this.sendVoicePacket(buffer.data, buffer.codec);
     }
 

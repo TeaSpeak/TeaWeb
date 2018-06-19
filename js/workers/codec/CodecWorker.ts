@@ -19,7 +19,6 @@ let codecInstance: CodecWorker;
 
 onmessage = function(e) {
     let data = JSON.parse(e.data);
-    console.log(prefix + "Pipeline timestamp: %d");
 
     let res: any = {};
     res.token = data.token;

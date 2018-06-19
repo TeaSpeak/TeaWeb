@@ -142,13 +142,13 @@ class CodecWrapper extends BasicCodec {
     }
 
     private sendWorkerMessage(message: any, transfare?: any[]) {
-        //console.log("Send worker: %o", message);
         message["timestamp"] = Date.now();
         this._worker.postMessage(JSON.stringify(message), transfare);
     }
 
     private onWorkerMessage(message: any) {
-        console.log("Worker message stock time: %d", Date.now() - message["timestamp"]);
+        if(Date.now() - message["timestamp"] > 5)
+            console.warn("Worker message stock time: %d", Date.now() - message["timestamp"]);
         if(!message["token"]) {
             console.error("Invalid worker token!");
             return;
