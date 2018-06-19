@@ -1,6 +1,8 @@
 /// <reference path="VoiceHandler.ts" />
 /// <reference path="../utils/modal.ts" />
 
+import group = log.group;
+
 abstract class VoiceActivityDetector {
     protected handle: VoiceRecorder;
 
@@ -20,6 +22,7 @@ abstract class VoiceActivityDetector {
 //A small class extention
 interface MediaStreamConstraints {
     deviceId?: string;
+    groupId?: string;
 }
 
 class VoiceRecorder {
@@ -44,11 +47,13 @@ class VoiceRecorder {
     private _chunkCount: number = 0;
 
     private _deviceId: string;
+    private _deviceGroup: string;
 
     constructor(handle: VoiceConnection) {
         this.handle = handle;
 
-        this._deviceId = settings.global("microphone_id", "default");
+        this._deviceId = settings.global("microphone_device_id", "default");
+        this._deviceGroup = settings.global("microphone_device_group", "default");
 
         this.audioContext = AudioController.globalContext;
         this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
@@ -66,14 +71,13 @@ class VoiceRecorder {
         this.mute = this.audioContext.createGain();
         this.mute.gain.setValueAtTime(0, 0);
 
-        this.processor.connect(this.mute);
+        this.processor.connect(this.audioContext.destination);
         this.mute.connect(this.audioContext.destination);
 
-        //this.setVADHander(new MuteVAD());
-        this.setVADHander(new PassThroughVAD());
+        this.setVADHandler(new PassThroughVAD());
     }
 
-    avariable() : boolean {
+    available() : boolean {
         return !!AudioController.userMedia;
     }
 
@@ -98,22 +102,21 @@ class VoiceRecorder {
         if(type == "ppt") {
             let keyCode: number = parseInt(settings.global("vad_ppt_key", JQuery.Key.T.toString()));
             if(!(this.getVADHandler() instanceof PushToTalkVAD))
-                this.setVADHander(new PushToTalkVAD(keyCode));
+                this.setVADHandler(new PushToTalkVAD(keyCode));
             else (this.getVADHandler() as PushToTalkVAD).key = keyCode;
         } else if(type == "pt") {
             if(!(this.getVADHandler() instanceof PassThroughVAD))
-                this.setVADHander(new PassThroughVAD());
+                this.setVADHandler(new PassThroughVAD());
         } else if(type == "vad") {
             if(!(this.getVADHandler() instanceof VoiceActivityDetectorVAD))
-                this.setVADHander(new VoiceActivityDetectorVAD());
-            let threshold = parseInt(settings.global("vad_threshold", "50"));
-            (this.getVADHandler() as VoiceActivityDetectorVAD).percentageThreshold = threshold;
+                this.setVADHandler(new VoiceActivityDetectorVAD());
+            (this.getVADHandler() as VoiceActivityDetectorVAD).percentageThreshold = settings.global("vad_threshold", 50);
         } else {
-            console.warn("Invalid VAD handler! (" + type + ")");
+            console.warn("Invalid VAD (Voice activation detector) handler! (" + type + ")");
         }
     }
 
-    setVADHander(handler: VoiceActivityDetector) {
+    setVADHandler(handler: VoiceActivityDetector) {
         if(this.vadHandler) {
             this.vadHandler.changeHandle(null, true);
             this.vadHandler.finalize();
@@ -130,27 +133,32 @@ class VoiceRecorder {
 
     update(flag: boolean) {
         if(this._recording == flag) return;
-        if(flag) this.start(this._deviceId);
+        if(flag) this.start(this._deviceId, this._deviceGroup);
         else this.stop();
     }
 
-    changeDevice(device: string) {
-        if(this._deviceId == device) return;
+    changeDevice(device: string, group: string) {
+        if(this._deviceId == device && this._deviceGroup == group) return;
         this._deviceId = device;
-        settings.changeGlobal("microphone_id", device);
+        this._deviceGroup = group;
+
+        settings.changeGlobal("microphone_device_id", device);
+        settings.changeServer("microphone_device_group", group);
         if(this._recording) {
             this.stop();
-            this.start(device);
+            this.start(device, group);
         }
     }
 
-    start(device: string){
+    start(device: string, groupId: string){
         this._deviceId = device;
-        console.log("Attempt recording!");
+        console.log("Attempt recording! (Device: %o | Group: %o)", device, groupId);
         this._recording = true;
         AudioController.userMedia({
-            audio: true,
-            deviceId: device
+            audio: {
+                deviceId: device,
+                groupId: groupId
+            }
         }, this.on_microphone.bind(this), error => {
             createErrorModal("Could not resolve microphone!", "Could not resolve microphone!<br>Message: " + error).open();
             console.error("Could not get microphone!");
@@ -164,6 +172,8 @@ class VoiceRecorder {
 
         if(this.microphoneStream) this.microphoneStream.disconnect();
         this.microphoneStream = undefined;
+
+        /*
         if(this.mediaStream) {
             if(this.mediaStream.stop)
                 this.mediaStream.stop();
@@ -172,23 +182,24 @@ class VoiceRecorder {
                     value.stop();
                 });
         }
+        */
         this.mediaStream = undefined;
     }
 
     private on_microphone(stream: MediaStream) {
-        if(this.microphoneStream) {
+        const oldStream = this.microphoneStream;
+        if(oldStream)
             this.stop(); //Disconnect old stream
-        }
         console.log("Start recording!");
 
-        this.mediaStream = stream as MediaStream;
-        const oldStream = this.microphoneStream;
+        this.mediaStream = stream;
         this.microphoneStream = this.audioContext.createMediaStreamSource(stream);
         this.microphoneStream.connect(this.processor);
         chat.serverChat().appendMessage("Mic channels " + this.microphoneStream.channelCount);
         chat.serverChat().appendMessage("Mic channel mode " + this.microphoneStream.channelCountMode);
         chat.serverChat().appendMessage("Max channel count " + this.audioContext.destination.maxChannelCount);
         chat.serverChat().appendMessage("Sample rate " + this.audioContext.sampleRate);
+        chat.serverChat().appendMessage("Stream ID " + stream.id);
         this.vadHandler.initialiseNewStream(oldStream, this.microphoneStream);
     }
 }

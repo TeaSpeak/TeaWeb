@@ -148,10 +148,10 @@ function loadDebug() {
         "js/ui/modal/ModalBanClient.js",
         "js/ui/channel.js",
         "js/ui/client.js",
-        "js/ui/MusicClient.js",
         "js/ui/server.js",
         "js/ui/view.js",
         "js/ui/ControlBar.js",
+        "js/ui/MusicClient.js",
 
         //Load permissions
         "js/permission/PermissionManager.js",

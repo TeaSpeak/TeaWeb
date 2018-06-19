@@ -148,8 +148,9 @@ namespace Modals {
         select_microphone.change(event => {
             let deviceSelected = select_microphone.find("option:selected");
             let deviceId = deviceSelected.attr("device-id");
-            console.log("Selected microphone device: " + deviceId);
-            globalClient.voiceConnection.voiceRecorder.changeDevice(deviceId);
+            let groupId = deviceSelected.attr("device-group");
+            console.log("Selected microphone device: id: %o group: %o", deviceId, groupId);
+            globalClient.voiceConnection.voiceRecorder.changeDevice(deviceId, groupId);
         });
         //Initialise speakers
 

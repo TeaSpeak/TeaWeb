@@ -58,7 +58,6 @@ class StaticSettings {
     static?<T>(key: string, _default?: T) : T {
         if(this._handle) return this._handle.static<T>(key, _default);
         let result = this._staticPropsTag.find("[key='" + key + "']");
-        console.log("%d | %o", result.length, result);
         return StaticSettings.transformStO(result.length > 0 ? decodeURIComponent(result.last().attr("value")) : undefined, _default);
     }
 
