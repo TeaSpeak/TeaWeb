@@ -91,8 +91,8 @@ class TSClient {
             port = 9987;
         }
         console.log("Start connection to " + host + ":" + port);
-        this.channelTree.initialiseHead(addr);
-        this.serverConnection.startConnection(host, port, new HandshakeHandler(identity, name));
+        this.channelTree.initialiseHead(addr, {host, port});
+        this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name));
     }
 
 
@@ -145,9 +145,9 @@ class TSClient {
                 callback += "&default_connect_type=teamspeak";
                 break;
         }
-        callback += "&default_connect_url=" + encodeURIComponent(this.serverConnection._remoteHost + ":" + this.serverConnection._remotePort);
+        callback += "&default_connect_url=" + encodeURIComponent(this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port);
 
-        return "https://" + this.serverConnection._remoteHost + ":" + this.serverConnection._remotePort + "/?forward_url=" + encodeURIComponent(callback);
+        return "https://" + this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port + "/?forward_url=" + encodeURIComponent(callback);
     }
 
     handleDisconnect(type: DisconnectReason, data: any = {}) {

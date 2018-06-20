@@ -31,8 +31,7 @@ class ReturnListener<T> {
 
 class ServerConnection {
     _client: TSClient;
-    _remoteHost: string;
-    _remotePort: number;
+    _remote_address: ServerAddress;
     _socket: WebSocket;
     _connectionState: ConnectionState = ConnectionState.UNCONNECTED;
     _handshakeHandler: HandshakeHandler;
@@ -62,19 +61,18 @@ class ServerConnection {
         return (this._retCodeIdx++).toString();
     }
 
-    startConnection(host : string, port : number, handshake: HandshakeHandler, timeout: number = 1000) {
+    startConnection(address : ServerAddress, handshake: HandshakeHandler, timeout: number = 1000) {
         if(this._connectTimeoutHandler) {
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
             this.disconnect();
         }
         this.updateConnectionState(ConnectionState.CONNECTING);
-        this._remoteHost = host;
-        this._remotePort = port;
+        this._remote_address = address;
         this._handshakeHandler = handshake;
         this._handshakeHandler.setConnection(this);
         this._connected = false;
-        chat.serverChat().appendMessage("Connecting to " + host + ":" + port);
+        chat.serverChat().appendMessage("Connecting to " + address.host + ":" + address.port);
 
         const self = this;
         try {
@@ -83,7 +81,7 @@ class ServerConnection {
                 this._client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
             }, timeout);
             let sockCpy;
-            this._socket = (sockCpy = new WebSocket('wss:' + this._remoteHost + ":" + this._remotePort));
+            this._socket = (sockCpy = new WebSocket('wss:' + address.host + ":" + address.port));
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
             if(this._socket != sockCpy) return; //Connect timeouted
@@ -375,11 +373,19 @@ class ConnectionCommandHandler {
         this.connection._client.clientId = parseInt(json["aclid"]);
         this.connection._client.getClient().updateVariables({key: "client_nickname", value: json["acn"]});
 
+        let updates: {
+            key: string,
+            value: string
+        }[] = [];
         for(let key in json) {
             if(key === "aclid") continue;
             if(key === "acn") continue;
-            this.connection._client.channelTree.server.updateProperty(key, json[key]);
+
+            updates.push({key: key, value: json[key]});
         }
+        this.connection._client.channelTree.server.updateVariables(...updates);
+
+
         chat.serverChat().name = this.connection._client.channelTree.server.properties["virtualserver_name"];
         chat.serverChat().appendMessage("Connected as {0}", true, this.connection._client.getClient().createChatTag(true));
         globalClient.onConnected();
@@ -712,27 +718,39 @@ class ConnectionCommandHandler {
     handleNotifyServerEdited(json) {
         json = json[0];
 
+        let updates: {
+            key: string,
+            value: string
+        }[] = [];
         for(let key in json) {
             if(key === "invokerid") continue;
             if(key === "invokername") continue;
             if(key === "invokeruid") continue;
             if(key === "reasonid") continue;
 
-            this.connection._client.channelTree.server.updateProperty(key, json[key]);
+            updates.push({key: key, value: json[key]});
         }
+        this.connection._client.channelTree.server.updateVariables(...updates);
+        if(this.connection._client.selectInfo.currentSelected == this.connection._client.channelTree.server)
+            this.connection._client.selectInfo.update();
     }
 
     handleNotifyServerUpdated(json) {
         json = json[0];
 
+        let updates: {
+            key: string,
+            value: string
+        }[] = [];
         for(let key in json) {
             if(key === "invokerid") continue;
             if(key === "invokername") continue;
             if(key === "invokeruid") continue;
             if(key === "reasonid") continue;
 
-            this.connection._client.channelTree.server.updateProperty(key, json[key]);
+            updates.push({key: key, value: json[key]});
         }
+        this.connection._client.channelTree.server.updateVariables(...updates);
         let info = this.connection._client.selectInfo;
         if(info.currentSelected instanceof ServerEntry)
             info.update();

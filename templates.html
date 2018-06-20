@@ -303,35 +303,55 @@
             </div>
         </template>
 
+        <!--
+         let spawnTag = (type: string, description: string) : JQuery => {
+                    return $.spawn("div").css("display", "inline-flex")
+                        .append($.spawn("div").addClass("icon_x32 client-" + type).css("margin-right", "5px"))
+                        .append($.spawn("a").text(description).css("align-self", "center"));
+                };
+
+                if(!this.current_selected.properties.client_output_hardware)
+                    spawnTag("hardware_output_muted", "Speakers/Headphones disabled").appendTo(this._htmlTag);
+
+
+                if(!this.current_selected.properties.client_input_hardware)
+                    spawnTag("hardware_input_muted", "Microphone disabled").appendTo(this._htmlTag);
+
+                if(this.current_selected.properties.client_output_muted)
+                    spawnTag("output_muted", "Speakers/Headphones Muted").appendTo(this._htmlTag);
+
+                if(this.current_selected.properties.client_input_muted)
+                    spawnTag("input_muted", "Microphone Muted").appendTo(this._htmlTag);
+        -->
         <script id="tmpl_selected_client" type="text/x-jsrender">
-            <table>
+            <table class="select_info_table">
                 <tr>
                     <td>Name:</td>
-                    <td class="info_key"><node key="client_name"/></td>
+                    <td><node key="client_name"/></td>
                 </tr>
                 {{if property_client_description.length > 0}}
                 <tr>
                     <td>Description:</td>
-                    <td class="info_key">{{>property_client_description}}</td>
+                    <td>{{>property_client_description}}</td>
                 </tr>
                 {{/if}}
                  <tr>
                     <td>Version:</td>
-                    <td class="info_key"><a title="{{:property_client_version}}">{{*: data.property_client_version.split(" ")[0]; }}</a> on {{:property_client_platform}}</td>
+                    <td><a title="{{>property_client_version}}">{{*: data.property_client_version.split(" ")[0]; }}</a> on {{>property_client_platform}}</td>
                 </tr>
                 <tr>
                     <td>Online since:</td>
-                    <td class="info_key update_onlinetime">{{:client_onlinetime}}</td>
+                    <td class="update_onlinetime">{{:client_onlinetime}}</td>
                 </tr>
                 <tr>
                     <td>Volume:</td>
-                    <td class="info_key">{{:sound_volume}}%</td>
+                    <td>{{:sound_volume}}%</td>
                 </tr>
 
                 {{if client_teaforum_id > 0}}
                 <tr>
                     <td>TeaSpeak Account:</td>
-                    <td class="info_key"><a href="//forum.teaspeak.de/index.php?members/{{:property_client_teaforum_id}}" target="_blank">{{:property_client_teaforum_name}}</a></td>
+                    <td><a href="//forum.teaspeak.de/index.php?members/{{:property_client_teaforum_id}}" target="_blank">{{>property_client_teaforum_name}}</a></td>
                 </tr>
                 {{/if}}
             </table>
@@ -362,6 +382,147 @@
                     <div style="margin-left: 3px">{{*: data["group_" + data.group_channel + "_name"]}}</div>
                 </div>
             </div>
+
+            <!-- Costume tags/icons -->
+            <!-- Speakers/Headphones disabled -->
+            {{if !property_client_output_hardware}}
+                <div style="display: inline-flex">
+                    <div class="icon_x32 client-hardware_output_muted" style="margin-right: 5px"></div>
+                    <a style="align-self: center">Speakers/Headphones disabled</a>
+                </div>
+            {{/if}}
+
+             <!-- Microphone disabled -->
+            {{if !property_client_input_hardware}}
+                <div style="display: inline-flex">
+                    <div class="icon_x32 client-hardware_input_muted" style="margin-right: 5px"></div>
+                    <a style="align-self: center">Microphone disabled</a>
+                </div>
+            {{/if}}
+
+             <!-- Speakers/Headphones Muted -->
+            {{if property_client_output_muted}}
+                <div style="display: inline-flex">
+                    <div class="icon_x32 client-output_muted" style="margin-right: 5px"></div>
+                    <a style="align-self: center">Speakers/Headphones Muted</a>
+                </div>
+            {{/if}}
+
+             <!-- Microphone Muted -->
+            {{if property_client_input_muted}}
+                <div style="display: inline-flex">
+                    <div class="icon_x32 client-input_muted" style="margin-right: 5px"></div>
+                    <a style="align-self: center">Microphone Muted</a>
+                </div>
+            {{/if}}
+        </script>
+
+        <!--
+        let version = this.current_selected.properties.virtualserver_version;
+            if(version.startsWith("TeaSpeak ")) version = version.substr("TeaSpeak ".length);
+
+            this._htmlTag.append(this.createInfoTable({
+                "Name": this.current_selected.properties.virtualserver_name,
+                "Address": "unknown",
+                "Type": "TeaSpeak",
+                "Version": version + " on " + this.current_selected.properties.virtualserver_platform,
+                "Uptime": "<a class='uptime'>" + formatDate(this.current_selected.calculateUptime()) + "</a>",
+                "Current Channels": this.current_selected.properties.virtualserver_channelsonline,
+                "Current Clients": this.current_selected.properties.virtualserver_clientsonline,
+                "Current Queries": this.current_selected.properties.virtualserver_queryclientsonline
+            }));
+        -->
+        <script id="tmpl_selected_server" type="text/x-jsrender">
+            <table class="select_info_table">
+                <tr>
+                    <td>Name:</td>
+                    <td><node key="server_name"/></td>
+                </tr>
+                <tr>
+                    <td>Address:</td>
+                    <td>{{>server_address}}</td>
+                </tr>
+                <tr>
+                    <td>Type:</td>
+                    <td>TeaSpeak</td>
+                </tr>
+                 <tr>
+                    <td>Version:</td>
+                    <td><a title="{{>property_virtualserver_version}}">{{*: data.property_virtualserver_version.split(" ")[0]; }}</a> on {{>property_virtualserver_platform}}</td>
+                </tr>
+                <tr>
+                    <td>Uptime:</td>
+                    <td class="update_onlinetime">{{:server_onlinetime}}</td>
+                </tr>
+                <tr>
+                    <td>Current Channels:</td>
+                    <td>{{:property_virtualserver_channelsonline}}</td>
+                </tr>
+                <tr>
+                    <td>Current Clients:</td>
+                    <td>{{:property_virtualserver_clientsonline}}</td>
+                </tr>
+                <tr>
+                    <td>Current Queries:</td>
+                    <td>{{:property_virtualserver_queryclientsonline}}</td>
+                </tr>
+            </table>
+        </script>
+
+        <script id="tmpl_selected_channel" type="text/x-jsrender">
+            <table class="select_info_table">
+                <tr>
+                    <td>Name:</td>
+                    <td><node key="channel_name"/></td>
+                </tr>
+                <tr>
+                    <td>Topic:</td>
+                    <td>{{>property_channel_topic}}</td>
+                </tr>
+                <tr>
+                    <td>Codec:</td>
+                    <td>{{>property_channel_codec}}</td>
+                </tr>
+                <tr>
+                    <td>Codec Quality:</td>
+                    <td>{{>property_channel_codec_quality}}</td>
+                </tr>
+                <tr>
+                    <td>Type:</td>
+                    <td>{{>channel_type}}</td>
+                </tr>
+                <tr>
+                    <td>Current clients:</td>
+                    <td>
+                        {{>channel_clients}} /
+                        {{if property_channel_maxclients == -1}}
+                            Unlimited
+                        {{else}}
+                            {{>property_channel_maxclients}}
+                        {{/if}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Subscription Status:</td>
+                    <td>
+                        {{if channel_subscribed}}
+                            Subscribed
+                        {{else}}
+                            Unsubscribed
+                        {{/if}}
+                    </td>
+                </tr>
+                <tr>
+                    <td>Voice Data Encryption:</td>
+                    <td>
+                        {{if property_channel_codec_is_unencrypted}}
+                            Unencrypted
+                        {{else}}
+                            Encrypted
+                        {{/if}}
+                    </td>
+                </tr>
+            </table>
         </script>
     </body>
 </html>

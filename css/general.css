@@ -103,11 +103,6 @@
     flex-direction: column;
 }
 
-.info_key {
-    font-weight: bold;
-    padding-right: 5px;
-}
-
 /* The Modal (background) */
 .modal {
     display: none; /* Hidden by default */

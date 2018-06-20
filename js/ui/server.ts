@@ -1,27 +1,37 @@
 /// <reference path="channel.ts" />
 
-class ServerEntry {
-    channelTree: ChannelTree;
-    properties: any = {
-        virtualserver_name: "",
-        virtualserver_icon_id: 0,
-        virtualserver_version: "unknown",
-        virtualserver_platform: "unknown",
-        virtualserver_unique_identifier: "",
+class ServerProperties {
+    virtualserver_name: string = "";
+    virtualserver_icon_id: number = 0;
+    virtualserver_version: string = "unknown";
+    virtualserver_platform: string = "unknown";
+    virtualserver_unique_identifier: string = "";
 
-        virtualserver_clientsonline: 0,
-        virtualserver_queryclientsonline: 0,
-        virtualserver_channelsonline: 0,
-        virtualserver_uptime: 0,
-        virtualserver_maxclients: 0
-    };
+    virtualserver_clientsonline: number = 0;
+    virtualserver_queryclientsonline: number = 0;
+    virtualserver_channelsonline: number = 0;
+    virtualserver_uptime: number = 0;
+    virtualserver_maxclients: number = 0
+}
+
+interface ServerAddress {
+    host: string;
+    port: number;
+}
+
+class ServerEntry {
+    remote_address: ServerAddress;
+    channelTree: ChannelTree;
+    properties: ServerProperties;
 
     lastInfoRequest: number = 0;
     nextInfoRequest: number = 0;
     private _htmlTag: JQuery<HTMLElement>;
 
-    constructor(tree, name) {
+    constructor(tree, name, address: ServerAddress) {
+        this.properties = new ServerProperties();
         this.channelTree = tree;
+        this.remote_address = address;
         this.properties.virtualserver_name = name;
     }
 
@@ -70,15 +80,26 @@ class ServerEntry {
         );
     }
 
-    updateProperty(key, value) : void {
-        console.log("Updating property " + key + " => '" + value + "' for the server");
-        this.properties[key] = value;
-        if(key == "virtualserver_name") {
-            this.htmlTag.find(".name").text(value);
-        } else if(key == "virtualserver_icon_id") {
-            if(this.channelTree.client.fileManager && this.channelTree.client.fileManager.icons)
-                this.htmlTag.find(".icon_property").replaceWith(this.channelTree.client.fileManager.icons.generateTag(this.properties.virtualserver_icon_id).addClass("icon_property"));
+    updateVariables(...variables: {key: string, value: string}[]) {
+        let group = log.group(log.LogType.DEBUG, LogCategory.SERVER, "Update properties (%i)", variables.length);
+
+        for(let variable of variables) {
+            if(typeof(this.properties[variable.key]) === "boolean")
+                this.properties[variable.key] = variable.value == "true" || variable.value == "1";
+            else if(typeof (this.properties[variable.key]) === "number")
+                this.properties[variable.key] = parseInt(variable.value);
+            else
+                this.properties[variable.key] = variable.value;
+            group.log("Updating server " + this.properties.virtualserver_name + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
+            if(variable.key == "virtualserver_name") {
+                this.htmlTag.find(".name").text(variable.value);
+            } else if(variable.key == "virtualserver_icon_id") {
+                if(this.channelTree.client.fileManager && this.channelTree.client.fileManager.icons)
+                    this.htmlTag.find(".icon_property").replaceWith(this.channelTree.client.fileManager.icons.generateTag(this.properties.virtualserver_icon_id).addClass("icon_property"));
+            }
         }
+
+        group.end();
     }
 
     updateProperties() {
@@ -92,7 +113,7 @@ class ServerEntry {
     }
 
     calculateUptime() : number {
-        if(this.properties.virtualserver_uptime == 0 || this.lastInfoRequest == 0) return Number.parseInt(this.properties.virtualserver_uptime);
-        return Number.parseInt(this.properties.virtualserver_uptime) + (new Date().getTime() - this.lastInfoRequest) / 1000;
+        if(this.properties.virtualserver_uptime == 0 || this.lastInfoRequest == 0) return this.properties.virtualserver_uptime;
+        return this.properties.virtualserver_uptime + (new Date().getTime() - this.lastInfoRequest) / 1000;
     }
 }

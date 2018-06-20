@@ -48,8 +48,8 @@ class ChannelTree {
         );
     }
 
-    initialiseHead(serverName: string) {
-        this.server = new ServerEntry(this, serverName);
+    initialiseHead(serverName: string, address: ServerAddress) {
+        this.server = new ServerEntry(this, serverName, address);
         this.server.htmlTag.appendTo(this.htmlTree);
         this.server.initializeListener();
     }

@@ -1,6 +1,7 @@
 enum LogCategory {
     CHANNEL,
     CLIENT,
+    SERVER,
     PERMISSIONS,
     GENERAL,
     NETWORKING
@@ -18,6 +19,7 @@ namespace log {
     let category_mapping = new Map<number, string>([
         [LogCategory.CHANNEL,       "Channel    "],
         [LogCategory.CLIENT,        "Client     "],
+        [LogCategory.SERVER,        "Server     "],
         [LogCategory.PERMISSIONS,   "Permission "],
         [LogCategory.GENERAL,       "General    "],
         [LogCategory.NETWORKING,    "Network    "]

@@ -7,10 +7,13 @@ interface Array<T> {
 
 interface JQuery {
     tmpl(values?: any) : JQuery;
+    render(values?: any) : string;
+    renderTag(values?: any) : JQuery;
 }
 
 interface JQueryStatic<TElement extends Node = HTMLElement> {
     spawn<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]>;
+    views: any;
 }
 
 
@@ -51,12 +54,11 @@ if(typeof ($) !== "undefined") {
             return $(document.createElement(tagName));
         }
     }
-    if(!$.prototype.tmpl) {
-        $.prototype.tmpl = function (values?: any) : JQuery {
-            return this.render(values);
+    if(!$.prototype.renderTag) {
+        $.prototype.renderTag = function (values?: any) : JQuery {
+            return $(this.render(values));
         }
     }
-
 }
 
 if (!String.prototype.format) {
