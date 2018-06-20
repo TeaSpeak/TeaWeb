@@ -222,7 +222,7 @@ class ChannelTree {
             (entry as ClientEntry).tag.addClass("selected");
         else if(entry instanceof ServerEntry)
             (entry as ServerEntry).htmlTag.addClass("selected");
-        this.client.selectInfo.currentSelected = entry;
+        this.client.selectInfo.setCurrentSelected(entry);
     }
 
     clientsByGroup(group: Group) : ClientEntry[] {

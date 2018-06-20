@@ -173,7 +173,6 @@ class VoiceRecorder {
         if(this.microphoneStream) this.microphoneStream.disconnect();
         this.microphoneStream = undefined;
 
-        /*
         if(this.mediaStream) {
             if(this.mediaStream.stop)
                 this.mediaStream.stop();
@@ -182,7 +181,6 @@ class VoiceRecorder {
                     value.stop();
                 });
         }
-        */
         this.mediaStream = undefined;
     }
 
@@ -195,11 +193,6 @@ class VoiceRecorder {
         this.mediaStream = stream;
         this.microphoneStream = this.audioContext.createMediaStreamSource(stream);
         this.microphoneStream.connect(this.processor);
-        chat.serverChat().appendMessage("Mic channels " + this.microphoneStream.channelCount);
-        chat.serverChat().appendMessage("Mic channel mode " + this.microphoneStream.channelCountMode);
-        chat.serverChat().appendMessage("Max channel count " + this.audioContext.destination.maxChannelCount);
-        chat.serverChat().appendMessage("Sample rate " + this.audioContext.sampleRate);
-        chat.serverChat().appendMessage("Stream ID " + stream.id);
         this.vadHandler.initialiseNewStream(oldStream, this.microphoneStream);
     }
 }

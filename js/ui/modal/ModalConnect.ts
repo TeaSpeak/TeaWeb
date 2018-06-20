@@ -12,7 +12,6 @@ namespace Modals {
                 let tag = $("#tmpl_connect").contents().clone();
 
                 let updateFields = function () {
-                    console.log("UPDATE!");
                     if(connectIdentity) tag.find(".connect_nickname").attr("placeholder", connectIdentity.name());
                     else tag.find(".connect_nickname").attr("");
 

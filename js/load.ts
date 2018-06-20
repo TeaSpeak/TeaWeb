@@ -146,12 +146,13 @@ function loadDebug() {
         "js/ui/modal/ModalConnect.js",
         "js/ui/modal/ModalChangeVolume.js",
         "js/ui/modal/ModalBanClient.js",
+        "js/ui/modal/ModalYesNo.js",
+
         "js/ui/channel.js",
         "js/ui/client.js",
         "js/ui/server.js",
         "js/ui/view.js",
         "js/ui/ControlBar.js",
-        "js/ui/MusicClient.js",
 
         //Load permissions
         "js/permission/PermissionManager.js",
@@ -175,7 +176,7 @@ function loadDebug() {
         "js/FileManager.js",
         "js/client.js",
         "js/chat.js",
-        "js/InfoBar.js",
+        "js/ui/frames/SelectedItemInfo.js",
         "js/Identity.js"
     ])).then(() => {
         awaitLoad(loadScripts(["js/main.js"])).then(() => {
@@ -188,11 +189,14 @@ function loadDebug() {
 function awaitLoad(promises: {path: string, promise: Promise<Boolean>}[]) : Promise<Boolean> {
     return new Promise<Boolean>((resolve, reject) => {
         let awaiting = promises.length;
+        let success = true;
+
         for(let entry of promises) {
             entry.promise.then(() => {
                 awaiting--;
                 if(awaiting == 0) resolve();
             }).catch(error => {
+                success = false;
                 if(error instanceof TypeError) {
                     console.error(error);
                     let name = (error as any).fileName + "@" + (error as any).lineNumber + ":" + (error as any).columnNumber;
@@ -236,6 +240,9 @@ function loadTemplates() {
         let root = document.getElementById("templates");
         while(tags.length > 0)
             root.appendChild(tags.item(0));
+        root = document.getElementById("script");
+        while(tags.length > 0)
+            root.appendChild(tags.item(0));
     }).catch(error => {
         console.error("Could not load templates!");
         console.log(error);
@@ -254,7 +261,8 @@ function loadSide() {
         ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => awaitLoad(loadScripts([
-        ["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
+        //["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
+        ["vendor/jsrender/jsrender.min.js"]
     ]))).then(() => {
         //Load the teaweb scripts
         loadScript("js/proto.js").then(loadDebug).catch(loadRelease);

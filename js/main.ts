@@ -5,6 +5,7 @@
 /// <reference path="ui/modal/ModalConnect.ts" />
 /// <reference path="ui/modal/ModalCreateChannel.ts" />
 /// <reference path="ui/modal/ModalBanClient.ts" />
+/// <reference path="ui/modal/ModalYesNo.ts" />
 /// <reference path="codec/CodecWrapper.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="log.ts" />
@@ -16,6 +17,7 @@ let chat: ChatBox;
 let forumIdentity: TeaForumIdentity;
 
 function main() {
+    $.views.settings.allowCode(true);
     //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
     //disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost&loader_ignore_age=1
     AudioController.initializeAudioController();
@@ -73,6 +75,11 @@ function main() {
     */
 
     //Modals.spawnSettingsModal();
+    /*
+    Modals.spawnYesNo("Are your sure?", "Do you really want to exit?", flag => {
+        console.log("Response: " + flag);
+    })
+    */
 }
 
 app.loadedListener.push(() => main());

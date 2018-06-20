@@ -1,9 +1,10 @@
+/// <reference path="log.ts" />
 /// <reference path="voice/AudioController.ts" />
 /// <reference path="proto.ts" />
 /// <reference path="ui/view.ts" />
 /// <reference path="connection.ts" />
 /// <reference path="settings.ts" />
-/// <reference path="InfoBar.ts" />
+/// <reference path="ui/frames/SelectedItemInfo.ts" />
 /// <reference path="FileManager.ts" />
 /// <reference path="permission/PermissionManager.ts" />
 /// <reference path="permission/GroupManager.ts" />
@@ -194,7 +195,7 @@ class TSClient {
                 break;
         }
 
-        this.selectInfo.currentSelected = null;
+        this.selectInfo.setCurrentSelected(null);
         this.channelTree.reset();
         this.voiceConnection.dropSession();
         if(this.serverConnection) this.serverConnection.disconnect();

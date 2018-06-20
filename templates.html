@@ -302,5 +302,66 @@
                 <a>Not playing any music</a>
             </div>
         </template>
+
+        <script id="tmpl_selected_client" type="text/x-jsrender">
+            <table>
+                <tr>
+                    <td>Name:</td>
+                    <td class="info_key"><node key="client_name"/></td>
+                </tr>
+                {{if property_client_description.length > 0}}
+                <tr>
+                    <td>Description:</td>
+                    <td class="info_key">{{>property_client_description}}</td>
+                </tr>
+                {{/if}}
+                 <tr>
+                    <td>Version:</td>
+                    <td class="info_key"><a title="{{:property_client_version}}">{{*: data.property_client_version.split(" ")[0]; }}</a> on {{:property_client_platform}}</td>
+                </tr>
+                <tr>
+                    <td>Online since:</td>
+                    <td class="info_key update_onlinetime">{{:client_onlinetime}}</td>
+                </tr>
+                <tr>
+                    <td>Volume:</td>
+                    <td class="info_key">{{:sound_volume}}%</td>
+                </tr>
+
+                {{if client_teaforum_id > 0}}
+                <tr>
+                    <td>TeaSpeak Account:</td>
+                    <td class="info_key"><a href="//forum.teaspeak.de/index.php?members/{{:property_client_teaforum_id}}" target="_blank">{{:property_client_teaforum_name}}</a></td>
+                </tr>
+                {{/if}}
+            </table>
+            <!-- Server groups -->
+            <div style="display: flex; flex-direction: column;">
+                <div style="display:flex;margin-top:5px;align-items:center">
+                     <div class="icon client-permission_server_groups"></div>
+                     <div style="margin-left:3px;font-weight:bold">Server groups:</div>
+                </div>
+
+                {{for group_server}}
+                    <div style="display: flex; margin-top: 1px; margin-left: 10px; align-items: center;">
+                        <node key="group_{{:group_id}}_icon"/>
+                        <div style="margin-left: 3px">{{:group_name}}</div>
+                    </div>
+                {{/for}}
+            </div>
+
+            <!-- Channel group -->
+            <div style="display: flex; flex-direction: column; margin-bottom: 20px">
+                <div style="display:flex;margin-top:10px;align-items:center">
+                     <div class="icon client-permission_channel"></div>
+                     <div style="margin-left:3px;font-weight:bold">Channel group:</div>
+                </div>
+
+                <div style="display: flex; margin-top: 1px; margin-left: 10px; align-items: center;">
+                    <node key="group_{{:group_channel}}_icon"/>
+                    <div style="margin-left: 3px">{{*: data["group_" + data.group_channel + "_name"]}}</div>
+                </div>
+            </div>
+        </script>
     </body>
 </html>

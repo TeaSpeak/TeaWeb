@@ -1,6 +1,5 @@
 /// <reference path="ui/channel.ts" />
 /// <reference path="client.ts" />
-/// <reference path="ui/MusicClient.ts" />
 
 class CommandResult {
     success: boolean;
