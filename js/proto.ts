@@ -6,7 +6,6 @@ interface Array<T> {
 }
 
 interface JQuery {
-    tmpl(values?: any) : JQuery;
     render(values?: any) : string;
     renderTag(values?: any) : JQuery;
 }

@@ -11,7 +11,7 @@ namespace Modals {
                 return header;
             },
             body: function () {
-                let tag = $("#tmpl_change_volume").tmpl();
+                let tag = $("#tmpl_change_volume").renderTag();
                 tag.find(".volume_slider").on("change",_ => updateCallback(tag.find(".volume_slider").val()));
                 tag.find(".volume_slider").on("input",_ => updateCallback(tag.find(".volume_slider").val()));
                 //connect_address

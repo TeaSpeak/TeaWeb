@@ -6,7 +6,7 @@ namespace Modals {
         const modal = createModal({
             header: channel ? "Edit channel" : "Create channel",
             body: () => {
-                let template = $("#tmpl_channel_edit").tmpl(channel ? channel.properties : new ChannelProperties());
+                let template = $("#tmpl_channel_edit").renderTag(channel ? channel.properties : new ChannelProperties());
                 template = $.spawn("div").append(template);
                 return template.tabify();
             },

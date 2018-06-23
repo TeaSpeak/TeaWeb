@@ -9,7 +9,7 @@ namespace Modals {
         modal = createModal({
             header: "Settings",
             body: () => {
-                let template = $("#tmpl_settings").tmpl();
+                let template = $("#tmpl_settings").renderTag();
                 template = $.spawn("div").append(template);
                 initialiseSettingListeners(modal,template = template.tabify());
                 return template;

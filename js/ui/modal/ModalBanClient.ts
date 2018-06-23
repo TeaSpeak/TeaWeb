@@ -9,7 +9,7 @@ namespace Modals {
                 return "Ban client";
             },
             body: function () {
-                let tag = $("#tmpl_client_ban").tmpl({
+                let tag = $("#tmpl_client_ban").renderTag({
                     client_name: name
                 });
 
