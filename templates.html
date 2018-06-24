@@ -14,27 +14,26 @@
     </head>
     <body>
         <!-- Template for chennel create & edit-->
-        <template id="tmpl_channel_edit">
+        <script id="tmpl_channel_edit" type="text/html">
             <div class="align_column channel_general_properties">
                 <div class="align_row property_entry">
                     <a class="key">Name:</a>
-                    <input class="value channel_name" value="${channel_name}"/>
+                    <input class="value channel_name" value="{{>channel_name}}"/>
                 </div>
                 <div class="align_row property_entry">
                     <a class="key">Password:</a>
-                    {{if channel_flag_password == "1"}}
-                        <input class="value channel_password" type="password" value="WolverinDEV">
-                    {{else}}
-                        <input class="value channel_password" type="password">
-                    {{/if}}
+
+                    <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
+                    <!-- Just display a random value here-->
+                    <input class="value channel_password" type="password" id="field_channel_password_{{rnd '0~13377331'/}}" {{if channel_flag_password}} value="WolverinDEV"{{/if}}/>
                 </div>
                 <div class="align_row property_entry">
                     <a class="key">Topic:</a>
-                    <input class="value channel_topic" value="${channel_topic}"/>
+                    <input class="value channel_topic" value="{{>channel_topic}}"/>
                 </div>
                 <div class="align_row property_entry">
                     <a class="key">Description:</a>
-                    <textarea class="value channel_description" style="height: 150px; resize: none">${channel_description}</textarea>
+                    <textarea class="value channel_description" style="height: 150px; resize: none">{{>channel_description}}</textarea>
                 </div>
             </div>
             <div style="margin-bottom: 5px"></div>
@@ -107,11 +106,11 @@
                     <x-content>TODO!</x-content>
                 </x-entry>
             </x-tab>
-        </template>
+        </script>
 
 
-        <!-- Template for the connect modal -->
-        <template id="tmpl_connect">
+            <!-- Template for the connect modal -->
+        <script id="tmpl_connect" type="text/html">
             <div style="margin-top: 5px;">
                 <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">
                     <div style="width: 68%; margin-bottom: 5px">
@@ -153,11 +152,11 @@
                     <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>
                 </div>
             </div>
-        </template>
+        </script>
 
 
         <!-- Template for the settings -->
-        <template id="tmpl_settings">
+        <script id="tmpl_settings" type="text/html">
             <x-tab>
                 <x-entry>
                     <x-tag>General</x-tag>
@@ -209,20 +208,20 @@
                     </x-content>
                 </x-entry>
             </x-tab>
-        </template>
+        </script>
 
-        <template id="tmpl_change_volume">
+        <script id="tmpl_change_volume" type="text/html">
             <div style="display: flex; justify-content: center; vertical-align: center">
                 <input type="range" min="0" max="200" value="100" class="volume_slider" style="width: 100%">
                 <div class="display_volume" style="width: 60px; align-self: center; text-align: center">&plusmn;0 %</div>
             </div>
-        </template>
+        </script>
 
-        <template id="tmpl_client_ban">
+        <script id="tmpl_client_ban" type="text/html">
             <div class="align_column">
                 <div class="align_column" style="margin: 5px">
                     <a>Name:</a>
-                    <input value="${client_name}" readonly>
+                    <input value="{{>client_name}}" readonly>
                 </div>
                 <div class="align_column" style="margin: 5px">
                     <a>Reason:</a>
@@ -242,14 +241,19 @@
                     </div>
                 </div>
             </div>
-        </template>
+        </script>
 
-        <template id="tmpl_music_frame">
+        <script id="tmpl_music_frame" type="text/html">
+            <!-- First we want to define some variables if not defined yet. -->
+            {{if !thumbnail}}
+                {{* data.thumbnail = "img/music/no_thumbnail.svg"; }}
+            {{/if}}
+
             <div class="music-wrapper">
                 <div class="container">
                     <div class="left">
                         <div class="static-card">
-                            <img src="${thumbnail}" alt="Thumbnail" class="thumbnail">
+                            <img src="{{:thumbnail}}" alt="Thumbnail" class="thumbnail">
                         </div>
                     </div>
                     <div class="right">
@@ -259,7 +263,7 @@
                             <label class="btn-settings"><span></span></label>
                         </div>
                         <div class="flip-card">
-                            <img src="${thumbnail}" alt="Thumbnail" class="thumbnail">
+                            <img src="{{:thumbnail}}" alt="Thumbnail" class="thumbnail">
                         </div>
                     </div>
                 </div>
@@ -294,7 +298,7 @@
                     </div>
                 </div>
             </div>
-        </template>
+        </script>
 
         <template id="tmpl_music_frame_empty">
             <div class="music-wrapper empty">
@@ -303,26 +307,6 @@
             </div>
         </template>
 
-        <!--
-         let spawnTag = (type: string, description: string) : JQuery => {
-                    return $.spawn("div").css("display", "inline-flex")
-                        .append($.spawn("div").addClass("icon_x32 client-" + type).css("margin-right", "5px"))
-                        .append($.spawn("a").text(description).css("align-self", "center"));
-                };
-
-                if(!this.current_selected.properties.client_output_hardware)
-                    spawnTag("hardware_output_muted", "Speakers/Headphones disabled").appendTo(this._htmlTag);
-
-
-                if(!this.current_selected.properties.client_input_hardware)
-                    spawnTag("hardware_input_muted", "Microphone disabled").appendTo(this._htmlTag);
-
-                if(this.current_selected.properties.client_output_muted)
-                    spawnTag("output_muted", "Speakers/Headphones Muted").appendTo(this._htmlTag);
-
-                if(this.current_selected.properties.client_input_muted)
-                    spawnTag("input_muted", "Microphone Muted").appendTo(this._htmlTag);
-        -->
         <script id="tmpl_selected_client" type="text/html">
             <table class="select_info_table">
                 <tr>
@@ -416,23 +400,7 @@
                 </div>
             {{/if}}
         </script>
-
-        <!--
-        let version = this.current_selected.properties.virtualserver_version;
-            if(version.startsWith("TeaSpeak ")) version = version.substr("TeaSpeak ".length);
-
-            this._htmlTag.append(this.createInfoTable({
-                "Name": this.current_selected.properties.virtualserver_name,
-                "Address": "unknown",
-                "Type": "TeaSpeak",
-                "Version": version + " on " + this.current_selected.properties.virtualserver_platform,
-                "Uptime": "<a class='uptime'>" + formatDate(this.current_selected.calculateUptime()) + "</a>",
-                "Current Channels": this.current_selected.properties.virtualserver_channelsonline,
-                "Current Clients": this.current_selected.properties.virtualserver_clientsonline,
-                "Current Queries": this.current_selected.properties.virtualserver_queryclientsonline
-            }));
-        -->
-        <script id="tmpl_selected_server" type="text/x-jsrender">
+        <script id="tmpl_selected_server" type="text/html">
             <table class="select_info_table">
                 <tr>
                     <td>Name:</td>
@@ -468,8 +436,7 @@
                 </tr>
             </table>
         </script>
-
-        <script id="tmpl_selected_channel" type="text/x-jsrender">
+        <script id="tmpl_selected_channel" type="text/html">
             <table class="select_info_table">
                 <tr>
                     <td>Name:</td>

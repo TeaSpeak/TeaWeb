@@ -18,8 +18,13 @@ let forumIdentity: TeaForumIdentity;
 
 function main() {
     $.views.settings.allowCode(true);
-    //localhost:63343/Web-Client/index.php?disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost
-    //disableUnloadDialog=1&default_connect_type=forum&default_connect_url=localhost&loader_ignore_age=1
+    $.views.tags("rnd", (argument) => {
+        let min = parseInt(argument.substr(0, argument.indexOf('~')));
+        let max = parseInt(argument.substr(argument.indexOf('~') + 1));
+
+        return (Math.round(Math.random() * (min + max + 1) - min)).toString();
+    });
+    //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
     AudioController.initializeAudioController();
     if(!TSIdentityHelper.setup()) { console.error("Could not setup the TeamSpeak identity parser!"); return; }
 
@@ -69,10 +74,15 @@ function main() {
     }
 
     /*
-    $("#music-test").replaceWith($("#tmpl_music_frame_empty").tmpl({
-        thumbnail: "img/loading_image.svg"
-    }));
-    */
+    let tag = $("#tmpl_music_frame").renderTag({
+        //thumbnail: "img/loading_image.svg"
+    });
+
+    tag.find(".timeline .slider").on('mousedown', () => {
+
+    });
+
+    $("#music-test").replaceWith(tag);
 
     //Modals.spawnSettingsModal();
     /*

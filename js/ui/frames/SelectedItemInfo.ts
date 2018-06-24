@@ -26,19 +26,30 @@ abstract class InfoManagerBase {
 }
 
 abstract class InfoManager<T> extends InfoManagerBase {
-    abstract createFrame(object: T, html_tag: JQuery<HTMLElement>);
+    protected handle?: InfoBar<undefined>;
+
+    createFrame<_>(handle: InfoBar<_>, object: T, html_tag: JQuery<HTMLElement>) {
+        this.handle = handle as InfoBar<undefined>;
+    }
+
     abstract updateFrame(object: T, html_tag: JQuery<HTMLElement>);
 
     finalizeFrame(object: T, frame: JQuery<HTMLElement>) {
         this.resetIntervals();
         this.resetTimers();
+        this.handle = undefined;
+    }
+
+    protected triggerUpdate() {
+        if(this.handle)
+            this.handle.update();
     }
 }
 
-class InfoBar {
+class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefined> {
     readonly handle: TSClient;
 
-    private current_selected?: ServerEntry | ChannelEntry | ClientEntry;
+    private current_selected?: AvailableTypes;
     private _htmlTag: JQuery<HTMLElement>;
 
     private current_manager: InfoManagerBase = undefined;
@@ -48,31 +59,16 @@ class InfoBar {
         this.handle = client;
         this._htmlTag = htmlTag;
 
+        this.managers.push(new MusicInfoManager());
         this.managers.push(new ClientInfoManager());
         this.managers.push(new ChannelInfoManager());
         this.managers.push(new ServerInfoManager());
-
-        //TODO music client
-        /*
-       this._htmlTag.append("Im a music bot!");
-            let frame = $("#tmpl_music_frame" + (this.current_selected.properties.music_track_id == 0 ? "_empty" : "")).tmpl({
-                thumbnail: "img/loading_image.svg"
-            }).css("align-self", "center");
-
-            if(this.current_selected.properties.music_track_id == 0) {
-
-            } else {
-
-            }
-
-            this._htmlTag.append(frame);
-         */
     }
 
-    setCurrentSelected<T extends ServerEntry | ChannelEntry | ClientEntry | undefined>(entry: T) {
+    setCurrentSelected(entry: AvailableTypes) {
         if(this.current_selected == entry) return;
         if(this.current_manager) {
-            (this.current_manager as InfoManager<undefined>).finalizeFrame.call(this.current_manager, this.current_selected, this._htmlTag);
+            (this.current_manager as InfoManager<AvailableTypes>).finalizeFrame(this.current_selected, this._htmlTag);
             this.current_manager = null;
             this.current_selected = null;
         }
@@ -88,7 +84,7 @@ class InfoBar {
 
         console.log("Using info manager: %o", this.current_manager);
         if(this.current_manager)
-            (this.current_manager as InfoManager<undefined>).createFrame.call(this.current_manager, this.current_selected, this._htmlTag);
+            (this.current_manager as InfoManager<AvailableTypes>).createFrame(this, this.current_selected, this._htmlTag);
     }
 
     get currentSelected() {
@@ -97,7 +93,7 @@ class InfoBar {
 
     update(){
         if(this.current_manager && this.current_selected)
-            (this.current_manager as InfoManager<undefined>).updateFrame.call(this.current_manager, this.current_selected, this._htmlTag);
+            (this.current_manager as InfoManager<AvailableTypes>).updateFrame(this.current_selected, this._htmlTag);
     }
 }
 
@@ -106,7 +102,9 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
         return typeof object == "object" && object instanceof ClientEntry;
     }
 
-    createFrame(client: ClientEntry, html_tag: JQuery<HTMLElement>) {
+    createFrame<_>(handle: InfoBar<_>, client: ClientEntry, html_tag: JQuery<HTMLElement>) {
+        super.createFrame(handle, client, html_tag);
+
         client.updateClientVariables();
         this.updateFrame(client, html_tag);
     }
@@ -161,7 +159,9 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
 }
 
 class ServerInfoManager extends InfoManager<ServerEntry> {
-    createFrame(server: ServerEntry, html_tag: JQuery<HTMLElement>) {
+    createFrame<_>(handle: InfoBar<_>, server: ServerEntry, html_tag: JQuery<HTMLElement>) {
+        super.createFrame(handle, server, html_tag);
+
         if(server.shouldUpdateProperties()) server.updateProperties();
         this.updateFrame(server, html_tag);
     }
@@ -187,31 +187,27 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
         }, 1000));
 
 
-        //TODO update button
-        /*
         let requestUpdate = $.spawn("button");
-            requestUpdate.css("min-height", "16px");
-            requestUpdate.css("bottom", 0);
-            requestUpdate.text("update info");
-            if(this.current_selected.shouldUpdateProperties())
-                requestUpdate.css("color", "green");
-            else {
-                requestUpdate.attr("disabled", "true");
-                requestUpdate.css("color", "red");
-            }
-            this._htmlTag.append(requestUpdate);
+        requestUpdate.css("min-height", "16px");
+        requestUpdate.css("bottom", 0);
+        requestUpdate.text("update info");
+        if(server.shouldUpdateProperties())
+            requestUpdate.css("color", "green");
+        else {
+            requestUpdate.attr("disabled", "true");
+            requestUpdate.css("color", "red");
+        }
+        html_tag.append(requestUpdate);
 
-            const _server : ServerEntry = this.current_selected;
-            const _this = this;
-            requestUpdate.click(function () {
-                _server.updateProperties();
-                _this.buildBar();
-            });
-            this.timers.push(setTimeout(function () {
-                requestUpdate.css("color", "green");
-                requestUpdate.removeAttr("disabled");
-            }, _server.nextInfoRequest - new Date().getTime()));
-         */
+        requestUpdate.click(() => {
+            server.updateProperties();
+            this.triggerUpdate();
+        });
+
+        this.registerTimer(setTimeout(function () {
+            requestUpdate.css("color", "green");
+            requestUpdate.removeAttr("disabled");
+        }, server.nextInfoRequest - new Date().getTime()));
     }
 
     available<V>(object: V): boolean {
@@ -220,7 +216,8 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
 }
 
 class ChannelInfoManager extends InfoManager<ChannelEntry> {
-    createFrame(channel: ChannelEntry, html_tag: JQuery<HTMLElement>) {
+    createFrame<_>(handle: InfoBar<_>, channel: ChannelEntry, html_tag: JQuery<HTMLElement>) {
+        super.createFrame(handle, channel, html_tag);
         this.updateFrame(channel, html_tag);
     }
 
@@ -244,6 +241,33 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
 
     available<V>(object: V): boolean {
         return typeof object == "object" && object instanceof ChannelEntry;
+    }
+}
+
+class MusicInfoManager extends InfoManager<MusicClientEntry> {
+    createFrame<_>(handle: InfoBar<_>, channel: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
+        super.createFrame(handle, channel, html_tag);
+        this.updateFrame(channel, html_tag);
+    }
+
+    updateFrame(bot: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
+        html_tag.append("Im a music bot!");
+
+        let frame = $("#tmpl_music_frame" + (bot.properties.music_track_id == 0 ? "_empty" : "")).renderTag({
+            thumbnail: "img/loading_image.svg"
+        }).css("align-self", "center");
+
+        if(bot.properties.music_track_id == 0) {
+
+        } else {
+
+        }
+
+        html_tag.append(frame);
+    }
+
+    available<V>(object: V): boolean {
+        return typeof object == "object" && object instanceof MusicClientEntry;
     }
 
 }

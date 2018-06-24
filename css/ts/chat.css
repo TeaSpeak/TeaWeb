@@ -99,8 +99,8 @@
 
     display:inline-block;
     border: solid 1px #000;
-    height: 18px;
-    min-height: 18px;
+    height: 22px;
+    min-height: 22px;
     max-height: 80px;
     overflow-y: auto;
     resize: vertical;

@@ -9,7 +9,7 @@ namespace Modals {
                 return header;
             },
             body: function () {
-                let tag = $("#tmpl_connect").contents().clone();
+                let tag = $("#tmpl_connect").renderTag();
 
                 let updateFields = function () {
                     if(connectIdentity) tag.find(".connect_nickname").attr("placeholder", connectIdentity.name());
