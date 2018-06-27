@@ -54,7 +54,7 @@ function main() {
     if(settings.static("default_connect_url")) {
         switch (settings.static("default_connect_type")) {
             case "teaforo":
-                if(forumIdentity)
+                if(forumIdentity.valid())
                     globalClient.startConnection(settings.static("default_connect_url"), forumIdentity);
                 else
                     Modals.spawnConnectModal(settings.static("default_connect_url"), IdentitifyType.TEAFORO);
@@ -62,7 +62,7 @@ function main() {
 
             case "teamspeak":
                 let connectIdentity = TSIdentityHelper.loadIdentity(settings.global("connect_identity_teamspeak_identity", ""));
-                if(!connectIdentity)
+                if(!connectIdentity || !connectIdentity.valid())
                     Modals.spawnConnectModal(settings.static("default_connect_url"), IdentitifyType.TEAMSPEAK);
                 else
                     globalClient.startConnection(settings.static("default_connect_url"), connectIdentity);

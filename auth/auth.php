@@ -182,6 +182,10 @@
 		die(json_encode($response));
 	}
 
+	function logged_in() {
+		return testSession() == 0;
+	}
+
 	function logout()
 	{
 		$app = getXF();
@@ -245,7 +249,5 @@
 			logout();
 		} else die("unknown type!");
 	} else if(isset($_POST)) {
-		error_log("Got auth> request!");
+		error_log("Got auth request!");
 	}
-
-error_log("Got auth request!");

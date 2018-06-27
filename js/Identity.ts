@@ -63,6 +63,8 @@ interface Identity {
     name() : string;
     uid() : string;
     type() : IdentitifyType;
+
+    valid() : boolean;
 }
 
 class TeamSpeakIdentity implements Identity {
@@ -97,12 +99,18 @@ class TeamSpeakIdentity implements Identity {
     publicKey() : string {
         return TSIdentityHelper.unwarpString(TSIdentityHelper.funcationPublicKey(this.handle));
     }
+
+    valid() : boolean { return true; }
 }
 
 class TeaForumIdentity implements Identity {
     readonly identityData: string;
     readonly identityDataJson: string;
     readonly identitySign: string;
+
+    valid() : boolean {
+        return this.identityData.length > 0 && this.identityDataJson.length > 0 && this.identitySign.length > 0;
+    }
 
     constructor(data: string, sign: string) {
         this.identityDataJson = data;

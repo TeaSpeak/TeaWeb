@@ -20,7 +20,7 @@
 		$localhost = true;
 	}
 	if (!$localhost || $testXF) {
-		redirectOnInvalidSession();
+		//redirectOnInvalidSession();
 	}
 ?>
 
@@ -183,10 +183,18 @@
         <div style="height: 100px"></div>
     </body>
     <footer>
-        <div class="container">
+        <div class="container" style="display: flex; flex-direction: row; align-content: space-between;">
+            <div style="align-self: center; position: fixed; left: 5px;">Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web" style="display: inline-block; position: relative">github.com</a></div>
             <div style="align-self: center;">TeaSpeak Web client by WolverinDEV</div>
-            <div style="align-self: center; position: fixed; right: 5px;"><a
-                        href="<?php echo authPath() . "auth.php?type=logout"; ?>">logout</a></div>
+            <div style="align-self: center; position: fixed; right: 5px;">
+                <?php
+                    if(logged_in()) {
+						?> <a href="<?php echo authPath() . "auth.php?type=logout"; ?>">logout</a> <?php
+                    } else {
+                        ?> <a href="<?php echo authPath() . "login.php"; ?>">Login</a> via the TeaSpeak forum. <?php
+                    }
+                ?>
+            </div>
         </div>
     </footer>
 </html>

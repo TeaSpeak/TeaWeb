@@ -17,8 +17,8 @@ enum CodecWorkerType {
 
 let codecInstance: CodecWorker;
 
-onmessage = function(e) {
-    let data = JSON.parse(e.data);
+onmessage = function(e: MessageEvent) {
+    let data = e.data;
 
     let res: any = {};
     res.token = data.token;
@@ -97,7 +97,6 @@ function printMessageToServerTab(message: string) {
 
 declare function postMessage(message: any): void;
 function sendMessage(message: any, origin?: string){
-    //console.log(prefix + " Send to main: %o", message);
     message["timestamp"] = Date.now();
-    postMessage(JSON.stringify(message));
+    postMessage(message);
 }

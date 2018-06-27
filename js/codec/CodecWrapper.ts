@@ -113,7 +113,6 @@ class CodecWrapper extends BasicCodec {
             for (let channel = 0; channel < this.channelCount; channel++)
                 buffer[offset * this.channelCount + channel] = data.getChannelData(channel)[offset];
         }
-        //FIXME test if this is right!
 
         this.sendWorkerMessage({
             command: "encodeSamples",
@@ -143,7 +142,7 @@ class CodecWrapper extends BasicCodec {
 
     private sendWorkerMessage(message: any, transfare?: any[]) {
         message["timestamp"] = Date.now();
-        this._worker.postMessage(JSON.stringify(message), transfare);
+        this._worker.postMessage(message, transfare);
     }
 
     private onWorkerMessage(message: any) {
@@ -192,7 +191,7 @@ class CodecWrapper extends BasicCodec {
             this._workerCallbackResolve = resolve;
 
             this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerCodec.js");
-            this._worker.onmessage = event => this.onWorkerMessage(JSON.parse(event.data));
+            this._worker.onmessage = event => this.onWorkerMessage(event.data);
         });
     }
 }
