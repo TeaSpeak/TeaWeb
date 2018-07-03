@@ -292,9 +292,7 @@ class ChannelEntry {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_switch",
                 name: "<b>Switch to channel</b>",
-                callback: () => {
-                    this.joinChannel();
-                }
+                callback: () => this.joinChannel()
             },
             MenuEntry.HR(),
             {
@@ -303,10 +301,13 @@ class ChannelEntry {
                 name: "Edit channel",
                 invalidPermission: !channelModify,
                 callback: () => {
-                    Modals.createChannelModal(this, undefined, (changes?: ChannelProperties) => {
+                    Modals.createChannelModal(this, undefined, this.channelTree.client.permissions, (changes?: ChannelProperties) => {
                         if(!changes) return;
                         changes["cid"] = this.channelId;
+                        this.channelTree.client.serverConnection.sendCommand("channeledit", changes);
                         log.info(LogCategory.CHANNEL, "Changed channel properties of channel %s: %o", this.channelName(), changes);
+                    }, permissions => {
+                        //TODO
                     });
                 }
             },

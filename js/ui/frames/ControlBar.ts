@@ -1,5 +1,5 @@
-/// <reference path="../client.ts" />
-/// <reference path="modal/ModalSettings.ts" />
+/// <reference path="../../client.ts" />
+/// <reference path="../modal/ModalSettings.ts" />
 /*
         client_output_hardware Value: '1'
         client_output_muted Value: '0'

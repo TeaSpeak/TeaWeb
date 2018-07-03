@@ -255,11 +255,13 @@ class ChannelTree {
     }
 
     spawnCreateChannel(parent?: ChannelEntry) {
-        Modals.createChannelModal(undefined, parent, (properties?: ChannelProperties) => {
+        Modals.createChannelModal(undefined, parent, this.client.permissions, (properties?: ChannelProperties) => {
             if(!properties) return;
             properties["cpid"] = parent ? parent.channelId : 0;
             log.debug(LogCategory.CHANNEL, "Creating new channel with properties: %o", properties);
             this.client.serverConnection.sendCommand("channelcreate", properties);
+        }, permissions => {
+            //TODO
         });
     }
 }

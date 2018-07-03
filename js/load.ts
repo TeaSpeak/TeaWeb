@@ -152,7 +152,9 @@ function loadDebug() {
         "js/ui/client.js",
         "js/ui/server.js",
         "js/ui/view.js",
-        "js/ui/ControlBar.js",
+
+        "js/ui/frames/SelectedItemInfo.js",
+        "js/ui/frames/ControlBar.js",
 
         //Load permissions
         "js/permission/PermissionManager.js",
@@ -176,7 +178,6 @@ function loadDebug() {
         "js/FileManager.js",
         "js/client.js",
         "js/chat.js",
-        "js/ui/frames/SelectedItemInfo.js",
         "js/Identity.js"
     ])).then(() => {
         awaitLoad(loadScripts(["js/main.js"])).then(() => {

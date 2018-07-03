@@ -45,9 +45,9 @@
                             <div style="vertical-align: center; margin: 20px;">
                                 <a>Channel Type</a><br>
                                 <fieldset style="border: gray solid; border-width: 2px; border-radius: 0px 6px 6px 6px;">
-                                    <div><input type="radio" name="channel_type" value="temp"> Temporary</div>
-                                    <div><input type="radio" name="channel_type" value="semi"> Semi-Permanent</div>
-                                    <div><input type="radio" name="channel_type" value="perm"> Permanent</div>
+                                    <div><input type="radio" name="channel_type" value="temp" {{if !channel_flag_semi_permanent && !channel_flag_permanent}}checked{{/if}}> Temporary</div>
+                                    <div><input type="radio" name="channel_type" value="semi" {{if channel_flag_semi_permanent}}checked{{/if}}> Semi-Permanent</div>
+                                    <div><input type="radio" name="channel_type" value="perm" {{if channel_flag_permanent}}checked{{/if}}> Permanent</div>
                                     <hr style="width: 100%;">
                                     <div><input type="checkbox" name="channel_default" id="default" value="def"> Default Channel</div>
                                 </fieldset>
@@ -74,16 +74,15 @@
                 <x-entry>
                     <x-tag>Permissions</x-tag>
                     <x-content>
-                        <!--
-                        <div style="display: flex; justify-content: space-evenly">
+                        <div style="display: flex; justify-content: space-evenly" class="settings_permissions">
                             <div>
                                 Regular needed powers:
                                 <table class="channel_perm_tbl">
-                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_join_power"></td></tr>
+                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_subscribe_power"></td></tr>
+                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_description_view_power"></td></tr>
+                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_modify_power"></td></tr>
+                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_delete_power"></td></tr>
                                 </table>
                             </div>
                             <div>
@@ -97,7 +96,6 @@
                                 </table>
                             </div>
                         </div>
-                        -->
                         TODO Implement!
                     </x-content>
                 </x-entry>

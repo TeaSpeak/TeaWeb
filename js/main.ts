@@ -37,7 +37,6 @@ function main() {
 
     chat = new ChatBox($("#chat"));
     globalClient.setup();
-    //globalClient.startConnection("localhost:19974"); //TODO remove only for testing
 
 
     if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) {

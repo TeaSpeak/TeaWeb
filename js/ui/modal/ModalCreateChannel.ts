@@ -1,7 +1,7 @@
 /// <reference path="../../utils/modal.ts" />
 
 namespace Modals {
-    export function createChannelModal(channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, callback: (ChannelProperties?: ChannelProperties) => void) {
+    export function createChannelModal(channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (ChannelProperties?: ChannelProperties) => void, callback_permission: (_: PermissionValue[]) => any) {
         let properties: ChannelProperties = { } as ChannelProperties; //The changes properties
         const modal = createModal({
             header: channel ? "Edit channel" : "Create channel",
@@ -32,10 +32,27 @@ namespace Modals {
 
         applyGeneralListener(properties, modal.htmlTag.find(".channel_general_properties"), modal.htmlTag.find(".button_ok"), !channel);
         applyStandardListener(properties, modal.htmlTag.find(".settings_standard"), modal.htmlTag.find(".button_ok"), parent, !channel);
+        applyPermissionListener(properties, modal.htmlTag.find(".settings_permissions"), modal.htmlTag.find(".button_ok"), permissions, channel);
 
+        let updated: PermissionValue[] = [];
         modal.htmlTag.find(".button_ok").click(() => {
+            modal.htmlTag.find(".settings_permissions").find("input[permission]").each((index, _element) => {
+                let element = $(_element);
+                if(!element.prop("changed")) return;
+                let permission = permissions.resolveInfo(element.attr("permission"));
+                if(!permission) {
+                    log.error(LogCategory.PERMISSIONS, "Failed to resolve channel permission for name %o", element.attr("permission"));
+                    element.prop("disabled", true);
+                    return;
+                }
+
+                updated.push(new PermissionValue(permission, element.val()));
+            });
+            console.log("Updated permissions %o", updated);
+        }).click(() => {
             modal.close();
-            callback(properties);
+            callback(properties); //First may create the channel
+            callback_permission(updated);
         });
 
         modal.htmlTag.find(".button_cancel").click(() => {
@@ -111,7 +128,8 @@ namespace Modals {
             .prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_SEMI_PERMANENT).granted(1));
         tag.find("input[name=\"channel_type\"][value=\"perm\"]")
             .prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1));
-        tag.find("input[name=\"channel_type\"]:not(:disabled)").last().prop("checked", true).trigger('change');
+        if(create)
+            tag.find("input[name=\"channel_type\"]:not(:disabled)").last().prop("checked", true).trigger('change');
 
         tag.find("input[name=\"channel_default\"]").change(function (this: HTMLInputElement) {
             console.log(this.checked);
@@ -140,5 +158,52 @@ namespace Modals {
             properties.channel_order = parseInt(selected.attr("channelId"));
         }).prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_SORTORDER : PermissionType.B_CHANNEL_MODIFY_SORTORDER).granted(1));
         orderTag.find("option").last().prop("selected", true);
+    }
+
+
+    function applyPermissionListener(properties: ChannelProperties, tag: JQuery, button: JQuery, permissions: PermissionManager, channel?: ChannelEntry) {
+        let apply_permissions = (channel_permissions: PermissionValue[]) => {
+            console.log("Got permissions: %o", channel_permissions);
+            let required_power = -2;
+            for(let cperm of channel_permissions)
+                if(cperm.type.name == PermissionType.I_CHANNEL_NEEDED_MODIFY_POWER) {
+                    required_power = cperm.value;
+                    return;
+                }
+
+            tag.find("input[permission]").each((index, _element) => {
+                let element = $(_element);
+                let permission = permissions.resolveInfo(element.attr("permission"));
+                if(!permission) {
+                    log.error(LogCategory.PERMISSIONS, "Failed to resolve channel permission for name %o", element.attr("permission"));
+                    element.prop("disabled", true);
+                    return;
+                }
+
+                let old_value: number = 0;
+                element.on("click keyup", () => {
+                    console.log("Permission triggered! %o", element.val() != old_value);
+                    element.prop("changed", element.val() != old_value);
+                });
+
+                for(let cperm of channel_permissions)
+                    if(cperm.type == permission) {
+                        element.val(old_value = cperm.value);
+                        return;
+                    }
+                element.val(0);
+            });
+
+            if(!permissions.neededPermission(PermissionType.I_CHANNEL_MODIFY_POWER).granted(required_power, false)) {
+                tag.find("input[permission]").prop("enabled", false); //No permissions
+            }
+        };
+
+        if(channel) {
+            permissions.requestChannelPermissions(channel.getChannelId()).then(apply_permissions).catch((error) => {
+                tag.find("input[permission]").prop("enabled", false);
+                console.log(error);
+            });
+        } else apply_permissions([]);
     }
 }

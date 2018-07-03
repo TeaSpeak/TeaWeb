@@ -293,7 +293,7 @@ class PermissionInfo {
     description: string;
 }
 
-class GrantedPermission {
+class PermissionValue {
     readonly type: PermissionInfo;
     value: number;
 
@@ -303,10 +303,8 @@ class GrantedPermission {
     }
 
     granted(requiredValue: number, required: boolean = true) : boolean {
-        let result = false;
-        if(this.value == -2)
-            result = !required;
-        result = this.value == -1 || this.value >= requiredValue;
+        let result;
+        result = this.value == -1 || this.value >= requiredValue || (this.value == -2 && requiredValue == -2 && !required);
         log.trace(LogCategory.PERMISSIONS, "Test needed required: %o | %i | %o => " + result , this, requiredValue, required);
         return result;
     }
@@ -316,7 +314,7 @@ class GrantedPermission {
     }
 }
 
-class NeededGrantedPermission extends GrantedPermission {
+class NeededPermissionValue extends PermissionValue {
     changeListener: ((newValue: number) => void)[] = [];
 
     constructor(type, value) {
@@ -324,11 +322,20 @@ class NeededGrantedPermission extends GrantedPermission {
     }
 }
 
+class ChannelPermissionRequest {
+    requested: number;
+    channel_id: number;
+    callback_success: ((_: PermissionValue[]) => any)[] = [];
+    callback_error: ((_: any) => any)[] = [];
+}
+
 class PermissionManager {
     readonly handle: TSClient;
 
     permissionList: PermissionInfo[] = [];
-    neededPermissions: NeededGrantedPermission[] = [];
+    neededPermissions: NeededPermissionValue[] = [];
+
+    requests_channel_permissions: ChannelPermissionRequest[] = [];
 
     initializedListener: ((initialized: boolean) => void)[] = [];
     private _cacheNeededPermissions: any;
@@ -338,6 +345,7 @@ class PermissionManager {
 
         this.handle.serverConnection.commandHandler["notifyclientneededpermissions"] = this.onNeededPermissions.bind(this);
         this.handle.serverConnection.commandHandler["notifypermissionlist"] = this.onPermissionList.bind(this);
+        this.handle.serverConnection.commandHandler["notifychannelpermlist"] = this.onChannelPermList.bind(this);
     }
 
     initialized() : boolean {
@@ -384,7 +392,7 @@ class PermissionManager {
 
         let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, "Got " + json.length + " needed permissions.");
         for(let e of json) {
-            let entry: NeededGrantedPermission = undefined;
+            let entry: NeededPermissionValue = undefined;
             for(let p of copy) {
                 if(p.type.id == e["permid"]) {
                     entry = p;
@@ -395,7 +403,7 @@ class PermissionManager {
             if(!entry) {
                 let info = this.resolveInfo(e["permid"]);
                 if(info) {
-                    entry = new NeededGrantedPermission(info, -2);
+                    entry = new NeededPermissionValue(info, -2);
                     this.neededPermissions.push(entry);
                 } else {
                     log.warn(LogCategory.PERMISSIONS, "Could not resolve perm for id %s (%o|%o)", e["permid"], e, info);
@@ -420,6 +428,32 @@ class PermissionManager {
         }
     }
 
+    private onChannelPermList(json) {
+       let permissions: PermissionValue[] = [];
+       let channelId: number = parseInt(json[0]["cid"]);
+       for(let element of json) {
+           let permission = this.resolveInfo(element["permid"]);
+           //TODO granted skipped and negated permissions
+           if(!permission) {
+               log.error(LogCategory.PERMISSIONS, "Failed to parse channel permission with id %o", element["permid"]);
+               continue;
+           }
+
+           permissions.push(new PermissionValue(permission, element["permvalue"]));
+       }
+
+       log.debug(LogCategory.PERMISSIONS, "Got channel permissions for channel %o", channelId);
+       for(let element of this.requests_channel_permissions) {
+           if(element.channel_id == channelId) {
+               for(let l of element.callback_success)
+                   l(permissions);
+               this.requests_channel_permissions.remove(element);
+               return;
+           }
+       }
+        log.debug(LogCategory.PERMISSIONS, "Missing channel permission handle for requested channel id %o", channelId);
+    }
+
     resolveInfo?(key: number | string | PermissionType) : PermissionInfo {
         for(let perm of this.permissionList)
             if(perm.id == key || perm.name == key)
@@ -427,7 +461,27 @@ class PermissionManager {
         return undefined;
     }
 
-    neededPermission(key: number | string | PermissionType | PermissionInfo) : GrantedPermission {
+    requestChannelPermissions(channelId: number) : Promise<PermissionValue[]> {
+        return new Promise<PermissionValue[]>((resolve, reject) => {
+             let request: ChannelPermissionRequest;
+             for(let element of this.requests_channel_permissions)
+                 if(element.requested + 1000 < Date.now() && request.channel_id == channelId) {
+                    request = element;
+                    break;
+                 }
+             if(!request) {
+                 request = new ChannelPermissionRequest();
+                 request.requested = Date.now();
+                 request.channel_id = channelId;
+                 this.handle.serverConnection.sendCommand("channelpermlist", {"cid": channelId});
+                 this.requests_channel_permissions.push(request);
+             }
+             request.callback_error.push(reject);
+             request.callback_success.push(resolve);
+        });
+    }
+
+    neededPermission(key: number | string | PermissionType | PermissionInfo) : PermissionValue {
         for(let perm of this.neededPermissions)
             if(perm.type.id == key || perm.type.name == key || perm.type == key)
                 return perm;
@@ -437,7 +491,7 @@ class PermissionManager {
             log.warn(LogCategory.PERMISSIONS, "Requested needed permission with invalid key! (%o)", key);
             return undefined;
         }
-        let result = new NeededGrantedPermission(info, -2);
+        let result = new NeededPermissionValue(info, -2);
         this.neededPermissions.push(result);
         return result;
 
