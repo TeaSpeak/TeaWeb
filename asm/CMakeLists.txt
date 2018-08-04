@@ -1,5 +1,7 @@
+cmake_minimum_required(VERSION 3.9)
 project(TeaWeb-Native)
 
+set (CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_FLAGS_DEBUG "") #Override some config values from the parent project
 set(CMAKE_CXX_COMPILER "emcc")
 set(CMAKE_C_COMPILER "emcc")
