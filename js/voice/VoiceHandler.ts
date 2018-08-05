@@ -128,8 +128,10 @@ class VoiceConnection {
         this.voiceRecorder.on_end = this.handleVoiceEnded.bind(this);
         this.voiceRecorder.reinitialiseVAD();
 
-        this.codecPool[4].initialize(2);
-        this.codecPool[5].initialize(2);
+        AudioController.on_initialized(() => {
+            this.codecPool[4].initialize(2);
+            this.codecPool[5].initialize(2);
+        });
 
         this.send_task = setInterval(this.sendNextVoicePacket.bind(this), 20);
     }
@@ -179,7 +181,7 @@ class VoiceConnection {
         this.dataChannel = this.rtcPeerConnection.createDataChannel('main', dataChannelConfig);
         this.dataChannel.onmessage = this.onDataChannelMessage.bind(this);
         this.dataChannel.onopen = this.onDataChannelOpen.bind(this);
-        this.dataChannel.binaryType = "arraybuffer";
+        //this.dataChannel.binaryType = "arraybuffer";
 
         let sdpConstraints : RTCOfferOptions = {};
         sdpConstraints.offerToReceiveAudio = 0;
@@ -198,10 +200,12 @@ class VoiceConnection {
     }
 
     handleControlPacket(json) {
-        if(json["request"] === "create") {
-            this.rtcPeerConnection.setRemoteDescription(new RTCSessionDescription({type: "answer", sdp: json["sdp"]}));
+        if(json["request"] === "answer") {
+            console.log("Set remote sdp! (%o)", json["msg"]);
+            this.rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(json["msg"]));
         } else if(json["request"] === "ice") {
-            this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate({candidate: json["candidate"],sdpMid: json["session"],sdpMLineIndex: json["line"]}));
+            console.log("Add remote ice! (%s)", json["candidate"]);
+            this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate({candidate: json["candidate"],sdpMid: json["session"], sdpMLineIndex: json["line"]}));
         }
     }
 
@@ -213,9 +217,7 @@ class VoiceConnection {
             this.client.serverConnection.sendData(JSON.stringify({
                 type: 'WebRTC',
                 request: "ice",
-                candidate: event.candidate.candidate,
-                line: event.candidate.sdpMLineIndex,
-                session: event.candidate.sdpMid
+                msg: event.candidate,
             }));
         }
     }
@@ -224,6 +226,7 @@ class VoiceConnection {
         console.log("Offer created and accepted");
         this.rtcPeerConnection.setLocalDescription(localSession);
 
+        console.log("Send offer: %o", localSession);
         this.client.serverConnection.sendData(JSON.stringify({type: 'WebRTC', request: "create", session: localSession}));
     }
 
@@ -232,6 +235,7 @@ class VoiceConnection {
     }
 
     onDataChannelMessage(message) {
+        console.log("Got message! %o", message);
         if(this.client.controlBar.muteOutput) return;
 
         let bin = new Uint8Array(message.data);

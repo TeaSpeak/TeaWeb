@@ -192,6 +192,7 @@ class CodecWrapper extends BasicCodec {
 
             this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerCodec.js");
             this._worker.onmessage = event => this.onWorkerMessage(event.data);
+            this._worker.onerror = (error: ErrorEvent) => reject("Failed to load worker (" + error.message + ")");
         });
     }
 }

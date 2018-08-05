@@ -91,4 +91,7 @@ function main() {
     */
 }
 
-app.loadedListener.push(() => main());
+app.loadedListener.push(() => {
+    main();
+    $(document).one('click', event => AudioController.initializeFromGesture());
+});

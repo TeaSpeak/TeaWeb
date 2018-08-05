@@ -7,18 +7,61 @@ enum PlayerState {
 }
 
 class AudioController {
-    public static userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    private static getUserMediaFunction() {
+        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+            return (settings, success, fail) => navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail);
+        return navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    }
+    public static userMedia = AudioController.getUserMediaFunction();
     private static _globalContext: AudioContext;
+    private static _globalContextPromise: Promise<void>;
     private static _audioInstances: AudioController[] = [];
+    private static _initialized_listener: (() => any)[] = [];
     private static _globalReplayScheduler: NodeJS.Timer;
     private static _timeIndex: number = 0;
     private static _audioDestinationStream: MediaStream;
 
     static get globalContext() : AudioContext {
-        if(this._globalContext) return this._globalContext;
-        this._globalContext = new AudioContext();
-        return this._globalContext;
+        if(this._globalContext && this._globalContext.state != "suspended") return this._globalContext;
+
+        if(!this._globalContext)
+            this._globalContext = new AudioContext();
+        if(this._globalContext.state == "suspended") {
+            if(!this._globalContextPromise) {
+                (this._globalContextPromise = this._globalContext.resume()).then(() => {
+                    this.fire_initialized();
+                }).catch(error => {
+                    displayCriticalError("Failed to initialize global audio context! (" + error + ")", false);
+                });
+            }
+            this._globalContext.resume(); //We already have our listener
+            return undefined;
+        }
+
+        if(this._globalContext.state == "running") {
+            this.fire_initialized();
+            return this._globalContext;
+        }
+        return undefined;
     }
+
+
+    private static fire_initialized() {
+        while(this._initialized_listener.length > 0)
+            this._initialized_listener.pop_front()();
+    }
+
+    static on_initialized(callback: () => any) {
+        if(this.globalContext)
+            callback();
+        else
+            this._initialized_listener.push(callback);
+    }
+
+    static initializeFromGesture() {
+        AudioController.globalContext;
+    }
+
     static initializeAudioController() {
         //this._globalReplayScheduler = setInterval(() => { AudioController.invokeNextReplay(); }, 20); //Fix me
     }
