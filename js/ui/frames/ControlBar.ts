@@ -150,14 +150,14 @@ class ControlBar {
         if(!targetChannel)
             targetChannel = this.handle.getClient().currentChannel();
         let voiceSupport = this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec);
-        if(voiceSupport == !this._codecNotSupported) return;
         this._codecNotSupported = !voiceSupport;
 
-        this.htmlTag.find(".btn_mute_input").prop("disabled", !this._codecNotSupported);
-        this.htmlTag.find(".btn_mute_output").prop("disabled", !this._codecNotSupported);
+        let voice_support = this.handle.voiceConnection.voiceSupported();
+        this.htmlTag.find(".btn_mute_input").prop("disabled", !this._codecNotSupported && voice_support);
+        this.htmlTag.find(".btn_mute_output").prop("disabled", !this._codecNotSupported && voice_support);
         this.handle.serverConnection.sendCommand("clientupdate", {
-            client_input_hardware: this._codecNotSupported,
-            client_output_hardware: this._codecNotSupported
+            client_input_hardware: this._codecNotSupported && voice_support,
+            client_output_hardware: this._codecNotSupported && voice_support
         });
 
         if(this._codecNotSupported)

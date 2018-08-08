@@ -1,8 +1,6 @@
 /// <reference path="VoiceHandler.ts" />
 /// <reference path="../utils/modal.ts" />
 
-import group = log.group;
-
 abstract class VoiceActivityDetector {
     protected handle: VoiceRecorder;
 
@@ -167,13 +165,10 @@ class VoiceRecorder {
         this._recording = true;
         console.log("Function: %o", AudioController.userMedia);
         let result = AudioController.userMedia({
-            /*
             audio: {
-                deviceId: device
-                //groupId: groupId
+                deviceId: device,
+                groupId: groupId
             }
-            */
-            audio: true
         }, this.on_microphone.bind(this), error => {
             createErrorModal("Could not resolve microphone!", "Could not resolve microphone!<br>Message: " + error).open();
             console.error("Could not get microphone!");

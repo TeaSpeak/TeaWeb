@@ -69,6 +69,9 @@
             gtag('js', new Date());
             gtag('config', 'UA-113151733-4');
         </script>
+        <div id="scripts">
+            <script type="application/ecmascript" src="js/load.js" defer></script>
+        </div>
     </head>
     <body>
         <!-- No javascript error -->
@@ -175,10 +178,6 @@
         <div id="contextMenu" class="contextMenu"></div>
 
         <div id="templates"></div>
-        <div id="scripts">
-            <script src="js/load.js"></script>
-        </div>
-
         <div id="music-test"></div>
         <div style="height: 100px"></div>
     </body>

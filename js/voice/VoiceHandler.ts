@@ -108,7 +108,7 @@ class VoiceConnection {
 
     voiceRecorder: VoiceRecorder;
 
-    private codecPool: CodecPool[] = [
+    private codec_pool: CodecPool[] = [
         new CodecPool(this,0,"Spex A", undefined), //Spex
         new CodecPool(this,1,"Spex B", undefined), //Spex
         new CodecPool(this,2,"Spex C", undefined), //Spex
@@ -129,15 +129,19 @@ class VoiceConnection {
         this.voiceRecorder.reinitialiseVAD();
 
         AudioController.on_initialized(() => {
-            this.codecPool[4].initialize(2);
-            this.codecPool[5].initialize(2);
+            this.codec_pool[4].initialize(2);
+            this.codec_pool[5].initialize(2);
         });
 
         this.send_task = setInterval(this.sendNextVoicePacket.bind(this), 20);
     }
 
     codecSupported(type: number) : boolean {
-        return this.codecPool.length > type && this.codecPool[type].supported();
+        return this.codec_pool.length > type && this.codec_pool[type].supported();
+    }
+
+    voiceSupported() : boolean {
+        return this.dataChannel && this.dataChannel.readyState == "open";
     }
 
     private voice_send_queue: {data: Uint8Array, codec: number}[] = [];
@@ -174,14 +178,18 @@ class VoiceConnection {
 
 
     createSession() {
-        const config = { /*iceServers: [{ url: 'stun:stun.l.google.com:19302' }]*/ };
+        this._ice_use_cache = true;
+
+        let config: RTCConfiguration = {};
+        config.iceServers = [];
+        config.iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
         this.rtcPeerConnection = new RTCPeerConnection(config);
         const dataChannelConfig = { ordered: false, maxRetransmits: 0 };
 
         this.dataChannel = this.rtcPeerConnection.createDataChannel('main', dataChannelConfig);
         this.dataChannel.onmessage = this.onDataChannelMessage.bind(this);
         this.dataChannel.onopen = this.onDataChannelOpen.bind(this);
-        //this.dataChannel.binaryType = "arraybuffer";
+        this.dataChannel.binaryType = "arraybuffer";
 
         let sdpConstraints : RTCOfferOptions = {};
         sdpConstraints.offerToReceiveAudio = 0;
@@ -199,13 +207,33 @@ class VoiceConnection {
         //TODO here!
     }
 
+    _ice_use_cache: boolean = true;
+    _ice_cache: any[] = [];
     handleControlPacket(json) {
         if(json["request"] === "answer") {
             console.log("Set remote sdp! (%o)", json["msg"]);
             this.rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(json["msg"]));
+            this._ice_use_cache = false;
+            for(let msg of this._ice_cache) {
+                this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(msg));
+            }
         } else if(json["request"] === "ice") {
-            console.log("Add remote ice! (%s)", json["candidate"]);
-            this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate({candidate: json["candidate"],sdpMid: json["session"], sdpMLineIndex: json["line"]}));
+            if(!this._ice_use_cache) {
+                console.log("Add remote ice! (%s | %o)", json["msg"], json);
+                this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(json["msg"]));
+            } else {
+                console.log("Cache remote ice! (%s | %o)", json["msg"], json);
+                this._ice_cache.push(json["msg"]);
+            }
+        } else if(json["request"] == "status") {
+            if(json["state"] == "failed") {
+                chat.serverChat().appendError("Failed to setup voice bridge ({}). Allow reconnect: {}", json["reason"], json["allow_reconnect"]);
+                log.error(LogCategory.NETWORKING, "Failed to setup voice bridge (%s). Allow reconnect: %s", json["reason"], json["allow_reconnect"]);
+                if(json["allow_reconnect"] == true) {
+                    this.createSession();
+                }
+                //TODO handle fail specially when its not allowed to reconnect
+            }
         }
     }
 
@@ -227,15 +255,15 @@ class VoiceConnection {
         this.rtcPeerConnection.setLocalDescription(localSession);
 
         console.log("Send offer: %o", localSession);
-        this.client.serverConnection.sendData(JSON.stringify({type: 'WebRTC', request: "create", session: localSession}));
+        this.client.serverConnection.sendData(JSON.stringify({type: 'WebRTC', request: "create", msg: localSession}));
     }
 
     onDataChannelOpen(channel) {
-        console.log("Got new data channel!");
+        console.log("Got new data channel! (%s)", this.dataChannel.readyState);
+        this.client.controlBar.updateVoice();
     }
 
     onDataChannelMessage(message) {
-        console.log("Got message! %o", message);
         if(this.client.controlBar.muteOutput) return;
 
         let bin = new Uint8Array(message.data);
@@ -249,7 +277,7 @@ class VoiceConnection {
             return;
         }
 
-        let codecPool = this.codecPool[codec];
+        let codecPool = this.codec_pool[codec];
         if(!codecPool) {
             console.error("Could not playback codec " + codec);
             return;
@@ -267,8 +295,8 @@ class VoiceConnection {
             codecPool.ownCodec(clientId)
                 .then(decoder => decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData))
                 .then(buffer => client.getAudioController().playBuffer(buffer)).catch(error => {
-                console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
-            });
+                    console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
+                });
         }
     }
 
@@ -283,7 +311,7 @@ class VoiceConnection {
         }
 
         //TODO Use channel codec!
-        this.codecPool[4].ownCodec(this.client.getClientId())
+        this.codec_pool[4].ownCodec(this.client.getClientId())
             .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4), data));
     }
 
