@@ -5,6 +5,11 @@ interface Array<T> {
     pop_front(): T | undefined;
 }
 
+interface JSON {
+    map_to<T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number) : T;
+    map_field_to<T>(object: T, value: any, field: string) : T;
+}
+
 interface JQuery {
     render(values?: any) : string;
     renderTag(values?: any) : JQuery;
@@ -15,10 +20,58 @@ interface JQueryStatic<TElement extends Node = HTMLElement> {
     views: any;
 }
 
-
 interface String {
     format(...fmt): string;
     format(arguments: string[]): string;
+}
+
+if(!JSON.map_to) {
+    JSON.map_to = function<T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number) : T {
+        if(!validator) validator = (a, b) => true;
+
+        if(!variables) {
+            variables = [];
+
+            if(!variable_direction || variable_direction == 0) {
+                for(let field in json)
+                    variables.push(field);
+            } else if(variable_direction == 1) {
+                for(let field in object)
+                    variables.push(field);
+            }
+        } else if(!Array.isArray(variables)) {
+            variables = [variables];
+        }
+
+        for(let field of variables) {
+            if(!json[field]) {
+                console.trace("Json does not contains %s", field);
+                continue;
+            }
+            if(!validator(field, json[field])) {
+                console.trace("Validator results in false for %s", field);
+                continue;
+            }
+
+            JSON.map_field_to(object, json[field], field);
+        }
+        return object;
+    }
+}
+
+if(!JSON.map_field_to) {
+    JSON.map_field_to = function<T>(object: T, value: any, field: string) : T {
+        let field_type = typeof(object[field]);
+        if(field_type == "string" || field_type == "object" || field_type == "undefined")
+            object[field as string] = value;
+        else if(field_type == "number")
+            object[field as string] = parseFloat(value);
+        else if(field_type == "boolean")
+            object[field as string] = value == "1" || value == "true";
+        else console.warn("Invalid object type %s for entry %s", field_type, field);
+
+        return object;
+    }
 }
 
 if (!Array.prototype.remove) {
@@ -108,4 +161,15 @@ function formatDate(secs: number) : string {
         result = "now ";
 
     return result.substr(0, result.length - 1);
+}
+
+function calculate_width(text: string) : number {
+    let element = $.spawn("div");
+    element.text(text)
+        .css("display", "none")
+        .css("margin", 0);
+    $("body").append(element);
+    let size = element.width();
+    element.detach();
+    return size;
 }

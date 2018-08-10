@@ -190,7 +190,7 @@ class ServerConnection {
         });
     }
 
-    sendCommand(command: string, data: any = {}, logResult: boolean = true) : Promise<CommandResult> {
+    sendCommand(command: string, data: any = {}, flags: string[] = [], logResult: boolean = true) : Promise<CommandResult> {
         const _this = this;
         let result = new Promise<CommandResult>((resolve, failed) => {
             let _data = $.isArray(data) ? data : [data];
@@ -210,7 +210,8 @@ class ServerConnection {
             this._socket.send(this.commandiefy({
                 "type": "command",
                 "command": command,
-                "data": _data
+                "data": _data,
+                "flags": flags
             }));
         });
         return new Promise<CommandResult>((resolve, failed) => {
@@ -219,10 +220,14 @@ class ServerConnection {
                     if(ex instanceof CommandResult) {
                         let res = ex;
                         if(!res.success) {
-                            chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
+                            if(res.id == 2568) { //Permission error
+                                chat.serverChat().appendError("insufficient client permissions. Failed on permission {}", this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
+                            } else {
+                                chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
+                            }
                         }
                     } else if(typeof(ex) == "string") {
-                        chat.serverChat().appendError("Command execution resuluts in " + ex);
+                        chat.serverChat().appendError("Command execution results in " + ex);
                     } else {
                         console.error("Invalid promise result type: " + typeof (ex) + ". Result:");
                         console.error(ex);
@@ -340,6 +345,8 @@ class ConnectionCommandHandler {
         this["notifyclientupdated"] = this.handleNotifyClientUpdated;
         this["notifyserveredited"] = this.handleNotifyServerEdited;
         this["notifyserverupdated"] = this.handleNotifyServerUpdated;
+
+        this["notifymusicplayerinfo"] = this.handleNotifyMusicPlayerInfo;
     }
 
     handleCommandResult(json) {
@@ -774,5 +781,17 @@ class ConnectionCommandHandler {
         let info = this.connection._client.selectInfo;
         if(info.currentSelected instanceof ServerEntry)
             info.update();
+    }
+
+    handleNotifyMusicPlayerInfo(json) {
+        json = json[0];
+
+        let bot = this.connection._client.channelTree.find_client_by_dbid(json["botid"]);
+        if(!bot || !(bot instanceof MusicClientEntry)) {
+            log.warn(LogCategory.CLIENT, "Got music player info for unknown or invalid bot! (ID: %i, Entry: %o)", json["botid"], bot);
+            return;
+        }
+
+        bot.handlePlayerInfo(json);
     }
 }

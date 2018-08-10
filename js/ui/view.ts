@@ -129,6 +129,13 @@ class ChannelTree {
         return undefined;
     }
 
+    find_channel_by_name(name: string, parent?: ChannelEntry, force_parent: boolean = true) : ChannelEntry | undefined {
+        for(let index = 0; index < this.channels.length; index++)
+            if(this.channels[index].channelName() == name && (!force_parent || parent == this.channels[index].parent))
+                return this.channels[index];
+        return undefined;
+    }
+
     moveChannel(channel: ChannelEntry, prevChannel: ChannelEntry, parent: ChannelEntry) {
         if(prevChannel != null && prevChannel.parent != parent) {
             console.error("Invalid channel move (different parents! (" + prevChannel.parent + "|" + parent + ")");
@@ -205,10 +212,16 @@ class ChannelTree {
         }
     }
 
-    findClient(clientId) : ClientEntry {
+    findClient?(clientId: number) : ClientEntry {
         for(let index = 0; index < this.clients.length; index++)
             if(this.clients[index].clientId() == clientId) return this.clients[index];
-        return null;
+        return undefined;
+    }
+
+    find_client_by_dbid?(client_dbid: number) : ClientEntry {
+        for(let index = 0; index < this.clients.length; index++)
+            if(this.clients[index].properties.client_database_id == client_dbid) return this.clients[index];
+        return undefined;
     }
 
     onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry) {
@@ -255,13 +268,35 @@ class ChannelTree {
     }
 
     spawnCreateChannel(parent?: ChannelEntry) {
-        Modals.createChannelModal(undefined, parent, this.client.permissions, (properties?: ChannelProperties) => {
+        Modals.createChannelModal(undefined, parent, this.client.permissions, (properties?, permissions?) => {
             if(!properties) return;
             properties["cpid"] = parent ? parent.channelId : 0;
-            log.debug(LogCategory.CHANNEL, "Creating new channel with properties: %o", properties);
-            this.client.serverConnection.sendCommand("channelcreate", properties);
-        }, permissions => {
-            //TODO
+            log.debug(LogCategory.CHANNEL, "Creating a new channel.\nProperties: %o\nPermissions: %o", properties);
+            this.client.serverConnection.sendCommand("channelcreate", properties).then(() => {
+                let channel = this.find_channel_by_name(properties.channel_name, parent, true);
+                if(!channel) {
+                    log.error(LogCategory.CHANNEL, "Failed to resolve channel after creation. Could not apply permissions!");
+                    return;
+                }
+                if(permissions && permissions.length > 0) {
+                    let perms = [];
+                    for(let perm of permissions) {
+                        perms.push({
+                            permvalue: perm.value,
+                            permnegated: false,
+                            permskip: false,
+                            permid: perm.type.id
+                        });
+                    }
+
+                    perms[0]["cid"] = channel.channelId;
+                    return this.client.serverConnection.sendCommand("channeladdperm", perms, ["continueonerror"]).then(() => new Promise<ChannelEntry>(resolve => { resolve(channel); }));
+                }
+
+                return new Promise<ChannelEntry>(resolve => { resolve(channel); })
+            }).then(channel => {
+                chat.serverChat().appendMessage("Channel {} successfully created!", true, channel.createChatTag());
+            });
         });
     }
 }

@@ -13,6 +13,8 @@ enum ClientType {
 class ClientProperties {
     client_type: ClientType = ClientType.CLIENT_VOICE; //TeamSpeaks type
     client_type_exact: ClientType = ClientType.CLIENT_VOICE;
+
+    client_database_id: number = 0;
     client_version: string = "";
     client_platform: string = "";
     client_nickname: string = "unknown";
@@ -329,12 +331,8 @@ class ClientEntry {
         let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, "Update properties (%i) of %s (%i)", variables.length, this.clientNickName(), this.clientId());
 
         for(let variable of variables) {
-            if(typeof(this.properties[variable.key]) === "boolean")
-                this.properties[variable.key] = variable.value == "true" || variable.value == "1";
-            else if(typeof (this.properties[variable.key]) === "number")
-                this.properties[variable.key] = parseInt(variable.value);
-            else
-                this.properties[variable.key] = variable.value;
+            JSON.map_field_to(this._properties, variable.value, variable.key);
+
             group.log("Updating client " + this.clientId() + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "client_nickname") {
                 this.tag.find(".name").text(variable.value);
@@ -547,11 +545,37 @@ class LocalClientEntry extends ClientEntry {
 }
 
 class MusicClientProperties extends ClientProperties {
-    music_volume: number = 0;
-    music_track_id: number = 0;
+    player_state: number = 0;
+    player_volume: number = 0;
+}
+
+class MusicClientPlayerInfo {
+    botid: number = 0;
+    player_state: number = 0;
+
+    player_buffered_index: number = 0;
+    player_replay_index: number = 0;
+    player_max_index: number = 0;
+    player_seekable: boolean = false;
+
+    player_title: string = "";
+    player_description: string = "";
+
+    song_id: number = 0;
+    song_url: string = "";
+    song_invoker: number = 0;
+    song_loaded: boolean = false;
+    song_title: string = "";
+    song_thumbnail: string = "";
+    song_length: number = 0;
 }
 
 class MusicClientEntry extends ClientEntry {
+    private _info_promise: Promise<MusicClientPlayerInfo>;
+    private _info_promise_age: number = 0;
+    private _info_promise_resolve: any;
+    private _info_promise_reject: any;
+
     constructor(clientId, clientName) {
         super(clientId, clientName, new MusicClientProperties());
     }
@@ -597,5 +621,34 @@ class MusicClientEntry extends ClientEntry {
 
     initializeListener(): void {
         super.initializeListener();
+    }
+
+    handlePlayerInfo(json) {
+        if(json) {
+            let info = JSON.map_to(new MusicClientPlayerInfo(), json);
+            if(this._info_promise_resolve)
+                this._info_promise_resolve(info);
+            this._info_promise_reject = undefined;
+        }
+        if(this._info_promise) {
+            if(this._info_promise_reject)
+                this._info_promise_reject("timeout");
+            this._info_promise = undefined;
+            this._info_promise_age = undefined;
+            this._info_promise_reject = undefined;
+            this._info_promise_resolve = undefined;
+        }
+    }
+
+    requestPlayerInfo(max_age: number = 1000) : Promise<MusicClientPlayerInfo> {
+        if(this._info_promise && this._info_promise_age && Date.now() - max_age <= this._info_promise_age) return this._info_promise;
+        this._info_promise_age = Date.now();
+        this._info_promise = new Promise<MusicClientPlayerInfo>((resolve, reject) => {
+            this._info_promise_reject = reject;
+            this._info_promise_resolve = resolve;
+        });
+
+        this.channelTree.client.serverConnection.sendCommand("musicbotplayerinfo", {botid: this.properties.client_database_id });
+        return this._info_promise;
     }
 }

@@ -301,13 +301,27 @@ class ChannelEntry {
                 name: "Edit channel",
                 invalidPermission: !channelModify,
                 callback: () => {
-                    Modals.createChannelModal(this, undefined, this.channelTree.client.permissions, (changes?: ChannelProperties) => {
-                        if(!changes) return;
-                        changes["cid"] = this.channelId;
-                        this.channelTree.client.serverConnection.sendCommand("channeledit", changes);
-                        log.info(LogCategory.CHANNEL, "Changed channel properties of channel %s: %o", this.channelName(), changes);
-                    }, permissions => {
-                        //TODO
+                    Modals.createChannelModal(this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
+                        if(changes) {
+                            changes["cid"] = this.channelId;
+                            this.channelTree.client.serverConnection.sendCommand("channeledit", changes);
+                            log.info(LogCategory.CHANNEL, "Changed channel properties of channel %s: %o", this.channelName(), changes);
+                        }
+
+                        if(permissions && permissions.length > 0) {
+                            let perms = [];
+                            for(let perm of permissions) {
+                                perms.push({
+                                    permvalue: perm.value,
+                                    permnegated: false,
+                                    permskip: false,
+                                    permid: perm.type.id
+                                });
+                            }
+
+                            perms[0]["cid"] = this.channelId;
+                            this.channelTree.client.serverConnection.sendCommand("channeladdperm", perms, ["continueonerror"]);
+                        }
                     });
                 }
             },
@@ -391,13 +405,8 @@ class ChannelEntry {
         for(let variable of variables) {
             let key = variable.key;
             let value = variable.value;
+            JSON.map_field_to(this.properties, value, variable.key);
 
-            if(typeof (this.properties[key]) == "number")
-                this.properties[key] = parseInt(value);
-            if(typeof (this.properties[key]) == "boolean")
-                this.properties[key] = value == "true" || value == "1";
-            else
-                this.properties[key] = value;
             group.log("Updating property " + key + " = '%s' -> %o", value, this.properties[key]);
 
             if(key == "channel_name") {

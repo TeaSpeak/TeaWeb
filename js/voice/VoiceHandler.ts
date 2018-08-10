@@ -178,6 +178,7 @@ class VoiceConnection {
 
 
     createSession() {
+        return;
         this._ice_use_cache = true;
 
         let config: RTCConfiguration = {};

@@ -8,16 +8,6 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 	height: 400px;
 	user-select: none;
 
-	.container {
-		.right:hover {
-			.flip-card {
-				transform: rotateY(-60deg);
-			}
-
-			z-index: 120;
-		}
-	}
-
 	.left, .right {
 		position: absolute;
 		width: 50%;
@@ -36,7 +26,7 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 
 			img {
 				width: calc(100% * 2);
-				height: 100%;
+				//height: 100%;
 			}
 		}
 
@@ -73,6 +63,12 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 	}
 	.right {
 		right: 0;
+	}
+	.right:hover {
+		.flip-card {
+			transform: rotateY(-60deg);
+		}
+		//z-index: 120;
 	}
 
 	.controls {
@@ -113,8 +109,7 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 			background-color: #dcdcdc;
 
 			span {
-				background-repeat: no-repeat;
-				background-position: 16px 42px;
+				background: no-repeat 16px 42px;
 				width: 80px;
 				height: 125px;
 				display: block;
@@ -129,26 +124,42 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 			border: 1px solid #fff;
 		}
 
+		//https://insidemartialartsmagazine.com.au/images/glyphicons/glyphicons/svg/individual_svg/
 		.btn-forward span {
-			background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABP0lEQVRoQ+2YwW3DMAxFX4ZNT7knE7QrNB0iWSKZIZ2g9/aYS4oPxECPpUSKFkCdZEAW+Pit729vmHxsJq+fAshWsBQoBTo7UI9QZwO7by8FgBOwA76629mwgYcCD+AbOABHQNfDhhfAUvAFeAFuowi8AVT3HXgDXp/zUJYIgKVgqbAFrpEEkQCqW+dB52IP/ESARAMsNcuh5FRnb4hRAEvdAnC13NEAAnG13AwAV8vNBHCx3GyAbstdC0Cz5a4JoMlyC8Axfeqt/f5Mtf9+a69FgebclA2g5KrUqvSquXlkAujbQWn101z1nxsyABQllE4/PM7PaIBpw9y0cbrJGi1nIvIRarbGbIBua8wEcLHGDABXaxwNMP2vRUvD3Nd6uJB7UZYNC8DSrYi1pUBEVy17lgKWbkWsLQUiumrZ8xeQiV4xsW8UvQAAAABJRU5ErkJggg==");
+			background-size: calc(42px * 2) calc(42px * 2);
+			margin-left: 10px;
+			background: url("../../img/music/forward.svg") no-repeat center;
 		}
 		.btn-rewind span {
-			background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAsElEQVRoQ+2YSw6AIAxEh9vqifS2utAF0YgtpBCS57raz0wHxqTJnzR5/aKB0QiCAAg0TgAKNQ6w+fUaBI5C1lXS/lPVImkrxLhqcgXfSWkABDL+QaHHMrLEku+CCYWg0PtEc7HCFcxBdk2Aq0TOOiiECqFCfk+EH8AP4Ae+9wY/gB8wqCoyiowio8jo2J+7BqHqF1LjyPpVZ8hEA4YhhYaAQOh4DR8HAcOQQkOmR+AEspRaMYlt9skAAAAASUVORK5CYII=");
+			background-size: calc(42px * 2) calc(42px * 2);
+			margin-left: 10px;
+			background: url("../../img/music/rewind.svg") no-repeat center;
 		}
 		.btn-settings span {
-			background-size: 42px 42px;
-			background-position: 22px 42px;
-			background-image: url("../../img/music/settings.svg");
+			background-size: calc(42px * 2) calc(42px * 2);
+			margin-left: 10px;
+			background: url("../../img/music/playlist.svg") no-repeat center;
 		}
 	}
 
 	.controls-overlay {
 		position: absolute;
 		display: block;
-		top: calc(100% - 40px);
+		top: calc(100% - 60px);
 		width: 100%;
-		height: 40px;
+		height: 60px;
 		z-index: 100;
+		overflow-x: hidden;
+		transition: width $animtime $ease;
+
+		.song {
+			margin-top: 5px;
+			margin-left: 20px;
+			height: 15px;
+			width: 360px;
+
+			font-family: "DejaVu Serif", serif;
+		}
 
 		.timer {
 			margin-left: 20px;
@@ -168,12 +179,27 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 				stroke-width: 0.5;
 				stroke-miterlimit: 10;
 				cursor: pointer;
+
+				color: white;
+				mix-blend-mode: difference;
 				//box-shadow: 20px 20px 20px 20px rgb(186, 0, 12);
+			}
+
+			.button.active {
+				animation: bounce 500ms alternate;
+				transform: scale(1.3);
+				transition: transform 150ms;
 			}
 
 			.button:hover {
 				animation: bounce 500ms alternate;
 				transform: scale(1.1);
+				transition: transform 150ms;
+			}
+
+			.button.active:hover {
+				animation: bounce 500ms alternate;
+				transform: scale(1.5);
 				transition: transform 150ms;
 			}
 
@@ -184,9 +210,9 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 
 			//TODO box SHADOW
 			.timeline {
-				width: 90%;
+				width: calc(100% - 100px);
 				height: 4px;
-				float: right;
+				float: left;
 				background: #DBE3E3;
 				position: relative;
 				align-self: center;
@@ -216,7 +242,19 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 					cursor: pointer;
 				}
 			}
+
+			.time {
+				min-width: 38px;
+				margin-left: 5px;
+				position: relative;
+				align-self: center;
+				font-family: 'fantasy'
+			}
 		}
+	}
+
+	.controls-overlay.flipped {
+		width: calc(50% + 7px);
 	}
 }
 

@@ -1,7 +1,7 @@
 /// <reference path="../../utils/modal.ts" />
 
 namespace Modals {
-    export function createChannelModal(channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (ChannelProperties?: ChannelProperties) => void, callback_permission: (_: PermissionValue[]) => any) {
+    export function createChannelModal(channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (properties?: ChannelProperties, permissions?: PermissionValue[]) => any) {
         let properties: ChannelProperties = { } as ChannelProperties; //The changes properties
         const modal = createModal({
             header: channel ? "Edit channel" : "Create channel",
@@ -51,8 +51,7 @@ namespace Modals {
             console.log("Updated permissions %o", updated);
         }).click(() => {
             modal.close();
-            callback(properties); //First may create the channel
-            callback_permission(updated);
+            callback(properties, updated); //First may create the channel
         });
 
         modal.htmlTag.find(".button_cancel").click(() => {

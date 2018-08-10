@@ -112,6 +112,19 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
     updateFrame(client: ClientEntry, html_tag: JQuery<HTMLElement>) {
         this.resetIntervals();
         html_tag.empty();
+
+        let properties = this.buildProperties(client);
+
+        let rendered = $("#tmpl_selected_client").renderTag([properties]);
+        rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
+        html_tag.append(rendered);
+
+        this.registerInterval(setInterval(() => {
+            html_tag.find(".update_onlinetime").text(formatDate(client.calculateOnlineTime()));
+        }, 1000));
+    }
+
+    buildProperties(client: ClientEntry) : any  {
         let properties: any = {};
 
         properties["client_name"] = client.createChatTag()[0];
@@ -147,14 +160,7 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
                 .attr("target", "_blank")
                 .text(client.properties.client_teaforum_id);
         }
-
-        let rendered = $("#tmpl_selected_client").renderTag([properties]);
-        rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
-        html_tag.append(rendered);
-
-        this.registerInterval(setInterval(() => {
-            html_tag.find(".update_onlinetime").text(formatDate(client.calculateOnlineTime()));
-        }, 1000));
+        return properties;
     }
 }
 
@@ -244,26 +250,198 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
     }
 }
 
-class MusicInfoManager extends InfoManager<MusicClientEntry> {
+function format_time(time: number) {
+    let hours: any = 0, minutes: any = 0, seconds: any = 0;
+    if(time >= 60 * 60) {
+        hours = Math.floor(time / (60 * 60));
+        time -= hours * 60 * 60;
+    }
+    if(time >= 60) {
+        minutes = Math.floor(time / 60);
+        time -= minutes * 60;
+    }
+    seconds = time;
+
+    if(hours > 9)
+        hours = hours.toString();
+    else if(hours > 0)
+        hours = '0' + hours.toString();
+    else hours = '';
+
+    if(minutes > 9)
+        minutes = minutes.toString();
+    else if(minutes > 0)
+        minutes = '0' + minutes.toString();
+    else
+        minutes = '00';
+
+    if(seconds > 9)
+        seconds = seconds.toString();
+    else if(seconds > 0)
+        seconds = '0' + seconds.toString();
+    else
+        seconds = '00';
+
+    return (hours ? hours + ":" : "") + minutes + ':' + seconds;
+}
+
+class MusicInfoManager extends ClientInfoManager {
     createFrame<_>(handle: InfoBar<_>, channel: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
         super.createFrame(handle, channel, html_tag);
         this.updateFrame(channel, html_tag);
     }
 
     updateFrame(bot: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
-        html_tag.append("Im a music bot!");
+        this.resetIntervals();
+        html_tag.empty();
 
-        let frame = $("#tmpl_music_frame" + (bot.properties.music_track_id == 0 ? "_empty" : "")).renderTag({
-            thumbnail: "img/loading_image.svg"
-        }).css("align-self", "center");
+        let properties = super.buildProperties(bot);
+        { //Render info frame
+            if(bot.properties.player_state != 2 && bot.properties.player_state != 3) {
+                properties["music_player"] =  $("#tmpl_music_frame_empty").renderTag().css("align-self", "center");
+            } else {
+                let frame = $.spawn("div").text("loading...") as JQuery<HTMLElement>;
+                properties["music_player"] = frame;
 
-        if(bot.properties.music_track_id == 0) {
 
-        } else {
+                bot.requestPlayerInfo().then(info => {
+                    let timestamp = Date.now();
 
+                    console.log(info);
+                    let _frame = $("#tmpl_music_frame").renderTag({
+                        song_name: info.player_title ? info.player_title :
+                                    info.song_url ? info.song_url : "No title or url",
+                        thumbnail: info.song_thumbnail && info.song_thumbnail.length > 0 ? info.song_thumbnail : undefined
+                    }).css("align-self", "center");
+                    frame.replaceWith(_frame);
+                    frame = _frame;
+
+                    /* Play/Pause logic */
+                    {
+                        let button_play = frame.find(".button_play");
+                        let button_pause = frame.find(".button_pause");
+
+                        frame.find(".button_play").click(handler => {
+                            if(!button_play.hasClass("active")) {
+                                this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                    botid: bot.properties.client_database_id,
+                                    action: 1
+                                }).then(updated => this.triggerUpdate()).catch(error => {
+                                    createErrorModal("Failed to execute play", "Failed to execute play.<br>{}".format(error)).open();
+                                    this.triggerUpdate();
+                                });
+                            }
+                            button_pause.removeClass("active");
+                            button_play.addClass("active");
+                        });
+                        frame.find(".button_pause").click(handler => {
+                            if(!button_pause.hasClass("active")) {
+                                this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                    botid: bot.properties.client_database_id,
+                                    action: 2
+                                }).then(updated => this.triggerUpdate()).catch(error => {
+                                    createErrorModal("Failed to execute pause", "Failed to execute pause.<br>{}".format(error)).open();
+                                    this.triggerUpdate();
+                                });
+                            }
+                            button_play.removeClass("active");
+                            button_pause.addClass("active");
+                        });
+
+                        if(bot.properties.player_state == 2)
+                            button_play.addClass("active");
+                        else if(bot.properties.player_state == 3)
+                            button_play.addClass("active");
+                    }
+
+                    /* Required flip card javascript */
+                    frame.find(".right").mouseenter(() => {
+                        frame.find(".controls-overlay").addClass("flipped");
+                    });
+                    frame.find(".right").mouseleave(() => {
+                        frame.find(".controls-overlay").removeClass("flipped");
+                    });
+
+                    /* Slider */
+                    frame.find(".timeline .slider").on('mousedown', ev => {
+                        let timeline = frame.find(".timeline");
+                        let time = frame.find(".time");
+                        let slider = timeline.find(".slider");
+                        let slider_old = slider.css("margin-left");
+
+                        let time_max = parseInt(timeline.attr("time-max"));
+                        slider.prop("editing", true);
+
+                        let target_timestamp = 0;
+                        let move_handler = (event: MouseEvent) => {
+                            let max = timeline.width();
+                            let current = event.pageX - timeline.offset().left - slider.width() / 2;
+                            if(current < 0) current = 0;
+                            else if(current > max) current = max;
+
+                            target_timestamp = current / max * time_max;
+                            time.text(format_time(Math.floor(target_timestamp / 1000)));
+                            slider.css("margin-left", current / max * 100 + "%");
+                        };
+
+                        let finish_handler = event => {
+                            console.log("Event (%i | %s): %o", event.button, event.type, event);
+                            if(event.type == "mousedown" && event.button != 2) return;
+                            $(document).unbind("mousemove", move_handler as any);
+                            $(document).unbind("mouseup mouseleave mousedown", finish_handler as any);
+
+                            if(event.type != "mousedown") {
+                                slider.prop("editing", false);
+                                slider.prop("edited", true);
+
+                                let current_timestamp = info.player_replay_index + Date.now() - timestamp;
+                                this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                    botid: bot.properties.client_database_id,
+                                    action: current_timestamp > target_timestamp ? 5 : 4,
+                                    units: current_timestamp < target_timestamp ? target_timestamp - current_timestamp : current_timestamp - target_timestamp
+                                }).then(() => this.triggerUpdate()).catch(error => {
+                                    slider.prop("edited", false);
+                                });
+                            } else { //Restore old
+                                event.preventDefault();
+                                slider.css("margin-left", slider_old + "%");
+                            }
+                        };
+
+                        $(document).on('mousemove', move_handler as any);
+                        $(document).on('mouseup mouseleave mousedown', finish_handler as any);
+
+                        ev.preventDefault();
+                        return false;
+                    });
+
+                    {
+                        frame.find(".timeline").attr("time-max", info.player_max_index);
+                        let timeline = frame.find(".timeline");
+                        let time_bar = timeline.find(".played");
+                        let slider = timeline.find(".slider");
+
+                        let player_time = _frame.find(".player_time");
+                        let update_handler = () => {
+                            let time_index = info.player_replay_index + Date.now() - timestamp;
+
+                            time_bar.css("width", time_index / info.player_max_index * 100 + "%");
+                            if(!slider.prop("editing") && !slider.prop("edited")) {
+                                player_time.text(format_time(Math.floor(time_index / 1000)));
+                                slider.css("margin-left", time_index / info.player_max_index * 100 + "%");
+                            }
+                       };
+
+                        this.registerInterval(setInterval(update_handler, 1000));
+                        update_handler();
+                    }
+                });
+            }
         }
 
-        html_tag.append(frame);
+        let rendered = $("#tmpl_selected_music").renderTag([properties]);
+        rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
+        html_tag.append(rendered);
     }
 
     available<V>(object: V): boolean {

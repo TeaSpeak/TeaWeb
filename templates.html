@@ -79,6 +79,7 @@
                                 Regular needed powers:
                                 <table class="channel_perm_tbl">
                                     <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_join_power"></td></tr>
+                                    <tr><td class="key">View:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_view_power"></td></tr>
                                     <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_subscribe_power"></td></tr>
                                     <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_description_view_power"></td></tr>
                                     <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_modify_power"></td></tr>
@@ -86,7 +87,7 @@
                                 </table>
                             </div>
                             <div>
-                                File transfare needed powers:
+                                File transfer needed powers:
                                 <table class="channel_perm_tbl">
                                     <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
                                     <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
@@ -96,7 +97,6 @@
                                 </table>
                             </div>
                         </div>
-                        TODO Implement!
                     </x-content>
                 </x-entry>
                 <x-entry>
@@ -244,8 +244,17 @@
         <script id="tmpl_music_frame" type="text/html">
             <!-- First we want to define some variables if not defined yet. -->
             {{if !thumbnail}}
-                {{* data.thumbnail = "img/music/no_thumbnail.svg"; }}
+                {{*
+                    data.thumbnail = "img/music/no_thumbnail.svg";
+                }}
             {{/if}}
+            {{*
+                if(!data.song_max_width) data.song_max_width = 300;
+
+                let width = calculate_width(data.song_name);
+                if(width > data.song_max_width)
+                    data.song_use_scroller = true;
+            }}
 
             <div class="music-wrapper">
                 <div class="container">
@@ -268,7 +277,7 @@
                 <div class="controls-overlay">
                     <div class="timer">
                         <div>
-                            <svg class="button" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
+                            <svg class="button button_play" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
                                 <defs>
                                     <filter id="shadow">
                                         <feDropShadow dx="4" dy="8" stdDeviation="4"/>
@@ -276,7 +285,7 @@
                                 </defs>
                                 <polyline style="filter:url(#shadow);" class="button" points="0.6,0.3 3.9,3.4 0.6,6.6 "></polyline>
                             </svg>
-                            <svg class="button" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
+                            <svg class="button button_pause" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
                                 <defs>
                                     <filter id="shadow">
                                         <feDropShadow dx="4" dy="8" stdDeviation="4"/>
@@ -293,6 +302,16 @@
                             <div class="played"></div>
                             <div class="slider"></div>
                         </div>
+                        <div class="time player_time">--:--</div>
+                    </div>
+                    <div class="song">
+                        {{if song_use_scroller}}
+                            <div class="scroll-left">
+                                <p class="name">{{>song_name}}</p>
+                            </div>
+                        {{else}}
+                            <div class="name" style="">{{>song_name}}</div>
+                        {{/if}}
                     </div>
                 </div>
             </div>
@@ -398,6 +417,67 @@
                 </div>
             {{/if}}
         </script>
+
+        <script id="tmpl_selected_music" type="text/html">
+            <table class="select_info_table">
+                <tr>
+                    <td>Name:</td>
+                    <td><node key="client_name"/></td>
+                </tr>
+                {{if property_client_description.length > 0}}
+                <tr>
+                    <td>Description:</td>
+                    <td>{{>property_client_description}}</td>
+                </tr>
+                {{/if}}
+                <tr>
+                    <td>Livetime:</td>
+                    <td class="update_onlinetime">{{:client_onlinetime}}</td>
+                </tr>
+                <!-- player_volume -->
+                <tr>
+                    <td>Remote Volume:</td>
+                    <td>{{*: data.property_player_volume * 100 }}%</td>
+                </tr>
+                <tr>
+                    <td>Local Volume:</td>
+                    <td>{{>sound_volume}}%</td>
+                </tr>
+                <!-- TODO: Created by -->
+            </table>
+            <!-- Server groups -->
+            <div style="display: flex; flex-direction: column;">
+                <div style="display:flex;margin-top:5px;align-items:center">
+                    <div class="icon client-permission_server_groups"></div>
+                    <div style="margin-left:3px;font-weight:bold">Server groups:</div>
+                </div>
+
+                {{for group_server}}
+                <div style="display: flex; margin-top: 1px; margin-left: 10px; align-items: center;">
+                    <node key="group_{{:group_id}}_icon"/>
+                    <div style="margin-left: 3px">{{:group_name}}</div>
+                </div>
+                {{/for}}
+            </div>
+
+            <!-- Channel group -->
+            <div style="display: flex; flex-direction: column; margin-bottom: 20px">
+                <div style="display:flex;margin-top:10px;align-items:center">
+                    <div class="icon client-permission_channel"></div>
+                    <div style="margin-left:3px;font-weight:bold">Channel group:</div>
+                </div>
+
+                <div style="display: flex; margin-top: 1px; margin-left: 10px; align-items: center;">
+                    <node key="group_{{:group_channel}}_icon"/>
+                    <div style="margin-left: 3px">{{*: data["group_" + data.group_channel + "_name"]}}</div>
+                </div>
+            </div>
+
+            <div>
+                <node key="music_player"/>
+            </div>
+        </script>
+
         <script id="tmpl_selected_server" type="text/html">
             <table class="select_info_table">
                 <tr>

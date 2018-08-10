@@ -84,12 +84,8 @@ class ServerEntry {
         let group = log.group(log.LogType.DEBUG, LogCategory.SERVER, "Update properties (%i)", variables.length);
 
         for(let variable of variables) {
-            if(typeof(this.properties[variable.key]) === "boolean")
-                this.properties[variable.key] = variable.value == "true" || variable.value == "1";
-            else if(typeof (this.properties[variable.key]) === "number")
-                this.properties[variable.key] = parseInt(variable.value);
-            else
-                this.properties[variable.key] = variable.value;
+            JSON.map_field_to(this.properties, variable.value, variable.key);
+
             group.log("Updating server " + this.properties.virtualserver_name + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "virtualserver_name") {
                 this.htmlTag.find(".name").text(variable.value);

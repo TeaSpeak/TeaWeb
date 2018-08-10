@@ -30,6 +30,7 @@
         <meta charset="UTF-8">
         <title>TeaSpeak-Web</title>
 
+        <link rel="stylesheet" href="css/scroll.css" type="text/css">
         <link rel="stylesheet" href="css/ts/tab.css" type="text/css">
         <link rel="stylesheet" href="css/ts/chat.css" type="text/css">
         <link rel="stylesheet" href="css/ts/client.css" type="text/css">
@@ -176,6 +177,10 @@
             </div>
         </div>
         <div id="contextMenu" class="contextMenu"></div>
+
+        <div style="background-color:white;">
+            <div style=" color: white; mix-blend-mode: difference;">And stay alive... XXXXXXX</div>
+        </div>
 
         <div id="templates"></div>
         <div id="music-test"></div>

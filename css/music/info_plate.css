@@ -4,10 +4,6 @@
   width: 400px;
   height: 400px;
   user-select: none; }
-  .music-wrapper .container .right:hover {
-    z-index: 120; }
-    .music-wrapper .container .right:hover .flip-card {
-      transform: rotateY(-60deg); }
   .music-wrapper .left, .music-wrapper .right {
     position: absolute;
     width: 50%;
@@ -26,8 +22,7 @@
       .music-wrapper .left .flip-card img,
       .music-wrapper .left .static-card img, .music-wrapper .right .flip-card img,
       .music-wrapper .right .static-card img {
-        width: calc(100% * 2);
-        height: 100%; }
+        width: calc(100% * 2); }
     .music-wrapper .left .static-card, .music-wrapper .right .static-card {
       border-right: none; }
     .music-wrapper .left .flip-card, .music-wrapper .right .flip-card {
@@ -51,6 +46,8 @@
     left: 0; }
   .music-wrapper .right {
     right: 0; }
+  .music-wrapper .right:hover .flip-card {
+    transform: rotateY(-60deg); }
   .music-wrapper .controls {
     position: absolute;
     right: 0;
@@ -83,8 +80,7 @@
       cursor: pointer;
       background-color: #dcdcdc; }
       .music-wrapper .controls label span {
-        background-repeat: no-repeat;
-        background-position: 16px 42px;
+        background: no-repeat 16px 42px;
         width: 80px;
         height: 125px;
         display: block;
@@ -95,20 +91,32 @@
       box-shadow: inset 0px 0px 10px 5px rgba(120, 120, 120, 0.2);
       border: 1px solid #fff; }
     .music-wrapper .controls .btn-forward span {
-      background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAABP0lEQVRoQ+2YwW3DMAxFX4ZNT7knE7QrNB0iWSKZIZ2g9/aYS4oPxECPpUSKFkCdZEAW+Pit729vmHxsJq+fAshWsBQoBTo7UI9QZwO7by8FgBOwA76629mwgYcCD+AbOABHQNfDhhfAUvAFeAFuowi8AVT3HXgDXp/zUJYIgKVgqbAFrpEEkQCqW+dB52IP/ESARAMsNcuh5FRnb4hRAEvdAnC13NEAAnG13AwAV8vNBHCx3GyAbstdC0Cz5a4JoMlyC8Axfeqt/f5Mtf9+a69FgebclA2g5KrUqvSquXlkAujbQWn101z1nxsyABQllE4/PM7PaIBpw9y0cbrJGi1nIvIRarbGbIBua8wEcLHGDABXaxwNMP2vRUvD3Nd6uJB7UZYNC8DSrYi1pUBEVy17lgKWbkWsLQUiumrZ8xeQiV4xsW8UvQAAAABJRU5ErkJggg=="); }
+      background-size: calc(42px * 2) calc(42px * 2);
+      margin-left: 10px;
+      background: url("../../img/music/forward.svg") no-repeat center; }
     .music-wrapper .controls .btn-rewind span {
-      background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAAsElEQVRoQ+2YSw6AIAxEh9vqifS2utAF0YgtpBCS57raz0wHxqTJnzR5/aKB0QiCAAg0TgAKNQ6w+fUaBI5C1lXS/lPVImkrxLhqcgXfSWkABDL+QaHHMrLEku+CCYWg0PtEc7HCFcxBdk2Aq0TOOiiECqFCfk+EH8AP4Ae+9wY/gB8wqCoyiowio8jo2J+7BqHqF1LjyPpVZ8hEA4YhhYaAQOh4DR8HAcOQQkOmR+AEspRaMYlt9skAAAAASUVORK5CYII="); }
+      background-size: calc(42px * 2) calc(42px * 2);
+      margin-left: 10px;
+      background: url("../../img/music/rewind.svg") no-repeat center; }
     .music-wrapper .controls .btn-settings span {
-      background-size: 42px 42px;
-      background-position: 22px 42px;
-      background-image: url("../../img/music/settings.svg"); }
+      background-size: calc(42px * 2) calc(42px * 2);
+      margin-left: 10px;
+      background: url("../../img/music/playlist.svg") no-repeat center; }
   .music-wrapper .controls-overlay {
     position: absolute;
     display: block;
-    top: calc(100% - 40px);
+    top: calc(100% - 60px);
     width: 100%;
-    height: 40px;
-    z-index: 100; }
+    height: 60px;
+    z-index: 100;
+    overflow-x: hidden;
+    transition: width 0.5s cubic-bezier(0.45, 0, 0.55, 1); }
+    .music-wrapper .controls-overlay .song {
+      margin-top: 5px;
+      margin-left: 20px;
+      height: 15px;
+      width: 360px;
+      font-family: "DejaVu Serif", serif; }
     .music-wrapper .controls-overlay .timer {
       margin-left: 20px;
       height: 15px;
@@ -125,18 +133,28 @@
         stroke: #4c4c4c;
         stroke-width: 0.5;
         stroke-miterlimit: 10;
-        cursor: pointer; }
+        cursor: pointer;
+        color: white;
+        mix-blend-mode: difference; }
+      .music-wrapper .controls-overlay .timer .button.active {
+        animation: bounce 500ms alternate;
+        transform: scale(1.3);
+        transition: transform 150ms; }
       .music-wrapper .controls-overlay .timer .button:hover {
         animation: bounce 500ms alternate;
         transform: scale(1.1);
+        transition: transform 150ms; }
+      .music-wrapper .controls-overlay .timer .button.active:hover {
+        animation: bounce 500ms alternate;
+        transform: scale(1.5);
         transition: transform 150ms; }
       .music-wrapper .controls-overlay .timer .timeline * {
         border: gray 0;
         border-radius: 8px; }
       .music-wrapper .controls-overlay .timer .timeline {
-        width: 90%;
+        width: calc(100% - 100px);
         height: 4px;
-        float: right;
+        float: left;
         background: #DBE3E3;
         position: relative;
         align-self: center;
@@ -159,6 +177,14 @@
           top: -4px;
           background: #303030;
           cursor: pointer; }
+      .music-wrapper .controls-overlay .timer .time {
+        min-width: 38px;
+        margin-left: 5px;
+        position: relative;
+        align-self: center;
+        font-family: "fantasy"; }
+  .music-wrapper .controls-overlay.flipped {
+    width: calc(50% + 7px); }
 
 .music-wrapper.empty {
   border: 7px solid #dedede;
