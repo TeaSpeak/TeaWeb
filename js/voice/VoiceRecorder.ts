@@ -202,6 +202,8 @@ class VoiceRecorder {
         console.log("Start recording!");
 
         this.mediaStream = stream;
+        if(!this.audioContext) return;
+
         this.microphoneStream = this.audioContext.createMediaStreamSource(stream);
         this.microphoneStream.connect(this.processor);
         this.vadHandler.initialiseNewStream(oldStream, this.microphoneStream);
