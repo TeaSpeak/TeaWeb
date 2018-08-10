@@ -327,6 +327,8 @@ class ConnectionCommandHandler {
         this["channellist"] = this.handleCommandChannelList;
         this["notifychannelcreated"] = this.handleCommandChannelCreate;
         this["notifychanneldeleted"] = this.handleCommandChannelDelete;
+        this["notifychannelhide"] = this.handleCommandChannelHide;
+        this["notifychannelshow"] = this.handleCommandChannelShow;
 
         this["notifycliententerview"] = this.handleCommandClientEnterView;
         this["notifyclientleftview"] = this.handleCommandClientLeftView;
@@ -447,6 +449,10 @@ class ConnectionCommandHandler {
         this.createChannelFromJson(json[0]);
     }
 
+    handleCommandChannelShow(json) {
+        this.createChannelFromJson(json[0]); //TODO may chat?
+    }
+
     handleCommandChannelDelete(json) {
         let tree = this.connection._client.channelTree;
 
@@ -455,6 +461,20 @@ class ConnectionCommandHandler {
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
                 console.error("Invalid channel onDelete (Unknown channel)");
+                continue;
+            }
+            tree.deleteChannel(channel);
+        }
+    }
+
+    handleCommandChannelHide(json) {
+        let tree = this.connection._client.channelTree;
+
+        console.log("Got " + json.length + " channel hides");
+        for(let index = 0; index < json.length; index++) {
+            let channel = tree.findChannel(json[index]["cid"]);
+            if(!channel) {
+                console.error("Invalid channel on hide (Unknown channel)");
                 continue;
             }
             tree.deleteChannel(channel);
