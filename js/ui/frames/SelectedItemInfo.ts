@@ -351,8 +351,33 @@ class MusicInfoManager extends ClientInfoManager {
                         if(bot.properties.player_state == 2)
                             button_play.addClass("active");
                         else if(bot.properties.player_state == 3)
-                            button_play.addClass("active");
+                            button_pause.addClass("active");
                     }
+
+                    { /* Button functions */
+                        _frame.find(".btn-forward").click(() => {
+                            this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                botid: bot.properties.client_database_id,
+                                action: 3
+                            }).then(updated => this.triggerUpdate()).catch(error => {
+                                createErrorModal("Failed to execute forward", "Failed to execute pause.<br>{}".format(error)).open();
+                                this.triggerUpdate();
+                            });
+                        });
+                        _frame.find(".btn-rewind").click(() => {
+                            this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                botid: bot.properties.client_database_id,
+                                action: 4
+                            }).then(updated => this.triggerUpdate()).catch(error => {
+                                createErrorModal("Failed to execute rewind", "Failed to execute pause.<br>{}".format(error)).open();
+                                this.triggerUpdate();
+                            });
+                        });
+                        _frame.find(".btn-settings").click(() => {
+                            createErrorModal("Not implemented", "This function is not implemented yet!").open();
+                        });
+                    }
+
 
                     /* Required flip card javascript */
                     frame.find(".right").mouseenter(() => {
@@ -397,7 +422,7 @@ class MusicInfoManager extends ClientInfoManager {
                                 let current_timestamp = info.player_replay_index + Date.now() - timestamp;
                                 this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
                                     botid: bot.properties.client_database_id,
-                                    action: current_timestamp > target_timestamp ? 5 : 4,
+                                    action: current_timestamp > target_timestamp ? 6 : 5,
                                     units: current_timestamp < target_timestamp ? target_timestamp - current_timestamp : current_timestamp - target_timestamp
                                 }).then(() => this.triggerUpdate()).catch(error => {
                                     slider.prop("edited", false);
@@ -423,7 +448,7 @@ class MusicInfoManager extends ClientInfoManager {
 
                         let player_time = _frame.find(".player_time");
                         let update_handler = () => {
-                            let time_index = info.player_replay_index + Date.now() - timestamp;
+                            let time_index = info.player_replay_index + (bot.properties.player_state == 2 ? Date.now() - timestamp : 0);
 
                             time_bar.css("width", time_index / info.player_max_index * 100 + "%");
                             if(!slider.prop("editing") && !slider.prop("edited")) {
@@ -431,7 +456,6 @@ class MusicInfoManager extends ClientInfoManager {
                                 slider.css("margin-left", time_index / info.player_max_index * 100 + "%");
                             }
                        };
-
                         this.registerInterval(setInterval(update_handler, 1000));
                         update_handler();
                     }

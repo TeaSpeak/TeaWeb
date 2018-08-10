@@ -178,9 +178,11 @@
         </div>
         <div id="contextMenu" class="contextMenu"></div>
 
+        <!--
         <div style="background-color:white;">
             <div style=" color: white; mix-blend-mode: difference;">And stay alive... XXXXXXX</div>
         </div>
+        -->
 
         <div id="templates"></div>
         <div id="music-test"></div>
