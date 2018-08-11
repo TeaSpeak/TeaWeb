@@ -71,7 +71,7 @@
             gtag('config', 'UA-113151733-4');
         </script>
         <div id="scripts">
-            <script type="application/ecmascript" src="js/load.js" defer></script>
+            <script type="application/javascript" src="js/load.js" defer></script>
         </div>
     </head>
     <body>

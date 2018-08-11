@@ -327,7 +327,7 @@ class MusicInfoManager extends ClientInfoManager {
                                     botid: bot.properties.client_database_id,
                                     action: 1
                                 }).then(updated => this.triggerUpdate()).catch(error => {
-                                    createErrorModal("Failed to execute play", "Failed to execute play.<br>{}".format(error)).open();
+                                    createErrorModal("Failed to execute play", MessageHelper.formatMessage("Failed to execute play.<br>{}", error)).open();
                                     this.triggerUpdate();
                                 });
                             }
@@ -340,7 +340,7 @@ class MusicInfoManager extends ClientInfoManager {
                                     botid: bot.properties.client_database_id,
                                     action: 2
                                 }).then(updated => this.triggerUpdate()).catch(error => {
-                                    createErrorModal("Failed to execute pause", "Failed to execute pause.<br>{}".format(error)).open();
+                                    createErrorModal("Failed to execute pause", MessageHelper.formatMessage("Failed to execute pause.<br>{}", error)).open();
                                     this.triggerUpdate();
                                 });
                             }

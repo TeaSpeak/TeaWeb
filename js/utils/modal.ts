@@ -4,7 +4,7 @@ $(document).on("mousedown",function (e) {
     }
 });
 
-type BodyCreator = (() => JQuery | string) | string | JQuery;
+type BodyCreator = (() => JQuery | JQuery[] | string) | string | JQuery | JQuery[];
 const ModalFunctions = {
     divify: function (val: JQuery) {
         if(val.length > 1) return $.spawn("div").append(val);
@@ -13,6 +13,12 @@ const ModalFunctions = {
 
     jqueriefy: function(val: BodyCreator) : JQuery {
         if($.isFunction(val)) val = val();
+        if($.isArray(val)) {
+            let result = $.spawn("div");
+            for(let element of val)
+                this.jqueriefy(element).appendTo(result);
+            return result;
+        }
         switch (typeof val){
             case "string": return $("<div>" + val + "</div>");
             case "object": return val as JQuery;

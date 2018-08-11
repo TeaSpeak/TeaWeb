@@ -57,6 +57,7 @@ namespace app {
                 l();
     }
 }
+
 if(typeof Module === "undefined")
     this["Module"] = {};
 app.initialize();
