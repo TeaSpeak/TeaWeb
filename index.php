@@ -86,7 +86,7 @@
             </div>
         </div>
         <script type="text/javascript" class="no-js">
-            let elements = document.getElementsByClassName("no-js");
+            var elements = document.getElementsByClassName("no-js");
             while (elements.length > 0) //Removing these elements (even self)
                 elements.item(0).remove();
         </script>

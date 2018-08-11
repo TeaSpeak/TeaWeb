@@ -1,0 +1,100 @@
+.modal {
+	//General style
+	.properties {
+		display: grid;
+		grid-template-columns: minmax(min-content, max-content) auto;
+		grid-column-gap: 10px;
+		grid-row-gap: 3px;
+		box-sizing: border-box;
+	}
+
+	hr {
+		border-top: 3px double #8c8b8b;
+		width: 100%;
+	}
+
+	.general_properties, .properties_general {
+		width: 100%;
+
+
+		/*
+		.slots {
+			width: 100%;
+			display: inline-flex;
+			flex-direction: row;
+
+			* {
+				display: inline-flex;
+			}
+
+			.maximum, .reserved {
+				a {
+					width: 140px;
+				}
+
+				input {
+					width: 100px;
+					margin-right: 20px;
+				}
+			}
+		}
+		*/
+	}
+
+	.input_error {
+		border-radius: 1px;
+		border: solid red;
+	}
+
+	.server_properties {
+		.properties {
+			grid-template-columns: 135px auto;
+			&:first-of-type {
+				margin-top: 5px;
+			}
+		}
+
+		.virtualserver_welcomemessage {
+			height: 70px;
+			resize: none;
+		}
+	}
+
+	.container {
+		padding: 6px;
+	}
+
+	.group_box {
+		margin-top: 5px;
+
+		&:first-of-type {
+			margin-top: 0px;
+		}
+	}
+}
+
+
+.channel_perm_tbl .value {
+	width: 60px;
+}
+
+
+.group_box {
+	display: grid;
+
+	.header {
+		float: left;
+		margin-bottom: 2px;
+	}
+
+	.content {
+		background: rgba(0, 0, 0, .035);
+		border: lightgray solid 1px;
+		border-radius: 0 2px;
+		padding: 6px;
+	}
+}
+
+.container {
+	margin: 2px;
+}

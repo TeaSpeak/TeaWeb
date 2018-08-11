@@ -30,7 +30,7 @@ namespace Modals {
         });
 
 
-        applyGeneralListener(properties, modal.htmlTag.find(".channel_general_properties"), modal.htmlTag.find(".button_ok"), !channel);
+        applyGeneralListener(properties, modal.htmlTag.find(".general_properties"), modal.htmlTag.find(".button_ok"), !channel);
         applyStandardListener(properties, modal.htmlTag.find(".settings_standard"), modal.htmlTag.find(".button_ok"), parent, !channel);
         applyPermissionListener(properties, modal.htmlTag.find(".settings_permissions"), modal.htmlTag.find(".button_ok"), permissions, channel);
 

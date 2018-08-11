@@ -1,10 +1,6 @@
 x-tab { display:none }
 
 .tab {
-    font-family: Arial;
-    font-size: 12px;
-    /*white-space: pre;*/
-    line-height: 1;
     padding: 2px;
     height: 100%;
     display: flex;
@@ -34,6 +30,11 @@ x-tab { display:none }
 */
 
 .tab .tab-header {
+    font-family: Arial;
+    font-size: 12px;
+    /*white-space: pre;*/
+    line-height: 1;
+
     max-width: 100%;
     overflow: auto;
     /*height: 24px;*/

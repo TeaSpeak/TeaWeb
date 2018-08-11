@@ -1,21 +1,68 @@
-.channel_general_properties .value {
-    width: 100%;
-}
-
-.channel_general_properties .key {
-    width: 150px;
-}
-
-.channel_general_properties .property_entry {
-    margin: 2px;
-}
+.modal .properties {
+  display: grid;
+  grid-template-columns: minmax(min-content, max-content) auto;
+  grid-column-gap: 10px;
+  grid-row-gap: 3px;
+  box-sizing: border-box; }
+.modal hr {
+  border-top: 3px double #8c8b8b;
+  width: 100%; }
+.modal .general_properties, .modal .properties_general {
+  width: 100%;
+  		/*
+  		.slots {
+  			width: 100%;
+  			display: inline-flex;
+  			flex-direction: row;
+  
+  			* {
+  				display: inline-flex;
+  			}
+  
+  			.maximum, .reserved {
+  				a {
+  					width: 140px;
+  				}
+  
+  				input {
+  					width: 100px;
+  					margin-right: 20px;
+  				}
+  			}
+  		}
+  		*/ }
+.modal .input_error {
+  border-radius: 1px;
+  border: solid red; }
+.modal .server_properties .properties {
+  grid-template-columns: 135px auto; }
+  .modal .server_properties .properties:first-of-type {
+    margin-top: 5px; }
+.modal .server_properties .virtualserver_welcomemessage {
+  height: 70px;
+  resize: none; }
+.modal .container {
+  padding: 6px; }
+.modal .group_box {
+  margin-top: 5px; }
+  .modal .group_box:first-of-type {
+    margin-top: 0px; }
 
 .channel_perm_tbl .value {
-    width: 60px;
-}
+  width: 60px; }
 
-.input_error {
-    border-radius: 1px;
-    border-style: solid;
-    border-color: red;
-}
+.group_box {
+  display: grid; }
+  .group_box .header {
+    float: left;
+    margin-bottom: 2px; }
+  .group_box .content {
+    background: rgba(0, 0, 0, 0.035);
+    border: lightgray solid 1px;
+    border-radius: 0 2px;
+    padding: 6px; }
+
+.container {
+  margin: 2px; }
+
+/*# sourceMappingURL=modals.css.map */

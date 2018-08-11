@@ -1,6 +1,10 @@
 /// <reference path="channel.ts" />
+/// <reference path="modal/ModalServerEdit.ts" />
 
 class ServerProperties {
+    virtualserver_host: string = "";
+    virtualserver_port: number = 0;
+
     virtualserver_name: string = "";
     virtualserver_icon_id: number = 0;
     virtualserver_version: string = "unknown";
@@ -11,7 +15,25 @@ class ServerProperties {
     virtualserver_queryclientsonline: number = 0;
     virtualserver_channelsonline: number = 0;
     virtualserver_uptime: number = 0;
-    virtualserver_maxclients: number = 0
+    virtualserver_maxclients: number = 0;
+    virtualserver_reserved_slots: number = 0;
+
+    virtualserver_password: string = "";
+    virtualserver_flag_password: boolean = false;
+
+    virtualserver_welcomemessage: string = "";
+
+    virtualserver_hostmessage: string = "";
+    virtualserver_hostmessage_mode: number = 0;
+
+    virtualserver_hostbanner_url: string = "";
+    virtualserver_hostbanner_gfx_url: string = "";
+    virtualserver_hostbanner_gfx_interval: number = 0;
+    virtualserver_hostbanner_mode: number = 0;
+
+    virtualserver_hostbutton_tooltip: string = "";
+    virtualserver_hostbutton_url: string = "";
+    virtualserver_hostbutton_gfx_url: string = "";
 }
 
 interface ServerAddress {
@@ -72,9 +94,16 @@ class ServerEntry {
     spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
         spawnMenu(x, y, {
                 type: MenuEntryType.ENTRY,
-                icon: "",
-                name: "test",
-                callback: () => {}
+                icon: "virtualserver_edit",
+                name: "Edit",
+                callback: () => {
+                    Modals.createServerModal(this, properties => {
+                        log.info(LogCategory.SERVER, "Changing server properties %o", properties);
+                        console.log("Changed properties: %o", properties);
+                        if (properties)
+                            this.channelTree.client.serverConnection.sendCommand("serveredit", properties);
+                    });
+                }
             },
             MenuEntry.CLOSE(on_close)
         );

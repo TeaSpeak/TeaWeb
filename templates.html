@@ -15,23 +15,20 @@
     <body>
         <!-- Template for chennel create & edit-->
         <script id="tmpl_channel_edit" type="text/html">
-            <div class="align_column channel_general_properties">
-                <div class="align_row property_entry">
+            <div class="align_column general_properties">
+                <div class="properties">
                     <a class="key">Name:</a>
                     <input class="value channel_name" value="{{>channel_name}}"/>
-                </div>
-                <div class="align_row property_entry">
+
                     <a class="key">Password:</a>
 
                     <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
                     <!-- Just display a random value here-->
                     <input class="value channel_password" type="password" id="field_channel_password_{{rnd '0~13377331'/}}" {{if channel_flag_password}} value="WolverinDEV"{{/if}}/>
-                </div>
-                <div class="align_row property_entry">
+
                     <a class="key">Topic:</a>
                     <input class="value channel_topic" value="{{>channel_topic}}"/>
-                </div>
-                <div class="align_row property_entry">
+
                     <a class="key">Description:</a>
                     <textarea class="value channel_description" style="height: 150px; resize: none">{{>channel_description}}</textarea>
                 </div>
@@ -44,7 +41,7 @@
                         <div class="settings_standard" style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly">
                             <div style="vertical-align: center; margin: 20px;">
                                 <a>Channel Type</a><br>
-                                <fieldset style="border: gray solid; border-width: 2px; border-radius: 0px 6px 6px 6px;">
+                                <fieldset style="border: 2px solid gray;border-radius: 0px 6px 6px 6px;">
                                     <div><input type="radio" name="channel_type" value="temp" {{if !channel_flag_semi_permanent && !channel_flag_permanent}}checked{{/if}}> Temporary</div>
                                     <div><input type="radio" name="channel_type" value="semi" {{if channel_flag_semi_permanent}}checked{{/if}}> Semi-Permanent</div>
                                     <div><input type="radio" name="channel_type" value="perm" {{if channel_flag_permanent}}checked{{/if}}> Permanent</div>
@@ -106,8 +103,136 @@
             </x-tab>
         </script>
 
+        <script id="tmpl_server_edit" type="text/html">
+            <div class="align_column properties_general server_properties">
+                <div class="properties">
+                    <a class="key">Name:</a>
+                    <input class="value virtualserver_name" value="{{>virtualserver_name}}"/>
 
-            <!-- Template for the connect modal -->
+                    <a class="key">Password:</a>
+                    <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
+                    <!-- Just display a random value here-->
+                    <input class="value virtualserver_password" type="password" id="field_server_password_{{rnd '0~13377331'/}}" {{if virtualserver_flag_password}} value="WolverinDEV"{{/if}}/>
+                </div>
+                <hr>
+                <div class="properties">
+                    <a>Maximum Clients:</a>
+                    <div>
+                        <input type="number" min="0" max="1024" value="{{:virtualserver_maxclients}}" class="value virtualserver_maxclients">
+
+                        <a>Reserved slots:</a>
+                        <input type="number" min="0" max="{{*: data.virtualserver_maxclients - 1 }}" value="{{:virtualserver_reserved_slots}}" class="value virtualserver_reserved_slots">
+                    </div>
+
+                    <div class="key">Welcome Message:</div>
+                    <textarea class="value virtualserver_welcomemessage">{{>virtualserver_welcomemessage}}</textarea>
+                </div>
+                <hr>
+            </div>
+            <div style="margin-bottom: 5px"></div>
+
+            <x-tab>
+                <x-entry>
+                    <x-tag>Host</x-tag>
+                    <x-content>
+                        <div class="container properties_host">
+                            <div class="group_box">
+                                <div class="header">Binding</div>
+                                <div class="content">
+                                    <div class="properties">
+                                        <div class="key">Host:</div>
+                                        <input class="value virtualserver_host" value="{{>virtualserver_host}}"/>
+
+                                        <div class="key">Port:</div>
+                                        <input type="number" min="1" max="65536" value="{{:virtualserver_port}}" class="value virtualserver_port">
+                                    </div>
+                                    <a>Note: These settings require a virtual server restart to take effect!</a>
+                                </div>
+                            </div>
+
+                            <div class="group_box">
+                                <div class="header">Host message</div>
+                                <div class="content properties">
+                                    <div class="key">Message:</div>
+                                    <input class="value virtualserver_hostmessage" value="{{>virtualserver_hostmessage}}"/>
+
+                                    <div class="key">Message Mode:</div>
+                                    <select class="value virtualserver_hostmessage_mode">
+                                        <option value="none">No message</option>
+                                        <option value="log">Show message in log</option>
+                                        <option value="modal">Show message as modal</option>
+                                        <option value="modal_exit">Show message as modal and disconnect the client</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="group_box">
+                                <div class="header">Host banner</div>
+                                <div class="content properties">
+                                    <div class="key">URL:</div>
+                                    <input class="value virtualserver_hostbanner_url" value="{{>virtualserver_hostbanner_url}}"/>
+
+                                    <div class="key">Banner Gfx URL:</div>
+                                    <input class="value virtualserver_hostbanner_gfx_url" value="{{>virtualserver_hostbanner_gfx_url}}"/>
+
+                                    <div class="key">Gfx Interval:</div>
+                                    <div class="value">
+                                        <input type="number" min="60" value="{{:virtualserver_hostbanner_gfx_interval}}" class="value virtualserver_hostbanner_gfx_interval">
+
+                                        <a>Resize:</a>
+                                        <select class="value virtualserver_hostbanner_mode">
+                                            <option value="none">Do not adjust</option>
+                                            <option value="ignore_ratio">Adjust but ignore ratio aspect</option>
+                                            <option value="keep_ratio">Adjust and keep ratio aspect</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="group_box">
+                                <div class="header">Host Button</div>
+                                <div class="content properties">
+                                    <div class="key">Tooltip:</div>
+                                    <input class="value virtualserver_hostbutton_tooltip" value="{{>virtualserver_hostbutton_tooltip}}"/>
+
+                                    <div class="key">URL:</div>
+                                    <input class="value virtualserver_hostbutton_url" value="{{>virtualserver_hostbutton_url}}"/>
+
+                                    <div class="key">Icon URL:</div>
+                                    <input class="value virtualserver_hostbutton_gfx_url" value="{{>virtualserver_hostbutton_gfx_url}}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Transfers</x-tag>
+                    <x-content>TeaSpeak does not yet support these variables</x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Anti-Flood</x-tag>
+                    <x-content>TODO!</x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Security</x-tag>
+                    <x-content>TODO!</x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Misc</x-tag>
+                    <x-content>TODO!</x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Log</x-tag>
+                    <x-content>TODO!</x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Messages</x-tag>
+                    <x-content>TODO!</x-content>
+                </x-entry>
+            </x-tab>
+        </script>
+
+        <!-- Template for the connect modal -->
         <script id="tmpl_connect" type="text/html">
             <div style="margin-top: 5px;">
                 <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">

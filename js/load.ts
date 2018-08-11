@@ -144,6 +144,7 @@ function loadDebug() {
         "js/ui/modal/ModalConnect.js",
         "js/ui/modal/ModalSettings.js",
         "js/ui/modal/ModalCreateChannel.js",
+        "js/ui/modal/ModalServerEdit.js",
         "js/ui/modal/ModalConnect.js",
         "js/ui/modal/ModalChangeVolume.js",
         "js/ui/modal/ModalBanClient.js",
