@@ -41,9 +41,14 @@ namespace TSIdentityHelper {
 
     export function unwarpString(str) : string {
         if(str == "") return "";
-        let message: string = Pointer_stringify(str);
-        functionDestroyString(str);
-        return message;
+        try {
+            let message: string = Pointer_stringify(str);
+            functionDestroyString(str);
+            return message;
+        } catch (error) {
+            console.error(error);
+            return "";
+        }
     }
 
     export function loadIdentity(key: string) : TeamSpeakIdentity {
