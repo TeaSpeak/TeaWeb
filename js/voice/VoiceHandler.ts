@@ -184,7 +184,7 @@ class VoiceConnection {
         config.iceServers = [];
         config.iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
         this.rtcPeerConnection = new RTCPeerConnection(config);
-        const dataChannelConfig = { ordered: false, maxRetransmits: 0 };
+        const dataChannelConfig = { ordered: true, maxRetransmits: 0 };
 
         this.dataChannel = this.rtcPeerConnection.createDataChannel('main', dataChannelConfig);
         this.dataChannel.onmessage = this.onDataChannelMessage.bind(this);

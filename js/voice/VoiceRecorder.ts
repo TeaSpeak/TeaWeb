@@ -65,19 +65,16 @@ class VoiceRecorder {
                     this._chunkCount = 0
                 }
             });
+            this.processor.connect(this.audioContext.destination);
 
             //Not needed but make sure we have data for the preprocessor
             this.mute = this.audioContext.createGain();
             this.mute.gain.setValueAtTime(0, 0);
             this.mute.connect(this.audioContext.destination);
 
-            this.processor.connect(this.audioContext.destination);
-
-            if(this.vadHandler) {
+            if(this.vadHandler)
                 this.vadHandler.initialise();
-                if(this.microphoneStream)
-                    this.vadHandler.initialiseNewStream(undefined, this.microphoneStream);
-            }
+            this.on_microphone(this.mediaStream);
         });
 
         this.setVADHandler(new PassThroughVAD());
@@ -127,6 +124,7 @@ class VoiceRecorder {
             this.vadHandler.changeHandle(null, true);
             this.vadHandler.finalize();
         }
+
         this.vadHandler = handler;
         this.vadHandler.changeHandle(this, false);
         if(this.audioContext) {
@@ -146,13 +144,16 @@ class VoiceRecorder {
         else this.stop();
     }
 
-    changeDevice(device: string, group: string) {
+    device_group_id() : string { return this._deviceGroup; }
+    device_id() : string { return this._deviceId; }
+
+    change_device(device: string, group: string) {
         if(this._deviceId == device && this._deviceGroup == group) return;
         this._deviceId = device;
         this._deviceGroup = group;
 
         settings.changeGlobal("microphone_device_id", device);
-        settings.changeServer("microphone_device_group", group);
+        settings.changeGlobal("microphone_device_group", group);
         if(this._recording) {
             this.stop();
             this.start(device, group);
@@ -161,10 +162,12 @@ class VoiceRecorder {
 
     start(device: string, groupId: string){
         this._deviceId = device;
-        console.log("Attempt recording! (Device: %o | Group: %o)", device, groupId);
+        this._deviceGroup = groupId;
+
+        console.log("[VoiceRecorder] Start recording! (Device: %o | Group: %o)", device, groupId);
         this._recording = true;
-        console.log("Function: %o", AudioController.userMedia);
-        let result = AudioController.userMedia({
+
+       AudioController.userMedia({
             audio: {
                 deviceId: device,
                 groupId: groupId
@@ -174,39 +177,43 @@ class VoiceRecorder {
             console.error("Could not get microphone!");
             console.error(error);
         });
-        console.log(result);
     }
 
-    stop(){
+    stop(stop_media_stream: boolean = true){
         console.log("Stop recording!");
         this._recording = false;
 
         if(this.microphoneStream) this.microphoneStream.disconnect();
         this.microphoneStream = undefined;
 
-        if(this.mediaStream) {
+        if(stop_media_stream && this.mediaStream) {
             if(this.mediaStream.stop)
                 this.mediaStream.stop();
             else
                 this.mediaStream.getTracks().forEach(value => {
                     value.stop();
                 });
+            this.mediaStream = undefined;
         }
-        this.mediaStream = undefined;
     }
 
     private on_microphone(stream: MediaStream) {
-        const oldStream = this.microphoneStream;
-        if(oldStream)
-            this.stop(); //Disconnect old stream
-        console.log("Start recording!");
+        const old_microphone_stream = this.microphoneStream;
+        if(old_microphone_stream)
+            this.stop(this.mediaStream != stream); //Disconnect old stream
 
         this.mediaStream = stream;
-        if(!this.audioContext) return;
+        if(!this.mediaStream) return;
+
+        if(!this.audioContext) {
+            console.log("[VoiceRecorder] Got microphone stream, but havn't a audio context. Waiting until its initialized");
+            return;
+        }
 
         this.microphoneStream = this.audioContext.createMediaStreamSource(stream);
         this.microphoneStream.connect(this.processor);
-        this.vadHandler.initialiseNewStream(oldStream, this.microphoneStream);
+        if(this.vadHandler)
+            this.vadHandler.initialiseNewStream(old_microphone_stream, this.microphoneStream);
     }
 }
 class MuteVAD extends VoiceActivityDetector {

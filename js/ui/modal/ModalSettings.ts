@@ -120,15 +120,11 @@ namespace Modals {
         let select_error = tag.find(".voice_microphone_select_error");
 
         navigator.mediaDevices.enumerateDevices().then(devices => {
-            let currentStream = globalClient.voiceConnection.voiceRecorder.getMediaStream();
-            let currentDeviceId;
-            if(currentStream) {
-                let audio = currentStream.getAudioTracks()[0];
-                currentDeviceId = audio.getSettings().deviceId;
-            }
+            let recoder = globalClient.voiceConnection.voiceRecorder;
+
             console.log("Got " + devices.length + " devices:");
             for(let device of devices) {
-                console.log(device);
+                console.log(" - Type: %s Name %s ID: %s Group: %s", device.kind, device.label, device.deviceId, device.groupId);
                 if(device.kind == "audioinput") {
                     let dtag = $.spawn("option");
                     dtag.attr("device-id", device.deviceId);
@@ -136,7 +132,7 @@ namespace Modals {
                     dtag.text(device.label);
                     select_microphone.append(dtag);
 
-                    dtag.prop("selected", currentDeviceId && device.deviceId == currentDeviceId);
+                    if(recoder) dtag.prop("selected", device.deviceId == recoder.device_id());
                 }
             }
         }).catch(error => {
@@ -150,7 +146,7 @@ namespace Modals {
             let deviceId = deviceSelected.attr("device-id");
             let groupId = deviceSelected.attr("device-group");
             console.log("Selected microphone device: id: %o group: %o", deviceId, groupId);
-            globalClient.voiceConnection.voiceRecorder.changeDevice(deviceId, groupId);
+            globalClient.voiceConnection.voiceRecorder.change_device(deviceId, groupId);
         });
         //Initialise speakers
 

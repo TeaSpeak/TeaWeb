@@ -9,7 +9,7 @@ enum PlayerState {
 class AudioController {
     private static getUserMediaFunction() {
         if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-            return (settings, success, fail) => navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail);
+            return (settings, success, fail) => { navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail); };
         return navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
     }
     public static userMedia = AudioController.getUserMediaFunction();
