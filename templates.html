@@ -541,6 +541,12 @@
                     <a style="align-self: center">Microphone Muted</a>
                 </div>
             {{/if}}
+
+            {{if property_client_flag_avatar && property_client_flag_avatar.length > 0}}
+                <div>
+                    <node key="client_avatar"/>
+                </div>
+            {{/if}}
         </script>
 
         <script id="tmpl_selected_music" type="text/html">

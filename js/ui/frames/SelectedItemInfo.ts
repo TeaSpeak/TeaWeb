@@ -160,6 +160,10 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
                 .attr("target", "_blank")
                 .text(client.properties.client_teaforum_id);
         }
+
+        if(client.properties.client_flag_avatar && client.properties.client_flag_avatar.length > 0) {
+            properties["client_avatar"] = client.channelTree.client.fileManager.avatars.generateTag(client);
+        }
         return properties;
     }
 }

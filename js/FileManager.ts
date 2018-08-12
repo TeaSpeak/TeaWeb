@@ -287,7 +287,9 @@ class IconManager {
                     array = concatenate(Uint8Array, array, data);
                 };
                 ft.on_complete = () => {
+                    console.log("Length: " + array.length);
                     let base64 = btoa(String.fromCharCode.apply(null, array));
+                    console.log("Length: " + array.length);
                     let icon = new Icon();
                     icon.base64 = base64;
                     icon.id = id;
@@ -353,7 +355,9 @@ class IconManager {
 class Avatar {
     clientUid: string;
     avatarId: string;
-    base64: string;
+    base64?: string;
+    url?: string;
+    blob?: Blob;
 }
 
 class AvatarManager {
@@ -364,6 +368,7 @@ class AvatarManager {
     }
 
     downloadAvatar(client: ClientEntry) : Promise<DownloadFileTransfer> {
+        console.log("Downloading avatar %s", client.avatarId());
         return this.handle.requestFileDownload("", "/avatar_" + client.avatarId());
     }
 
@@ -371,8 +376,10 @@ class AvatarManager {
         let avatar = localStorage.getItem("avatar_" + client.properties.client_unique_identifier);
         if(avatar) {
             let i = JSON.parse(avatar) as Avatar;
-            if(i.base64.length > 0 && i.avatarId == client.properties.client_flag_avatar) { //TODO timestamp?
-                return i;
+            if(i.base64) {
+                if(i.base64.length > 0 && i.avatarId == client.properties.client_flag_avatar) { //TODO timestamp?
+                    return i;
+                }
             }
         }
         return undefined;
@@ -399,9 +406,15 @@ class AvatarManager {
                     array = concatenate(Uint8Array, array, data);
                 };
                 ft.on_complete = () => {
-                    let base64 = btoa(String.fromCharCode.apply(null, array));
                     let avatar = new Avatar();
-                    avatar.base64 = base64;
+                    if(array.length > 1 * 1024 * 1024) {
+                        let blob_image = new Blob([array]);
+                        avatar.url = URL.createObjectURL(blob_image);
+                        avatar.blob = blob_image;
+                    } else {
+                        let base64 = btoa(String.fromCharCode.apply(null, array));
+                        avatar.base64 = base64;
+                    }
                     avatar.clientUid = client.clientUid();
                     avatar.avatarId = client.properties.client_flag_avatar;
 
@@ -425,7 +438,6 @@ class AvatarManager {
         img.attr("alt", "");
 
         let avatar = this.resolveCached(client);
-        avatar = undefined;
         if(avatar) {
             img.attr("src", "data:image/png;base64," + avatar.base64);
             tag.append(img);
@@ -435,8 +447,13 @@ class AvatarManager {
             tag.append(loader);
 
             this.loadAvatar(client).then(avatar => {
-                img.attr("src", "data:image/png;base64," + avatar.base64);
+                if(avatar.url)
+                    img.attr("src", avatar.url);
+                else
+                    img.attr("src", "data:image/png;base64," + avatar.base64);
                 console.debug("Avatar " + client.clientNickName() + " loaded :)");
+                console.log(avatar.base64);
+                console.log(avatar.url);
 
                 img.css("opacity", 0);
                 tag.append(img);
