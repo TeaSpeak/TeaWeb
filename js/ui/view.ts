@@ -183,6 +183,7 @@ class ChannelTree {
         let tag = client.tag.css({display: "none"}).fadeIn("slow");
         tag.appendTo(channel.clientTag());
         channel.adjustSize(true);
+        client.currentChannel().reorderClients();
         client.initializeListener();
 
         channel.updateChannelTypeIcon();
@@ -193,6 +194,11 @@ class ChannelTree {
         this.clients.push(client);
         client.channelTree = this;
         client.initializeListener();
+    }
+
+    reorderAllClients() {
+        for(let channel of this.channels)
+            channel.reorderClients();
     }
 
     moveClient(client: ClientEntry, channel: ChannelEntry) {
@@ -208,8 +214,10 @@ class ChannelTree {
         }
         if(client.currentChannel()) {
             client.currentChannel().adjustSize();
+            client.currentChannel().reorderClients();
             client.currentChannel().updateChannelTypeIcon();
         }
+        client.updateClientStatusIcons();
     }
 
     findClient?(clientId: number) : ClientEntry {

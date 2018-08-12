@@ -40,6 +40,8 @@ class ClientProperties {
 
     client_teaforum_id: number = 0;
     client_teaforum_name: string = "";
+
+    client_talk_power: number = 0;
 }
 
 class ClientEntry {
@@ -241,6 +243,7 @@ class ClientEntry {
         tag.append($.spawn("div").addClass("away").text(this.clientNickName()));
 
         let clientIcons = $.spawn("span");
+        clientIcons.append($.spawn("div").addClass("icon icon_talk_power client-input_muted").hide());
         tag.append(clientIcons);
 
         return this._tag = tag;
@@ -282,10 +285,18 @@ class ClientEntry {
     set speaking(flag) {
         if(flag == this._speaking) return;
         this._speaking = flag;
-        this.updateClientIcon();
+        this.updateClientSpeakIcon();
     }
 
-    updateClientIcon() {
+    updateClientStatusIcons() {
+        let talk_power = this.properties.client_talk_power >= this._channel.properties.channel_needed_talk_power;
+        if(talk_power)
+            this.tag.find("span").find(".icon_talk_power").hide();
+        else
+            this.tag.find("span").find(".icon_talk_power").show();
+    }
+
+    updateClientSpeakIcon() {
         let icon: string = "";
         let clicon: string = "";
         if(this.properties.client_away) {
@@ -340,7 +351,7 @@ class ClientEntry {
                 if(chat) chat.name = variable.value;
             }
             if(variable.key == "client_away" || variable.key == "client_output_muted" || variable.key == "client_input_hardware" || variable.key == "client_input_muted" || variable.key == "client_is_channel_commander"){
-                this.updateClientIcon();
+                this.updateClientSpeakIcon();
             }
             if(variable.key == "client_away_message" || variable.key == "client_away") {
                 this.updateAwayMessage();
@@ -349,6 +360,13 @@ class ClientEntry {
                 this.audioController.volume = parseFloat(settings.server("volume_client_" + this.clientUid(), "1"));
                 console.error("Updated volume from config " + this.audioController.volume + " - " + "volume_client_" + this.clientUid() + " - " + settings.server("volume_client_" + this.clientUid(), "1"));
                 console.log(this.avatarId());
+            }
+            if(variable.key == "client_talk_power") {
+                if(this._channel) {
+                    this._channel.reorderClients();
+                    this.updateClientStatusIcons();
+                }
+
             }
         }
 

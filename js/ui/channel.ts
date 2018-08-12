@@ -108,8 +108,8 @@ class ChannelEntry {
         return result;
     }
 
-    clients(deep = false) {
-        const result = [];
+    clients(deep = false) : ClientEntry[] {
+        const result: ClientEntry[] = [];
         if(this.channelTree == null) return [];
 
         const self = this;
@@ -152,14 +152,17 @@ class ChannelEntry {
         let iconTag = $.spawn("span").addClass("icons");
         iconTag.appendTo(this._tag_channel);
 
-        //Default icon (4)
+        //Default icon (5)
         iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_default icon client-channel_default").attr("title", "Default channel")));
-        //Password icon (3)
+        //Password icon (4)
         iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_password icon client-register").attr("title", "The channel is password protected")));
-        //Music icon (2)
+        //Music icon (3)
         iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_music icon client-music").attr("title", "Music quality")));
+        //Channel moderated (2)
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_moderated icon client-moderated").attr("title", "Channel is moderated")));
         //Channel Icon (1)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").addClass("icon_entry channel_icon").attr("title", "Channel icon"));
+        //iconTag.append($.spawn("div").addClass("channel_only_normal").addClass("icon_entry channel_icon").attr("title", "Channel icon"));
+        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry channel_icon").attr("title", "Channel icon")));
         //Default no sound (0)
         let container = $.spawn("div");
         let noSound = $.spawn("div").addClass("icon_entry icon_no_sound icon client-conflict-icon").attr("title", "You don't support the channel codec");
@@ -209,6 +212,34 @@ class ChannelEntry {
     }
     clientTag() : JQuery<HTMLElement>{
         return this._tag_clients;
+    }
+
+    reorderClients() {
+        let clients = this.clients();
+
+        if(clients.length > 1) {
+            clients.sort((a, b) => {
+                if(a.properties.client_talk_power < b.properties.client_talk_power)
+                    return 1;
+                if(a.properties.client_talk_power > b.properties.client_talk_power)
+                    return -1;
+
+                if(a.properties.client_nickname > b.properties.client_nickname)
+                    return 1;
+                if(a.properties.client_nickname < b.properties.client_nickname)
+                    return -1;
+
+                return 0;
+            });
+            clients.reverse();
+
+            for(let index = 0; index + 1 < clients.length; index++)
+                clients[index].tag.before(clients[index + 1].tag);
+
+            for(let client of clients) {
+                console.log("- %i %s", client.properties.client_talk_power, client.properties.client_nickname);
+            }
+        }
     }
 
     adjustSize(parent = true) {
@@ -428,7 +459,8 @@ class ChannelEntry {
                 (this.properties.channel_flag_default ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_default"));
             } else if(key == "channel_flag_password")
                 (this.properties.channel_flag_password ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_password"));
-
+            else if(key == "channel_needed_talk_power")
+                (this.properties.channel_needed_talk_power > 0 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_moderated"));
             if(key == "channel_maxclients" || key == "channel_maxfamilyclients" || key == "channel_flag_private" || key == "channel_flag_password")
                 this.updateChannelTypeIcon();
         }

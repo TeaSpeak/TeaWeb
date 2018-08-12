@@ -645,10 +645,12 @@
                     <td>Name:</td>
                     <td><node key="channel_name"/></td>
                 </tr>
+                {{if property_channel_topic}}
                 <tr>
                     <td>Topic:</td>
                     <td>{{>property_channel_topic}}</td>
                 </tr>
+                {{/if}}
                 <tr>
                     <td>Codec:</td>
                     <td>{{>property_channel_codec}}</td>
