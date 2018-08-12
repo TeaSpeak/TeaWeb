@@ -10,10 +10,12 @@ enum GroupTarget {
     CHANNEL
 }
 
+class GroupProperties {
+    iconid: number = 0;
+}
+
 class Group {
-    properties: any = {
-        iconid: 0
-    };
+    properties: GroupProperties = new GroupProperties();
 
     readonly handle: GroupManager;
     readonly id: number;
@@ -34,13 +36,13 @@ class Group {
     }
 
     updateProperty(key, value) {
-        this.properties[key] = value;
+        JSON.map_field_to(this.properties, value, key);
 
         if(key == "iconid") {
-            const _this = this;
-            console.log("Icon id " + _this.properties.iconid);
+            this.properties.iconid = (new Uint32Array([this.properties.iconid]))[0];
+            console.log("Icon id " + this.properties.iconid);
             this.handle.handle.channelTree.clientsByGroup(this).forEach(client => {
-                client.updateGroupIcon(_this);
+                client.updateGroupIcon(this);
             });
         }
     }
