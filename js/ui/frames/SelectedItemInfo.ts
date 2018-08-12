@@ -1,4 +1,5 @@
 /// <reference path="../../client.ts" />
+/// <reference path="../../../vendor/bbcode/xbbcode.ts" />
 
 abstract class InfoManagerBase {
     private timers: NodeJS.Timer[] = [];
@@ -243,6 +244,22 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
 
         for(let key in channel.properties)
             properties["property_" + key] = channel.properties[key];
+
+        let tag_channel_description = $.spawn("div");
+        properties["bbcode_channel_description"] = tag_channel_description;
+
+        channel.getChannelDescription().then(description => {
+            let result = XBBCODE.process({
+                text: description,
+                escapeHtml: true,
+                addInLineBreaks: true
+            });
+            if(result.error) {
+                console.log("BBCode parse error: %o", result.errorQueue);
+            }
+
+            tag_channel_description.html(result.html);
+        });
 
         let rendered = $("#tmpl_selected_channel").renderTag([properties]);
         rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });

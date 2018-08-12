@@ -20,7 +20,6 @@ class ChannelProperties {
     channel_topic: string = "";
 
     channel_password: string = "";
-    channel_description: string = "";
 
     channel_codec: number = 4;
     channel_codec_quality: number = 0;
@@ -60,6 +59,10 @@ class ChannelEntry {
     private _tag_channel:           JQuery<HTMLElement>;
 
     private _cachedPassword: string;
+    private _cached_channel_description: string = undefined;
+    private _cached_channel_description_promise: Promise<string> = undefined;
+    private _cached_channel_description_promise_resolve: any = undefined;
+    private _cached_channel_description_promise_reject: any = undefined;
 
     constructor(channelId, channelName, parent = null, prevChannel = null) {
         this.properties = new ChannelProperties();
@@ -79,6 +82,20 @@ class ChannelEntry {
 
     formatedChannelName() {
         return this._formatedChannelName ? this._formatedChannelName : this.properties.channel_name;
+    }
+
+    getChannelDescription() : Promise<string> {
+        if(this._cached_channel_description) return new Promise<string>(resolve => resolve(this._cached_channel_description));
+        if(this._cached_channel_description_promise) return this._cached_channel_description_promise;
+
+        this.channelTree.client.serverConnection.sendCommand("channelgetdescription", {cid: this.channelId}).catch(error => {
+            this._cached_channel_description_promise_reject(error);
+        });
+
+        return this._cached_channel_description_promise = new Promise<string>((resolve, reject) => {
+            this._cached_channel_description_promise_resolve = resolve;
+            this._cached_channel_description_promise_reject = reject;
+        });
     }
 
     parentChannel() { return this.parent; }
@@ -461,6 +478,14 @@ class ChannelEntry {
                 (this.properties.channel_flag_password ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_password"));
             else if(key == "channel_needed_talk_power")
                 (this.properties.channel_needed_talk_power > 0 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_moderated"));
+            else if(key == "channel_description") {
+                this._cached_channel_description = undefined;
+                if(this._cached_channel_description_promise_resolve)
+                    this._cached_channel_description_promise_resolve(value);
+                this._cached_channel_description_promise = undefined;
+                this._cached_channel_description_promise_resolve = undefined;
+                this._cached_channel_description_promise_reject = undefined;
+            }
             if(key == "channel_maxclients" || key == "channel_maxfamilyclients" || key == "channel_flag_private" || key == "channel_flag_password")
                 this.updateChannelTypeIcon();
         }
