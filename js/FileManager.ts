@@ -362,6 +362,8 @@ class Avatar {
 
 class AvatarManager {
     handle: FileManager;
+    private loading_avatars: {promise: Promise<Avatar>, name: string}[] = [];
+    private loaded_urls: string[] = [];
 
     constructor(handle: FileManager) {
         this.handle = handle;
@@ -376,27 +378,44 @@ class AvatarManager {
         let avatar = localStorage.getItem("avatar_" + client.properties.client_unique_identifier);
         if(avatar) {
             let i = JSON.parse(avatar) as Avatar;
+            //TODO timestamp?
+
+            if(i.avatarId != client.properties.client_flag_avatar) return undefined;
+
             if(i.base64) {
-                if(i.base64.length > 0 && i.avatarId == client.properties.client_flag_avatar) { //TODO timestamp?
+                if(i.base64.length > 0)
                     return i;
-                }
+                else i.base64 = undefined;
+            }
+            if(i.url) {
+                for(let url of this.loaded_urls)
+                    if(url == i.url) return i;
             }
         }
         return undefined;
     }
 
+    private load_finished(name: string) {
+        for(let entry of this.loading_avatars)
+            if(entry.name == name)
+                this.loading_avatars.remove(entry);
+    }
     loadAvatar(client: ClientEntry) : Promise<Avatar> {
-        const _this = this;
-        return new Promise<Avatar>((resolve, reject) => {
+        let name = client.avatarId();
+        for(let promise of this.loading_avatars)
+            if(promise.name == name) return promise.promise;
+
+        let promise = new Promise<Avatar>((resolve, reject) => {
             let avatar = this.resolveCached(client);
             if(avatar){
                 resolve(avatar);
                 return;
             }
 
-            _this.downloadAvatar(client).then(ft => {
+            this.downloadAvatar(client).then(ft => {
                 let array = new Uint8Array(0);
                 ft.on_fail = reason => {
+                    this.load_finished(name);
                     console.error("Could not download avatar " + client.properties.client_flag_avatar + " -> " + reason);
                     chat.serverChat().appendError("Fail to download avatar for {0}. ({1})", client.clientNickName(), JSON.stringify(reason));
                     reject(reason);
@@ -407,28 +426,33 @@ class AvatarManager {
                 };
                 ft.on_complete = () => {
                     let avatar = new Avatar();
-                    if(array.length > 1 * 1024 * 1024) {
+                    if(array.length >= 1 * 1024 * 1024) {
                         let blob_image = new Blob([array]);
                         avatar.url = URL.createObjectURL(blob_image);
                         avatar.blob = blob_image;
+                        this.loaded_urls.push(avatar.url);
                     } else {
-                        let base64 = btoa(String.fromCharCode.apply(null, array));
-                        avatar.base64 = base64;
+                        avatar.base64 = btoa(String.fromCharCode.apply(null, array));
                     }
                     avatar.clientUid = client.clientUid();
                     avatar.avatarId = client.properties.client_flag_avatar;
 
                     localStorage.setItem("avatar_" + client.properties.client_unique_identifier, JSON.stringify(avatar));
+                    this.load_finished(name);
                     resolve(avatar);
                 };
 
                 ft.startTransfer();
             }).catch(reason => {
+                this.load_finished(name);
                 console.error("Error while downloading avatar! (" + JSON.stringify(reason) + ")");
                 chat.serverChat().appendError("Failed to request avatar download for {0}. ({1})", client.clientNickName(), JSON.stringify(reason));
                 reject(reason);
             });
         });
+
+        this.loading_avatars.push({promise: promise, name: name});
+        return promise;
     }
 
     generateTag(client: ClientEntry) {
@@ -439,7 +463,10 @@ class AvatarManager {
 
         let avatar = this.resolveCached(client);
         if(avatar) {
-            img.attr("src", "data:image/png;base64," + avatar.base64);
+            if(avatar.url)
+                img.attr("src", avatar.url);
+            else
+                img.attr("src", "data:image/png;base64," + avatar.base64);
             tag.append(img);
         } else {
             let loader = $.spawn("img");
