@@ -262,6 +262,7 @@ function loadSide() {
     //Load the general scripts and required scripts
     awaitLoad(loadScripts([
         ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
+        ["vendor/bbcode/xbbcode.js"],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => awaitLoad(loadScripts([
         //["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
