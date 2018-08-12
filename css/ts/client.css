@@ -52,7 +52,7 @@
 
 .channelTree div * {vertical-align: middle;display:inline-block;height: 16px;padding: 0px;}
 .channelTree div img  {border: 0;}
-.channelTree div span {position: absolute; right: 0;}
+.channelTree div > span {position: absolute; right: 0;}
 .channelTree .name {
     vertical-align: middle;
     margin-top: 1px;
@@ -103,6 +103,10 @@
     cursor: pointer;
     margin-top: 1px;
     width: calc(100%);
+}
+
+.channelTree .client span > div {
+    margin-left: 3px;
 }
 
 .channelTree .server {
