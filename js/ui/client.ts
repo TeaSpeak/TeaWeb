@@ -26,7 +26,7 @@ class ClientProperties {
     client_lastconnected: number = 0;
 
     client_flag_avatar: string = "";
-
+    client_icon_id: number = 0;
 
     client_away_message: string = "";
     client_away: boolean = false;
@@ -244,6 +244,8 @@ class ClientEntry {
 
         let clientIcons = $.spawn("span");
         clientIcons.append($.spawn("div").addClass("icon icon_talk_power client-input_muted").hide());
+        clientIcons.append($.spawn("span").addClass("group_icons"));
+        clientIcons.append($.spawn("span").addClass("client_icon"));
         tag.append(clientIcons);
 
         return this._tag = tag;
@@ -349,6 +351,8 @@ class ClientEntry {
                 this.tag.find(".name").text(variable.value);
                 let chat = this.chat(false);
                 if(chat) chat.name = variable.value;
+                if(this._channel)
+                    this._channel.reorderClients();
             }
             if(variable.key == "client_away" || variable.key == "client_output_muted" || variable.key == "client_input_hardware" || variable.key == "client_input_muted" || variable.key == "client_is_channel_commander"){
                 this.updateClientSpeakIcon();
@@ -368,6 +372,8 @@ class ClientEntry {
                 }
 
             }
+            if(variable.key == "client_icon_id")
+                this.updateClientIcon();
         }
 
         group.end();
@@ -402,13 +408,23 @@ class ClientEntry {
         return c;
     }
 
+    updateClientIcon() {
+        this.tag.find("span .client_icon").children().detach();
+        if(this.properties.client_icon_id > 0) {
+            this.channelTree.client.fileManager.icons.generateTag(this.properties.client_icon_id).attr("title", "Client icon")
+                .appendTo(this.tag.find("span .client_icon"));
+        }
+    }
 
     updateGroupIcon(group: Group) {
         //TODO group icon order
-        this.tag.find(".icon_group_" + group.id).detach();
+        this.tag.find(".group_icons .icon_group_" + group.id).detach();
 
-        if(group.properties.iconid > 0)
-            this.tag.find("span").append(this.channelTree.client.fileManager.icons.generateTag(group.properties.iconid).addClass("icon_group_" + group.id));
+        if (group.properties.iconid > 0) {
+            this.tag.find("span .group_icons").append(
+                $.spawn("div").addClass("icon_group_" + group.id).append(this.channelTree.client.fileManager.icons.generateTag(group.properties.iconid)).attr("title", group.name)
+            );
+        }
     }
 
     assignedServerGroupIds() : number[] {
