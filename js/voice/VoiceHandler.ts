@@ -296,6 +296,8 @@ class VoiceConnection {
                 .then(decoder => decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData))
                 .then(buffer => client.getAudioController().playBuffer(buffer)).catch(error => {
                     console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
+                    if(error instanceof Error)
+                        console.error(error.stack);
                 });
         }
     }

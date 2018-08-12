@@ -132,7 +132,7 @@ class AudioController {
     onSilence: () => void;
 
     constructor() {
-        this.speakerContext = AudioController.globalContext;
+        AudioController.on_initialized(() => this.speakerContext = AudioController.globalContext);
 
         this.onSpeaking = function () { };
         this.onSilence = function () { };
@@ -147,6 +147,14 @@ class AudioController {
     }
 
     playBuffer(buffer: AudioBuffer) {
+        if(!buffer) {
+            console.warn("[AudioController] Got empty or undefined buffer! Dropping it");
+            return;
+        }
+        if(!this.speakerContext) {
+            console.warn("[AudioController] Failed to replay audio. Global audio context not initialized yet!");
+            return;
+        }
         if (buffer.sampleRate != this.speakerContext.sampleRate)
             console.warn("[AudioController] Source sample rate isn't equal to playback sample rate! (" + buffer.sampleRate + " | " + this.speakerContext.sampleRate + ")");
 
