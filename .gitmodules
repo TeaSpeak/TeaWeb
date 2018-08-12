@@ -8,3 +8,6 @@
 [submodule "asm/libraries/tommath"]
 	path = asm/libraries/tommath
 	url = http://git.mcgalaxy.de:8090/WolverinDEV/tommath.git
+[submodule "vendor/bbcode"]
+	path = vendor/bbcode
+	url = https://github.com/patorjk/Extendible-BBCode-Parser.git
