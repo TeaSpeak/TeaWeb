@@ -242,6 +242,7 @@ class Icon {
 
 class IconManager {
     handle: FileManager;
+    private loading_icons: {promise: Promise<Icon>, id: number}[] = [];
 
     constructor(handle: FileManager) {
         this.handle = handle;
@@ -266,18 +267,27 @@ class IconManager {
         return undefined;
     }
 
+    private load_finished(id: number) {
+        for(let entry of this.loading_icons)
+            if(entry.id == id)
+                this.loading_icons.remove(entry);
+    }
     loadIcon(id: number) : Promise<Icon> {
-        const _this = this;
-        return new Promise<Icon>((resolve, reject) => {
+        for(let entry of this.loading_icons)
+            if(entry.id == id) return entry.promise;
+
+        let promise = new Promise<Icon>((resolve, reject) => {
             let icon = this.resolveCached(id);
             if(icon){
+                this.load_finished(id);
                 resolve(icon);
                 return;
             }
 
-            _this.downloadIcon(id).then(ft => {
+            this.downloadIcon(id).then(ft => {
                 let array = new Uint8Array(0);
                 ft.on_fail = reason => {
+                    this.load_finished(id);
                     console.error("Could not download icon " + id + " -> " + reason);
                     chat.serverChat().appendError("Fail to download icon {0}. ({1})", id, JSON.stringify(reason));
                     reject(reason);
@@ -287,15 +297,14 @@ class IconManager {
                     array = concatenate(Uint8Array, array, data);
                 };
                 ft.on_complete = () => {
-                    console.log("Length: " + array.length);
                     let base64 = btoa(String.fromCharCode.apply(null, array));
-                    console.log("Length: " + array.length);
                     let icon = new Icon();
                     icon.base64 = base64;
                     icon.id = id;
                     icon.name = "icon_" + id;
 
                     localStorage.setItem("icon_" + id, JSON.stringify(icon));
+                    this.load_finished(id);
                     resolve(icon);
                 };
 
@@ -306,6 +315,9 @@ class IconManager {
                 reject(reason);
             });
         });
+
+        this.loading_icons.push({promise: promise, id: id});
+        return promise;
     }
 
     //$("<img width=\"16\" height=\"16\" alt=\"tick\" src=\"data:image/png;base64," + value.base64 + "\">")
@@ -408,6 +420,7 @@ class AvatarManager {
         let promise = new Promise<Avatar>((resolve, reject) => {
             let avatar = this.resolveCached(client);
             if(avatar){
+                this.load_finished(name);
                 resolve(avatar);
                 return;
             }
