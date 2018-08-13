@@ -34,6 +34,11 @@ class ServerProperties {
     virtualserver_hostbutton_tooltip: string = "";
     virtualserver_hostbutton_url: string = "";
     virtualserver_hostbutton_gfx_url: string = "";
+
+    //Special requested properties
+    virtualserver_default_client_description: string = "";
+    virtualserver_default_channel_description: string = "";
+    virtualserver_default_channel_topic: string = "";
 }
 
 interface ServerAddress {
@@ -45,6 +50,10 @@ class ServerEntry {
     remote_address: ServerAddress;
     channelTree: ChannelTree;
     properties: ServerProperties;
+
+    private info_request_promise: Promise<void> = undefined;
+    private info_request_promise_resolve: any = undefined;
+    private info_request_promise_reject: any = undefined;
 
     lastInfoRequest: number = 0;
     nextInfoRequest: number = 0;
@@ -109,7 +118,7 @@ class ServerEntry {
         );
     }
 
-    updateVariables(...variables: {key: string, value: string}[]) {
+    updateVariables(is_self_notify: boolean, ...variables: {key: string, value: string}[]) {
         let group = log.group(log.LogType.DEBUG, LogCategory.SERVER, "Update properties (%i)", variables.length);
 
         for(let variable of variables) {
@@ -125,12 +134,29 @@ class ServerEntry {
         }
 
         group.end();
+        if(is_self_notify && this.info_request_promise_resolve) {
+            this.info_request_promise_resolve();
+            this.info_request_promise = undefined;
+            this.info_request_promise_reject = undefined;
+            this.info_request_promise_resolve = undefined;
+        }
     }
 
-    updateProperties() {
-        this.lastInfoRequest = new Date().getTime();
+    updateProperties() : Promise<void> {
+        if(this.info_request_promise && Date.now() - this.lastInfoRequest < 1000) return this.info_request_promise;
+        this.lastInfoRequest = Date.now();
         this.nextInfoRequest =  this.lastInfoRequest + 10 * 1000;
-        this.channelTree.client.serverConnection.sendCommand("servergetvariables");
+        this.channelTree.client.serverConnection.sendCommand("servergetvariables").catch(error => {
+            this.info_request_promise_reject(error);
+            this.info_request_promise = undefined;
+            this.info_request_promise_reject = undefined;
+            this.info_request_promise_resolve = undefined;
+        });
+
+        return this.info_request_promise = new Promise<void>((resolve, reject) => {
+            this.info_request_promise_reject = reject;
+            this.info_request_promise_resolve = resolve;
+        });
     }
 
     shouldUpdateProperties() : boolean {

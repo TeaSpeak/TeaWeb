@@ -78,6 +78,7 @@ enum PermissionType {
     B_VIRTUALSERVER_MODIFY_TEMPORARY_PASSWORDS_OWN = "b_virtualserver_modify_temporary_passwords_own",
     B_VIRTUALSERVER_MODIFY_CHANNEL_TEMP_DELETE_DELAY_DEFAULT = "b_virtualserver_modify_channel_temp_delete_delay_default",
     B_VIRTUALSERVER_MODIFY_MUSIC_BOT_LIMIT = "b_virtualserver_modify_music_bot_limit",
+    B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES = "b_virtualserver_modify_music_bot_limit",
     I_CHANNEL_MIN_DEPTH = "i_channel_min_depth",
     I_CHANNEL_MAX_DEPTH = "i_channel_max_depth",
     B_CHANNEL_GROUP_INHERITANCE_END = "b_channel_group_inheritance_end",

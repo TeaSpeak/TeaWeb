@@ -31,6 +31,7 @@ namespace Modals {
 
         server_applyGeneralListener(properties, modal.htmlTag.find(".properties_general"), modal.htmlTag.find(".button_ok"));
         server_applyHostListener(properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
+        server_applyMessages(properties, server, modal.htmlTag.find(".properties_messages"));
 
         modal.htmlTag.find(".button_ok").click(() => {
             modal.close();
@@ -93,20 +94,6 @@ namespace Modals {
     }
 
 
-    /*
-virtualserver_hostmessage
-virtualserver_hostmessage_mode X
-
-virtualserver_hostbanner_url
-virtualserver_hostbanner_gfx_url
-virtualserver_hostbanner_gfx_interval
-virtualserver_hostbanner_mode X
-
-virtualserver_hostbutton_tooltip
-virtualserver_hostbutton_url
-virtualserver_hostbutton_gfx_url
-
-     */
     function server_applyHostListener(properties: ServerProperties, original_properties: ServerProperties, tag: JQuery, button: JQuery) {
         tag.find(".virtualserver_host").change(function (this: HTMLInputElement) {
             properties.virtualserver_host = this.value;
@@ -158,18 +145,26 @@ virtualserver_hostbutton_gfx_url
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
 
     }
-    /*
-        <!--
-                virtualserver_hostmessage: string = "";
-                virtualserver_hostmessage_mode: string = "";
 
-                virtualserver_hostbanner_url: string = "";
-                virtualserver_hostbanner_gfx_url: string = "";
-                virtualserver_hostbanner_gfx_interval: number = 0;
+    function server_applyMessages(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        server.updateProperties().then(() => {
+            tag.find(".virtualserver_default_client_description").val(server.properties.virtualserver_default_client_description);
+            tag.find(".virtualserver_default_channel_description").val(server.properties.virtualserver_default_channel_description);
+            tag.find(".virtualserver_default_channel_topic").val(server.properties.virtualserver_default_channel_topic);
+        });
 
-                virtualserver_hostbutton_tooltip: string = "";
-                virtualserver_hostbutton_url: string = "";
-                virtualserver_hostbutton_gfx_url: string = "";
-            -->
-     */
+        console.log(tag);
+        console.log(tag.find(".virtualserver_default_client_description"));
+        tag.find(".virtualserver_default_client_description").change(function (this: HTMLInputElement) {
+            properties.virtualserver_default_client_description = this.value;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
+
+        tag.find(".virtualserver_default_channel_description").change(function (this: HTMLInputElement) {
+            properties.virtualserver_default_channel_description = this.value;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
+
+        tag.find(".virtualserver_default_channel_topic").change(function (this: HTMLInputElement) {
+            properties.virtualserver_default_channel_topic = this.value;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
+    }
 }

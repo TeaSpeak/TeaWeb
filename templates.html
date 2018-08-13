@@ -227,7 +227,29 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>Messages</x-tag>
-                    <x-content>TODO!</x-content>
+                    <x-content>
+                        <div> <!-- We have to move the shit one layer up  -->
+                            <div class="container properties_messages">
+                                <div class="group_box">
+                                    <div class="header">Channel</div>
+                                    <div class="content properties">
+                                        <div class="key">Default Topic:</div>
+                                        <textarea class="value virtualserver_default_channel_topic">{{>virtualserver_default_channel_topic}}</textarea>
+
+                                        <div class="key">Default Description</div>
+                                        <textarea class="value virtualserver_default_channel_description">{{>virtualserver_default_channel_description}}</textarea>
+                                    </div>
+                                </div>
+                                <div class="group_box">
+                                    <div class="header">Client</div>
+                                    <div class="content properties">
+                                        <div class="key">Default Description</div>
+                                        <textarea class="value virtualserver_default_client_description">{{>virtualserver_default_client_description}}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
             </x-tab>
         </script>
@@ -701,7 +723,8 @@
                     </td>
                 </tr>
             </table>
-            <div>
+            <div style="margin-top: 10px">
+                <b style="margin-bottom: 2px">Description</b>
                 <node key="bbcode_channel_description"></node>
             </div>
         </script>

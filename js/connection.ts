@@ -392,7 +392,7 @@ class ConnectionCommandHandler {
 
             updates.push({key: key, value: json[key]});
         }
-        this.connection._client.channelTree.server.updateVariables(...updates);
+        this.connection._client.channelTree.server.updateVariables(false, ...updates);
 
 
         chat.serverChat().name = this.connection._client.channelTree.server.properties["virtualserver_name"];
@@ -757,7 +757,7 @@ class ConnectionCommandHandler {
 
             updates.push({key: key, value: json[key]});
         }
-        this.connection._client.channelTree.server.updateVariables(...updates);
+        this.connection._client.channelTree.server.updateVariables(false, ...updates);
         if(this.connection._client.selectInfo.currentSelected == this.connection._client.channelTree.server)
             this.connection._client.selectInfo.update();
     }
@@ -777,7 +777,7 @@ class ConnectionCommandHandler {
 
             updates.push({key: key, value: json[key]});
         }
-        this.connection._client.channelTree.server.updateVariables(...updates);
+        this.connection._client.channelTree.server.updateVariables(true, ...updates);
         let info = this.connection._client.selectInfo;
         if(info.currentSelected instanceof ServerEntry)
             info.update();
