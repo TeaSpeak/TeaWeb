@@ -39,6 +39,10 @@ class ServerProperties {
     virtualserver_default_client_description: string = "";
     virtualserver_default_channel_description: string = "";
     virtualserver_default_channel_topic: string = "";
+
+    virtualserver_antiflood_points_tick_reduce: number = 0;
+    virtualserver_antiflood_points_needed_command_block: number = 0;
+    virtualserver_antiflood_points_needed_ip_block: number = 0;
 }
 
 interface ServerAddress {

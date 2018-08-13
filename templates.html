@@ -211,7 +211,20 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>Anti-Flood</x-tag>
-                    <x-content>TODO!</x-content>
+                    <x-content>
+                        <div class="container properties_flood">
+                            <div class="properties">
+                                <div class="key">Reduced points per tick:</div>
+                                <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_tick_reduce}}" class="value virtualserver_antiflood_points_tick_reduce">
+
+                                <div class="key">Points needed to block commands:</div>
+                                <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_needed_command_block}}" class="value virtualserver_antiflood_points_needed_command_block">
+
+                                <div class="key">Points needed to block IP:</div>
+                                <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_needed_ip_block}}" class="value virtualserver_antiflood_points_needed_ip_block">
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>Security</x-tag>

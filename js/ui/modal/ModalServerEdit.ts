@@ -32,6 +32,7 @@ namespace Modals {
         server_applyGeneralListener(properties, modal.htmlTag.find(".properties_general"), modal.htmlTag.find(".button_ok"));
         server_applyHostListener(properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
         server_applyMessages(properties, server, modal.htmlTag.find(".properties_messages"));
+        server_applyFlood(properties, server, modal.htmlTag.find(".properties_flood"));
 
         modal.htmlTag.find(".button_ok").click(() => {
             modal.close();
@@ -153,8 +154,6 @@ namespace Modals {
             tag.find(".virtualserver_default_channel_topic").val(server.properties.virtualserver_default_channel_topic);
         });
 
-        console.log(tag);
-        console.log(tag.find(".virtualserver_default_client_description"));
         tag.find(".virtualserver_default_client_description").change(function (this: HTMLInputElement) {
             properties.virtualserver_default_client_description = this.value;
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
@@ -166,5 +165,25 @@ namespace Modals {
         tag.find(".virtualserver_default_channel_topic").change(function (this: HTMLInputElement) {
             properties.virtualserver_default_channel_topic = this.value;
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
+    }
+
+    function server_applyFlood(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        server.updateProperties().then(() => {
+            tag.find(".virtualserver_antiflood_points_tick_reduce").val(server.properties.virtualserver_antiflood_points_tick_reduce);
+            tag.find(".virtualserver_antiflood_points_needed_command_block").val(server.properties.virtualserver_antiflood_points_needed_command_block);
+            tag.find(".virtualserver_antiflood_points_needed_ip_block").val(server.properties.virtualserver_antiflood_points_needed_ip_block);
+        });
+
+        tag.find(".virtualserver_antiflood_points_tick_reduce").change(function (this: HTMLInputElement) {
+            properties.virtualserver_antiflood_points_tick_reduce = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+
+        tag.find(".virtualserver_antiflood_points_needed_command_block").change(function (this: HTMLInputElement) {
+            properties.virtualserver_antiflood_points_needed_command_block = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+
+        tag.find(".virtualserver_antiflood_points_needed_ip_block").change(function (this: HTMLInputElement) {
+            properties.virtualserver_antiflood_points_needed_ip_block = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
     }
 }
