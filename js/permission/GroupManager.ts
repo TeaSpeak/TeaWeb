@@ -12,6 +12,10 @@ enum GroupTarget {
 
 class GroupProperties {
     iconid: number = 0;
+
+    sortid: number = 0;
+    savedb: boolean = false;
+    namemode: number = 0;
 }
 
 class Group {
@@ -66,6 +70,21 @@ class GroupManager {
         this.handle.serverConnection.sendCommand("channelgrouplist");
     }
 
+    static sorter() : (a: Group, b: Group) => number {
+        return (a, b) => {
+            if(a.properties.sortid < b.properties.sortid)
+                return 1;
+            if(a.properties.sortid > b.properties.sortid)
+                return -1;
+
+            if(a.id < b.id)
+                return -1;
+            if(a.id > b.id)
+                return 1;
+            return 0;
+        }
+    }
+
     serverGroup?(id: number) : Group {
         for(let group of this.serverGroups)
             if(group.id == id) return group;
@@ -103,7 +122,7 @@ class GroupManager {
                     continue;
             }
 
-            let group = new Group(this,target == GroupTarget.SERVER ? groupData["sgid"] : groupData["cgid"], target, type, groupData["name"]);
+            let group = new Group(this,parseInt(target == GroupTarget.SERVER ? groupData["sgid"] : groupData["cgid"]), target, type, groupData["name"]);
             for(let key in groupData as any) {
                 if(key == "sgid") continue;
                 if(key == "cgid") continue;

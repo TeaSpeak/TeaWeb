@@ -33,6 +33,8 @@ namespace Modals {
         server_applyHostListener(properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
         server_applyMessages(properties, server, modal.htmlTag.find(".properties_messages"));
         server_applyFlood(properties, server, modal.htmlTag.find(".properties_flood"));
+        server_applySecurity(properties, server, modal.htmlTag.find(".properties_security"));
+        server_applyMisc(properties, server, modal.htmlTag.find(".properties_misc"));
 
         modal.htmlTag.find(".button_ok").click(() => {
             modal.close();
@@ -61,6 +63,10 @@ namespace Modals {
             if(this.value.length < 1 || this.value.length > 70)
                 $(this).addClass("input_error");
             updateButton();
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NAME).granted(1));
+
+        tag.find(".virtualserver_name_phonetic").change(function (this: HTMLInputElement) {
+            properties.virtualserver_name_phonetic = this.value;
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NAME).granted(1));
 
         tag.find(".virtualserver_password").change(function (this: HTMLInputElement) {
@@ -185,5 +191,121 @@ namespace Modals {
         tag.find(".virtualserver_antiflood_points_needed_ip_block").change(function (this: HTMLInputElement) {
             properties.virtualserver_antiflood_points_needed_ip_block = this.valueAsNumber;
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+    }
+
+
+    function server_applySecurity(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        server.updateProperties().then(() => {
+            tag.find(".virtualserver_needed_identity_security_level").val(server.properties.virtualserver_needed_identity_security_level);
+        });
+
+        tag.find(".virtualserver_needed_identity_security_level").change(function (this: HTMLInputElement) {
+            properties.virtualserver_needed_identity_security_level = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NEEDED_IDENTITY_SECURITY_LEVEL).granted(1));
+
+        tag.find(".virtualserver_codec_encryption_mode").change(function (this: HTMLSelectElement) {
+            properties.virtualserver_codec_encryption_mode = this.selectedIndex;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1))
+            .find("option").eq(server.properties.virtualserver_codec_encryption_mode).prop('selected', true);
+    }
+
+    function server_applyMisc(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        { //TODO notify on tmp channeladmin group and vice versa
+            //virtualserver_default_server_group
+            //virtualserver_default_channel_group
+            //virtualserver_default_channel_admin_group
+            {
+                let groups_tag = tag.find(".default_server_group");
+                groups_tag.change(function (this: HTMLSelectElement) {
+                    properties.virtualserver_default_server_group = parseInt($(this.item(this.selectedIndex)).attr("group-id"));
+                });
+
+                for(let group of server.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
+                    if(group.type != 2) continue;
+                    let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
+                    if(group.id == server.properties.virtualserver_default_server_group)
+                        group_tag.prop("selected", true);
+                    group_tag.appendTo(groups_tag);
+                }
+            }
+
+            {
+                let groups_tag = tag.find(".default_channel_group");
+                groups_tag.change(function (this: HTMLSelectElement) {
+                    properties.virtualserver_default_channel_group = parseInt($(this.item(this.selectedIndex)).attr("group-id"));
+                });
+
+                for(let group of server.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
+                    if(group.type != 2) continue;
+                    let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
+                    if(group.id == server.properties.virtualserver_default_channel_group)
+                        group_tag.prop("selected", true);
+                    group_tag.appendTo(groups_tag);
+                }
+            }
+
+            {
+                let groups_tag = tag.find(".default_channel_admin_group");
+                groups_tag.change(function (this: HTMLSelectElement) {
+                    properties.virtualserver_default_channel_admin_group = parseInt($(this.item(this.selectedIndex)).attr("group-id"));
+                });
+
+                for(let group of server.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
+                    if(group.type != 2) continue;
+                    let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
+                    if(group.id == server.properties.virtualserver_default_channel_admin_group)
+                        group_tag.prop("selected", true);
+                    group_tag.appendTo(groups_tag);
+                }
+            }
+        }
+
+        server.updateProperties().then(() => {
+            //virtualserver_antiflood_points_needed_ip_block
+            //virtualserver_antiflood_points_needed_command_block
+            //virtualserver_antiflood_points_tick_reduce
+
+            //virtualserver_complain_autoban_count
+            //virtualserver_complain_autoban_time
+            //virtualserver_complain_remove_time
+            tag.find(".virtualserver_antiflood_points_needed_ip_block").val(server.properties.virtualserver_antiflood_points_needed_ip_block);
+            tag.find(".virtualserver_antiflood_points_needed_command_block").val(server.properties.virtualserver_antiflood_points_needed_command_block);
+            tag.find(".virtualserver_antiflood_points_tick_reduce").val(server.properties.virtualserver_antiflood_points_tick_reduce);
+            tag.find(".virtualserver_complain_autoban_count").val(server.properties.virtualserver_complain_autoban_count);
+            tag.find(".virtualserver_complain_autoban_time").val(server.properties.virtualserver_complain_autoban_time);
+            tag.find(".virtualserver_complain_remove_time").val(server.properties.virtualserver_complain_remove_time);
+
+            tag.find(".virtualserver_weblist_enabled").prop("checked", server.properties.virtualserver_weblist_enabled);
+        });
+
+        tag.find(".virtualserver_antiflood_points_needed_ip_block").change(function (this: HTMLInputElement) {
+            properties.virtualserver_antiflood_points_needed_ip_block = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+
+        tag.find(".virtualserver_antiflood_points_needed_command_block").change(function (this: HTMLInputElement) {
+            properties.virtualserver_antiflood_points_needed_command_block = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+
+        tag.find(".virtualserver_antiflood_points_tick_reduce").change(function (this: HTMLInputElement) {
+            properties.virtualserver_antiflood_points_tick_reduce = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+
+
+        tag.find(".virtualserver_complain_autoban_count").change(function (this: HTMLInputElement) {
+            properties.virtualserver_complain_autoban_count = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
+
+        tag.find(".virtualserver_complain_autoban_time").change(function (this: HTMLInputElement) {
+            properties.virtualserver_complain_autoban_time = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
+
+        tag.find(".virtualserver_complain_remove_time").change(function (this: HTMLInputElement) {
+            properties.virtualserver_complain_remove_time = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
+
+
+        tag.find(".virtualserver_weblist_enabled").change(function (this: HTMLInputElement) {
+            properties.virtualserver_weblist_enabled = $(this).prop("checked");
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_WEBLIST).granted(1));
     }
 }

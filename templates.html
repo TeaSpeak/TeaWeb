@@ -108,6 +108,8 @@
                 <div class="properties">
                     <a class="key">Name:</a>
                     <input class="value virtualserver_name" value="{{>virtualserver_name}}"/>
+                    <a class="key">Phonetic Name:</a>
+                    <input class="value virtualserver_name_phonetic" value="{{>virtualserver_name_phonetic}}"/>
 
                     <a class="key">Password:</a>
                     <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
@@ -228,16 +230,77 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>Security</x-tag>
-                    <x-content>TODO!</x-content>
+                    <x-content>
+                        <div class="container properties_security">
+                            <div class="properties">
+                                <div class="key">Needed Security Level:</div>
+                                <input type="number" min="1" max="64" value="{{:virtualserver_needed_identity_security_level}}" class="value virtualserver_needed_identity_security_level">
+                                <div class="key">Channel voice data encryption:</div>
+                                <select class="value virtualserver_codec_encryption_mode">
+                                    <option value="unset">Edit per channel individually</option>
+                                    <option value="off">Globally disabled</option>
+                                    <option value="on">Globally enabled (recommended)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>Misc</x-tag>
-                    <x-content>TODO!</x-content>
+                    <x-content>
+                        <div class="container properties_misc">
+                            <div class="group_box">
+                                <div class="header">Default groups</div>
+                                <div class="content properties">
+                                    <div class="key">Server group</div>
+                                    <select class="value default_server_group"></select>
+
+                                    <div class="key">Channel group</div>
+                                    <select class="value default_channel_group"></select>
+
+                                    <div class="key">Channel Admin group</div>
+                                    <select class="value default_channel_admin_group"></select>
+                                </div>
+                            </div>
+                            <div class="group_box">
+                                <div class="header">Complain</div>
+                                <div class="content complains">
+                                    <div class="key">Autoban Count</div>
+                                    <div class="key">Autoban Time</div>
+                                    <div class="key">Remove Time</div>
+
+                                    <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_count}}" class="value virtualserver_complain_autoban_count">
+                                    <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_time}}" class="value virtualserver_complain_autoban_time">
+                                    <input type="number" min="1" max="65536" value="{{:virtualserver_complain_remove_time}}" class="value virtualserver_complain_remove_time">
+                                </div>
+                            </div>
+                            <div class="properties">
+                                <div class="key">Minimum clients is channel before silence:</div>
+                                <input type="number" min="1" max="65536" value="{{:virtualserver_min_clients_in_channel_before_forced_silence}}" class="value virtualserver_min_clients_in_channel_before_forced_silence">
+
+                                <div class="key">Priority speaker dim modificator:</div>
+                                <input type="number" min="-100" max="0" value="{{:virtualserver_priority_speaker_dimm_modificator}}" class="value virtualserver_priority_speaker_dimm_modificator">
+
+                                <div class="key">Delete delay for temporary channels</div>
+                                <input type="number" min="1" max="65536" value="{{:virtualserver_channel_temp_delete_delay_default}}" class="value virtualserver_channel_temp_delete_delay_default">
+                            </div>
+
+                            <div class="group_box">
+                                <div class="header">Server list</div>
+                                <div class="content">
+                                    <input type="checkbox" class="value virtualserver_weblist_enabled" checked="{{:virtualserver_weblist_enabled}}"> Enable reporting to the TeamSpeak server list<br>
+                                    <input type="checkbox" class="value" checked="false" disabled> <del>Enable reporting to the TeaSpeak server list</del> (TeaSpeak does not support this setting)
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
+                <!-- TeaSpeak don't have any configurable log section
                 <x-entry>
                     <x-tag>Log</x-tag>
                     <x-content>TODO!</x-content>
                 </x-entry>
+                -->
                 <x-entry>
                     <x-tag>Messages</x-tag>
                     <x-content>

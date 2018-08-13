@@ -6,6 +6,7 @@ class ServerProperties {
     virtualserver_port: number = 0;
 
     virtualserver_name: string = "";
+    virtualserver_name_phonetic: string = "";
     virtualserver_icon_id: number = 0;
     virtualserver_version: string = "unknown";
     virtualserver_platform: string = "unknown";
@@ -35,6 +36,12 @@ class ServerProperties {
     virtualserver_hostbutton_url: string = "";
     virtualserver_hostbutton_gfx_url: string = "";
 
+    virtualserver_codec_encryption_mode: number = 0;
+
+    virtualserver_default_server_group: number = 0;
+    virtualserver_default_channel_group: number = 0;
+    virtualserver_default_channel_admin_group: number = 0;
+
     //Special requested properties
     virtualserver_default_client_description: string = "";
     virtualserver_default_channel_description: string = "";
@@ -43,6 +50,14 @@ class ServerProperties {
     virtualserver_antiflood_points_tick_reduce: number = 0;
     virtualserver_antiflood_points_needed_command_block: number = 0;
     virtualserver_antiflood_points_needed_ip_block: number = 0;
+
+    virtualserver_complain_autoban_count: number = 0;
+    virtualserver_complain_autoban_time: number = 0;
+    virtualserver_complain_remove_time: number = 0;
+
+    virtualserver_needed_identity_security_level: number = 8;
+    virtualserver_weblist_enabled: boolean = false;
+    virtualserver_min_clients_in_channel_before_forced_silence: number = 0;
 }
 
 interface ServerAddress {
