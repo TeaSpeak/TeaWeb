@@ -122,7 +122,7 @@ class ServerEntry {
     spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
         spawnMenu(x, y, {
                 type: MenuEntryType.ENTRY,
-                icon: "virtualserver_edit",
+                icon: "client-virtualserver_edit",
                 name: "Edit",
                 callback: () => {
                     Modals.createServerModal(this, properties => {
