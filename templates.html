@@ -66,39 +66,119 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>Audio</x-tag>
-                    <x-content>TODO!</x-content>
+                    <x-content>
+                        <div class="container">
+                            <div class="settings_audio">
+                                <div class="group_box">
+                                    <div class="header">Presets</div>
+                                    <div class="content">
+                                        <fieldset style="">
+                                            <div><input type="radio" name="voice_template" value="voice_mobile"> Voice Mobile</div>
+                                            <div><input type="radio" name="voice_template" value="voice_desktop"> Voice Desktop</div>
+                                            <div><input type="radio" name="voice_template" value="music"> Music</div>
+                                            <div><input type="radio" name="voice_template" value="custom"> Custom</div>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                                <div class="group_box">
+                                    <div class="header">Custom Settings</div>
+                                    <div class="content">
+                                        <div class="custom">
+                                            <div>Codec:</div>
+                                            <select class="voice_codec">
+                                                <option value="speex_narrow">Speex Narrowband <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="speex_wide">Speex Wideband <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="speex_ultra_wide">Speex Ultra-Wideband <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="celt">CELT Mono <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="opus_voice">Opus Voice</option>
+                                                <option value="opus_music">Opus Music</option>
+                                            </select>
+
+                                            <div>Quality:</div>
+                                            <div class="quality">
+                                                <input class="voice_quality_slider" type="range" min="1" max="10" value="6">
+                                                <div class="voice_quality_number">6</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>Permissions</x-tag>
                     <x-content>
                         <div style="display: flex; justify-content: space-evenly" class="settings_permissions">
-                            <div>
-                                Regular needed powers:
-                                <table class="channel_perm_tbl">
-                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_join_power"></td></tr>
-                                    <tr><td class="key">View:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_view_power"></td></tr>
-                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_subscribe_power"></td></tr>
-                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_description_view_power"></td></tr>
-                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_modify_power"></td></tr>
-                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_delete_power"></td></tr>
-                                </table>
+                            <div class="group_box">
+                                <div class="header">Regular needed powers:</div>
+                                <div class="content">
+                                    <table class="channel_perm_tbl">
+                                        <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_join_power"></td></tr>
+                                        <tr><td class="key">View:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_view_power"></td></tr>
+                                        <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_subscribe_power"></td></tr>
+                                        <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_description_view_power"></td></tr>
+                                        <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_modify_power"></td></tr>
+                                        <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_delete_power"></td></tr>
+                                    </table>
+                                </div>
                             </div>
-                            <div>
-                                File transfer needed powers:
-                                <table class="channel_perm_tbl">
-                                    <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                </table>
+                            <div class="group_box">
+                                <div class="header">File transfer needed powers:</div>
+                                <div class="content">
+                                    <table class="channel_perm_tbl">
+                                        <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                        <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                        <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                        <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                        <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>Advanced</x-tag>
-                    <x-content>TODO!</x-content>
+                    <x-content>
+                        <div class="container settings_advanced">
+                            <div class="group_box">
+                                <div class="header">Other Settings</div>
+                                <div class="content properties">
+                                    <div class="key">Phonetic Name:</div>
+                                    <input class="value channel_name_phonetic" value="{{>channel_name_phonetic}}">
+
+                                    <div class="key">Delete delay:</div>
+                                    <input class="value channel_delete_delay" type="number" min="0" max="99999999" value="{{:channel_delete_delay}}"> <!-- Implement max? -->
+
+                                    <div><input class="channel_codec_is_unencrypted" type="checkbox" style="margin-left: 0px" {{if !channel_codec_is_unencrypted}}checked{{/if}}> Voice Data encrypted</div>
+                                </div>
+                            </div>
+
+                            <div class="group_box">
+                                <div class="header">Max users</div>
+                                <div class="content max_users">
+                                    <fieldset>
+                                        <div><input type="radio" name="max_users" value="infinity" {{if channel_flag_maxclients_unlimited}}checked{{/if}}>Unlimited</div>
+                                        <div class="max_limited"><input type="radio" name="max_users" value="limited" {{if !channel_flag_maxclients_unlimited}}checked{{/if}}>Limited
+                                            <input style="margin-left: 25px;" class="value channel_maxclients" value="{{:channel_maxclients}}" type="number" min="0" max="99999999"></div>
+                                    </fieldset>
+                                </div>
+                            </div>
+
+                            <div class="group_box">
+                                <div class="header">Family Max users</div>
+                                <div class="content max_users">
+                                    <fieldset>
+                                        <div><input type="radio" name="max_users_family" value="inherited" {{if channel_flag_maxfamilyclients_inherited}}checked{{/if}}>Inherited</div>
+                                        <div><input type="radio" name="max_users_family" value="infinity" {{if channel_flag_maxfamilyclients_unlimited}}checked{{/if}}>Unlimited</div>
+                                        <div class="max_limited"><input type="radio" name="max_users_family" value="limited" {{if !channel_flag_maxfamilyclients_unlimited && !channel_flag_maxfamilyclients_inherited}}checked{{/if}}>Limited
+                                            <input style="margin-left: 25px;" class="value channel_maxfamilyclients" type="number" value="{{:channel_maxfamilyclients}}" min="0" max="99999999"></div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
             </x-tab>
         </script>

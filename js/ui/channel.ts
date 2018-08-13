@@ -17,6 +17,7 @@ namespace ChannelType {
 class ChannelProperties {
     channel_order: number = 0;
     channel_name: string = "";
+    channel_name_phonetic: string = "";
     channel_topic: string = "";
 
     channel_password: string = "";
@@ -38,7 +39,11 @@ class ChannelProperties {
     channel_flag_maxfamilyclients_inherited: boolean = false;
     channel_flag_maxfamilyclients_unlimited: boolean = false;
 
-    channel_icon_id: number;
+    channel_icon_id: number = 0;
+    channel_delete_delay: number = 0;
+
+    //Only after request
+    channel_description: string = "";
 }
 
 class ChannelEntry {

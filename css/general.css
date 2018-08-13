@@ -201,6 +201,11 @@ html {
     background-color: gray;
 }
 
+fieldset {
+    border: unset;
+    display: unset;
+}
+
 .modal-head-error {
     background: darkred;
 

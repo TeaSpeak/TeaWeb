@@ -13,32 +13,16 @@
 		width: 100%;
 	}
 
-	.general_properties, .properties_general {
+	.general_properties, .properties_general, .server_properties, .properties_messages {
 		width: 100%;
 
+		.group_box {
+			margin-top: 5px;
 
-		/*
-		.slots {
-			width: 100%;
-			display: inline-flex;
-			flex-direction: row;
-
-			* {
-				display: inline-flex;
-			}
-
-			.maximum, .reserved {
-				a {
-					width: 140px;
-				}
-
-				input {
-					width: 100px;
-					margin-right: 20px;
-				}
+			&:first-of-type {
+				margin-top: 0px;
 			}
 		}
-		*/
 	}
 
 	.input_error {
@@ -78,14 +62,6 @@
 	.container {
 		padding: 6px;
 	}
-
-	.group_box {
-		margin-top: 5px;
-
-		&:first-of-type {
-			margin-top: 0px;
-		}
-	}
 }
 
 
@@ -96,6 +72,7 @@
 
 .group_box {
 	display: grid;
+	grid-template-rows: min-content;
 
 	.header {
 		float: left;
@@ -112,4 +89,53 @@
 
 .container {
 	margin: 2px;
+}
+
+/* Channel edit/create modal */
+.settings_audio {
+	display: grid;
+	grid-template-columns: 40% 60%;
+	grid-gap: 10px;
+
+	.custom {
+		display: grid;
+		grid-template-columns: min-content auto;
+		grid-template-rows: repeat(auto-fill, min-content);
+		grid-column-gap: 5px;
+
+		select {
+			height: fit-content;
+		}
+
+		.quality {
+			display: inline-grid;
+			grid-template-columns: auto min-content;
+			grid-column-gap: 5px;
+		}
+	}
+}
+
+.settings_advanced {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, max-content);
+	grid-template-rows: repeat(auto-fill, max-content);
+	grid-gap: 5px;
+
+	> div:first-of-type {
+		grid-column: auto / span 2;
+	}
+
+	.max_limited {
+		width: 100%;
+		display: inline-flex;
+		input[type="number"] {
+			width: 75px;
+		}
+	}
+
+	.group_box {
+		fieldset, fieldset > div {
+			width: 100%;
+		}
+	}
 }
