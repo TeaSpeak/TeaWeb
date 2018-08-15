@@ -7,30 +7,12 @@
 .modal hr {
   border-top: 3px double #8c8b8b;
   width: 100%; }
-.modal .general_properties, .modal .properties_general {
-  width: 100%;
-  		/*
-  		.slots {
-  			width: 100%;
-  			display: inline-flex;
-  			flex-direction: row;
-  
-  			* {
-  				display: inline-flex;
-  			}
-  
-  			.maximum, .reserved {
-  				a {
-  					width: 140px;
-  				}
-  
-  				input {
-  					width: 100px;
-  					margin-right: 20px;
-  				}
-  			}
-  		}
-  		*/ }
+.modal .general_properties, .modal .properties_general, .modal .server_properties, .modal .properties_messages {
+  width: 100%; }
+  .modal .general_properties .group_box, .modal .properties_general .group_box, .modal .server_properties .group_box, .modal .properties_messages .group_box {
+    margin-top: 5px; }
+    .modal .general_properties .group_box:first-of-type, .modal .properties_general .group_box:first-of-type, .modal .server_properties .group_box:first-of-type, .modal .properties_messages .group_box:first-of-type {
+      margin-top: 0px; }
 .modal .input_error {
   border-radius: 1px;
   border: solid red; }
@@ -41,18 +23,24 @@
 .modal .server_properties .virtualserver_welcomemessage {
   height: 70px;
   resize: none; }
+.modal .properties_messages textarea {
+  height: 70px;
+  resize: none; }
+.modal .properties_misc .complains {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  grid-template-rows: auto auto;
+  grid-column-gap: 5px;
+  margin-bottom: 10px; }
 .modal .container {
   padding: 6px; }
-.modal .group_box {
-  margin-top: 5px; }
-  .modal .group_box:first-of-type {
-    margin-top: 0px; }
 
 .channel_perm_tbl .value {
   width: 60px; }
 
 .group_box {
-  display: grid; }
+  display: grid;
+  grid-template-rows: min-content; }
   .group_box .header {
     float: left;
     margin-bottom: 2px; }
@@ -64,5 +52,37 @@
 
 .container {
   margin: 2px; }
+
+/* Channel edit/create modal */
+.settings_audio {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  grid-gap: 10px; }
+  .settings_audio .custom {
+    display: grid;
+    grid-template-columns: min-content auto;
+    grid-template-rows: repeat(auto-fill, min-content);
+    grid-column-gap: 5px; }
+    .settings_audio .custom select {
+      height: fit-content; }
+    .settings_audio .custom .quality {
+      display: inline-grid;
+      grid-template-columns: auto min-content;
+      grid-column-gap: 5px; }
+
+.settings_advanced {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, max-content);
+  grid-template-rows: repeat(auto-fill, max-content);
+  grid-gap: 5px; }
+  .settings_advanced > div:first-of-type {
+    grid-column: auto / span 2; }
+  .settings_advanced .max_limited {
+    width: 100%;
+    display: inline-flex; }
+    .settings_advanced .max_limited input[type="number"] {
+      width: 75px; }
+  .settings_advanced .group_box fieldset, .settings_advanced .group_box fieldset > div {
+    width: 100%; }
 
 /*# sourceMappingURL=modals.css.map */
