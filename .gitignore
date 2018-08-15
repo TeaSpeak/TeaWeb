@@ -7,3 +7,8 @@ auth/js/auth.js.map
 .idea/
 #This is just for me local (a nice animation which i may implement later)
 animates/
+asm/**
+!asm/identity/
+!asm/src/
+!asm/CMakeLists.txt
+!asm/make_opus.sh
