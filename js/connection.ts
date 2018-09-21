@@ -293,11 +293,17 @@ class HandshakeHandler {
             data.publicKey = (this.identity as TeamSpeakIdentity).publicKey();
         } else if(this.identity.type() == IdentitifyType.TEAFORO) {
             data.data = (this.identity as TeaForumIdentity).identityDataJson;
+        } else if(this.identity.type() == IdentitifyType.NICKNAME) {
+            data["client_nickname"] = this.identity.name();
         }
 
         this.connection.sendCommand("handshakebegin", data).catch(error => {
             console.log(error);
             //TODO here
+        }).then(() => {
+            if(this.identity.type() == IdentitifyType.NICKNAME) {
+                this.handshake_finished();
+            }
         });
     }
 
@@ -307,19 +313,25 @@ class HandshakeHandler {
             proof = (this.identity as TeamSpeakIdentity).signMessage(json[0]["message"]);
         } else if(this.identity.type() == IdentitifyType.TEAFORO) {
             proof = (this.identity as TeaForumIdentity).identitySign;
+        } else if(this.identity.type() == IdentitifyType.NICKNAME) {
+            //FIXME handle error this should never happen!
         }
         this.connection.sendCommand("handshakeindentityproof", {proof: proof}).then(() => {
-            this.connection.sendCommand("clientinit", {
-                //TODO variables!
-                client_nickname: this.name ? this.name : this.identity.name(),
-                client_platform: navigator.platform,
-                client_version: navigator.userAgent,
-                //client_browser_engine: navigator.product
-            });
+           this.handshake_finished();
         }).catch(error => {
             console.error("Got login error");
             console.log(error);
         }); //TODO handle error
+    }
+
+    private handshake_finished() {
+        this.connection.sendCommand("clientinit", {
+            //TODO variables!
+            client_nickname: this.name ? this.name : this.identity.name(),
+            client_platform: navigator.platform,
+            client_version: navigator.userAgent,
+            //client_browser_engine: navigator.product
+        });
     }
 }
 

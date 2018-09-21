@@ -101,12 +101,20 @@ class CodecPool {
     }
 }
 
+enum VoiceConnectionType {
+    JS_ENCODE,
+    NATIVE_ENCODE
+}
+
 class VoiceConnection {
     client: TSClient;
     rtcPeerConnection: RTCPeerConnection;
     dataChannel: RTCDataChannel;
 
     voiceRecorder: VoiceRecorder;
+    type: VoiceConnectionType = VoiceConnectionType.NATIVE_ENCODE;
+
+    local_audio_stream: any;
 
     private codec_pool: CodecPool[] = [
         new CodecPool(this,0,"Spex A", undefined), //Spex
@@ -124,13 +132,23 @@ class VoiceConnection {
     constructor(client) {
         this.client = client;
         this.voiceRecorder = new VoiceRecorder(this);
-        this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
+        if(this.type != VoiceConnectionType.NATIVE_ENCODE) {
+            this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
+        }
         this.voiceRecorder.on_end = this.handleVoiceEnded.bind(this);
         this.voiceRecorder.reinitialiseVAD();
 
         AudioController.on_initialized(() => {
             this.codec_pool[4].initialize(2);
             this.codec_pool[5].initialize(2);
+
+            if(this.type == VoiceConnectionType.NATIVE_ENCODE) {
+                let stream =  this.voiceRecorder.get_output_stream();
+                stream.disconnect();
+
+                this.local_audio_stream = AudioController.globalContext.createMediaStreamDestination();
+                stream.connect(this.local_audio_stream);
+            }
         });
 
         this.send_task = setInterval(this.sendNextVoicePacket.bind(this), 20);
@@ -180,6 +198,7 @@ class VoiceConnection {
     createSession() {
         this._ice_use_cache = true;
 
+
         let config: RTCConfiguration = {};
         config.iceServers = [];
         config.iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
@@ -192,10 +211,14 @@ class VoiceConnection {
         this.dataChannel.binaryType = "arraybuffer";
 
         let sdpConstraints : RTCOfferOptions = {};
-        sdpConstraints.offerToReceiveAudio = 0;
+        sdpConstraints.offerToReceiveAudio = this.type == VoiceConnectionType.NATIVE_ENCODE ? 1 : 0;
         sdpConstraints.offerToReceiveVideo = 0;
 
         this.rtcPeerConnection.onicecandidate = this.onIceCandidate.bind(this);
+
+        if(this.local_audio_stream) { //May a typecheck?
+            this.rtcPeerConnection.addStream(this.local_audio_stream.stream);
+        }
         this.rtcPeerConnection.createOffer(this.onOfferCreated.bind(this), () => {
             console.error("Could not create ice offer!");
         }, sdpConstraints);
@@ -317,6 +340,10 @@ class VoiceConnection {
             .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4), data));
     }
 
+    audio_destination() : AudioNode {
+        return undefined;
+    }
+
     private handleVoiceEnded() {
         if(!this.voiceRecorder) return;
         if(!this.client.connected) return;
@@ -324,6 +351,6 @@ class VoiceConnection {
         console.log("Voice ended");
         this.client.getClient().speaking = false;
         if(this.dataChannel)
-            this.sendVoicePacket(new Uint8Array(0), 4); //TODO Use channel codec!
+            this.sendVoicePacket(new Uint8Array(0), 5); //TODO Use channel codec!
     }
 }

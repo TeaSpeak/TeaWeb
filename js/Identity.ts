@@ -1,6 +1,7 @@
 enum IdentitifyType {
     TEAFORO,
-    TEAMSPEAK
+    TEAMSPEAK,
+    NICKNAME
 }
 
 namespace TSIdentityHelper {
@@ -70,6 +71,33 @@ interface Identity {
     type() : IdentitifyType;
 
     valid() : boolean;
+}
+
+class NameIdentity implements Identity {
+    private _name: string;
+
+    constructor(name: string) {
+        this._name = name;
+    }
+
+    set_name(name: string) { this._name = name; }
+
+    name(): string {
+        return this._name;
+    }
+
+    uid(): string {
+        return btoa(this._name); //FIXME hash!
+    }
+
+    type(): IdentitifyType {
+        return IdentitifyType.NICKNAME;
+    }
+
+    valid(): boolean {
+        return this._name != undefined && this._name != "";
+    }
+
 }
 
 class TeamSpeakIdentity implements Identity {

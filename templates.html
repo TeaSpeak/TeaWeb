@@ -437,6 +437,7 @@
                         <select class="identity_select">
                             <option name="identity_type" value="TEAFORO">Forum Account</option>
                             <option name="identity_type" value="TEAMSPEAK">TeamSpeak</option>
+                            <option name="identity_type" value="NICKNAME">Nickname (Debug purposes only!)</option> <!-- Only available on localhost for debug -->
                         </select>
                     </div>
                     <hr>
@@ -449,6 +450,9 @@
                     </div>
                     <div class="identity_config_TEAFORO identity_config">
                         You're using your forum account as verification
+                    </div>
+                    <div class="identity_config_NICKNAME identity_config">
+                        This is just for debug and uses the name as unique identifier
                     </div>
 
                     <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>

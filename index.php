@@ -19,6 +19,7 @@
 
 		$localhost = true;
 	}
+	$localhost |= gethostname() == "WolverinDEV";
 	if (!$localhost || $testXF) {
 		//redirectOnInvalidSession();
 	}
@@ -54,6 +55,7 @@
 				}
 
 				spawnProperty('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
+				spawnProperty('localhost_debug', $localhost ? "true" : "false");
 				spawnProperty('forum_user_data', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]]);
 				spawnProperty('forum_user_sign', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]]);
 			?>
