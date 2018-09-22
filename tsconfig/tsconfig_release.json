@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig_base.json",
   "compilerOptions": {
-    "outFile": "../generated/js/client.js"
+    "outFile": "../generated/js/client.js",
+    /* because were excluding load.ts we have to define its types */
+    "typeRoots" : ["./@types/", "../node_modules/@types/"]
   },
   "exclude": [
     "../js/load.ts",

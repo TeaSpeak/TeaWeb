@@ -34,7 +34,7 @@ namespace Modals {
         applyStandardListener(properties, modal.htmlTag.find(".settings_standard"), modal.htmlTag.find(".button_ok"), parent, !channel);
         applyPermissionListener(properties, modal.htmlTag.find(".settings_permissions"), modal.htmlTag.find(".button_ok"), permissions, channel);
         applyAudioListener(properties, modal.htmlTag.find(".settings_audio"), modal.htmlTag.find(".button_ok"), channel);
-        applyAdvancedListener(properties, modal.htmlTag.find(".settings_advanced"), channel);
+        applyAdvancedListener(properties, modal.htmlTag.find(".settings_advanced"), modal.htmlTag.find(".button_ok"), channel);
 
         let updated: PermissionValue[] = [];
         modal.htmlTag.find(".button_ok").click(() => {

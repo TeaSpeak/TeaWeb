@@ -65,7 +65,7 @@ namespace Modals {
                     tag.find(".identity_file").change(function (this: HTMLInputElement) {
                         const reader = new FileReader();
                         reader.onload = function() {
-                            connectIdentity = TSIdentityHelper.loadIdentityFromFileContains(reader.result);
+                            connectIdentity = TSIdentityHelper.loadIdentityFromFileContains(reader.result as string);
 
                             console.log(connectIdentity.uid());
                             if(!connectIdentity) tag.find(".error_message").text("Could not read identity! " + TSIdentityHelper.last_error());

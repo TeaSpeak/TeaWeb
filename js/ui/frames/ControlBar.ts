@@ -152,7 +152,7 @@ class ControlBar {
         if(!targetChannel) targetChannel = this.handle.getClient().currentChannel();
         let client = this.handle.getClient();
 
-        this.codec_supported = this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec);
+        this.codec_supported = targetChannel ? this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec) : true;
         this.support_record = this.handle.voiceConnection.voice_send_support();
         this.support_playback = this.handle.voiceConnection.voice_playback_support();
 

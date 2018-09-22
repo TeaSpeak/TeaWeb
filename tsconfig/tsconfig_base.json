@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "module": "none",
-    "target": "es2016",
-    "sourceMap": true
+    "target": "es6",
+    "sourceMap": true,
+    "typeRoots" : ["../node_modules/@types/"]
   },
   "exclude": [
     "../node_modules",

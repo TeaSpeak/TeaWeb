@@ -2,6 +2,8 @@
 /// <reference path="../codec/Codec.ts" />
 /// <reference path="VoiceRecorder.ts" />
 
+import WarningListener = NodeJS.WarningListener;
+
 class CodecPoolEntry {
     instance: BasicCodec;
     owner: number;
@@ -106,13 +108,23 @@ enum VoiceConnectionType {
     NATIVE_ENCODE
 }
 
+/* funny fact that typescript dosn't find this */
+interface RTCPeerConnection {
+    addStream(stream: MediaStream): void;
+    getLocalStreams(): MediaStream[];
+    getStreamById(streamId: string): MediaStream | null;
+    removeStream(stream: MediaStream): void;
+    createOffer(successCallback?: RTCSessionDescriptionCallback, failureCallback?: RTCPeerConnectionErrorCallback, options?: RTCOfferOptions): Promise<RTCSessionDescription>;
+}
+
+
 class VoiceConnection {
     client: TSClient;
     rtcPeerConnection: RTCPeerConnection;
     dataChannel: RTCDataChannel;
 
     voiceRecorder: VoiceRecorder;
-    type: VoiceConnectionType = VoiceConnectionType.NATIVE_ENCODE;
+    type: VoiceConnectionType = VoiceConnectionType.JS_ENCODE;
 
     local_audio_stream: any;
 
@@ -131,7 +143,7 @@ class VoiceConnection {
 
     constructor(client) {
         this.client = client;
-        this.type = settings.global("voice_connection_type", VoiceConnectionType.JS_ENCODE);
+        this.type = settings.static_global("voice_connection_type", this.type);
         this.voiceRecorder = new VoiceRecorder(this);
         if(this.type != VoiceConnectionType.NATIVE_ENCODE) {
             this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
@@ -220,8 +232,8 @@ class VoiceConnection {
         this.dataChannel.binaryType = "arraybuffer";
 
         let sdpConstraints : RTCOfferOptions = {};
-        sdpConstraints.offerToReceiveAudio = this.type == VoiceConnectionType.NATIVE_ENCODE ? 1 : 0;
-        sdpConstraints.offerToReceiveVideo = 0;
+        sdpConstraints.offerToReceiveAudio = this.type == VoiceConnectionType.NATIVE_ENCODE ? true : false;
+        sdpConstraints.offerToReceiveVideo = false;
 
         this.rtcPeerConnection.onicecandidate = this.onIceCandidate.bind(this);
 

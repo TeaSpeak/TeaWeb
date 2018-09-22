@@ -1,7 +1,7 @@
 {
   "name": "client",
   "version": "1.0.0",
-  "description": "Welcome here! This repository is created with two reasons:\r 1. People can bring their own ideas and follow their implementation\r 2. People can see TeaSpeak Web client progress and avoid creating repetitive issues all the time.",
+  "description": "Welcome here! This repository is created with two reasons:\n 1. People can bring their own ideas and follow their implementation\n 2. People can see TeaSpeak Web client progress and avoid creating repetitive issues all the time.",
   "main": "main.js",
   "directories": {
     "test": "test"
@@ -12,21 +12,19 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/node": "^9.4.6",
-    "@types/webrtc": "0.0.23"
+    "@types/node": "^9.4.6"
   },
   "dependencies": {
     "@types/emscripten": "0.0.31",
     "@types/jquery": "^3.3.0",
-    "@types/text-encoding": "0.0.32",
     "@types/websocket": "0.0.38"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MypowerHD/TeaWeb.git"
+    "url": "git+https://github.com/TeaSpeak/TeaWeb/TeaWeb.git"
   },
   "bugs": {
-    "url": "https://github.com/MypowerHD/TeaWeb/issues"
+    "url": "https://github.com/TeaSpeak/TeaWeb/issues"
   },
-  "homepage": "https://github.com/MypowerHD/TeaWeb#readme"
+  "homepage": "https://github.com/TeaSpeak/TeaWeb/TeaWeb#readme"
 }

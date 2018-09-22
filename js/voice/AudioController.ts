@@ -6,6 +6,11 @@ enum PlayerState {
     STOPPED
 }
 
+interface Navigator {
+    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+}
+
 class AudioController {
     private static getUserMediaFunction() {
         if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)

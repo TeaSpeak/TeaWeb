@@ -1,11 +1,13 @@
 {
   "compilerOptions": {
     "module": "none",
-    "target": "es2016",
+    "target": "es6",
     "sourceMap": true
   },
   "exclude": [
     "node_modules",
-    "js/workers"
+    "js/workers",
+    "enviroment",
+    "tsconfig"
   ]
 }
