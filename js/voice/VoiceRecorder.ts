@@ -30,7 +30,8 @@ class VoiceRecorder {
 
     handle: VoiceConnection;
     on_data: (data: AudioBuffer, head: boolean) => void = undefined;
-    on_end: () => void = () => {};
+    on_end: () => any;
+    on_start: () => any;
 
     private _recording: boolean = false;
 
@@ -57,17 +58,26 @@ class VoiceRecorder {
             this.audioContext = AudioController.globalContext;
             this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
 
+            const empty_buffer = this.audioContext.createBuffer(VoiceRecorder.CHANNELS, VoiceRecorder.BUFFER_SIZE, 48000);
             this.processor.addEventListener('audioprocess', ev => {
                 if(this.microphoneStream && this.vadHandler.shouldRecord(ev.inputBuffer)) {
+                    if(this._chunkCount == 0 && this.on_start)
+                        this.on_start();
+
                     if(this.on_data)
-                        this.on_data(ev.inputBuffer, this._chunkCount++ == 0);
+                        this.on_data(ev.inputBuffer, this._chunkCount == 0);
                     else {
                         for(let channel = 0; channel < ev.inputBuffer.numberOfChannels; channel++)
                             ev.outputBuffer.copyToChannel(ev.inputBuffer.getChannelData(channel), channel);
                     }
+                    this._chunkCount++;
                 } else {
-                    if(this._chunkCount != 0) this.on_end();
-                    this._chunkCount = 0
+                    if(this._chunkCount != 0 && this.on_end)
+                        this.on_end();
+                    this._chunkCount = 0;
+
+                    for(let channel = 0; channel < ev.inputBuffer.numberOfChannels; channel++)
+                        ev.outputBuffer.copyToChannel(empty_buffer.getChannelData(channel), channel);
                 }
             });
             this.processor.connect(this.audioContext.destination);

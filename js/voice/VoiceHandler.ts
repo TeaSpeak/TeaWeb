@@ -136,6 +136,7 @@ class VoiceConnection {
             this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
         }
         this.voiceRecorder.on_end = this.handleVoiceEnded.bind(this);
+        this.voiceRecorder.on_start = this.handleVoiceStarted.bind(this);
         this.voiceRecorder.reinitialiseVAD();
 
         AudioController.on_initialized(() => {
@@ -158,8 +159,15 @@ class VoiceConnection {
         return this.codec_pool.length > type && this.codec_pool[type].supported();
     }
 
-    voiceSupported() : boolean {
+    voice_playback_support() : boolean {
         return this.dataChannel && this.dataChannel.readyState == "open";
+    }
+
+    voice_send_support() : boolean {
+        if(this.type == VoiceConnectionType.NATIVE_ENCODE)
+            return this.rtcPeerConnection.getLocalStreams().length > 0;
+        else
+            return this.voice_playback_support();
     }
 
     private voice_send_queue: {data: Uint8Array, codec: number}[] = [];
@@ -340,17 +348,22 @@ class VoiceConnection {
             .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4), data));
     }
 
-    audio_destination() : AudioNode {
-        return undefined;
-    }
-
     private handleVoiceEnded() {
+        if(this.client && this.client.getClient())
+            this.client.getClient().speaking = false;
+
         if(!this.voiceRecorder) return;
         if(!this.client.connected) return;
+        console.log("Local voice ended");
 
-        console.log("Voice ended");
-        this.client.getClient().speaking = false;
         if(this.dataChannel)
             this.sendVoicePacket(new Uint8Array(0), 5); //TODO Use channel codec!
+    }
+
+    private handleVoiceStarted() {
+        console.log("Local voice started");
+
+        if(this.client && this.client.getClient())
+            this.client.getClient().speaking = true;
     }
 }

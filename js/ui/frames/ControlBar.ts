@@ -17,7 +17,9 @@ class ControlBar {
     private _away: boolean;
     private _awayMessage: string;
 
-    private _codecNotSupported: boolean = false;
+    private codec_supported: boolean = false;
+    private support_playback: boolean = false;
+    private support_record: boolean = false;
 
     readonly handle: TSClient;
     htmlTag: JQuery;
@@ -141,26 +143,34 @@ class ControlBar {
                 client_output_muted: this._muteOutput,
                 client_away: this._away,
                 client_away_message: this._awayMessage,
-                client_input_hardware: !this._codecNotSupported,
-                client_output_hardware: !this._codecNotSupported
+                client_input_hardware: this.codec_supported && this.support_record,
+                client_output_hardware: this.codec_supported && this.support_playback
             });
     }
 
     updateVoice(targetChannel?: ChannelEntry) {
         if(!targetChannel) targetChannel = this.handle.getClient().currentChannel();
-        let voiceSupport = this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec);
-        this._codecNotSupported = !voiceSupport;
+        let client = this.handle.getClient();
 
-        let voice_support = this.handle.voiceConnection.voiceSupported();
-        this.htmlTag.find(".btn_mute_input").prop("disabled", !this._codecNotSupported && voice_support);
-        this.htmlTag.find(".btn_mute_output").prop("disabled", !this._codecNotSupported && voice_support);
+        this.codec_supported = this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec);
+        this.support_record = this.handle.voiceConnection.voice_send_support();
+        this.support_playback = this.handle.voiceConnection.voice_playback_support();
+
+        this.htmlTag.find(".btn_mute_input").prop("disabled", !this.codec_supported|| !this.support_playback || !this.support_record);
+        this.htmlTag.find(".btn_mute_output").prop("disabled", !this.codec_supported || !this.support_playback);
         this.handle.serverConnection.sendCommand("clientupdate", {
-            client_input_hardware: voiceSupport,
-            client_output_hardware: voiceSupport
+            client_input_hardware: this.codec_supported && this.support_record,
+            client_output_hardware: this.codec_supported && this.support_playback
         });
 
-        if(this._codecNotSupported)
+        if(!this.codec_supported)
             createErrorModal("Channel codec unsupported", "This channel has an unsupported codec.<br>You cant speak or listen to anybody within this channel!").open();
+
+        /* Update these properties anyways (for case the server fails to handle the command) */
+        client.updateVariables(
+            {key: "client_input_hardware", value: (this.codec_supported && this.support_record) + ""},
+            {key: "client_output_hardware", value: (this.codec_supported && this.support_playback) + ""}
+        );
     }
 
     private onOpenSettings() {

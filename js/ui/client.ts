@@ -345,6 +345,7 @@ class ClientEntry {
     updateVariables(...variables: {key: string, value: string}[]) {
         let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, "Update properties (%i) of %s (%i)", variables.length, this.clientNickName(), this.clientId());
 
+        let update_status_icon = false;
         for(let variable of variables) {
             JSON.map_field_to(this._properties, variable.value, variable.key);
 
