@@ -131,6 +131,7 @@ class VoiceConnection {
 
     constructor(client) {
         this.client = client;
+        this.type = settings.global("voice_connection_type", VoiceConnectionType.JS_ENCODE);
         this.voiceRecorder = new VoiceRecorder(this);
         if(this.type != VoiceConnectionType.NATIVE_ENCODE) {
             this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
