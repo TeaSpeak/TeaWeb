@@ -94,7 +94,7 @@ class Settings extends StaticSettings {
 
     static_global?<T>(key: string, _default?: T) : T {
         let _static = this.static<string>(key);
-        if(_static) StaticSettings.transformStO(_static, _default);
+        if(_static) return StaticSettings.transformStO(_static, _default);
         return this.global<T>(key, _default);
     }
 

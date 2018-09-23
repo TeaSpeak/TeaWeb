@@ -124,7 +124,7 @@ class VoiceConnection {
     dataChannel: RTCDataChannel;
 
     voiceRecorder: VoiceRecorder;
-    type: VoiceConnectionType = VoiceConnectionType.JS_ENCODE;
+    private _type: VoiceConnectionType = VoiceConnectionType.JS_ENCODE;
 
     local_audio_stream: any;
 
@@ -143,11 +143,8 @@ class VoiceConnection {
 
     constructor(client) {
         this.client = client;
-        this.type = settings.static_global("voice_connection_type", this.type);
+        this._type = settings.static_global("voice_connection_type", this._type);
         this.voiceRecorder = new VoiceRecorder(this);
-        if(this.type != VoiceConnectionType.NATIVE_ENCODE) {
-            this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
-        }
         this.voiceRecorder.on_end = this.handleVoiceEnded.bind(this);
         this.voiceRecorder.on_start = this.handleVoiceStarted.bind(this);
         this.voiceRecorder.reinitialiseVAD();
@@ -156,16 +153,40 @@ class VoiceConnection {
             this.codec_pool[4].initialize(2);
             this.codec_pool[5].initialize(2);
 
-            if(this.type == VoiceConnectionType.NATIVE_ENCODE) {
-                let stream =  this.voiceRecorder.get_output_stream();
-                stream.disconnect();
-
-                this.local_audio_stream = AudioController.globalContext.createMediaStreamDestination();
-                stream.connect(this.local_audio_stream);
-            }
+            if(this.type == VoiceConnectionType.NATIVE_ENCODE)
+                this.setup_native();
+            else
+                this.setup_js();
         });
 
         this.send_task = setInterval(this.sendNextVoicePacket.bind(this), 20);
+    }
+
+    private setup_native() {
+        this.voiceRecorder.on_data = undefined;
+
+        let stream =  this.voiceRecorder.get_output_stream();
+        stream.disconnect();
+
+        if(!this.local_audio_stream)
+            this.local_audio_stream = AudioController.globalContext.createMediaStreamDestination();
+        stream.connect(this.local_audio_stream);
+    }
+
+    private setup_js() {
+        this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
+    }
+
+    get type() : VoiceConnectionType { return this._type; }
+    set type(target: VoiceConnectionType) {
+        if(target == this.type) return;
+        this._type = target;
+
+        if(this.type == VoiceConnectionType.NATIVE_ENCODE)
+            this.setup_native();
+        else
+            this.setup_js();
+        this.createSession();
     }
 
     codecSupported(type: number) : boolean {
@@ -217,6 +238,9 @@ class VoiceConnection {
 
 
     createSession() {
+        if(this.rtcPeerConnection) {
+            this.dropSession();
+        }
         this._ice_use_cache = true;
 
 
@@ -232,13 +256,14 @@ class VoiceConnection {
         this.dataChannel.binaryType = "arraybuffer";
 
         let sdpConstraints : RTCOfferOptions = {};
-        sdpConstraints.offerToReceiveAudio = this.type == VoiceConnectionType.NATIVE_ENCODE ? true : false;
+        sdpConstraints.offerToReceiveAudio = this._type == VoiceConnectionType.NATIVE_ENCODE;
         sdpConstraints.offerToReceiveVideo = false;
 
         this.rtcPeerConnection.onicecandidate = this.onIceCandidate.bind(this);
 
         if(this.local_audio_stream) { //May a typecheck?
             this.rtcPeerConnection.addStream(this.local_audio_stream.stream);
+            console.log("Adding stream (%o)!", this.local_audio_stream.stream);
         }
         this.rtcPeerConnection.createOffer(this.onOfferCreated.bind(this), () => {
             console.error("Could not create ice offer!");

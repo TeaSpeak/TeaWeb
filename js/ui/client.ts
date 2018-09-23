@@ -305,10 +305,10 @@ class ClientEntry {
             icon = "client-away";
         } else if(!this.properties.client_output_hardware) {
             icon = "client-hardware_output_muted";
-        } else if(!this.properties.client_input_hardware) {
-            icon = "client-hardware_input_muted";
         } else if(this.properties.client_output_muted) {
             icon = "client-output_muted";
+        } else if(!this.properties.client_input_hardware) {
+            icon = "client-hardware_input_muted";
         } else if(this.properties.client_input_muted) {
             icon = "client-input_muted";
         } else {
