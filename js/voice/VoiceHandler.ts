@@ -281,15 +281,21 @@ class VoiceConnection {
     handleControlPacket(json) {
         if(json["request"] === "answer") {
             console.log("Set remote sdp! (%o)", json["msg"]);
-            this.rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(json["msg"]));
+            this.rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(json["msg"])).catch(error => {
+                console.log("Failed to apply remote description: %o", error); //FIXME error handling!
+            });
             this._ice_use_cache = false;
             for(let msg of this._ice_cache) {
-                this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(msg));
+                this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(msg)).catch(error => {
+                    console.log("Failed to add remote cached ice candidate %s: %o", msg, error);
+                });
             }
         } else if(json["request"] === "ice") {
             if(!this._ice_use_cache) {
                 console.log("Add remote ice! (%s | %o)", json["msg"], json);
-                this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(json["msg"]));
+                this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(json["msg"])).catch(error => {
+                    console.log("Failed to add remote ice candidate %s: %o", json["msg"], error);
+                });
             } else {
                 console.log("Cache remote ice! (%s | %o)", json["msg"], json);
                 this._ice_cache.push(json["msg"]);
@@ -310,18 +316,28 @@ class VoiceConnection {
     onIceCandidate(event) {
         console.log("Got ice candidate! Event:");
         console.log(event);
-        if (event && event.candidate) {
-            this.client.serverConnection.sendData(JSON.stringify({
-                type: 'WebRTC',
-                request: "ice",
-                msg: event.candidate,
-            }));
+        if (event) {
+            if(event.candidate)
+                this.client.serverConnection.sendData(JSON.stringify({
+                    type: 'WebRTC',
+                    request: "ice",
+                    msg: event.candidate,
+                }));
+            else {
+                this.client.serverConnection.sendData(JSON.stringify({
+                    type: 'WebRTC',
+                    request: "ice_finish"
+                }));
+            }
         }
     }
 
     onOfferCreated(localSession) {
         console.log("Offer created and accepted");
-        this.rtcPeerConnection.setLocalDescription(localSession);
+        this.rtcPeerConnection.setLocalDescription(localSession).catch(error => {
+            console.log("Failed to apply local description: %o", error);
+            //FIXME error handling
+        });
 
         console.log("Send offer: %o", localSession);
         this.client.serverConnection.sendData(JSON.stringify({type: 'WebRTC', request: "create", msg: localSession}));
