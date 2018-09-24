@@ -19,6 +19,7 @@ enum DisconnectReason {
     CLIENT_KICKED,
     CLIENT_BANNED,
     SERVER_CLOSED,
+    SERVER_REQUIRES_PASSWORD,
     UNKNOWN
 }
 
@@ -75,7 +76,7 @@ class TSClient {
         this.controlBar.initialise();
     }
 
-    startConnection(addr: string, identity: Identity, name?: string) {
+    startConnection(addr: string, identity: Identity, name?: string, password?: {password: string, hashed: boolean}) {
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
 
@@ -92,7 +93,15 @@ class TSClient {
         }
         console.log("Start connection to " + host + ":" + port);
         this.channelTree.initialiseHead(addr, {host, port});
-        this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name));
+
+        if(password && !password.hashed) {
+            helpers.hashPassword(password.password).then(password => {
+                this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password));
+            }).catch(error => {
+                createErrorModal("Error while hasing password", "Faield to hash server password!").open();
+            })
+        } else
+            this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password ? password.password : undefined));
     }
 
 
@@ -158,7 +167,6 @@ class TSClient {
                 console.error("Could not connect to remote host! Exception");
                 console.error(data);
 
-                //TODO test for status 1006
                 createErrorModal(
                     "Could not connect",
                     "Could not connect to remote host (Connection refused)<br>" +
@@ -188,6 +196,15 @@ class TSClient {
                             "Reason: " + data.reasonmsg
                 ).open();
                 break;
+            case DisconnectReason.SERVER_REQUIRES_PASSWORD:
+                chat.serverChat().appendError("Server requires password");
+                createInputModal("Server password", "Enter server password:", password => password.length != 0, password => {
+                    if(!(typeof password === "string")) return;
+                    this.startConnection(this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port,
+                        this.serverConnection._handshakeHandler.identity,
+                        this.serverConnection._handshakeHandler.name,
+                        {password: password as string, hashed: false});
+                }).open();
             default:
                 console.error("Got uncaught disconnect!");
                 console.error("Type: " + type + " Data:");

@@ -273,9 +273,11 @@ class HandshakeHandler {
     readonly identity: Identity;
     readonly name?: string;
     private connection: ServerConnection;
+    server_password: string;
 
-    constructor(identity: Identity, name?: string) {
+    constructor(identity: Identity, name?: string, password?: string) {
         this.identity = identity;
+        this.server_password = password;
         this.name = name;
     }
 
@@ -330,7 +332,19 @@ class HandshakeHandler {
             client_nickname: this.name ? this.name : this.identity.name(),
             client_platform: navigator.platform,
             client_version: navigator.userAgent,
+
+            client_server_password: this.server_password
             //client_browser_engine: navigator.product
+        }).catch(error => {
+            this.connection.disconnect();
+            if(error instanceof CommandResult) {
+                if(error.id == 1028) {
+                    this.connection._client.handleDisconnect(DisconnectReason.SERVER_REQUIRES_PASSWORD);
+                } else {
+
+                    this.connection._client.handleDisconnect(DisconnectReason.CLIENT_KICKED, error);
+                }
+            }
         });
     }
 }

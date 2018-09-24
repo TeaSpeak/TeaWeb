@@ -143,7 +143,12 @@ namespace Modals {
 
                     let field_address = tag.parents(".modal-content").find(".connect_address");
                     let address = field_address.val().toString();
-                    globalClient.startConnection(address, connectIdentity, tag.parents(".modal-content").find(".connect_nickname").val().toString());
+                    globalClient.startConnection(
+                        address,
+                        connectIdentity,
+                        tag.parents(".modal-content").find(".connect_nickname").val().toString(),
+                        {password: tag.parents(".modal-content").find(".connect_password").val().toString(), hashed: false}
+                    );
                 });
                 tag.append(button);
                 return tag;
