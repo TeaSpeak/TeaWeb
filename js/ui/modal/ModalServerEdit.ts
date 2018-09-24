@@ -211,9 +211,6 @@ namespace Modals {
 
     function server_applyMisc(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
         { //TODO notify on tmp channeladmin group and vice versa
-            //virtualserver_default_server_group
-            //virtualserver_default_channel_group
-            //virtualserver_default_channel_admin_group
             {
                 let groups_tag = tag.find(".default_server_group");
                 groups_tag.change(function (this: HTMLSelectElement) {
@@ -224,6 +221,20 @@ namespace Modals {
                     if(group.type != 2) continue;
                     let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
                     if(group.id == server.properties.virtualserver_default_server_group)
+                        group_tag.prop("selected", true);
+                    group_tag.appendTo(groups_tag);
+                }
+            }
+            {
+                let groups_tag = tag.find(".default_music_group");
+                groups_tag.change(function (this: HTMLSelectElement) {
+                    properties.virtualserver_default_music_group = parseInt($(this.item(this.selectedIndex)).attr("group-id"));
+                });
+
+                for(let group of server.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
+                    if(group.type != 2) continue;
+                    let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
+                    if(group.id == server.properties.virtualserver_default_music_group)
                         group_tag.prop("selected", true);
                     group_tag.appendTo(groups_tag);
                 }

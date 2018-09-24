@@ -38,6 +38,7 @@ class ServerProperties {
 
     virtualserver_codec_encryption_mode: number = 0;
 
+    virtualserver_default_music_group: number = 0;
     virtualserver_default_server_group: number = 0;
     virtualserver_default_channel_group: number = 0;
     virtualserver_default_channel_admin_group: number = 0;
