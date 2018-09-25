@@ -263,15 +263,49 @@ function loadTemplates() {
     });
 }
 
+interface Navigator {
+    browserSpecs: {
+        name: string,
+        version: string
+    }
+}
+
+navigator.browserSpecs = (function(){
+    let ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+    if(/trident/i.test(M[1])){
+        tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+        return {name:'IE',version:(tem[1] || '')};
+    }
+    if(M[1]=== 'Chrome'){
+        tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+        if(tem != null) return {name:tem[1].replace('OPR', 'Opera'),version:tem[2]};
+    }
+    M = M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+    if((tem = ua.match(/version\/(\d+)/i))!= null)
+        M.splice(1, 1, tem[1]);
+    return {name:M[0], version:M[1]};
+})();
+
+console.log(navigator.browserSpecs); //Object { name: "Firefox", version: "42" }
 //TODO release config!
 function loadSide() {
     if(typeof (WebAssembly) === "undefined" || typeof (WebAssembly.compile) === "undefined") {
+        console.log(navigator.browserSpecs);
+        if (navigator.browserSpecs.name == 'Safari') {
+            if (parseInt(navigator.browserSpecs.version) < 11) {
+                displayCriticalError("You require Safari 11 or higher to use the web client!<br>Safari " + navigator.browserSpecs.version + " does not support WebAssambly!");
+                return;
+            }
+        }
+        else {
+            // Do something for all other browsers.
+        }
         displayCriticalError("You require WebAssembly for TeaSpeak-Web!");
         return;
     }
     //Load the general scripts and required scripts
     awaitLoad(loadScripts([
-        ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
+        //["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
         ["vendor/bbcode/xbbcode.js"],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => awaitLoad(loadScripts([

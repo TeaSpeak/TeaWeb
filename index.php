@@ -75,6 +75,7 @@
             gtag('js', new Date());
             gtag('config', 'UA-113151733-4');
         </script>
+        <script src="vendor/jquery/jquery.min.js"></script>
         <div id="scripts">
             <script type="application/javascript" src="js/load.js" defer></script>
         </div>
@@ -149,7 +150,7 @@
                                 </div>
                             </div>
                             <div class="dropdown">
-                                <div class="btn_away_toggle"><div class="icon client-away"></div><a>Toggle away status</a></div>
+                                <div class="btn_away_toggle"><div class="icon client-away"></div><a>Toggle away status</a></div>vendor/jquery/jquery.min.js
                                 <div class="btn_away_message"><div class="icon client-away"></div><a>Set away message</a></div>
                             </div>
                         </div>
