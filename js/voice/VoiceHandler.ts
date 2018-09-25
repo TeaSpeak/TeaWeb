@@ -162,7 +162,29 @@ class VoiceConnection {
         this.send_task = setInterval(this.sendNextVoicePacket.bind(this), 20);
     }
 
+    native_encoding_supported() : boolean {
+        if(!AudioContext.prototype.createMediaStreamDestination) return false; //Required, but not available within edge
+        return true;
+    }
+
+    javascript_encoding_supported() : boolean {
+        if(!RTCPeerConnection.prototype.createDataChannel) return false;
+        return true;
+    }
+
+    current_encoding_supported() : boolean {
+        switch (this._type) {
+            case VoiceConnectionType.JS_ENCODE:
+                return this.javascript_encoding_supported();
+            case VoiceConnectionType.NATIVE_ENCODE:
+                return this.native_encoding_supported();
+        }
+        return false;
+    }
+
     private setup_native() {
+        if(!this.native_encoding_supported()) return;
+
         this.voiceRecorder.on_data = undefined;
 
         let stream =  this.voiceRecorder.get_output_stream();
@@ -174,6 +196,8 @@ class VoiceConnection {
     }
 
     private setup_js() {
+        if(!this.javascript_encoding_supported()) return;
+
         this.voiceRecorder.on_data = this.handleVoiceData.bind(this);
     }
 
@@ -199,7 +223,7 @@ class VoiceConnection {
 
     voice_send_support() : boolean {
         if(this.type == VoiceConnectionType.NATIVE_ENCODE)
-            return this.rtcPeerConnection.getLocalStreams().length > 0;
+            return this.native_encoding_supported() && this.rtcPeerConnection.getLocalStreams().length > 0;
         else
             return this.voice_playback_support();
     }
@@ -238,6 +262,8 @@ class VoiceConnection {
 
 
     createSession() {
+        if(!this.current_encoding_supported()) return false;
+
         if(this.rtcPeerConnection) {
             this.dropSession();
         }

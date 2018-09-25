@@ -425,7 +425,7 @@
                     <div style="width: 20%">
                         <div>Server password:</div>
                         <form name="server_password_form" onsubmit="return false;">
-                            <input type="password" autocomplete="off" style="width: 100%" class="connect_password">
+                            <input type="password" if="connect_server_password_{{rnd '0~13377331'/}}" autocomplete="off" style="width: 100%" class="connect_password">
                         </form>
                     </div>
                 </div>
@@ -452,14 +452,20 @@
                         </div>
                     </div>
                     <div class="identity_config_TEAFORO identity_config">
-                        You're using your forum account as verification
+                        {{if forum_valid}}
+                            You're using your forum account as verification
+                        {{else}}
+                            You cant use your TeaSpeak forum account.<br>
+                            You're not connected!<br>
+                            Click <a href="{{:forum_path}}login.php">here</a> to login via the TeaSpeak forum.
+                        {{/if}}
                     </div>
                     <div class="identity_config_NICKNAME identity_config">
                         This is just for debug and uses the name as unique identifier
                     </div>
 
                     <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>
-                </div>
+                </div> <!-- <a href="<?php echo authPath() . "login.php"; ?>">Login</a> via the TeaSpeak forum. -->
             </div>
         </script>
 
@@ -808,40 +814,44 @@
         </script>
 
         <script id="tmpl_selected_server" type="text/html">
-            <table class="select_info_table">
-                <tr>
-                    <td>Name:</td>
-                    <td><node key="server_name"/></td>
-                </tr>
-                <tr>
-                    <td>Address:</td>
-                    <td>{{>server_address}}</td>
-                </tr>
-                <tr>
-                    <td>Type:</td>
-                    <td>TeaSpeak</td>
-                </tr>
-                 <tr>
-                    <td>Version:</td>
-                    <td><a title="{{>property_virtualserver_version}}">{{*: data.property_virtualserver_version.split(" ")[0]; }}</a> on {{>property_virtualserver_platform}}</td>
-                </tr>
-                <tr>
-                    <td>Uptime:</td>
-                    <td class="update_onlinetime">{{:server_onlinetime}}</td>
-                </tr>
-                <tr>
-                    <td>Current Channels:</td>
-                    <td>{{:property_virtualserver_channelsonline}}</td>
-                </tr>
-                <tr>
-                    <td>Current Clients:</td>
-                    <td>{{:property_virtualserver_clientsonline}}</td>
-                </tr>
-                <tr>
-                    <td>Current Queries:</td>
-                    <td>{{:property_virtualserver_queryclientsonline}}</td>
-                </tr>
-            </table>
+            <div class="select_server">
+                <table class="select_info_table">
+                    <tr>
+                        <td>Name:</td>
+                        <td><node key="server_name"/></td>
+                    </tr>
+                    <tr>
+                        <td>Address:</td>
+                        <td>{{>server_address}}</td>
+                    </tr>
+                    <tr>
+                        <td>Type:</td>
+                        <td>TeaSpeak</td>
+                    </tr>
+                    <tr>
+                        <td>Version:</td>
+                        <td><a title="{{>property_virtualserver_version}}">{{*: data.property_virtualserver_version.split(" ")[0]; }}</a> on {{>property_virtualserver_platform}}</td>
+                    </tr>
+                    <tr>
+                        <td>Uptime:</td>
+                        <td class="update_onlinetime">{{:server_onlinetime}}</td>
+                    </tr>
+                    <tr>
+                        <td>Current Channels:</td>
+                        <td>{{:property_virtualserver_channelsonline}}</td>
+                    </tr>
+                    <tr>
+                        <td>Current Clients:</td>
+                        <td>{{:property_virtualserver_clientsonline}}</td>
+                    </tr>
+                    <tr>
+                        <td>Current Queries:</td>
+                        <td>{{:property_virtualserver_queryclientsonline}}</td>
+                    </tr>
+                </table>
+
+                <button class="button-update btn_update">Update info</button>
+            </div>
         </script>
         <script id="tmpl_selected_channel" type="text/html">
             <table class="select_info_table">

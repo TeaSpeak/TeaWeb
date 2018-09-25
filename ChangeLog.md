@@ -4,6 +4,9 @@
     - Added support for away messages
     * Fixed away display within information bar
     - Capturing last given address and nickname within connect modal
+    * Using random password field ids for server connect modal
+    + Improved forum not authenticated message within connect modal
+    - Added partitional MS Edge support
     
 * **24.09.18**:
     - Added server passwords within login modal

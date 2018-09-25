@@ -9,7 +9,10 @@ namespace Modals {
                 return header;
             },
             body: function () {
-                let tag = $("#tmpl_connect").renderTag();
+                let tag = $("#tmpl_connect").renderTag({
+                    forum_path: settings.static("forum_path"),
+                    forum_valid: !!forumIdentity
+                });
 
                 let updateFields = function () {
                     if(connectIdentity) tag.find(".connect_nickname").attr("placeholder", connectIdentity.name());
@@ -107,8 +110,6 @@ namespace Modals {
                 }
 
                 {
-                    if(!forumIdentity)
-                        tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAFORO]).html("You cant use your TeaSpeak forum account.<br>You're not connected!");
                     tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAFORO]).on('shown', ev => {
                         connectIdentity = forumIdentity;
                         updateFields();

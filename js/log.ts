@@ -104,7 +104,7 @@ namespace log {
         }
 
         log(message: string, ...optionalParams: any[]) : this {
-            if(!this.initialized) {
+            if(!this.initialized && false) {
                 if(this._collapsed && console.groupCollapsed)
                     console.groupCollapsed(this.name, ...this.optionalParams);
                 else

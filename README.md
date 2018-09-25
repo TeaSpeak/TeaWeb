@@ -12,3 +12,8 @@ To **report an issue**, then find and push the **New Issue** button, fill all th
 
 
 You can also ask questions here, if you have any.
+
+#Browser support:
+MS Edge:
+    - Partitional
+    - No voice support (missing data channel support)

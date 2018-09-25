@@ -1,10 +1,12 @@
-.select_info_table { }
-.select_info_table tr { }
-.select_info_table tr td {
-}
-
 .select_info_table tr td:nth-child(1) {
-    font-weight: bold;
-    padding-right: 5px;
-    min-width: 20%;
-}
+  font-weight: bold;
+  padding-right: 5px;
+  min-width: 20%; }
+
+.select_server {
+  display: inline-flex;
+  justify-content: space-between; }
+  .select_server .button-update {
+    width: 100%; }
+
+/*# sourceMappingURL=SelectInfo.css.map */

@@ -132,6 +132,8 @@ class TSClient {
         if(this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
         this.controlBar.updateProperties();
+        if(!this.voiceConnection.current_encoding_supported())
+            createErrorModal("Codec encode type not supported!", "Codec encode type " + VoiceConnectionType[this.voiceConnection.type] + " not supported by this browser!<br>Choose another one!").open();
     }
 
     get connected() : boolean {

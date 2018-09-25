@@ -191,34 +191,33 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
 
         let rendered = $("#tmpl_selected_server").renderTag([properties]);
         rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
-        html_tag.append(rendered);
 
         this.registerInterval(setInterval(() => {
             html_tag.find(".update_onlinetime").text(formatDate(server.calculateUptime()));
         }, 1000));
 
 
-        let requestUpdate = $.spawn("button");
-        requestUpdate.css("min-height", "16px");
-        requestUpdate.css("bottom", 0);
-        requestUpdate.text("update info");
-        if(server.shouldUpdateProperties())
-            requestUpdate.css("color", "green");
-        else {
-            requestUpdate.attr("disabled", "true");
-            requestUpdate.css("color", "red");
+        {
+            let requestUpdate = rendered.find(".btn_update");
+            /*
+            let requestUpdate = $.spawn("button");
+            requestUpdate.css("min-height", "16px");
+            requestUpdate.css("bottom", 0);
+            requestUpdate.text("update info");
+            */
+            requestUpdate.prop("enabled", server.shouldUpdateProperties());
+
+            requestUpdate.click(() => {
+                server.updateProperties();
+                this.triggerUpdate();
+            });
+
+            this.registerTimer(setTimeout(function () {
+                requestUpdate.prop("enabled", true);
+            }, server.nextInfoRequest - Date.now()));
         }
-        html_tag.append(requestUpdate);
 
-        requestUpdate.click(() => {
-            server.updateProperties();
-            this.triggerUpdate();
-        });
-
-        this.registerTimer(setTimeout(function () {
-            requestUpdate.css("color", "green");
-            requestUpdate.removeAttr("disabled");
-        }, server.nextInfoRequest - new Date().getTime()));
+        html_tag.append(rendered);
     }
 
     available<V>(object: V): boolean {

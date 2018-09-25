@@ -56,6 +56,10 @@ class AudioController {
             this._initialized_listener.pop_front()();
     }
 
+    static initialized() : boolean {
+        return this.globalContext.state === "running";
+    }
+
     static on_initialized(callback: () => any) {
         if(this.globalContext)
             callback();
@@ -68,6 +72,7 @@ class AudioController {
     }
 
     static initializeAudioController() {
+        AudioController.globalContext; //Just test here
         //this._globalReplayScheduler = setInterval(() => { AudioController.invokeNextReplay(); }, 20); //Fix me
     }
 

@@ -77,11 +77,12 @@ class ServerConnection {
         const self = this;
         try {
             this._connectTimeoutHandler = setTimeout(() => {
+                console.log("Connect timeout triggered!");
                 this.disconnect();
                 this._client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
             }, timeout);
             let sockCpy;
-            this._socket = (sockCpy = new WebSocket('wss:' + address.host + ":" + address.port));
+            this._socket = (sockCpy = new WebSocket('wss://' + address.host + ":" + address.port));
             clearTimeout(this._connectTimeoutHandler);
             this._connectTimeoutHandler = null;
             if(this._socket != sockCpy) return; //Connect timeouted
