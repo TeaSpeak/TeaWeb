@@ -1,10 +1,12 @@
-//Source: https://www.movable-type.co.uk/scripts/sha1.html
-
-/*
-declare class TextEncoder {
-    encode(msg) : ArrayBuffer;
+declare function define($);
+declare function unescape(string: string): string;
+declare class _sha1 {
+    static arrayBuffer($: ArrayBuffer) : ArrayBuffer;
 }
-*/
+interface Window {
+    TextEncoder: any;
+}
+
 namespace sha {
     /*
      * [js-sha1]{@link https://github.com/emn178/js-sha1}
@@ -18,33 +20,33 @@ namespace sha {
     (function() {
         'use strict';
 
-        var root = typeof window === 'object' ? window : {};
-        var NODE_JS = !root.JS_SHA1_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
+        let root: any = typeof window === 'object' ? window : {};
+        let NODE_JS = !root.JS_SHA1_NO_NODE_JS && typeof process === 'object' && process.versions && process.versions.node;
         if (NODE_JS) {
             root = global;
         }
-        var COMMON_JS = !root.JS_SHA1_NO_COMMON_JS && typeof module === 'object' && module.exports;
-        var AMD = typeof define === 'function' && define.amd;
-        var HEX_CHARS = '0123456789abcdef'.split('');
-        var EXTRA = [-2147483648, 8388608, 32768, 128];
-        var SHIFT = [24, 16, 8, 0];
-        var OUTPUT_TYPES = ['hex', 'array', 'digest', 'arrayBuffer'];
+        let COMMON_JS = !root.JS_SHA1_NO_COMMON_JS && typeof module === 'object' && module.exports;
+        let AMD = typeof define === 'function' && (define as any).amd;
+        let HEX_CHARS = '0123456789abcdef'.split('');
+        let EXTRA = [-2147483648, 8388608, 32768, 128];
+        let SHIFT = [24, 16, 8, 0];
+        let OUTPUT_TYPES = ['hex', 'array', 'digest', 'arrayBuffer'];
 
-        var blocks = [];
+        let blocks = [];
 
-        var createOutputMethod = function (outputType) {
+        let createOutputMethod = function (outputType) {
             return function (message) {
                 return new Sha1(true).update(message)[outputType]();
             };
         };
 
-        var createMethod = function () {
-            var method = createOutputMethod('hex');
+        let createMethod = function () {
+            let method: any = createOutputMethod('hex');
             if (NODE_JS) {
                 method = nodeWrap(method);
             }
             method.create = function () {
-                return new Sha1();
+                return new (Sha1 as any)();
             };
             method.update = function (message) {
                 return method.create().update(message);
@@ -378,23 +380,23 @@ namespace sha {
         }
     })();
 
-    export function encode_text(buffer: string) {
+    export function encode_text(buffer: string) : ArrayBuffer {
         if (window.TextEncoder) {
-            return new TextEncoder().encode(buffer);
+            return new TextEncoder().encode(buffer).buffer;
         }
         let utf8 = unescape(encodeURIComponent(buffer));
         let result = new Uint8Array(utf8.length);
         for (let i = 0; i < utf8.length; i++) {
             result[i] = utf8.charCodeAt(i);
         }
-        return result;
+        return result.buffer;
     }
     export function sha1(message: string | ArrayBuffer) : PromiseLike<ArrayBuffer> {
         let buffer = message instanceof ArrayBuffer ? message : encode_text(message as string);
 
         if(/Edge/.test(navigator.userAgent))
             return new Promise<ArrayBuffer>(resolve => {
-                resolve(_sha1.arrayBuffer(buffer));
+                resolve(_sha1.arrayBuffer(buffer as ArrayBuffer));
             });
         else
             return crypto.subtle.digest("SHA-1", buffer);
