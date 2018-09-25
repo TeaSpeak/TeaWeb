@@ -216,5 +216,6 @@ class TSClient {
         this.channelTree.reset();
         this.voiceConnection.dropSession();
         if(this.serverConnection) this.serverConnection.disconnect();
+        this.controlBar.update_connection_state();
     }
 }

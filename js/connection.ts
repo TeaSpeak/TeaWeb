@@ -120,6 +120,7 @@ class ServerConnection {
 
     updateConnectionState(state: ConnectionState) {
         this._connectionState = state;
+        this._client.controlBar.update_connection_state();
     }
 
     disconnect() : boolean {

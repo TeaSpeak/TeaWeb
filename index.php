@@ -41,6 +41,7 @@
         <link rel="stylesheet" href="css/loader.css" type="text/css">
         <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
         <link rel="stylesheet" href="css/frame/SelectInfo.css" type="text/css">
+        <link rel="stylesheet" href="css/control_bar.css" type="text/css">
         <link rel="stylesheet" href="vendor/bbcode/xbbcode.css" type="text/css">
 
         <!-- https://localhost:9987/?forward_url=http%3A%2F%2Flocalhost%3A63344%2FWeb-Client%2Findex.php%3F_ijt%3D82b1uhmnh0a5l1n35nnjps5eid%26loader_ignore_age%3D1%26connect_default_host%3Dlocalhost%26default_connect_type%3Dforum%26default_connect_url%3Dtrue%26default_connect_type%3Dteamspeak%26default_connect_url%3Dlocalhost%253A9987 -->
@@ -130,22 +131,54 @@
                 <div style="height: 45px; width: 100%; border-radius: 2px 0px 0px 0px; border-bottom-width: 0px; background-color: lightgrey"
                      class="main_container">
                     <div id="control_bar" class="control_bar">
-                        <div class="button btn_connect">
+                        <div class="button btn_connect" title="Connect to a server">
                             <div class="icon_x32 client-connect"></div>
                         </div>
+                        <div class="button btn_disconnect" title="Disconnect from server" style="display: none">
+                            <div class="icon_x32 client-disconnect"></div>
+                        </div>
                         <!--<div class="button btn_disconnect"><div class="icon_x32 client-disconnect"></div></div>-->
-                        <div style="border-left:2px solid gray;height: auto; margin-left: 5px; margin-right: 5px"></div>
-                        <div class="button btn_client_away">
-                            <div class="icon_x32 client-away"></div>
+                        <div class="divider"></div>
+
+                        <div class="button-dropdown btn_away" title="Toggle away status">
+                            <div class="buttons">
+                                <div class="button icon_x32 client-away btn_away_toggle"></div>
+                                <div class="button-dropdown">
+                                    <div class="arrow"></div>
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <div class="btn_away_toggle"><div class="icon client-away"></div><a>Toggle away status</a></div>
+                                <div class="btn_away_message"><div class="icon client-away"></div><a>Set away message</a></div>
+                            </div>
                         </div>
                         <div class="button btn_mute_input">
-                            <div class="icon_x32 client-input_muted"></div>
+                            <div class="icon_x32 client-input_muted" title="Mute/unmute microphone"></div>
                         </div>
                         <div class="button btn_mute_output">
-                            <div class="icon_x32 client-output_muted"></div>
+                            <div class="icon_x32 client-output_muted" title="Mute/unmute headphones"></div>
                         </div>
+                        <div class="divider"></div>
+
+                        <div class="button-dropdown btn_token" title="Use token">
+                            <div class="buttons">
+                                <div class="button icon_x32 client-token btn_token_use"></div>
+                                <div class="button-dropdown">
+                                    <div class="arrow"></div>
+                                </div>
+                            </div>
+                            <div class="dropdown">
+                                <div class="btn_token_list"><div class="icon client-token"></div><a>List tokens</a></div>
+                                <div class="btn_token_use"><div class="icon client-token_use"></div><a>Use token</a></div>
+                            </div>
+                        </div>
+
                         <div style="width: 100%"></div>
-                        <div class="button btn_open_settings">
+                        <div class="button btn_permissions" title="View/edit permissions">
+                            <div class="icon_x32 client-permission_overview"></div>
+                        </div>
+                        <div class="divider"></div>
+                        <div class="button btn_open_settings" title="Edit global client settings">
                             <div class="icon_x32 client-settings"></div>
                         </div>
                     </div>

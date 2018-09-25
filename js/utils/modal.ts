@@ -221,3 +221,17 @@ function createErrorModal(header: BodyCreator, message: BodyCreator, props: Moda
 
     return createModal(props);
 }
+
+function createInfoModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: "" }) {
+    props = ModalFunctions.warpProperties(props);
+
+    let head = $.spawn("div");
+    head.addClass("modal-head-info");
+    ModalFunctions.divify(ModalFunctions.jqueriefy(header)).appendTo(head);
+    props.header = head;
+
+    props.body = ModalFunctions.divify(ModalFunctions.jqueriefy(message));
+    props.footer = ModalFunctions.divify(ModalFunctions.jqueriefy(""));
+
+    return createModal(props);
+}

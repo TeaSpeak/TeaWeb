@@ -696,6 +696,18 @@
             </div>
 
             <!-- Costume tags/icons -->
+            <!-- Client is away -->
+            {{if property_client_away}}
+            <div style="display: inline-flex">
+                <div class="icon_x32 client-away" style="margin-right: 5px"></div>
+                <a style="align-self: center">Away
+                    {{if property_client_away_message && property_client_away_message.length > 0}}
+                        ({{>property_client_away_message}})
+                    {{/if}}
+                </a>
+            </div>
+            {{/if}}
+
             <!-- Speakers/Headphones disabled -->
             {{if !property_client_output_hardware}}
                 <div style="display: inline-flex">

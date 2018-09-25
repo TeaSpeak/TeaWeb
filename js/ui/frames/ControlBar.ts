@@ -31,11 +31,35 @@ class ControlBar {
 
     initialise() {
         this.htmlTag.find(".btn_connect").on('click', this.onConnect.bind(this));
-        this.htmlTag.find(".btn_client_away").on('click', this.onAway.bind(this));
+        this.htmlTag.find(".btn_disconnect").on('click', this.onDisconnect.bind(this));
         this.htmlTag.find(".btn_mute_input").on('click', this.onInputMute.bind(this));
         this.htmlTag.find(".btn_mute_output").on('click', this.onOutputMute.bind(this));
         this.htmlTag.find(".btn_open_settings").on('click', this.onOpenSettings.bind(this));
 
+        {
+            let tokens = this.htmlTag.find(".btn_token");
+            tokens.find(".button-dropdown").on('click', () => {
+                tokens.find(".dropdown").addClass("displayed");
+            });
+            tokens.on('mouseleave', () => {
+                tokens.find(".dropdown").removeClass("displayed");
+            });
+
+            tokens.find(".btn_token_use").on('click', this.on_token_use.bind(this));
+            tokens.find(".btn_token_list").on('click', this.on_token_list.bind(this));
+        }
+        {
+            let away = this.htmlTag.find(".btn_away");
+            away.find(".button-dropdown").on('click', () => {
+                away.find(".dropdown").addClass("displayed");
+            });
+            away.on('mouseleave', () => {
+                away.find(".dropdown").removeClass("displayed");
+            });
+
+            away.find(".btn_away_toggle").on('click', this.on_away_toggle.bind(this));
+            away.find(".btn_away_message").on('click', this.on_away_set_message.bind(this));
+        }
 
         //Need an initialise
         this.muteInput = settings.global("mute_input") == "1";
@@ -43,8 +67,16 @@ class ControlBar {
     }
 
 
-    onAway() {
+    on_away_toggle() {
+        this._awayMessage = "";
         this.away = !this._away;
+    }
+
+    on_away_set_message() {
+        createInputModal("Set away message", "Please enter the away message", message => true, message => {
+            if(message)
+                this.away = message;
+        }).open();
     }
 
     onInputMute() {
@@ -114,13 +146,11 @@ class ControlBar {
             this._away = true;
         }
 
-        let tag = this.htmlTag.find(".btn_client_away");
+        let tag = this.htmlTag.find(".btn_away_toggle");
         if( this._away) {
-            if(!tag.hasClass("activated"))
-                tag.addClass("activated");
+            tag.addClass("activated");
         } else {
-            if(tag.hasClass("activated"))
-                tag.removeClass("activated");
+            tag.removeClass("activated");
         }
 
         if(this.handle.serverConnection.connected)
@@ -179,5 +209,42 @@ class ControlBar {
 
     private onConnect() {
         Modals.spawnConnectModal(settings.static("connect_default_host", "ts.TeaSpeak.de"));
+    }
+
+    update_connection_state() {
+        switch (this.handle.serverConnection ? this.handle.serverConnection._connectionState : ConnectionState.UNCONNECTED) {
+            case ConnectionState.CONNECTED:
+            case ConnectionState.CONNECTING:
+            case ConnectionState.INITIALISING:
+                this.htmlTag.find(".btn_disconnect").show();
+                this.htmlTag.find(".btn_connect").hide();
+                break;
+            default:
+                this.htmlTag.find(".btn_disconnect").hide();
+                this.htmlTag.find(".btn_connect").show();
+        }
+    }
+
+    private onDisconnect() {
+        this.handle.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
+        this.update_connection_state();
+    }
+
+    private on_token_use() {
+        createInputModal("Use token", "Please enter your token/priviledge key", message => message.length > 0, result => {
+            if(!result) return;
+            if(this.handle.serverConnection.connected)
+                this.handle.serverConnection.sendCommand("tokenuse", {
+                    token: result
+                }).then(() => {
+                    createInfoModal("Use token", "Toke successfully used!").open();
+                }).catch(error => {
+                    createErrorModal("Use token", "Failed to use token: " + (error instanceof CommandResult ? error.message : error)).open();
+                });
+        }).open();
+    }
+
+    private on_token_list() {
+        createErrorModal("Not implemented", "Token list is not implemented yet!").open();
     }
 }

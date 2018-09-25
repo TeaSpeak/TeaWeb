@@ -234,43 +234,6 @@ fieldset {
     border-color: red;
 }
 
-.control_bar {
-    display: flex;
-    flex-direction: row;
-}
-
-.control_bar .button {
-    cursor: pointer;
-    background-color: lightgray;
-    border: rgba(0, 0, 0, 0) solid;
-    border-radius: 5px;
-    align-items: center;
-    border-width: 2px;
-    height: 36px;
-    width: 36px;
-    margin-right: 5px;
-    margin-left: 5px;
-}
-
-.control_bar .button:hover {
-    background-color: rgba(0,0,0,0.4);
-    border: rgba(255,255,255,.75) solid;
-    border-width: 2px;
-    /*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
-}
-
-.control_bar .button.activated {
-    background-color: rgba(0,0,0,0.25);
-    border: rgba(255,255,255,.75) solid;
-    border-width: 2px;
-}
-
-.control_bar .button.activated:hover {
-    background-color: rgba(0,0,0,0.4);
-    border: rgba(255,255,255,.75) solid;
-    border-width: 2px;
-}
-
 .GroupBox {
     border: gray solid;
     border-width: 2px;

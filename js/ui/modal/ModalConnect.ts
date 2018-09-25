@@ -19,10 +19,12 @@ namespace Modals {
 
                     let field_address = tag.find(".connect_address");
                     let address = field_address.val().toString();
+                    settings.changeGlobal("connect_address", address);
                     let flag_address = !!address.match(Regex.IP_V4) || !!address.match(Regex.DOMAIN);
 
                     let field_nickname = tag.find(".connect_nickname");
                     let nickname = field_nickname.val().toString();
+                    settings.changeGlobal("connect_name", nickname);
                     let flag_nickname = (nickname.length == 0 && connectIdentity && connectIdentity.name().length > 0) || nickname.length >= 3 && nickname.length <= 32;
 
                     if(flag_address) {
@@ -48,7 +50,8 @@ namespace Modals {
                     }
                 };
 
-                tag.find(".connect_address").val(defaultHost);
+                tag.find(".connect_nickname").val(settings.static_global("connect_name", undefined));
+                tag.find(".connect_address").val(settings.static_global("connect_address", defaultHost));
                 tag.find(".connect_address").on("keyup", () => updateFields());
                 tag.find(".connect_nickname").on("keyup", () => updateFields());
 

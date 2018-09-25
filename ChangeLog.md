@@ -1,5 +1,10 @@
 # Changelog:
-
+* **25.09.18**:
+    - Added support for token use
+    - Added support for away messages
+    * Fixed away display within information bar
+    - Capturing last given address and nickname within connect modal
+    
 * **24.09.18**:
     - Added server passwords within login modal
     - Fixed native encoding for opera and firefox
