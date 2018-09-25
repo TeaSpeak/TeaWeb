@@ -58,6 +58,16 @@ namespace app {
     }
 }
 
+/* safari remove "fix" */
+Object.defineProperty(Element.prototype, "remove", {
+    enumerable: false,
+    configurable: false,
+    writable: false,
+    value: function(){
+        this.parentElement.removeChild(this);
+    }
+});
+
 if(typeof Module === "undefined")
     this["Module"] = {};
 app.initialize();

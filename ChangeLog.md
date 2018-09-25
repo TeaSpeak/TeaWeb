@@ -7,6 +7,7 @@
     * Using random password field ids for server connect modal
     + Improved forum not authenticated message within connect modal
     - Added partitional MS Edge support
+    * Fixed chat new line indeed
     
 * **24.09.18**:
     - Added server passwords within login modal

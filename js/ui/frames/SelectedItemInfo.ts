@@ -199,13 +199,7 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
 
         {
             let requestUpdate = rendered.find(".btn_update");
-            /*
-            let requestUpdate = $.spawn("button");
-            requestUpdate.css("min-height", "16px");
-            requestUpdate.css("bottom", 0);
-            requestUpdate.text("update info");
-            */
-            requestUpdate.prop("enabled", server.shouldUpdateProperties());
+            requestUpdate.prop("disabled", !server.shouldUpdateProperties());
 
             requestUpdate.click(() => {
                 server.updateProperties();
@@ -213,7 +207,7 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
             });
 
             this.registerTimer(setTimeout(function () {
-                requestUpdate.prop("enabled", true);
+                requestUpdate.prop("disabled", false);
             }, server.nextInfoRequest - Date.now()));
         }
 

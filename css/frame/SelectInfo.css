@@ -4,9 +4,17 @@
   min-width: 20%; }
 
 .select_server {
+  height: 100%;
   display: inline-flex;
+  flex-direction: column;
   justify-content: space-between; }
   .select_server .button-update {
-    width: 100%; }
+    width: 100%;
+    height: 23px; }
+    .select_server .button-update:disabled {
+      color: red;
+      pointer-events: none; }
+    .select_server .button-update:not(:disabled) {
+      color: green; }
 
 /*# sourceMappingURL=SelectInfo.css.map */

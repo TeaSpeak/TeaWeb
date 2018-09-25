@@ -6,11 +6,11 @@ enum ChatType {
 }
 
 namespace MessageHelper {
-    export function htmlEscape(message: string) : string {
+    export function htmlEscape(message: string) : string[] {
         const div = document.createElement('div');
         div.innerText = message;
         message =  div.innerHTML;
-        return message.replace(/ /g, '&nbsp;');
+        return message.replace(/ /g, '&nbsp;').split(/<br>/);
     }
 
     export function formatElement(object: any) : JQuery[] {
@@ -21,7 +21,8 @@ namespace MessageHelper {
             return result;
         } else if(typeof(object) == "string") {
             if(object.length == 0) return [];
-            return [$.spawn("a").html(this.htmlEscape(object))];
+
+            return this.htmlEscape(object).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 || idx + 1 == array.length ? "inline" : "") + "block").html(entry));
         } else if(typeof(object) === "object") {
             if(object instanceof jQuery)
                 return [object];
