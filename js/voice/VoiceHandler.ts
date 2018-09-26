@@ -163,7 +163,7 @@ class VoiceConnection {
     }
 
     native_encoding_supported() : boolean {
-        if(!AudioContext.prototype.createMediaStreamDestination) return false; //Required, but not available within edge
+        if(!(webkitAudioContext || AudioContext).prototype.createMediaStreamDestination) return false; //Required, but not available within edge
         return true;
     }
 

@@ -23,6 +23,17 @@ interface MediaStreamConstraints {
     groupId?: string;
 }
 
+if(!AudioBuffer.prototype.copyToChannel) { //Webkit does not implement this function
+    AudioBuffer.prototype.copyToChannel = function (source: Float32Array, channelNumber: number, startInChannel?: number) {
+        if(!startInChannel) startInChannel = 0;
+
+        let destination = this.getChannelData(channelNumber);
+        for(let index = 0; index < source.length; index++)
+            if(destination.length < index + startInChannel)
+                destination[index + startInChannel] = source[index];
+    }
+}
+
 class VoiceRecorder {
     private static readonly CHANNEL = 0;
     private static readonly CHANNELS = 1;

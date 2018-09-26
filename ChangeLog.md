@@ -1,4 +1,7 @@
 # Changelog:
+* **26.09.18**:
+    - Added Safari support
+    
 * **25.09.18**:
     - Added support for token use
     - Added support for away messages

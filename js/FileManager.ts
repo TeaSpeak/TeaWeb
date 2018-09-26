@@ -492,8 +492,6 @@ class AvatarManager {
                 else
                     img.attr("src", "data:image/png;base64," + avatar.base64);
                 console.debug("Avatar " + client.clientNickName() + " loaded :)");
-                console.log(avatar.base64);
-                console.log(avatar.url);
 
                 img.css("opacity", 0);
                 tag.append(img);

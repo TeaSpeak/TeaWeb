@@ -97,6 +97,8 @@ app.loadedListener.push(() => {
             $(document).one('click', event => AudioController.initializeFromGesture());
         }
     } catch (ex) {
+        if(ex instanceof ReferenceError)
+            ex = ex.message + ":<br>" + ex.stack;
         displayCriticalError("Failed to invoke main function:<br>" + ex, false);
     }
 });

@@ -211,6 +211,24 @@ class ClientEntry {
                 }
             },
             MenuEntry.HR(),
+            /*
+            {
+                type: MenuEntryType.ENTRY,
+                icon: "client-kick_server",
+                name: "Add group to client",
+                invalidPermission: true, //!this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
+                callback: () => {
+                    Modals.spawnBanClient(this.properties.client_nickname, (duration, reason) => {
+                        this.channelTree.client.serverConnection.sendCommand("banclient", {
+                            uid: this.properties.client_unique_identifier,
+                            banreason: reason,
+                            time: duration
+                        });
+                    });
+                }
+            },
+            MenuEntry.HR(),
+            */
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-volume",

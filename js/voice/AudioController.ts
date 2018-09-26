@@ -11,6 +11,8 @@ interface Navigator {
     webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
 }
 
+declare class webkitAudioContext extends AudioContext {}
+
 class AudioController {
     private static getUserMediaFunction() {
         if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
@@ -30,7 +32,7 @@ class AudioController {
         if(this._globalContext && this._globalContext.state != "suspended") return this._globalContext;
 
         if(!this._globalContext)
-            this._globalContext = new AudioContext();
+            this._globalContext = new (webkitAudioContext || AudioContext)();
         if(this._globalContext.state == "suspended") {
             if(!this._globalContextPromise) {
                 (this._globalContextPromise = this._globalContext.resume()).then(() => {
