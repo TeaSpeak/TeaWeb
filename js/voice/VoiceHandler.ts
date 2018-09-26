@@ -117,7 +117,6 @@ interface RTCPeerConnection {
     createOffer(successCallback?: RTCSessionDescriptionCallback, failureCallback?: RTCPeerConnectionErrorCallback, options?: RTCOfferOptions): Promise<RTCSessionDescription>;
 }
 
-
 class VoiceConnection {
     client: TSClient;
     rtcPeerConnection: RTCPeerConnection;
@@ -150,6 +149,7 @@ class VoiceConnection {
         this.voiceRecorder.reinitialiseVAD();
 
         AudioController.on_initialized(() => {
+            log.info(LogCategory.VOICE, "Initializing voice handler after AudioController has been initialized!");
             this.codec_pool[4].initialize(2);
             this.codec_pool[5].initialize(2);
 
@@ -163,12 +163,12 @@ class VoiceConnection {
     }
 
     native_encoding_supported() : boolean {
-        if(!(webkitAudioContext || AudioContext).prototype.createMediaStreamDestination) return false; //Required, but not available within edge
+        if(!(window.webkitAudioContext || window.AudioContext || {prototype: {}} as typeof AudioContext).prototype.createMediaStreamDestination) return false; //Required, but not available within edge
         return true;
     }
 
     javascript_encoding_supported() : boolean {
-        if(!RTCPeerConnection.prototype.createDataChannel) return false;
+        if(!(window.RTCPeerConnection || {prototype: {}} as typeof RTCPeerConnection).prototype.createDataChannel) return false;
         return true;
     }
 
@@ -183,7 +183,11 @@ class VoiceConnection {
     }
 
     private setup_native() {
-        if(!this.native_encoding_supported()) return;
+        log.info(LogCategory.VOICE, "Setting up native voice stream!");
+        if(!this.native_encoding_supported()) {
+            log.warn(LogCategory.VOICE, "Native codec isnt supported!");
+            return;
+        }
 
         this.voiceRecorder.on_data = undefined;
 

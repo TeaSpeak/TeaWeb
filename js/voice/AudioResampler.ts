@@ -17,7 +17,7 @@ class AudioResampler {
             return new Promise<AudioBuffer>(resolve => resolve(buffer));
 
         let context;
-        context = new (webkitOfflineAudioContext || OfflineAudioContext)(buffer.numberOfChannels, Math.ceil(buffer.length * this.targetSampleRate / buffer.sampleRate), this.targetSampleRate);
+        context = new (window.webkitOfflineAudioContext || window.OfflineAudioContext)(buffer.numberOfChannels, Math.ceil(buffer.length * this.targetSampleRate / buffer.sampleRate), this.targetSampleRate);
 
         let source = context.createBufferSource();
         source.buffer = buffer;

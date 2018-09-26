@@ -173,3 +173,13 @@ function calculate_width(text: string) : number {
     element.detach();
     return size;
 }
+
+declare class webkitAudioContext extends AudioContext {}
+declare class webkitOfflineAudioContext extends OfflineAudioContext {}
+interface Window {
+    readonly webkitAudioContext: typeof webkitAudioContext;
+    readonly AudioContext: typeof webkitAudioContext;
+    readonly OfflineAudioContext: typeof OfflineAudioContext;
+    readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
+    readonly RTCPeerConnection: typeof RTCPeerConnection;
+}

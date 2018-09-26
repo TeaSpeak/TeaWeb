@@ -92,8 +92,8 @@ function main() {
 app.loadedListener.push(() => {
     try {
         main();
-        if(!AudioController.initialized) {
-            console.log("Initialize audio controller later!");
+        if(!AudioController.initialized()) {
+            log.info(LogCategory.VOICE, "Initialize audio controller later!");
             $(document).one('click', event => AudioController.initializeFromGesture());
         }
     } catch (ex) {

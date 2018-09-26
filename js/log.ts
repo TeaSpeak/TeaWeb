@@ -4,7 +4,8 @@ enum LogCategory {
     SERVER,
     PERMISSIONS,
     GENERAL,
-    NETWORKING
+    NETWORKING,
+    VOICE
 }
 
 namespace log {
@@ -22,7 +23,8 @@ namespace log {
         [LogCategory.SERVER,        "Server     "],
         [LogCategory.PERMISSIONS,   "Permission "],
         [LogCategory.GENERAL,       "General    "],
-        [LogCategory.NETWORKING,    "Network    "]
+        [LogCategory.NETWORKING,    "Network    "],
+        [LogCategory.VOICE,         "Voice      "]
     ]);
 
     function logDirect(type: LogType, message: string, ...optionalParams: any[]) {

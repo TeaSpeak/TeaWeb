@@ -18,7 +18,6 @@ class AVGCalculator {
     }
 }
 
-declare class webkitOfflineAudioContext extends OfflineAudioContext {}
 abstract class BasicCodec implements Codec {
     protected _audioContext: OfflineAudioContext;
     protected _decodeResampler: AudioResampler;
@@ -33,7 +32,7 @@ abstract class BasicCodec implements Codec {
     constructor(codecSampleRate: number) {
         this.channelCount = 1;
         this.samplesPerUnit = 960;
-        this._audioContext = new (webkitOfflineAudioContext || OfflineAudioContext)(AudioController.globalContext.destination.channelCount, 1024,AudioController.globalContext.sampleRate );
+        this._audioContext = new (window.webkitOfflineAudioContext || window.OfflineAudioContext)(AudioController.globalContext.destination.channelCount, 1024,AudioController.globalContext.sampleRate );
         this._codecSampleRate = codecSampleRate;
         this._decodeResampler = new AudioResampler(AudioController.globalContext.sampleRate);
         this._encodeResampler = new AudioResampler(codecSampleRate);
