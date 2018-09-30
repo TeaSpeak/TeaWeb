@@ -82,9 +82,9 @@ class GroupManager {
 
     static sorter() : (a: Group, b: Group) => number {
         return (a, b) => {
-            if(a.properties.sortid < b.properties.sortid)
-                return 1;
             if(a.properties.sortid > b.properties.sortid)
+                return 1;
+            if(a.properties.sortid < b.properties.sortid)
                 return -1;
 
             if(a.id < b.id)

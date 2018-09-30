@@ -663,6 +663,8 @@ class LocalClientEntry extends ClientEntry {
                 },
                 type: MenuEntryType.ENTRY
             },
+            MenuEntry.HR(),
+            ...this.assignment_context(),
             MenuEntry.CLOSE(on_close)
         );
     }

@@ -7,7 +7,7 @@ namespace Modals {
                 let groups = tag["groups"] = [];
 
                 tag["client_name"] = client.clientNickName();
-                for(let group of client.channelTree.client.groups.serverGroups) {
+                for(let group of client.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
                     if(group.type != GroupType.NORMAL) continue;
 
                     let entry = {} as any;
