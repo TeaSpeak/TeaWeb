@@ -1,7 +1,9 @@
 # Changelog:
 * **30.09.18**
     - Added the permission system (Assignments and management)
-
+    * Fixed poke and client description with empty message
+    * Fixed channel tree icons
+    
 * **26.09.18**:
     - Added Safari support
     

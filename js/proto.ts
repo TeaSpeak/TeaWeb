@@ -109,7 +109,9 @@ if(typeof ($) !== "undefined") {
     if(!$.prototype.renderTag) {
         $.prototype.renderTag = function (values?: any) : JQuery {
             let result = $(this.render(values));
-            result.find("node").each((index, element) => { $(element).replaceWith(values[$(element).attr("key")]); });
+            result.find("node").each((index, element) => {
+                $(element).replaceWith(values[$(element).attr("key")] || values[0][$(element).attr("key")]);
+            });
             return result;
         }
     }

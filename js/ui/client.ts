@@ -228,7 +228,7 @@ class ClientEntry {
                 name: "Poke client",
                 callback: function () {
                     createInputModal("Poke client", "Poke message:<br>", text => true, result => {
-                        if(result) {
+                        if(typeof(result) === "string") {
                             console.log("Poking client " + _this.clientNickName() + " with message " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientpoke", {
                                 clid: _this.clientId(),
@@ -244,7 +244,7 @@ class ClientEntry {
                 name: "Change description",
                 callback: function () {
                     createInputModal("Change client description", "New description:<br>", text => true, result => {
-                        if(result) {
+                        if(typeof(result) === "string") {
                             console.log("Changing " + _this.clientNickName() + "'s description to " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientedit", {
                                 clid: _this.clientId(),
@@ -501,9 +501,18 @@ class ClientEntry {
             }
             if(variable.key == "client_icon_id")
                 this.updateClientIcon();
+            if(variable.key =="client_channel_group_id" || variable.key == "client_servergroups")
+                this.updateGroupIcons();
         }
 
         group.end();
+    }
+
+    updateGroupIcons() {
+        this.tag.find("span .group_icons").children().detach();
+        for(let id of this.assignedServerGroupIds())
+            this.updateGroupIcon(this.channelTree.client.groups.serverGroup(id));
+        this.updateGroupIcon(this.channelTree.client.groups.channelGroup(this.properties.client_channel_group_id));
     }
 
     updateClientVariables(){
