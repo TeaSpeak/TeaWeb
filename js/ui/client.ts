@@ -110,7 +110,7 @@ class ClientEntry {
     protected assignment_context() : ContextMenuEntry[] {
         let server_groups: ContextMenuEntry[] = [];
         for(let group of this.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
-            if(group.type == GroupType.NORMAL) continue;
+            if(group.type != GroupType.NORMAL) continue;
 
             let entry: ContextMenuEntry = {} as any;
 
@@ -553,6 +553,7 @@ class ClientEntry {
     }
 
     updateGroupIcon(group: Group) {
+        if(!group) return;
         //TODO group icon order
         this.tag.find(".group_icons .icon_group_" + group.id).detach();
 

@@ -8,11 +8,13 @@ abstract class InfoManagerBase {
     protected resetTimers() {
         for(let timer of this.timers)
             clearTimeout(timer);
+        this.timers = [];
     }
 
     protected resetIntervals() {
         for(let interval of this.intervals)
             clearInterval(interval);
+        this.intervals = [];
     }
 
     protected registerTimer(timer: NodeJS.Timer) {
@@ -116,7 +118,7 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
 
         let properties = this.buildProperties(client);
 
-        let rendered = $("#tmpl_selected_client").renderTag([properties]);
+        let rendered = $("#tmpl_selected_client").renderTag(properties);
         html_tag.append(rendered);
 
         this.registerInterval(setInterval(() => {
