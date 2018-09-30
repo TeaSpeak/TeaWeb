@@ -18,6 +18,11 @@ class GroupProperties {
     namemode: number = 0;
 }
 
+class GroupPermissionRequest {
+    group_id: number;
+    promise: LaterPromise<PermissionValue[]>;
+}
+
 class Group {
     properties: GroupProperties = new GroupProperties();
 
@@ -30,6 +35,7 @@ class Group {
     requiredModifyPower: number = 0;
     requiredMemberAddPower: number = 0;
     requiredMemberRemovePower: number = 0;
+
 
     constructor(handle: GroupManager, id: number, target: GroupTarget, type: GroupType, name: string) {
         this.handle = handle;
@@ -58,11 +64,15 @@ class GroupManager {
     serverGroups: Group[] = [];
     channelGroups: Group[] = [];
 
+    private requests_group_permissions: GroupPermissionRequest[] = [];
     constructor(client: TSClient) {
         this.handle = client;
 
         this.handle.serverConnection.commandHandler["notifyservergrouplist"] = this.onServerGroupList.bind(this);
         this.handle.serverConnection.commandHandler["notifychannelgrouplist"] = this.onServerGroupList.bind(this);
+
+        this.handle.serverConnection.commandHandler["notifyservergrouppermlist"] = this.onPermissionList.bind(this);
+        this.handle.serverConnection.commandHandler["notifychannelgrouppermlist"] = this.onPermissionList.bind(this);
     }
 
     requestGroups(){
@@ -145,4 +155,47 @@ class GroupManager {
         console.log("Got " + json.length + " new " + target + " groups:");
     }
 
+    request_permissions(group: Group) : Promise<PermissionValue[]> { //database_empty_result
+        for(let request of this.requests_group_permissions)
+            if(request.group_id == group.id && request.promise.time() + 1000 > Date.now())
+                return request.promise;
+        let req = new GroupPermissionRequest();
+        req.group_id = group.id;
+        req.promise = new LaterPromise<PermissionValue[]>();
+        this.requests_group_permissions.push(req);
+
+        this.handle.serverConnection.sendCommand(group.target == GroupTarget.SERVER ? "servergrouppermlist" : "channelgrouppermlist", {
+            cgid: group.id,
+            sgid: group.id
+        }).catch(error => {
+            if(error instanceof CommandResult && error.id == 0x0501)
+                req.promise.resolved([]);
+            else
+                req.promise.rejected(error);
+        });
+        return req.promise;
+    }
+
+    private onPermissionList(json: any[]) {
+        let group = json[0]["sgid"] ? this.serverGroup(parseInt(json[0]["sgid"])) : this.channelGroup(parseInt(json[0]["cgid"]));
+        if(!group) {
+            log.error(LogCategory.PERMISSIONS, "Got group permissions for group %o/%o, but its not a registered group!", json[0]["sgid"], json[0]["cgid"]);
+            return;
+        }
+        let requests: GroupPermissionRequest[] = [];
+        for(let req of this.requests_group_permissions)
+            if(req.group_id == group.id)
+                requests.push(req);
+
+        if(requests.length == 0) {
+            log.warn(LogCategory.PERMISSIONS, "Got group permissions for group %o/%o, but it was never requested!", json[0]["sgid"], json[0]["cgid"]);
+            return;
+        }
+
+        let permissions = PermissionManager.parse_permission_bulk(json, this.handle.permissions);
+        for(let req of requests) {
+            this.requests_group_permissions.remove(req);
+            req.promise.resolved(permissions);
+        }
+    }
 }

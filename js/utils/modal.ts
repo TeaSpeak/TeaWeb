@@ -1,5 +1,5 @@
 $(document).on("mousedown",function (e) {
-    if($(e.target).parents(".modal").length == 0){
+    if($(e.target).parents("#contextMenu").length == 0 && $(e.target).parents(".modal").length == 0){
         $(".modal:visible").last().find(".close").trigger("click");
     }
 });

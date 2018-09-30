@@ -117,7 +117,6 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
         let properties = this.buildProperties(client);
 
         let rendered = $("#tmpl_selected_client").renderTag([properties]);
-        rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
         html_tag.append(rendered);
 
         this.registerInterval(setInterval(() => {
@@ -190,7 +189,6 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
             properties["property_" + key] = server.properties[key];
 
         let rendered = $("#tmpl_selected_server").renderTag([properties]);
-        rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
 
         this.registerInterval(setInterval(() => {
             html_tag.find(".update_onlinetime").text(formatDate(server.calculateUptime()));
@@ -255,7 +253,6 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
         });
 
         let rendered = $("#tmpl_selected_channel").renderTag([properties]);
-        rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
         html_tag.append(rendered);
     }
 
@@ -478,7 +475,6 @@ class MusicInfoManager extends ClientInfoManager {
         }
 
         let rendered = $("#tmpl_selected_music").renderTag([properties]);
-        rendered.find("node").each((index, element) => { $(element).replaceWith(properties[$(element).attr("key")]); });
         html_tag.append(rendered);
     }
 

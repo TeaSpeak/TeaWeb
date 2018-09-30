@@ -36,7 +36,7 @@ class ChannelTree {
             this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT).granted(1) ||
             this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_PERMANENT).granted(1);
 
-        spawnMenu(x, y,
+        spawn_context_menu(x, y,
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_create",

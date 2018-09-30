@@ -57,7 +57,7 @@ class AudioController {
     }
 
     static initialized() : boolean {
-        return this.globalContext.state === "running";
+        return (this.globalContext || {state: ""}).state === "running";
     }
 
     static on_initialized(callback: () => any) {

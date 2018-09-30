@@ -37,6 +37,7 @@ class ServerConnection {
     _handshakeHandler: HandshakeHandler;
     commandHandler: ConnectionCommandHandler;
 
+    readonly helper: CommandHelper;
     private _connectTimeoutHandler: NodeJS.Timer = undefined;
     private _connected: boolean = false;
     private _retCodeIdx: number;
@@ -47,6 +48,7 @@ class ServerConnection {
 
         this._socket = null;
         this.commandHandler = new ConnectionCommandHandler(this);
+        this.helper = new CommandHelper(this);
         this._retCodeIdx = 0;
         this._retListener = [];
     }
@@ -348,6 +350,73 @@ class HandshakeHandler {
                 }
             }
         });
+    }
+}
+
+interface ClientNameInfo {
+    //cluid=tYzKUryn\/\/Y8VBMf8PHUT6B1eiE= name=Exp clname=Exp cldbid=9
+    client_unique_id: string;
+    client_nickname: string;
+    client_database_id: number;
+}
+
+interface ClientNameFromUid {
+    promise: LaterPromise<ClientNameInfo[]>,
+    keys: string[],
+    response: ClientNameInfo[]
+}
+
+class CommandHelper {
+    readonly connection: ServerConnection;
+
+    private _callbacks_namefromuid: ClientNameFromUid[] = [];
+
+    constructor(connection) {
+        this.connection = connection;
+        this.connection.commandHandler["notifyclientnamefromuid"] = this.handle_notifyclientnamefromuid.bind(this);
+    }
+
+    info_from_uid(...uid: string[]) : Promise<ClientNameInfo[]> {
+        let uids = [...uid];
+        for(let p of this._callbacks_namefromuid)
+            if(p.keys == uids) return p.promise;
+
+        let req: ClientNameFromUid = {} as any;
+        req.keys = uids;
+        req.response = new Array(uids.length);
+        req.promise = new LaterPromise<ClientNameInfo[]>();
+
+        for(let uid of uids) {
+            this.connection.sendCommand("clientgetnamefromuid", {
+                cluid: uid
+            }).catch(req.promise.function_rejected());
+        }
+
+        this._callbacks_namefromuid.push(req);
+        return req.promise;
+    }
+
+    private handle_notifyclientnamefromuid(json: any[]) {
+        for(let entry of json) {
+            let info: ClientNameInfo = {} as any;
+            info.client_unique_id = entry["cluid"];
+            info.client_nickname = entry["clname"];
+            info.client_database_id = parseInt(entry["cldbid"]);
+
+            for(let elm of this._callbacks_namefromuid.slice(0)) {
+                let unset = 0;
+                for(let index = 0; index < elm.keys.length; index++) {
+                    if(elm.keys[index] == info.client_unique_id) {
+                        elm.response[index] = info;
+                    }
+                    if(elm.response[index] == undefined) unset++;
+                }
+                if(unset == 0) {
+                    this._callbacks_namefromuid.remove(elm);
+                    elm.promise.resolved(elm.response);
+                }
+            }
+        }
     }
 }
 

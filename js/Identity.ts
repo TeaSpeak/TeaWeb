@@ -43,6 +43,9 @@ namespace TSIdentityHelper {
     export function unwarpString(str) : string {
         if(str == "") return "";
         try {
+            if(!$.isFunction(window.Pointer_stringify) || !$.isFunction(Pointer_stringify)) {
+                displayCriticalError("Missing required wasm function!<br>Please reload the page!", false);
+            }
             let message: string = Pointer_stringify(str);
             functionDestroyString(str);
             return message;

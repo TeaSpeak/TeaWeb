@@ -1,0 +1,137 @@
+.context-menu {
+	overflow: visible;
+	display: none;
+	z-index: 1000;
+	position: absolute;
+	border: 1px solid #CCC;
+	white-space: nowrap;
+	font-family: sans-serif;
+	background: #FFF;
+	color: #333;
+	padding: 3px;
+
+	* {
+		font-family: Arial, serif;
+		font-size: 12px;
+		white-space: pre;
+		line-height: 1;
+		vertical-align: middle;
+	}
+
+	.entry {
+		/*padding: 8px 12px;*/
+		padding-right: 12px;
+		cursor: pointer;
+		list-style-type: none;
+		transition: all .3s ease;
+		user-select: none;
+		align-items: center;
+
+		display: flex;
+
+		&.disabled {
+			background-color: lightgray;
+			cursor: not-allowed;
+		}
+
+		&:hover:not(.disabled) {
+			background-color: #DEF;
+		}
+	}
+
+	.icon_empty, .icon {
+		margin-right: 4px;
+	}
+
+	.arrow {
+		cursor: pointer;
+		pointer-events: all;
+		width: 7px;
+		height: 7px;
+		padding: 0;
+		margin-right: 5px;
+		margin-left: 5px;
+
+		position: absolute;
+		right: 3px;
+	}
+
+	.sub-container {
+		padding-right: 3px;
+		position: relative;
+
+		&:hover {
+			.sub-menu {
+				display: block;
+			}
+		}
+	}
+
+	.sub-menu {
+		display: none;
+		left: 100%;
+		top: -4px;
+		position: absolute;
+		margin-left: 3px;
+	}
+
+	.checkbox {
+		margin-top: 1px;
+		margin-left: 1px;
+		display: block;
+		position: relative;
+		padding-left: 14px;
+		margin-bottom: 12px;
+		cursor: pointer;
+		font-size: 22px;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+
+		/* Hide the browser's default checkbox */
+		input {
+			position: absolute;
+			opacity: 0;
+			cursor: pointer;
+			display: none;
+		}
+
+		.checkmark {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 11px;
+			width: 11px;
+			background-color: #eee;
+
+			&:after {
+				content: "";
+				position: absolute;
+				display: none;
+
+				left: 4px;
+				top: 1px;
+				width: 3px;
+				height: 7px;
+				border: solid white;
+				border-width: 0 2px 2px 0;
+				-webkit-transform: rotate(45deg);
+				-ms-transform: rotate(45deg);
+				transform: rotate(45deg);
+			}
+		}
+
+		&:hover input ~ .checkmark {
+			background-color: #ccc;
+		}
+
+		input:checked ~ .checkmark {
+			background-color: #2196F3;
+		}
+
+		input:checked ~ .checkmark:after {
+			display: block;
+		}
+	}
+}

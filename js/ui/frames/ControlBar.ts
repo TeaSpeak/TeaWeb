@@ -35,7 +35,7 @@ class ControlBar {
         this.htmlTag.find(".btn_mute_input").on('click', this.onInputMute.bind(this));
         this.htmlTag.find(".btn_mute_output").on('click', this.onOutputMute.bind(this));
         this.htmlTag.find(".btn_open_settings").on('click', this.onOpenSettings.bind(this));
-
+        this.htmlTag.find(".btn_permissions").on('click', this.onPermission.bind(this));
         {
             let tokens = this.htmlTag.find(".btn_token");
             tokens.find(".button-dropdown").on('click', () => {
@@ -246,5 +246,14 @@ class ControlBar {
 
     private on_token_list() {
         createErrorModal("Not implemented", "Token list is not implemented yet!").open();
+    }
+
+    private onPermission() {
+        let button = this.htmlTag.find(".btn_permissions");
+        button.addClass("activated");
+        setTimeout(() => {
+            Modals.spawnPermissionEdit().open();
+            button.removeClass("activated");
+        }, 0);
     }
 }

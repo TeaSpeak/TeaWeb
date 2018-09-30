@@ -121,7 +121,7 @@ class ServerEntry {
     }
 
     spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
-        spawnMenu(x, y, {
+        spawn_context_menu(x, y, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-virtualserver_edit",
                 name: "Edit",

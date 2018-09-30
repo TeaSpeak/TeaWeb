@@ -341,7 +341,7 @@ class ChannelEntry {
                 flagDelete = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_DELETE_TEMPORARY).granted(1);
         }
 
-        spawnMenu(x, y, {
+        spawn_context_menu(x, y, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_switch",
                 name: "<b>Switch to channel</b>",

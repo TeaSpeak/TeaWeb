@@ -294,9 +294,26 @@ class PermissionInfo {
     description: string;
 }
 
+class PermissionGroup {
+    begin: number;
+    end: number;
+    deep: number;
+    name: string;
+}
+
+class GroupedPermissions {
+    group: PermissionGroup;
+    permissions: PermissionInfo[];
+    children: GroupedPermissions[];
+    parent: GroupedPermissions;
+}
+
 class PermissionValue {
     readonly type: PermissionInfo;
     value: number;
+    flag_skip: boolean;
+    flag_negate: boolean;
+    granted_value: number;
 
     constructor(type, value) {
         this.type = type;
@@ -330,16 +347,95 @@ class ChannelPermissionRequest {
     callback_error: ((_: any) => any)[] = [];
 }
 
+class TeaPermissionRequest {
+    client_id?: number;
+    channel_id?: number;
+    promise: LaterPromise<PermissionValue[]>;
+}
+
 class PermissionManager {
     readonly handle: TSClient;
 
     permissionList: PermissionInfo[] = [];
+    permissionGroups: PermissionGroup[] = [];
     neededPermissions: NeededPermissionValue[] = [];
 
     requests_channel_permissions: ChannelPermissionRequest[] = [];
+    requests_client_permissions: TeaPermissionRequest[] = [];
+    requests_client_channel_permissions: TeaPermissionRequest[] = [];
 
     initializedListener: ((initialized: boolean) => void)[] = [];
     private _cacheNeededPermissions: any;
+
+    /* Static info mapping until TeaSpeak implements a detailed info */
+    static readonly group_mapping: {name: string, deep: number}[] = [
+        {name: "Global", deep: 0},
+            {name: "Information", deep: 1},
+            {name: "Virtual server management", deep: 1},
+            {name: "Administration", deep: 1},
+            {name: "Settings", deep: 1},
+        {name: "Virtual Server", deep: 0},
+            {name: "Information", deep: 1},
+            {name: "Administration", deep: 1},
+            {name: "Settings", deep: 1},
+        {name: "Channel", deep: 0},
+            {name: "Information", deep: 1},
+            {name: "Create", deep: 1},
+            {name: "Modify", deep: 1},
+            {name: "Delete", deep: 1},
+            {name: "Access", deep: 1},
+        {name: "Group", deep: 0},
+            {name: "Information", deep: 1},
+            {name: "Create", deep: 1},
+            {name: "Modify", deep: 1},
+            {name: "Delete", deep: 1},
+        {name: "Client", deep: 0},
+            {name: "Information", deep: 1},
+            {name: "Admin", deep: 1},
+            {name: "Basics", deep: 1},
+            {name: "Modify", deep: 1},
+        //TODO Music bot
+        {name: "File Transfer", deep: 0},
+    ];
+    private _group_mapping;
+
+    public static parse_permission_bulk(json: any[], manager: PermissionManager) : PermissionValue[] {
+        let permissions: PermissionValue[] = [];
+        for(let perm of json) {
+            let perm_id = parseInt(perm["permid"]);
+            let perm_grant = (perm_id & (1 << 15)) > 0;
+            if(perm_grant)
+                perm_id &= ~(1 << 15);
+
+            let perm_info = manager.resolveInfo(perm_id);
+            if(!perm_info) {
+                log.warn(LogCategory.PERMISSIONS, "Got unknown permission id (%o/%o (%o))!", perm["permid"], perm_id, perm["permsid"]);
+                return;
+            }
+
+            let permission: PermissionValue;
+            for(let ref_perm of permissions) {
+                if(ref_perm.type == perm_info) {
+                    permission = ref_perm;
+                    break;
+                }
+            }
+            if(!permission) {
+                permission = new PermissionValue(perm_info, 0);
+                permission.granted_value = undefined;
+                permission.value = undefined;
+                permissions.push(permission);
+            }
+            if(perm_grant) {
+                permission.granted_value = parseInt(perm["permvalue"]);
+            } else {
+                permission.value = parseInt(perm["permvalue"]);
+                permission.flag_negate = perm["permnegated"] == "1";
+                permission.flag_skip = perm["permskip"] == "1";
+            }
+        }
+        return permissions;
+    }
 
     constructor(client: TSClient) {
         this.handle = client;
@@ -347,6 +443,7 @@ class PermissionManager {
         this.handle.serverConnection.commandHandler["notifyclientneededpermissions"] = this.onNeededPermissions.bind(this);
         this.handle.serverConnection.commandHandler["notifypermissionlist"] = this.onPermissionList.bind(this);
         this.handle.serverConnection.commandHandler["notifychannelpermlist"] = this.onChannelPermList.bind(this);
+        this.handle.serverConnection.commandHandler["notifyclientpermlist"] = this.onClientPermList.bind(this);
     }
 
     initialized() : boolean {
@@ -359,10 +456,25 @@ class PermissionManager {
 
     private onPermissionList(json) {
         this.permissionList = [];
+        this.permissionGroups = [];
+        this._group_mapping = PermissionManager.group_mapping.slice();
 
         let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, "Permission mapping");
         for(let e of json) {
-            if(e["group_id_end"]) continue; //Skip all group ids (may use later?)
+            if(e["group_id_end"]) {
+                let group = new PermissionGroup();
+                group.begin = this.permissionGroups.length ? this.permissionGroups.last().end : 0;
+                group.end = parseInt(e["group_id_end"]);
+                group.deep = 0;
+                group.name = "Group " + e["group_id_end"];
+
+                let info = this._group_mapping.pop_front();
+                if(info) {
+                    group.name = info.name;
+                    group.deep = info.deep;
+                }
+                this.permissionGroups.push(group);
+            }
 
             let perm = new PermissionInfo();
             perm.name = e["permname"];
@@ -430,19 +542,9 @@ class PermissionManager {
     }
 
     private onChannelPermList(json) {
-       let permissions: PermissionValue[] = [];
        let channelId: number = parseInt(json[0]["cid"]);
-       for(let element of json) {
-           let permission = this.resolveInfo(element["permid"]);
-           //TODO granted skipped and negated permissions
-           if(!permission) {
-               log.error(LogCategory.PERMISSIONS, "Failed to parse channel permission with id %o", element["permid"]);
-               continue;
-           }
 
-           permissions.push(new PermissionValue(permission, element["permvalue"]));
-       }
-
+       let permissions = PermissionManager.parse_permission_bulk(json, this.handle.permissions);
        log.debug(LogCategory.PERMISSIONS, "Got channel permissions for channel %o", channelId);
        for(let element of this.requests_channel_permissions) {
            if(element.channel_id == channelId) {
@@ -466,7 +568,7 @@ class PermissionManager {
         return new Promise<PermissionValue[]>((resolve, reject) => {
              let request: ChannelPermissionRequest;
              for(let element of this.requests_channel_permissions)
-                 if(element.requested + 1000 < Date.now() && request.channel_id == channelId) {
+                 if(element.requested + 1000 < Date.now() && element.channel_id == channelId) {
                     request = element;
                     break;
                  }
@@ -482,6 +584,58 @@ class PermissionManager {
         });
     }
 
+    requestClientPermissions(client_id: number) : Promise<PermissionValue[]> {
+        for(let request of this.requests_client_permissions)
+            if(request.client_id == client_id && request.promise.time() + 1000 > Date.now())
+                return request.promise;
+
+        let request: TeaPermissionRequest = {} as any;
+        request.client_id = client_id;
+        request.promise = new LaterPromise<PermissionValue[]>();
+
+        this.handle.serverConnection.sendCommand("clientpermlist", {cldbid: client_id}).catch(error => {
+            if(error instanceof CommandResult && error.id == 0x0501)
+                request.promise.resolved([]);
+            else
+                request.promise.rejected(error);
+        });
+
+        this.requests_client_permissions.push(request);
+        return request.promise;
+    }
+
+    requestClientChannelPermissions(client_id: number, channel_id: number) : Promise<PermissionValue[]> {
+        for(let request of this.requests_client_channel_permissions)
+            if(request.client_id == client_id && request.channel_id == channel_id && request.promise.time() + 1000 > Date.now())
+                return request.promise;
+
+        let request: TeaPermissionRequest = {} as any;
+        request.client_id = client_id;
+        request.channel_id = channel_id;
+        request.promise = new LaterPromise<PermissionValue[]>();
+
+        this.handle.serverConnection.sendCommand("channelclientpermlist", {cldbid: client_id, cid: channel_id}).catch(error => {
+            if(error instanceof CommandResult && error.id == 0x0501)
+                request.promise.resolved([]);
+            else
+                request.promise.rejected(error);
+        });
+
+        this.requests_client_channel_permissions.push(request);
+        return request.promise;
+    }
+
+    private onClientPermList(json: any[]) {
+        let client = parseInt(json[0]["cldbid"]);
+        let permissions = PermissionManager.parse_permission_bulk(json, this);
+        for(let req of this.requests_client_permissions.slice(0)) {
+            if(req.client_id == client) {
+                this.requests_client_permissions.remove(req);
+                req.promise.resolved(permissions);
+            }
+        }
+    }
+
     neededPermission(key: number | string | PermissionType | PermissionInfo) : PermissionValue {
         for(let perm of this.neededPermissions)
             if(perm.type.id == key || perm.type.name == key || perm.type == key)
@@ -495,6 +649,43 @@ class PermissionManager {
         let result = new NeededPermissionValue(info, -2);
         this.neededPermissions.push(result);
         return result;
+    }
 
+    groupedPermissions() : GroupedPermissions[] {
+        let result: GroupedPermissions[] = [];
+        let current: GroupedPermissions;
+
+        for(let group of this.permissionGroups) {
+            if(group.deep == 0) {
+                current = new GroupedPermissions();
+                current.group = group;
+                current.parent = undefined;
+                current.children = [];
+                current.permissions = [];
+                result.push(current);
+            } else {
+                if(!current) {
+                    throw "invalid order!";
+                } else {
+                    while(group.deep <= current.group.deep)
+                        current = current.parent;
+
+                    let parent = current;
+                    current = new GroupedPermissions();
+                    current.group = group;
+                    current.parent = parent;
+                    current.children = [];
+                    current.permissions = [];
+                    parent.children.push(current);
+                }
+            }
+
+            for(let permission of this.permissionList)
+                if(permission.id > current.group.begin && permission.id <= current.group.end)
+                    current.permissions.push(permission);
+
+        }
+
+        return result;
     }
 }

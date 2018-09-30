@@ -159,6 +159,8 @@ function loadDebug() {
         "js/ui/modal/ModalChangeVolume.js",
         "js/ui/modal/ModalBanClient.js",
         "js/ui/modal/ModalYesNo.js",
+        "js/ui/modal/ModalPermissionEdit.js",
+        "js/ui/modal/ModalServerGroupDialog.js",
 
         "js/ui/channel.js",
         "js/ui/client.js",
@@ -261,13 +263,6 @@ function loadTemplates() {
         console.log(error);
         displayCriticalError("Could not load HTML templates!", false);
     });
-}
-
-interface Navigator {
-    browserSpecs: {
-        name: string,
-        version: string
-    }
 }
 
 navigator.browserSpecs = (function(){

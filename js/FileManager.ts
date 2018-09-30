@@ -321,7 +321,7 @@ class IconManager {
     }
 
     //$("<img width=\"16\" height=\"16\" alt=\"tick\" src=\"data:image/png;base64," + value.base64 + "\">")
-    generateTag(id: number) {
+    generateTag(id: number) : JQuery<HTMLDivElement> {
         if(id == 0)
             return $("<div class='icon_empty'></div>");
         else if(id < 1000)

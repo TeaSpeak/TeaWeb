@@ -87,6 +87,8 @@ function main() {
         console.log("Response: " + flag);
     })
     */
+
+    //Modals.spawnPermissionEdit();
 }
 
 app.loadedListener.push(() => {

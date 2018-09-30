@@ -1,7 +1,7 @@
 
 interface JQuery {
-    asTabWidget() : JQuery;
-    tabify() : this;
+    asTabWidget(copy?: boolean) : JQuery;
+    tabify(copy?: boolean) : this;
 
     changeElementType(type: string) : JQuery;
 }
@@ -21,8 +21,8 @@ if(typeof (customElements) !== "undefined") {
 }
 
 var TabFunctions = {
-    tabify(template: JQuery) : JQuery {
-        console.log("Tabify:");
+    tabify(template: JQuery, copy: boolean = true) : JQuery {
+        console.log("Tabify: copy=" + copy);
         console.log(template);
 
         let tag = $.spawn("div");
@@ -40,10 +40,13 @@ var TabFunctions = {
         template.find("x-entry").each(function () {
             let hentry = $.spawn("div");
             hentry.addClass("entry");
-            hentry.append($(this).find("x-tag").clone(true, true));
+            if(copy)
+                hentry.append($(this).find("x-tag").clone(true, true));
+            else
+                hentry.append($(this).find("x-tag"));
 
             const _this = $(this);
-            const _entryContent = _this.find("x-content").clone(true, true);
+            const _entryContent = copy ? _this.find("x-content").clone(true, true) : _this.find("x-content");
             silentContent.append(_entryContent);
             hentry.on("click", function () {
                 if(hentry.hasClass("selected")) return;
@@ -72,9 +75,9 @@ var TabFunctions = {
 }
 
 if(!$.fn.asTabWidget) {
-    $.fn.asTabWidget = function () : JQuery {
+    $.fn.asTabWidget = function (copy?: boolean) : JQuery {
         if($(this).prop("tagName") == "X-TAB")
-            return TabFunctions.tabify($(this));
+            return TabFunctions.tabify($(this), typeof(copy) === "boolean" ? copy : true);
         else {
             throw "Invalid tag! " + $(this).prop("tagName");
         }
@@ -82,13 +85,13 @@ if(!$.fn.asTabWidget) {
 }
 
 if(!$.fn.tabify) {
-    $.fn.tabify = function () {
+    $.fn.tabify = function (copy?: boolean) {
         try {
-            let self = this.asTabWidget();
+            let self = this.asTabWidget(copy);
             this.replaceWith(self);
         } catch(object) {}
         this.find("x-tab").each(function () {
-            $(this).replaceWith($(this).asTabWidget());
+            $(this).replaceWith($(this).asTabWidget(copy));
         });
         return this;
     }

@@ -85,4 +85,281 @@
   .settings_advanced .group_box fieldset, .settings_advanced .group_box fieldset > div {
     width: 100%; }
 
+.permission-explorer {
+  width: 100%;
+  display: grid;
+  grid-template-rows: min-content auto;
+  grid-gap: 5px; }
+  .permission-explorer .bar-filter {
+    display: grid;
+    grid-gap: 5px;
+    grid-template-columns: max-content auto max-content; }
+    .permission-explorer .bar-filter input[type="text"] {
+      width: 100%; }
+  .permission-explorer.disabled {
+    pointer-events: none; }
+    .permission-explorer.disabled .overlay-disabled {
+      display: block; }
+    .permission-explorer.disabled input {
+      background-color: #00000033; }
+  .permission-explorer .overlay-disabled {
+    display: none;
+    position: absolute;
+    background-color: #00000033;
+    z-index: 1000;
+    height: 100%;
+    width: 100%; }
+  .permission-explorer .list {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    border: lightgray solid 2px;
+    user-select: none;
+    padding-bottom: 2px;
+    overflow-y: scroll;
+    overflow-x: hidden; }
+    .permission-explorer .list .header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background-color: lightgray;
+      padding-left: 0 !important; }
+      .permission-explorer .list .header > div {
+        border: grey solid;
+        border-width: 0 2px 0 0;
+        padding-left: 2px; }
+      .permission-explorer .list .header > div:last-of-type {
+        border: none; }
+    .permission-explorer .list > .entry {
+      padding-left: 4px; }
+    .permission-explorer .list .entry {
+      display: grid;
+      grid-template-columns: auto 100px 100px 100px 100px; }
+      .permission-explorer .list .entry > div {
+        padding-left: 2px; }
+      .permission-explorer .list .entry.selected {
+        background-color: #11111122; }
+      .permission-explorer .list .entry.unset > .permission-value, .permission-explorer .list .entry.unset > .permission-skip, .permission-explorer .list .entry.unset > .permission-negate {
+        visibility: hidden; }
+      .permission-explorer .list .entry.unset > .permission-name {
+        color: lightgray; }
+    .permission-explorer .list .group {
+      grid-template-columns: auto;
+      grid-template-rows: auto auto; }
+      .permission-explorer .list .group .group-entries {
+        margin-left: 50px; }
+      .permission-explorer .list .group .title.selected {
+        background-color: #11111122; }
+    .permission-explorer .list .arrow {
+      cursor: pointer;
+      pointer-events: all;
+      width: 7px;
+      height: 7px;
+      padding: 0;
+      margin-right: 5px;
+      margin-left: 3px; }
+    .permission-explorer .list input {
+      border: none;
+      background: transparent;
+      vertical-align: text-bottom;
+      max-width: 90%; }
+    .permission-explorer .list .checkbox {
+      margin-top: 1px;
+      margin-left: 1px;
+      display: block;
+      position: relative;
+      padding-left: 35px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      font-size: 22px;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      /* Hide the browser's default checkbox */ }
+      .permission-explorer .list .checkbox input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer; }
+      .permission-explorer .list .checkbox .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 16px;
+        width: 16px;
+        background-color: #eee; }
+        .permission-explorer .list .checkbox .checkmark:after {
+          content: "";
+          position: absolute;
+          display: none;
+          left: 6px;
+          top: 2px;
+          width: 5px;
+          height: 10px;
+          border: solid white;
+          border-width: 0 3px 3px 0;
+          -webkit-transform: rotate(45deg);
+          -ms-transform: rotate(45deg);
+          transform: rotate(45deg); }
+      .permission-explorer .list .checkbox:hover input ~ .checkmark {
+        background-color: #ccc; }
+      .permission-explorer .list .checkbox input:checked ~ .checkmark {
+        background-color: #2196F3; }
+      .permission-explorer .list .checkbox input:checked ~ .checkmark:after {
+        display: block; }
+
+.arrow {
+  display: inline-block;
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  padding: 3px; }
+  .arrow.right {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg); }
+  .arrow.left {
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg); }
+  .arrow.up {
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg); }
+  .arrow.down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg); }
+
+.layout-group-server, .layout-group-channel, .layout-channel, .layout-client, .layout-client-channel {
+  width: 100%;
+  display: flex;
+  flex-direction: row; }
+  .layout-group-server > div, .layout-group-channel > div, .layout-channel > div, .layout-client > div, .layout-client-channel > div {
+    margin: 5px; }
+  .layout-group-server .list-group-server, .layout-group-server .list-group-channel, .layout-group-server .list-group-server-clients, .layout-group-server .list-channel, .layout-group-channel .list-group-server, .layout-group-channel .list-group-channel, .layout-group-channel .list-group-server-clients, .layout-group-channel .list-channel, .layout-channel .list-group-server, .layout-channel .list-group-channel, .layout-channel .list-group-server-clients, .layout-channel .list-channel, .layout-client .list-group-server, .layout-client .list-group-channel, .layout-client .list-group-server-clients, .layout-client .list-channel, .layout-client-channel .list-group-server, .layout-client-channel .list-group-channel, .layout-client-channel .list-group-server-clients, .layout-client-channel .list-channel {
+    position: relative; }
+    .layout-group-server .list-group-server .entries, .layout-group-server .list-group-channel .entries, .layout-group-server .list-group-server-clients .entries, .layout-group-server .list-channel .entries, .layout-group-channel .list-group-server .entries, .layout-group-channel .list-group-channel .entries, .layout-group-channel .list-group-server-clients .entries, .layout-group-channel .list-channel .entries, .layout-channel .list-group-server .entries, .layout-channel .list-group-channel .entries, .layout-channel .list-group-server-clients .entries, .layout-channel .list-channel .entries, .layout-client .list-group-server .entries, .layout-client .list-group-channel .entries, .layout-client .list-group-server-clients .entries, .layout-client .list-channel .entries, .layout-client-channel .list-group-server .entries, .layout-client-channel .list-group-channel .entries, .layout-client-channel .list-group-server-clients .entries, .layout-client-channel .list-channel .entries {
+      display: table;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      min-width: 100%; }
+  .layout-group-server .list-group-server, .layout-group-server .list-group-channel, .layout-group-channel .list-group-server, .layout-group-channel .list-group-channel, .layout-channel .list-group-server, .layout-channel .list-group-channel, .layout-client .list-group-server, .layout-client .list-group-channel, .layout-client-channel .list-group-server, .layout-client-channel .list-group-channel {
+    width: 300px;
+    flex-grow: 0;
+    border: grey solid 1px;
+    user-select: none;
+    overflow: auto;
+    position: relative; }
+    .layout-group-server .list-group-server .group, .layout-group-server .list-group-channel .group, .layout-group-channel .list-group-server .group, .layout-group-channel .list-group-channel .group, .layout-channel .list-group-server .group, .layout-channel .list-group-channel .group, .layout-client .list-group-server .group, .layout-client .list-group-channel .group, .layout-client-channel .list-group-server .group, .layout-client-channel .list-group-channel .group {
+      display: block;
+      white-space: nowrap;
+      cursor: pointer; }
+      .layout-group-server .list-group-server .group .icon, .layout-group-server .list-group-server .group .icon_empty, .layout-group-server .list-group-channel .group .icon, .layout-group-server .list-group-channel .group .icon_empty, .layout-group-channel .list-group-server .group .icon, .layout-group-channel .list-group-server .group .icon_empty, .layout-group-channel .list-group-channel .group .icon, .layout-group-channel .list-group-channel .group .icon_empty, .layout-channel .list-group-server .group .icon, .layout-channel .list-group-server .group .icon_empty, .layout-channel .list-group-channel .group .icon, .layout-channel .list-group-channel .group .icon_empty, .layout-client .list-group-server .group .icon, .layout-client .list-group-server .group .icon_empty, .layout-client .list-group-channel .group .icon, .layout-client .list-group-channel .group .icon_empty, .layout-client-channel .list-group-server .group .icon, .layout-client-channel .list-group-server .group .icon_empty, .layout-client-channel .list-group-channel .group .icon, .layout-client-channel .list-group-channel .group .icon_empty {
+        margin-right: 3px; }
+      .layout-group-server .list-group-server .group .name.savedb, .layout-group-server .list-group-channel .group .name.savedb, .layout-group-channel .list-group-server .group .name.savedb, .layout-group-channel .list-group-channel .group .name.savedb, .layout-channel .list-group-server .group .name.savedb, .layout-channel .list-group-channel .group .name.savedb, .layout-client .list-group-server .group .name.savedb, .layout-client .list-group-channel .group .name.savedb, .layout-client-channel .list-group-server .group .name.savedb, .layout-client-channel .list-group-channel .group .name.savedb {
+        color: blue; }
+      .layout-group-server .list-group-server .group .name.default, .layout-group-server .list-group-channel .group .name.default, .layout-group-channel .list-group-server .group .name.default, .layout-group-channel .list-group-channel .group .name.default, .layout-channel .list-group-server .group .name.default, .layout-channel .list-group-channel .group .name.default, .layout-client .list-group-server .group .name.default, .layout-client .list-group-channel .group .name.default, .layout-client-channel .list-group-server .group .name.default, .layout-client-channel .list-group-channel .group .name.default {
+        color: black;
+        font-weight: bold; }
+      .layout-group-server .list-group-server .group.selected, .layout-group-server .list-group-channel .group.selected, .layout-group-channel .list-group-server .group.selected, .layout-group-channel .list-group-channel .group.selected, .layout-channel .list-group-server .group.selected, .layout-channel .list-group-channel .group.selected, .layout-client .list-group-server .group.selected, .layout-client .list-group-channel .group.selected, .layout-client-channel .list-group-server .group.selected, .layout-client-channel .list-group-channel .group.selected {
+        background-color: blue; }
+        .layout-group-server .list-group-server .group.selected .name.savedb, .layout-group-server .list-group-channel .group.selected .name.savedb, .layout-group-channel .list-group-server .group.selected .name.savedb, .layout-group-channel .list-group-channel .group.selected .name.savedb, .layout-channel .list-group-server .group.selected .name.savedb, .layout-channel .list-group-channel .group.selected .name.savedb, .layout-client .list-group-server .group.selected .name.savedb, .layout-client .list-group-channel .group.selected .name.savedb, .layout-client-channel .list-group-server .group.selected .name.savedb, .layout-client-channel .list-group-channel .group.selected .name.savedb {
+          color: white; }
+
+.layout-group-server .permission-explorer {
+  flex-grow: 70; }
+.layout-group-server .list-group-server-clients {
+  flex-grow: 0;
+  width: 200px;
+  border: grey solid 1px; }
+
+.layout-channel .list-channel, .layout-client-channel .list-channel {
+  display: flex;
+  flex-direction: column;
+  overflow-x: scroll;
+  overflow-y: auto;
+  width: 300px;
+  flex-grow: 1; }
+  .layout-channel .list-channel .channel, .layout-client-channel .list-channel .channel {
+    cursor: pointer;
+    display: block;
+    width: 100%;
+    height: max-content;
+    white-space: nowrap; }
+    .layout-channel .list-channel .channel .icon, .layout-channel .list-channel .channel .icon_empty, .layout-client-channel .list-channel .channel .icon, .layout-client-channel .list-channel .channel .icon_empty {
+      margin-right: 3px; }
+    .layout-channel .list-channel .channel.selected, .layout-client-channel .list-channel .channel.selected {
+      background-color: blue; }
+
+.layout-client .client-info, .layout-client-channel .client-info {
+  display: flex;
+  flex-direction: column; }
+  .layout-client .client-info > div:not(.list-channel), .layout-client-channel .client-info > div:not(.list-channel) {
+    display: grid;
+    grid-template-columns: auto;
+    grid-template-rows: max-content; }
+  .layout-client .client-info .client-info input, .layout-client-channel .client-info .client-info input {
+    pointer-events: none; }
+
+.group-assignment-list .group-list {
+  border: lightgray solid 1px;
+  padding: 3px; }
+  .group-assignment-list .group-list .group-entry {
+    display: flex;
+    flex-direction: row;
+    height: max-content; }
+  .group-assignment-list .group-list .checkbox {
+    margin-top: 1px;
+    margin-left: 1px;
+    display: block;
+    position: relative;
+    padding-left: 18px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    font-size: 22px;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    /* Hide the browser's default checkbox */ }
+    .group-assignment-list .group-list .checkbox input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      display: none; }
+    .group-assignment-list .group-list .checkbox .checkmark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 16px;
+      width: 16px;
+      background-color: #eee;
+      margin-right: 4px; }
+      .group-assignment-list .group-list .checkbox .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+        left: 5px;
+        top: 1px;
+        width: 6px;
+        height: 12px;
+        border: solid white;
+        border-width: 0 3px 3px 0;
+        -webkit-transform: rotate(45deg);
+        -ms-transform: rotate(45deg);
+        transform: rotate(45deg); }
+    .group-assignment-list .group-list .checkbox:hover:not(.disabled) input ~ .checkmark {
+      background-color: #ccc; }
+    .group-assignment-list .group-list .checkbox input:checked ~ .checkmark {
+      background-color: #2196F3; }
+    .group-assignment-list .group-list .checkbox input:checked ~ .checkmark:after {
+      display: block; }
+    .group-assignment-list .group-list .checkbox.disabled {
+      user-select: none;
+      pointer-events: none;
+      cursor: not-allowed; }
+      .group-assignment-list .group-list .checkbox.disabled .checkmark {
+        background-color: #00000055; }
+        .group-assignment-list .group-list .checkbox.disabled .checkmark:after {
+          border-color: #00000055; }
+
 /*# sourceMappingURL=modals.css.map */

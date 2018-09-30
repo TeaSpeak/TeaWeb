@@ -1,5 +1,6 @@
 /// <reference path="channel.ts" />
 /// <reference path="modal/ModalChangeVolume.ts" />
+/// <reference path="modal/ModalServerGroupDialog.ts" />
 
 enum ClientType {
     CLIENT_VOICE,
@@ -106,10 +107,113 @@ class ClientEntry {
         }
     }
 
+    protected assignment_context() : ContextMenuEntry[] {
+        let server_groups: ContextMenuEntry[] = [];
+        for(let group of this.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
+            if(group.type == GroupType.NORMAL) continue;
+
+            let entry: ContextMenuEntry = {} as any;
+
+            {
+                let tag = $.spawn("label").addClass("checkbox");
+                $.spawn("input").attr("type", "checkbox").prop("checked", this.groupAssigned(group)).appendTo(tag);
+                $.spawn("span").addClass("checkmark").appendTo(tag);
+                entry.icon = tag;
+            }
+
+            entry.name = group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]";
+            if(this.groupAssigned(group)) {
+                entry.callback = () => {
+                    this.channelTree.client.serverConnection.sendCommand("servergroupdelclient", {
+                        sgid: group.id,
+                        cldbid: this.properties.client_database_id
+                    });
+                };
+                entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
+            } else {
+                entry.callback = () => {
+                    this.channelTree.client.serverConnection.sendCommand("servergroupaddclient", {
+                        sgid: group.id,
+                        cldbid: this.properties.client_database_id
+                    });
+                };
+                entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_REMOVE_POWER).granted(group.requiredMemberAddPower);
+            }
+            entry.type = MenuEntryType.ENTRY;
+            server_groups.push(entry);
+        }
+
+        let channel_groups: ContextMenuEntry[] = [];
+        for(let group of this.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
+            if(group.type != GroupType.NORMAL) continue;
+
+            let entry: ContextMenuEntry = {} as any;
+            {
+                let tag = $.spawn("label").addClass("checkbox");
+                $.spawn("input").attr("type", "checkbox").prop("checked", this.assignedChannelGroup() == group.id).appendTo(tag);
+                $.spawn("span").addClass("checkmark").appendTo(tag);
+                entry.icon = tag;
+            }
+            entry.name = group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]";
+            entry.callback = () => {
+                this.channelTree.client.serverConnection.sendCommand("setclientchannelgroup", {
+                    cldbid: this.properties.client_database_id,
+                    cgid: group.id,
+                    cid: this.currentChannel().channelId
+                });
+            };
+            entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
+            entry.type = MenuEntryType.ENTRY;
+            channel_groups.push(entry);
+        }
+
+        return [{
+            type: MenuEntryType.SUB_MENU,
+            icon: "client-permission_server_groups",
+            name: "Set server group",
+            sub_menu: [
+                {
+                    type: MenuEntryType.ENTRY,
+                    icon: "client-permission_server_groups",
+                    name: "Server groups dialog",
+                    callback: () => {
+                        Modals.createServerGroupAssignmentModal(this, (group, flag) => {
+                            if(flag) {
+                                return this.channelTree.client.serverConnection.sendCommand("servergroupaddclient", {
+                                    sgid: group.id,
+                                    cldbid: this.properties.client_database_id
+                                }).then(result => true);
+                            } else
+                                return this.channelTree.client.serverConnection.sendCommand("servergroupdelclient", {
+                                    sgid: group.id,
+                                    cldbid: this.properties.client_database_id
+                                }).then(result => true);
+                        });
+                    }
+                },
+                MenuEntry.HR(),
+                ...server_groups
+            ]
+        },{
+            type: MenuEntryType.SUB_MENU,
+            icon: "client-permission_channel",
+            name: "Set channel group",
+            sub_menu: [
+                ...channel_groups
+            ]
+        },{
+            type: MenuEntryType.SUB_MENU,
+            icon: "client-permission_client",
+            name: "Permissions",
+            disabled: true,
+            sub_menu: [ ]
+        }];
+    }
+
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
         const _this = this;
 
-        spawnMenu(x, y,
+        spawn_context_menu(x, y,
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-change_nickname",
@@ -151,6 +255,8 @@ class ClientEntry {
                     }, { width: 400, maxLength: 1024 }).open();
                 }
             },
+            MenuEntry.HR(),
+            ...this.assignment_context(),
             MenuEntry.HR(), {
                 type: MenuEntryType.ENTRY,
                 icon: "client-move_client_to_own_channel",
@@ -524,7 +630,7 @@ class LocalClientEntry extends ClientEntry {
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
         const _self = this;
 
-        spawnMenu(x, y,
+        spawn_context_menu(x, y,
             {
                 name: "<b>Change name</b>",
                 icon: "client-change_nickname",
@@ -640,7 +746,7 @@ class MusicClientEntry extends ClientEntry {
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
-        spawnMenu(x, y,
+        spawn_context_menu(x, y,
             {
                 name: "<b>Change bot name</b>",
                 icon: "client-change_nickname",
@@ -660,6 +766,8 @@ class MusicClientEntry extends ClientEntry {
                 callback: () => {},
                 type: MenuEntryType.ENTRY
             },
+            MenuEntry.HR(),
+            ...super.assignment_context(),
             MenuEntry.HR(),
             {
                 name: "Delete bot",

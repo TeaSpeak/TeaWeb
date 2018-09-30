@@ -225,7 +225,7 @@ class ChatEntry {
                     //TODO Implement this?
                 }
             });
-            spawnMenu(e.pageX, e.pageY, ...actions);
+            spawn_context_menu(e.pageX, e.pageY, ...actions);
         });
 
         closeTag.click(function () {

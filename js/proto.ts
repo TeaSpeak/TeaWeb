@@ -26,29 +26,29 @@ interface String {
 }
 
 if(!JSON.map_to) {
-    JSON.map_to = function<T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number) : T {
-        if(!validator) validator = (a, b) => true;
+    JSON.map_to = function <T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number): T {
+        if (!validator) validator = (a, b) => true;
 
-        if(!variables) {
+        if (!variables) {
             variables = [];
 
-            if(!variable_direction || variable_direction == 0) {
-                for(let field in json)
+            if (!variable_direction || variable_direction == 0) {
+                for (let field in json)
                     variables.push(field);
-            } else if(variable_direction == 1) {
-                for(let field in object)
+            } else if (variable_direction == 1) {
+                for (let field in object)
                     variables.push(field);
             }
-        } else if(!Array.isArray(variables)) {
+        } else if (!Array.isArray(variables)) {
             variables = [variables];
         }
 
-        for(let field of variables) {
-            if(!json[field]) {
+        for (let field of variables) {
+            if (!json[field]) {
                 console.trace("Json does not contains %s", field);
                 continue;
             }
-            if(!validator(field, json[field])) {
+            if (!validator(field, json[field])) {
                 console.trace("Validator results in false for %s", field);
                 continue;
             }
@@ -108,7 +108,9 @@ if(typeof ($) !== "undefined") {
     }
     if(!$.prototype.renderTag) {
         $.prototype.renderTag = function (values?: any) : JQuery {
-            return $(this.render(values));
+            let result = $(this.render(values));
+            result.find("node").each((index, element) => { $(element).replaceWith(values[$(element).attr("key")]); });
+            return result;
         }
     }
 }
@@ -182,4 +184,12 @@ interface Window {
     readonly OfflineAudioContext: typeof OfflineAudioContext;
     readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
     readonly RTCPeerConnection: typeof RTCPeerConnection;
+    readonly Pointer_stringify: any;
+}
+
+interface Navigator {
+    browserSpecs: {
+        name: string,
+        version: string
+    };
 }

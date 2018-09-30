@@ -1,4 +1,7 @@
 # Changelog:
+* **30.09.18**
+    - Added the permission system (Assignments and management)
+
 * **26.09.18**:
     - Added Safari support
     

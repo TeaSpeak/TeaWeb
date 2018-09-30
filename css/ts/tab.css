@@ -16,7 +16,7 @@ x-tab { display:none }
     border-radius: 0px 2px 2px 2px;
     border-style: solid;
     overflow-y: auto;
-    height: calc(100% - 2 * 18px);
+    height: 100%;
     padding: 2px;
 }
 
@@ -68,6 +68,6 @@ x-tab { display:none }
     display: none;
 }
 
-.tab .selected {
-    background: #11111111!important;
+.tab .tab-header .entry.selected {
+    background: #11111111;
 }

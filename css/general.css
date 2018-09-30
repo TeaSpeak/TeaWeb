@@ -4,53 +4,6 @@
     box-sizing: border-box;
 }
 
-.contextMenu {
-    display: none;
-    z-index: 1000;
-    position: absolute;
-    overflow: hidden;
-    border: 1px solid #CCC;
-    white-space: nowrap;
-    font-family: sans-serif;
-    background: #FFF;
-    color: #333;
-    padding: 3px;
-}
-.contextMenu *{
-    font-family: Arial;
-    font-size: 12px;
-    white-space: pre;
-    line-height: 1;
-    vertical-align: middle;
-}
-
-/* Each of the items in the list */
-.contextMenu li {
-    /*padding: 8px 12px;*/
-    padding-right: 12px;
-    cursor: pointer;
-    list-style-type: none;
-    transition: all .3s ease;
-    user-select: none;
-    align-items: center;
-
-    display: flex;
-}
-
-.contextMenu .icon_empty,
-.contextMenu .icon {
-    margin-right: 4px;
-}
-
-.contextMenu li:hover:not(.disabled) {
-    background-color: #DEF;
-}
-
-.contextMenu li.disabled {
-    background-color: lightgray;
-    cursor: not-allowed;
-}
-
 .align_row {
     display: flex;
     flex-direction: row;

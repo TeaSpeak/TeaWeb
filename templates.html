@@ -13,6 +13,61 @@
         <link rel="stylesheet" href="css/general.css" type="text/css">
     </head>
     <body>
+        <!-- Template for the connect modal -->
+        <script id="tmpl_connect" type="text/html">
+            <div style="margin-top: 5px;">
+                <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">
+                    <div style="width: 68%; margin-bottom: 5px">
+                        <div>Remote address and port:</div>
+                        <input type="text" style="width: 100%" class="connect_address" value="unknown">
+                    </div>
+                    <div style="width: 20%">
+                        <div>Server password:</div>
+                        <form name="server_password_form" onsubmit="return false;">
+                            <input type="password" if="connect_server_password_{{rnd '0~13377331'/}}" autocomplete="off" style="width: 100%" class="connect_password">
+                        </form>
+                    </div>
+                </div>
+                <div>
+                    <div>Nickname:</div>
+                    <input type="text" style="width: 100%" class="connect_nickname" value="">
+                </div>
+                <hr>
+                <div class="group_box">
+                    <div style="display: flex; justify-content: space-between;">
+                        <div style="text-align: right;">Identity Settings</div>
+                        <select class="identity_select">
+                            <option name="identity_type" value="TEAFORO">Forum Account</option>
+                            <option name="identity_type" value="TEAMSPEAK">TeamSpeak</option>
+                            <option name="identity_type" value="NICKNAME">Nickname (Debug purposes only!)</option> <!-- Only available on localhost for debug -->
+                        </select>
+                    </div>
+                    <hr>
+                    <div class="identity_config_TEAMSPEAK identity_config">
+                        Please enter your exported TS3 Identity string bellow or select your exported Identity<br>
+                        <div style="width: 100%; display: flex; flex-direction: row">
+                            <input placeholder="Identity string" style="width: 70%; margin: 5px;" class="identity_string">
+                            <div style="width: 30%; margin: 5px"><input class="identity_file" type="file"></div>
+                        </div>
+                    </div>
+                    <div class="identity_config_TEAFORO identity_config">
+                        {{if forum_valid}}
+                        You're using your forum account as verification
+                        {{else}}
+                        You cant use your TeaSpeak forum account.<br>
+                        You're not connected!<br>
+                        Click <a href="{{:forum_path}}login.php">here</a> to login via the TeaSpeak forum.
+                        {{/if}}
+                    </div>
+                    <div class="identity_config_NICKNAME identity_config">
+                        This is just for debug and uses the name as unique identifier
+                    </div>
+
+                    <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>
+                </div> <!-- <a href="<?php echo authPath() . "login.php"; ?>">Login</a> via the TeaSpeak forum. -->
+            </div>
+        </script>
+
         <!-- Template for chennel create & edit-->
         <script id="tmpl_channel_edit" type="text/html">
             <div class="align_column general_properties">
@@ -182,7 +237,6 @@
                 </x-entry>
             </x-tab>
         </script>
-
         <script id="tmpl_server_edit" type="text/html">
             <div class="align_column properties_general server_properties">
                 <div class="properties">
@@ -414,62 +468,6 @@
             </x-tab>
         </script>
 
-        <!-- Template for the connect modal -->
-        <script id="tmpl_connect" type="text/html">
-            <div style="margin-top: 5px;">
-                <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">
-                    <div style="width: 68%; margin-bottom: 5px">
-                        <div>Remote address and port:</div>
-                        <input type="text" style="width: 100%" class="connect_address" value="unknown">
-                    </div>
-                    <div style="width: 20%">
-                        <div>Server password:</div>
-                        <form name="server_password_form" onsubmit="return false;">
-                            <input type="password" if="connect_server_password_{{rnd '0~13377331'/}}" autocomplete="off" style="width: 100%" class="connect_password">
-                        </form>
-                    </div>
-                </div>
-                <div>
-                    <div>Nickname:</div>
-                    <input type="text" style="width: 100%" class="connect_nickname" value="">
-                </div>
-                <hr>
-                <div class="group_box">
-                    <div style="display: flex; justify-content: space-between;">
-                        <div style="text-align: right;">Identity Settings</div>
-                        <select class="identity_select">
-                            <option name="identity_type" value="TEAFORO">Forum Account</option>
-                            <option name="identity_type" value="TEAMSPEAK">TeamSpeak</option>
-                            <option name="identity_type" value="NICKNAME">Nickname (Debug purposes only!)</option> <!-- Only available on localhost for debug -->
-                        </select>
-                    </div>
-                    <hr>
-                    <div class="identity_config_TEAMSPEAK identity_config">
-                        Please enter your exported TS3 Identity string bellow or select your exported Identity<br>
-                        <div style="width: 100%; display: flex; flex-direction: row">
-                            <input placeholder="Identity string" style="width: 70%; margin: 5px;" class="identity_string">
-                            <div style="width: 30%; margin: 5px"><input class="identity_file" type="file"></div>
-                        </div>
-                    </div>
-                    <div class="identity_config_TEAFORO identity_config">
-                        {{if forum_valid}}
-                            You're using your forum account as verification
-                        {{else}}
-                            You cant use your TeaSpeak forum account.<br>
-                            You're not connected!<br>
-                            Click <a href="{{:forum_path}}login.php">here</a> to login via the TeaSpeak forum.
-                        {{/if}}
-                    </div>
-                    <div class="identity_config_NICKNAME identity_config">
-                        This is just for debug and uses the name as unique identifier
-                    </div>
-
-                    <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>
-                </div> <!-- <a href="<?php echo authPath() . "login.php"; ?>">Login</a> via the TeaSpeak forum. -->
-            </div>
-        </script>
-
-
         <!-- Template for the settings -->
         <script id="tmpl_settings" type="text/html">
             <x-tab>
@@ -524,14 +522,12 @@
                 </x-entry>
             </x-tab>
         </script>
-
         <script id="tmpl_change_volume" type="text/html">
             <div style="display: flex; justify-content: center; vertical-align: center">
                 <input type="range" min="0" max="200" value="100" class="volume_slider" style="width: 100%">
                 <div class="display_volume" style="width: 60px; align-self: center; text-align: center">&plusmn;0 %</div>
             </div>
         </script>
-
         <script id="tmpl_client_ban" type="text/html">
             <div class="align_column">
                 <div class="align_column" style="margin: 5px">
@@ -558,6 +554,192 @@
             </div>
         </script>
 
+        <!-- Permission overview -->
+        <script id="tmpl_server_permissions" type="text/html">
+            <x-tab>
+                <x-entry>
+                    <x-tag>Server Groups</x-tag>
+                    <x-content>
+                        <div class="layout-group-server">
+                            <div class="list-group-server">
+                                <div class="entries"></div>
+                            </div>
+                            <node key="permissions_group_server"/>
+                            <div class="list-group-server-clients"></div>
+                        </div>
+                    </x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Channel Groups</x-tag>
+                    <x-content>
+                        <div class="layout-group-channel">
+                            <div class="list-group-channel">
+                                <div class="entries"></div>
+                            </div>
+                            <node key="permissions_group_channel"/>
+                        </div>
+                    </x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Channel permissions</x-tag>
+                    <x-content>
+                        <div class="layout-channel">
+                            <div class="list-channel">
+                                <div class="entries"></div>
+                            </div>
+                            <node key="permissions_channel"/>
+                        </div>
+                    </x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Client permissions</x-tag>
+                    <x-content>
+                        <div class="layout-client">
+                            <div class="client-info">
+                                <div class="client-select">
+                                    <a>Client unique ID:</a>
+                                    <input type="text" class="client-select-uid">
+                                </div>
+                                <hr>
+                                <div class="client-info">
+                                    <a>Nickname:</a>
+                                    <input class="client-name">
+
+                                    <a>Unique ID:</a>
+                                    <input class="client-uid">
+
+                                    <a>Cleint database ID:</a>
+                                    <input class="client-dbid">
+                                </div>
+                            </div>
+                            <node key="permissions_client"/>
+                        </div>
+                    </x-content>
+                </x-entry>
+                <x-entry>
+                    <x-tag>Client channel permissions</x-tag>
+                    <x-content>
+                        <div class="layout-client-channel">
+                            <div class="client-info">
+                                <div class="client-select">
+                                    <a>Client unique ID:</a>
+                                    <input type="text" class="client-select-uid">
+                                </div>
+                                <hr>
+                                <div class="client-info">
+                                    <a>Nickname:</a>
+                                    <input class="client-name">
+
+                                    <a>Unique ID:</a>
+                                    <input class="client-uid">
+
+                                    <a>Cleint database ID:</a>
+                                    <input class="client-dbid">
+                                </div>
+                                <hr>
+                                <div class="list-channel">
+                                    <div class="entries"></div>
+                                </div>
+                            </div>
+                            <node key="permissions_client_channel"/>
+                        </div>
+                    </x-content>
+                </x-entry>
+            </x-tab>
+        </script>
+        <script id="tmpl_server_group_assignment" type="text/html">
+           <div class="group-assignment-list">
+               <a>Changing groups of <b>{{>client_name}}</b></a>
+               <div class="group-list">
+                   {{for groups}}
+                   <div class="group-entry">
+                       <label class="checkbox {{if disabled}}disabled{{/if}}">
+                           <input type="checkbox" group-id="{{>id}}" {{if assigned}}checked{{/if}}>
+                           <span class="checkmark"></span>
+                       </label>
+                       <node key="icon_{{>id}}"></node>
+                       <a>{{>name}} ({{>id}})</a>
+                   </div>
+                   {{/for}}
+               </div>
+           </div>
+        </script>
+
+        <script id="tmpl_permission_explorer" type="text/html">
+            <div class="align_row permission-explorer">
+                <div class="bar-filter">
+                    <div><a>Filter:</a></div>
+                    <div><input type="text" class="filter-input"></div>
+                    <div><input type="checkbox" class="filter-granted"><a>Show granted permissions only</a></div>
+                </div>
+                <div class="list">
+                    <div class="entry header">
+                        <div>Permission Name</div>
+                        <div>Value</div>
+                        <div>Skip</div>
+                        <div>Negate</div>
+                        <div>Granted</div>
+                    </div>
+
+                    <div class="entries">
+                        {{for permissions tmpl="#tmpl_permission_entry"/}}
+                    </div>
+                    <!--
+                    <div class="entry">
+                        <div>this_is_a_test_permission</div>
+                        <div>value</div>
+                        <div>skip</div>
+                        <div>negate</div>
+                        <div>granted</div>
+                    </div>
+                    <div class="entry group">
+                        <div class="title"><div class="arrow right"></div><a>Test group</a></div>
+                        <div class="group-entries">
+                            <div class="entry">
+                                <div>Grouped entry A</div>
+                                <div>value</div>
+                                <div>skip</div>
+                                <div>negate</div>
+                                <div>granted</div>
+                            </div>
+                            <div class="entry">
+                                <div>Grouped entry B</div>
+                                <div>value</div>
+                                <div>skip</div>
+                                <div>negate</div>
+                                <div>granted</div>
+                            </div>
+                        </div>
+                    </div>
+                    -->
+                    <div class="overlay-disabled"></div>
+                </div>
+                <div>
+                    <button class="button-update"><div class="icon client-check_update"></div> Update</button>
+                </div>
+            </div>
+        </script>
+        <script id="tmpl_permission_entry" type="text/html">
+        {{if type == "entry"}}
+            <div class="entry {{if unset}}unset{{/if}} permission {{>permission_name}}">
+                <div class="permission-name filter-key">{{>permission_name}}</div>
+                <div class="permission-value"><node key="{{>permission_name}}_value"></node></div>
+                <div class="permission-skip"><node key="{{>permission_name}}_skip"></node></div>
+                <div class="permission-negate"><node key="{{>permission_name}}_negate"></node></div>
+                <div class="permission-grant"><node key="{{>permission_name}}_grant"></node></div>
+            </div>
+        {{else}}
+            <div class="entry group">
+                <div class="title"><div class="arrow down"></div><a>{{>name}}</a></div>
+                <div class="group-entries">
+                    {{for entries tmpl="#tmpl_permission_entry"/}}
+                </div>
+            </div>
+        {{/if}}
+        </script>
+
+
+        <!-- Music interface -->
         <script id="tmpl_music_frame" type="text/html">
             <!-- First we want to define some variables if not defined yet. -->
             {{if !thumbnail}}
@@ -633,7 +815,6 @@
                 </div>
             </div>
         </script>
-
         <template id="tmpl_music_frame_empty">
             <div class="music-wrapper empty">
                 <img src="img/music/empty_disk.svg">
@@ -752,7 +933,6 @@
                 </div>
             {{/if}}
         </script>
-
         <script id="tmpl_selected_music" type="text/html">
             <table class="select_info_table">
                 <tr>
@@ -812,7 +992,6 @@
                 <node key="music_player"/>
             </div>
         </script>
-
         <script id="tmpl_selected_server" type="text/html">
             <div class="select_server">
                 <table class="select_info_table">
