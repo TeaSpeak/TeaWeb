@@ -36,8 +36,9 @@ namespace app {
         };
 
         Module['onAbort'] = message => {
-            Module['onAbort'] = undefined;
-            displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>", false);
+            //Module['onAbort'] = undefined;
+            //displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>", false);
+            Module['onRuntimeInitialized'](); //FIXME! Just a bridge
         };
 
         Module['locateFile'] = file => {
@@ -93,18 +94,7 @@ function loadScript(path: string | string[]) : Promise<Boolean> {
             });
         });
     } else {
-        return new Promise<Boolean>((resolve, reject) => {
-            const tag = document.createElement("script");
-            tag.type = "text\/javascript";
-            tag.onerror = error => {
-                console.log(error);
-                tag.remove();
-                reject(error);
-            };
-            tag.onload = () => resolve();
-            document.getElementById("scripts").appendChild(tag);
-            tag.src = path;
-        });
+        return load_script0(path);
     }
 }
 
@@ -241,7 +231,7 @@ function displayCriticalError(message: string, closeable: boolean = true) {
 
 function loadTemplates() {
     //Load the templates
-    $.ajax("templates.html", {
+    $.ajax("http://localhost/home/TeaSpeak/TeaSpeak/Web-Client/templates.html", {
         cache: false, //Change this when in release mode
     }).then((element, status) => {
         let node = document.createElement("html");

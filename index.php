@@ -31,6 +31,9 @@
         <meta charset="UTF-8">
         <title>TeaSpeak-Web</title>
 
+        <?php
+        if(!isset($CLIENT) || !$CLIENT) {
+        ?>
         <link rel="stylesheet" href="css/scroll.css" type="text/css">
         <link rel="stylesheet" href="css/ts/tab.css" type="text/css">
         <link rel="stylesheet" href="css/ts/chat.css" type="text/css">
@@ -44,7 +47,7 @@
         <link rel="stylesheet" href="css/control_bar.css" type="text/css">
         <link rel="stylesheet" href="css/context_menu.css" type="text/css">
         <link rel="stylesheet" href="vendor/bbcode/xbbcode.css" type="text/css">
-
+        <?php } ?>
         <!-- https://localhost:9987/?forward_url=http%3A%2F%2Flocalhost%3A63344%2FWeb-Client%2Findex.php%3F_ijt%3D82b1uhmnh0a5l1n35nnjps5eid%26loader_ignore_age%3D1%26connect_default_host%3Dlocalhost%26default_connect_type%3Dforum%26default_connect_url%3Dtrue%26default_connect_type%3Dteamspeak%26default_connect_url%3Dlocalhost%253A9987 -->
         <!-- PHP generated properies -->
         <!-- localhost:63342/TeaSpeak-Web/index.php?_ijt=o48hmliefjoa8cer8v7mpl98pj&connect_default_host=192.168.43.141 -->
@@ -226,18 +229,69 @@
         <div id="templates"></div>
         <div id="music-test"></div>
         <div style="height: 100px"></div>
+
+        <script type="application/javascript">
+            /**
+             * @param path {string}
+             * @returns {Promise}
+             */
+            function load_script0(path) {
+                if(window.require !== undefined) {
+                    return new Promise((resolve, reject) => {
+                        console.log("load via node %o %o", resolve, reject);
+                        const ipcRenderer = require('electron').ipcRenderer;
+                        ipcRenderer.send("load-file", "loaded-file-" + path, path);
+                        ipcRenderer.once("loaded-file-" + path, (event, data) => {
+                            if(data === '404') {
+                                reject('script missing');
+                                return;
+                            }
+                            const tag = document.createElement("script");
+                            tag.type = "text\/javascript";
+                            document.getElementById("scripts").appendChild(tag);
+                            tag.src = URL.createObjectURL(new Blob([decodeURIComponent(data)], {type: "text/javascript"}));
+                            resolve();
+                        });
+                    });
+                } else { //Normal web browser load
+                    return new Promise((resolve, reject) => {
+                        console.log("load via web %o %o", resolve, reject);
+                        const tag = document.createElement("script");
+                        tag.type = "text\/javascript";
+                        tag.onerror = error => {
+                            console.log(error);
+                            tag.remove();
+                            reject(error);
+                        };
+                        tag.onload = () => resolve();
+                        document.getElementById("scripts").appendChild(tag);
+                        tag.src = path;
+                    });
+                }
+            }
+
+            if(window.require !== undefined) {
+                module.paths.push("/home/wolverindev/Development-WebApp/")
+                window.$ = require("jquery");
+            } else {
+                load_script0("vendor/jquery/jquery.min.js");
+            }
+            load_script0("load.js");
+        </script>
     </body>
     <footer>
         <div class="container" style="display: flex; flex-direction: row; align-content: space-between;">
             <div style="align-self: center; position: fixed; left: 5px;">Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web" style="display: inline-block; position: relative">github.com</a></div>
             <div style="align-self: center;">TeaSpeak Web client by WolverinDEV</div>
             <div style="align-self: center; position: fixed; right: 5px;">
-                <?php
+				<?php
+				/*
                     if(logged_in()) {
-						?> <a href="<?php echo authPath() . "auth.php?type=logout"; ?>">logout</a> <?php
-                    } else {
-                        ?> <a href="<?php echo authPath() . "login.php"; ?>">Login</a> via the TeaSpeak forum. <?php
-                    }
+                        echo '<a href="' . authPath() . '"auth.php?type=logout>logout</a>';
+					} else {
+						echo '<a href="' . authPath() . '"login.php>Login</a> via the TeaSpeak forum.';
+					}
+				*/
                 ?>
             </div>
         </div>

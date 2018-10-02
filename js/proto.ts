@@ -187,6 +187,7 @@ interface Window {
     readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
     readonly RTCPeerConnection: typeof RTCPeerConnection;
     readonly Pointer_stringify: any;
+    require(id: string): any;
 }
 
 interface Navigator {
