@@ -1,0 +1,17 @@
+html, body {
+}
+
+.app-container {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+
+	.app {
+		width: 1200px;
+		height: 900px;
+		display: flex;
+		flex-direction: column;
+		resize: both;
+		margin: 20px;
+	}
+}

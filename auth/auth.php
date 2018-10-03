@@ -239,15 +239,17 @@
 		}
 	}
 
-	if (isset($_GET["type"])) {
-		error_log("Got authX request!");
-		var_dump($_GET);
-		var_dump($_POST);
-		if ($_GET["type"] == "login") {
-			checkLogin($_POST["user"], $_POST["pass"]);
-		} else if ($_GET["type"] == "logout") {
-			logout();
-		} else die("unknown type!");
-	} else if(isset($_POST)) {
-		error_log("Got auth request!");
+	if(!$_INCLIDE_ONLY) {
+		if (isset($_GET["type"])) {
+			error_log("Got authX request!");
+			var_dump($_GET);
+			var_dump($_POST);
+			if ($_GET["type"] == "login") {
+				checkLogin($_POST["user"], $_POST["pass"]);
+			} else if ($_GET["type"] == "logout") {
+				logout();
+			} else die("unknown type!");
+		} else if(isset($_POST)) {
+			error_log("Got auth request!");
+		}
 	}
