@@ -1,6 +1,9 @@
 **.js
+!vendor/**/*.js
 **.js.map
-*.css.map
+**.css.map
+**.css
+!vendor/**/*.css
 
 asm/build/
 generated/
