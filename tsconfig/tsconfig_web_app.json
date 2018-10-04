@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig_shared.json",
+  "compilerOptions": {
+    /* because were excluding load.ts we have to define its types */
+    "typeRoots" : ["../node_modules/@types/", "./@types/"],
+    "types" : ["exports", "jquery", "webassembly-js-api", "node", "emscripten"]
+  },
+  "exclude": [
+    "../node_modules",
+    "../shared/js/load.ts",
+    "../shared/js/codec/workers",
+    "../shared/js/workers"
+  ],
+  "include": [
+    "../shared/js/**/*",
+    "../web/js/**/*"
+  ]
+}

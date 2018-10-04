@@ -107,6 +107,6 @@ app.loadedListener.push(() => {
     } catch (ex) {
         if(ex instanceof ReferenceError)
             ex = ex.message + ":<br>" + ex.stack;
-        displayCriticalError("Failed to invoke main function:<br>" + ex, false);
+        displayCriticalError("Failed to invoke main function:<br>" + ex);
     }
 });

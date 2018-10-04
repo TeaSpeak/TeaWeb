@@ -29,7 +29,7 @@ Module['onAbort'] = message => {
 try {
     console.log("Node init!");
     Module['locateFile'] = file => "../../wasm/" + file;
-    importScripts("../../asm/generated/TeaWeb-Worker-Codec-Opus.js");
+    importScripts("../../wasm/TeaWeb-Worker-Codec-Opus.js");
 } catch (e) {
     console.log(e);
     Module['onAbort']("Cloud not load native script!");

@@ -194,6 +194,8 @@ interface Window {
     readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
     readonly RTCPeerConnection: typeof RTCPeerConnection;
     readonly Pointer_stringify: any;
+    readonly jsrender: any;
+
     require(id: string): any;
 }
 

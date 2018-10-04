@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig_web_app.json",
+  "compilerOptions": {
+    "outFile": "../generated/js/client.js",
+  }
+}

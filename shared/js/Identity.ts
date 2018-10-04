@@ -44,7 +44,7 @@ namespace TSIdentityHelper {
         if(str == "") return "";
         try {
             if(!$.isFunction(window.Pointer_stringify) || !$.isFunction(Pointer_stringify)) {
-                displayCriticalError("Missing required wasm function!<br>Please reload the page!", false);
+                displayCriticalError("Missing required wasm function!<br>Please reload the page!");
             }
             let message: string = Pointer_stringify(str);
             functionDestroyString(str);

@@ -37,18 +37,11 @@ namespace app {
 
         Module['onAbort'] = message => {
             Module['onAbort'] = undefined;
-            displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>", false);
+            displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>");
         };
 
         Module['locateFile'] = file => {
-            console.log("File path for " + file);
             return "wasm/" + file;
-            switch (type) {
-                case Type.RELEASE:
-                    return "js/assembly/" + file;
-                case Type.DEBUG:
-                    return "asm/generated/" + file;
-            }
         };
     }
 
@@ -108,8 +101,8 @@ function loadRelease() {
     console.log("Load for release!");
     awaitLoad(loadScripts([
         //Load general API's
-        ["js/assembly/TeaWeb-Identity.js"],
-        ["js/client.min.js", "js/client.js", "generated/js/client.min.js", "generated/js/client.js"]
+        ["wasm/TeaWeb-Identity.js"],
+        ["js/client.min.js", "js/client.js"]
     ])).then(() => {
         console.log("Loaded successfully all scripts!");
         app.callbackApp();
@@ -123,7 +116,7 @@ function loadDebug() {
     console.log("Load for debug!");
 
     awaitLoad(loadScripts([
-        ["asm/generated/TeaWeb-Identity.js"],
+        ["wasm/TeaWeb-Identity.js"],
 
         //Load general API's
         "js/log.js",
@@ -168,7 +161,6 @@ function loadDebug() {
         //Load codec
         "js/codec/Codec.js",
         "js/codec/BasicCodec.js",
-        "js/codec/CodecWrapper.js",
 
         //Load general stuff
         "js/settings.js",
@@ -179,6 +171,8 @@ function loadDebug() {
         "js/chat.js",
         "js/Identity.js"
     ])).then(() => {
+        return loadScripts(["js/codec/CodecWrapper.js"]);
+    }).then(() => {
         awaitLoad(loadScripts(["js/main.js"])).then(() => {
             console.log("Loaded successfully all scripts!");
             app.callbackApp();
@@ -228,17 +222,16 @@ function loadTemplates() {
         let root = document.getElementById("templates");
         while(tags.length > 0){
             let tag = tags.item(0);
-            if(tag.id == "tmpl_main")
-                document.getElementsByTagName("body").item(0).appendChild(tag);
+            if(tag.id == "tmpl_main") {
+                let main_node = document.createElement("div");
+                document.getElementsByTagName("body").item(0).appendChild(main_node);
+                main_node.outerHTML = tag.innerHTML;
+                tag.remove();
+            }
             else
                 root.appendChild(tag);
 
         }
-        /*
-        root = document.getElementById("script");
-        while(tags.length > 0)
-            root.appendChild(tags.item(0));
-        */
     }).catch(error => {
         console.error("Could not load templates!");
         console.log(error);
@@ -248,6 +241,14 @@ function loadTemplates() {
 
 //TODO release config!
 function loadSide() {
+    if(window.require !== undefined) {
+        console.log("Loading node specific things");
+        const app = require('electron').remote.app;
+        module.paths.push(app.getAppPath());
+        window.$ = require("jquery");
+        require("native/loader_adapter.js");
+    }
+
     if(typeof (WebAssembly) === "undefined" || typeof (WebAssembly.compile) === "undefined") {
         console.log(navigator.browserSpecs);
         if (navigator.browserSpecs.name == 'Safari') {
@@ -261,11 +262,6 @@ function loadSide() {
         }
         displayCriticalError("You require WebAssembly for TeaSpeak-Web!");
         return;
-    }
-    if(window.require !== undefined) {
-        const app = require('electron').remote.app;
-        module.paths.push(app.getAppPath());
-        window.$ = require("jquery");
     }
     //Load the general scripts and required scripts
     awaitLoad(loadScripts([

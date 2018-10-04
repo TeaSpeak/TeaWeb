@@ -36,7 +36,7 @@ class AudioController {
                 (this._globalContextPromise = this._globalContext.resume()).then(() => {
                     this.fire_initialized();
                 }).catch(error => {
-                    displayCriticalError("Failed to initialize global audio context! (" + error + ")", false);
+                    displayCriticalError("Failed to initialize global audio context! (" + error + ")");
                 });
             }
             this._globalContext.resume(); //We already have our listener
