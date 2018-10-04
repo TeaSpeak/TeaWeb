@@ -5,16 +5,10 @@
 **.css
 !vendor/**/*.css
 
-asm/build/
 generated/
 node_modules/
 auth/certs/
 auth/js/auth.js.map
 .idea/
-asm/**
-!asm/identity/
-!asm/src/
-!asm/CMakeLists.txt
-!asm/make_opus.sh
 
 web/*-environment/
