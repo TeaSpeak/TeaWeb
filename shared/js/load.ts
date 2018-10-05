@@ -245,7 +245,7 @@ function loadSide() {
         console.log("Loading node specific things");
         const app = require('electron').remote.app;
         module.paths.push(app.getAppPath());
-        window.$ = require("jquery");
+        window.$ = require("assets/jquery.min.js");
         require("native/loader_adapter.js");
     }
 
@@ -264,12 +264,12 @@ function loadSide() {
         return;
     }
     //Load the general scripts and required scripts
-    awaitLoad(loadScripts([
-        ["vendor/jquery/jquery.min.js", /*"https://code.jquery.com/jquery-latest.min.js"*/],
+    (window.require !== undefined ? Promise.resolve(true) : awaitLoad(loadScripts([
+        ["vendor/jquery/jquery.min.js"],
+    ]))).then(() => awaitLoad(loadScripts([
         ["vendor/bbcode/xbbcode.js"],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
-    ])).then(() => {
-    }).then(() => awaitLoad(loadScripts([
+    ]))).then(() => awaitLoad(loadScripts([
         //["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
         ["vendor/jsrender/jsrender.min.js"]
     ]))).then(() => {

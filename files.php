@@ -107,7 +107,7 @@
 			"local-path" => "./web/html/"
 		],
 		[
-			"web-only" => true,
+			/* "web-only" => true, */ //Currently client as well
 			"type" => "html",
 			"search-pattern" => "/.*\.(php|html)/",
 			"search-exclude" => "/(files.php)/",
@@ -202,16 +202,6 @@
 		return $result;
 	}
 
-	function fdump($name) {
-		$file = fopen($name, "r") or die(json_encode([
-			"success" => false,
-			"error" => "missing file (" . $name . ")"
-		]));
-
-		echo (fread($file, filesize($name)));
-		fclose($file);
-	}
-
 	if(isset($_SERVER["argv"])) { //Executed by command line
 		if(strpos(PHP_OS, "Linux") == -1) {
 			error_log("Invalid operating system! Help tool only available under linux!");
@@ -251,7 +241,7 @@
 					$environment = "web/dev-environment";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client/dev-environment";
+					$environment = "client-api/environment/files";
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -263,7 +253,7 @@
 					$environment = "web/rel-environment";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client/rel-environment";
+					$environment = "client-api/environment/files";
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -275,9 +265,10 @@
 
 			{
 				exec($command = "rm -r " . $environment, $output, $state);
-				exec($command = "mkdir " . $environment, $output, $state); if($state) goto handle_error;
+				exec($command = "mkdir -p " . $environment, $output, $state); if($state) goto handle_error;
 
-				$files = find_files(0b01, "./", $type);
+				$files = find_files($flagset, "./", $type);
+				$original_path = realpath(".");
 				if(!chdir($environment)) {
 					error_log("Failed to enter directory " . $environment . "!");
 					exit(1);
@@ -289,22 +280,35 @@
 						if($state) goto handle_error;
 					}
 
-					$parent = substr_count(realpath($file->path), DIRECTORY_SEPARATOR) - substr_count(realpath('.'), DIRECTORY_SEPARATOR);
+					$parent_base = substr_count(realpath($file->path), DIRECTORY_SEPARATOR) - substr_count(realpath('.'), DIRECTORY_SEPARATOR);
+					$parent_file = substr_count(realpath("."), DIRECTORY_SEPARATOR) - substr_count($original_path, DIRECTORY_SEPARATOR); //Current to parent
+					$parent = $parent_base + $parent_file;
 
-					$path = "../../";
+					$path = "";
 					for($index = 0; $index < $parent; $index++)
 						$path = $path  . "../";
 					exec($command = "ln -s " . $path . $file->local_path . " " . $file->path, $output, $state);
 					if($state) goto handle_error;
 					echo $command . PHP_EOL;
 				}
+				if(!chdir($original_path)) {
+					error_log("Failed to reset directory!");
+					exit(1);
+				}
 				echo "Generated!" . PHP_EOL;
 			}
 
+
+			if ($_SERVER["argv"][2] == "client") {
+				if(!chdir("client-api/environment")) {
+					error_log("Failed to enter directory client-api/environment!");
+					exit(1);
+				}
+				exec($command = "ln -s ../api.php ./", $output, $state);
+				if($state) goto handle_error;
+			}
+
 			exit(0);
-
-
-
 			handle_error:
 			error_log("Failed to execute command '" . $command . "'!");
 			error_log("Command returned code " . $state . ". Output: " . PHP_EOL);

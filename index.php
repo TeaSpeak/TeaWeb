@@ -17,6 +17,10 @@
 		{
 		}
 
+		function logged_in() {
+		    return false;
+        }
+
 		$localhost = true;
 	}
 	$localhost |= gethostname() == "WolverinDEV";
@@ -88,6 +92,7 @@
         </div>
     </head>
     <body>
+		<?php if(!$CLIENT) { ?>
         <!-- No javascript error -->
         <div style="display: block; position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; background-color: gray; z-index: 1000; text-align: center;" class="no-js">
             <div style="position: relative; display: inline-block; top: 30%">
@@ -102,6 +107,7 @@
             while (elements.length > 0) //Removing these elements (even self)
                 elements.item(0).remove();
         </script>
+		<?php } ?>
 
         <!-- Loading screen -->
         <div class="loader">
@@ -140,13 +146,11 @@
             <div style="align-self: center;">TeaSpeak Web client by WolverinDEV</div>
             <div style="align-self: center; position: fixed; right: 5px;">
 				<?php
-				/*
                     if(logged_in()) {
                         echo '<a href="' . authPath() . '"auth.php?type=logout>logout</a>';
 					} else {
 						echo '<a href="' . authPath() . '"login.php>Login</a> via the TeaSpeak forum.';
 					}
-				*/
                 ?>
             </div>
         </div>

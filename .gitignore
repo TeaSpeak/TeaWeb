@@ -12,3 +12,4 @@ auth/js/auth.js.map
 .idea/
 
 web/*-environment/
+client-api/environment
