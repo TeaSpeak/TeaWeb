@@ -24,7 +24,7 @@ namespace MessageHelper {
 
             return this.htmlEscape(object).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 || idx + 1 == array.length ? "inline" : "") + "block").html(entry));
         } else if(typeof(object) === "object") {
-            if(object instanceof jQuery)
+            if(object instanceof $)
                 return [object];
             return this.formatElement("<unknwon object>");
         } else if(typeof(object) === "function") return this.formatElement(object());
@@ -295,7 +295,7 @@ class ChatBox {
 
         this.htmlTag.find(".input button").click(this.onSend.bind(this));
         this.htmlTag.find(".input_box").keypress(event => {
-            if(event.keyCode == JQuery.Key.Enter && !event.shiftKey) {
+            if(event.keyCode == $.Key.Enter && !event.shiftKey) {
                 this.onSend();
                 return false;
             }

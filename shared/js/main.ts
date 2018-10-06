@@ -17,6 +17,37 @@ let chat: ChatBox;
 let forumIdentity: TeaForumIdentity;
 
 const js_render = window.jsrender || $;
+const native_client = window.require !== undefined;
+
+function setup_close() {
+    if(settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) return;
+
+    window.onbeforeunload = event => {
+        if(!globalClient.serverConnection || !globalClient.serverConnection.connected) return;
+
+        if(!native_client) {
+            event.returnValue = "Are you really sure?<br>You're still connected!";
+        } else {
+            event.preventDefault();
+            event.returnValue = "question";
+
+            const {remote} = require('electron');
+            const dialog = remote.dialog;
+
+            dialog.showMessageBox(remote.getCurrentWindow(), {
+                    type: 'question',
+                    buttons: ['Yes', 'No'],
+                    title: 'Confirm',
+                    message: 'Are you really sure?\nYou\'re still connected!'
+            }, choice => {
+                if(choice === 0) {
+                    window.onbeforeunload = undefined;
+                    remote.getCurrentWindow().close();
+                }
+            });
+        }
+    };
+}
 
 function main() {
     if(!js_render) {
@@ -45,12 +76,8 @@ function main() {
     globalClient.setup();
 
 
-    if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) {
-        window.addEventListener("beforeunload", function (event) {
-            if(globalClient.serverConnection && globalClient.serverConnection.connected)
-                event.returnValue = "Are you really sure?<br>You're still connected!";
-            //event.preventDefault();
-        });
+    if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false) && !native_client) {
+
     }
     //Modals.spawnConnectModal();
     //Modals.spawnSettingsModal();
@@ -95,6 +122,11 @@ function main() {
     */
 
     //Modals.spawnPermissionEdit();
+
+    setup_close();
+    $(window).on('resize', () => {
+        globalClient.channelTree.handle_resized();
+    });
 }
 
 app.loadedListener.push(() => {

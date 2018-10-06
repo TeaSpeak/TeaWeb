@@ -169,12 +169,19 @@ class TSClient {
                 console.error("Could not connect to remote host! Exception");
                 console.error(data);
 
-                createErrorModal(
-                    "Could not connect",
-                    "Could not connect to remote host (Connection refused)<br>" +
-                    "If you're sure that the remote host is up, than you may not allow unsigned certificates.<br>" +
-                    "Click <a href='" + this.certAcceptUrl() + "'>here</a> to accept the remote certificate"
-                ).open();
+                if(native_client) {
+                    createErrorModal(
+                        "Could not connect",
+                        "Could not connect to remote host (Connection refused)"
+                    ).open();
+                } else {
+                    createErrorModal(
+                        "Could not connect",
+                        "Could not connect to remote host (Connection refused)<br>" +
+                        "If you're sure that the remote host is up, than you may not allow unsigned certificates.<br>" +
+                        "Click <a href='" + this.certAcceptUrl() + "'>here</a> to accept the remote certificate"
+                    ).open();
+                }
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 console.error("Lost connection to remote server!");

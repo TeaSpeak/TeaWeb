@@ -28,6 +28,8 @@ class ChannelTree {
                 _this.showContextMenu(event.pageX, event.pageY);
             });
         }
+
+        this.htmlTree.on('resize', this.handle_resized.bind(this));
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
@@ -306,5 +308,10 @@ class ChannelTree {
                 chat.serverChat().appendMessage("Channel {} successfully created!", true, channel.createChatTag());
             });
         });
+    }
+
+    handle_resized() {
+        for(let channel of this.channels)
+            channel.handle_frame_resized();
     }
 }

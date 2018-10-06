@@ -403,6 +403,10 @@ class ChannelEntry {
         );
     }
 
+    handle_frame_resized() {
+        this.__updateChannelName();
+    }
+
     private __updateChannelName() {
         this._formatedChannelName = undefined;
         parseType:
@@ -437,12 +441,16 @@ class ChannelEntry {
 
             if(this._channelAlign == "*") {
                 let lastSuccess = "";
-                let index = 0;
+                let index = 6;
+
+                let name = this.formatedChannelName();
+                while(index-- > 0)
+                    name = name + name;
+                channelName.text(name);
                 do {
-                    channelName.text((lastSuccess = channelName.text()) + this.formatedChannelName());
-                    console.log(channelName.parent().width() + " : " + channelName.width() + " : " + channelName.innerWidth() + " : " + channelName.outerWidth());
-                } while (channelName.parent().width() >= channelName.width() && ++index < 255);
-                if(index == 255) console.warn(LogCategory.CHANNEL, "Repeating spacer took too much repeats!");
+                    channelName.text(name = name + name);
+                } while (channelName.parent().width() >= channelName.width() && ++index < 64);
+                if(index == 64) console.warn(LogCategory.CHANNEL, "Repeating spacer took too much repeats!");
                 if(lastSuccess.length > 0) {
                     channelName.text(lastSuccess);
                     self.addClass("c");
