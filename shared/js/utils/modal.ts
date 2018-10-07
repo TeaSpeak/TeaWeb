@@ -74,9 +74,11 @@ class ModalProperties {
 class Modal {
     private _htmlTag: JQuery;
     properties: ModalProperties;
+    shown: boolean;
 
     constructor(props: ModalProperties) {
         this.properties = props;
+        this.shown = false;
     }
 
     get htmlTag() : JQuery {
@@ -113,11 +115,13 @@ class Modal {
     }
 
     open() {
+        this.shown = true;
         this.htmlTag.appendTo($("body"));
         this.htmlTag.show();
     }
 
     close() {
+        this.shown = false;
         const _this = this;
         this.htmlTag.animate({opacity: 0}, () => {
             _this.htmlTag.detach();

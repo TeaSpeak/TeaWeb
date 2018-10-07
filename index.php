@@ -20,8 +20,6 @@
 		function logged_in() {
 		    return false;
         }
-
-		$localhost = true;
 	}
 	$localhost |= gethostname() == "WolverinDEV";
 	if (!$localhost || $testXF) {
@@ -87,6 +85,9 @@
             gtag('config', 'UA-113151733-4');
         </script>
         <script src="vendor/jquery/jquery.min.js"></script>
+        <script>
+            //const exports = {};
+        </script>
         <div id="scripts">
             <script type="application/javascript" src="js/load.js" defer></script>
         </div>

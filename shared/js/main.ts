@@ -54,6 +54,10 @@ function main() {
         displayCriticalError("Missing jsrender extension!");
         return;
     }
+    if(!js_render.views) {
+        displayCriticalError("Missing jsrender viewer extension!");
+        return;
+    }
     js_render.views.settings.allowCode(true);
     js_render.views.tags("rnd", (argument) => {
         let min = parseInt(argument.substr(0, argument.indexOf('~')));

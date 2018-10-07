@@ -135,13 +135,14 @@
                         </div>
                     </div>
                     <div class="identity_config_TEAFORO identity_config">
-                        {{if forum_valid}}
-                        You're using your forum account as verification
-                        {{else}}
-                        You cant use your TeaSpeak forum account.<br>
-                        You're not connected!<br>
-                        Click <a href="{{:forum_path}}login.php">here</a> to login via the TeaSpeak forum.
-                        {{/if}}
+                        <div class="connected">
+                            You're using your forum account as verification
+                        </div>
+                        <div class="disconnected">
+                            You cant use your TeaSpeak forum account.<br>
+                            You're not connected!<br>
+                            Click {{if !client}}<a href="{{:forum_path}}login.php">here</a>{{else}}<a href="#" class="native-teaforo-login">here</a>{{/if}} to login via the TeaSpeak forum.
+                        </div>
                     </div>
                     <div class="identity_config_NICKNAME identity_config">
                         This is just for debug and uses the name as unique identifier

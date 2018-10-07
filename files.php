@@ -86,6 +86,15 @@
 			"path" => "css/",
 			"local-path" => "./client/css/"
 		],
+		[
+			"client-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.js/",
+			"build-target" => "dev|rel",
+
+			"path" => "js/",
+			"local-path" => "./client/js/"
+		],
 
 		/* web specs */
 		[

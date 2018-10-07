@@ -1,4 +1,5 @@
 /// <reference path="../../utils/modal.ts" />
+
 namespace Modals {
     export function spawnConnectModal(defaultHost: string = "ts.TeaSpeak.de", def_connect_type?: IdentitifyType) {
         let connectIdentity: Identity;
@@ -10,6 +11,7 @@ namespace Modals {
             },
             body: function () {
                 let tag = $("#tmpl_connect").renderTag({
+                    client: native_client,
                     forum_path: settings.static("forum_path"),
                     forum_valid: !!forumIdentity
                 });
@@ -110,10 +112,38 @@ namespace Modals {
                 }
 
                 {
-                    tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAFORO]).on('shown', ev => {
+                    const element = tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAFORO]);
+                    element.on('shown', ev => {
+                        console.log("Updating via shown");
                         connectIdentity = forumIdentity;
+
+                        if(connectIdentity) {
+                            element.find(".connected").show();
+                            element.find(".disconnected").hide();
+                        } else {
+                            element.find(".connected").hide();
+                            element.find(".disconnected").show();
+                        }
                         updateFields();
                     });
+
+                    if(native_client) {
+                        tag.find(".native-teaforo-login").on('click', event => {
+                            setTimeout(() => {
+                                const forum = require("teaforo.js");
+                                const call = () => {
+                                    try {
+                                        console.log("Trigger update!");
+                                        element.trigger('shown');
+                                    } catch ($) { console.log($); }
+                                    if(connectModal.shown)
+                                        forum.register_callback(call);
+                                };
+                                forum.register_callback(call);
+                                forum.open();
+                            }, 0);
+                        });
+                    }
                 }
 
                 {
@@ -125,8 +155,11 @@ namespace Modals {
                         if(connectIdentity instanceof NameIdentity)
                             connectIdentity.set_name(tag.find(".connect_nickname").val() as string);
                     });
-                    if(!settings.static("localhost_debug", false))
+
+                    if(!settings.static("localhost_debug", false)) {
+                        console.trace("Removing debug connect option");
                         tag.find(".identity_select option[value=" + IdentitifyType[IdentitifyType.NICKNAME] + "]").remove();
+                    }
                 }
 
                 //connect_address

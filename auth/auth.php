@@ -104,9 +104,9 @@
 	/**
 	 * @param $username
 	 * @param $password
+	 * @return array
 	 */
-	function checkLogin($username, $password)
-	{
+	function checkLogin($username, $password) {
 		$allowedXFGroups = [
 			3, //Administrator
 			6, //Web tester
@@ -118,7 +118,7 @@
 		$response["success"] = false;
 
 		if (!isset($username) || !isset($password)) {
-			$response["msg"] = "missing credicals";
+			$response["msg"] = "missing credentials";
 			goto _return;
 		}
 
@@ -165,7 +165,8 @@
 						$response["user_data"] = $user_data["data"];
 						$response["user_sign"] = $user_data["sign"];
 					} catch (Exception $error) {
-						die($error);
+						$response["success"] = false;
+						$response["msg"] = $error->getMessage();
 					}
 					goto _return;
 				} else {
@@ -175,15 +176,15 @@
 				$response["msg"] = $error;
 			}
 		} else {
-			$response["msg"] = "To many login's!";
+			$response["msg"] = "Too many login's!";
 		}
 
 		_return:
-		die(json_encode($response));
+		return $response;
 	}
 
 	function logged_in() {
-		return testSession() == 0;
+		return test_session() == 0;
 	}
 
 	function logout()
@@ -192,24 +193,20 @@
 		$session = $app->session();
 		$session->expunge();
 
-		global $localhost;
-		if($localhost)
-			header("Location: login.php");
-		else
-			header("Location: https://web.teaspeak.de/");
-		setcookie($session->getCookieName(), '', time() - 3600, '/');
-		setcookie("session", '', time() - 3600, '/');
+		return true;
 	}
 
 	/**
 	 * @return int 0 = Success | 1 = Invalid coocie | 2 = invalid session
 	 */
-	function testSession()
+	function test_session($sessionId = null)
 	{
 		$app = getXF();
-		if (!isset($_COOKIE[$app->session()->getCookieName()]))
-			return 1;
-		$sessionId = $_COOKIE[$app->session()->getCookieName()];
+		if(!isset($sessionId)) {
+			if (!isset($_COOKIE[$app->session()->getCookieName()]))
+				return 1;
+			$sessionId = $_COOKIE[$app->session()->getCookieName()];
+		}
 		$app->session()->expunge();
 		if (!$app->session()->start(remoteAddress(), $sessionId) || !$app->session()->exists())
 			return 2;
@@ -219,7 +216,7 @@
 	function redirectOnInvalidSession()
 	{
 		$app = getXF();
-		$status = testSession();
+		$status = test_session();
 		if ($status != 0) {
 			$type = "undefined";
 			switch ($status) {
@@ -245,11 +242,41 @@
 			var_dump($_GET);
 			var_dump($_POST);
 			if ($_GET["type"] == "login") {
-				checkLogin($_POST["user"], $_POST["pass"]);
+				die(checkLogin($_POST["user"], $_POST["pass"]));
 			} else if ($_GET["type"] == "logout") {
 				logout();
+				global $localhost;
+				if($localhost)
+					header("Location: login.php");
+				else
+					header("Location: https://web.teaspeak.de/");
+				setcookie($session->getCookieName(), '', time() - 3600, '/');
+				setcookie("session", '', time() - 3600, '/');
 			} else die("unknown type!");
 		} else if(isset($_POST)) {
-			error_log("Got auth request!");
+			error_log("Got auth post request!");
+			if($_POST["action"] === "login") {
+				die(json_encode(checkLogin($_POST["user"], $_POST["pass"])));
+			} else if ($_POST["action"] === "logout") {
+				logout();
+				die(json_encode([
+					"success" => true
+				]));
+			} else if($_POST["action"] === "validate") {
+				$app = getXF();
+				if(test_session($_POST["token"]) === 0)
+					die(json_encode([
+						"success" => true,
+						"token" => $app->session()->getSessionId()
+					]));
+				else
+					die(json_encode([
+						"success" => false
+					]));
+			} else
+				die(json_encode([
+					"success" => false,
+					"msg" => "Invalid action"
+				]));
 		}
 	}

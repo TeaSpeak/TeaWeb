@@ -243,8 +243,9 @@ function loadTemplates() {
 function loadSide() {
     if(window.require !== undefined) {
         console.log("Loading node specific things");
-        const app = require('electron').remote.app;
-        module.paths.push(app.getAppPath());
+        const remote = require('electron').remote;
+        module.paths.push(remote.app.getAppPath());
+        module.paths.push(remote.getGlobal("browser-root") + "js/");
         window.$ = require("assets/jquery.min.js");
         require("native/loader_adapter.js");
     }
