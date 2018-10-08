@@ -103,7 +103,7 @@ if (!Array.prototype.last){
 if(typeof ($) !== "undefined") {
     if(!$.spawn) {
         $.spawn = function<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]> {
-            return $(document.createElement(tagName));
+            return $(document.createElement(tagName) as any);
         }
     }
     if(!$.prototype.renderTag) {

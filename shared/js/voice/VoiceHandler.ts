@@ -2,8 +2,6 @@
 /// <reference path="../codec/Codec.ts" />
 /// <reference path="VoiceRecorder.ts" />
 
-import WarningListener = NodeJS.WarningListener;
-
 class CodecPoolEntry {
     instance: BasicCodec;
     owner: number;
@@ -138,7 +136,7 @@ class VoiceConnection {
 
     private vpacketId: number = 0;
     private chunkVPacketId: number = 0;
-    private send_task: number = 0;
+    private send_task: NodeJS.Timer;
 
     constructor(client) {
         this.client = client;

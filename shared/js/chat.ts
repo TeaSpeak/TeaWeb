@@ -295,7 +295,7 @@ class ChatBox {
 
         this.htmlTag.find(".input button").click(this.onSend.bind(this));
         this.htmlTag.find(".input_box").keypress(event => {
-            if(event.keyCode == $.Key.Enter && !event.shiftKey) {
+            if(event.keyCode == JQuery.Key.Enter && !event.shiftKey) {
                 this.onSend();
                 return false;
             }
