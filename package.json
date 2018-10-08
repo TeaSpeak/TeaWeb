@@ -14,7 +14,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/emscripten": "0.0.31",
-    "@types/jquery": "^3.3.0",
+    "@types/jquery": "3.3.5",
     "@types/node": "^9.4.6",
     "@types/websocket": "0.0.38",
     "electron": "^3.0.2",
