@@ -250,7 +250,7 @@
 					$environment = "web/dev-environment";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client-api/environment/files";
+					$environment = "client-api/environment/ui-files";
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -262,7 +262,7 @@
 					$environment = "web/rel-environment";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client-api/environment/files";
+					$environment = "client-api/environment/ui-files";
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -313,6 +313,11 @@
 					error_log("Failed to enter directory client-api/environment!");
 					exit(1);
 				}
+				if(!is_dir("versions/beta"))
+					exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
+				if(!is_dir("versions/stable"))
+					exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
+
 				exec($command = "ln -s ../api.php ./", $output, $state);
 				if($state) goto handle_error;
 			}
