@@ -331,15 +331,23 @@ class HandshakeHandler {
     }
 
     private handshake_finished() {
-        this.connection.sendCommand("clientinit", {
+        let data = {
             //TODO variables!
             client_nickname: this.name ? this.name : this.identity.name(),
             client_platform: navigator.platform,
             client_version: navigator.userAgent,
 
-            client_server_password: this.server_password
-            //client_browser_engine: navigator.product
-        }).catch(error => {
+            client_server_password: this.server_password,
+            client_browser_engine: navigator.product
+        };
+
+        if(window.require) {
+            const os = require('os');
+            data.client_version = "TeaClient"; //FIXME get version
+            data.client_platform = os.platform() + " (" + os.arch() + ")";
+        }
+
+        this.connection.sendCommand("clientinit", data).catch(error => {
             this.connection.disconnect();
             if(error instanceof CommandResult) {
                 if(error.id == 1028) {

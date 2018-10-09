@@ -54,7 +54,7 @@ echo "PATH=\"$PATH:`pwd`\"" >> ~/.bashrc
 ```
 
 # Build TeaWeb
-## Close and initialize project
+## Clone and initialize project
 ```bash
 git clone https://github.com/TeaSpeak/TeaWeb
 git submodule update --init --recursive --remote --checkout
@@ -62,10 +62,16 @@ git submodule update --init --recursive --remote --checkout
 
 ## Build native libraries
 ### Opus
+#### Native loader
 ```bash
 cd asm
 ./make_opus.sh
 ```
+#### Javascript loader
+```bash
+npm run build-worker
+```
+
 
 ### Tommath
 ```bash
@@ -90,7 +96,7 @@ emcmake cmake ..
 emmake make -j 4
 ```
 
-# Now generate project structure
+## Now generate project structure
 ```bash
 npm install --only=dev
 ./scripts/build_web_release.sh

@@ -6,6 +6,7 @@
   "directories": {},
   "scripts": {
     "compile-sass": "sass --update .:.",
+    "build-worker": "tsc -p shared/js/workers/tsconfig_worker_codec.json",
     "build-web-app": "tsc -p tsconfig/tsconfig_web_app.json",
     "build-web-app-release": "tsc -p tsconfig/tsconfig_web_app_packaged.json",
     "build-web-preload": "tsc -p tsconfig/tsconfig_web_preload.json"
