@@ -8,7 +8,7 @@ if [ ! -d web/rel-environment ]; then
     exit 1
 fi
 
-git diff-index --quiet HEAD -- "asm/libraries/*"
+git diff-index HEAD -- . ':!asm/libraries/'
 if [ $? -ne 0 ]; then
     echo "You're using a private modified build!"
     echo "Cant assign git hash!"
