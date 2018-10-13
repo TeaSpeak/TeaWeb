@@ -3,12 +3,19 @@ dist: trusty
 
 jobs:
   include:
-    - stage: build docker image
+    - stage: build teaweb
       script:
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker images
       - docker pull $DOCKER_USERNAME/teaweb
       - docker images
-    - stage: build
+      - docker run --rm teaweb:build /bin/bash -c /root/build_teaweb.sh travis
+      if: branch = master
+    - stage: test teaweb
       script:
-      - docker run --rm teaweb:build /bin/bash -c "ls -lah"
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker images
+      - docker pull $DOCKER_USERNAME/teaweb
+      - docker images
+      - docker run --rm teaweb:build /bin/bash -c /root/build_teaweb.sh
+      if: branch != master
