@@ -1,4 +1,4 @@
-# Official TeaSpeak-Web Issue Tracker ![](https://travis-ci.org/TeaSpeak/TeaWeb.svg?branch=master)
+# Official TeaSpeak-Web Issue Tracker [![Build Status](https://travis-ci.org/TeaSpeak/TeaWeb.svg?branch=master)](https://travis-ci.org/TeaSpeak/TeaWeb)
 
 Welcome here! This repository is created with two reasons:
 1. People can bring their own ideas and follow their implementation
