@@ -1,13 +1,14 @@
-sudo: required
+sudo: true
+dist: trusty
 
-services:
-  - docker
-
-before_install:
-- docker pull wolverindev/teaweb
-- docker run --name teaweb teaweb:build /bin/bash
-
-script:
-- "ls -lah"
-- "cd root"
-- "ls -lah"
+jobs:
+  include:
+    - stage: build docker image
+      script:
+      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+      - docker images
+      - docker pull $DOCKER_USERNAME/teaweb
+      - docker images
+    - stage: build
+      script:
+      - docker run --rm teaweb:build /bin/bash -c "ls -lah"
