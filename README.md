@@ -1,4 +1,4 @@
-# Official TeaSpeak-Web Issue Tracker
+# Official TeaSpeak-Web Issue Tracker ![](https://travis-ci.org/TeaSpeak/TeaWeb.svg?branch=master)
 
 Welcome here! This repository is created with two reasons:
 1. People can bring their own ideas and follow their implementation
@@ -11,5 +11,7 @@ To **report an issue**, then find and push the **New Issue** button, fill all th
 You can also ask questions here, if you have any.
 
 # Browser support:
-MS Edge: partitional
+MS Edge: partitional  
     No voice support (missing data channel support)
+    
+   
