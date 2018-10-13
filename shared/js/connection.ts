@@ -322,15 +322,17 @@ class HandshakeHandler {
         } else if(this.identity.type() == IdentitifyType.NICKNAME) {
             //FIXME handle error this should never happen!
         }
-        this.connection.sendCommand("handshakeindentityproof", {proof: proof}).then(() => {
-           this.handshake_finished();
-        }).catch(error => {
+        this.connection.sendCommand("handshakeindentityproof", {proof: proof}).catch(error => {
             console.error("Got login error");
             console.log(error);
-        }); //TODO handle error
+        }).then(() => this.handshake_finished()); //TODO handle error
     }
 
-    private handshake_finished() {
+    private async handshake_finished(version?: string) {
+        if(window.require && !version) {
+            version = "?.?.?"; //FIXME findout version!
+        }
+
         let data = {
             //TODO variables!
             client_nickname: this.name ? this.name : this.identity.name(),
@@ -342,9 +344,22 @@ class HandshakeHandler {
         };
 
         if(window.require) {
-            const os = require('os');
-            data.client_version = "TeaClient"; //FIXME get version
-            data.client_platform = os.platform() + " (" + os.arch() + ")";
+            data.client_version = "TeaClient ";
+            data.client_version += " " + version;
+
+            const os = require("os");
+            const arch_mapping = {
+                "x32": "32bit",
+                "x64": "64bit"
+            };
+
+            data.client_version += " " + (arch_mapping[os.arch()] || os.arch());
+
+            const os_mapping = {
+                "win32": "Windows",
+                "linux": "Linux"
+            };
+            data.client_platform = (os_mapping[os.platform()] || os.platform());
         }
 
         this.connection.sendCommand("clientinit", data).catch(error => {

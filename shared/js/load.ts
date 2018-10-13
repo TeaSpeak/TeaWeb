@@ -239,6 +239,10 @@ function loadTemplates() {
     });
 }
 
+interface Window {
+    $: JQuery;
+}
+
 //TODO release config!
 function loadSide() {
     if(window.require !== undefined) {

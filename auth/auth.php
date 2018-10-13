@@ -242,7 +242,7 @@
 			var_dump($_GET);
 			var_dump($_POST);
 			if ($_GET["type"] == "login") {
-				die(checkLogin($_POST["user"], $_POST["pass"]));
+				die(json_encode(checkLogin($_POST["user"], $_POST["pass"])));
 			} else if ($_GET["type"] == "logout") {
 				logout();
 				global $localhost;
@@ -253,7 +253,7 @@
 				setcookie($session->getCookieName(), '', time() - 3600, '/');
 				setcookie("session", '', time() - 3600, '/');
 			} else die("unknown type!");
-		} else if(isset($_POST)) {
+		} else if(isset($_POST["action"])) {
 			error_log("Got auth post request!");
 			if($_POST["action"] === "login") {
 				die(json_encode(checkLogin($_POST["user"], $_POST["pass"])));
