@@ -7,7 +7,7 @@ jobs:
       script:
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker images
-      - docker pull $DOCKER_USERNAME/teaweb:build
+      - docker pull $DOCKER_USERNAME/teaweb
       - docker images
       - docker run --rm teaweb:build /bin/bash -c /root/build_teaweb.sh travis
       if: branch = master
@@ -15,7 +15,7 @@ jobs:
       script:
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker images
-      - docker pull $DOCKER_USERNAME/teaweb:build
+      - docker pull $DOCKER_USERNAME/teaweb
       - docker images
       - docker run --rm teaweb:build /bin/bash -c /root/build_teaweb.sh
       if: branch != master
