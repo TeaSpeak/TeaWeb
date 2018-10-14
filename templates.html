@@ -6,7 +6,7 @@
     </head>
     <body>
         <!-- main frame -->
-        <script id="tmpl_main" type="text/html">
+        <script class="jsrender-template" id="tmpl_main" type="text/html">
             <div class="app-container">
                 <div class="app">
                     <!-- Container -->
@@ -98,7 +98,7 @@
             <div style="height: 100px"></div>
         </script>
         <!-- Template for the connect modal -->
-        <script id="tmpl_connect" type="text/html">
+        <script class="jsrender-template" id="tmpl_connect" type="text/html">
             <div style="margin-top: 5px;">
                 <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">
                     <div style="width: 68%; margin-bottom: 5px">
@@ -154,7 +154,7 @@
         </script>
 
         <!-- Template for chennel create & edit-->
-        <script id="tmpl_channel_edit" type="text/html">
+        <script class="jsrender-template" id="tmpl_channel_edit" type="text/html">
             <div class="align_column general_properties">
                 <div class="properties">
                     <a class="key">Name:</a>
@@ -322,7 +322,7 @@
                 </x-entry>
             </x-tab>
         </script>
-        <script id="tmpl_server_edit" type="text/html">
+        <script class="jsrender-template" id="tmpl_server_edit" type="text/html">
             <div class="align_column properties_general server_properties">
                 <div class="properties">
                     <a class="key">Name:</a>
@@ -554,7 +554,7 @@
         </script>
 
         <!-- Template for the settings -->
-        <script id="tmpl_settings" type="text/html">
+        <script class="jsrender-template" id="tmpl_settings" type="text/html">
             <x-tab>
                 <x-entry>
                     <x-tag>General</x-tag>
@@ -607,13 +607,13 @@
                 </x-entry>
             </x-tab>
         </script>
-        <script id="tmpl_change_volume" type="text/html">
+        <script class="jsrender-template" id="tmpl_change_volume" type="text/html">
             <div style="display: flex; justify-content: center; vertical-align: center">
                 <input type="range" min="0" max="200" value="100" class="volume_slider" style="width: 100%">
                 <div class="display_volume" style="width: 60px; align-self: center; text-align: center">&plusmn;0 %</div>
             </div>
         </script>
-        <script id="tmpl_client_ban" type="text/html">
+        <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
             <div class="align_column">
                 <div class="align_column" style="margin: 5px">
                     <a>Name:</a>
@@ -640,7 +640,7 @@
         </script>
 
         <!-- Permission overview -->
-        <script id="tmpl_server_permissions" type="text/html">
+        <script class="jsrender-template" id="tmpl_server_permissions" type="text/html">
             <x-tab>
                 <x-entry>
                     <x-tag>Server Groups</x-tag>
@@ -649,7 +649,9 @@
                             <div class="list-group-server">
                                 <div class="entries"></div>
                             </div>
-                            <node key="permissions_group_server"/>
+                            <div class="horizontal-stretch">
+                                <node key="permissions_group_server"/>
+                            </div>
                             <div class="list-group-server-clients"></div>
                         </div>
                     </x-content>
@@ -661,7 +663,9 @@
                             <div class="list-group-channel">
                                 <div class="entries"></div>
                             </div>
-                            <node key="permissions_group_channel"/>
+                            <div class="horizontal-stretch">
+                                <node key="permissions_group_channel"/>
+                            </div>
                         </div>
                     </x-content>
                 </x-entry>
@@ -672,7 +676,9 @@
                             <div class="list-channel">
                                 <div class="entries"></div>
                             </div>
-                            <node key="permissions_channel"/>
+                            <div class="horizontal-stretch">
+                                <node key="permissions_channel"/>
+                            </div>
                         </div>
                     </x-content>
                 </x-entry>
@@ -697,7 +703,9 @@
                                     <input class="client-dbid">
                                 </div>
                             </div>
-                            <node key="permissions_client"/>
+                            <div class="horizontal-stretch">
+                                <node key="permissions_client"/>
+                            </div>
                         </div>
                     </x-content>
                 </x-entry>
@@ -726,13 +734,15 @@
                                     <div class="entries"></div>
                                 </div>
                             </div>
-                            <node key="permissions_client_channel"/>
+                            <div class="horizontal-stretch">
+                                <node key="permissions_client_channel"/>
+                            </div>
                         </div>
                     </x-content>
                 </x-entry>
             </x-tab>
         </script>
-        <script id="tmpl_server_group_assignment" type="text/html">
+        <script class="jsrender-template" id="tmpl_server_group_assignment" type="text/html">
            <div class="group-assignment-list">
                <a>Changing groups of <b>{{>client_name}}</b></a>
                <div class="group-list">
@@ -750,82 +760,105 @@
            </div>
         </script>
 
-        <script id="tmpl_permission_explorer" type="text/html">
-            <div class="align_row permission-explorer">
-                <div class="bar-filter">
-                    <div><a>Filter:</a></div>
-                    <div><input type="text" class="filter-input"></div>
-                    <div><input type="checkbox" class="filter-granted"><a>Show granted permissions only</a></div>
-                </div>
-                <div class="list">
-                    <div class="entry header">
-                        <div>Permission Name</div>
-                        <div>Value</div>
-                        <div>Skip</div>
-                        <div>Negate</div>
-                        <div>Granted</div>
-                    </div>
-
-                    <div class="entries">
-                        {{for permissions tmpl="#tmpl_permission_entry"/}}
-                    </div>
-                    <!--
-                    <div class="entry">
-                        <div>this_is_a_test_permission</div>
-                        <div>value</div>
-                        <div>skip</div>
-                        <div>negate</div>
-                        <div>granted</div>
-                    </div>
-                    <div class="entry group">
-                        <div class="title"><div class="arrow right"></div><a>Test group</a></div>
-                        <div class="group-entries">
-                            <div class="entry">
-                                <div>Grouped entry A</div>
-                                <div>value</div>
-                                <div>skip</div>
-                                <div>negate</div>
-                                <div>granted</div>
-                            </div>
-                            <div class="entry">
-                                <div>Grouped entry B</div>
-                                <div>value</div>
-                                <div>skip</div>
-                                <div>negate</div>
-                                <div>granted</div>
-                            </div>
-                        </div>
-                    </div>
-                    -->
-                    <div class="overlay-disabled"></div>
-                </div>
-                <div>
-                    <button class="button-update"><div class="icon client-check_update"></div> Update</button>
-                </div>
-            </div>
-        </script>
-        <script id="tmpl_permission_entry" type="text/html">
-        {{if type == "entry"}}
+        <script class="jsrender-template" id="tmpl_permission_entry" type="text/html">
+            {{if type == "entry"}}
             <div class="entry {{if unset}}unset{{/if}} permission {{>permission_name}}">
                 <div class="permission-name filter-key">{{>permission_name}}</div>
-                <div class="permission-value"><node key="{{>permission_name}}_value"></node></div>
-                <div class="permission-skip"><node key="{{>permission_name}}_skip"></node></div>
-                <div class="permission-negate"><node key="{{>permission_name}}_negate"></node></div>
-                <div class="permission-grant"><node key="{{>permission_name}}_grant"></node></div>
+                <div class="permission-value">
+                    {{if permission_name.startsWith("b_") }}
+                    <label class="checkbox">
+                        <input type="checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                    {{else}}
+                    <input type="number" min-value="-1" max-value="9999999999" />
+                    {{/if}}
+                </div>
+                <div class="permission-skip">
+                    <label class="checkbox">
+                        <input type="checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="permission-negate">
+                    <label class="checkbox">
+                        <input type="checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="permission-grant">
+                    <input type="number" min-value="-1" max-value="9999999999" />
+                </div>
             </div>
-        {{else}}
+            {{else}}
             <div class="entry group">
                 <div class="title"><div class="arrow down"></div><a>{{>name}}</a></div>
                 <div class="group-entries">
-                    {{for entries tmpl="#tmpl_permission_entry"/}}
+                    {{for entries tmpl="tmpl_permission_entry"/}}
                 </div>
             </div>
-        {{/if}}
+            {{/if}}
+        </script>
+        <script class="jsrender-template" id="tmpl_permission_explorer" type="text/html">
+            <div class="container-permissions">
+                <div class="align_row permission-explorer">
+                    <div class="bar-filter">
+                        <div><a>Filter:</a></div>
+                        <div><input type="text" class="filter-input"></div>
+                        <div><input type="checkbox" class="filter-granted"><a>Show granted permissions only</a></div>
+                    </div>
+                    <div class="list">
+                        <div class="entry header">
+                            <div>Permission Name</div>
+                            <div>Value</div>
+                            <div>Skip</div>
+                            <div>Negate</div>
+                            <div>Granted</div>
+                        </div>
+
+                        <div class="entries">
+                            {{for permissions tmpl="tmpl_permission_entry" /}}
+                        </div>
+                        <!--
+                        <div class="entry">
+                            <div>this_is_a_test_permission</div>
+                            <div>value</div>
+                            <div>skip</div>
+                            <div>negate</div>
+                            <div>granted</div>
+                        </div>
+                        <div class="entry group">
+                            <div class="title"><div class="arrow right"></div><a>Test group</a></div>
+                            <div class="group-entries">
+                                <div class="entry">
+                                    <div>Grouped entry A</div>
+                                    <div>value</div>
+                                    <div>skip</div>
+                                    <div>negate</div>
+                                    <div>granted</div>
+                                </div>
+                                <div class="entry">
+                                    <div>Grouped entry B</div>
+                                    <div>value</div>
+                                    <div>skip</div>
+                                    <div>negate</div>
+                                    <div>granted</div>
+                                </div>
+                            </div>
+                        </div>
+                        -->
+                        <div class="overlay-disabled"></div>
+                    </div>
+                    <div>
+                        <button class="button-update"><div class="icon client-check_update"></div> Update</button>
+                    </div>
+                </div>
+            </div>
         </script>
 
 
         <!-- Music interface -->
-        <script id="tmpl_music_frame" type="text/html">
+        <script class="jsrender-template" id="tmpl_music_frame" type="text/html">
             <!-- First we want to define some variables if not defined yet. -->
             {{if !thumbnail}}
                 {{*
@@ -900,14 +933,14 @@
                 </div>
             </div>
         </script>
-        <script id="tmpl_music_frame_empty" type="text/html">
+        <script class="jsrender-template" id="tmpl_music_frame_empty" type="text/html">
             <div class="music-wrapper empty">
                 <img src="img/music/empty_disk.svg">
                 <a>Not playing any music</a>
             </div>
         </script>
 
-        <script id="tmpl_selected_client" type="text/html">
+        <script class="jsrender-template" id="tmpl_selected_client" type="text/html">
             <table class="select_info_table">
                 <tr>
                     <td>Name:</td>
@@ -1018,7 +1051,7 @@
                 </div>
             {{/if}}
         </script>
-        <script id="tmpl_selected_music" type="text/html">
+        <script class="jsrender-template" id="tmpl_selected_music" type="text/html">
             <table class="select_info_table">
                 <tr>
                     <td>Name:</td>
@@ -1077,7 +1110,7 @@
                 <node key="music_player"/>
             </div>
         </script>
-        <script id="tmpl_selected_server" type="text/html">
+        <script class="jsrender-template" id="tmpl_selected_server" type="text/html">
             <div class="select_server">
                 <table class="select_info_table">
                     <tr>
@@ -1117,7 +1150,7 @@
                 <button class="button-update btn_update">Update info</button>
             </div>
         </script>
-        <script id="tmpl_selected_channel" type="text/html">
+        <script class="jsrender-template" id="tmpl_selected_channel" type="text/html">
             <table class="select_info_table">
                 <tr>
                     <td>Name:</td>

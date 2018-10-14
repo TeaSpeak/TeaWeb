@@ -37,41 +37,6 @@ namespace Modals {
                             entry.permission_name = perm.name;
                             entry.unset = true;
                             group_entry.entries.push(entry);
-
-                            {
-                                let tag: JQuery<HTMLElement>;
-                                if(perm.name.startsWith("b_")) {
-                                    tag = $.spawn("label").addClass("checkbox");
-                                    $.spawn("input").attr("type", "checkbox").appendTo(tag);
-                                    $.spawn("span").addClass("checkmark").appendTo(tag);
-                                } else {
-                                    tag = $.spawn("input");
-                                    tag.attr("type", "number");
-                                    tag.attr("min-value", -1);
-                                    tag.attr("max-value", 9999999999); //TODO use there may the grant permission
-                                }
-                                root_entry[perm.name + "_value"] = tag;
-                            }
-                            {
-                                let tag = $.spawn("label").addClass("checkbox");
-                                $.spawn("input").attr("type", "checkbox").appendTo(tag);
-                                $.spawn("span").addClass("checkmark").appendTo(tag);
-                                root_entry[perm.name + "_skip"] = tag;
-                            }
-                            {
-                                let tag = $.spawn("label").addClass("checkbox");
-                                $.spawn("input").attr("type", "checkbox").appendTo(tag);
-                                $.spawn("span").addClass("checkmark").appendTo(tag);
-                                root_entry[perm.name + "_negate"] = tag;
-                            }
-                            {
-                                let tag = $.spawn("input");
-                                tag.attr("type", "number");
-                                tag.attr("min-value", -1);
-                                tag.attr("max-value", 9999999999);
-                                root_entry[perm.name + "_grant"] = tag;
-                            }
-                            //{{>permission_name}}_value
                         }
                     };
                     groups.forEach(entry => insert_group(entry));
@@ -115,7 +80,8 @@ namespace Modals {
                 return tag;
             },
 
-            width: "90%"
+            width: "90%",
+            height: "80%"
         });
 
         connectModal.htmlTag.find(".btn_close").on('click', () => {
@@ -152,7 +118,7 @@ namespace Modals {
     function make_permission_editor(tag: JQuery, default_number: number, cb_edit: (type: PermissionInfo, value?: number, skip?: boolean, negate?: boolean) => Promise<boolean>, cb_grant_edit: (type: PermissionInfo, value?: number) => Promise<boolean>) {
         tag = tag.hasClass("permission-explorer") ? tag : tag.find(".permission-explorer");
         const list = tag.find(".list");
-        list.css("max-height", document.body.clientHeight * .7)
+        //list.css("max-height", document.body.clientHeight * .7)
 
         list.find(".arrow").each((idx, _entry) => {
             let entry = $(_entry);

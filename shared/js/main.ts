@@ -49,14 +49,14 @@ function setup_close() {
     };
 }
 
-function main() {
+function setup_jsrender() : boolean {
     if(!js_render) {
         displayCriticalError("Missing jsrender extension!");
-        return;
+        return false;
     }
     if(!js_render.views) {
         displayCriticalError("Missing jsrender viewer extension!");
-        return;
+        return false;
     }
     js_render.views.settings.allowCode(true);
     js_render.views.tags("rnd", (argument) => {
@@ -65,6 +65,19 @@ function main() {
 
         return (Math.round(Math.random() * (min + max + 1) - min)).toString();
     });
+
+    $(".jsrender-template").each((idx, _entry) => {
+        if(!js_render.templates(_entry.id, _entry.innerHTML)) { //, _entry.innerHTML
+            console.error("Failed to cache template " + _entry.id + " for js render!");
+        } else
+            console.debug("Successfully loaded jsrender template " + _entry.id);
+    });
+    return true;
+}
+
+function main() {
+    if(!setup_jsrender()) return;
+
     //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
     AudioController.initializeAudioController();
     if(!TSIdentityHelper.setup()) { console.error("Could not setup the TeamSpeak identity parser!"); return; }

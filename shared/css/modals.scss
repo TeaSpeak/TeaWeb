@@ -140,10 +140,21 @@
 	}
 }
 
+.horizontal-stretch {
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+}
+
+.container-permissions {
+	display: flex;
+	height: 100%;
+}
+
 .permission-explorer {
 	width: 100%;
 	display: grid;
-	grid-template-rows: min-content auto;
+	grid-template-rows: min-content auto min-content;
 	grid-gap: 5px;
 
 	.bar-filter {
@@ -355,15 +366,21 @@
 
 .layout-group-server, .layout-group-channel, .layout-channel, .layout-client, .layout-client-channel {
 	width: 100%;
+	height: 100%;
 	display: flex;
 	flex-direction: row;
+	justify-content: stretch;
 
 	& > div {
 		margin: 5px;
 	}
 
 	.list-group-server, .list-group-channel, .list-group-server-clients, .list-channel {
+		border: grey solid 1px;
 		position: relative;
+		width: 175px;
+		flex-grow: 0;
+
 		.entries {
 			display: table;
 			position: absolute;
@@ -374,8 +391,6 @@
 	}
 
 	.list-group-server, .list-group-channel {
-		width: 300px;
-		flex-grow: 0;
 		border: grey solid 1px;
 		user-select: none;
 		overflow: auto;
@@ -419,7 +434,6 @@
 	.list-group-server-clients {
 		flex-grow: 0;
 		width: 200px;
-		border: grey solid 1px;
 	}
 }
 
@@ -428,10 +442,7 @@
 		display: flex;
 		flex-direction: column;
 
-		overflow-x: scroll;
-		overflow-y: auto;
-		width: 300px;
-		flex-grow: 1;
+		overflow: auto;
 
 		.channel {
 			cursor: pointer;
@@ -455,6 +466,7 @@
 	.client-info {
 		display: flex;
 		flex-direction: column;
+		width: 200px;
 
 		& > div:not(.list-channel) {
 			display: grid;
@@ -466,6 +478,10 @@
 			input {
 				pointer-events: none;
 			}
+		}
+
+		.list-channel {
+			flex-grow: 1;
 		}
 	}
 }

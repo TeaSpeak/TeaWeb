@@ -58,7 +58,7 @@ class ModalProperties {
         return this;
     }
     width: number | string = "60%";
-    hight: number | string = "auto";
+    height: number | string = "auto";
 
     closeable: boolean = true;
 
@@ -92,7 +92,10 @@ class Modal {
 
         let content = $.spawn("div");
         content.addClass("modal-content");
-        content.css("width", this.properties.width);
+        if(this.properties.width)
+            content.css("width", this.properties.width);
+        if(this.properties.height)
+            content.css("height", this.properties.height);
 
         let header = ModalFunctions.divify(ModalFunctions.jqueriefy(this.properties.header)).addClass("modal-header");
         if(this.properties.closeable) header.append("<span class=\"close\">&times;</span>");

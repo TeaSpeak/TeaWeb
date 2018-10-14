@@ -115,7 +115,7 @@ function loadDebug() {
     app.type = app.Type.DEBUG;
     console.log("Load for debug!");
 
-    awaitLoad(loadScripts([
+    load_wait_scripts([
         ["wasm/TeaWeb-Identity.js"],
 
         //Load general API's
@@ -170,18 +170,18 @@ function loadDebug() {
         "js/client.js",
         "js/chat.js",
         "js/Identity.js"
+    ]).then(() => load_wait_scripts([
+        "js/codec/CodecWrapper.js"
+    ])).then(() => load_wait_scripts([
+        "js/main.js"
     ])).then(() => {
-        return loadScripts(["js/codec/CodecWrapper.js"]);
-    }).then(() => {
-        awaitLoad(loadScripts(["js/main.js"])).then(() => {
-            console.log("Loaded successfully all scripts!");
-            app.callbackApp();
-        });
+        console.log("Loaded successfully all scripts!");
+        app.callbackApp();
     });
 }
 
-function awaitLoad(promises: {path: string, promise: Promise<Boolean>}[]) : Promise<Boolean> {
-    return new Promise<Boolean>((resolve, reject) => {
+function awaitLoad(promises: {path: string, promise: Promise<Boolean>}[]) : Promise<void> {
+    return new Promise<void>((resolve, reject) => {
         let awaiting = promises.length;
         let success = true;
 
@@ -203,6 +203,10 @@ function awaitLoad(promises: {path: string, promise: Promise<Boolean>}[]) : Prom
             })
         }
     });
+}
+
+function load_wait_scripts(paths: (string | string[])[]) : Promise<void> {
+    return awaitLoad(loadScripts(paths));
 }
 
 
@@ -248,6 +252,7 @@ function loadSide() {
     if(window.require !== undefined) {
         console.log("Loading node specific things");
         const remote = require('electron').remote;
+        module.paths.push(remote.app.getAppPath() + "/node_modules");
         module.paths.push(remote.app.getAppPath() + "/app");
         module.paths.push(remote.getGlobal("browser-root") + "js/");
         window.$ = require("assets/jquery.min.js");
@@ -269,15 +274,17 @@ function loadSide() {
         return;
     }
     //Load the general scripts and required scripts
-    (window.require !== undefined ? Promise.resolve(true) : awaitLoad(loadScripts([
-        ["vendor/jquery/jquery.min.js"],
-    ]))).then(() => awaitLoad(loadScripts([
+    (window.require !== undefined ?
+        Promise.resolve() :
+        load_wait_scripts([
+            "vendor/jquery/jquery.min.js"
+        ])
+    ).then(() => load_wait_scripts([
+        "vendor/jsrender/jsrender.min.js"
+    ])).then(() => load_wait_scripts([
         ["vendor/bbcode/xbbcode.js"],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
-    ]))).then(() => awaitLoad(loadScripts([
-        //["https://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"]
-        ["vendor/jsrender/jsrender.min.js"]
-    ]))).then(() => {
+    ])).then(() => {
         //Load the teaweb scripts
         loadScript("js/proto.js").then(loadDebug).catch(loadRelease);
         //Load the teaweb templates

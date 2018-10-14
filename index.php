@@ -72,7 +72,7 @@
 			?>
         </x-properties>
 
-        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <!-- Global site tag (gtag.js) - Google Analytics
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
@@ -84,7 +84,7 @@
             gtag('js', new Date());
             gtag('config', 'UA-113151733-4');
         </script>
-        <script src="vendor/jquery/jquery.min.js"></script>
+         -->
         <script>
             //const exports = {};
         </script>

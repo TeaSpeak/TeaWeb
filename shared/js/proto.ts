@@ -112,8 +112,12 @@ if(typeof ($) !== "undefined") {
             if(this.render) {
                 result = $(this.render(values));
             } else {
-                result = window.jsrender.templates("xxx", this.html())
-                result = window.jsrender.render["xxx"](values);
+                const template = window.jsrender.render[this.attr("id")];
+                /*
+                result = window.jsrender.templates("tmpl_permission_entry", $("#tmpl_permission_entry").html());
+                result = window.jsrender.templates("xxx", this.html());
+                */
+                result = template(values);
                 result = $(result);
             }
             result.find("node").each((index, element) => {

@@ -79,7 +79,13 @@
 }
 
 /* Modal Body */
-.modal-body:not(:empty) {padding: 2px 16px;}
+.modal-body:not(:empty) {
+	display: flex;
+    padding: 2px 16px;
+	flex-grow: 1;
+	flex-direction: column;
+	justify-content: stretch;
+}
 
 /* Modal Footer */
 .modal-footer:not(:empty) {
@@ -120,6 +126,7 @@
     animation-name: modalFlyIn;
     animation-duration: 0.4s;
     top: 10%;
+	max-height: 80%;
 
     left: 0;
     right: 0;
