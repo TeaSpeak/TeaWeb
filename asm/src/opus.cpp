@@ -73,6 +73,7 @@ extern "C" {
         printf("Initialize opus. (Channel count: %d Sample rate: %d Type: %d)!\n", channelCount, 48000, type);
         auto codec = new OpusHandle{};
 	    codec->opusType = type;
+	    codec->channelCount = channelCount;
 	    if(!reinitialize_decoder(codec)) return nullptr;
 	    if(!reinitialize_encoder(codec)) return nullptr;
         return codec;

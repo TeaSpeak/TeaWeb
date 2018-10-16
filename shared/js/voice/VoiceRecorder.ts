@@ -36,7 +36,7 @@ if(!AudioBuffer.prototype.copyToChannel) { //Webkit does not implement this func
 
 class VoiceRecorder {
     private static readonly CHANNEL = 0;
-    private static readonly CHANNELS = 1;
+    private static readonly CHANNELS = 2;
     private static readonly BUFFER_SIZE = 1024 * 4;
 
     handle: VoiceConnection;

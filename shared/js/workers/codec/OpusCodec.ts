@@ -95,6 +95,7 @@ class OpusWorker implements CodecWorker {
         if (result < 0) {
             return "invalid result on decode (" + result + ")";
         }
+        console.log("Result: %o | Channel count %o", result, this.channelCount);
         return Module.HEAPF32.slice(this.decodeBuffer.byteOffset / 4, (this.decodeBuffer.byteOffset / 4) + (result * this.channelCount));
     }
 

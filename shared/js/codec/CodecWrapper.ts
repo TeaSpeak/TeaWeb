@@ -68,9 +68,11 @@ class CodecWrapper extends BasicCodec {
                                 array[index] = data.data[index];
 
                             let audioBuf = this._audioContext.createBuffer(this.channelCount, array.length / this.channelCount, this._codecSampleRate);
-                            for (let channel = 0; channel < this.channelCount; channel++)
-                                for (let offset = 0; offset < audioBuf.length; offset++)
-                                        audioBuf.getChannelData(channel)[offset] = array[channel * audioBuf.length + offset];
+                            for (let channel = 0; channel < this.channelCount; channel++) {
+                                for (let offset = 0; offset < audioBuf.length; offset++) {
+                                    audioBuf.getChannelData(channel)[offset] = array[channel + offset * 2];
+                                }
+                            }
                             resolve(audioBuf);
                         } else {
                             reject(data.message);
