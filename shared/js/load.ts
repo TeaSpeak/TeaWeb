@@ -136,6 +136,8 @@ function loadDebug() {
         "js/ui/modal/ModalConnect.js",
         "js/ui/modal/ModalChangeVolume.js",
         "js/ui/modal/ModalBanClient.js",
+        "js/ui/modal/ModalBanCreate.js",
+        "js/ui/modal/ModalBanList.js",
         "js/ui/modal/ModalYesNo.js",
         "js/ui/modal/ModalPermissionEdit.js",
         "js/ui/modal/ModalServerGroupDialog.js",
@@ -224,6 +226,10 @@ function loadTemplates() {
             tags = node.children;
 
         let root = document.getElementById("templates");
+        if(!root) {
+            displayCriticalError("Failed to find template tag!");
+            return;
+        }
         while(tags.length > 0){
             let tag = tags.item(0);
             if(tag.id == "tmpl_main") {
@@ -283,6 +289,7 @@ function loadSide() {
         "vendor/jsrender/jsrender.min.js"
     ])).then(() => load_wait_scripts([
         ["vendor/bbcode/xbbcode.js"],
+        ["vendor/moment/moment.js"],
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => {
         //Load the teaweb scripts

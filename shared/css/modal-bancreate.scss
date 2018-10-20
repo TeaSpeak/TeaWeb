@@ -1,0 +1,73 @@
+.bancreate {
+	display: flex;
+	flex-direction: column;
+
+	.frame-container {
+		display: flex;
+		flex-direction: column;
+
+		.container {
+			display: block;
+			flex-shrink: 0;
+			flex-grow: 0;
+
+			a {
+				display: block;
+			}
+
+			input, textarea {
+				width: 100%;
+			}
+
+			textarea {
+				resize: vertical;
+				max-height: 100%;
+				overflow-y: auto;
+			}
+
+			&:not(:first-of-type) {
+				margin-top: 5px;
+			}
+
+			&.container-reason {
+				max-height: 500px;
+				display: flex;
+				flex-direction: column;
+			}
+
+			.container-name-type {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				margin-top: 2px;
+
+				* {
+					display: inline-block;
+				}
+			}
+
+			.container-time-input {
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+			}
+		}
+
+		.footer {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+
+			.container-global {
+				display: inline-block;
+
+				.input-global {
+					vertical-align: bottom;
+				}
+			}
+			.container-buttons {
+				display: inline-block;
+			}
+		}
+	}
+}

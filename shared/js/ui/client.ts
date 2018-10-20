@@ -307,12 +307,12 @@ class ClientEntry {
                 name: "Ban client",
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
-                    Modals.spawnBanClient(this.properties.client_nickname, (duration, reason) => {
+                    Modals.spawnBanClient(this.properties.client_nickname, (data) => {
                         this.channelTree.client.serverConnection.sendCommand("banclient", {
                             uid: this.properties.client_unique_identifier,
-                            banreason: reason,
-                            time: duration
-                        });
+                            banreason: data.reason,
+                            time: data.length
+                        }, [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]);
                     });
                 }
             },

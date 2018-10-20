@@ -4,8 +4,10 @@
 /// <reference path="utils/modal.ts" />
 /// <reference path="ui/modal/ModalConnect.ts" />
 /// <reference path="ui/modal/ModalCreateChannel.ts" />
+/// <reference path="ui/modal/ModalBanCreate.ts" />
 /// <reference path="ui/modal/ModalBanClient.ts" />
 /// <reference path="ui/modal/ModalYesNo.ts" />
+/// <reference path="ui/modal/ModalBanList.ts" />
 /// <reference path="codec/CodecWrapper.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="log.ts" />
@@ -49,6 +51,7 @@ function setup_close() {
     };
 }
 
+declare function moment(...arguments) : any;
 function setup_jsrender() : boolean {
     if(!js_render) {
         displayCriticalError("Missing jsrender extension!");
@@ -64,6 +67,10 @@ function setup_jsrender() : boolean {
         let max = parseInt(argument.substr(argument.indexOf('~') + 1));
 
         return (Math.round(Math.random() * (min + max + 1) - min)).toString();
+    });
+
+    js_render.views.tags("fmt_date", (...arguments) => {
+        return moment(arguments[0]).format(arguments[1]);
     });
 
     $(".jsrender-template").each((idx, _entry) => {
@@ -138,8 +145,6 @@ function main() {
     })
     */
 
-    //Modals.spawnPermissionEdit();
-
     setup_close();
     $(window).on('resize', () => {
         globalClient.channelTree.handle_resized();
@@ -154,7 +159,7 @@ app.loadedListener.push(() => {
             $(document).one('click', event => AudioController.initializeFromGesture());
         }
     } catch (ex) {
-        if(ex instanceof ReferenceError)
+        if(ex instanceof ReferenceError || ex instanceof TypeError)
             ex = ex.message + ":<br>" + ex.stack;
         displayCriticalError("Failed to invoke main function:<br>" + ex);
     }

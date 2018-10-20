@@ -56,6 +56,9 @@
                             </div>
 
                             <div style="width: 100%"></div>
+                            <div class="button btn_banlist" title="Banlist">
+                                <div class="icon_x32 client-ban_list"></div>
+                            </div>
                             <div class="button btn_permissions" title="View/edit permissions">
                                 <div class="icon_x32 client-permission_overview"></div>
                             </div>
@@ -153,7 +156,7 @@
             </div>
         </script>
 
-        <!-- Template for chennel create & edit-->
+        <!-- Template for channel create & edit-->
         <script class="jsrender-template" id="tmpl_channel_edit" type="text/html">
             <div class="align_column general_properties">
                 <div class="properties">
@@ -613,31 +616,6 @@
                 <div class="display_volume" style="width: 60px; align-self: center; text-align: center">&plusmn;0 %</div>
             </div>
         </script>
-        <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
-            <div class="align_column">
-                <div class="align_column" style="margin: 5px">
-                    <a>Name:</a>
-                    <input value="{{>client_name}}" readonly>
-                </div>
-                <div class="align_column" style="margin: 5px">
-                    <a>Reason:</a>
-                    <textarea style="height: 32px; resize: vertical; max-height: 150px; min-height: 32px" maxlength="512" class="ban_reason"></textarea>
-                </div>
-                <div class="align_row" style="margin: 5px; justify-content: space-between">
-                    <a>Duration:</a>
-                    <div class="align_row">
-                        <input type="number" value="1" class="ban_duration" style="margin-right: 7px" min="1">
-                        <select class="ban_duration_type">
-                            <option value="sec">seconds</option>
-                            <option value="min">minutes</option>
-                            <option value="hours">hours</option>
-                            <option value="days">days</option>
-                            <option value="perm">permanent</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        </script>
 
         <!-- Permission overview -->
         <script class="jsrender-template" id="tmpl_server_permissions" type="text/html">
@@ -856,6 +834,220 @@
             </div>
         </script>
 
+        <!-- General management templates -->
+        <script class="jsrender-template" id="tmpl_ban_list" type="text/html">
+            <div class="banlist">
+                <div class="frame-container">
+                    <div class="top-menu">
+                        <div class="manage-buttons">
+                            <button class="button-add">Add</button>
+                            <button class="button-edit">Edit</button>
+                            <button class="button-remove">Remove</button>
+                        </div>
+                        <div class="search">
+                            <input type="text" class="entry-filter">
+                        </div>
+                    </div>
+                    <div class="entry-container">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="field-properties">Name/IP/UID/HWID</th>
+                                        <th class="field-reason">Reason</th>
+                                        <th class="field-invoker">Creator</th>
+                                        <th class="field-timestamp">Created / Expires</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="ban-entry-list">
+                                    <!--
+                                    <tr class="ban-entry">
+                                        <td class="field-properties">
+                                            <a class="property property-name">name=WolverasdasdinDEV</a>
+                                            <a class="property property-ip">ip=WolverasdasdinDEV</a>
+                                            <a class="property property-unique-id">uid=WolverasdasdinDEV</a>
+                                            <a class="property property-hardware-id">hwid=WolverasdasdinDEV</a>
+                                        </td>
+                                        <td class="field-reason">Insult</td>
+                                        <td class="field-invoker">WolverinDEV</td>
+                                        <td class="field-timestamp">1.1.2013 12:22 / 1.21.2013 12:22</td>
+                                    </tr>
+                                    <tr class="ban-entry">
+                                        <td class="field-properties">
+                                            <a class="property property-name">name=WolverasdasdinDEV</a>
+                                            <a class="property property-ip">ip=WolverasdasdinDEV</a>
+                                            <a class="property property-unique-id">uid=WolverasdasdinDEV</a>
+                                            <a class="property property-hardware-id">hwid=WolverasdasdinDEV</a>
+                                        </td>
+                                        <td class="field-reason">Insult</td>
+                                        <td class="field-invoker">WolverinDEV</td>
+                                        <td class="field-timestamp">
+                                            <a class="timestamp-created">Created: 1.1.2013 12:22</a>
+                                            <a class="timestamp-expires">Expires: 1.21.2013 12:22</a>
+                                        </td>
+                                    </tr>
+                                    -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="bottom-menu">
+                        <div class="left">
+                            <button class="button-refresh">Reload</button>
+                            <div><input type="checkbox" class="filter-flag-force-own"> Show only own bans</div>
+                            <div><input type="checkbox" class="filter-flag-highlight-own"> Highlight own bans</div>
+                        </div>
+                        <div class="right">
+                            <a class="entry-count-info"></a>
+                            <button class="button-close">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
+            <div class="align_column">
+                <div class="align_column" style="margin: 5px">
+                    <a>Name:</a>
+                    <input value="{{>client_name}}" readonly>
+                </div>
+                <div class="align_column" style="margin: 5px">
+                    <a>Reason:</a>
+                    <textarea style="height: 32px; resize: vertical; max-height: 150px; min-height: 32px" maxlength="512" class="ban_reason"></textarea>
+                </div>
+                <div class="align_row" style="margin: 5px; justify-content: space-between">
+                    <a>Duration:</a>
+                    <div class="align_row">
+                        <input type="number" value="1" class="ban_duration" style="margin-right: 7px" min="1">
+                        <select class="ban_duration_type">
+                            <option value="sec">seconds</option>
+                            <option value="min">minutes</option>
+                            <option value="hours">hours</option>
+                            <option value="days">days</option>
+                            <option value="perm">permanent</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="group_box container-ban-type">
+                    <div class="header">Ban client by</div>
+                    <div class="content ban-types">
+                        <div>
+                            <input type="checkbox" class="ban-type-nickname">
+                            <a>Nickname</a>
+                            <div class="help-tip tip-right tip-small" checked>
+                                <p>
+                                    Bans the client by his current nickname.<br>
+                                    The currently nickname cant be used until the ban expired
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <input type="checkbox" class="ban-type-hardware-id" checked>
+                            <a>Hardware ID</a>
+                            <div class="help-tip tip-right tip-small">
+                                <p>
+                                    Bans the client by his hardware id.<br>
+                                    The hardware id has different meanings, depends on the users agent<br>
+                                    TeaClient: The hardware id will be equal to the mac address<br>
+                                    TeaWeb: The TeaSpeak web client hasn't a hardware id, it will be random<br>
+                                    TeamSpeak 3 client: The hardware id will be a result of some hashes from hardware specific properties
+                                </p>
+                            </div>
+                        </div>
+                        <div>
+                            <input type="checkbox" class="ban-type-ip" checked>
+                            <a>IP Address</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+        <script class="jsrender-template" id="tmpl_ban_entry" type="text/html">
+            <tr class="ban-entry {{if server_id == 0}}ban-entry-global{{/if}} {{if flag_own}}ban-entry-own{{/if}}" ban-id={{>banid}} server-id={{>server_id}}>
+                <td class="field-properties">
+                    {{if name }}<a class="property property-name">name={{>name}}</a>{{/if}}
+                    {{if ip }} <a class="property property-ip">ip={{>ip}}</a>{{/if}}
+                    {{if unique_id }} <a class="property property-unique-id">uid={{>unique_id}}</a>{{/if}}
+                    {{if hardware_id }}<a class="property property-hardware-id">hwid={{>hardware_id}}</a>{{/if}}
+                </td>
+                <td class="field-reason">{{>reason}}</td>
+                <td class="field-invoker">{{>invoker_name}}</td>
+                <td class="field-timestamp">
+                    <a class="timestamp-created">Created: {{fmt_date timestamp_created "DD.MM.YYYY HH:mm" /}}</a>
+                    <a class="timestamp-expire">Expire: {{if (!timestamp_expire || timestamp_expire.getTime() == 0) }}never{{else}}{{fmt_date timestamp_expire "DD.MM.YYYY HH:mm" /}}{{/if}}</a>
+                </td>
+            </tr>
+        </script>
+        <!--  `hwid` VARCHAR(" CLIENT_UID_LENGTH "), `uid` VARCHAR(" CLIENT_UID_LENGTH "), `name` VARCHAR(" CLIENT_NAME_LENGTH "), `ip` VARCHAR(128) -->
+        <script class="jsrender-template" id="tmpl_ban_create" type="text/html">
+            <div class="bancreate">
+                <div class="frame-container">
+                    <div class="container container-ip">
+                        <a>IP:</a>
+                        <input class="input-ip" type="text" maxlength="128">
+                    </div>
+                    <div class="container container-name">
+                        <a>Name:</a>
+                        <input class="input-name" type="text" maxlength="128">
+                        <div class="container-name-type">
+                            <a>Interpret IP/Name as:</a>
+                            <select class="input-name-type">
+                                <option value="wildcard-4">Wildcard IPv4</option>
+                                <option value="wildcard-6">Wildcard IPv6</option>
+                                <option value="fixed" selected>Fixed string</option>
+                                <option value="regex">Regular Expression</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="container container-uid">
+                        <a>Unique ID:</a>
+                        <div><input class="input-uid" type="text" maxlength="64"></div>
+                    </div>
+                    <div class="container container-hwid">
+                        <a>Hardware ID:</a>
+                        <input class="input-hwid" type="text" max="64">
+                    </div>
+                    <div class="container container-reason">
+                        <a>Reason</a>
+                        <textarea class="input-reason"></textarea>
+                    </div>
+                    <div class="container container-time">
+                        <a>Duration</a>
+                        <div class="container-time-input">
+                            <input type="number" value="1" class="input-time" style="margin-right: 7px" min="1">
+                            <select class="input-time-unit">
+                                <option value="sec">seconds</option>
+                                <option value="min">minutes</option>
+                                <option value="hours">hours</option>
+                                <option value="days">days</option>
+                                <option value="perm">permanent</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <div>
+                            <div class="container-global">
+                                <input type="checkbox" class="input-global">
+                                <a>Use this ban as a global ban</a>
+                                <div class="help-tip tip-center tip-small">
+                                    <p>
+                                        Global bans are bans which apply instance wide.<br>
+                                        This means that (if this rule apply to a victim) cant join <b>any</b> virtual server!<br>
+                                        Global bans are by default shown to every server admin group,<br>
+                                        but could only be created with query rights
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container-buttons modal-button-group" style="text-align: right; margin-top: 3px; margin-bottom: 6px;">
+                            <button class="button-close">Cancel</button>
+                            <button class="button-success">OK</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
 
         <!-- Music interface -->
         <script class="jsrender-template" id="tmpl_music_frame" type="text/html">

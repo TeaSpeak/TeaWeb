@@ -87,10 +87,6 @@
 	}
 }
 
-.container {
-	margin: 2px;
-}
-
 /* Channel edit/create modal */
 .settings_audio {
 	display: grid;
@@ -335,6 +331,10 @@
 			}
 		}
 	}
+}
+
+.container-ban-type {
+	margin: 5px;
 }
 
 .arrow {

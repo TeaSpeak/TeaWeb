@@ -71,12 +71,16 @@ class ModalProperties {
     }
 }
 
-class Modal {
+class Modal extends EventTarget {
     private _htmlTag: JQuery;
     properties: ModalProperties;
     shown: boolean;
 
+    close_listener: (() => any)[] = [];
+
     constructor(props: ModalProperties) {
+        super();
+
         this.properties = props;
         this.shown = false;
     }
@@ -124,12 +128,16 @@ class Modal {
     }
 
     close() {
+        if(!this.shown) return;
+
         this.shown = false;
         const _this = this;
         this.htmlTag.animate({opacity: 0}, () => {
             _this.htmlTag.detach();
         });
         this.properties.triggerClose();
+        for(const listener of this.close_listener)
+            listener();
     }
 }
 
@@ -223,7 +231,7 @@ function createErrorModal(header: BodyCreator, message: BodyCreator, props: Moda
     ModalFunctions.divify(ModalFunctions.jqueriefy(header)).appendTo(head);
     props.header = head;
 
-    props.body = ModalFunctions.divify(ModalFunctions.jqueriefy(message));
+    props.body = $.spawn("div").append(ModalFunctions.divify(ModalFunctions.jqueriefy(message)));
     props.footer = ModalFunctions.divify(ModalFunctions.jqueriefy(""));
 
     return createModal(props);

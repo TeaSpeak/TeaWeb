@@ -40,6 +40,7 @@
         ?>
 
         <link rel="stylesheet" href="css/main.css" type="text/css">
+        <link rel="stylesheet" href="css/helptag.css" type="text/css">
         <link rel="stylesheet" href="css/scroll.css" type="text/css">
         <link rel="stylesheet" href="css/ts/tab.css" type="text/css">
         <link rel="stylesheet" href="css/ts/chat.css" type="text/css">
@@ -47,6 +48,8 @@
         <link rel="stylesheet" href="css/ts/icons.css" type="text/css">
         <link rel="stylesheet" href="css/general.css" type="text/css">
         <link rel="stylesheet" href="css/modals.css" type="text/css">
+        <link rel="stylesheet" href="css/modal-banlist.css" type="text/css">
+        <link rel="stylesheet" href="css/modal-bancreate.css" type="text/css">
         <link rel="stylesheet" href="css/loader.css" type="text/css">
         <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
         <link rel="stylesheet" href="css/frame/SelectInfo.css" type="text/css">
@@ -93,7 +96,7 @@
         </div>
     </head>
     <body>
-		<?php if(!$CLIENT) { ?>
+		<?php if(!$CLIENT && false) { ?>
         <!-- No javascript error -->
         <div style="display: block; position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; background-color: gray; z-index: 1000; text-align: center;" class="no-js">
             <div style="position: relative; display: inline-block; top: 30%">
@@ -128,8 +131,7 @@
         </div>
 
         <!-- Critical load error -->
-        <div style="display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: gray; z-index: 1000; text-align: center;"
-             id="critical-load">
+        <div style="display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: gray; z-index: 1000; text-align: center;" id="critical-load">
             <div style="position: relative; display: inline-block; top: 30%">
                 <img src="img/script.svg" height="128px">
                 <h1 style="color: red">Got some trouble while loading important files!</h1>

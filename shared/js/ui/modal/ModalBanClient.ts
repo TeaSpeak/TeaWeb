@@ -3,7 +3,13 @@
 /// <reference path="../../client.ts" />
 
 namespace Modals {
-    export function spawnBanClient(name: string, callback: (length: number, reason: string) => void) {
+    export function spawnBanClient(name: string, callback: (data: {
+        length: number,
+        reason: string,
+        no_name: boolean,
+        no_ip: boolean,
+        no_hwid: boolean
+    }) => void) {
         const connectModal = createModal({
             header: function() {
                 return "Ban client";
@@ -85,7 +91,14 @@ namespace Modals {
             let duration = connectModal.htmlTag.find(".ban_duration_type option:selected");
             console.log(duration);
             console.log(length + "*" + duration.attr("duration-scale"));
-            callback(length * parseInt(duration.attr("duration-scale")), connectModal.htmlTag.find(".ban_reason").val() as string);
+
+            callback({
+                length: length * parseInt(duration.attr("duration-scale")),
+                reason: connectModal.htmlTag.find(".ban_reason").val() as string,
+                no_hwid: !connectModal.htmlTag.find(".ban-type-hardware-id").prop("checked"),
+                no_ip: !connectModal.htmlTag.find(".ban-type-ip").prop("checked"),
+                no_name: !connectModal.htmlTag.find(".ban-type-nickname").prop("checked")
+            });
         })
     }
 }

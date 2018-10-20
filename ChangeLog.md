@@ -1,4 +1,9 @@
 # Changelog:
+* **20.10.18**
+    - Project restructuring (forgot to update the changelog)
+    - Added a complete ban ui
+    - Fixed pointer stringify bug 
+    
 * **30.09.18**
     - Added the permission system (Assignments and management)
     * Fixed poke and client description with empty message

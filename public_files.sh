@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
-tsc -p tsconfig/tsconfig_release.json
+npm run compile-sass
+npm run build-worker
+npm run build-web-app-release
+npm run build-web-preload
 #uglifyjs -c --source-map --verbose -o generated/js/client.min.js generated/js/client.js
-mv generated/js/client.js generated/js/client.min.js
+cp generated/js/client.js generated/js/client.min.js
 
 

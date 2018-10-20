@@ -215,7 +215,7 @@ class ServerConnection {
                 "type": "command",
                 "command": command,
                 "data": _data,
-                "flags": flags
+                "flags": flags.filter(entry => entry.length != 0)
             }));
         });
         return new Promise<CommandResult>((resolve, failed) => {
@@ -225,7 +225,8 @@ class ServerConnection {
                         let res = ex;
                         if(!res.success) {
                             if(res.id == 2568) { //Permission error
-                                chat.serverChat().appendError("insufficient client permissions. Failed on permission {}", this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
+                                res.message = "Insufficient client permissions. Failed on permission " + this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name;
+                                chat.serverChat().appendError("Insufficient client permissions. Failed on permission {}", this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
                             } else {
                                 chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
                             }

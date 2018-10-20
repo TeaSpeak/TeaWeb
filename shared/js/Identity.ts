@@ -20,7 +20,7 @@ namespace TSIdentityHelper {
     let functionDestroyString: any;
     let functionDestroyIdentity: any;
 
-    export function  setup() : boolean {
+    export function setup() : boolean {
         functionDestroyString = Module.cwrap("destroy_string", "pointer", []);
         functionLastError = Module.cwrap("last_error_message", null, ["string"]);
         funcationParseIdentity = Module.cwrap("parse_identity", "pointer", ["string"]);
@@ -43,10 +43,10 @@ namespace TSIdentityHelper {
     export function unwarpString(str) : string {
         if(str == "") return "";
         try {
-            if(!$.isFunction(window.Pointer_stringify) || !$.isFunction(Pointer_stringify)) {
+            if(!$.isFunction(window.Pointer_stringify)) {
                 displayCriticalError("Missing required wasm function!<br>Please reload the page!");
             }
-            let message: string = Pointer_stringify(str);
+            let message: string = window.Pointer_stringify(str);
             functionDestroyString(str);
             return message;
         } catch (error) {

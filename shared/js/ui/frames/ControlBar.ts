@@ -1,5 +1,6 @@
 /// <reference path="../../client.ts" />
 /// <reference path="../modal/ModalSettings.ts" />
+/// <reference path="../modal/ModalBanList.ts" />
 /*
         client_output_hardware Value: '1'
         client_output_muted Value: '0'
@@ -11,6 +12,8 @@
         client_away Value: '0'
         client_away_message Value: ''
  */
+import openBanList = Modals.openBanList;
+
 class ControlBar {
     private _muteInput: boolean;
     private _muteOutput: boolean;
@@ -36,6 +39,7 @@ class ControlBar {
         this.htmlTag.find(".btn_mute_output").on('click', this.onOutputMute.bind(this));
         this.htmlTag.find(".btn_open_settings").on('click', this.onOpenSettings.bind(this));
         this.htmlTag.find(".btn_permissions").on('click', this.onPermission.bind(this));
+        this.htmlTag.find(".btn_banlist").on('click', this.onBanlist.bind(this));
         {
             let tokens = this.htmlTag.find(".btn_token");
             tokens.find(".button-dropdown").on('click', () => {
@@ -255,5 +259,11 @@ class ControlBar {
             Modals.spawnPermissionEdit().open();
             button.removeClass("activated");
         }, 0);
+    }
+
+    private onBanlist() {
+        if(!this.handle.serverConnection) return;
+
+        openBanList(this.handle);
     }
 }
