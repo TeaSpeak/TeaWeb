@@ -32,7 +32,7 @@
     <head>
         <meta charset="UTF-8">
         <?php
-            if($CLIENT) {
+            if($CLIENT == true) {
                 echo "<title>TeaClient</title>";
             } else {
 				echo "<title>TeaSpeak-Web</title>";
@@ -142,21 +142,24 @@
         <div id="music-test"></div>
         <div id="templates"></div>
     </body>
-	<?php if(!$CLIENT) { ?>
-    <footer>
-        <div class="container" style="display: flex; flex-direction: row; align-content: space-between;">
-            <div style="align-self: center; position: fixed; left: 5px;">Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web" style="display: inline-block; position: relative">github.com</a></div>
-            <div style="align-self: center;">TeaSpeak Web client by WolverinDEV</div>
-            <div style="align-self: center; position: fixed; right: 5px;">
-				<?php
-                    if(logged_in()) {
-                        echo '<a href="' . authPath() . '"auth.php?type=logout>logout</a>';
-					} else {
-						echo '<a href="' . authPath() . '"login.php>Login</a> via the TeaSpeak forum.';
-					}
-                ?>
+
+	<?php
+        if($CLIENT == false) {
+			$TAG = "<footer>
+                    <div class=\"container\" style=\"display: flex; flex-direction: row; align-content: space-between;\">
+                        <div style=\"align-self: center; position: fixed; left: 5px;\">Open source on <a href=\"https://github.com/TeaSpeak/TeaSpeak-Web\" style=\"display: inline-block; position: relative\">github.com</a></div>
+                        <div style=\"align-self: center;\">TeaSpeak Web client by WolverinDEV</div>
+                        <div style=\"align-self: center; position: fixed; right: 5px;\">";
+
+			if (logged_in()) {
+				$TAG = $TAG . "<a href=\"" . "x" . "auth.php?type=logout\">logout</a>";
+			} else {
+				$TAG = $TAG . "<a href=\"" . "y" . "login.php\">Login</a> via the TeaSpeak forum.";
+			}
+
+			echo $TAG . "</div>
             </div>
-        </div>
-    </footer>
-	<?php } ?>
+        </footer>";
+		}
+    ?>
 </html>
