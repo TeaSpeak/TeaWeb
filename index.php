@@ -25,6 +25,8 @@
 	if (!$localhost || $testXF) {
 		//redirectOnInvalidSession();
 	}
+
+	$WEB_CLIENT = http_response_code() !== false;
 ?>
 
 <!DOCTYPE html>
@@ -32,7 +34,7 @@
     <head>
         <meta charset="UTF-8">
         <?php
-            if($CLIENT == true) {
+            if(!$WEB_CLIENT) {
                 echo "<title>TeaClient</title>";
             } else {
 				echo "<title>TeaSpeak-Web</title>";
@@ -76,7 +78,7 @@
 			?>
         </x-properties>
 
-        <!-- Global site tag (gtag.js) - Google Analytics
+        <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
@@ -88,7 +90,6 @@
             gtag('js', new Date());
             gtag('config', 'UA-113151733-4');
         </script>
-         -->
         <script>
             //const exports = {};
         </script>
@@ -97,7 +98,7 @@
         </div>
     </head>
     <body>
-		<?php if(!$CLIENT && false) { ?>
+		<?php if($WEB_CLIENT) { ?>
         <!-- No javascript error -->
         <div style="display: block; position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; background-color: gray; z-index: 1000; text-align: center;" class="no-js">
             <div style="position: relative; display: inline-block; top: 30%">
@@ -145,7 +146,7 @@
     </body>
 
 	<?php
-        if($CLIENT == false) {
+        if($WEB_CLIENT) {
 			$TAG = "<footer>
                     <div class=\"container\" style=\"display: flex; flex-direction: row; align-content: space-between;\">
                         <div style=\"align-self: center; position: fixed; left: 5px;\">Open source on <a href=\"https://github.com/TeaSpeak/TeaSpeak-Web\" style=\"display: inline-block; position: relative\">github.com</a></div>
