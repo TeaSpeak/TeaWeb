@@ -116,7 +116,7 @@ function loadDebug() {
     app.type = app.Type.DEBUG;
     console.log("Load for debug!");
 
-    let custom_scripts: string[] | string[][] = [];
+    let custom_scripts: (string | string[])[] = [];
 
     if(!window.require) {
         console.log("Adding browser audio player");

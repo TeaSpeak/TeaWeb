@@ -98,7 +98,9 @@
         </div>
     </head>
     <body>
-		<?php if($WEB_CLIENT) { ?>
+		<?php
+            if(true) {
+        ?>
         <!-- No javascript error -->
         <div style="display: block; position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; background-color: gray; z-index: 1000; text-align: center;" class="no-js">
             <div style="position: relative; display: inline-block; top: 30%">

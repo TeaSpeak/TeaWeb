@@ -1,14 +1,16 @@
 <?php
+	/* this file generates the final environment. All files have to be compiled before! */
 	$APP_FILE_LIST = [
-		[
+		/* shared part */
+		[ /* shared html and php files */
 			"type" => "html",
-			"search-pattern" => "/^([a-zA-Z]+)\.html$/",
+			"search-pattern" => "/^([a-zA-Z]+)\.(html|php)$/",
 			"build-target" => "dev|rel",
 
 			"path" => "./",
-			"local-path" => "./"
+			"local-path" => "./shared/html/"
 		],
-		[
+		[ /* shared javascript files (development mode only) */
 			"type" => "js",
 			"search-pattern" => "/.*\.js$/",
 			"search-exclude" => "/(.*\/)?workers\/.*/",
@@ -17,7 +19,7 @@
 			"path" => "js/",
 			"local-path" => "./shared/js/"
 		],
-		[
+		[ /* shared generated worker codec */
 			"type" => "js",
 			"search-pattern" => "/WorkerCodec.js$/",
 			"build-target" => "dev|rel",
@@ -25,7 +27,7 @@
 			"path" => "js/workers/",
 			"local-path" => "./shared/js/workers/"
 		],
-		[
+		[ /* shared css files */
 			"type" => "css",
 			"search-pattern" => "/.*\.css$/",
 			"build-target" => "dev|rel",
@@ -33,7 +35,7 @@
 			"path" => "css/",
 			"local-path" => "./shared/css/"
 		],
-		[
+		[ /* shared image files */
 			"type" => "img",
 			"search-pattern" => "/.*\.(svg|png)/",
 			"build-target" => "dev|rel",
@@ -41,7 +43,7 @@
 			"path" => "img/",
 			"local-path" => "./shared/img/"
 		],
-		[
+		[ /* generated assembly files */
 			"type" => "wasm",
 			"search-pattern" => "/.*\.(wasm)/",
 			"build-target" => "dev|rel",
@@ -49,7 +51,7 @@
 			"path" => "wasm/",
 			"local-path" => "./asm/generated/"
 		],
-		[ /* useless? */
+		[ /* generated assembly javascript files */
 			"type" => "js",
 			"search-pattern" => "/.*\.(js)/",
 			"build-target" => "dev|rel",
@@ -76,7 +78,7 @@
 			"local-path" => "./vendor/"
 		],
 
-		/* client specs */
+		/* client specific */
 		[
 			"client-only" => true,
 			"type" => "css",
@@ -96,8 +98,8 @@
 			"local-path" => "./client/js/"
 		],
 
-		/* web specs */
-		[
+		/* web specific */
+		[ /* web javascript files (development mode only) */
 			"web-only" => true,
 			"type" => "js",
 			"search-pattern" => "/.*\.js$/",
@@ -106,7 +108,26 @@
 			"path" => "js/",
 			"local-path" => "./web/js/"
 		],
-		[
+		[ /* web merged javascript files (shared inclusive) */
+			"web-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"build-target" => "rel",
+
+			"path" => "js/",
+			"local-path" => "./web/generated/"
+		],
+		[ /* Add the shared generated files. Exclude the shared file because we're including it already */
+			"web-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"search-exclude" => "/shared\.js(.map)?$/",
+			"build-target" => "rel",
+
+			"path" => "js/",
+			"local-path" => "./shared/generated/"
+		],
+		[ /* web css files */
 			"web-only" => true,
 			"type" => "css",
 			"search-pattern" => "/.*\.css$/",
@@ -115,7 +136,7 @@
 			"path" => "css/",
 			"local-path" => "./web/css/"
 		],
-		[
+		[ /* web html files */
 			"web-only" => true,
 			"type" => "html",
 			"search-pattern" => "/.*\.(php|html)/",
@@ -123,36 +144,7 @@
 
 			"path" => "./",
 			"local-path" => "./web/html/"
-		],
-		[
-			/* "web-only" => true, */ //Currently client as well
-			"type" => "html",
-			"search-pattern" => "/.*\.(php|html)/",
-			"search-exclude" => "/(files.php)/",
-			"search-depth" => 1,
-			"build-target" => "dev|rel",
-
-			"path" => "./",
-			"local-path" => "./"
-		],
-		[
-			"web-only" => true,
-			"type" => "js",
-			"search-pattern" => "/.*\.(js)/",
-			"build-target" => "rel",
-
-			"path" => "./",
-			"local-path" => "./generated/"
-		],
-		[
-			"web-only" => true,
-			"type" => "js",
-			"search-pattern" => "/load.js/",
-			"build-target" => "rel",
-
-			"path" => "./js/",
-			"local-path" => "./shared/js/"
-		],
+		]
 	];
 
 	function list_dir($base_dir, $match = null, $depth = -1, &$results = array(), $dir = "") {
@@ -256,7 +248,7 @@
 			if($_SERVER["argv"][3] == "dev") {
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;
-					$environment = "web/dev-environment";
+					$environment = "web/environment/development";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
 					$environment = "client-api/environment/ui-files/raw";
@@ -268,7 +260,7 @@
 				$type = "rel";
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;
-					$environment = "web/rel-environment";
+					$environment = "web/environment/release";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
 					$environment = "client-api/environment/ui-files/raw";

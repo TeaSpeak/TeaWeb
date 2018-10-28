@@ -14,4 +14,4 @@
   
   
   
-*Delete me: If you dont follow this issue template, you may not get a response or the issue get instantly closed.*
+*Delete me: If you don't follow this issue template, you may not get a response or the issue get instantly closed.*

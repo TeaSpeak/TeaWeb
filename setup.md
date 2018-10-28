@@ -1,3 +1,5 @@
+# Attention this guid is currently outdated! (Project got restructured)
+Anyway most of this stuff is still relevant for the web client, just the last few steps may differ
 
 # Environment setup
 ## Basic system requirements

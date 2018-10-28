@@ -21,6 +21,12 @@ let forumIdentity: TeaForumIdentity;
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
+function getUserMediaFunction() {
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        return (settings, success, fail) => { navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail); };
+    return navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+}
+
 function setup_close() {
     if(settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) return;
 

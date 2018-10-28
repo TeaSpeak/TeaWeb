@@ -59,7 +59,7 @@ namespace Modals {
 
                 switch (select.value) {
                     case "ppt":
-                        let keyCode: number = parseInt(settings.global("vad_ppt_key", JQuery.Key.T.toString()));
+                        let keyCode: number = parseInt(settings.global("vad_ppt_key", String.fromCharCode(JQuery.Key.T)));
                         vad_tag.find(".vat_ppt_key").text(String.fromCharCode(keyCode));
                         break;
                     case "vad":

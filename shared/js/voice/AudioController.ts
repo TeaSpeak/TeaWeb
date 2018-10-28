@@ -1,5 +1,3 @@
-/// <reference path="../../exports/audio/AudioPlayer.d.ts" />
-
 enum PlayerState {
     PREBUFFERING,
     PLAYING,
@@ -207,6 +205,8 @@ class AudioController {
     }
 
     private applyVolume(buffer: AudioBuffer) {
+        if(this._volume == 1) return;
+
         for(let channel = 0; channel < buffer.numberOfChannels; channel++) {
             let data = buffer.getChannelData(channel);
             for(let sample = 0; sample < data.length; sample++) {
@@ -222,10 +222,4 @@ class AudioController {
             this._codecCache.push(new CodecClientCache());
         return this._codecCache[codec];
     }
-}
-
-function getUserMediaFunction() {
-    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-        return (settings, success, fail) => { navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail); };
-    return navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 }

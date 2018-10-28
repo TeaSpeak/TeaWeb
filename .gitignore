@@ -9,7 +9,9 @@ generated/
 node_modules/
 auth/certs/
 auth/js/auth.js.map
+
+
+.sass-cache/
 .idea/
 
-web/*-environment/
-client-api/environment
+.package-lock.json

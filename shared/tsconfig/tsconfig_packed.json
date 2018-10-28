@@ -1,0 +1,20 @@
+/*
+  config for generating one single file
+  Note: loader declarations have to be generated first
+*/
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "none",
+    "outFile": "../generated/shared.js"
+  },
+  "exclude": [
+    "../js/workers",
+    "../js/load.ts"
+  ],
+  "include": [
+    "../declarations/imports_*.d.ts",
+    "../declarations/exports_loader.d.ts",
+    "../js/**/*.ts"
+  ]
+}

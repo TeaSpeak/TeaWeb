@@ -8,9 +8,9 @@
     "allowJs": false,
     "checkJs": false,
 
-    "outFile": "declarations/web_api"
+    "outFile": "../declarations/exports_loader"
   },
   "include": [
-    "js/**/*.ts"
+    "../js/load.ts"
   ]
 }

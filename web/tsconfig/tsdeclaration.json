@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "listFiles": true,
+    "module": "system",
+    "target": "es6",
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "allowJs": false,
+    "checkJs": false,
+
+    "outFile": "declarations/exports"
+  },
+  "include": [
+    "js/**/*.ts"
+  ]
+}

@@ -1,0 +1,12 @@
+/* general web project config */
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true
+  },
+  "include": [
+    "../declarations/imports_*.d.ts",
+    "../js/**/*.ts"
+  ]
+}

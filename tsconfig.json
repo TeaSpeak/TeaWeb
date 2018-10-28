@@ -1,3 +1,4 @@
+/* General file with least possible errors. This is just for your IDE (PHP-Storm for example) */
 {
   "compilerOptions": {
     "target": "es6",
@@ -7,7 +8,8 @@
   "exclude": [
     "node_modules",
     "js/workers",
-    "enviroment",
-    "tsconfig"
+    "shared/declarations/**/*.d.ts",
+    "web/declarations/**/*.d.ts",
+    "vendor/**/*.ts"
   ]
 }

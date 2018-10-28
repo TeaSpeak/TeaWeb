@@ -1,5 +1,3 @@
-/// <reference path="../app-definitions/native_api.d.ts" />
-
 const ipc = require("electron").ipcRenderer;
 let callback_listener: (() => any)[] = [];
 

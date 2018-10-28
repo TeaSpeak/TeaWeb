@@ -1,8 +1,0 @@
-RewriteEngine On
-
-<Files .htaccess>
-    Order allow,deny
-    Allow from all
-</Files>
-
-RedirectMatch 403 ^/certs/.*

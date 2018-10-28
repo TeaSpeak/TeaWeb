@@ -23,4 +23,3 @@ declare namespace audio.player {
     function set_device(device_id?: string): Promise<void>;
     function current_device(device_id?: string): Device;
 }
-declare function getUserMediaFunction(): (settings: any, success: any, fail: any) => void;

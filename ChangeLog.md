@@ -1,4 +1,14 @@
 # Changelog:
+* **28.10.18**
+    - Restructured the project
+    - Added a lot of helper scripts
+    - Added a native client declaration export file to access the native methods
+    
+* **27.10.18**
+    - Added speaker select option (client only)
+    - Displaying version of the client
+    - Reworked on the audio setting menu
+    
 * **20.10.18**
     - Project restructuring (forgot to update the changelog)
     - Added a complete ban ui

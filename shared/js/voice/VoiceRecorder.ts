@@ -120,7 +120,7 @@ class VoiceRecorder {
     reinitialiseVAD() {
         let type = settings.global("vad_type", "vad");
         if(type == "ppt") {
-            let keyCode: number = parseInt(settings.global("vad_ppt_key", JQuery.Key.T.toString()));
+            let keyCode: number = parseInt(settings.global("vad_ppt_key", String.fromCharCode(JQuery.Key.T)));
             if(!(this.getVADHandler() instanceof PushToTalkVAD))
                 this.setVADHandler(new PushToTalkVAD(keyCode));
             else (this.getVADHandler() as PushToTalkVAD).key = keyCode;

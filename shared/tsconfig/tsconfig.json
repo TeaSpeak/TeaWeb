@@ -1,0 +1,15 @@
+/* general shared project config */
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true
+  },
+  "exclude": [
+    "../js/workers"
+  ],
+  "include": [
+    "../declarations/imports_*.d.ts",
+    "../js/**/*.ts"
+  ]
+}
