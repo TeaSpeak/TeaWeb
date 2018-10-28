@@ -7,6 +7,7 @@
 	 */
 
 	$UI_BASE_PATH = "ui-files/";
+	$UI_RAW_BASE_PATH = "ui-files/raw/";
 	$CLIENT_BASE_PATH = "files/";
 
 	if(!isset($_SERVER['REQUEST_METHOD'])) {
@@ -46,10 +47,7 @@
 			include $name;
 			return;
 		}
-		$file = fopen($name, "r") or die(json_encode([
-			"success" => false,
-			"error" => "missing file (" . $name . ")"
-		]));
+		$file = fopen($name, "r") or error_exit("missing file \"" . $name . "\".");
 
 		echo (fread($file, filesize($name)));
 		fclose($file);
@@ -64,7 +62,7 @@
 	}
 
 	function handle_develop_web_request() {
-		global $UI_BASE_PATH;
+		global $UI_RAW_BASE_PATH;
 
 		if(isset($_GET) && isset($_GET["type"])) {
 			if($_GET["type"] === "files") {
@@ -73,7 +71,7 @@
 				/* header("mode: develop"); */
 
 				echo ("type\thash\tpath\tname\n");
-				foreach (list_dir($UI_BASE_PATH) as $file) {
+				foreach (list_dir($UI_RAW_BASE_PATH) as $file) {
 					$type_idx = strrpos($file, ".");
 					$type = substr($file, $type_idx + 1);
 					if($type == "php") $type = "html";
@@ -85,13 +83,13 @@
 					$name_idx = strrpos($name, ".");
 					$name = substr($name, 0, $name_idx);
 
-					echo $type . "\t" . sha1_file($UI_BASE_PATH . $file) . "\t" . $path . "\t" . $name . "." . $type . "\n";
+					echo $type . "\t" . sha1_file($UI_RAW_BASE_PATH . $file) . "\t" . $path . "\t" . $name . "." . $type . "\n";
 				}
 				die;
 			} else if($_GET["type"] === "file") {
 				header("Content-Type: text/plain");
 
-				$path = realpath($UI_BASE_PATH . $_GET["path"]);
+				$path = realpath($UI_RAW_BASE_PATH . $_GET["path"]);
 				$name = $_GET["name"];
 				if($path === False || strpos($path, realpath(".")) === False || strpos($name, "/") !== False) error_exit("Invalid file");
 
@@ -132,10 +130,64 @@
 					header("Content-Transfer-Encoding: Binary");
 					header("Content-Length:".filesize($path . $platform->update));
 					header("Content-Disposition: attachment; filename=update.tar.gz");
+					header("info-version: 1");
 					readfile($path . $platform->update);
 					die();
 				}
 				error_exit("Missing platform, arch or file");
+			} else if ($_GET["type"] == "ui-info") {
+				global $UI_BASE_PATH;
+
+				$version_info = file_get_contents($UI_BASE_PATH . "info.json");
+				if($version_info === false) $version_info = array();
+				else $version_info = json_decode($version_info, true);
+
+				$info = array();
+				$info["success"] = true;
+				$info["versions"] = array();
+
+				foreach($version_info as $channel => $data) {
+					if(!isset($data["latest"])) continue;
+
+					$channel_info = [
+						"timestamp" => $data["latest"]["timestamp"],
+						"version" => $data["latest"]["version"],
+						"git-ref" => $data["latest"]["git-ref"],
+						"channel" => $channel
+					];
+					array_push($info["versions"], $channel_info);
+				}
+				
+				die(json_encode($info));
+			} else if ($_GET["type"] == "ui-download") {
+				global $UI_BASE_PATH;
+
+				if(!isset($_GET["git-ref"]) || !isset($_GET["channel"]) || !isset($_GET["version"]))
+					error_exit("missing required parameters");
+
+				$version_info = file_get_contents($UI_BASE_PATH . "info.json");
+				if($version_info === false) $version_info = array();
+				else $version_info = json_decode($version_info, true);
+
+				if(!isset($version_info[$_GET["channel"]]))
+					error_exit("missing channel");
+
+				foreach ($version_info[$_GET["channel"]]["history"] as $entry) {
+					if($entry["version"] == $_GET["version"] && $entry["git-ref"] == $_GET["git-ref"]) {
+						header("Cache-Control: public"); // needed for internet explorer
+						header("Content-Type: application/binary");
+						header("Content-Transfer-Encoding: Binary");
+						header("Content-Disposition: attachment; filename=ui.tar.gz");
+						header("info-version: 1");
+						$read = readfile($entry["file"]);
+						header("Content-Length:" . $read);
+
+						if($read === false) error_exit("internal error: Failed to read file!");
+						die();
+					}
+				}
+
+				error_exit("missing version");
 			}
 		} else if($_POST["type"] == "deploy-build") {
 			global $CLIENT_BASE_PATH;
@@ -158,7 +210,7 @@
 			if($_FILES["installer"]["error"] !== UPLOAD_ERR_OK) error_exit("Upload for installer failed!");
 
 			$json_version = json_decode($_POST["version"], true);
-			$version = $json_version["major"] . "." . $json_version["minor"] . "." . $json_version["patch"] . ($json_version["build"] > 0 ? $json_version["build"] : "");
+			$version = $json_version["major"] . "." . $json_version["minor"] . "." . $json_version["patch"] . ($json_version["build"] > 0 ? "-" . $json_version["build"] : "");
 			$path = $CLIENT_BASE_PATH . DIRECTORY_SEPARATOR . $_POST["channel"] . DIRECTORY_SEPARATOR . $version . DIRECTORY_SEPARATOR;
 			exec("mkdir -p " . $path);
 			//mkdir($path, 777, true);
@@ -216,6 +268,55 @@
 			move_uploaded_file($_FILES["installer"]["tmp_name"],$path . $filename_install);
 			move_uploaded_file($_FILES["update"]["tmp_name"],$path . $filename_update);
 
+			die(json_encode([
+				"success" => true
+			]));
+		} else if($_POST["type"] == "deploy-ui-build") {
+			global $UI_BASE_PATH;
+
+			if(!isset($_POST["secret"]) || !isset($_POST["channel"]) || !isset($_POST["version"]) || !isset($_POST["git_ref"]))
+				error_exit("Missing required information!");
+
+			$path = $UI_BASE_PATH . DIRECTORY_SEPARATOR;
+			$channeled_path = $UI_BASE_PATH . DIRECTORY_SEPARATOR . $_POST["channel"];
+			$filename = "TeaClientUI-" . $_POST["version"] . "_" . $_POST["git_ref"] . ".tar.gz";
+			exec("mkdir -p " . $path);
+			exec("mkdir -p " . $channeled_path);
+
+			{
+				$require_secret = file_get_contents(".deploy_secret");
+				if($require_secret === false || strlen($require_secret) == 0) error_exit("Server missing secret!");
+
+				error_log($_POST["secret"]);
+				error_log(trim($require_secret));
+				if(!is_string($_POST["secret"])) error_exit("Invalid secret!");
+				if(strcmp(trim($require_secret), trim($_POST["secret"])) !== 0)
+					error_exit("Secret does not match!");
+			}
+			{
+				$info = file_get_contents($path . "info.json");
+				if($info === false) $info = array();
+				else $info = json_decode($info, true);
+
+				$channel_info = &$info[$_POST["channel"]];
+				if(!$channel_info) $channel_info = array();
+
+				$entry = [
+					"timestamp" => time(),
+					"file" => $channeled_path . DIRECTORY_SEPARATOR . $filename,
+					"version" => $_POST["version"],
+					"git-ref" => $_POST["git_ref"]
+				];
+
+				$channel_info["latest"] = $entry;
+				if(!$channel_info["history"]) $channel_info["history"] = array();
+				array_push($channel_info["history"], $entry);
+
+				file_put_contents($path . "info.json", json_encode($info));
+			}
+
+
+			move_uploaded_file($_FILES["file"]["tmp_name"],$channeled_path . DIRECTORY_SEPARATOR . $filename);
 			die(json_encode([
 				"success" => true
 			]));

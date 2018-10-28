@@ -52,21 +52,21 @@ namespace app {
     }
 }
 
-function loadScripts(paths: (string | string[])[]) : {path: string, promise: Promise<Boolean>}[] {
+function load_scripts(paths: (string | string[])[]) : {path: string, promise: Promise<Boolean>}[] {
     let result = [];
     for(let path of paths)
-        result.push({path: path, promise: loadScript(path)});
+        result.push({path: path, promise: load_script(path)});
     return result;
 }
 
-function loadScript(path: string | string[]) : Promise<Boolean> {
+function load_script(path: string | string[]) : Promise<Boolean> {
     if(Array.isArray(path)) { //Having fallbacks
         return new Promise<Boolean>((resolve, reject) => {
-            loadScript(path[0]).then(resolve).catch(error => {
+            load_script(path[0]).then(resolve).catch(error => {
                 if(path.length >= 2) {
-                    loadScript(path.slice(1)).then(resolve).catch(() => reject("could not load file " + formatPath(path)));
+                    load_script(path.slice(1)).then(resolve).catch(() => reject("could not load file " + formatPath(path)));
                 } else {
-                    reject("could not load file (event fallback's)");
+                    reject("could not load file");
                 }
             });
         });
@@ -99,7 +99,7 @@ function formatPath(path: string | string[]) {
 function loadRelease() {
     app.type = app.Type.RELEASE;
     console.log("Load for release!");
-    awaitLoad(loadScripts([
+    awaitLoad(load_scripts([
         //Load general API's
         ["wasm/TeaWeb-Identity.js"],
         ["js/client.min.js", "js/client.js"]
@@ -110,10 +110,18 @@ function loadRelease() {
         console.error("Could not load " + error.path);
     });
 }
+
 /** Only possible for developers! **/
 function loadDebug() {
     app.type = app.Type.DEBUG;
     console.log("Load for debug!");
+
+    let custom_scripts: string[] | string[][] = [];
+
+    if(!window.require) {
+        console.log("Adding browser audio player");
+        custom_scripts.push(["js/audio/AudioPlayer.js"]);
+    }
 
     load_wait_scripts([
         ["wasm/TeaWeb-Identity.js"],
@@ -171,7 +179,9 @@ function loadDebug() {
         "js/FileManager.js",
         "js/client.js",
         "js/chat.js",
-        "js/Identity.js"
+        "js/Identity.js",
+
+        ...custom_scripts
     ]).then(() => load_wait_scripts([
         "js/codec/CodecWrapper.js"
     ])).then(() => load_wait_scripts([
@@ -208,7 +218,7 @@ function awaitLoad(promises: {path: string, promise: Promise<Boolean>}[]) : Prom
 }
 
 function load_wait_scripts(paths: (string | string[])[]) : Promise<void> {
-    return awaitLoad(loadScripts(paths));
+    return awaitLoad(load_scripts(paths));
 }
 
 
@@ -293,7 +303,7 @@ function loadSide() {
         ["https://webrtc.github.io/adapter/adapter-latest.js"]
     ])).then(() => {
         //Load the teaweb scripts
-        loadScript("js/proto.js").then(loadDebug).catch(loadRelease);
+        load_script("js/proto.js").then(loadDebug).catch(loadRelease);
         //Load the teaweb templates
         loadTemplates();
     });
@@ -345,7 +355,7 @@ if(typeof Module === "undefined")
 app.initialize();
 app.loadedListener.push(fadeoutLoader);
 
-if(!window.displayCriticalError) {
+if(!window.displayCriticalError) { /* Declare this function here only because its required before load */
     window.displayCriticalError = function(message: string) {
         if(typeof(createErrorModal) !== 'undefined') {
             createErrorModal("A critical error occurred while loading the page!", message, {closeable: false}).open();

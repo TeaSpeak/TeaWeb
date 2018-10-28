@@ -1,3 +1,5 @@
+/// <reference path="../../exports/audio/AudioPlayer.d.ts" />
+
 enum PlayerState {
     PREBUFFERING,
     PLAYING,
@@ -6,73 +8,15 @@ enum PlayerState {
     STOPPED
 }
 
-interface Navigator {
-    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-}
-
 class AudioController {
-    private static getUserMediaFunction() {
-        if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-            return (settings, success, fail) => { navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail); };
-        return navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    }
-    public static userMedia = AudioController.getUserMediaFunction();
-    private static _globalContext: AudioContext;
-    private static _globalContextPromise: Promise<void>;
     private static _audioInstances: AudioController[] = [];
-    private static _initialized_listener: (() => any)[] = [];
     private static _globalReplayScheduler: NodeJS.Timer;
     private static _timeIndex: number = 0;
     private static _audioDestinationStream: MediaStream;
 
-    static get globalContext() : AudioContext {
-        if(this._globalContext && this._globalContext.state != "suspended") return this._globalContext;
-
-        if(!this._globalContext)
-            this._globalContext = new (window.webkitAudioContext || window.AudioContext)();
-        if(this._globalContext.state == "suspended") {
-            if(!this._globalContextPromise) {
-                (this._globalContextPromise = this._globalContext.resume()).then(() => {
-                    this.fire_initialized();
-                }).catch(error => {
-                    displayCriticalError("Failed to initialize global audio context! (" + error + ")");
-                });
-            }
-            this._globalContext.resume(); //We already have our listener
-            return undefined;
-        }
-
-        if(this._globalContext.state == "running") {
-            this.fire_initialized();
-            return this._globalContext;
-        }
-        return undefined;
-    }
-
-
-    private static fire_initialized() {
-        while(this._initialized_listener.length > 0)
-            this._initialized_listener.pop_front()();
-    }
-
-    static initialized() : boolean {
-        return (this.globalContext || {state: ""}).state === "running";
-    }
-
-    static on_initialized(callback: () => any) {
-        if(this.globalContext)
-            callback();
-        else
-            this._initialized_listener.push(callback);
-    }
-
-    static initializeFromGesture() {
-        AudioController.globalContext;
-    }
-
     static initializeAudioController() {
-        AudioController.globalContext; //Just test here
+        if(!audio.player.initialize())
+            console.warn("Failed to initialize audio controller!");
         //this._globalReplayScheduler = setInterval(() => { AudioController.invokeNextReplay(); }, 20); //Fix me
     }
 
@@ -142,7 +86,7 @@ class AudioController {
     onSilence: () => void;
 
     constructor() {
-        AudioController.on_initialized(() => this.speakerContext = AudioController.globalContext);
+        audio.player.on_ready(() => this.speakerContext = audio.player.context());
 
         this.onSpeaking = function () { };
         this.onSilence = function () { };
@@ -204,6 +148,10 @@ class AudioController {
     private playQueue() {
         let buffer: AudioBuffer;
         while(buffer = this.audioCache.pop_front()) {
+            if(this.playingAudioCache.length >= this._latencyBufferLength * 1.5 + 3) {
+                console.log("Dropping buffer because playing queue grows to much");
+                continue; /* drop the data (we're behind) */
+            }
             if(this._timeIndex < this.speakerContext.currentTime) this._timeIndex = this.speakerContext.currentTime;
 
             let player = this.speakerContext.createBufferSource();
@@ -212,7 +160,7 @@ class AudioController {
             player.onended = () => this.removeNode(player);
             this.playingAudioCache.push(player);
 
-            player.connect(AudioController.globalContext.destination);
+            player.connect(audio.player.destination());
             player.start(this._timeIndex);
             this._timeIndex += buffer.duration;
          }
@@ -274,4 +222,10 @@ class AudioController {
             this._codecCache.push(new CodecClientCache());
         return this._codecCache[codec];
     }
+}
+
+function getUserMediaFunction() {
+    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+        return (settings, success, fail) => { navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail); };
+    return navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 }

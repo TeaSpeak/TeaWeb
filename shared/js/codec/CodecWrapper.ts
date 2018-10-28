@@ -34,7 +34,6 @@ class CodecWrapper extends BasicCodec {
             this._workerListener.push({
                 token: token,
                 resolve: data => {
-                    console.log("Init result: %o", data);
                     this._initialized = data["success"] == true;
                     if(data["success"] == true)
                         resolve();
@@ -144,7 +143,7 @@ class CodecWrapper extends BasicCodec {
 
     private sendWorkerMessage(message: any, transfare?: any[]) {
         message["timestamp"] = Date.now();
-        this._worker.postMessage(message, transfare);
+        this._worker.postMessage(message, transfare as any);
     }
 
     private onWorkerMessage(message: any) {

@@ -146,7 +146,7 @@ class VoiceConnection {
         this.voiceRecorder.on_start = this.handleVoiceStarted.bind(this);
         this.voiceRecorder.reinitialiseVAD();
 
-        AudioController.on_initialized(() => {
+        audio.player.on_ready(() => {
             log.info(LogCategory.VOICE, "Initializing voice handler after AudioController has been initialized!");
             this.codec_pool[4].initialize(2);
             this.codec_pool[5].initialize(2);
@@ -193,7 +193,7 @@ class VoiceConnection {
         stream.disconnect();
 
         if(!this.local_audio_stream)
-            this.local_audio_stream = AudioController.globalContext.createMediaStreamDestination();
+            this.local_audio_stream = audio.player.context().createMediaStreamDestination();
         stream.connect(this.local_audio_stream);
     }
 

@@ -138,7 +138,7 @@ function main() {
 
     $("#music-test").replaceWith(tag);
 
-    //Modals.spawnSettingsModal();
+    Modals.spawnSettingsModal();
     /*
     Modals.spawnYesNo("Are your sure?", "Do you really want to exit?", flag => {
         console.log("Response: " + flag);
@@ -154,13 +154,17 @@ function main() {
 app.loadedListener.push(() => {
     try {
         main();
-        if(!AudioController.initialized()) {
+        if(!audio.player.initialized()) {
             log.info(LogCategory.VOICE, "Initialize audio controller later!");
-            $(document).one('click', event => AudioController.initializeFromGesture());
+            if(!audio.player.initializeFromGesture) {
+                console.error("Missing audio.player.initializeFromGesture");
+            } else
+                $(document).one('click', event => audio.player.initializeFromGesture());
         }
     } catch (ex) {
+        console.error(ex.stack);
         if(ex instanceof ReferenceError || ex instanceof TypeError)
-            ex = ex.message + ":<br>" + ex.stack;
+            ex = ex.name + ": " + ex.message;
         displayCriticalError("Failed to invoke main function:<br>" + ex);
     }
 });

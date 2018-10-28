@@ -1,9 +1,9 @@
-import {UserData} from "../app-definitions/teaforo/manager";
+/// <reference path="../app-definitions/native_api.d.ts" />
 
 const ipc = require("electron").ipcRenderer;
 let callback_listener: (() => any)[] = [];
 
-ipc.on('teaforo-update', (event, data: UserData) => {
+ipc.on('teaforo-update', (event, data: forum.UserData) => {
     console.log("Got data update: %o", data);
     forumIdentity = data ? new TeaForumIdentity(data.application_data, data.application_data_sign) : undefined;
     try {

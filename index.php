@@ -50,6 +50,7 @@
         <link rel="stylesheet" href="css/modals.css" type="text/css">
         <link rel="stylesheet" href="css/modal-banlist.css" type="text/css">
         <link rel="stylesheet" href="css/modal-bancreate.css" type="text/css">
+        <link rel="stylesheet" href="css/modal-settings.css" type="text/css">
         <link rel="stylesheet" href="css/loader.css" type="text/css">
         <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
         <link rel="stylesheet" href="css/frame/SelectInfo.css" type="text/css">

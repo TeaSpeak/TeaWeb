@@ -329,11 +329,17 @@ class HandshakeHandler {
         }).then(() => this.handshake_finished()); //TODO handle error
     }
 
-    private async handshake_finished(version?: string) {
-        if(window.require && !version) {
-            version = "?.?.?"; //FIXME findout version!
+    private handshake_finished(version?: string) {
+        if(native_client && window["native"] && native.client_version && !version) {
+            native.client_version()
+                .then( this.handshake_finished.bind(this))
+                .catch(error => {
+                    console.error("Failed to get version:");
+                    console.error(error);
+                    this.handshake_finished("?.?.?");
+                });
+            return;
         }
-
         let data = {
             //TODO variables!
             client_nickname: this.name ? this.name : this.identity.name(),
@@ -344,7 +350,7 @@ class HandshakeHandler {
             client_browser_engine: navigator.product
         };
 
-        if(window.require) {
+        if(version) {
             data.client_version = "TeaClient ";
             data.client_version += " " + version;
 

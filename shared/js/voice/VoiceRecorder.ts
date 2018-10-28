@@ -65,8 +65,8 @@ class VoiceRecorder {
         this._deviceId = settings.global("microphone_device_id", "default");
         this._deviceGroup = settings.global("microphone_device_group", "default");
 
-        AudioController.on_initialized(() => {
-            this.audioContext = AudioController.globalContext;
+        audio.player.on_ready(() => {
+            this.audioContext = audio.player.context();
             this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
 
             const empty_buffer = this.audioContext.createBuffer(VoiceRecorder.CHANNELS, VoiceRecorder.BUFFER_SIZE, 48000);
@@ -102,7 +102,7 @@ class VoiceRecorder {
     }
 
     available() : boolean {
-        return !!AudioController.userMedia;
+        return !!getUserMediaFunction() && !!getUserMediaFunction();
     }
 
     recording() : boolean {
@@ -184,7 +184,8 @@ class VoiceRecorder {
         console.log("[VoiceRecorder] Start recording! (Device: %o | Group: %o)", device, groupId);
         this._recording = true;
 
-       AudioController.userMedia({
+        //FIXME Implement that here for thew client as well
+        getUserMediaFunction()({
             audio: {
                 deviceId: device,
                 groupId: groupId
@@ -257,7 +258,7 @@ class VoiceActivityDetectorVAD extends VoiceActivityDetector {
     percentage_listener: (per: number) => void = ($) => {};
 
     initialise() {
-        this.analyzer = AudioController.globalContext.createAnalyser();
+        this.analyzer = audio.player.context().createAnalyser();
         this.analyzer.smoothingTimeConstant = 1; //TODO test
         this.buffer = new Uint8Array(this.analyzer.fftSize);
         return super.initialise();

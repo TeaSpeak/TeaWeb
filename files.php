@@ -99,6 +99,15 @@
 		/* web specs */
 		[
 			"web-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"build-target" => "dev",
+
+			"path" => "js/",
+			"local-path" => "./web/js/"
+		],
+		[
+			"web-only" => true,
 			"type" => "css",
 			"search-pattern" => "/.*\.css$/",
 			"build-target" => "dev|rel",
@@ -250,7 +259,7 @@
 					$environment = "web/dev-environment";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client-api/environment/ui-files";
+					$environment = "client-api/environment/ui-files/raw";
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -262,7 +271,7 @@
 					$environment = "web/rel-environment";
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client-api/environment/ui-files";
+					$environment = "client-api/environment/ui-files/raw";
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -318,7 +327,7 @@
 				if(!is_dir("versions/stable"))
 					exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
 
-				exec($command = "ln -s ../api.php ./", $output, $state);
+				exec($command = "ln -s ../api.php ./", $output, $state); $state = 0; //Dont handle an error here!
 				if($state) goto handle_error;
 			}
 

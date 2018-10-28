@@ -29,12 +29,12 @@ abstract class BasicCodec implements Codec {
     channelCount: number = 1;
     samplesPerUnit: number = 960;
 
-    constructor(codecSampleRate: number) {
+    protected constructor(codecSampleRate: number) {
         this.channelCount = 1;
         this.samplesPerUnit = 960;
-        this._audioContext = new (window.webkitOfflineAudioContext || window.OfflineAudioContext)(AudioController.globalContext.destination.channelCount, 1024,AudioController.globalContext.sampleRate );
+        this._audioContext = new (window.webkitOfflineAudioContext || window.OfflineAudioContext)(audio.player.destination().channelCount, 1024, audio.player.context().sampleRate);
         this._codecSampleRate = codecSampleRate;
-        this._decodeResampler = new AudioResampler(AudioController.globalContext.sampleRate);
+        this._decodeResampler = new AudioResampler(audio.player.context().sampleRate);
         this._encodeResampler = new AudioResampler(codecSampleRate);
     }
 

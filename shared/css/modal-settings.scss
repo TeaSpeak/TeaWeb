@@ -1,0 +1,100 @@
+.modal .settings_audio {
+	display: flex;
+	flex-direction: column;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+	margin: 3px;
+	> div {
+		margin: 2px;
+	}
+
+	a {
+		align-self: center;
+	}
+
+	.group_box {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.settings-device {
+		display: flex;
+		flex-direction: column;
+		width: 100%;
+
+		a {
+			flex-grow: 0;
+		}
+
+		.settings-device-error {
+			display: none;
+
+			width: 100%;
+			margin-bottom: 3px;
+			padding: 2px;
+
+			align-self: center;
+			text-align: center;
+
+			vertical-align: center;
+			border: darkred 2px solid;
+			border-radius: 4px;
+			background: #be00006b;
+		}
+
+		.settings-device-select {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			> div {
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+
+			select {
+				flex-grow: 1;
+				margin-left: 5px;
+				width: 100%;
+			}
+		}
+	}
+
+	.settings-vad-container {
+		display: flex;
+		flex-direction: row;
+		margin-top: 5px;
+
+		> div {
+			width: 50%;
+		}
+
+		fieldset {
+			input {
+				vertical-align: text-bottom;
+			}
+		}
+
+		.settings-vad {
+			display: flex;
+			flex-direction: column;
+		}
+
+		.settings-vad-impl {
+			display: flex;
+			justify-content: space-around;
+			padding: 5px;
+
+			> div {
+				align-self: center;
+			}
+
+			.settings-vad-impl-entry {
+				display: none;
+			}
+		}
+	}
+}

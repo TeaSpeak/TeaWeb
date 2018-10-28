@@ -564,43 +564,61 @@
                     <x-content>Didnt setuped yet!</x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Voice</x-tag>
+                    <x-tag>Audio</x-tag>
                     <x-content>
-                        <div class="settings_voice align_column">
-                            <div style="justify-content: right">
-                                <a style="margin-left: 20px">Microphone:</a>
-                                <select class="voice_microphone_select"></select>
-                                <hr>
-                            </div>
-                            <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly"><div style="vertical-align: center; margin: 20px; min-width: 175px">
-                                <a>Voice Activity Detection</a>
-                                <div>
-                                    <fieldset class="GroupBox">
-                                        <div><input type="radio" name="vad_type" value="pt" display="Always active"> Always active</div>
-                                        <div><input type="radio" name="vad_type" value="vad" display="Voice activity detection"> Voice activity detection</div>
-                                        <div><input type="radio" name="vad_type" value="ppt" display="Push to talk"> Push to talk</div>
-                                    </fieldset>
-                                </div>
-                            </div>
-                                <div style="border-left:1px solid #000;height: auto;"></div>
-                                <div style="flex-direction: column; align-content: stretch; vertical-align: center; margin: 20px;">
-                                    <div class="vad_settings">
-                                        <div style="font-size: 14px; text-align: center"><a class="vad_type">Type[Unknown]</a> settings</div>
-                                        <div class="vad_type_settings vad_type_pt">There are no setting entries for an <b>always</b> online voice detection.</div>
-                                        <div class="vad_type_settings vad_type_ppt">
-                                            <a>Push to talk key:</a>
-                                            <button class="vat_ppt_key">Uninitialised</button>
+                        <div class="settings_audio">
+                            <div class="group_box">
+                                <div class="header">Microphone</div>
+                                <div class="content settings-microphone">
+                                    <div class="settings-device settings-device-microphone">
+                                        <div class="settings-device-error"></div>
+                                        <div class="settings-device-select">
+                                            <a>Device:</a>
+                                            <div><select class="audio-select-microphone"></select></div>
                                         </div>
-                                        <div class="vad_type_settings vad_type_vad">
-                                            <div>Voice activity threshold (<a class="vad_vad_slider_value">20</a>%)</div>
-                                            <div class="vad_vad_threshold_selector">
-                                                <div class="vad_vad_bar">
-                                                    <div style="width: 100%; height: 100%; position: absolute">
-                                                        <div class="vad_vad_bar_filler"></div>
+                                    </div>
+                                    <div class="settings-vad-container">
+                                        <div class="group_box">
+                                            <div class="header">Voice Activity Detection</div>
+                                            <div class="content">
+                                                <fieldset>
+                                                    <div><input type="radio" name="vad_type" value="pt" display="Always active"> Always active</div>
+                                                    <div><input type="radio" name="vad_type" value="vad" display="Voice activity detection"> Voice activity detection</div>
+                                                    <div><input type="radio" name="vad_type" value="ppt" display="Push to talk"> Push to talk</div>
+                                                </fieldset>
+                                            </div>
+                                        </div>
+                                        <div class="settings-vad-impl">
+                                            <div class="settings-vad-impl-entry setting-vad-pt">
+                                                There are no setting entries for an <b>always</b> online voice detection.
+                                            </div>
+                                            <div class="settings-vad-impl-entry setting-vad-ppt">
+                                                <a>Push to talk key:</a>
+                                                <button class="vat_ppt_key">Uninitialised</button>
+                                            </div>
+                                            <div class="settings-vad-impl-entry setting-vad-vad">
+                                                <div>Voice activity threshold (<a class="vad_vad_slider_value">20</a>%)</div>
+                                                <div class="vad_vad_threshold_selector">
+                                                    <div class="vad_vad_bar">
+                                                        <div style="width: 100%; height: 100%; position: absolute">
+                                                            <div class="vad_vad_bar_filler"></div>
+                                                        </div>
+                                                        <input type="range" min="0" max="100" value="50" class="vad_vad_slider">
                                                     </div>
-                                                    <input type="range" min="0" max="100" value="50" class="vad_vad_slider">
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group_box">
+                                <div class="header">Speaker</div>
+                                <div class="content settings-speaker">
+                                    <div class="settings-device settings-device-speaker">
+                                        <div class="settings-device-error"></div>
+                                        <div class="settings-device-select">
+                                            <a>Device:</a>
+                                            <div><select class="audio-select-speaker"></select></div>
                                         </div>
                                     </div>
                                 </div>
