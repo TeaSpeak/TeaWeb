@@ -245,7 +245,7 @@
 			$flagset = 0b00;
 			$environment = "";
 			$type = "dev";
-			if($_SERVER["argv"][3] == "dev") {
+			if($_SERVER["argv"][3] == "dev" || $_SERVER["argv"][3] == "development") {
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;
 					$environment = "web/environment/development";
@@ -256,7 +256,7 @@
 					error_log("Invalid type!");
 					goto help;
 				}
-			} else if($_SERVER["argv"][3] == "rel") {
+			} else if($_SERVER["argv"][3] == "rel" || $_SERVER["argv"][3] == "release") {
 				$type = "rel";
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;

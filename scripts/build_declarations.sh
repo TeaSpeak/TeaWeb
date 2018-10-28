@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 
+BASEDIR=$(dirname "$0")
+source "${BASEDIR}/resolve_commands.sh"
+
 function generate_link() {
-    if [ ! -L $2 ] || [ ${BASH_ARGV[0]} == "force" ]; then
-        if [ -e $2 ]; then
+    if [ ! -L $2 ] || [ "${BASH_ARGV[0]}" == "force" ]; then
+        if [ -e $2 ] || [ -L $2 ]; then
             rm $2
         fi
         ln -rs $1 $2
@@ -17,11 +20,11 @@ cd "$BASEDIR/../"
 #Note: For the client we have to use the given file
 
 #Web
-tsc -p web/tsconfig/tsdeclaration.json
+execute_tsc -p web/tsconfig/tsdeclaration.json
 echo "Generated web declarations"
 
 #Shared
-tsc -p shared/tsconfig/tsdeclaration.json
+execute_tsc -p shared/tsconfig/tsdeclaration.json
 echo "Generated shared declarations"
 
 #Now build the merged declaration for the shared project

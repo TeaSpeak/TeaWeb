@@ -11,6 +11,6 @@
     "outFile": "declarations/exports"
   },
   "include": [
-    "js/**/*.ts"
+    "../js/**/*.ts"
   ]
 }

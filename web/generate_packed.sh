@@ -2,6 +2,7 @@
 
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR"
+source ../scripts/resolve_commands.sh
 
 if [ ! -e declarations/imports_shared.d.ts ]; then
     echo "generate the declarations first!"
@@ -15,7 +16,7 @@ if [ ! -e ../shared/generated/shared.js ]; then
     exit 1
 fi
 
-tsc -p tsconfig/tsconfig_packed.json
+execute_tsc -p tsconfig/tsconfig_packed.json
 if [ $? -ne 0 ]; then
     echo "Failed to build file"
     exit 1

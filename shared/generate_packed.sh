@@ -2,6 +2,7 @@
 
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR"
+source ../scripts/resolve_commands.sh
 
 #Generate the loader definitions first
 LOADER_FILE="declarations/exports_loader.d.ts"
@@ -11,13 +12,14 @@ if [ -e ${LOADER_FILE} ]; then
         echo "Failed to remove loader file!\nThis could be critical later!"
     fi
 fi
-tsc -p tsconfig/tsdeclaration_loader.json &> /dev/null #We dont want the output!
+result=$(execute_tsc -p tsconfig/tsdeclaration_loader.json)
 if [ ! -e ${LOADER_FILE} ]; then
     echo "Failed to generate definitions"
+    echo "$result"
     exit 1
 fi
 
-tsc -p tsconfig/tsconfig_packed.json
+execute_tsc -p tsconfig/tsconfig_packed.json
 if [ $? -ne 0 ]; then
     echo "Failed to generate packed file!"
     exit 1
