@@ -144,7 +144,48 @@
 
 			"path" => "./",
 			"local-path" => "./web/html/"
-		]
+		],
+
+
+
+		/* special web.teaspeak.de only auth files */
+		[ /* login page and api */
+			"web-only" => true,
+			"type" => "html",
+			"search-pattern" => "/.*\.(php|html)/",
+			"build-target" => "dev|rel",
+			"search-depth" => 1,
+
+			"path" => "./",
+			"local-path" => "./auth/"
+		],
+		[ /* javascript  */
+			"web-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"build-target" => "dev|rel",
+
+			"path" => "js/",
+			"local-path" => "./auth/js/"
+		],
+		[ /* web css files */
+			"web-only" => true,
+			"type" => "css",
+			"search-pattern" => "/.*\.css$/",
+			"build-target" => "dev|rel",
+
+			"path" => "css/",
+			"local-path" => "./auth/css/"
+		],
+		[ /* certificates */
+			"web-only" => true,
+			"type" => "pem",
+			"search-pattern" => "/.*\.pem$/",
+			"build-target" => "dev|rel",
+
+			"path" => "certs/",
+			"local-path" => "./auth/certs/"
+		],
 	];
 
 	function list_dir($base_dir, $match = null, $depth = -1, &$results = array(), $dir = "") {

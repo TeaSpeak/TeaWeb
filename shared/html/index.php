@@ -156,9 +156,9 @@
                         <div style=\"align-self: center; position: fixed; right: 5px;\">";
 
 			if (logged_in()) {
-				$TAG = $TAG . "<a href=\"" . "x" . "auth.php?type=logout\">logout</a>";
+				$TAG = $TAG . "<a href=\"" . authPath() . "auth.php?type=logout\">logout</a>";
 			} else {
-				$TAG = $TAG . "<a href=\"" . "y" . "login.php\">Login</a> via the TeaSpeak forum.";
+				$TAG = $TAG . "<a href=\"" . authPath() . "login.php\">Login</a> via the TeaSpeak forum.";
 			}
 
 			echo $TAG . "</div>
