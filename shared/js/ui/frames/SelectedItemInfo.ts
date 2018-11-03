@@ -530,10 +530,64 @@ class MusicInfoManager extends ClientInfoManager {
                     }
                 });
             }
+
+            const player = properties["music_player"];
+            const player_transformer = $.spawn("div").append(player);
+            player_transformer.css({
+                'display': 'block',
+                //'width': "100%",
+                'height': '100%'
+            });
+            properties["music_player"] = player_transformer;
         }
 
         let rendered = $("#tmpl_selected_music").renderTag([properties]);
         html_tag.append(rendered);
+
+        {
+            const player = properties["music_player"] as JQuery;
+            const player_width = 400; //player.width();
+            const player_height = 400; //player.height();
+
+            const parent = player.parent();
+            parent.css({
+                'flex-grow': 1,
+                'display': 'flex',
+                'flex-direction': 'row',
+                'justify-content': 'space-around',
+            });
+
+            const padding = 14;
+            const scale_x = Math.min((parent.width() - padding) / player_width, 1.5);
+            const scale_y = Math.min((parent.height() - padding) / player_height, 1.5);
+            let scale = Math.min(scale_x, scale_y);
+
+            let translate_x = 50, translate_y = 50;
+            if(scale_x == scale_y && scale_x == scale) {
+                //Equal scale
+            } else if(scale_x == scale) {
+                //We scale on the x-Axis
+                //We have to adjust the y-Axis
+            } else {
+                //We scale on the y-Axis
+                //We have to adjust the x-Axis
+
+            }
+            //1 => 0 | 0
+            //1.5 => 0 | 25
+            //0.5 => 0 | -25
+            //const translate_x = scale_x != scale ? 0 : undefined || 50 - (50 * ((parent.width() - padding) / player_width));
+            //const translate_y = scale_y != scale || scale_y > 1 ? 0 : undefined || 50 - (50 * ((parent.height() - padding) / player_height));
+            const transform = ("translate(0%, " + (scale * 50 - 50)  + "%) scale(" + scale.toPrecision(2)  + ")");
+
+            console.log("Parents: %o | %o", parent.width(), parent.height());
+            console.log("Player: %o | %o", player_width, player_height);
+            console.log("Scale: %f => translate: %o | %o", scale, translate_x, translate_y);
+            player.css({
+                transform:  transform
+            });
+            console.log("Transform: " + transform);
+        }
     }
 
     available<V>(object: V): boolean {

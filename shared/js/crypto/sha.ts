@@ -394,7 +394,7 @@ namespace sha {
     export function sha1(message: string | ArrayBuffer) : PromiseLike<ArrayBuffer> {
         let buffer = message instanceof ArrayBuffer ? message : encode_text(message as string);
 
-        if(/Edge/.test(navigator.userAgent))
+        if(!crypto || !crypto.subtle || !crypto.subtle.digest || /Edge/.test(navigator.userAgent))
             return new Promise<ArrayBuffer>(resolve => {
                 resolve(_sha1.arrayBuffer(buffer as ArrayBuffer));
             });

@@ -65,7 +65,8 @@ namespace MessageHelper {
                 console.warn("Message to format contains invalid index (" + number + ")");
 
             result.push(...this.formatElement(objects[number]));
-            begin = found = found + 2 + offset;
+            found = found + 1 + offset;
+            begin = found + 1;
             console.log("Offset: " + offset + " Number: " + number);
         } while(found++);
 
@@ -235,6 +236,11 @@ class ChatEntry {
 
         this._htmlTag = tag;
         return tag;
+    }
+
+    focus() {
+        this.handle.activeChat = this;
+        this.handle.htmlTag.find(".input_box").focus();
     }
 
     set name(newName : string) {

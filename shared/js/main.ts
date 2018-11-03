@@ -152,8 +152,14 @@ function main() {
     */
 
     setup_close();
+
+    let _resize_timeout: NodeJS.Timer;
     $(window).on('resize', () => {
-        globalClient.channelTree.handle_resized();
+        if(_resize_timeout)
+            clearTimeout(_resize_timeout);
+        _resize_timeout = setTimeout(() => {
+            globalClient.channelTree.handle_resized();
+        }, 1000);
     });
 }
 

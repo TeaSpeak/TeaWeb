@@ -2,6 +2,15 @@
 * **03.11.18**
     - Reworked on the basic overlay sizes
     - Added hostbanner to the UI 
+    - Implemented sounds
+    - Implemented poke notification
+    - Added local volume change to music bots
+    - Added move and channel kick to the music bot context menu options
+    - Reworked private chat format
+    - Added several server chat messages
+    - Fixed client double click chat opening
+    - Implemented client drag and drop
+    - Fixed channel select within sub channels
     
 * **28.10.18**
     - Restructured the project

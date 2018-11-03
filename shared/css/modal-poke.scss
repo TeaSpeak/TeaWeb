@@ -1,0 +1,35 @@
+.container-poke {
+	display: flex;
+	flex-direction: column;
+
+	.container-information {
+		text-align: center;
+	}
+
+	.container-message {
+		text-align: center;
+
+		.message {
+			color: green;
+		}
+	}
+
+	.button-close {
+		margin-top: 5px;
+		width: 150px;
+		float: right;
+	}
+}
+
+/*
+  <script class="jsrender-template" id="tmpl_poke_popup" type="text/html">
+            <div class="container-poke">
+                <div class="container-information">
+                    <a>You have been poked by </a><node key="invoker"></node><a>:</a>
+                </div>
+                <div class="container-message">
+                    <a class="message">{{>message}}</a>
+                </div>
+            </div>
+        </script>
+ */

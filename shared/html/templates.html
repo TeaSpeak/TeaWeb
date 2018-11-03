@@ -431,7 +431,7 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>Transfers</x-tag>
-                    <x-content>TeaSpeak does not yet support these variables</x-content>
+                    <x-content>This needs to be implemented :)</x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>Anti-Flood</x-tag>
@@ -1322,9 +1322,7 @@
         </script>
         <script class="jsrender-template" id="tmpl_selected_hostbanner" type="text/html">
             <div class="hostbanner">
-                {{if property_virtualserver_hostbanner_url}}
-                <a href="{{:property_virtualserver_hostbanner_url}}">
-                {{/if}}
+                <a href="{{:property_virtualserver_hostbanner_url}}" style="display: flex; flex-direction: row; justify-content: center;">
 
                     <img src="
                                     {{:property_virtualserver_hostbanner_gfx_url}}
@@ -1348,9 +1346,7 @@
 
                     alt="Host banner"
                     >
-                {{if property_virtualserver_hostbanner_url}}
                 </a>
-                {{/if}}
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_selected_server" type="text/html">
@@ -1461,6 +1457,17 @@
             <div style="margin-top: 10px">
                 <b style="margin-bottom: 2px">Description</b>
                 <node key="bbcode_channel_description"></node>
+            </div>
+        </script>
+        <script class="jsrender-template" id="tmpl_poke_popup" type="text/html">
+            <div class="container-poke">
+                <div class="container-information">
+                    <a>You have been poked by </a><node key="invoker"></node><a>:</a>
+                </div>
+                <div class="container-message">
+                    <a class="message">{{>message}}</a>
+                </div>
+                <button class="button-close">close</button>
             </div>
         </script>
     </body>

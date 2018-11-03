@@ -1,0 +1,49 @@
+#Sound test
+sound.test;This is a test sound
+sound.egg;WolverinDEV is the best and I love TeaSpeak!
+
+#Away
+away_activated;See you soon
+away_deactivated;Welcome back
+
+#Connection
+connection.connected;Connected
+connection.disconnected;Disconnected
+connection.disconnected.timeout;Connection to server lost
+connection.refused;Connect failed
+connection.banned;You got banned from this server
+
+#Server
+server.edited;Server edited
+server.edited.self;You edited the server
+server.kicked;You got kicked from the server
+
+#Channel activity
+channel.kicked;You got kicked from the channel
+channel.moved;Channel moved
+channel.joined;Channel joined
+channel.created;Channel created
+channel.edited;Channel edited
+channel.edited.self;You edited the channel
+channel.deleted;Channel deleted
+
+#User action
+user.moved;User moved
+user.moved.self;You have been moved
+user.poked.self;Hey wakeup!
+user.banned;User banned
+
+user.joined;User joined your channel
+user.joined.moved;User got moved to your channel
+user.joined.kicked;User got kicked to your channel
+user.joined.connect;User connected to your channel
+
+user.left;User left your channel
+user.left.kicked.channel;User in your channel got kicked from the channel
+user.left.kicked.server;User in your channel got kicked from the server
+user.left.moved;User was moved out of your channel
+user.left.disconnect;User disconnected from your channel
+user.left.banned;User in your channel was banned from the server
+
+#Error
+error.insufficient_permissions;insufficient permissions

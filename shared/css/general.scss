@@ -277,6 +277,7 @@ footer .container {
 		}
 
 		min-width: 100px;
+		max-width: 60%; /* tmp chat fix */
 		display: flex;
 		flex-direction: column;
 		flex-grow: 1;
@@ -314,4 +315,25 @@ footer .container {
 		width: 40%;
 		border-radius: 0 0 2px 0;
 	}
+}
+
+#mouse-move {
+	display: none;
+	position: absolute;
+
+	.container {
+		position: relative;
+		display: block;
+
+		border: 2px solid gray;
+		-webkit-border-radius: 2px;
+		-moz-border-radius: 2px;
+		border-radius: 2px;
+	}
+}
+
+html, body {
+	min-height: 500px;
+	min-width: 500px;
+	overflow: hidden;
 }

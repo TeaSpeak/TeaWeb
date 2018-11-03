@@ -53,6 +53,7 @@
         <link rel="stylesheet" href="css/modal-banlist.css" type="text/css">
         <link rel="stylesheet" href="css/modal-bancreate.css" type="text/css">
         <link rel="stylesheet" href="css/modal-settings.css" type="text/css">
+        <link rel="stylesheet" href="css/modal-poke.css" type="text/css">
         <link rel="stylesheet" href="css/loader.css" type="text/css">
         <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
         <link rel="stylesheet" href="css/frame/SelectInfo.css" type="text/css">
@@ -145,6 +146,11 @@
 
         <div id="music-test"></div>
         <div id="templates"></div>
+        <div id="sounds"></div>
+        <div id="mouse-move">
+            <div class="container">
+            </div>
+        </div>
     </body>
 
 	<?php

@@ -13,6 +13,7 @@
 	display: inline-flex;
 	flex-direction: column;
 	justify-content: space-between;
+	flex-grow: 1;
 
 	.button-update {
 		width: 100%;
@@ -80,13 +81,14 @@
 	.container-select-info {
 		flex-grow: 1;
 		flex-shrink: 1;
-
 		display: flex;
 		flex-direction: column;
 		justify-content: stretch;
 
-		> div {
-			flex-grow: 1;
+		.select_server {
+			> div {
+				flex-grow: 1;
+			}
 		}
 	}
 }

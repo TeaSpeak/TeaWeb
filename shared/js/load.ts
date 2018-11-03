@@ -129,6 +129,8 @@ function loadDebug() {
         //Load general API's
         "js/log.js",
 
+        "js/sound/Sounds.js",
+
         "js/utils/modal.js",
         "js/utils/tab.js",
         "js/utils/helpers.js",
@@ -147,6 +149,7 @@ function loadDebug() {
         "js/ui/modal/ModalBanCreate.js",
         "js/ui/modal/ModalBanList.js",
         "js/ui/modal/ModalYesNo.js",
+        "js/ui/modal/ModalPoke.js",
         "js/ui/modal/ModalPermissionEdit.js",
         "js/ui/modal/ModalServerGroupDialog.js",
 
@@ -154,6 +157,7 @@ function loadDebug() {
         "js/ui/client.js",
         "js/ui/server.js",
         "js/ui/view.js",
+        "js/ui/client_move.js",
 
         "js/ui/frames/SelectedItemInfo.js",
         "js/ui/frames/ControlBar.js",

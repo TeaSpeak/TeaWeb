@@ -6,7 +6,10 @@ namespace Modals {
         const modal = createModal({
             header: channel ? "Edit channel" : "Create channel",
             body: () => {
-                let template = $("#tmpl_channel_edit").renderTag(channel ? channel.properties : new ChannelProperties());
+                let template = $("#tmpl_channel_edit").renderTag(channel ? channel.properties : {
+                    channel_flag_maxfamilyclients_unlimited: true,
+                    channel_flag_maxclients_unlimited: true
+                } as ChannelProperties);
                 template = $.spawn("div").append(template);
                 return template.tabify();
             },
@@ -62,6 +65,8 @@ namespace Modals {
         });
 
         modal.open();
+        if(!channel)
+            modal.htmlTag.find(".channel_name").focus();
     }
 
     function applyGeneralListener(properties: ChannelProperties, tag: JQuery, button: JQuery, create: boolean) {
@@ -71,7 +76,7 @@ namespace Modals {
             else button.attr("disabled", "true");
         };
 
-        tag.find(".channel_name").change(function (this: HTMLInputElement) {
+        tag.find(".channel_name").on('change keyup', function (this: HTMLInputElement) {
             properties.channel_name = this.value;
 
             $(this).removeClass("input_error");
@@ -101,8 +106,10 @@ namespace Modals {
         }).prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_DESCRIPTION : PermissionType.B_CHANNEL_MODIFY_DESCRIPTION).granted(1));
 
         if(create) {
-            tag.find(".channel_name").trigger("change");
-            tag.find(".channel_password").trigger('change');
+            setTimeout(() => {
+                tag.find(".channel_name").trigger("change");
+                tag.find(".channel_password").trigger('change');
+            }, 0);
         }
     }
 

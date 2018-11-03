@@ -15,6 +15,9 @@ class AudioController {
     static initializeAudioController() {
         if(!audio.player.initialize())
             console.warn("Failed to initialize audio controller!");
+        sound.initialize().then(() => {
+            console.log("Sounds initialitzed");
+        });
         //this._globalReplayScheduler = setInterval(() => { AudioController.invokeNextReplay(); }, 20); //Fix me
     }
 

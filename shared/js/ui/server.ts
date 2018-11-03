@@ -130,7 +130,9 @@ class ServerEntry {
                         log.info(LogCategory.SERVER, "Changing server properties %o", properties);
                         console.log("Changed properties: %o", properties);
                         if (properties)
-                            this.channelTree.client.serverConnection.sendCommand("serveredit", properties);
+                            this.channelTree.client.serverConnection.sendCommand("serveredit", properties).then(() => {
+                                sound.play(Sound.SERVER_EDITED_SELF);
+                            });
                     });
                 }
             },

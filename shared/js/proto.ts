@@ -121,7 +121,7 @@ if(typeof ($) !== "undefined") {
                 result = $(result);
             }
             result.find("node").each((index, element) => {
-                $(element).replaceWith(values[$(element).attr("key")] || values[0][$(element).attr("key")]);
+                $(element).replaceWith(values[$(element).attr("key")] || (values[0] || [])[$(element).attr("key")]);
             });
             return result;
         }

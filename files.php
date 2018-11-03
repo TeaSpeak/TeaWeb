@@ -35,6 +35,22 @@
 			"path" => "css/",
 			"local-path" => "./shared/css/"
 		],
+		[ /* shared sound files */
+			"type" => "wav",
+			"search-pattern" => "/.*\.wav$/",
+			"build-target" => "dev|rel",
+
+			"path" => "audio/",
+			"local-path" => "./shared/audio/"
+		],
+		[ /* shared data sound files */
+			"type" => "json",
+			"search-pattern" => "/.*\.json/",
+			"build-target" => "dev|rel",
+
+			"path" => "audio/",
+			"local-path" => "./shared/audio/"
+		],
 		[ /* shared image files */
 			"type" => "img",
 			"search-pattern" => "/.*\.(svg|png)/",

@@ -232,6 +232,7 @@ class ControlBar {
     private onDisconnect() {
         this.handle.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
         this.update_connection_state();
+        sound.play(Sound.CONNECTION_DISCONNECTED);
     }
 
     private on_token_use() {

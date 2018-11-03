@@ -98,7 +98,7 @@ class TSClient {
             helpers.hashPassword(password.password).then(password => {
                 this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password));
             }).catch(error => {
-                createErrorModal("Error while hasing password", "Faield to hash server password!").open();
+                createErrorModal("Error while hashing password", "Failed to hash server password!<br>" + error).open();
             })
         } else
             this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password ? password.password : undefined));
@@ -182,6 +182,7 @@ class TSClient {
                         "Click <a href='" + this.certAcceptUrl() + "'>here</a> to accept the remote certificate"
                     ).open();
                 }
+                sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 console.error("Lost connection to remote server!");
@@ -189,9 +190,11 @@ class TSClient {
                     "Connection closed",
                     "The connection was closed by remote host"
                 ).open();
+                sound.play(Sound.CONNECTION_DISCONNECTED);
                 break;
             case DisconnectReason.CONNECTION_PING_TIMEOUT:
                 console.error("Connection ping timeout");
+                sound.play(Sound.CONNECTION_DISCONNECTED_TIMEOUT);
                 createErrorModal(
                     "Connection lost",
                     "Lost connection to remote host (Ping timeout)<br>Even possible?"
@@ -204,6 +207,7 @@ class TSClient {
                     "The server is closed.<br>" +
                             "Reason: " + data.reasonmsg
                 ).open();
+                sound.play(Sound.CONNECTION_DISCONNECTED);
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
                 chat.serverChat().appendError("Server requires password");
@@ -214,6 +218,19 @@ class TSClient {
                         this.serverConnection._handshakeHandler.name,
                         {password: password as string, hashed: false});
                 }).open();
+                break;
+            case DisconnectReason.CLIENT_KICKED:
+                chat.serverChat().appendError("You got kicked from the server by {0}{1}",
+                    ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
+                    data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
+                sound.play(Sound.SERVER_KICKED);
+                break;
+            case DisconnectReason.CLIENT_BANNED:
+                chat.serverChat().appendError("You got banned from the server by {0}{1}",
+                    ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
+                    data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
+                sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
+                break;
             default:
                 console.error("Got uncaught disconnect!");
                 console.error("Type: " + type + " Data:");

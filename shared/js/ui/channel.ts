@@ -56,6 +56,7 @@ class ChannelEntry {
 
     private _channelAlign: string;
     private _formatedChannelName: string;
+    private _family_index: number = 0;
 
     //HTML DOM elements
     private _tag_root:              JQuery<HTMLElement>;
@@ -161,8 +162,10 @@ class ChannelEntry {
 
         //Tag channel
         this._tag_channel = $.spawn("div");
+        this._tag_channel.attr('channel-id', this.channelId);
         this._tag_channel.addClass("channelLine");
         this._tag_channel.addClass(this._channelAlign); //For left
+        this._tag_channel.css('z-index', this._family_index);
 
         let channelType = $.spawn("div");
         channelType.addClass("channel_only_normal channel_type icon client-channel_green_subscribed");
@@ -373,7 +376,9 @@ class ChannelEntry {
                             }
 
                             perms[0]["cid"] = this.channelId;
-                            this.channelTree.client.serverConnection.sendCommand("channeladdperm", perms, ["continueonerror"]);
+                            this.channelTree.client.serverConnection.sendCommand("channeladdperm", perms, ["continueonerror"]).then(() => {
+                                sound.play(Sound.CHANNEL_EDITED_SELF);
+                            });
                         }
                     });
                 }
@@ -383,7 +388,11 @@ class ChannelEntry {
                 icon: "client-channel_delete",
                 name: "Delete channel",
                 invalidPermission: !flagDelete,
-                callback: () => this.channelTree.client.serverConnection.sendCommand("channeldelete", {cid: this.channelId})
+                callback: () => {
+                    this.channelTree.client.serverConnection.sendCommand("channeldelete", {cid: this.channelId}).then(() => {
+                        sound.play(Sound.CHANNEL_DELETED);
+                    })
+                }
             },
             MenuEntry.HR(),
             {
@@ -564,8 +573,10 @@ class ChannelEntry {
                     this.updateChannelTypeIcon();
                 });
             }).open();
-        } else
-            this.channelTree.client.getServerConnection().joinChannel(this, this._cachedPassword).catch(error => {
+        } else if(this.channelTree.client.getClient().currentChannel() != this)
+            this.channelTree.client.getServerConnection().joinChannel(this, this._cachedPassword).then(() => {
+                sound.play(Sound.CHANNEL_JOINED);
+            }).catch(error => {
                 if(error instanceof CommandResult) {
                     if(error.id == 781) { //Invalid password
                         this._cachedPassword = undefined;

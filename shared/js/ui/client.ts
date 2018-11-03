@@ -1,6 +1,7 @@
 /// <reference path="channel.ts" />
 /// <reference path="modal/ModalChangeVolume.ts" />
 /// <reference path="modal/ModalServerGroupDialog.ts" />
+/// <reference path="client_move.ts" />
 
 enum ClientType {
     CLIENT_VOICE,
@@ -80,7 +81,7 @@ class ClientEntry {
         return this._properties;
     }
 
-    currentChannel() { return this._channel; }
+    currentChannel() : ChannelEntry { return this._channel; }
     clientNickName(){ return this.properties.client_nickname; }
     clientUid(){ return this.properties.client_unique_identifier; }
     clientId(){ return this._clientId; }
@@ -95,6 +96,11 @@ class ClientEntry {
             _this.channelTree.onSelect(_this);
         });
 
+        if(this.clientId() != this.channelTree.client.clientId && !(this instanceof MusicClientEntry))
+            this.tag.dblclick(event => {
+                this.chat(true).focus();
+            });
+
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
             this.tag.on("contextmenu", function (event) {
                 event.preventDefault();
@@ -105,6 +111,25 @@ class ClientEntry {
                 return false;
             });
         }
+
+        this.tag.mousedown(event => {
+            this.channelTree.client_mover.activate(this, target => {
+                if(!target) return;
+                if(target == this._channel) return;
+
+                const source = this._channel;
+                const self = this.channelTree.client.getClient();
+                this.channelTree.client.serverConnection.sendCommand("clientmove", {
+                    clid: this.clientId(),
+                    cid: target.getChannelId()
+                }).then(event => {
+                    if(this.clientId() == this.channelTree.client.clientId)
+                        sound.play(Sound.CHANNEL_JOINED);
+                    else if(target !== source && target != self.currentChannel())
+                        sound.play(Sound.USER_MOVED);
+                });
+            }, event);
+        });
     }
 
     protected assignment_context() : ContextMenuEntry[] {
@@ -312,7 +337,9 @@ class ClientEntry {
                             uid: this.properties.client_unique_identifier,
                             banreason: data.reason,
                             time: data.length
-                        }, [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]);
+                        }, [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]).then(() => {
+                            sound.play(Sound.USER_BANNED);
+                        });
                     });
                 }
             },
@@ -780,6 +807,48 @@ class MusicClientEntry extends ClientEntry {
             },
             MenuEntry.HR(),
             ...super.assignment_context(),
+            MenuEntry.HR(),{
+                type: MenuEntryType.ENTRY,
+                icon: "client-move_client_to_own_channel",
+                name: "Move client to your channel",
+                callback: () => {
+                    this.channelTree.client.serverConnection.sendCommand("clientmove", {
+                        clid: this.clientId(),
+                        cid: this.channelTree.client.getClient().currentChannel().getChannelId()
+                    });
+                }
+            }, {
+                type: MenuEntryType.ENTRY,
+                icon: "client-kick_channel",
+                name: "Kick client from channel",
+                callback: () => {
+                    createInputModal("Kick client from channel", "Kick reason:<br>", text => true, result => {
+                        if(result) {
+                            console.log("Kicking client " + this.clientNickName() + " from channel with reason " + result);
+                            this.channelTree.client.serverConnection.sendCommand("clientkick", {
+                                clid: this.clientId(),
+                                reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
+                                reasonmsg: result
+                            });
+
+                        }
+                    }, { width: 400, maxLength: 255 }).open();
+                }
+            },
+            MenuEntry.HR(),
+            {
+                type: MenuEntryType.ENTRY,
+                icon: "client-volume",
+                name: "Change Volume",
+                callback: () => {
+                    Modals.spawnChangeVolume(this.audioController.volume, volume => {
+                        settings.changeServer("volume_client_" + this.clientUid(), volume);
+                        this.audioController.volume = volume;
+                        if(globalClient.selectInfo.currentSelected == this)
+                            globalClient.selectInfo.update();
+                    });
+                }
+            },
             MenuEntry.HR(),
             {
                 name: "Delete bot",

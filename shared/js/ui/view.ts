@@ -13,9 +13,14 @@ class ChannelTree {
     channels: ChannelEntry[];
     clients: ClientEntry[];
 
+    readonly client_mover: ClientMover;
+
     constructor(client, htmlTree) {
+        document.addEventListener("touchstart", function(){}, true);
+
         this.client = client;
         this.htmlTree = htmlTree;
+        this.client_mover = new ClientMover(this);
         this.reset();
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
@@ -122,6 +127,7 @@ class ChannelTree {
             elm.after(entry);
 
         channel.adjustSize(true);
+
         channel.initializeListener();
     }
 
@@ -164,8 +170,12 @@ class ChannelTree {
         }
 
 
-        if(oldParent) oldParent.adjustSize();
-        if(channel) channel.adjustSize();
+        if(oldParent) {
+            oldParent.adjustSize();
+        }
+        if(channel) {
+            channel.adjustSize();
+        }
     }
 
     deleteClient(client: ClientEntry) {
@@ -306,6 +316,7 @@ class ChannelTree {
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
             }).then(channel => {
                 chat.serverChat().appendMessage("Channel {} successfully created!", true, channel.createChatTag());
+                sound.play(Sound.CHANNEL_CREATED);
             });
         });
     }
