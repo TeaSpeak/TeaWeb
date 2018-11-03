@@ -1,4 +1,8 @@
 # Changelog:
+* **03.11.18**
+    - Reworked on the basic overlay sizes
+    - Added hostbanner to the UI 
+    
 * **28.10.18**
     - Restructured the project
     - Added a lot of helper scripts

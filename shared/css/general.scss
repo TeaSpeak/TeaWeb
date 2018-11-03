@@ -267,3 +267,51 @@ footer .container {
     vertical-align: center;
     justify-content: center;
 }
+
+.app {
+	.container-channel-chat {
+		> div {
+			min-height: 100px;
+			min-width: 100px;
+			max-width: 100%;
+		}
+
+		min-width: 100px;
+		display: flex;
+		flex-direction: column;
+		flex-grow: 1;
+
+		.container-channel {
+			flex-grow: 60;
+			display: flex;
+			justify-content: stretch;
+
+			overflow: auto;
+			overflow-x: visible;
+
+
+			background: white;
+			border: 2px solid lightgray;
+			border-right-width: 0;
+		}
+
+		.container-chat {
+			display: flex;
+			flex-direction: column;
+			justify-content: stretch;
+
+			max-height: 400px;
+			height: 250px;
+			border-radius: 0 0 0 2px;
+			border-top-width: 0;
+			border-right-width: 0;
+		}
+	}
+
+	.container-info {
+		min-width: 100px;
+		max-width: 40%;
+		width: 40%;
+		border-radius: 0 0 2px 0;
+	}
+}

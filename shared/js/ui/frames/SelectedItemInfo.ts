@@ -54,28 +54,35 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     private current_selected?: AvailableTypes;
     private _htmlTag: JQuery<HTMLElement>;
+    private _tag_info: JQuery<HTMLElement>;
+    private _tag_banner: JQuery<HTMLElement>;
 
     private current_manager: InfoManagerBase = undefined;
     private managers: InfoManagerBase[] = [];
+    private banner_manager: Hostbanner;
 
     constructor(client: TSClient, htmlTag: JQuery<HTMLElement>) {
         this.handle = client;
         this._htmlTag = htmlTag;
+        this._tag_info = htmlTag.find(".container-select-info");
+        this._tag_banner = htmlTag.find(".container-banner");
 
         this.managers.push(new MusicInfoManager());
         this.managers.push(new ClientInfoManager());
         this.managers.push(new ChannelInfoManager());
         this.managers.push(new ServerInfoManager());
+
+        this.banner_manager = new Hostbanner(client, this._tag_banner);
     }
 
     setCurrentSelected(entry: AvailableTypes) {
         if(this.current_selected == entry) return;
         if(this.current_manager) {
-            (this.current_manager as InfoManager<AvailableTypes>).finalizeFrame(this.current_selected, this._htmlTag);
+            (this.current_manager as InfoManager<AvailableTypes>).finalizeFrame(this.current_selected, this._tag_info);
             this.current_manager = null;
             this.current_selected = null;
         }
-        this._htmlTag.empty();
+        this._tag_info.empty();
 
         this.current_selected = entry;
         for(let manager of this.managers) {
@@ -87,7 +94,7 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
         console.log("Using info manager: %o", this.current_manager);
         if(this.current_manager)
-            (this.current_manager as InfoManager<AvailableTypes>).createFrame(this, this.current_selected, this._htmlTag);
+            (this.current_manager as InfoManager<AvailableTypes>).createFrame(this, this.current_selected, this._tag_info);
     }
 
     get currentSelected() {
@@ -96,7 +103,56 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     update(){
         if(this.current_manager && this.current_selected)
-            (this.current_manager as InfoManager<AvailableTypes>).updateFrame(this.current_selected, this._htmlTag);
+            (this.current_manager as InfoManager<AvailableTypes>).updateFrame(this.current_selected, this._tag_info);
+    }
+
+    update_banner() {
+        this.banner_manager.update();
+    }
+}
+
+class Hostbanner {
+    readonly html_tag: JQuery<HTMLElement>;
+    readonly client: TSClient;
+
+    private updater: NodeJS.Timer;
+
+    constructor(client: TSClient, htmlTag: JQuery<HTMLElement>) {
+        this.client = client;
+        this.html_tag = htmlTag;
+    }
+
+    update() {
+        if(this.updater) {
+            clearTimeout(this.updater);
+            this.updater = undefined;
+        }
+
+        this.html_tag.empty();
+        const tag = this.generate_tag();
+
+        if(tag) {
+            this.html_tag.append(tag);
+            this.html_tag.prop("disabled", false);
+        } else
+            this.html_tag.prop("disabled", true);
+    }
+
+    private generate_tag?() : JQuery<HTMLElement> {
+        if(!this.client.connected) return undefined;
+        const server = this.client.channelTree.server;
+        if(!server) return undefined;
+        if(!server.properties.virtualserver_hostbanner_gfx_url) return undefined;
+
+        let properties: any = {};
+        for(let key in server.properties)
+            properties["property_" + key] = server.properties[key];
+
+        const rendered = $("#tmpl_selected_hostbanner").renderTag(properties);
+
+        if(server.properties.virtualserver_hostbanner_gfx_interval > 0)
+            this.updater = setTimeout(() => this.update(), Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60) * 1000);
+        return rendered;
     }
 }
 

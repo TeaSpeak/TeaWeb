@@ -69,14 +69,13 @@
                         </div>
                     </div>
 
-                    <div style="flex-direction: row; height: 100%; width: 100%; display: flex">
-                        <div style="width: 60%; flex-direction: column;">
-                            <div style="height: 60%; border-radius: 0 0 0 0; border-right-width: 0; overflow: auto; overflow-x: visible"
-                                 class="main_container">
+                    <div style="flex-direction: row; height: 100%; width: 100%; display: flex; justify-content: stretch;">
+                        <div class="container-channel-chat">
+                            <div class="container-channel" class="main_container">
                                 <div class="channelTree" id="channelTree"></div>
-                            </div> <!-- Channel tree -->
-                            <div style="height: 40%; border-radius: 0 0 0 2px; border-top-width: 0; border-right-width: 0;"
-                                 class="main_container">
+                            </div>
+                            <!-- Channel tree -->
+                            <div class="main_container container-chat">
                                 <div id="chat">
                                     <div class="messages">
                                         <div class="message_box"></div>
@@ -90,15 +89,16 @@
                                 </div>
                             </div> <!-- Chat window -->
                         </div>
-                        <div style="width: 40%; border-radius: 0px 0px 2px 0px;" class="main_container">
+                        <div class="main_container container-info">
                             <div id="select_info" class="select_info" style="width: 100%; max-width: 100%">
+                                <div class="container-banner"></div>
+                                <div class="container-select-info"></div>
                             </div>
                         </div> <!-- Selection info -->
                     </div>
                 </div>
             </div>
             <div id="contextMenu" class="context-menu"></div>
-            <div style="height: 100px"></div>
         </script>
         <!-- Template for the connect modal -->
         <script class="jsrender-template" id="tmpl_connect" type="text/html">
@@ -1320,42 +1320,84 @@
                 <node key="music_player"/>
             </div>
         </script>
+        <script class="jsrender-template" id="tmpl_selected_hostbanner" type="text/html">
+            <div class="hostbanner">
+                {{if property_virtualserver_hostbanner_url}}
+                <a href="{{:property_virtualserver_hostbanner_url}}">
+                {{/if}}
+
+                    <img src="
+                                    {{:property_virtualserver_hostbanner_gfx_url}}
+                                    {{if property_virtualserver_hostbanner_gfx_interval > 0}}
+                                        {{*
+                                            date = Math.floor(Date.now() / 1000);
+                                            if (data.property_virtualserver_hostbanner_gfx_interval <= 60)
+                                                data.property_virtualserver_hostbanner_gfx_interval = 60;
+                                            date = Math.floor(date / data.property_virtualserver_hostbanner_gfx_interval) * data.property_virtualserver_hostbanner_gfx_interval;
+                                        }}
+                                        ?ts={{*:date}}
+                                    {{/if}}
+                                 "
+                         {{if property_virtualserver_hostbanner_mode == 0}}
+
+                         {{else property_virtualserver_hostbanner_mode == 1}}
+                         style="width: 100%; height: 100%;"
+                         {{else property_virtualserver_hostbanner_mode == 2}}
+                         style="width: 100%; height: auto;"
+                         {{/if}}
+
+                    alt="Host banner"
+                    >
+                {{if property_virtualserver_hostbanner_url}}
+                </a>
+                {{/if}}
+            </div>
+        </script>
         <script class="jsrender-template" id="tmpl_selected_server" type="text/html">
             <div class="select_server">
-                <table class="select_info_table">
-                    <tr>
-                        <td>Name:</td>
-                        <td><node key="server_name"/></td>
-                    </tr>
-                    <tr>
-                        <td>Address:</td>
-                        <td>{{>server_address}}</td>
-                    </tr>
-                    <tr>
-                        <td>Type:</td>
-                        <td>TeaSpeak</td>
-                    </tr>
-                    <tr>
-                        <td>Version:</td>
-                        <td><a title="{{>property_virtualserver_version}}">{{*: data.property_virtualserver_version.split(" ")[0]; }}</a> on {{>property_virtualserver_platform}}</td>
-                    </tr>
-                    <tr>
-                        <td>Uptime:</td>
-                        <td class="update_onlinetime">{{:server_onlinetime}}</td>
-                    </tr>
-                    <tr>
-                        <td>Current Channels:</td>
-                        <td>{{:property_virtualserver_channelsonline}}</td>
-                    </tr>
-                    <tr>
-                        <td>Current Clients:</td>
-                        <td>{{:property_virtualserver_clientsonline}}</td>
-                    </tr>
-                    <tr>
-                        <td>Current Queries:</td>
-                        <td>{{:property_virtualserver_queryclientsonline}}</td>
-                    </tr>
-                </table>
+                <div class="container">
+                    <!--
+                        virtualserver_hostbanner_url: string = "";
+                        virtualserver_hostbanner_gfx_url: string = "";
+                        virtualserver_hostbanner_gfx_interval: number = 0;
+                        virtualserver_hostbanner_mode: number = 0;
+                    -->
+
+                    <table class="select_info_table">
+                        <tr>
+                            <td>Name:</td>
+                            <td><node key="server_name"/></td>
+                        </tr>
+                        <tr>
+                            <td>Address:</td>
+                            <td>{{>server_address}}</td>
+                        </tr>
+                        <tr>
+                            <td>Type:</td>
+                            <td>TeaSpeak</td>
+                        </tr>
+                        <tr>
+                            <td>Version:</td>
+                            <td><a title="{{>property_virtualserver_version}}">{{*: data.property_virtualserver_version.split(" ")[0]; }}</a> on {{>property_virtualserver_platform}}</td>
+                        </tr>
+                        <tr>
+                            <td>Uptime:</td>
+                            <td class="update_onlinetime">{{:server_onlinetime}}</td>
+                        </tr>
+                        <tr>
+                            <td>Current Channels:</td>
+                            <td>{{:property_virtualserver_channelsonline}}</td>
+                        </tr>
+                        <tr>
+                            <td>Current Clients:</td>
+                            <td>{{:property_virtualserver_clientsonline}}</td>
+                        </tr>
+                        <tr>
+                            <td>Current Queries:</td>
+                            <td>{{:property_virtualserver_queryclientsonline}}</td>
+                        </tr>
+                    </table>
+                </div>
 
                 <button class="button-update btn_update">Update info</button>
             </div>

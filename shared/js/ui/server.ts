@@ -141,6 +141,7 @@ class ServerEntry {
     updateVariables(is_self_notify: boolean, ...variables: {key: string, value: string}[]) {
         let group = log.group(log.LogType.DEBUG, LogCategory.SERVER, "Update properties (%i)", variables.length);
 
+        let update_bannner = false;
         for(let variable of variables) {
             JSON.map_field_to(this.properties, variable.value, variable.key);
 
@@ -150,8 +151,12 @@ class ServerEntry {
             } else if(variable.key == "virtualserver_icon_id") {
                 if(this.channelTree.client.fileManager && this.channelTree.client.fileManager.icons)
                     this.htmlTag.find(".icon_property").replaceWith(this.channelTree.client.fileManager.icons.generateTag(this.properties.virtualserver_icon_id).addClass("icon_property"));
+            } else if(variable.key.indexOf('hostbanner') != -1) {
+                update_bannner = true;
             }
         }
+        if(update_bannner)
+            this.channelTree.client.selectInfo.update_banner();
 
         group.end();
         if(is_self_notify && this.info_request_promise_resolve) {
