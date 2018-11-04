@@ -65,7 +65,7 @@ namespace sound {
         node?: HTMLAudioElement;
 
     }
-    let warned = false
+    let warned = false;
     let speech_mapping: {[key: string]:SpeechFile} = {};
 
     function register_sound(key: string, file: string) {

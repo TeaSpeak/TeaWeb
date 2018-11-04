@@ -72,6 +72,10 @@
 			flex-direction: row;
 			justify-content: stretch;
 
+			&:not(:first-of-type) {
+				margin-top: 5px;
+			}
+
 			div {
 				flex-grow: 0;
 
