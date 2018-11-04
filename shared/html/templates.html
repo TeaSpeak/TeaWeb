@@ -431,7 +431,40 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>Transfers</x-tag>
-                    <x-content>This needs to be implemented :)</x-content>
+                    <x-content>
+                        <div class="container-file-transfer">
+                            <div class="group_box">
+                                <div class="header">Upload</div>
+                                <div class="content settings">
+                                    <div class="setting">
+                                        <div class="key">Bandwidth Limit:</div>
+                                        <input type="number" class="value virtualserver_max_upload_total_bandwidth" value="{{>virtualserver_max_upload_total_bandwidth}}"/>
+                                        <div class="suffix">Bytes/s</div>
+                                    </div>
+                                    <div class="setting">
+                                        <div class="key">Upload Quota:</div>
+                                        <input type="number" class="value virtualserver_upload_quota" value="{{>virtualserver_upload_quota}}"/>
+                                        <div class="suffix">MiB</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group_box">
+                                <div class="header">Download</div>
+                                <div class="content settings">
+                                    <div class="setting">
+                                        <div class="key">Bandwidth Limit:</div>
+                                        <input type="number" class="value virtualserver_max_download_total_bandwidth" value="{{>virtualserver_max_download_total_bandwidth}}"/>
+                                        <div class="suffix">Bytes/s</div>
+                                    </div>
+                                    <div class="setting">
+                                        <div class="key">Download Quota:</div>
+                                        <input type="number" class="value virtualserver_download_quota" value="{{>virtualserver_download_quota}}"/>
+                                        <div class="suffix">MiB</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>Anti-Flood</x-tag>

@@ -59,6 +59,11 @@ class ServerProperties {
     virtualserver_needed_identity_security_level: number = 8;
     virtualserver_weblist_enabled: boolean = false;
     virtualserver_min_clients_in_channel_before_forced_silence: number = 0;
+
+    virtualserver_max_upload_total_bandwidth: number = 0;
+    virtualserver_upload_quota: number = 0;
+    virtualserver_max_download_total_bandwidth: number = 0;
+    virtualserver_download_quota: number = 0;
 }
 
 interface ServerAddress {

@@ -65,6 +65,32 @@
 }
 
 
+.container-file-transfer {
+	.settings {
+		.setting {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			div {
+				flex-grow: 0;
+
+				&.suffix {
+					width: 50px;
+					margin-left: 5px;
+				}
+				&:first-of-type {
+					width: 130px;
+				}
+			}
+
+			input {
+				flex-grow: 1;
+			}
+		}
+	}
+}
+
 .channel_perm_tbl .value {
 	width: 60px;
 }

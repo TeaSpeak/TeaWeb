@@ -30,6 +30,7 @@ namespace Modals {
         });
 
         server_applyGeneralListener(properties, modal.htmlTag.find(".properties_general"), modal.htmlTag.find(".button_ok"));
+        server_applyTransferListener(properties, server, modal.htmlTag.find('.container-file-transfer'));
         server_applyHostListener(properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
         server_applyMessages(properties, server, modal.htmlTag.find(".properties_messages"));
         server_applyFlood(properties, server, modal.htmlTag.find(".properties_flood"));
@@ -318,5 +319,35 @@ namespace Modals {
         tag.find(".virtualserver_weblist_enabled").change(function (this: HTMLInputElement) {
             properties.virtualserver_weblist_enabled = $(this).prop("checked");
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_WEBLIST).granted(1));
+    }
+
+
+    function server_applyTransferListener(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        server.updateProperties().then(() => {
+            //virtualserver_max_upload_total_bandwidth
+            //virtualserver_upload_quota
+            //virtualserver_max_download_total_bandwidth
+            //virtualserver_download_quota
+
+            tag.find(".virtualserver_max_upload_total_bandwidth").val(server.properties.virtualserver_max_upload_total_bandwidth);
+            tag.find(".virtualserver_upload_quota").val(server.properties.virtualserver_upload_quota);
+            tag.find(".virtualserver_max_download_total_bandwidth").val(server.properties.virtualserver_max_download_total_bandwidth);
+            tag.find(".virtualserver_download_quota").val(server.properties.virtualserver_download_quota);
+        });
+
+
+        tag.find(".virtualserver_max_upload_total_bandwidth").change(function (this: HTMLInputElement) {
+            properties.virtualserver_max_upload_total_bandwidth = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_SETTINGS).granted(1));
+        tag.find(".virtualserver_max_download_total_bandwidth").change(function (this: HTMLInputElement) {
+            properties.virtualserver_max_download_total_bandwidth = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_SETTINGS).granted(1));
+
+        tag.find(".virtualserver_upload_quota").change(function (this: HTMLInputElement) {
+            properties.virtualserver_upload_quota = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_QUOTAS).granted(1));
+        tag.find(".virtualserver_download_quota").change(function (this: HTMLInputElement) {
+            properties.virtualserver_download_quota = this.valueAsNumber;
+        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_QUOTAS).granted(1));
     }
 }

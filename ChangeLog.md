@@ -6,6 +6,7 @@
     - Improved hostbanner reload (Not flicker anymore)
     - Added sounds on servergroup assignment and on revoke as well for channel group changed
     - Added client multiselect and multi actions
+    - Implemented serveredit file transfer support
     
 * **03.11.18**
     - Reworked on the basic overlay sizes
