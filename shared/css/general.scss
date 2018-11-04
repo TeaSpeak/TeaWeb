@@ -320,6 +320,7 @@ footer .container {
 #mouse-move {
 	display: none;
 	position: absolute;
+	z-index: 10000;
 
 	.container {
 		position: relative;
