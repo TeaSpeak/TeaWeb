@@ -80,6 +80,8 @@ class AudioController {
     private _codecCache: CodecClientCache[] = [];
     private _timeIndex: number = 0;
     private _latencyBufferLength: number = 3;
+    private _buffer_timeout: NodeJS.Timer;
+
     allowBuffering: boolean = true;
 
     //Events
@@ -125,6 +127,7 @@ class AudioController {
         switch (this.playerState) {
             case PlayerState.PREBUFFERING:
             case PlayerState.BUFFERING:
+                this.reset_buffer_timeout(true); //Reset timeout, we got a new buffer
                 if(this.audioCache.length <= this._latencyBufferLength) {
                     if(this.playerState == PlayerState.BUFFERING) {
                         if(this.allowBuffering) break;
@@ -183,19 +186,36 @@ class AudioController {
             this.playingAudioCache = [];
         }
         this.testBufferQueue();
+        this.playQueue(); //Flush queue
     }
 
     private testBufferQueue() {
         if(this.audioCache.length == 0 && this.playingAudioCache.length == 0) {
-            if(this.playerState != PlayerState.STOPPING) {
+            if(this.playerState != PlayerState.STOPPING && this.playerState != PlayerState.STOPPED) {
+                if(this.playerState == PlayerState.BUFFERING) return; //We're already buffering
+
                 this.playerState = PlayerState.BUFFERING;
                 if(!this.allowBuffering)
                     console.warn("[Audio] Detected a buffer underflow!");
+                this.reset_buffer_timeout(true);
             } else {
                 this.playerState = PlayerState.STOPPED;
                 this.onSilence();
             }
         }
+    }
+
+    private reset_buffer_timeout(restart: boolean) {
+        if(this._buffer_timeout)
+            clearTimeout(this._buffer_timeout);
+        if(restart)
+            this._buffer_timeout = setTimeout(() => {
+                if(this.playerState == PlayerState.PREBUFFERING || this.playerState == PlayerState.BUFFERING) {
+                    console.warn("[Audio] Buffering exceeded timeout. Flushing and stopping replay");
+                    this.stopAudio();
+                }
+                this._buffer_timeout = undefined;
+            }, 1000);
     }
 
     get volume() : number { return this._volume; }

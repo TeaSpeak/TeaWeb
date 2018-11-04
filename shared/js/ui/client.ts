@@ -54,6 +54,7 @@ class ClientEntry {
     protected _properties: ClientProperties;
     protected lastVariableUpdate: number = 0;
     protected _speaking: boolean = false;
+    private _listener_initialized: boolean;
 
     channelTree: ChannelTree;
     audioController: AudioController;
@@ -91,28 +92,40 @@ class ClientEntry {
     }
 
     initializeListener(){
-        const _this = this;
+        if(this._listener_initialized) return;
+        this._listener_initialized = true;
+
         this.tag.click(event => {
-            _this.channelTree.onSelect(_this);
+            this.channelTree.onSelect(this);
         });
 
         if(this.clientId() != this.channelTree.client.clientId && !(this instanceof MusicClientEntry))
             this.tag.dblclick(event => {
+                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
+                    return;
+                }
                 this.chat(true).focus();
             });
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            this.tag.on("contextmenu", function (event) {
+            this.tag.on("contextmenu", (event) => {
                 event.preventDefault();
-                _this.channelTree.onSelect(_this);
-                _this.showContextMenu(event.pageX, event.pageY, () => {
-                    _this.channelTree.onSelect(undefined);
+                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
+                    (this.channelTree.currently_selected_context_callback || ((_) => null))(event);
+                    return;
+                }
+
+                this.channelTree.onSelect(this, true);
+                this.showContextMenu(event.pageX, event.pageY, () => {
+                    this.channelTree.onSelect(undefined, true);
                 });
                 return false;
             });
         }
 
         this.tag.mousedown(event => {
+            if(event.which != 1) return; //Only the left button
+
             this.channelTree.client_mover.activate(this, target => {
                 if(!target) return;
                 if(target == this._channel) return;
@@ -296,7 +309,7 @@ class ClientEntry {
                 type: MenuEntryType.ENTRY,
                 icon: "client-kick_channel",
                 name: "Kick client from channel",
-                callback: function () {
+                callback: () => {
                     createInputModal("Kick client from channel", "Kick reason:<br>", text => true, result => {
                         if(result) {
                             console.log("Kicking client " + _this.clientNickName() + " from channel with reason " + result);
@@ -313,7 +326,7 @@ class ClientEntry {
                 type: MenuEntryType.ENTRY,
                 icon: "client-kick_server",
                 name: "Kick client fom server",
-                callback: function () {
+                callback: () => {
                     createInputModal("Kick client from server", "Kick reason:<br>", text => true, result => {
                         if(result) {
                             console.log("Kicking client " + _this.clientNickName() + " from server with reason " + result);
@@ -700,9 +713,11 @@ class LocalClientEntry extends ClientEntry {
         super.initializeListener();
         this.tag.find(".name").addClass("own_name");
 
-        const _self = this;
-        this.tag.dblclick(function () {
-            _self.openRename();
+        this.tag.dblclick(() => {
+            if($.isArray(this.channelTree.currently_selected)) { //Multiselect
+                return;
+            }
+            this.openRename();
         });
     }
 
@@ -789,20 +804,61 @@ class MusicClientEntry extends ClientEntry {
             {
                 name: "<b>Change bot name</b>",
                 icon: "client-change_nickname",
-                disabled: true,
-                callback: () => {},
+                disabled: false,
+                callback: () => {
+                    createInputModal("Change music bots nickname", "New nickname:<br>", text => text.length >= 3 && text.length <= 31, result => {
+                        if(result) {
+                            this.channelTree.client.serverConnection.sendCommand("clientedit", {
+                                clid: this.clientId(),
+                                client_nickname: result
+                            });
+
+                        }
+                    }, { width: 400, maxLength: 255 }).open();
+                },
                 type: MenuEntryType.ENTRY
             }, {
                 name: "Change bot description",
                 icon: "client-edit",
-                disabled: true,
-                callback: () => {},
+                disabled: false,
+                callback: () => {
+                    createInputModal("Change music bots description", "New description:<br>", text => true, result => {
+                        if(typeof(result) === 'string') {
+                            this.channelTree.client.serverConnection.sendCommand("clientedit", {
+                                clid: this.clientId(),
+                                client_description: result
+                            });
+
+                        }
+                    }, { width: 400, maxLength: 255 }).open();
+                },
                 type: MenuEntryType.ENTRY
             }, {
                 name: "Open music panel",
                 icon: "client-edit",
                 disabled: true,
                 callback: () => {},
+                type: MenuEntryType.ENTRY
+            }, {
+                name: "Quick url replay",
+                icon: "client-edit",
+                disabled: false,
+                callback: () => {
+                    createInputModal("Please enter the URL", "URL:", text => true, result => {
+                        if(result) {
+                            this.channelTree.client.serverConnection.sendCommand("musicbotqueueadd", {
+                                botid: this.properties.client_database_id,
+                                type: "yt", //Its a hint not a force!
+                                url: result
+                            }).catch(error => {
+                                if(error instanceof CommandResult) {
+                                    error = error.extra_message || error.message;
+                                }
+                                createErrorModal("Failed to replay url", "Failed to enqueue url:<br>" + error).open();
+                            });
+                        }
+                    }, { width: 400, maxLength: 255 }).open();
+                },
                 type: MenuEntryType.ENTRY
             },
             MenuEntry.HR(),
@@ -830,7 +886,6 @@ class MusicClientEntry extends ClientEntry {
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
                                 reasonmsg: result
                             });
-
                         }
                     }, { width: 400, maxLength: 255 }).open();
                 }
@@ -853,9 +908,16 @@ class MusicClientEntry extends ClientEntry {
             {
                 name: "Delete bot",
                 icon: "client-delete",
-                disabled: true,
+                disabled: false,
                 callback: () => {
-                   //TODO
+                    const tag = $.spawn("div").append(MessageHelper.formatMessage("Do you really want to delete {0}", this.createChatTag(false)));
+                    Modals.spawnYesNo("Are you sure?", $.spawn("div").append(tag), result => {
+                       if(result) {
+                           this.channelTree.client.serverConnection.sendCommand("musicbotdelete", {
+                               botid: this.properties.client_database_id
+                           });
+                       }
+                    });
                 },
                 type: MenuEntryType.ENTRY
             },

@@ -44,7 +44,14 @@ enum Sound {
     ERROR_INSUFFICIENT_PERMISSIONS = "error.insufficient_permissions",
 
     MESSAGE_SEND = "message.send",
-    MESSAGE_RECEIVED = "message.received"
+    MESSAGE_RECEIVED = "message.received",
+
+    GROUP_SERVER_ASSIGNED = "group.server.assigned",
+    GROUP_SERVER_REVOKED = "group.server.revoked",
+    GROUP_CHANNEL_CHANGED = "group.channel.changed",
+    GROUP_SERVER_ASSIGNED_SELF = "group.server.assigned.self",
+    GROUP_SERVER_REVOKED_SELF = "group.server.revoked.self",
+    GROUP_CHANNEL_CHANGED_SELF = "group.channel.changed.self"
 }
 
 namespace sound {

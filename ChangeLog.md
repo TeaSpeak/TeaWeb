@@ -1,4 +1,12 @@
 # Changelog:
+* **04.11.18**
+    - Added basic music bot management (Create | Delete | Nickname/Description-change)
+    - Merged music bot pause and play. Added stop button
+    - Fixed voice "lamp" being on on channel switch
+    - Improved hostbanner reload (Not flicker anymore)
+    - Added sounds on servergroup assignment and on revoke as well for channel group changed
+    - Added client multiselect and multi actions
+    
 * **03.11.18**
     - Reworked on the basic overlay sizes
     - Added hostbanner to the UI 

@@ -128,17 +128,25 @@ class Hostbanner {
             this.updater = undefined;
         }
 
-        this.html_tag.empty();
         const tag = this.generate_tag();
 
         if(tag) {
-            this.html_tag.append(tag);
-            this.html_tag.prop("disabled", false);
-        } else
+            tag.then(element => {
+                this.html_tag.empty();
+                this.html_tag.append(element);
+                this.html_tag.prop("disabled", false);
+            }).catch(error => {
+                console.warn("Failed to load hostbanner: %o", error);
+                this.html_tag.empty();
+                this.html_tag.prop("disabled", true);
+            })
+        } else {
+            this.html_tag.empty();
             this.html_tag.prop("disabled", true);
+        }
     }
 
-    private generate_tag?() : JQuery<HTMLElement> {
+    private generate_tag?() : Promise<JQuery<HTMLElement>> {
         if(!this.client.connected) return undefined;
         const server = this.client.channelTree.server;
         if(!server) return undefined;
@@ -149,10 +157,19 @@ class Hostbanner {
             properties["property_" + key] = server.properties[key];
 
         const rendered = $("#tmpl_selected_hostbanner").renderTag(properties);
-
-        if(server.properties.virtualserver_hostbanner_gfx_interval > 0)
-            this.updater = setTimeout(() => this.update(), Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60) * 1000);
-        return rendered;
+        const image = rendered.find("img");
+        return new Promise<JQuery<HTMLElement>>((resolve, reject) => {
+            const node_image = image[0] as HTMLImageElement;
+            node_image.onload = () => {
+                console.debug("Hostbanner has been loaded");
+                if(server.properties.virtualserver_hostbanner_gfx_interval > 0)
+                    this.updater = setTimeout(() => this.update(), Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60) * 1000);
+                resolve(rendered);
+            };
+            node_image.onerror = event => {
+                reject(event);
+            }
+        });
     }
 }
 
@@ -354,6 +371,15 @@ function format_time(time: number) {
     return (hours ? hours + ":" : "") + minutes + ':' + seconds;
 }
 
+enum MusicPlayerState {
+    SLEEPING,
+    LOADING,
+
+    PLAYING,
+    PAUSED,
+    STOPPED
+}
+
 class MusicInfoManager extends ClientInfoManager {
     createFrame<_>(handle: InfoBar<_>, channel: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
         super.createFrame(handle, channel, html_tag);
@@ -366,12 +392,12 @@ class MusicInfoManager extends ClientInfoManager {
 
         let properties = super.buildProperties(bot);
         { //Render info frame
-            if(bot.properties.player_state != 2 && bot.properties.player_state != 3) {
+            if(bot.properties.player_state < MusicPlayerState.PLAYING) {
                 properties["music_player"] =  $("#tmpl_music_frame_empty").renderTag().css("align-self", "center");
             } else {
                 let frame = $.spawn("div").text("loading...") as JQuery<HTMLElement>;
                 properties["music_player"] = frame;
-
+                properties["song_url"] = $.spawn("a").text("loading...");
 
                 bot.requestPlayerInfo().then(info => {
                     let timestamp = Date.now();
@@ -380,8 +406,11 @@ class MusicInfoManager extends ClientInfoManager {
                     let _frame = $("#tmpl_music_frame").renderTag({
                         song_name: info.player_title ? info.player_title :
                                     info.song_url ? info.song_url : "No title or url",
+                        song_url: info.song_url,
                         thumbnail: info.song_thumbnail && info.song_thumbnail.length > 0 ? info.song_thumbnail : undefined
                     }).css("align-self", "center");
+                    properties["song_url"].text(info.song_url);
+
                     frame.replaceWith(_frame);
                     frame = _frame;
 
@@ -389,8 +418,8 @@ class MusicInfoManager extends ClientInfoManager {
                     {
                         let button_play = frame.find(".button_play");
                         let button_pause = frame.find(".button_pause");
-
-                        frame.find(".button_play").click(handler => {
+                        let button_stop = frame.find('.button_stop');
+                        button_play.click(handler => {
                             if(!button_play.hasClass("active")) {
                                 this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
                                     botid: bot.properties.client_database_id,
@@ -400,10 +429,10 @@ class MusicInfoManager extends ClientInfoManager {
                                     this.triggerUpdate();
                                 });
                             }
-                            button_pause.removeClass("active");
-                            button_play.addClass("active");
+                            button_pause.show();
+                            button_play.hide();
                         });
-                        frame.find(".button_pause").click(handler => {
+                        button_pause.click(handler => {
                             if(!button_pause.hasClass("active")) {
                                 this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
                                     botid: bot.properties.client_database_id,
@@ -413,14 +442,29 @@ class MusicInfoManager extends ClientInfoManager {
                                     this.triggerUpdate();
                                 });
                             }
-                            button_play.removeClass("active");
-                            button_pause.addClass("active");
+                            button_play.show();
+                            button_pause.hide();
+                        });
+                        button_stop.click(handler => {
+                            this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                botid: bot.properties.client_database_id,
+                                action: 0
+                            }).then(updated => this.triggerUpdate()).catch(error => {
+                                createErrorModal("Failed to execute stop", MessageHelper.formatMessage("Failed to execute stop.<br>{}", error)).open();
+                                this.triggerUpdate();
+                            });
                         });
 
-                        if(bot.properties.player_state == 2)
-                            button_play.addClass("active");
-                        else if(bot.properties.player_state == 3)
-                            button_pause.addClass("active");
+                        if(bot.properties.player_state == 2) {
+                            button_play.hide();
+                            button_pause.show();
+                        } else if(bot.properties.player_state == 3) {
+                            button_pause.hide();
+                            button_play.show();
+                        }  else if(bot.properties.player_state == 4) {
+                            button_pause.hide();
+                            button_play.show();
+                        }
                     }
 
                     { /* Button functions */

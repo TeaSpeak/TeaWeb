@@ -105,17 +105,20 @@ class ServerEntry {
     }
 
     initializeListener(){
-        const _this = this;
-
-        this._htmlTag.click(function () {
-            _this.channelTree.onSelect(_this);
+        this._htmlTag.click(() => {
+            this.channelTree.onSelect(this);
         });
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            this.htmlTag.on("contextmenu", function (event) {
+            this.htmlTag.on("contextmenu", (event) => {
                 event.preventDefault();
-                _this.channelTree.onSelect(_this);
-                _this.spawnContextMenu(event.pageX, event.pageY, () => { _this.channelTree.onSelect(undefined); });
+                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
+                    (this.channelTree.currently_selected_context_callback || ((_) => null))(event);
+                    return;
+                }
+
+                this.channelTree.onSelect(this, true);
+                this.spawnContextMenu(event.pageX, event.pageY, () => { this.channelTree.onSelect(undefined, true); });
             });
         }
     }

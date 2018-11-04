@@ -293,14 +293,24 @@ class ChannelEntry {
         this.channelTag().click(function () {
             _this.channelTree.onSelect(_this);
         });
-        this.channelTag().dblclick(() => this.joinChannel());
+        this.channelTag().dblclick(() => {
+            if($.isArray(this.channelTree.currently_selected)) { //Multiselect
+                return;
+            }
+            this.joinChannel()
+        });
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            this.channelTag().on("contextmenu", function (event) {
+            this.channelTag().on("contextmenu", (event) => {
                 event.preventDefault();
-                _this.channelTree.onSelect(_this);
+                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
+                    (this.channelTree.currently_selected_context_callback || ((_) => null))(event);
+                    return;
+                }
+
+                _this.channelTree.onSelect(_this, true);
                 _this.showContextMenu(event.pageX, event.pageY, () => {
-                    _this.channelTree.onSelect(undefined);
+                    _this.channelTree.onSelect(undefined, true);
                 });
             });
         }
@@ -392,6 +402,22 @@ class ChannelEntry {
                     this.channelTree.client.serverConnection.sendCommand("channeldelete", {cid: this.channelId}).then(() => {
                         sound.play(Sound.CHANNEL_DELETED);
                     })
+                }
+            },
+            MenuEntry.HR(),
+            {
+                type: MenuEntryType.ENTRY,
+                icon: "client-addon-collection",
+                name: "Create music bot",
+                callback: () => {
+                    this.channelTree.client.serverConnection.sendCommand("musicbotcreate", {cid: this.channelId}).then(() => {
+                        createInfoModal("Bot successfully created", "But has been successfully created.").open();
+                    }).catch(error => {
+                        if(error instanceof CommandResult) {
+                            error = error.extra_message || error.message;
+                        }
+                        createErrorModal("Failed to create bot", "Failed to create the music bot:<br>" + error).open();
+                    });
                 }
             },
             MenuEntry.HR(),

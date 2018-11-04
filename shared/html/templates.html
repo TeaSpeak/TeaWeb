@@ -1103,26 +1103,46 @@
                 </div>
                 <div class="controls-overlay">
                     <div class="timer">
-                        <div>
-                            <svg class="button button_play" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
-                                <defs>
-                                    <filter id="shadow">
-                                        <feDropShadow dx="4" dy="8" stdDeviation="4"/>
-                                    </filter>
-                                </defs>
-                                <polyline style="filter:url(#shadow);" class="button" points="0.6,0.3 3.9,3.4 0.6,6.6 "></polyline>
-                            </svg>
-                            <svg class="button button_pause" x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
-                                <defs>
-                                    <filter id="shadow">
-                                        <feDropShadow dx="4" dy="8" stdDeviation="4"/>
-                                    </filter>
-                                </defs>
-                                <g style="filter:url(#shadow);">
-                                    <line x1="0.4" y1="0.1" x2="0.4" y2="6.8"></line>
-                                    <line x1="4.1" y1="0.1" x2="4.1" y2="6.8"></line>
-                                </g>
-                            </svg>
+                        <div class="button-container">
+                            <div class="container-play-pause">
+                                <div class="button button_play">
+                                    <svg x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
+                                        <defs>
+                                            <filter id="shadow_play" title="Start replaying">
+                                                <feDropShadow dx="4" dy="8" stdDeviation="4"/>
+                                            </filter>
+                                        </defs>
+                                        <polyline style="filter:url(#shadow_play);" class="button" points="0.6,0.3 3.9,3.4 0.6,6.6 "></polyline>
+                                    </svg>
+                                </div>
+                                <div class="button button_pause" title="Pause the current song">
+                                    <svg x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
+                                        <defs>
+                                            <filter id="shadow_pause">
+                                                <feDropShadow dx="4" dy="8" stdDeviation="4"/>
+                                            </filter>
+                                        </defs>
+                                        <g style="filter:url(#shadow_pause);">
+                                            <line x1="0.4" y1="0.1" x2="0.4" y2="6.8"></line>
+                                            <line x1="4.1" y1="0.1" x2="4.1" y2="6.8"></line>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="button button_stop" title="Stop the music bot">
+                                    <svg x="0px" y="0px" viewBox="0 0 4.5 6.9" style="enable-background:new 0 0 4.5 6.9;">
+                                        <defs>
+                                            <filter id="shadow_stop">
+                                                <feDropShadow dx="4" dy="8" stdDeviation="4"/>
+                                            </filter>
+                                        </defs>
+                                        <g style="filter:url(#shadow_stop);">
+                                            <rect x="0.25" y="1.45" width="4" height="4" fill="black"></rect>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                         <div class="timeline">
                             <div class="buffered"></div>
@@ -1286,6 +1306,12 @@
                     <td>Local Volume:</td>
                     <td>{{>sound_volume}}%</td>
                 </tr>
+                {{if song_url}}
+                <tr>
+                    <td>Currently replaying:</td>
+                    <td><node key="song_url"></node></td>
+                </tr>
+                {{/if}}
                 <!-- TODO: Created by -->
             </table>
             <!-- Server groups -->

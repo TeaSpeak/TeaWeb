@@ -3,7 +3,7 @@
 /// <reference path="../../client.ts" />
 
 namespace Modals {
-    export function spawnBanClient(name: string, callback: (data: {
+    export function spawnBanClient(name: string | string[], callback: (data: {
         length: number,
         reason: string,
         no_name: boolean,
@@ -16,7 +16,7 @@ namespace Modals {
             },
             body: function () {
                 let tag = $("#tmpl_client_ban").renderTag({
-                    client_name: name
+                    client_name: $.isArray(name) ? '"' + name.join('", "') + '"' : name
                 });
 
                 let maxTime = 0; //globalClient.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).value;

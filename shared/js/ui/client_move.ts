@@ -53,8 +53,10 @@ class ClientMover {
             const d_y = this.origin_point.y - event.pageY;
             this._active = Math.sqrt(d_x * d_x + d_y * d_y) > 5 * 5;
 
-            if(this._active)
+            if(this._active) {
                 ClientMover.move_element.show();
+                this.channel_tree.onSelect(this.selected_client, true);
+            }
         }
 
         const elements = document.elementsFromPoint(event.pageX, event.pageY);

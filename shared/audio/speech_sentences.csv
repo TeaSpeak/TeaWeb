@@ -47,3 +47,11 @@ user.left.banned;User in your channel was banned from the server
 
 #Error
 error.insufficient_permissions;insufficient permissions
+
+#Groups
+group.server.assigned;Server group assigned
+group.server.revoked;Server group revoked
+group.channel.changed;Channel group changed
+group.server.assigned.self;Server group assigned
+group.server.revoked.self;Server group revoked
+group.channel.changed.self;Channel group changed

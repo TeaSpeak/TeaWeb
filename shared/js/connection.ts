@@ -479,6 +479,10 @@ class ConnectionCommandHandler {
         this["notifyclientpoke"] = this.handleNotifyClientPoke;
 
         this["notifymusicplayerinfo"] = this.handleNotifyMusicPlayerInfo;
+
+        this["notifyservergroupclientadded"] = this.handleNotifyServerGroupClientAdd;
+        this["notifyservergroupclientdeleted"] = this.handleNotifyServerGroupClientRemove;
+        this["notifyclientchannelgroupchanged"] = this.handleNotifyClientChannelGroupChanged;
     }
 
     handleCommandResult(json) {
@@ -802,14 +806,16 @@ class ConnectionCommandHandler {
             console.error("Unknown client move (Channel from)!");
 
         let self = client instanceof LocalClientEntry;
+        let current_clients;
         if(self) {
             chat.channelChat().name = channel_to.channelName();
-            for(let entry of client.channelTree.clientsByChannel(client.currentChannel()))
-                if(entry !== client) entry.getAudioController().stopAudio(true);
+            current_clients = client.channelTree.clientsByChannel(client.currentChannel())
             this.connection._client.controlBar.updateVoice(channel_to);
         }
 
         tree.moveClient(client, channel_to);
+        for(const entry of current_clients || [])
+            if(entry !== client) entry.getAudioController().stopAudio(true);
 
         const own_channel = this.connection._client.getClient().currentChannel();
         if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
@@ -842,7 +848,7 @@ class ConnectionCommandHandler {
                 channel_from ? channel_from.createChatTag(true) : undefined,
                 channel_to.createChatTag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
-                (json["reasonmsg"] || "").length > 0 ? " (" + json["msg"] + ")" : ""
+                json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
             );
             if(self) {
                 sound.play(Sound.CHANNEL_KICKED);
@@ -1025,5 +1031,34 @@ class ConnectionCommandHandler {
         }, json["msg"]);
 
         sound.play(Sound.USER_POKED_SELF);
+    }
+
+    //TODO server chat message
+    handleNotifyServerGroupClientAdd(json) {
+        json = json[0];
+
+        const self = this.connection._client.getClient();
+        if(json["clid"] == self.clientId())
+            sound.play(Sound.GROUP_SERVER_ASSIGNED_SELF);
+    }
+
+    //TODO server chat message
+    handleNotifyServerGroupClientRemove(json) {
+        json = json[0];
+
+        const self = this.connection._client.getClient();
+        if(json["clid"] == self.clientId()) {
+            sound.play(Sound.GROUP_SERVER_REVOKED_SELF);
+        } else {
+        }
+    }
+
+    //TODO server chat message
+    handleNotifyClientChannelGroupChanged(json) {
+        json = json[0];
+
+        const self = this.connection._client.getClient();
+        if(json["clid"] == self.clientId())
+            sound.play(Sound.GROUP_CHANNEL_CHANGED_SELF);
     }
 }

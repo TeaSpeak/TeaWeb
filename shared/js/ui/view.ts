@@ -6,6 +6,11 @@
 /// <reference path="client.ts" />
 /// <reference path="modal/ModalCreateChannel.ts" />
 
+let shift_pressed = false;
+$(document).on('keyup keydown', function(e){
+    shift_pressed = e.shiftKey;
+    console.log(shift_pressed);
+});
 class ChannelTree {
     client: TSClient;
     htmlTree: JQuery;
@@ -13,6 +18,8 @@ class ChannelTree {
     channels: ChannelEntry[];
     clients: ClientEntry[];
 
+    currently_selected: ClientEntry | ServerEntry | ChannelEntry | (ClientEntry | ServerEntry)[] = undefined;
+    currently_selected_context_callback: (event) => any = undefined;
     readonly client_mover: ClientMover;
 
     constructor(client, htmlTree) {
@@ -24,13 +31,16 @@ class ChannelTree {
         this.reset();
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            let _this = this;
-            this.htmlTree.parent().on("contextmenu", function (event) {
+            this.htmlTree.parent().on("contextmenu", (event) => {
                 if(event.isDefaultPrevented()) return;
 
                 event.preventDefault();
-                _this.onSelect(undefined);
-                _this.showContextMenu(event.pageX, event.pageY);
+                if($.isArray(this.currently_selected)) { //Multiselect
+                    (this.currently_selected_context_callback || ((_) => null))(event);
+                } else {
+                    this.onSelect(undefined);
+                    this.showContextMenu(event.pageX, event.pageY);
+                }
             });
         }
 
@@ -233,21 +243,72 @@ class ChannelTree {
     }
 
     findClient?(clientId: number) : ClientEntry {
-        for(let index = 0; index < this.clients.length; index++)
-            if(this.clients[index].clientId() == clientId) return this.clients[index];
+        for(let index = 0; index < this.clients.length; index++) {
+            if(this.clients[index].clientId() == clientId)
+                return this.clients[index];
+        }
         return undefined;
     }
 
     find_client_by_dbid?(client_dbid: number) : ClientEntry {
-        for(let index = 0; index < this.clients.length; index++)
-            if(this.clients[index].properties.client_database_id == client_dbid) return this.clients[index];
+        for(let index = 0; index < this.clients.length; index++) {
+            if(this.clients[index].properties.client_database_id == client_dbid)
+                return this.clients[index];
+        }
         return undefined;
     }
 
-    onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry) {
-        this.htmlTree.find(".selected").each(function (idx, e) {
-            $(e).removeClass("selected");
-        });
+    private static same_selected_type(a, b) {
+        if(a instanceof ChannelEntry)
+            return b instanceof ChannelEntry;
+        if(a instanceof ClientEntry)
+            return b instanceof ClientEntry;
+        if(a instanceof ServerEntry)
+            return b instanceof ServerEntry;
+        return a == b;
+    }
+
+    onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry, enforce_single?: boolean) {
+        console.log(shift_pressed);
+        if(this.currently_selected && shift_pressed && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
+            if(!entry) return; //Nowhere
+
+            if($.isArray(this.currently_selected)) {
+                if(!ChannelTree.same_selected_type(this.currently_selected[0], entry)) return; //Not the same type
+            } else if(ChannelTree.same_selected_type(this.currently_selected, entry)) {
+                this.currently_selected = [this.currently_selected] as any;
+            }
+            if(entry instanceof ChannelEntry)
+                this.currently_selected_context_callback = this.callback_multiselect_channel.bind(this);
+            if(entry instanceof ClientEntry)
+                this.currently_selected_context_callback = this.callback_multiselect_client.bind(this);
+        } else
+            this.currently_selected = undefined;
+
+        if(!$.isArray(this.currently_selected) || enforce_single) {
+            this.currently_selected = entry;
+            this.htmlTree.find(".selected").each(function (idx, e) {
+                $(e).removeClass("selected");
+            });
+        } else {
+            for(const e of this.currently_selected)
+                if(e == entry) {
+                    this.currently_selected.remove(e);
+                    if(entry instanceof ChannelEntry)
+                        (entry as ChannelEntry).rootTag().find("> .channelLine").removeClass("selected");
+                    else if(entry instanceof ClientEntry)
+                        (entry as ClientEntry).tag.removeClass("selected");
+                    else if(entry instanceof ServerEntry)
+                        (entry as ServerEntry).htmlTag.removeClass("selected");
+                    if(this.currently_selected.length == 1)
+                        this.currently_selected = this.currently_selected[0];
+                    else if(this.currently_selected.length == 0)
+                        this.currently_selected = undefined;
+                    //Already selected
+                    return;
+                }
+            this.currently_selected.push(entry as any);
+        }
 
         if(entry instanceof ChannelEntry)
             (entry as ChannelEntry).rootTag().find("> .channelLine").addClass("selected");
@@ -255,7 +316,136 @@ class ChannelTree {
             (entry as ClientEntry).tag.addClass("selected");
         else if(entry instanceof ServerEntry)
             (entry as ServerEntry).htmlTag.addClass("selected");
-        this.client.selectInfo.setCurrentSelected(entry);
+
+        this.client.selectInfo.setCurrentSelected($.isArray(this.currently_selected) ? undefined : entry);
+    }
+
+    private callback_multiselect_channel(event) {
+        console.log("Multiselect channel");
+    }
+    private callback_multiselect_client(event) {
+        console.log("Multiselect client");
+        const clients = this.currently_selected as ClientEntry[];
+        const music_only = clients.map(e => e instanceof MusicClientEntry ? 0 : 1).reduce((a, b) => a + b, 0) == 0;
+        const music_entry = clients.map(e => e instanceof MusicClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
+        const local_client = clients.map(e => e instanceof LocalClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
+        console.log("Music only: %o | Container music: %o | Container local: %o", music_entry, music_entry, local_client);
+        let entries: ContextMenuEntry[] = [];
+        if (!music_entry && !local_client) { //Music bots or local client cant be poked
+            entries.push({
+                type: MenuEntryType.ENTRY,
+                icon: "client-poke",
+                name: "Poke clients",
+                callback: () => {
+                    createInputModal("Poke clients", "Poke message:<br>", text => true, result => {
+                        if (typeof(result) === "string") {
+                            for (const client of this.currently_selected as ClientEntry[])
+                                this.client.serverConnection.sendCommand("clientpoke", {
+                                    clid: client.clientId(),
+                                    msg: result
+                                });
+
+                        }
+                    }, {width: 400, maxLength: 512}).open();
+                }
+            });
+        }
+        entries.push({
+            type: MenuEntryType.ENTRY,
+            icon: "client-move_client_to_own_channel",
+            name: "Move clients to your channel",
+            callback: () => {
+                const target = this.client.getClient().currentChannel().getChannelId();
+                for(const client of clients)
+                    this.client.serverConnection.sendCommand("clientmove", {
+                        clid: client.clientId(),
+                        cid: target
+                    });
+            }
+        });
+        if (!local_client) {//local client cant be kicked and/or banned or kicked
+            entries.push(MenuEntry.HR());
+            entries.push({
+                type: MenuEntryType.ENTRY,
+                icon: "client-kick_channel",
+                name: "Kick clients from channel",
+                callback: () => {
+                    createInputModal("Kick clients from channel", "Kick reason:<br>", text => true, result => {
+                        if (result) {
+                            for (const client of clients)
+                                this.client.serverConnection.sendCommand("clientkick", {
+                                    clid: client.clientId(),
+                                    reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
+                                    reasonmsg: result
+                                });
+
+                        }
+                    }, {width: 400, maxLength: 255}).open();
+                }
+            });
+
+            if (!music_entry) { //Music bots  cant be banned or kicked
+                entries.push({
+                    type: MenuEntryType.ENTRY,
+                    icon: "client-kick_server",
+                    name: "Kick clients fom server",
+                    callback: () => {
+                        createInputModal("Kick clients from server", "Kick reason:<br>", text => true, result => {
+                            if (result) {
+                                for (const client of clients)
+                                    this.client.serverConnection.sendCommand("clientkick", {
+                                        clid: client.clientId(),
+                                        reasonid: ViewReasonId.VREASON_SERVER_KICK,
+                                        reasonmsg: result
+                                    });
+
+                            }
+                        }, {width: 400, maxLength: 255}).open();
+                    }
+                }, {
+                    type: MenuEntryType.ENTRY,
+                    icon: "client-ban_client",
+                    name: "Ban clients",
+                    invalidPermission: !this.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
+                    callback: () => {
+                        Modals.spawnBanClient((clients).map(entry => entry.clientNickName()), (data) => {
+                            for (const client of clients)
+                                this.client.serverConnection.sendCommand("banclient", {
+                                    uid: client.properties.client_unique_identifier,
+                                    banreason: data.reason,
+                                    time: data.length
+                                }, [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]).then(() => {
+                                    sound.play(Sound.USER_BANNED);
+                                });
+                        });
+                    }
+                });
+            }
+            if(music_only) {
+                entries.push(MenuEntry.HR());
+                entries.push({
+                    name: "Delete bots",
+                    icon: "client-delete",
+                    disabled: false,
+                    callback: () => {
+                        const param_string = clients.map((_, index) => "{" + index + "}").join(', ');
+                        const param_values = clients.map(client => client.createChatTag(true));
+                        const tag = $.spawn("div").append(...MessageHelper.formatMessage("Do you really want to delete " + param_string, ...param_values));
+                        const tag_container = $.spawn("div").append(tag);
+                        Modals.spawnYesNo("Are you sure?", tag_container, result => {
+                            if(result) {
+                                for(const client of clients)
+                                    this.client.serverConnection.sendCommand("musicbotdelete", {
+                                        botid: client.properties.client_database_id
+                                    });
+                            }
+                        });
+                    },
+                    type: MenuEntryType.ENTRY
+                });
+            }
+        }
+        spawn_context_menu(event.pageX, event.pageY, ...entries);
     }
 
     clientsByGroup(group: Group) : ClientEntry[] {
