@@ -96,10 +96,11 @@ class ClientEntry {
         this._listener_initialized = true;
 
         this.tag.click(event => {
+            console.log("Clicked!");
             this.channelTree.onSelect(this);
         });
 
-        if(this.clientId() != this.channelTree.client.clientId && !(this instanceof MusicClientEntry))
+        if(!(this instanceof LocalClientEntry) && !(this instanceof MusicClientEntry))
             this.tag.dblclick(event => {
                 if($.isArray(this.channelTree.currently_selected)) { //Multiselect
                     return;

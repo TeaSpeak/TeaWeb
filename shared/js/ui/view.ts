@@ -34,6 +34,10 @@ class ChannelTree {
             this.htmlTree.parent().on("contextmenu", (event) => {
                 if(event.isDefaultPrevented()) return;
 
+                for(const element of document.elementsFromPoint(event.pageX, event.pageY))
+                    if(element.classList.contains("channelLine") || element.classList.contains("client"))
+                        return;
+
                 event.preventDefault();
                 if($.isArray(this.currently_selected)) { //Multiselect
                     (this.currently_selected_context_callback || ((_) => null))(event);
@@ -472,7 +476,7 @@ class ChannelTree {
         this.server = null;
         this.clients = [];
         this.channels = [];
-        this.htmlTree.empty();
+        this.htmlTree.children().detach(); //Do not remove the listener!
     }
 
     spawnCreateChannel(parent?: ChannelEntry) {
