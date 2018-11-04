@@ -90,6 +90,8 @@ namespace sound {
             $.ajax({
                 url: "audio/speech/mapping.json",
                 success: response => {
+                    if(typeof(response) === "string")
+                        response = JSON.parse(response);
                     for(const entry of response)
                         register_sound(entry.key, "speech/" + entry.file);
                     resolve();
