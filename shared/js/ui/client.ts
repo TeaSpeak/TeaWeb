@@ -91,7 +91,7 @@ class ClientEntry {
         return this.audioController;
     }
 
-    initializeListener(){
+    protected initializeListener(){
         if(this._listener_initialized) return;
         this._listener_initialized = true;
 
@@ -412,7 +412,9 @@ class ClientEntry {
         clientIcons.append($.spawn("span").addClass("client_icon"));
         tag.append(clientIcons);
 
-        return this._tag = tag;
+        this._tag = tag;
+        this.initializeListener();
+        return this._tag;
     }
 
     static chatTag(id: number, name: string, uid: string, braces: boolean = false) : JQuery {

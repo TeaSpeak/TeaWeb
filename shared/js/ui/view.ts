@@ -206,7 +206,6 @@ class ChannelTree {
         tag.appendTo(channel.clientTag());
         channel.adjustSize(true);
         client.currentChannel().reorderClients();
-        client.initializeListener();
 
         channel.updateChannelTypeIcon();
         return client;
@@ -215,7 +214,6 @@ class ChannelTree {
     registerClient(client: ClientEntry) {
         this.clients.push(client);
         client.channelTree = this;
-        client.initializeListener();
     }
 
     reorderAllClients() {
