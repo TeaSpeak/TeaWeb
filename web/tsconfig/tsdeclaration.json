@@ -8,7 +8,7 @@
     "allowJs": false,
     "checkJs": false,
 
-    "outFile": "declarations/exports"
+    "outFile": "../declarations/exports"
   },
   "include": [
     "../js/**/*.ts"
