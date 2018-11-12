@@ -1,15 +1,11 @@
 /// <reference path="BasicCodec.ts"/>
 
-enum CodecWorkerType {
-    WORKER_OPUS
-}
-
-class CodecWrapper extends BasicCodec {
+class CodecWrapperWorker extends BasicCodec {
     private _worker: Worker;
     private _workerListener: {token: string, resolve: (data: any) => void}[] = [];
     private _workerCallbackToken = "callback_token";
     private _workerTokeIndex: number = 0;
-    type: CodecWorkerType;
+    type: CodecType;
 
     private _initialized: boolean = false;
     private _workerCallbackResolve: () => any;
@@ -17,7 +13,7 @@ class CodecWrapper extends BasicCodec {
 
     private _initializePromise: Promise<Boolean>;
     name(): string {
-        return "Worker for " + CodecWorkerType[this.type] + " Channels " + this.channelCount;
+        return "Worker for " + CodecType[this.type] + " Channels " + this.channelCount;
     }
 
     initialise() : Promise<Boolean> {
@@ -131,10 +127,19 @@ class CodecWrapper extends BasicCodec {
         return true;
     }
 
-    constructor(type: CodecWorkerType, channelCount: number) {
+    constructor(type: CodecType) {
         super(48000);
         this.type = type;
-        this.channelCount = channelCount;
+        switch (type) {
+            case CodecType.OPUS_MUSIC:
+                this.channelCount = 2;
+                break;
+            case CodecType.OPUS_VOICE:
+                this.channelCount = 1;
+                break;
+            default:
+                throw "invalid codec type!";
+        }
     }
 
     private generateToken() {

@@ -2,6 +2,11 @@ interface CodecCostructor {
     new (codecSampleRate: number) : Codec;
 }
 
+enum CodecType {
+    OPUS_VOICE,
+    OPUS_MUSIC
+}
+
 class BufferChunk {
     buffer: AudioBuffer;
     index: number;

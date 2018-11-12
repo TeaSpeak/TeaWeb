@@ -11,10 +11,6 @@ interface CodecWorker {
     reset();
 }
 
-enum CodecWorkerType {
-    WORKER_OPUS
-}
-
 let codecInstance: CodecWorker;
 
 onmessage = function(e: MessageEvent) {
@@ -27,12 +23,14 @@ onmessage = function(e: MessageEvent) {
     //console.log(prefix + " Got from main: %o", data);
     switch (data.command) {
         case "initialise":
-            console.log(prefix + "Got initialize for type " + CodecWorkerType[data.type as CodecWorkerType]);
-            switch (data.type as CodecWorkerType) {
-                case CodecWorkerType.WORKER_OPUS:
-                    codecInstance = new OpusWorker(data.channelCount, data.channelCount == 1 ? OpusType.VOIP : OpusType.AUDIO);
+            console.log(prefix + "Got initialize for type " + CodecType[data.type as CodecType]);
+            switch (data.type as CodecType) {
+                case CodecType.OPUS_MUSIC:
+                    codecInstance = new OpusWorker(2, OpusType.AUDIO);
                     break;
-
+                case CodecType.OPUS_VOICE:
+                    codecInstance = new OpusWorker(1, OpusType.VOIP);
+                    break;
                 default:
                     res.message = "Could not find worker type!";
                     console.error("Could not resolve opus type!");

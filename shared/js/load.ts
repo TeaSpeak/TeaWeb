@@ -187,7 +187,7 @@ function loadDebug() {
 
         ...custom_scripts
     ]).then(() => load_wait_scripts([
-        "js/codec/CodecWrapper.js"
+        "js/codec/CodecWrapperWorker.js"
     ])).then(() => load_wait_scripts([
         "js/main.js"
     ])).then(() => {

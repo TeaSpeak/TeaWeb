@@ -1,6 +1,6 @@
 /// <reference path="BasicCodec.ts"/>
 
-class RawCodec extends BasicCodec {
+class CodecWrapperRaw extends BasicCodec {
     converterRaw: any;
     converter: Uint8Array;
     bufferSize: number = 4096 * 4;

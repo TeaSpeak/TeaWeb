@@ -130,8 +130,8 @@ class VoiceConnection {
         new CodecPool(this,1,"Spex B", undefined), //Spex
         new CodecPool(this,2,"Spex C", undefined), //Spex
         new CodecPool(this,3,"CELT Mono", undefined), //CELT Mono
-        new CodecPool(this,4,"Opus Voice", () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 1) }), //opus voice
-        new CodecPool(this,5,"Opus Music", () => { return new CodecWrapper(CodecWorkerType.WORKER_OPUS, 2) })  //opus music
+        new CodecPool(this,4,"Opus Voice", () => { return audio.codec.new_instance(CodecType.OPUS_VOICE) }), //opus voice
+        new CodecPool(this,5,"Opus Music", () => { return audio.codec.new_instance(CodecType.OPUS_MUSIC) })  //opus music
     ];
 
     private vpacketId: number = 0;
