@@ -23,6 +23,7 @@ onmessage = function(e: MessageEvent) {
     //console.log(prefix + " Got from main: %o", data);
     switch (data.command) {
         case "initialise":
+            let error;
             console.log(prefix + "Got initialize for type " + CodecType[data.type as CodecType]);
             switch (data.type as CodecType) {
                 case CodecType.OPUS_MUSIC:
@@ -32,12 +33,12 @@ onmessage = function(e: MessageEvent) {
                     codecInstance = new OpusWorker(1, OpusType.VOIP);
                     break;
                 default:
-                    res.message = "Could not find worker type!";
+                    error = "Could not find worker type!";
                     console.error("Could not resolve opus type!");
-                    return;
+                    break;
             }
 
-            let error = codecInstance.initialise();
+            error = error || codecInstance.initialise();
             if(error)
                 res["message"] = error;
             else

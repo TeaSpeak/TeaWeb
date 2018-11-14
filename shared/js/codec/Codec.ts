@@ -4,7 +4,12 @@ interface CodecCostructor {
 
 enum CodecType {
     OPUS_VOICE,
-    OPUS_MUSIC
+    OPUS_MUSIC,
+
+    SPEEX_NARROWBAND,
+    SPEEX_WIDEBAND,
+    SPEEX_ULTRA_WIDEBAND,
+    CELT_MONO
 }
 
 class BufferChunk {

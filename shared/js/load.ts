@@ -121,6 +121,7 @@ function loadDebug() {
     if(!window.require) {
         console.log("Adding browser audio player");
         custom_scripts.push(["js/audio/AudioPlayer.js"]);
+        custom_scripts.push(["js/audio/WebCodec.js"]);
     }
 
     load_wait_scripts([

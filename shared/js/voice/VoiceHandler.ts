@@ -13,7 +13,7 @@ class CodecPool {
     handle: VoiceConnection;
     codecIndex: number;
     name: string;
-    creator: () => BasicCodec;
+    type: CodecType;
 
     entries: CodecPoolEntry[] = [];
     maxInstances: number = 2;
@@ -26,6 +26,7 @@ class CodecPool {
                 console.log("Release again! (%o)", codec);
                 this.releaseCodec(i + 1);
             }).catch(error => {
+                console.warn("Disabling codec support for " + this.name);
                 if(this._supported) {
                     createErrorModal("Could not load codec driver", "Could not load or initialize codec " + this.name + "<br>" +
                         "Error: <code>" + JSON.stringify(error) + "</code>").open();
@@ -35,11 +36,11 @@ class CodecPool {
             });
     }
 
-    supported() { return this.creator != undefined && this._supported; }
+    supported() { return this._supported; }
 
     ownCodec?(clientId: number, create: boolean = true) : Promise<BasicCodec | undefined> {
         return new Promise<BasicCodec>((resolve, reject) => {
-            if(!this.creator || !this._supported) {
+            if(!this._supported) {
                 reject("unsupported codec!");
                 return;
             }
@@ -72,7 +73,7 @@ class CodecPool {
             if(freeSlot == 0){
                 freeSlot = this.entries.length;
                 let entry = new CodecPoolEntry();
-                entry.instance = this.creator();
+                entry.instance = audio.codec.new_instance(this.type);
                 entry.instance.on_encoded_data = buffer => this.handle.handleEncodedVoicePacket(buffer, this.codecIndex);
                 this.entries.push(entry);
             }
@@ -93,11 +94,13 @@ class CodecPool {
             if(this.entries[index].owner == clientId) this.entries[index].owner = 0;
     }
 
-    constructor(handle: VoiceConnection, index: number, name: string, creator: () => BasicCodec){
-        this.creator = creator;
+    constructor(handle: VoiceConnection, index: number, name: string, type: CodecType){
         this.handle = handle;
         this.codecIndex = index;
         this.name = name;
+        this.type = type;
+
+        this._supported = this.type !== undefined && audio.codec.supported(this.type);
     }
 }
 
@@ -121,17 +124,17 @@ class VoiceConnection {
     dataChannel: RTCDataChannel;
 
     voiceRecorder: VoiceRecorder;
-    private _type: VoiceConnectionType = VoiceConnectionType.NATIVE_ENCODE;
+    private _type: VoiceConnectionType = VoiceConnectionType.JS_ENCODE;
 
     local_audio_stream: any;
 
     private codec_pool: CodecPool[] = [
-        new CodecPool(this,0,"Spex A", undefined), //Spex
-        new CodecPool(this,1,"Spex B", undefined), //Spex
-        new CodecPool(this,2,"Spex C", undefined), //Spex
-        new CodecPool(this,3,"CELT Mono", undefined), //CELT Mono
-        new CodecPool(this,4,"Opus Voice", () => { return audio.codec.new_instance(CodecType.OPUS_VOICE) }), //opus voice
-        new CodecPool(this,5,"Opus Music", () => { return audio.codec.new_instance(CodecType.OPUS_MUSIC) })  //opus music
+        new CodecPool(this,0,"Speex Narrowband", CodecType.SPEEX_NARROWBAND),
+        new CodecPool(this,1,"Speex Wideband", CodecType.SPEEX_WIDEBAND),
+        new CodecPool(this,2,"Speex Ultra Wideband", CodecType.SPEEX_ULTRA_WIDEBAND),
+        new CodecPool(this,3,"CELT Mono", CodecType.CELT_MONO),
+        new CodecPool(this,4,"Opus Voice", CodecType.OPUS_VOICE),
+        new CodecPool(this,5,"Opus Music", CodecType.OPUS_MUSIC)
     ];
 
     private vpacketId: number = 0;
@@ -148,6 +151,12 @@ class VoiceConnection {
 
         audio.player.on_ready(() => {
             log.info(LogCategory.VOICE, "Initializing voice handler after AudioController has been initialized!");
+            if(native_client) {
+                this.codec_pool[0].initialize(2);
+                this.codec_pool[1].initialize(2);
+                this.codec_pool[2].initialize(2);
+                this.codec_pool[3].initialize(2);
+            }
             this.codec_pool[4].initialize(2);
             this.codec_pool[5].initialize(2);
 
@@ -415,6 +424,10 @@ class VoiceConnection {
         }
     }
 
+    private current_channel_codec() : number {
+        return (this.client.getClient().currentChannel() || {properties: { channel_codec: 4}}).properties.channel_codec;
+    }
+
     private handleVoiceData(data: AudioBuffer, head: boolean) {
         if(!this.voiceRecorder) return;
         if(!this.client.connected) return false;
@@ -426,8 +439,9 @@ class VoiceConnection {
         }
 
         //TODO Use channel codec!
-        this.codec_pool[4].ownCodec(this.client.getClientId())
-            .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(4), data));
+        const codec = this.current_channel_codec();
+        this.codec_pool[codec].ownCodec(this.client.getClientId())
+            .then(encoder => encoder.encodeSamples(this.client.getClient().getAudioController().codecCache(codec), data));
     }
 
     private handleVoiceEnded() {
@@ -439,7 +453,7 @@ class VoiceConnection {
         console.log("Local voice ended");
 
         if(this.dataChannel)
-            this.sendVoicePacket(new Uint8Array(0), 5); //TODO Use channel codec!
+            this.sendVoicePacket(new Uint8Array(0), this.current_channel_codec()); //TODO Use channel codec!
     }
 
     private handleVoiceStarted() {
