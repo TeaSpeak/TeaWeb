@@ -135,6 +135,11 @@ function main() {
         }
     }
 
+    ppt.initialize().catch(error => {
+        console.error("Failed to initialize ppt!");
+        //TODO error notification?
+    });
+
     /*
     let tag = $("#tmpl_music_frame").renderTag({
         //thumbnail: "img/loading_image.svg"

@@ -4,8 +4,6 @@
 /// <reference path="../../voice/AudioController.ts" />
 
 namespace Modals {
-    import set = Reflect.set;
-
     export function spawnSettingsModal() {
         let modal;
         modal = createModal({
@@ -59,8 +57,10 @@ namespace Modals {
 
                 switch (select.value) {
                     case "ppt":
-                        let keyCode: number = parseInt(settings.global("vad_ppt_key", String.fromCharCode(JQuery.Key.T)));
-                        vad_tag.find(".vat_ppt_key").text(String.fromCharCode(keyCode));
+                        let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
+                        ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+
+                        vad_tag.find(".vat_ppt_key").text(ppt.key_description(ppt_settings));
                         break;
                     case "vad":
                         let slider = vad_tag.find(".vad_vad_slider");
@@ -88,13 +88,25 @@ namespace Modals {
                         },
                         footer: ""
                     });
-                    $(document).one("keypress", function (e) {
-                        console.log("Got key " + e.keyCode);
-                        modal.close();
-                        settings.changeGlobal("vad_ppt_key", e.keyCode.toString());
-                        globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
-                        vad_tag.find(".vat_ppt_key").text(String.fromCharCode(e.keyCode));
-                    });
+
+                    let listener = (event: ppt.KeyEvent) => {
+                        if(event.type == ppt.EventType.KEY_TYPED) {
+                            settings.changeGlobal('vad_ppt_key', undefined); //TODO remove that because its legacy shit
+                            console.log("Got key %o", event);
+
+                            let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
+                            ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+                            Object.assign(ppt_settings, event);
+                            settings.changeGlobal('vad_ppt_settings', ppt_settings);
+
+                            globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
+
+                            ppt.unregister_key_listener(listener);
+                            modal.close();
+                            vad_tag.find(".vat_ppt_key").text(ppt.key_description(event));
+                        }
+                    };
+                    ppt.register_key_listener(listener);
                     modal.open();
                 });
             }

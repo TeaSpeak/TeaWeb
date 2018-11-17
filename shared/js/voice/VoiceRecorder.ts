@@ -120,10 +120,34 @@ class VoiceRecorder {
     reinitialiseVAD() {
         let type = settings.global("vad_type", "vad");
         if(type == "ppt") {
-            let keyCode: number = parseInt(settings.global("vad_ppt_key", String.fromCharCode(JQuery.Key.T)));
+            if(settings.global('vad_ppt_key', undefined)) {
+                //TODO remove that because its legacy shit
+                createErrorModal("VAD changed!", "VAD key detection changed.<br>Please reset your PPT key!").open();
+            }
+            let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
+            ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+
+            if(ppt_settings.version === undefined)
+                ppt_settings.version = 1;
+
+            if(ppt_settings.key_code === undefined)
+                ppt_settings.key_code = "KeyT";
+
+            if(ppt_settings.key_ctrl === undefined)
+                ppt_settings.key_ctrl = false;
+
+            if(ppt_settings.key_shift === undefined)
+                ppt_settings.key_shift = false;
+
+            if(ppt_settings.key_alt === undefined)
+                ppt_settings.key_alt = false;
+
+            if(ppt_settings.key_windows === undefined)
+                ppt_settings.key_windows = false;
+
             if(!(this.getVADHandler() instanceof PushToTalkVAD))
-                this.setVADHandler(new PushToTalkVAD(keyCode));
-            else (this.getVADHandler() as PushToTalkVAD).key = keyCode;
+                this.setVADHandler(new PushToTalkVAD(ppt_settings));
+            else (this.getVADHandler() as PushToTalkVAD).key = ppt_settings;
         } else if(type == "pt") {
             if(!(this.getVADHandler() instanceof PassThroughVAD))
                 this.setVADHandler(new PassThroughVAD());
@@ -298,35 +322,36 @@ class VoiceActivityDetectorVAD extends VoiceActivityDetector {
     }
 }
 
+interface PPTKeySettings extends ppt.KeyDescriptor{
+    version?: number;
+}
+
 class PushToTalkVAD extends VoiceActivityDetector {
-    private _key: number;
+    private _key: ppt.KeyDescriptor;
+    private _key_hook: ppt.KeyHook;
+
     private _pushed: boolean = false;
-    private _evListenerDown = (e: KeyboardEvent) => {
-        //console.log("Down -> " + e.key + " -> " + e.keyCode);
-        if(e.key == String.fromCharCode(this._key))
-            this.pushed = true;
-    };
 
-    private _evListenerUp = e => {
-        if(e.key == String.fromCharCode(this._key))
-            this.pushed = false;
-    };
-
-    constructor(key: any) {
+    constructor(key: ppt.KeyDescriptor) {
         super();
         this._key = key;
+        this._key_hook = {
+            callback_release: () => this._pushed = false,
+            callback_press: () => this._pushed = true,
+
+            cancel: false
+        } as ppt.KeyHook;
+        Object.assign(this._key_hook, this._key);
     }
 
 
     initialise() {
-        document.addEventListener("keydown", this._evListenerDown);
-        document.addEventListener("keyup", this._evListenerUp);
+        ppt.register_key_hook(this._key_hook);
         return super.initialise();
     }
 
     finalize() {
-        document.removeEventListener("keydown", this._evListenerDown);
-        document.removeEventListener("keyup", this._evListenerUp);
+        ppt.unregister_key_hook(this._key_hook);
         return super.finalize();
     }
 
@@ -334,8 +359,8 @@ class PushToTalkVAD extends VoiceActivityDetector {
         this._pushed = flag;
     }
 
-    set key(key: number) {
-        this._key = key;
+    set key(key: ppt.KeyDescriptor) {
+        Object.assign(this._key_hook, this._key);
         this._pushed = false;
     }
 

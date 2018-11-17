@@ -29,7 +29,7 @@ class StaticSettings {
         if      (typeof input === "string")     return input as string;
         else if (typeof input === "number")     return input.toString();
         else if (typeof input === "boolean")    return input ? "1" : "0";
-        else if (typeof input == "undefined")   return undefined;
+        else if (typeof input === "undefined")  return undefined;
         return JSON.stringify(input);
     }
 

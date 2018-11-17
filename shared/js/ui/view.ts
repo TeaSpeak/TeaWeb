@@ -6,11 +6,6 @@
 /// <reference path="client.ts" />
 /// <reference path="modal/ModalCreateChannel.ts" />
 
-let shift_pressed = false;
-$(document).on('keyup keydown', function(e){
-    shift_pressed = e.shiftKey;
-    console.log(shift_pressed);
-});
 class ChannelTree {
     client: TSClient;
     htmlTree: JQuery;
@@ -271,8 +266,7 @@ class ChannelTree {
     }
 
     onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry, enforce_single?: boolean) {
-        console.log(shift_pressed);
-        if(this.currently_selected && shift_pressed && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
+        if(this.currently_selected && ppt.key_pressed(ppt.SpecialKey.SHIFT) && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
             if(!entry) return; //Nowhere
 
             if($.isArray(this.currently_selected)) {

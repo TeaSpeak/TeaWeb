@@ -122,6 +122,7 @@ function loadDebug() {
         console.log("Adding browser audio player");
         custom_scripts.push(["js/audio/AudioPlayer.js"]);
         custom_scripts.push(["js/audio/WebCodec.js"]);
+        custom_scripts.push(["js/WebPPTListener.js"]);
     }
 
     load_wait_scripts([
@@ -186,6 +187,7 @@ function loadDebug() {
         "js/chat.js",
         "js/Identity.js",
 
+        "js/PPTListener.js",
         ...custom_scripts
     ]).then(() => load_wait_scripts([
         "js/codec/CodecWrapperWorker.js"

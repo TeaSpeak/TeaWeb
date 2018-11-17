@@ -7,9 +7,12 @@
   },
   "exclude": [
     "node_modules",
-    "js/workers",
+    "shared/js/workers",
     "shared/declarations/**/*.d.ts",
+    "shared/generated",
     "web/declarations/**/*.d.ts",
+    "web/generated/",
+    "web/environment/",
     "vendor/**/*.ts"
   ]
 }
