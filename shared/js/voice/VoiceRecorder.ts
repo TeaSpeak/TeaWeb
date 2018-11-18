@@ -360,8 +360,11 @@ class PushToTalkVAD extends VoiceActivityDetector {
     }
 
     set key(key: ppt.KeyDescriptor) {
-        Object.assign(this._key_hook, this._key);
+        ppt.unregister_key_hook(this._key_hook);
+        Object.assign(this._key, key);
+        Object.assign(this._key_hook, key);
         this._pushed = false;
+        ppt.register_key_hook(this._key_hook);
     }
 
     shouldRecord(buffer: AudioBuffer): boolean {
