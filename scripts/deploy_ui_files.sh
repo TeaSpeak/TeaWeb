@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 
+# ./scripts/deploy_ui_files.sh http://dev.clientapi.teaspeak.de/api.php test 1.1.0
+
 TMP_FILE_NAME="TeaSpeakUI.tar.gz"
 TMP_DIR_NAME="tmp"
 
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
 
-if [ "$#" -ne 2 ]; then
-    echo "Illegal number of parameters"
+if [ "$#" -ne 3 ]; then
+    echo "Illegal number of parameters (url | channel | required version)"
     exit 1
 fi
 
@@ -73,6 +75,7 @@ cd ../../../
 RESP=$(curl \
   -k \
   -X POST \
+  -F "required_client=$3" \
   -F "type=deploy-ui-build" \
   -F "channel=$2" \
   -F "version=$APPLICATION_VERSION" \

@@ -153,7 +153,8 @@
 						"timestamp" => $data["latest"]["timestamp"],
 						"version" => $data["latest"]["version"],
 						"git-ref" => $data["latest"]["git-ref"],
-						"channel" => $channel
+						"channel" => $channel,
+						"required_client" => $data["latest"]["required_client"]
 					];
 					array_push($info["versions"], $channel_info);
 				}
@@ -274,7 +275,7 @@
 		} else if($_POST["type"] == "deploy-ui-build") {
 			global $UI_BASE_PATH;
 
-			if(!isset($_POST["secret"]) || !isset($_POST["channel"]) || !isset($_POST["version"]) || !isset($_POST["git_ref"]))
+			if(!isset($_POST["secret"]) || !isset($_POST["channel"]) || !isset($_POST["version"]) || !isset($_POST["git_ref"]) || !isset($_POST["required_client"]))
 				error_exit("Missing required information!");
 
 			$path = $UI_BASE_PATH . DIRECTORY_SEPARATOR;
@@ -305,7 +306,8 @@
 					"timestamp" => time(),
 					"file" => $channeled_path . DIRECTORY_SEPARATOR . $filename,
 					"version" => $_POST["version"],
-					"git-ref" => $_POST["git_ref"]
+					"git-ref" => $_POST["git_ref"],
+					"required_client" => $_POST["required_client"]
 				];
 
 				$channel_info["latest"] = $entry;

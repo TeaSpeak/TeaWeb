@@ -1,4 +1,7 @@
 # Changelog:
+* **17.11.18**
+    - Improved PPT handling
+    
 * **04.11.18**
     - Added basic music bot management (Create | Delete | Nickname/Description-change)
     - Merged music bot pause and play. Added stop button
