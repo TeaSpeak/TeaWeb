@@ -1,4 +1,7 @@
 # Changelog:
+* **20.11.18**
+    - Improved client updates, and showing a query client as a query
+    
 * **17.11.18**
     - Improved PPT handling
     
