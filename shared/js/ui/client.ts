@@ -468,29 +468,38 @@ class ClientEntry {
     updateClientSpeakIcon() {
         let icon: string = "";
         let clicon: string = "";
-        if(this.properties.client_away) {
-            icon = "client-away";
-        } else if(!this.properties.client_output_hardware) {
-            icon = "client-hardware_output_muted";
-        } else if(this.properties.client_output_muted) {
-            icon = "client-output_muted";
-        } else if(!this.properties.client_input_hardware) {
-            icon = "client-hardware_input_muted";
-        } else if(this.properties.client_input_muted) {
-            icon = "client-input_muted";
+
+        console.error(this.properties.client_nickname + " - " + this.properties.client_type_exact + " - " + this.properties.client_type);
+        if(this.properties.client_type_exact == ClientType.CLIENT_QUERY) {
+            icon = "client-server_query";
+            console.log("Server query!");
         } else {
-            if(this._speaking) {
-                if(this.properties.client_is_channel_commander)
-                    clicon = "client_cc_talk";
-                else
-                    clicon = "client_talk";
+            if(this.properties.client_away) {
+                icon = "client-away";
+            } else if(!this.properties.client_output_hardware) {
+                icon = "client-hardware_output_muted";
+            } else if(this.properties.client_output_muted) {
+                icon = "client-output_muted";
+            } else if(!this.properties.client_input_hardware) {
+                icon = "client-hardware_input_muted";
+            } else if(this.properties.client_input_muted) {
+                icon = "client-input_muted";
             } else {
-                if(this.properties.client_is_channel_commander)
-                    clicon = "client_cc_idle";
-                else
-                    clicon = "client_idle";
+                if(this._speaking) {
+                    if(this.properties.client_is_channel_commander)
+                        clicon = "client_cc_talk";
+                    else
+                        clicon = "client_talk";
+                } else {
+                    if(this.properties.client_is_channel_commander)
+                        clicon = "client_cc_idle";
+                    else
+                        clicon = "client_idle";
+                }
             }
         }
+
+
         if(clicon.length > 0)
             this.tag.find(".icon_client_state").attr('class', 'icon_client_state clicon ' + clicon);
         else if(icon.length > 0)
@@ -512,7 +521,11 @@ class ClientEntry {
     updateVariables(...variables: {key: string, value: string}[]) {
         let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, "Update properties (%i) of %s (%i)", variables.length, this.clientNickName(), this.clientId());
 
-        let update_status_icon = false;
+        let update_icon_status = false;
+        let update_icon_speech = false;
+        let update_away = false;
+        let reorder_channel = false;
+
         for(let variable of variables) {
             JSON.map_field_to(this._properties, variable.value, variable.key);
 
@@ -521,14 +534,14 @@ class ClientEntry {
                 this.tag.find(".name").text(variable.value);
                 let chat = this.chat(false);
                 if(chat) chat.name = variable.value;
-                if(this._channel)
-                    this._channel.reorderClients();
+
+                reorder_channel = true;
             }
             if(variable.key == "client_away" || variable.key == "client_output_muted" || variable.key == "client_input_hardware" || variable.key == "client_input_muted" || variable.key == "client_is_channel_commander"){
-                this.updateClientSpeakIcon();
+                update_icon_speech = true;
             }
             if(variable.key == "client_away_message" || variable.key == "client_away") {
-                this.updateAwayMessage();
+                update_away = true;
             }
             if(variable.key == "client_unique_identifier") {
                 this.audioController.volume = parseFloat(settings.server("volume_client_" + this.clientUid(), "1"));
@@ -536,17 +549,24 @@ class ClientEntry {
                 console.log(this.avatarId());
             }
             if(variable.key == "client_talk_power") {
-                if(this._channel) {
-                    this._channel.reorderClients();
-                    this.updateClientStatusIcons();
-                }
-
+                reorder_channel = true;
+                update_icon_status = true;
             }
             if(variable.key == "client_icon_id")
                 this.updateClientIcon();
             if(variable.key =="client_channel_group_id" || variable.key == "client_servergroups")
                 this.updateGroupIcons();
         }
+
+        /* process updates after variables have been set */
+        if(this._channel && reorder_channel)
+            this._channel.reorderClients();
+        if(update_icon_speech)
+            this.updateClientSpeakIcon();
+        if(update_icon_status)
+            this.updateClientStatusIcons();
+        if(update_away)
+            this.updateAwayMessage();
 
         group.end();
     }
