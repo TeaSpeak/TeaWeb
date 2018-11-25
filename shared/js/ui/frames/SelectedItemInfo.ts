@@ -148,6 +148,7 @@ class Hostbanner {
 
     private generate_tag?() : Promise<JQuery<HTMLElement>> {
         if(!this.client.connected) return undefined;
+
         const server = this.client.channelTree.server;
         if(!server) return undefined;
         if(!server.properties.virtualserver_hostbanner_gfx_url) return undefined;

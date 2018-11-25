@@ -238,10 +238,11 @@ class TSClient {
                 break;
         }
 
-        this.selectInfo.setCurrentSelected(null);
         this.channelTree.reset();
         this.voiceConnection.dropSession();
         if(this.serverConnection) this.serverConnection.disconnect();
         this.controlBar.update_connection_state();
+        this.selectInfo.setCurrentSelected(null);
+        this.selectInfo.update_banner();
     }
 }
