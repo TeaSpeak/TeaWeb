@@ -1,4 +1,8 @@
 # Changelog:
+* **25.11.18**
+    - Implemented support for svg and image detection
+    - Fixed keeped host banner
+    
 * **20.11.18**
     - Improved client updates, and showing a query client as a query
     
