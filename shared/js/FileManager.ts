@@ -240,6 +240,51 @@ class Icon {
     base64: string;
 }
 
+enum ImageType {
+    UNKNOWN,
+    BITMAP,
+    PNG,
+    GIF,
+    SVG,
+    JPEG
+}
+
+function media_image_type(type: ImageType) {
+    switch (type) {
+        case ImageType.BITMAP:
+            return "bmp";
+        case ImageType.GIF:
+            return "gif";
+        case ImageType.SVG:
+            return "svg+xml";
+        case ImageType.JPEG:
+            return "jpeg";
+        case ImageType.UNKNOWN:
+        case ImageType.PNG:
+        default:
+            return "png";
+    }
+}
+
+function image_type(base64: string) {
+    const bin = atob(base64);
+    if(bin.length < 10) return ImageType.UNKNOWN;
+
+    if(bin[0] == String.fromCharCode(66) && bin[1] == String.fromCharCode(77)) {
+        return ImageType.BITMAP;
+    } else if(bin.substr(0, 8) == "\x89\x50\x4e\x47\x0d\x0a\x1a\x0a") {
+        return ImageType.PNG;
+    } else if(bin.substr(0, 4) == "\x47\x49\x46\x38" && (bin[4] == '\x37' || bin[4] == '\x39') && bin[5] == '\x61') {
+        return ImageType.GIF;
+    } else if(bin[0] == '\x3c') {
+        return ImageType.SVG;
+    } else if(bin[0] == '\xFF' && bin[1] == '\xd8') {
+        return ImageType.JPEG;
+    }
+
+    return ImageType.UNKNOWN;
+}
+
 class IconManager {
     handle: FileManager;
     private loading_icons: {promise: Promise<Icon>, id: number}[] = [];
@@ -335,7 +380,10 @@ class IconManager {
 
         let icon = this.resolveCached(id);
         if(icon) {
-            img.attr("src", "data:image/png;base64," + icon.base64);
+            const type = image_type(icon.base64);
+            const media = media_image_type(type);
+            console.debug("Icon has an image type of %o (media: %o)", type, media);
+            img.attr("src", "data:image/" + media + ";base64," + icon.base64);
             tag.append(img);
         } else {
             img.attr("src", "file://null");
@@ -345,7 +393,10 @@ class IconManager {
             tag.append(loader);
 
             this.loadIcon(id).then(icon => {
-                img.attr("src", "data:image/png;base64," + icon.base64);
+                const type = image_type(icon.base64);
+                const media = media_image_type(type);
+                console.debug("Icon has an image type of %o (media: %o)", type, media);
+                img.attr("src", "data:image/" + media + ";base64," + icon.base64);
                 console.debug("Icon " + id + " loaded :)");
 
                 img.css("opacity", 0);
@@ -439,7 +490,7 @@ class AvatarManager {
                 };
                 ft.on_complete = () => {
                     let avatar = new Avatar();
-                    if(array.length >= 1 * 1024 * 1024) {
+                    if(array.length >= 1024 * 1024) {
                         let blob_image = new Blob([array]);
                         avatar.url = URL.createObjectURL(blob_image);
                         avatar.blob = blob_image;
@@ -478,8 +529,12 @@ class AvatarManager {
         if(avatar) {
             if(avatar.url)
                 img.attr("src", avatar.url);
-            else
-                img.attr("src", "data:image/png;base64," + avatar.base64);
+            else {
+                const type = image_type(avatar.base64);
+                const media = media_image_type(type);
+                console.debug("Avatar has an image type of %o (media: %o)", type, media);
+                img.attr("src", "data:image/" + media + ";base64," + avatar.base64);
+            }
             tag.append(img);
         } else {
             let loader = $.spawn("img");
@@ -489,8 +544,12 @@ class AvatarManager {
             this.loadAvatar(client).then(avatar => {
                 if(avatar.url)
                     img.attr("src", avatar.url);
-                else
-                    img.attr("src", "data:image/png;base64," + avatar.base64);
+                else {
+                    const type = image_type(avatar.base64);
+                    const media = media_image_type(type);
+                    console.debug("Avatar has an image type of %o (media: %o)", type, media);
+                    img.attr("src", "data:image/" + media + ";base64," + avatar.base64);
+                }
                 console.debug("Avatar " + client.clientNickName() + " loaded :)");
 
                 img.css("opacity", 0);
