@@ -49,8 +49,8 @@ abstract class BasicCodec implements Codec {
 
 
     encodeSamples(cache: CodecClientCache, pcm: AudioBuffer) {
-        this._encodeResampler.resample(pcm).then(buffer => this.encodeSamples0(cache, buffer))
-            .catch(error => console.error("Could not resample PCM data for codec. Error:" + error));
+        this._encodeResampler.resample(pcm).catch(error => console.error("Could not resample PCM data for codec. Error:" + error))
+            .then(buffer => this.encodeSamples0(cache, buffer as any)).catch(error => console.error("Could not encode PCM data for codec. Error:" + error))
 
     }
 

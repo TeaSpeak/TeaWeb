@@ -23,7 +23,8 @@ class BufferChunk {
 
     copyRangeTo(target: AudioBuffer, maxLength: number, offset: number) {
         let copy = Math.min(this.buffer.length - this.index, maxLength);
-        for(let channel = 0; channel < this.buffer.numberOfChannels; channel++) {
+        //TODO may warning if channel counts are not queal?
+        for(let channel = 0; channel < Math.min(target.numberOfChannels, this.buffer.numberOfChannels); channel++) {
             target.getChannelData(channel).set(
                 this.buffer.getChannelData(channel).subarray(this.index, this.index + copy),
                 offset

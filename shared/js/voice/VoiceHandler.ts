@@ -124,7 +124,7 @@ class VoiceConnection {
     dataChannel: RTCDataChannel;
 
     voiceRecorder: VoiceRecorder;
-    private _type: VoiceConnectionType = VoiceConnectionType.JS_ENCODE;
+    private _type: VoiceConnectionType = VoiceConnectionType.NATIVE_ENCODE;
 
     local_audio_stream: any;
 

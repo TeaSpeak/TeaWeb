@@ -212,7 +212,9 @@ class VoiceRecorder {
         getUserMediaFunction()({
             audio: {
                 deviceId: device,
-                groupId: groupId
+                groupId: groupId,
+                echoCancellation: true,
+                echoCancellationType: 'browser'
             }
         }, this.on_microphone.bind(this), error => {
             createErrorModal("Could not resolve microphone!", "Could not resolve microphone!<br>Message: " + error).open();
