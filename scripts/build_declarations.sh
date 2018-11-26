@@ -12,6 +12,10 @@ function generate_link() {
     fi
 }
 
+function replace_tribble() {
+    #${1} => file name
+    echo "$(cat ${1} | sed -E 's/\/\/\/[ ]+<reference [a-zA-Z.-=_ ]+\/>.*/\n/')" > ${1}
+}
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
 
@@ -21,10 +25,12 @@ cd "$BASEDIR/../"
 
 #Web
 execute_tsc -p web/tsconfig/tsdeclaration.json
+replace_tribble web/declarations/exports.d.ts
 echo "Generated web declarations"
 
 #Shared
 execute_tsc -p shared/tsconfig/tsdeclaration.json
+replace_tribble shared/declarations/exports.d.ts
 echo "Generated shared declarations"
 
 #Now build the merged declaration for the shared project

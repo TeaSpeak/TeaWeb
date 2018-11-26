@@ -8,7 +8,6 @@
 /// <reference path="ui/modal/ModalBanClient.ts" />
 /// <reference path="ui/modal/ModalYesNo.ts" />
 /// <reference path="ui/modal/ModalBanList.ts" />
-/// <reference path="codec/CodecWrapper.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="log.ts" />
 

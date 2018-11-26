@@ -50,8 +50,9 @@ namespace ppt {
         return result.substr(3);
     }
 
+    /*
     export declare function initialize() : Promise<void>;
-    export declare function finalize(); /* most the times not really required */
+    export declare function finalize(); // most the times not really required
 
     export declare function register_key_listener(listener: (_: KeyEvent) => any);
     export declare function unregister_key_listener(listener: (_: KeyEvent) => any);
@@ -60,4 +61,5 @@ namespace ppt {
     export declare function unregister_key_hook(hook: KeyHook);
 
     export declare function key_pressed(code: string | SpecialKey) : boolean;
+    */
 }

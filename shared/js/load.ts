@@ -52,6 +52,34 @@ namespace app {
     }
 }
 
+/* define that here */
+let impl_display_critical_error: (message: string) => any;
+
+interface Window {
+    impl_display_critical_error: (_: string) => any;
+}
+if(!window.impl_display_critical_error) { /* default impl */
+    impl_display_critical_error = message => {
+        if(typeof(createErrorModal) !== 'undefined') {
+            createErrorModal("A critical error occurred while loading the page!", message, {closeable: false}).open();
+        } else {
+            let tag = document.getElementById("critical-load");
+            let detail = tag.getElementsByClassName("detail")[0];
+            detail.innerHTML = message;
+
+            tag.style.display = "block";
+        }
+        fadeoutLoader();
+    }
+}
+function displayCriticalError(message: string) {
+    if(window.impl_display_critical_error)
+        window.impl_display_critical_error(message);
+    else
+        console.error("Could not display a critical message: " + message); /* this shall never happen! */
+}
+
+
 function load_scripts(paths: (string | string[])[]) : {path: string, promise: Promise<Boolean>}[] {
     let result = [];
     for(let path of paths)
@@ -361,21 +389,6 @@ if(typeof Module === "undefined")
     this["Module"] = {};
 app.initialize();
 app.loadedListener.push(fadeoutLoader);
-
-if(!window.displayCriticalError) { /* Declare this function here only because its required before load */
-    window.displayCriticalError = function(message: string) {
-        if(typeof(createErrorModal) !== 'undefined') {
-            createErrorModal("A critical error occurred while loading the page!", message, {closeable: false}).open();
-        } else {
-            let tag = document.getElementById("critical-load");
-            let detail = tag.getElementsByClassName("detail")[0];
-            detail.innerHTML = message;
-
-            tag.style.display = "block";
-        }
-        fadeoutLoader();
-    }
-}
 
 navigator.browserSpecs = (function(){
     let ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
