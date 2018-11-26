@@ -423,7 +423,7 @@ class MusicInfoManager extends ClientInfoManager {
                         button_play.click(handler => {
                             if(!button_play.hasClass("active")) {
                                 this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
-                                    botid: bot.properties.client_database_id,
+                                    bot_id: bot.properties.client_database_id,
                                     action: 1
                                 }).then(updated => this.triggerUpdate()).catch(error => {
                                     createErrorModal("Failed to execute play", MessageHelper.formatMessage("Failed to execute play.<br>{}", error)).open();
@@ -436,7 +436,7 @@ class MusicInfoManager extends ClientInfoManager {
                         button_pause.click(handler => {
                             if(!button_pause.hasClass("active")) {
                                 this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
-                                    botid: bot.properties.client_database_id,
+                                    bot_id: bot.properties.client_database_id,
                                     action: 2
                                 }).then(updated => this.triggerUpdate()).catch(error => {
                                     createErrorModal("Failed to execute pause", MessageHelper.formatMessage("Failed to execute pause.<br>{}", error)).open();
@@ -448,7 +448,7 @@ class MusicInfoManager extends ClientInfoManager {
                         });
                         button_stop.click(handler => {
                             this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
-                                botid: bot.properties.client_database_id,
+                                bot_id: bot.properties.client_database_id,
                                 action: 0
                             }).then(updated => this.triggerUpdate()).catch(error => {
                                 createErrorModal("Failed to execute stop", MessageHelper.formatMessage("Failed to execute stop.<br>{}", error)).open();
@@ -471,7 +471,7 @@ class MusicInfoManager extends ClientInfoManager {
                     { /* Button functions */
                         _frame.find(".btn-forward").click(() => {
                             this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
-                                botid: bot.properties.client_database_id,
+                                bot_id: bot.properties.client_database_id,
                                 action: 3
                             }).then(updated => this.triggerUpdate()).catch(error => {
                                 createErrorModal("Failed to execute forward", "Failed to execute pause.<br>{}".format(error)).open();
@@ -480,7 +480,7 @@ class MusicInfoManager extends ClientInfoManager {
                         });
                         _frame.find(".btn-rewind").click(() => {
                             this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
-                                botid: bot.properties.client_database_id,
+                                bot_id: bot.properties.client_database_id,
                                 action: 4
                             }).then(updated => this.triggerUpdate()).catch(error => {
                                 createErrorModal("Failed to execute rewind", "Failed to execute pause.<br>{}".format(error)).open();
@@ -535,7 +535,7 @@ class MusicInfoManager extends ClientInfoManager {
 
                                 let current_timestamp = info.player_replay_index + Date.now() - timestamp;
                                 this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
-                                    botid: bot.properties.client_database_id,
+                                    bot_id: bot.properties.client_database_id,
                                     action: current_timestamp > target_timestamp ? 6 : 5,
                                     units: current_timestamp < target_timestamp ? target_timestamp - current_timestamp : current_timestamp - target_timestamp
                                 }).then(() => this.triggerUpdate()).catch(error => {

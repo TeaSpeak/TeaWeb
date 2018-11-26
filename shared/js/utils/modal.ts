@@ -71,7 +71,7 @@ class ModalProperties {
     }
 }
 
-class Modal extends EventTarget {
+class Modal {
     private _htmlTag: JQuery;
     properties: ModalProperties;
     shown: boolean;
@@ -79,8 +79,6 @@ class Modal extends EventTarget {
     close_listener: (() => any)[] = [];
 
     constructor(props: ModalProperties) {
-        super();
-
         this.properties = props;
         this.shown = false;
     }

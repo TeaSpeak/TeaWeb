@@ -788,7 +788,7 @@ class MusicClientProperties extends ClientProperties {
 }
 
 class MusicClientPlayerInfo {
-    botid: number = 0;
+    bot_id: number = 0;
     player_state: number = 0;
 
     player_buffered_index: number = 0;
@@ -870,7 +870,7 @@ class MusicClientEntry extends ClientEntry {
                     createInputModal("Please enter the URL", "URL:", text => true, result => {
                         if(result) {
                             this.channelTree.client.serverConnection.sendCommand("musicbotqueueadd", {
-                                botid: this.properties.client_database_id,
+                                bot_id: this.properties.client_database_id,
                                 type: "yt", //Its a hint not a force!
                                 url: result
                             }).catch(error => {
@@ -937,7 +937,7 @@ class MusicClientEntry extends ClientEntry {
                     Modals.spawnYesNo("Are you sure?", $.spawn("div").append(tag), result => {
                        if(result) {
                            this.channelTree.client.serverConnection.sendCommand("musicbotdelete", {
-                               botid: this.properties.client_database_id
+                               bot_id: this.properties.client_database_id
                            });
                        }
                     });
@@ -977,7 +977,7 @@ class MusicClientEntry extends ClientEntry {
             this._info_promise_resolve = resolve;
         });
 
-        this.channelTree.client.serverConnection.sendCommand("musicbotplayerinfo", {botid: this.properties.client_database_id });
+        this.channelTree.client.serverConnection.sendCommand("musicbotplayerinfo", {bot_id: this.properties.client_database_id });
         return this._info_promise;
     }
 }
