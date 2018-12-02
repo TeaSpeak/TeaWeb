@@ -163,7 +163,7 @@
 			$TAG = "<footer>
                     <div class=\"container\" style=\"display: flex; flex-direction: row; align-content: space-between;\">
                         <div style=\"align-self: center; position: fixed; left: 5px;\">Open source on <a href=\"https://github.com/TeaSpeak/TeaSpeak-Web\" style=\"display: inline-block; position: relative\">github.com</a></div>
-                        <div style=\"align-self: center;\">TeaSpeak Web client by WolverinDEV</div>
+                        <div style=\"align-self: center;\">TeaSpeak Web client (" . $version . ") by WolverinDEV</div>
                         <div style=\"align-self: center; position: fixed; right: 5px;\">";
 
 			if (logged_in()) {
