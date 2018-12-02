@@ -64,7 +64,9 @@
 
 		overflow: hidden;
 
-		&:not(:disabled) {
+
+		&.disabled {
+			display: none;
 			margin-bottom: 5px;
 		}
 

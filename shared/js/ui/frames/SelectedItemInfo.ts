@@ -133,16 +133,14 @@ class Hostbanner {
         if(tag) {
             tag.then(element => {
                 this.html_tag.empty();
-                this.html_tag.append(element);
-                this.html_tag.prop("disabled", false);
+                this.html_tag.append(element).removeClass("disabled");
+
             }).catch(error => {
                 console.warn("Failed to load hostbanner: %o", error);
-                this.html_tag.empty();
-                this.html_tag.prop("disabled", true);
+                this.html_tag.empty().addClass("disabled");
             })
         } else {
-            this.html_tag.empty();
-            this.html_tag.prop("disabled", true);
+            this.html_tag.empty().addClass("disabled");
         }
     }
 

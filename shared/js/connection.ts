@@ -343,11 +343,13 @@ class HandshakeHandler {
                 });
             return;
         }
+
+        const browser_name = (navigator.browserSpecs || {})["name"];
         let data = {
             //TODO variables!
             client_nickname: this.name ? this.name : this.identity.name(),
             client_platform: navigator.platform,
-            client_version: navigator.userAgent,
+            client_version: browser_name ? browser_name + " (" + navigator.userAgent + ")" : navigator.userAgent,
 
             client_server_password: this.server_password,
             client_browser_engine: navigator.product

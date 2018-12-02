@@ -3,6 +3,8 @@
     - Fixed `[spacerX]` detection
     - Added a hint if the channel encryption has been overridden by the server settings
     - Enabled log grouping
+    - Improved permission popup performance
+    - Showing a better client version on client info
     
 * **1.12.18**
     - Added the possibility to navigate via arrow keys within the channel tree
