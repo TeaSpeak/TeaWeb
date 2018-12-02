@@ -191,7 +191,7 @@ namespace Modals {
                 return tag;
             },
 
-            width: 600,
+            width: '70%',
             //closeable: false
         });
         connectModal.open();

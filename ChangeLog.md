@@ -5,6 +5,8 @@
     - Enabled log grouping
     - Improved permission popup performance
     - Showing a better client version on client info
+    - When you press enter while a channel is selected let you enter this channel
+    - Fixed connect file select overflow
     
 * **1.12.18**
     - Added the possibility to navigate via arrow keys within the channel tree
