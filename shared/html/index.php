@@ -76,6 +76,11 @@
 				spawnProperty('forum_user_data', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]]);
 				spawnProperty('forum_user_sign', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]]);
 				spawnProperty('forum_path', authPath());
+
+				$version = file_get_contents("./version");
+				if ($version === false)
+				    $version = "unknown";
+				spawnProperty("version", $version);
 			?>
         </x-properties>
 

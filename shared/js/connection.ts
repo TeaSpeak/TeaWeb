@@ -344,12 +344,13 @@ class HandshakeHandler {
             return;
         }
 
-        const browser_name = (navigator.browserSpecs || {})["name"];
+        const git_version = settings.static_global("version", "unknown");
+        const browser_name = (navigator.browserSpecs || {})["name"] || " ";
         let data = {
             //TODO variables!
             client_nickname: this.name ? this.name : this.identity.name(),
-            client_platform: navigator.platform,
-            client_version: browser_name ? browser_name + " (" + navigator.userAgent + ")" : navigator.userAgent,
+            client_platform: (browser_name ? browser_name + " " : "") + navigator.platform,
+            client_version: "TeaWeb " + git_version + " (" + navigator.userAgent + ")",
 
             client_server_password: this.server_password,
             client_browser_engine: navigator.product

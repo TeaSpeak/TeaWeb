@@ -57,7 +57,12 @@ namespace Modals {
 
                 tag.find(".connect_nickname").val(settings.static_global("connect_name", undefined));
                 tag.find(".connect_address").val(settings.static_global("connect_address", defaultHost));
-                tag.find(".connect_address").on("keyup", () => updateFields());
+                tag.find(".connect_address")
+                    .on("keyup", () => updateFields())
+                    .on('keydown', event => {
+                        if(event.keyCode == JQuery.Key.Enter && !event.shiftKey)
+                            tag.parents(".modal-content").find(".connect_connect_button").trigger('click');
+                    });
                 tag.find(".connect_nickname").on("keyup", () => updateFields());
 
                 tag.find(".identity_select").on('change', function (this: HTMLSelectElement) {

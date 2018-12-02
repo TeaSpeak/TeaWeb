@@ -1,0 +1,2 @@
+- channel encrypted within status bar (ref for override via server: encrypted: false (overridden by server: true))
+- arrow channel select move

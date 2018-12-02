@@ -365,6 +365,10 @@
 				echo "Generated!" . PHP_EOL;
 			}
 
+			{
+				exec("./scripts/git_index.sh sort-tag", $output, $state);
+				file_put_contents($environment . DIRECTORY_SEPARATOR . "version", $output);
+			}
 
 			if ($_SERVER["argv"][2] == "client") {
 				if(!chdir("client-api/environment")) {
