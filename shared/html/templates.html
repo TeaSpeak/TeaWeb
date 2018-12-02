@@ -1510,6 +1510,13 @@
                         {{else}}
                             Encrypted
                         {{/if}}
+
+                        {{if server_encryption == 2}}
+                            (Overridden by the server with Encrypted)
+                        {{/if}}
+                        {{if server_encryption == 1}}
+                            (Overridden by the server with Unencrypted)
+                        {{/if}}
                     </td>
                 </tr>
             </table>

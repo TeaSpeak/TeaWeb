@@ -308,6 +308,7 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
         properties["channel_type"] = ChannelType.normalize(channel.channelType());
         properties["channel_clients"] = channel.channelTree.clientsByChannel(channel).length;
         properties["channel_subscribed"] = true; //TODO
+        properties["server_encryption"] = channel.channelTree.server.properties.virtualserver_codec_encryption_mode;
 
         for(let key in channel.properties)
             properties["property_" + key] = channel.properties[key];

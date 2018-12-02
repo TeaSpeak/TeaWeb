@@ -50,9 +50,11 @@ class ChannelEntry {
     channelTree: ChannelTree;
     channelId: number;
     parent?: ChannelEntry;
-    prevChannel?: ChannelEntry;
     properties: ChannelProperties = new ChannelProperties();
     originalHeight: number;
+
+    channel_previous?: ChannelEntry;
+    channel_next?: ChannelEntry;
 
     private _channelAlign: string;
     private _formatedChannelName: string;
@@ -70,12 +72,11 @@ class ChannelEntry {
     private _cached_channel_description_promise_resolve: any = undefined;
     private _cached_channel_description_promise_reject: any = undefined;
 
-    constructor(channelId, channelName, parent = null, prevChannel = null) {
+    constructor(channelId, channelName, parent = null) {
         this.properties = new ChannelProperties();
         this.channelId = channelId;
         this._formatedChannelName = channelName;
         this.parent = parent;
-        this.prevChannel = prevChannel;
         this.channelTree = null;
 
         this.initializeTag();
@@ -87,7 +88,7 @@ class ChannelEntry {
     }
 
     formatedChannelName() {
-        return this._formatedChannelName ? this._formatedChannelName : this.properties.channel_name;
+        return this._formatedChannelName !== undefined ? this._formatedChannelName : this.properties.channel_name;
     }
 
     getChannelDescription() : Promise<string> {
@@ -104,7 +105,7 @@ class ChannelEntry {
         });
     }
 
-    parentChannel() { return this.parent; }
+    parent_channel?() { return this.parent; }
     hasParent(){ return this.parent != null; }
     getChannelId(){ return this.channelId; }
     channelClass() { return "channel_full"; }
@@ -118,14 +119,14 @@ class ChannelEntry {
             let current = entry;
             if(deep) {
                 while(current) {
-                    if(current.parentChannel() == self) {
+                    if(current.parent_channel() == self) {
                         result.push(entry);
                         break;
                     }
-                    current = current.parentChannel();
+                    current = current.parent_channel();
                 }
             } else
-                if(current.parentChannel() == self)
+                if(current.parent_channel() == self)
                     result.push(entry);
         });
         return result;
@@ -140,17 +141,36 @@ class ChannelEntry {
             let current = entry.currentChannel();
             if(deep) {
                 while(current) {
-                    if(current.parentChannel() == self) {
+                    if(current.parent_channel() == self) {
                         result.push(entry);
                         break;
                     }
-                    current = current.parentChannel();
+                    current = current.parent_channel();
                 }
             } else
             if(current == self)
                 result.push(entry);
         });
         return result;
+    }
+
+    clients_ordered() : ClientEntry[] {
+        const clients = this.clients(false);
+
+        clients.sort((a, b) => {
+            if(a.properties.client_talk_power < b.properties.client_talk_power)
+                return 1;
+            if(a.properties.client_talk_power > b.properties.client_talk_power)
+                return -1;
+
+            if(a.properties.client_nickname > b.properties.client_nickname)
+                return 1;
+            if(a.properties.client_nickname < b.properties.client_nickname)
+                return -1;
+
+            return 0;
+        });
+        return clients;
     }
 
     private initializeTag() {
@@ -285,7 +305,7 @@ class ChannelEntry {
         this._tag_root.css({height: size + subSize + clientSize});
         this._tag_siblings.css("margin-top", (clientSize + 16) + "px");
         this._tag_clients.css({height: clientSize});
-        if(parent && this.parentChannel()) this.parentChannel().adjustSize(parent);
+        if(parent && this.parent_channel()) this.parent_channel().adjustSize(parent);
     }
 
     initializeListener() {
@@ -445,7 +465,7 @@ class ChannelEntry {
     private __updateChannelName() {
         this._formatedChannelName = undefined;
         parseType:
-        if(this.parentChannel() == null && this.properties.channel_name.charAt(0) == '[') {
+        if(this.parent_channel() == null && this.properties.channel_name.charAt(0) == '[') {
             let end = this.properties.channel_name.indexOf(']');
             if(end == -1) break parseType;
 
@@ -469,9 +489,9 @@ class ChannelEntry {
         let channelName = self.find(".channel_name");
         channelName.text(this.formatedChannelName());
         channelName.parent().removeClass("l r c *"); //Alignments
-        (this._formatedChannelName ? $.fn.hide : $.fn.show).apply(self.find(".channel_only_normal"));
+        (this._formatedChannelName !== undefined ? $.fn.hide : $.fn.show).apply(self.find(".channel_only_normal"));
 
-        if(this._formatedChannelName) {
+        if(this._formatedChannelName !== undefined) {
             channelName.parent().addClass(this._channelAlign);
 
             if(this._channelAlign == "*") {

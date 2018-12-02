@@ -6,6 +6,7 @@
 /// <reference path="client.ts" />
 /// <reference path="modal/ModalCreateChannel.ts" />
 
+
 class ChannelTree {
     client: TSClient;
     htmlTree: JQuery;
@@ -16,6 +17,11 @@ class ChannelTree {
     currently_selected: ClientEntry | ServerEntry | ChannelEntry | (ClientEntry | ServerEntry)[] = undefined;
     currently_selected_context_callback: (event) => any = undefined;
     readonly client_mover: ClientMover;
+
+    private channel_last?: ChannelEntry;
+    private channel_first?: ChannelEntry;
+
+    private selected_event?: Event;
 
     constructor(client, htmlTree) {
         document.addEventListener("touchstart", function(){}, true);
@@ -44,6 +50,16 @@ class ChannelTree {
         }
 
         this.htmlTree.on('resize', this.handle_resized.bind(this));
+
+        /* TODO release these events again when ChannelTree get deinitialized */
+        $(document).on('click', event => {
+            if(this.selected_event != event.originalEvent)
+                this.selected_event = undefined;
+        });
+        $(document).on('keydown', this.handle_key_press.bind(this));
+        this.htmlTree.on('click', event => {{
+            this.selected_event = event.originalEvent;
+        }});
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
@@ -75,8 +91,8 @@ class ChannelTree {
         this.htmlTree.find(tag).fadeOut("slow", () => {
             tag.remove();
             if(element instanceof ChannelEntry) {
-                if(element.parentChannel())
-                    element.parentChannel().adjustSize(true);
+                if(element.parent_channel())
+                    element.parent_channel().adjustSize(true);
             } else if(element instanceof ClientEntry) {
                 element.currentChannel().adjustSize(true);
             }
@@ -99,13 +115,25 @@ class ChannelTree {
                     entry.channelTree = null;
                     index--;
                     break;
-                } else currentEntry = currentEntry.parentChannel();
+                } else currentEntry = currentEntry.parent_channel();
             }
         }
 
         this.channels.remove(channel);
         this.__deleteAnimation(channel);
         channel.channelTree = null;
+
+        if(channel.channel_previous)
+            channel.channel_previous.channel_next = channel.channel_next;
+
+        if(channel.channel_next)
+            channel.channel_next.channel_previous = channel.channel_previous;
+
+        if(channel == this.channel_first)
+            this.channel_first = channel.channel_next;
+
+        if(channel == this.channel_last)
+            this.channel_last = channel.channel_previous;
     }
 
     insertChannel(channel: ChannelEntry) {
@@ -114,29 +142,53 @@ class ChannelTree {
 
         let elm = undefined;
         let tag = this.htmlTree;
-        let prevChannel = null;
+
+        let previous_channel = null;
         if(channel.hasParent()) {
-            let parent = channel.parentChannel();
+            let parent = channel.parent_channel();
             let siblings = parent.siblings();
             if(siblings.length == 0) {
                 elm = parent.rootTag();
-                prevChannel = null;
+                previous_channel = null;
             } else {
-                prevChannel = siblings.last();
-                elm = prevChannel.tag;
+                previous_channel = siblings.last();
+                elm = previous_channel.tag;
             }
             tag = parent.siblingTag();
-        }
-        channel.prevChannel = prevChannel;
-        let entry = channel.rootTag().css({display: "none"}).fadeIn("slow");
+        } else {
+            previous_channel = this.channel_last;
 
+            if(!this.channel_last)
+                this.channel_last = channel;
+
+            if(!this.channel_first)
+                this.channel_first = channel;
+        }
+
+        channel.channel_previous = previous_channel;
+        channel.channel_next = undefined;
+
+        if(previous_channel) {
+            channel.channel_next = previous_channel.channel_next;
+            previous_channel.channel_next = channel;
+
+            if(channel.channel_next)
+                channel.channel_next.channel_previous = channel;
+        }
+
+        let entry = channel.rootTag().css({display: "none"}).fadeIn("slow");
         entry.appendTo(tag);
+
         channel.originalHeight = entry.outerHeight(false);
         if(elm != undefined)
             elm.after(entry);
 
-        channel.adjustSize(true);
+        if(channel.channel_previous == channel) /* shall never happen */
+            channel.channel_previous = undefined;
+        if(channel.channel_next == channel) /* shall never happen */
+            channel.channel_next = undefined;
 
+        channel.adjustSize(true);
         channel.initializeListener();
     }
 
@@ -153,31 +205,71 @@ class ChannelTree {
         return undefined;
     }
 
-    moveChannel(channel: ChannelEntry, prevChannel: ChannelEntry, parent: ChannelEntry) {
-        if(prevChannel != null && prevChannel.parent != parent) {
-            console.error("Invalid channel move (different parents! (" + prevChannel.parent + "|" + parent + ")");
+    moveChannel(channel: ChannelEntry, channel_previus: ChannelEntry, parent: ChannelEntry) {
+        if(channel_previus != null && channel_previus.parent != parent) {
+            console.error("Invalid channel move (different parents! (" + channel_previus.parent + "|" + parent + ")");
             return;
         }
-        let oldParent = channel.parentChannel();
-        channel.prevChannel = prevChannel;
+
+        if(channel.channel_next)
+            channel.channel_next.channel_previous = channel.channel_previous;
+
+        if(channel.channel_previous)
+            channel.channel_previous.channel_next = channel.channel_next;
+
+        if(channel == this.channel_last)
+            this.channel_last = channel.channel_previous;
+
+        if(channel == this.channel_first)
+            this.channel_first = channel.channel_next;
+
+
+        let oldParent = channel.parent_channel();
+        channel.channel_next = undefined;
+        channel.channel_previous = channel_previus;
         channel.parent = parent;
 
-        if(prevChannel)
-            prevChannel.rootTag().after(channel.rootTag());
-        else {
+        if(channel_previus) {
+            if(channel_previus == this.channel_last)
+                this.channel_last = channel;
+
+            channel.channel_next = channel_previus.channel_next;
+            channel_previus.channel_next = channel;
+            channel_previus.rootTag().after(channel.rootTag());
+
+            if(channel.channel_next)
+                channel.channel_next.channel_previous = channel;
+        } else {
             if(parent) {
                 let siblings = parent.siblings();
                 if(siblings.length <= 1) { //Self should be already in there
                     let left = channel.rootTag();
-                    left.appendTo($(parent.siblingTag()));
+                    left.appendTo(parent.siblingTag());
+
+                    channel.channel_next = undefined;
                 } else {
-                    channel.prevChannel = siblings[siblings.length - 2];
-                    channel.prevChannel.rootTag().after(channel.rootTag());
+                    channel.channel_previous = siblings[siblings.length - 2];
+                    channel.channel_previous.rootTag().after(channel.rootTag());
+
+                    channel.channel_next = channel.channel_previous.channel_next;
+                    channel.channel_next.channel_previous = channel;
+                    channel.channel_previous.channel_next = channel;
                 }
-            } else
+            } else {
                 this.htmlTree.find(".server").after(channel.rootTag());
+
+                channel.channel_next = this.channel_first;
+                if(this.channel_first)
+                    this.channel_first.channel_previous = channel;
+
+                this.channel_first = channel;
+            }
         }
 
+        if(channel.channel_previous == channel) /* shall never happen */
+            channel.channel_previous = undefined;
+        if(channel.channel_next == channel) /* shall never happen */
+            channel.channel_next = undefined;
 
         if(oldParent) {
             oldParent.adjustSize();
@@ -471,6 +563,9 @@ class ChannelTree {
         this.clients = [];
         this.channels = [];
         this.htmlTree.children().detach(); //Do not remove the listener!
+
+        this.channel_first = undefined;
+        this.channel_last = undefined;
     }
 
     spawnCreateChannel(parent?: ChannelEntry) {
@@ -510,5 +605,104 @@ class ChannelTree {
     handle_resized() {
         for(let channel of this.channels)
             channel.handle_frame_resized();
+    }
+
+    private select_next_channel(channel: ChannelEntry, select_client: boolean) {
+        if(select_client) {
+            const clients = channel.clients_ordered();
+            if(clients.length > 0) {
+                this.onSelect(clients[0], true);
+                return;
+            }
+        }
+
+        const children = channel.siblings();
+        if(children.length > 0) {
+            this.onSelect(children[0], true);
+            return;
+        }
+
+        const next = channel.channel_next;
+        if(next) {
+            this.onSelect(next, true);
+            return;
+        }
+
+        let parent = channel.parent_channel();
+        while(parent) {
+            const p_next = parent.channel_next;
+            if(p_next) {
+                this.onSelect(p_next, true);
+                return;
+            }
+
+            parent = parent.parent_channel();
+        }
+    }
+
+    handle_key_press(event: KeyboardEvent) {
+        if(!this.selected_event || !this.currently_selected || $.isArray(this.currently_selected)) return;
+
+        if(event.keyCode == JQuery.Key.ArrowUp) {
+            event.preventDefault();
+            if(this.currently_selected instanceof ChannelEntry) {
+                let previous = this.currently_selected.channel_previous;
+
+                if(previous) {
+                    while(true) {
+                        const siblings = previous.siblings();
+                        if(siblings.length == 0) break;
+                        previous = siblings.last();
+                    }
+                    const clients = previous.clients_ordered();
+                    if(clients.length > 0) {
+                        this.onSelect(clients.last(), true);
+                        return;
+                    } else {
+                        this.onSelect(previous, true);
+                        return;
+                    }
+                } else if(this.currently_selected.hasParent()) {
+                    const channel = this.currently_selected.parent_channel();
+                    const clients = channel.clients_ordered();
+                    if(clients.length > 0) {
+                        this.onSelect(clients.last(), true);
+                        return;
+                    } else {
+                        this.onSelect(channel, true);
+                        return;
+                    }
+                } else
+                    this.onSelect(this.server, true);
+            } else if(this.currently_selected instanceof ClientEntry) {
+                const channel = this.currently_selected.currentChannel();
+                const clients = channel.clients_ordered();
+                const index = clients.indexOf(this.currently_selected);
+                if(index > 0) {
+                    this.onSelect(clients[index - 1], true);
+                    return;
+                }
+
+                this.onSelect(channel, true);
+                return;
+            }
+
+        } else if(event.keyCode == JQuery.Key.ArrowDown) {
+            event.preventDefault();
+            if(this.currently_selected instanceof ChannelEntry) {
+                this.select_next_channel(this.currently_selected, true);
+            } else if(this.currently_selected instanceof ClientEntry){
+                const channel = this.currently_selected.currentChannel();
+                const clients = channel.clients_ordered();
+                const index = clients.indexOf(this.currently_selected);
+                if(index + 1 < clients.length) {
+                    this.onSelect(clients[index + 1], true);
+                    return;
+                }
+
+                this.select_next_channel(channel, false);
+            } else if(this.currently_selected instanceof ServerEntry)
+                this.onSelect(this.channel_first, true);
+        }
     }
 }

@@ -1,4 +1,12 @@
 # Changelog:
+* **2.12.18**
+    - Fixed `[spacerX]` detection
+    - Added a hint if the channel encryption has been overridden by the server settings
+    - Enabled log grouping
+    
+* **1.12.18**
+    - Added the possibility to navigate via arrow keys within the channel tree
+    
 * **25.11.18**
     - Implemented support for svg and image detection
     - Fixed keeped host banner
