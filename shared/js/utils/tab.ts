@@ -37,32 +37,42 @@ var TabFunctions = {
         let silentContent = $.spawn("div");
         silentContent.addClass("tab-content-invisible");
 
-        template.find("x-entry").each(function () {
-            let hentry = $.spawn("div");
-            hentry.addClass("entry");
+        template.find("x-entry").each( (_, _entry) => {
+            const entry = $(_entry);
+
+            let tag_header = $.spawn("div").addClass("entry");
             if(copy)
-                hentry.append($(this).find("x-tag").clone(true, true));
+                tag_header.append(entry.find("x-tag").clone(true, true));
             else
-                hentry.append($(this).find("x-tag"));
+                tag_header.append(entry.find("x-tag"));
 
-            const _this = $(this);
-            const _entryContent = copy ? _this.find("x-content").clone(true, true) : _this.find("x-content");
-            silentContent.append(_entryContent);
-            hentry.on("click", function () {
-                if(hentry.hasClass("selected")) return;
+            const tag_content = copy ? entry.find("x-content").clone(true, true) : entry.find("x-content");
+            content.append(tag_content.hide());
+
+            tag_header.on("click", () => {
+                if(tag_header.hasClass("selected")) return;
+
                 tag.find(".tab-header .selected").removeClass("selected");
-                hentry.addClass("selected");
+                tag_header.addClass("selected");
 
-                content.children().appendTo(silentContent);
-                console.log(silentContent);
-                content.empty();
-                content.append(_entryContent);
-                //console.log(_this.find("x-content"));
-                //content.append(_this.find("x-content"));
+                content.find("> x-content").hide();
+                /* don't show many nodes at once */
+                let entries = tag_content.find(".tab-show-partitional");
+                entries.hide();
+                const show_next = index => {
+                    console.log("Show " + index);
+                    if(index >= entries.length) return;
+                    entries.eq(index).show();
+
+                    setTimeout(show_next.bind(undefined, index + 1), 0);
+                };
+                show_next(0);
+
+                tag_content.show();
             });
 
             console.log(this);
-            header.append(hentry);
+            header.append(tag_header);
         });
 
         header.find(".entry").first().trigger("click");
