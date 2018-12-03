@@ -1061,7 +1061,8 @@ class ConnectionCommandHandler {
         json = json[0];
 
         const self = this.connection._client.getClient();
-        if(json["clid"] == self.clientId())
+        if(json["clid"] == self.clientId()) {
             sound.play(Sound.GROUP_CHANNEL_CHANGED_SELF);
+        }
     }
 }

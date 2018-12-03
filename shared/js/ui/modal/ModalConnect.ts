@@ -1,7 +1,7 @@
 /// <reference path="../../utils/modal.ts" />
 
 namespace Modals {
-    export function spawnConnectModal(defaultHost: string = "ts.TeaSpeak.de", def_connect_type?: IdentitifyType) {
+    export function spawnConnectModal(defaultHost: { url: string, enforce: boolean} = { url: "ts.TeaSpeak.de", enforce: false}, def_connect_type?: { identity: IdentitifyType, enforce: boolean}) {
         let connectIdentity: Identity;
         const connectModal = createModal({
             header: function() {
@@ -56,7 +56,7 @@ namespace Modals {
                 };
 
                 tag.find(".connect_nickname").val(settings.static_global("connect_name", undefined));
-                tag.find(".connect_address").val(settings.static_global("connect_address", defaultHost));
+                tag.find(".connect_address").val(defaultHost.enforce ? defaultHost.url : settings.static_global("connect_address", defaultHost.url));
                 tag.find(".connect_address")
                     .on("keyup", () => updateFields())
                     .on('keydown', event => {
@@ -71,7 +71,7 @@ namespace Modals {
                     tag.find(".identity_config:not(" + ".identity_config_" + this.value + ")").hide();
                     tag.find(".identity_config_" + this.value).show().trigger('shown');
                 });
-                tag.find(".identity_select").val(IdentitifyType[def_connect_type ? def_connect_type : settings.global("connect_identity_type", IdentitifyType.TEAFORO)]);
+                tag.find(".identity_select").val(IdentitifyType[def_connect_type && def_connect_type.enforce ? def_connect_type.identity : settings.global("connect_identity_type", (def_connect_type || { identity: undefined }).identity || IdentitifyType.TEAFORO)]);
                 setTimeout(() =>  tag.find(".identity_select").trigger('change'), 0); //For some reason could not be run instantly
 
                 {
@@ -211,28 +211,3 @@ namespace Modals {
         IP: /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$|^\s*((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))(%.+)?\s*$/,
     };
 }
-
-/*
-<div style="display: flex; justify-content: space-between;">
-                        <div style="text-align: right;">Identity Settings</div>
-                        <select class="identity_select">
-                            <option name="identity_type" value="identity_type_forum">Forum Account</option>
-                            <option name="identity_type" value="identity_type_teamspeak">TeamSpeak</option>
-                        </select>
-                    </div>
-                    <hr>
-                    <div class="identity_config_teamspeak">
-                        Please enter your exported TS3 Identity string bellow or select your exported Identity<br>
-                        <div style="width: 100%; display: flex; flex-direction: row">
-                            <input placeholder="Identity string" style="width: 70%; margin: 5px;" class="identity_string">
-                            <div style="width: 30%; margin: 5px"><input name="identity_file" type="file"></div>
-                        </div>
-                    </div>
-                    <div class="identity_config_forum">
-                        You're using your forum account as verification
-                    </div>
-
-                    <div style="background-color: red; border-radius: 1px; display: none" class="error_message">
-                        Identity isnt valid!
-                    </div>
- */

@@ -212,7 +212,10 @@ class ControlBar {
     }
 
     private onConnect() {
-        Modals.spawnConnectModal(settings.static("connect_default_host", "ts.TeaSpeak.de"));
+        Modals.spawnConnectModal({
+            url: "ts.TeaSpeak.de",
+            enforce: false
+        });
     }
 
     update_connection_state() {

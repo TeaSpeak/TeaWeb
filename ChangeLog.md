@@ -1,4 +1,7 @@
 # Changelog:
+* **3.12.18**
+    - Fixed url connect parameters
+    
 * **2.12.18**
     - Fixed `[spacerX]` detection
     - Added a hint if the channel encryption has been overridden by the server settings
