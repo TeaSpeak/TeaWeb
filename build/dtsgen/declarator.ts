@@ -1,8 +1,12 @@
 import * as ts from "typescript";
 import {SyntaxKind} from "typescript";
 
-if (!Array.prototype.last){
-    Array.prototype.last = function(){
+interface Array<T> {
+    last?(): T;
+}
+
+if (!(<any>Array).prototype.last){
+    (<any>Array).prototype.last = function(){
         if(this.length == 0) return undefined;
         return this[this.length - 1];
     };

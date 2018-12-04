@@ -19,6 +19,15 @@ function replace_tribble() {
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
 
+#Building the generator
+cd build/dtsgen
+execute_tsc -p tsconfig.json
+if [ $? -ne 0 ]; then
+    echo "Failed to build typescript declaration generator"
+    exit 1
+fi
+cd ../../
+
 #Easy going: Each "module" has it's exports and imports
 #So lets first build the exports and ignore any errors
 #Note: For the client we have to use the given file

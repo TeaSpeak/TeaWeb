@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "moduleResolution": "node",
+    "module": "commonjs",
+    "lib": ["es6"],
+
+    "typeRoots": [],
+    "types": []
+  },
+  "files": [
+    "declarator.ts",
+    "index.ts"
+  ]
+}

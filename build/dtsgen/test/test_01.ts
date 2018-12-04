@@ -10,6 +10,7 @@ function test2() : C {
 
     return undefined;
 }
+// @ts-ignore
 function test4() : D {
 
     return undefined;
