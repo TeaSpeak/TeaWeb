@@ -1,9 +1,10 @@
-import {readFileSync, writeFileSync} from "fs";
+import {readFileSync, writeFileSync, mkdir} from "fs";
 import {isArray, isString} from "util";
 import * as ts from "typescript";
 import * as decl from "./declarator";
 import * as glob from "glob";
 import * as path from "path";
+import * as mkdirp from "mkdirp";
 
 let source_files: string[] = [];
 let exclude_files: string[] = [];
@@ -87,4 +88,8 @@ source_files.forEach(file => {
     });
 });
 
-writeFileSync(base_path + "/" + target_file, result);
+mkdirp(path.normalize(path.dirname(base_path + "/" + target_file)), error => {
+    if(error)
+        throw error;
+    writeFileSync(base_path + "/" + target_file, result);
+});
