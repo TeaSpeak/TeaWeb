@@ -5,7 +5,6 @@ enum IdentitifyType {
 }
 
 namespace TSIdentityHelper {
-    import Pointer_stringify = Module.Pointer_stringify;
     export let funcationParseIdentity: any;
     export let funcationParseIdentityByFile: any;
     export let funcationCalculateSecurityLevel: any;

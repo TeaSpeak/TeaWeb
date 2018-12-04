@@ -1,9 +1,9 @@
 
-interface JQuery {
-    asTabWidget(copy?: boolean) : JQuery;
+interface JQuery<TElement = HTMLElement> {
+    asTabWidget(copy?: boolean) : JQuery<TElement>;
     tabify(copy?: boolean) : this;
 
-    changeElementType(type: string) : JQuery;
+    changeElementType(type: string) : JQuery<TElement>;
 }
 
 if(typeof (customElements) !== "undefined") {

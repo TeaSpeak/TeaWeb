@@ -10,9 +10,9 @@ interface JSON {
     map_field_to<T>(object: T, value: any, field: string) : T;
 }
 
-interface JQuery {
+interface JQuery<TElement = HTMLElement> {
     render(values?: any) : string;
-    renderTag(values?: any) : JQuery;
+    renderTag(values?: any) : JQuery<TElement>;
 }
 
 interface JQueryStatic<TElement extends Node = HTMLElement> {

@@ -6,17 +6,20 @@
   "directories": {},
   "scripts": {
     "compile-sass": "sass --update .:.",
-    "build-worker": "tsc -p shared/js/workers/tsconfig_worker_codec.json"
+    "build-worker": "tsc -p shared/js/workers/tsconfig_worker_codec.json",
+    "dtsgen": "node build/dtsgen/index.js"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
   "devDependencies": {
     "@types/emscripten": "0.0.31",
-    "@types/moment": "^2.13.0",
+    "@types/gulp": "^4.0.5",
     "@types/jquery": "3.3.5",
+    "@types/moment": "^2.13.0",
     "@types/node": "^9.4.6",
     "@types/websocket": "0.0.38",
     "electron": "^3.0.2",
+    "gulp": "^3.9.1",
     "sass": "^1.14.1",
     "typescript": "^3.1.1"
   },
