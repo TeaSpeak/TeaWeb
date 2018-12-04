@@ -24,12 +24,12 @@ cd "$BASEDIR/../"
 #Note: For the client we have to use the given file
 
 #Web
-execute_tsc -p web/tsconfig/tsdeclaration.json
+npm run dtsgen -- --config web/tsconfig/dtsconfig.json -v
 replace_tribble web/declarations/exports.d.ts
 echo "Generated web declarations"
 
 #Shared
-execute_tsc -p shared/tsconfig/tsdeclaration.json
+npm run dtsgen -- --config shared/tsconfig/dtsconfig.json -v
 replace_tribble shared/declarations/exports.d.ts
 echo "Generated shared declarations"
 

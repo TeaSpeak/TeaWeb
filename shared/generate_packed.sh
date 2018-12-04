@@ -12,7 +12,7 @@ if [ -e ${LOADER_FILE} ]; then
         echo "Failed to remove loader file!\nThis could be critical later!"
     fi
 fi
-result=$(execute_tsc -p tsconfig/tsdeclaration_loader.json)
+npm run dtsgen -- --config $(pwd)/tsconfig/dtsconfig_loader.json -v
 if [ ! -e ${LOADER_FILE} ]; then
     echo "Failed to generate definitions"
     echo "$result"
