@@ -72,7 +72,7 @@ class ChannelTree {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_create",
-                name: "Create channel",
+                name: tr("Create channel"),
                 invalidPermission: !channelCreate,
                 callback: () => this.spawnCreateChannel()
             },
@@ -207,7 +207,7 @@ class ChannelTree {
 
     moveChannel(channel: ChannelEntry, channel_previus: ChannelEntry, parent: ChannelEntry) {
         if(channel_previus != null && channel_previus.parent != parent) {
-            console.error("Invalid channel move (different parents! (" + channel_previus.parent + "|" + parent + ")");
+            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channel_previus.parent, parent);
             return;
         }
 
@@ -409,23 +409,23 @@ class ChannelTree {
     }
 
     private callback_multiselect_channel(event) {
-        console.log("Multiselect channel");
+        console.log(tr("Multiselect channel"));
     }
     private callback_multiselect_client(event) {
-        console.log("Multiselect client");
+        console.log(tr("Multiselect client"));
         const clients = this.currently_selected as ClientEntry[];
         const music_only = clients.map(e => e instanceof MusicClientEntry ? 0 : 1).reduce((a, b) => a + b, 0) == 0;
         const music_entry = clients.map(e => e instanceof MusicClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
         const local_client = clients.map(e => e instanceof LocalClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
-        console.log("Music only: %o | Container music: %o | Container local: %o", music_entry, music_entry, local_client);
+        console.log(tr("Music only: %o | Container music: %o | Container local: %o"), music_entry, music_entry, local_client);
         let entries: ContextMenuEntry[] = [];
         if (!music_entry && !local_client) { //Music bots or local client cant be poked
             entries.push({
                 type: MenuEntryType.ENTRY,
                 icon: "client-poke",
-                name: "Poke clients",
+                name: tr("Poke clients"),
                 callback: () => {
-                    createInputModal("Poke clients", "Poke message:<br>", text => true, result => {
+                    createInputModal(tr("Poke clients"), tr("Poke message:<br>"), text => true, result => {
                         if (typeof(result) === "string") {
                             for (const client of this.currently_selected as ClientEntry[])
                                 this.client.serverConnection.sendCommand("clientpoke", {
@@ -441,7 +441,7 @@ class ChannelTree {
         entries.push({
             type: MenuEntryType.ENTRY,
             icon: "client-move_client_to_own_channel",
-            name: "Move clients to your channel",
+            name: tr("Move clients to your channel"),
             callback: () => {
                 const target = this.client.getClient().currentChannel().getChannelId();
                 for(const client of clients)
@@ -456,9 +456,9 @@ class ChannelTree {
             entries.push({
                 type: MenuEntryType.ENTRY,
                 icon: "client-kick_channel",
-                name: "Kick clients from channel",
+                name: tr("Kick clients from channel"),
                 callback: () => {
-                    createInputModal("Kick clients from channel", "Kick reason:<br>", text => true, result => {
+                    createInputModal(tr("Kick clients from channel"), tr("Kick reason:<br>"), text => true, result => {
                         if (result) {
                             for (const client of clients)
                                 this.client.serverConnection.sendCommand("clientkick", {
@@ -476,9 +476,9 @@ class ChannelTree {
                 entries.push({
                     type: MenuEntryType.ENTRY,
                     icon: "client-kick_server",
-                    name: "Kick clients fom server",
+                    name: tr("Kick clients fom server"),
                     callback: () => {
-                        createInputModal("Kick clients from server", "Kick reason:<br>", text => true, result => {
+                        createInputModal(tr("Kick clients from server"), tr("Kick reason:<br>"), text => true, result => {
                             if (result) {
                                 for (const client of clients)
                                     this.client.serverConnection.sendCommand("clientkick", {
@@ -493,7 +493,7 @@ class ChannelTree {
                 }, {
                     type: MenuEntryType.ENTRY,
                     icon: "client-ban_client",
-                    name: "Ban clients",
+                    name: tr("Ban clients"),
                     invalidPermission: !this.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                     callback: () => {
                         Modals.spawnBanClient((clients).map(entry => entry.clientNickName()), (data) => {
@@ -512,15 +512,15 @@ class ChannelTree {
             if(music_only) {
                 entries.push(MenuEntry.HR());
                 entries.push({
-                    name: "Delete bots",
+                    name: tr("Delete bots"),
                     icon: "client-delete",
                     disabled: false,
                     callback: () => {
                         const param_string = clients.map((_, index) => "{" + index + "}").join(', ');
                         const param_values = clients.map(client => client.createChatTag(true));
-                        const tag = $.spawn("div").append(...MessageHelper.formatMessage("Do you really want to delete " + param_string, ...param_values));
+                        const tag = $.spawn("div").append(...MessageHelper.formatMessage(tr("Do you really want to delete ") + param_string, ...param_values));
                         const tag_container = $.spawn("div").append(tag);
-                        Modals.spawnYesNo("Are you sure?", tag_container, result => {
+                        Modals.spawnYesNo(tr("Are you sure?"), tag_container, result => {
                             if(result) {
                                 for(const client of clients)
                                     this.client.serverConnection.sendCommand("musicbotdelete", {
@@ -572,11 +572,11 @@ class ChannelTree {
         Modals.createChannelModal(undefined, parent, this.client.permissions, (properties?, permissions?) => {
             if(!properties) return;
             properties["cpid"] = parent ? parent.channelId : 0;
-            log.debug(LogCategory.CHANNEL, "Creating a new channel.\nProperties: %o\nPermissions: %o", properties);
+            log.debug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
             this.client.serverConnection.sendCommand("channelcreate", properties).then(() => {
                 let channel = this.find_channel_by_name(properties.channel_name, parent, true);
                 if(!channel) {
-                    log.error(LogCategory.CHANNEL, "Failed to resolve channel after creation. Could not apply permissions!");
+                    log.error(LogCategory.CHANNEL, tr("Failed to resolve channel after creation. Could not apply permissions!"));
                     return;
                 }
                 if(permissions && permissions.length > 0) {
@@ -596,7 +596,7 @@ class ChannelTree {
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
             }).then(channel => {
-                chat.serverChat().appendMessage("Channel {} successfully created!", true, channel.createChatTag());
+                chat.serverChat().appendMessage(tr("Channel {} successfully created!"), true, channel.createChatTag());
                 sound.play(Sound.CHANNEL_CREATED);
             });
         });

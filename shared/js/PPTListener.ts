@@ -38,15 +38,15 @@ namespace ppt {
     export function key_description(key: KeyDescriptor) {
         let result = "";
         if(key.key_shift)
-            result += " + Shift";
+            result += " + " + tr("Shift");
         if(key.key_alt)
-            result += " + Alt";
+            result += " + " + tr("Alt");
         if(key.key_ctrl)
-            result += " + CTRL";
+            result += " + " + tr("CTRL");
         if(key.key_windows)
-            result += " + Win";
+            result += " + " + tr("Win");
 
-        result += " + " + (key.key_code ? key.key_code : "unset");
+        result += " + " + (key.key_code ? key.key_code : tr("unset"));
         return result.substr(3);
     }
 

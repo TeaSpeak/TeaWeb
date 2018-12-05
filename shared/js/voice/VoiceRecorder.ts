@@ -122,7 +122,7 @@ class VoiceRecorder {
         if(type == "ppt") {
             if(settings.global('vad_ppt_key', undefined)) {
                 //TODO remove that because its legacy shit
-                createErrorModal("VAD changed!", "VAD key detection changed.<br>Please reset your PPT key!").open();
+                createErrorModal(tr("VAD changed!"), tr("VAD key detection changed.<br>Please reset your PPT key!")).open();
             }
             let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
             ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
@@ -156,7 +156,7 @@ class VoiceRecorder {
                 this.setVADHandler(new VoiceActivityDetectorVAD());
             (this.getVADHandler() as VoiceActivityDetectorVAD).percentageThreshold = settings.global("vad_threshold", 50);
         } else {
-            console.warn("Invalid VAD (Voice activation detector) handler! (" + type + ")");
+            console.warn(tr("Invalid VAD (Voice activation detector) handler! (%o)"), type);
         }
     }
 
@@ -205,7 +205,7 @@ class VoiceRecorder {
         this._deviceId = device;
         this._deviceGroup = groupId;
 
-        console.log("[VoiceRecorder] Start recording! (Device: %o | Group: %o)", device, groupId);
+        console.log(tr("[VoiceRecorder] Start recording! (Device: %o | Group: %o)"), device, groupId);
         this._recording = true;
 
         //FIXME Implement that here for thew client as well
@@ -217,14 +217,14 @@ class VoiceRecorder {
                 echoCancellationType: 'browser'
             }
         }, this.on_microphone.bind(this), error => {
-            createErrorModal("Could not resolve microphone!", "Could not resolve microphone!<br>Message: " + error).open();
-            console.error("Could not get microphone!");
+            createErrorModal(tr("Could not resolve microphone!"), tr("Could not resolve microphone!<br>Message: ") + error).open();
+            console.error(tr("Could not get microphone!"));
             console.error(error);
         });
     }
 
     stop(stop_media_stream: boolean = true){
-        console.log("Stop recording!");
+        console.log(tr("Stop recording!"));
         this._recording = false;
 
         if(this.microphoneStream) this.microphoneStream.disconnect();
@@ -250,7 +250,7 @@ class VoiceRecorder {
         if(!this.mediaStream) return;
 
         if(!this.audioContext) {
-            console.log("[VoiceRecorder] Got microphone stream, but havn't a audio context. Waiting until its initialized");
+            console.log(tr("[VoiceRecorder] Got microphone stream, but havn't a audio context. Waiting until its initialized"));
             return;
         }
 

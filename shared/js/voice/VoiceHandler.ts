@@ -23,12 +23,12 @@ class CodecPool {
     initialize(cached: number) {
         for(let i = 0; i < cached; i++)
             this.ownCodec(i + 1).then(codec => {
-                console.log("Release again! (%o)", codec);
+                console.log(tr("Release again! (%o)"), codec);
                 this.releaseCodec(i + 1);
             }).catch(error => {
-                console.warn("Disabling codec support for " + this.name);
+                console.warn(tr("Disabling codec support for "), this.name);
                 if(this._supported) {
-                    createErrorModal("Could not load codec driver", "Could not load or initialize codec " + this.name + "<br>" +
+                    createErrorModal(tr("Could not load codec driver"), tr("Could not load or initialize codec ") + this.name + "<br>" +
                         "Error: <code>" + JSON.stringify(error) + "</code>").open();
                 }
                 this._supported = false;
@@ -41,7 +41,7 @@ class CodecPool {
     ownCodec?(clientId: number, create: boolean = true) : Promise<BasicCodec | undefined> {
         return new Promise<BasicCodec>((resolve, reject) => {
             if(!this._supported) {
-                reject("unsupported codec!");
+                reject(tr("unsupported codec!"));
                 return;
             }
 
@@ -55,8 +55,8 @@ class CodecPool {
                             //TODO test success flag
                             this.ownCodec(clientId, false).then(resolve).catch(reject);
                         }).catch(error => {
-                            console.error("Could not initialize codec!\nError: %o", error);
-                            reject("Could not initialize codec!");
+                            console.error(tr("Could not initialize codec!\nError: %o"), error);
+                            reject(tr("Could not initialize codec!"));
                         });
                     }
                     return;
@@ -129,12 +129,12 @@ class VoiceConnection {
     local_audio_stream: any;
 
     private codec_pool: CodecPool[] = [
-        new CodecPool(this,0,"Speex Narrowband", CodecType.SPEEX_NARROWBAND),
-        new CodecPool(this,1,"Speex Wideband", CodecType.SPEEX_WIDEBAND),
-        new CodecPool(this,2,"Speex Ultra Wideband", CodecType.SPEEX_ULTRA_WIDEBAND),
-        new CodecPool(this,3,"CELT Mono", CodecType.CELT_MONO),
-        new CodecPool(this,4,"Opus Voice", CodecType.OPUS_VOICE),
-        new CodecPool(this,5,"Opus Music", CodecType.OPUS_MUSIC)
+        new CodecPool(this,0,tr("Speex Narrowband"), CodecType.SPEEX_NARROWBAND),
+        new CodecPool(this,1,tr("Speex Wideband"), CodecType.SPEEX_WIDEBAND),
+        new CodecPool(this,2,tr("Speex Ultra Wideband"), CodecType.SPEEX_ULTRA_WIDEBAND),
+        new CodecPool(this,3,tr("CELT Mono"), CodecType.CELT_MONO),
+        new CodecPool(this,4,tr("Opus Voice"), CodecType.OPUS_VOICE),
+        new CodecPool(this,5,tr("Opus Music"), CodecType.OPUS_MUSIC)
     ];
 
     private vpacketId: number = 0;
@@ -150,7 +150,7 @@ class VoiceConnection {
         this.voiceRecorder.reinitialiseVAD();
 
         audio.player.on_ready(() => {
-            log.info(LogCategory.VOICE, "Initializing voice handler after AudioController has been initialized!");
+            log.info(LogCategory.VOICE, tr("Initializing voice handler after AudioController has been initialized!"));
             if(native_client) {
                 this.codec_pool[0].initialize(2);
                 this.codec_pool[1].initialize(2);
@@ -190,9 +190,9 @@ class VoiceConnection {
     }
 
     private setup_native() {
-        log.info(LogCategory.VOICE, "Setting up native voice stream!");
+        log.info(LogCategory.VOICE, tr("Setting up native voice stream!"));
         if(!this.native_encoding_supported()) {
-            log.warn(LogCategory.VOICE, "Native codec isnt supported!");
+            log.warn(LogCategory.VOICE, tr("Native codec isnt supported!"));
             return;
         }
 
@@ -267,7 +267,7 @@ class VoiceConnection {
                 //TODO may handle error?
             }
         } else {
-            console.warn("Could not transfer audio (not connected)");
+            console.warn(tr("Could not transfer audio (not connected)"));
         }
     }
 
@@ -300,10 +300,10 @@ class VoiceConnection {
 
         if(this.local_audio_stream) { //May a typecheck?
             this.rtcPeerConnection.addStream(this.local_audio_stream.stream);
-            console.log("Adding stream (%o)!", this.local_audio_stream.stream);
+            console.log(tr("Adding stream (%o)!"), this.local_audio_stream.stream);
         }
         this.rtcPeerConnection.createOffer(this.onOfferCreated.bind(this), () => {
-            console.error("Could not create ice offer!");
+            console.error(tr("Could not create ice offer!"));
         }, sdpConstraints);
     }
 
@@ -317,30 +317,30 @@ class VoiceConnection {
     _ice_cache: any[] = [];
     handleControlPacket(json) {
         if(json["request"] === "answer") {
-            console.log("Set remote sdp! (%o)", json["msg"]);
+            console.log(tr("Set remote sdp! (%o)"), json["msg"]);
             this.rtcPeerConnection.setRemoteDescription(new RTCSessionDescription(json["msg"])).catch(error => {
-                console.log("Failed to apply remote description: %o", error); //FIXME error handling!
+                console.log(tr("Failed to apply remote description: %o"), error); //FIXME error handling!
             });
             this._ice_use_cache = false;
             for(let msg of this._ice_cache) {
                 this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(msg)).catch(error => {
-                    console.log("Failed to add remote cached ice candidate %s: %o", msg, error);
+                    console.log(tr("Failed to add remote cached ice candidate %s: %o"), msg, error);
                 });
             }
         } else if(json["request"] === "ice") {
             if(!this._ice_use_cache) {
-                console.log("Add remote ice! (%s | %o)", json["msg"], json);
+                console.log(tr("Add remote ice! (%s | %o)"), json["msg"], json);
                 this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(json["msg"])).catch(error => {
-                    console.log("Failed to add remote ice candidate %s: %o", json["msg"], error);
+                    console.log(tr("Failed to add remote ice candidate %s: %o"), json["msg"], error);
                 });
             } else {
-                console.log("Cache remote ice! (%s | %o)", json["msg"], json);
+                console.log(tr("Cache remote ice! (%s | %o)"), json["msg"], json);
                 this._ice_cache.push(json["msg"]);
             }
         } else if(json["request"] == "status") {
             if(json["state"] == "failed") {
-                chat.serverChat().appendError("Failed to setup voice bridge ({}). Allow reconnect: {}", json["reason"], json["allow_reconnect"]);
-                log.error(LogCategory.NETWORKING, "Failed to setup voice bridge (%s). Allow reconnect: %s", json["reason"], json["allow_reconnect"]);
+                chat.serverChat().appendError(tr("Failed to setup voice bridge ({}). Allow reconnect: {}"), json["reason"], json["allow_reconnect"]);
+                log.error(LogCategory.NETWORKING, tr("Failed to setup voice bridge (%s). Allow reconnect: %s"), json["reason"], json["allow_reconnect"]);
                 if(json["allow_reconnect"] == true) {
                     this.createSession();
                 }
@@ -351,7 +351,7 @@ class VoiceConnection {
 
     //Listeners
     onIceCandidate(event) {
-        console.log("Got ice candidate! Event:");
+        console.log(tr("Got ice candidate! Event:"));
         console.log(event);
         if (event) {
             if(event.candidate)
@@ -370,18 +370,18 @@ class VoiceConnection {
     }
 
     onOfferCreated(localSession) {
-        console.log("Offer created and accepted");
+        console.log(tr("Offer created and accepted"));
         this.rtcPeerConnection.setLocalDescription(localSession).catch(error => {
-            console.log("Failed to apply local description: %o", error);
+            console.log(tr("Failed to apply local description: %o"), error);
             //FIXME error handling
         });
 
-        console.log("Send offer: %o", localSession);
+        console.log(tr("Send offer: %o"), localSession);
         this.client.serverConnection.sendData(JSON.stringify({type: 'WebRTC', request: "create", msg: localSession}));
     }
 
     onDataChannelOpen(channel) {
-        console.log("Got new data channel! (%s)", this.dataChannel.readyState);
+        console.log(tr("Got new data channel! (%s)"), this.dataChannel.readyState);
         this.client.controlBar.updateVoice();
     }
 
@@ -395,13 +395,13 @@ class VoiceConnection {
         //console.log("Client id " + clientId + " PacketID " + packetId + " Codec: " + codec);
         let client = this.client.channelTree.findClient(clientId);
         if(!client) {
-            console.error("Having  voice from unknown client? (ClientID: " + clientId + ")");
+            console.error(tr("Having  voice from unknown client? (ClientID: %o)"), clientId);
             return;
         }
 
         let codecPool = this.codec_pool[codec];
         if(!codecPool) {
-            console.error("Could not playback codec " + codec);
+            console.error(tr("Could not playback codec %o"), codec);
             return;
         }
 
@@ -417,7 +417,7 @@ class VoiceConnection {
             codecPool.ownCodec(clientId)
                 .then(decoder => decoder.decodeSamples(client.getAudioController().codecCache(codec), encodedData))
                 .then(buffer => client.getAudioController().playBuffer(buffer)).catch(error => {
-                    console.error("Could not playback client's (" + clientId + ") audio (" + error + ")");
+                    console.error(tr("Could not playback client's (%o) audio (%o)"), clientId, error);
                     if(error instanceof Error)
                         console.error(error.stack);
                 });
@@ -450,14 +450,14 @@ class VoiceConnection {
 
         if(!this.voiceRecorder) return;
         if(!this.client.connected) return;
-        console.log("Local voice ended");
+        console.log(tr("Local voice ended"));
 
         if(this.dataChannel)
             this.sendVoicePacket(new Uint8Array(0), this.current_channel_codec()); //TODO Use channel codec!
     }
 
     private handleVoiceStarted() {
-        console.log("Local voice started");
+        console.log(tr("Local voice started"));
 
         if(this.client && this.client.getClient())
             this.client.getClient().speaking = true;

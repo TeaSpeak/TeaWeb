@@ -77,7 +77,7 @@ class ControlBar {
     }
 
     on_away_set_message() {
-        createInputModal("Set away message", "Please enter the away message", message => true, message => {
+        createInputModal(tr("Set away message"), tr("Please enter the away message"), message => true, message => {
             if(message)
                 this.away = message;
         }).open();
@@ -198,7 +198,7 @@ class ControlBar {
         });
 
         if(!this.codec_supported)
-            createErrorModal("Channel codec unsupported", "This channel has an unsupported codec.<br>You cant speak or listen to anybody within this channel!").open();
+            createErrorModal(tr("Channel codec unsupported"), tr("This channel has an unsupported codec.<br>You cant speak or listen to anybody within this channel!")).open();
 
         /* Update these properties anyways (for case the server fails to handle the command) */
         client.updateVariables(
@@ -239,21 +239,22 @@ class ControlBar {
     }
 
     private on_token_use() {
-        createInputModal("Use token", "Please enter your token/priviledge key", message => message.length > 0, result => {
+        createInputModal(tr("Use token"), tr("Please enter your token/priviledge key"), message => message.length > 0, result => {
             if(!result) return;
             if(this.handle.serverConnection.connected)
                 this.handle.serverConnection.sendCommand("tokenuse", {
                     token: result
                 }).then(() => {
-                    createInfoModal("Use token", "Toke successfully used!").open();
+                    createInfoModal(tr("Use token"), tr("Toke successfully used!")).open();
                 }).catch(error => {
-                    createErrorModal("Use token", "Failed to use token: " + (error instanceof CommandResult ? error.message : error)).open();
+                    //TODO tr
+                    createErrorModal(tr("Use token"), "Failed to use token: " + (error instanceof CommandResult ? error.message : error)).open();
                 });
         }).open();
     }
 
     private on_token_list() {
-        createErrorModal("Not implemented", "Token list is not implemented yet!").open();
+        createErrorModal(tr("Not implemented"), tr("Token list is not implemented yet!")).open();
     }
 
     private onPermission() {

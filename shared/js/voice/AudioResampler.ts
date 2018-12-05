@@ -4,12 +4,12 @@ class AudioResampler {
 
     constructor(targetSampleRate: number){
         this.targetSampleRate = targetSampleRate;
-        if(this.targetSampleRate < 3000 || this.targetSampleRate > 384000) throw "The target sample rate is outside the range [3000, 384000].";
+        if(this.targetSampleRate < 3000 || this.targetSampleRate > 384000) throw tr("The target sample rate is outside the range [3000, 384000].");
     }
 
     resample(buffer: AudioBuffer) : Promise<AudioBuffer> {
         if(!buffer) {
-            console.warn("Received empty buffer as input! Returning empty output!");
+            console.warn(tr("Received empty buffer as input! Returning empty output!"));
             return Promise.resolve(buffer);
         }
         //console.log("Encode from %i to %i", buffer.sampleRate, this.targetSampleRate);

@@ -323,7 +323,7 @@ class PermissionValue {
     granted(requiredValue: number, required: boolean = true) : boolean {
         let result;
         result = this.value == -1 || this.value >= requiredValue || (this.value == -2 && requiredValue == -2 && !required);
-        log.trace(LogCategory.PERMISSIONS, "Test needed required: %o | %i | %o => " + result , this, requiredValue, required);
+        log.trace(LogCategory.PERMISSIONS, tr("Test needed required: %o | %i | %o => %o"), this, requiredValue, required, result);
         return result;
     }
 
@@ -368,6 +368,7 @@ class PermissionManager {
     private _cacheNeededPermissions: any;
 
     /* Static info mapping until TeaSpeak implements a detailed info */
+    //TODO tr
     static readonly group_mapping: {name: string, deep: number}[] = [
         {name: "Global", deep: 0},
             {name: "Information", deep: 1},
@@ -409,7 +410,7 @@ class PermissionManager {
 
             let perm_info = manager.resolveInfo(perm_id);
             if(!perm_info) {
-                log.warn(LogCategory.PERMISSIONS, "Got unknown permission id (%o/%o (%o))!", perm["permid"], perm_id, perm["permsid"]);
+                log.warn(LogCategory.PERMISSIONS, tr("Got unknown permission id (%o/%o (%o))!"), perm["permid"], perm_id, perm["permsid"]);
                 return;
             }
 
@@ -459,14 +460,14 @@ class PermissionManager {
         this.permissionGroups = [];
         this._group_mapping = PermissionManager.group_mapping.slice();
 
-        let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, "Permission mapping");
+        let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, tr("Permission mapping"));
         for(let e of json) {
             if(e["group_id_end"]) {
                 let group = new PermissionGroup();
                 group.begin = this.permissionGroups.length ? this.permissionGroups.last().end : 0;
                 group.end = parseInt(e["group_id_end"]);
                 group.deep = 0;
-                group.name = "Group " + e["group_id_end"];
+                group.name = tr("Group ") + e["group_id_end"];
 
                 let info = this._group_mapping.pop_front();
                 if(info) {
@@ -480,12 +481,12 @@ class PermissionManager {
             perm.name = e["permname"];
             perm.id = parseInt(e["permid"]);
             perm.description = e["permdesc"];
-            group.log("%i <> %s -> %s", perm.id, perm.name, perm.description);
+            group.log(tr("%i <> %s -> %s"), perm.id, perm.name, perm.description);
             this.permissionList.push(perm);
         }
         group.end();
 
-        log.info(LogCategory.PERMISSIONS, "Got %i permissions", this.permissionList.length);
+        log.info(LogCategory.PERMISSIONS, tr("Got %i permissions"), this.permissionList.length);
         if(this._cacheNeededPermissions)
             this.onNeededPermissions(this._cacheNeededPermissions);
         for(let listener of this.initializedListener)
@@ -494,7 +495,7 @@ class PermissionManager {
 
     private onNeededPermissions(json) {
         if(this.permissionList.length == 0) {
-            log.warn(LogCategory.PERMISSIONS, "Got needed permissions but don't have a permission list!");
+            log.warn(LogCategory.PERMISSIONS, tr("Got needed permissions but don't have a permission list!"));
             this._cacheNeededPermissions = json;
             return;
         }
@@ -503,7 +504,7 @@ class PermissionManager {
         let copy = this.neededPermissions.slice();
         let addcount = 0;
 
-        let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, "Got " + json.length + " needed permissions.");
+        let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, tr("Got %d needed permissions."), json.length);
         for(let e of json) {
             let entry: NeededPermissionValue = undefined;
             for(let p of copy) {
@@ -519,7 +520,7 @@ class PermissionManager {
                     entry = new NeededPermissionValue(info, -2);
                     this.neededPermissions.push(entry);
                 } else {
-                    log.warn(LogCategory.PERMISSIONS, "Could not resolve perm for id %s (%o|%o)", e["permid"], e, info);
+                    log.warn(LogCategory.PERMISSIONS, tr("Could not resolve perm for id %s (%o|%o)"), e["permid"], e, info);
                     continue;
                 }
                 addcount++;
@@ -527,12 +528,15 @@ class PermissionManager {
 
             if(entry.value == parseInt(e["permvalue"])) continue;
             entry.value = parseInt(e["permvalue"]);
+
+            //TODO tr
             group.log("Update needed permission " + entry.type.name + " to " + entry.value);
             for(let listener of entry.changeListener)
                 listener(entry.value);
         }
         group.end();
 
+        //TODO tr
         log.debug(LogCategory.PERMISSIONS, "Dropping " + copy.length + " needed permissions and added " + addcount + " permissions.");
         for(let e of copy) {
             e.value = -2;
@@ -545,7 +549,7 @@ class PermissionManager {
        let channelId: number = parseInt(json[0]["cid"]);
 
        let permissions = PermissionManager.parse_permission_bulk(json, this.handle.permissions);
-       log.debug(LogCategory.PERMISSIONS, "Got channel permissions for channel %o", channelId);
+       log.debug(LogCategory.PERMISSIONS, tr("Got channel permissions for channel %o"), channelId);
        for(let element of this.requests_channel_permissions) {
            if(element.channel_id == channelId) {
                for(let l of element.callback_success)
@@ -554,7 +558,7 @@ class PermissionManager {
                return;
            }
        }
-        log.debug(LogCategory.PERMISSIONS, "Missing channel permission handle for requested channel id %o", channelId);
+        log.debug(LogCategory.PERMISSIONS, tr("Missing channel permission handle for requested channel id %o"), channelId);
     }
 
     resolveInfo?(key: number | string | PermissionType) : PermissionInfo {
@@ -640,10 +644,10 @@ class PermissionManager {
         for(let perm of this.neededPermissions)
             if(perm.type.id == key || perm.type.name == key || perm.type == key)
                 return perm;
-        log.debug(LogCategory.PERMISSIONS, "Could not resolve grant permission %o. Creating a new one.", key);
+        log.debug(LogCategory.PERMISSIONS, tr("Could not resolve grant permission %o. Creating a new one."), key);
         let info = key instanceof PermissionInfo ? key : this.resolveInfo(key);
         if(!info) {
-            log.warn(LogCategory.PERMISSIONS, "Requested needed permission with invalid key! (%o)", key);
+            log.warn(LogCategory.PERMISSIONS, tr("Requested needed permission with invalid key! (%o)"), key);
             return undefined;
         }
         let result = new NeededPermissionValue(info, -2);
@@ -665,7 +669,7 @@ class PermissionManager {
                 result.push(current);
             } else {
                 if(!current) {
-                    throw "invalid order!";
+                    throw tr("invalid order!");
                 } else {
                     while(group.deep <= current.group.deep)
                         current = current.parent;

@@ -1,7 +1,7 @@
 namespace Modals {
     export function createServerGroupAssignmentModal(client: ClientEntry, callback: (group: Group, flag: boolean) => Promise<boolean>) {
         const modal = createModal({
-            header: "Server Groups",
+            header: tr("Server Groups"),
             body: () => {
                 let tag: any = {};
                 let groups = tag["groups"] = [];
@@ -28,7 +28,7 @@ namespace Modals {
                         let group_id = parseInt(entry.attr("group-id"));
                         let group = client.channelTree.client.groups.serverGroup(group_id);
                         if(!group) {
-                            console.warn("Could not resolve target group!");
+                            console.warn(tr("Could not resolve target group!"));
                             return false;
                         }
 
@@ -45,7 +45,7 @@ namespace Modals {
                 footer.css("margin", "5px");
 
                 let button_close = $.spawn("button");
-                button_close.text("Close").addClass("button_close");
+                button_close.text(tr("Close")).addClass("button_close");
 
                 footer.append(button_close);
 

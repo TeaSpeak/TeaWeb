@@ -59,7 +59,7 @@ namespace Modals {
     export function spawnPermissionEdit() : Modal {
         const connectModal = createModal({
             header: function() {
-                return "Server Permissions";
+                return tr("Server Permissions");
             },
             body: function () {
                 let properties: any = {};
@@ -96,9 +96,9 @@ namespace Modals {
                                task_queue.pop_front()().then(() => setTimeout(task_invokder, 0));
                            };
                            setTimeout(task_invokder, 5);
-                       }, 1000);
+                       }, 5);
                    });
-                }, 1000);
+                }, 5);
 
                 return tag;
             },
@@ -110,7 +110,7 @@ namespace Modals {
                 tag.addClass("modal-button-group");
 
                 let buttonOk = $.spawn("button");
-                buttonOk.text("Close").addClass("btn_close");
+                buttonOk.text(tr("Close")).addClass("btn_close");
                 tag.append(buttonOk);
                 return tag;
             },
@@ -268,22 +268,22 @@ namespace Modals {
                     spawn_context_menu(event.pageX, event.pageY, {
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Expend group",
+                        name: tr("Expend group"),
                         callback: () => expend_all.bind(this, entry)
                     }, {
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Expend all",
+                        name: tr("Expend all"),
                         callback: () => expend_all.bind(this, undefined)
                     }, {
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Collapse group",
+                        name: tr("Collapse group"),
                         callback: collapse_all.bind(this, entry)
                     }, {
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Collapse all",
+                        name: tr("Collapse all"),
                         callback: () => expend_all.bind(this, undefined)
                     });
                 });
@@ -321,14 +321,14 @@ namespace Modals {
                         entries.push({
                             type: MenuEntryType.ENTRY,
                             icon: "",
-                            name: "Add permission",
+                            name: tr("Add permission"),
                             callback: () => entry.trigger('dblclick')
                         });
                     } else {
                         entries.push({
                             type: MenuEntryType.ENTRY,
                             icon: "",
-                            name: "Remove permission",
+                            name: tr("Remove permission"),
                             callback: () => {
                                 entry.addClass("unset");
                                 entry.find(".permission-value input").val("").trigger('change');
@@ -339,7 +339,7 @@ namespace Modals {
                         entries.push({
                             type: MenuEntryType.ENTRY,
                             icon: "",
-                            name: "Add grant permission",
+                            name: tr("Add grant permission"),
                             callback: () => {
                                 let value = entry.find("> .permission-grant input");
                                 value.focus().val(default_number).trigger('change');
@@ -349,7 +349,7 @@ namespace Modals {
                         entries.push({
                             type: MenuEntryType.ENTRY,
                             icon: "",
-                            name: "Remove permission",
+                            name: tr("Remove permission"),
                             callback: () => {
                                 entry.find("> .permission-grant input").val("").trigger('change');
                             }
@@ -359,28 +359,28 @@ namespace Modals {
                     entries.push({
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Expend all",
+                        name: tr("Expend all"),
                         callback: () => expend_all.bind(this, undefined)
                     });
                     entries.push({
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Collapse all",
+                        name: tr("Collapse all"),
                         callback: collapse_all.bind(this, undefined)
                     });
                     entries.push(MenuEntry.HR());
                     entries.push({
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Show permission description",
+                        name: tr("Show permission description"),
                         callback: () => {
-                            createErrorModal("Not implemented!", "This function isnt implemented yet!").open();
+                            createErrorModal(tr("Not implemented!"), tr("This function isnt implemented yet!")).open();
                         }
                     });
                     entries.push({
                         type: MenuEntryType.ENTRY,
                         icon: "",
-                        name: "Copy permission name",
+                        name: tr("Copy permission name"),
                         callback: () => {
                             copy_to_clipboard(entry.find(".permission-name").text() as string);
                         }
@@ -392,7 +392,7 @@ namespace Modals {
                 entry.find(".permission-value input, .permission-negate input, .permission-skip input").on('change', event => {
                     let permission = globalClient.permissions.resolveInfo(entry.find(".permission-name").text());
                     if(!permission) {
-                        console.error("Attempted to edit a not known permission! (%s)", entry.find(".permission-name").text());
+                        console.error(tr("Attempted to edit a not known permission! (%s)"), entry.find(".permission-name").text());
                         return;
                     }
 
@@ -417,7 +417,7 @@ namespace Modals {
                 entry.find(".permission-grant input").on('change', event => {
                     let permission = globalClient.permissions.resolveInfo(entry.find(".permission-name").text());
                     if(!permission) {
-                        console.error("Attempted to edit a not known permission! (%s)", entry.find(".permission-name").text());
+                        console.error(tr("Attempted to edit a not known permission! (%s)"), entry.find(".permission-name").text());
                         return;
                     }
 
@@ -469,12 +469,12 @@ namespace Modals {
             let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
             let channel = globalClient.channelTree.findChannel(channel_id);
             if(!channel) {
-                console.warn("Missing selected channel id for permission editor action!");
-                return Promise.reject("invalid channel");
+                console.warn(tr("Missing selected channel id for permission editor action!"));
+                return Promise.reject(tr("invalid channel"));
             }
 
             if(value != undefined) {
-                console.log("Added permission " + type.name + " with properties: %o %o %o", value, skip, negate);
+                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("channelclientaddperm", {
                         cldbid: cldbid,
@@ -486,7 +486,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed permission " + type.name);
+                console.log(tr("Removed permission %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("channelclientdelperm", {
                         cldbid: cldbid,
@@ -502,12 +502,12 @@ namespace Modals {
             let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
             let channel = globalClient.channelTree.findChannel(channel_id);
             if(!channel) {
-                console.warn("Missing selected channel id for permission editor action!");
-                return Promise.reject("invalid channel");
+                console.warn(tr("Missing selected channel id for permission editor action!"));
+                return Promise.reject(tr("invalid channel"));
             }
 
             if(value != undefined) {
-                console.log("Added grant of %o for " + type.name, value);
+                console.log(tr("Added grant of %o for %s"),type.name, value);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("channelclientaddperm", {
                         cldbid: cldbid,
@@ -519,7 +519,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed grant permission for %s", type.name);
+                console.log(tr("Removed grant permission for %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("channelclientdelperm", {
                         cldbid: cldbid,
@@ -544,7 +544,7 @@ namespace Modals {
                 let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
                 let channel = globalClient.channelTree.findChannel(channel_id);
                 if(!channel) {
-                    console.warn("Missing selected channel id for permission editor action!");
+                    console.warn(tr("Missing selected channel id for permission editor action!"));
                     return Promise.reject();
                 }
 
@@ -567,7 +567,7 @@ namespace Modals {
             let cldbid = parseInt(tag.find(".client-dbid").val() as string);
             if(isNaN(cldbid)) return Promise.reject("invalid cldbid");
             if(value != undefined) {
-                console.log("Added permission " + type.name + " with properties: %o %o %o", value, skip, negate);
+                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("clientaddperm", {
                         cldbid: cldbid,
@@ -578,7 +578,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed permission " + type.name);
+                console.log(tr("Removed permission %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("clientdelperm", {
                         cldbid: cldbid,
@@ -591,7 +591,7 @@ namespace Modals {
             if(isNaN(cldbid)) return Promise.reject("invalid cldbid");
 
             if(value != undefined) {
-                console.log("Added grant of %o for " + type.name, value);
+                console.log(tr("Added grant of %o for %s"), type.name, value);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("clientaddperm", {
                         cldbid: cldbid,
@@ -602,7 +602,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed grant permission for %s", type.name);
+                console.log(tr("Removed grant permission for %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("clientdelperm", {
                         cldbid: cldbid,
@@ -642,12 +642,12 @@ namespace Modals {
             let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
             let channel = globalClient.channelTree.findChannel(channel_id);
             if(!channel) {
-                console.warn("Missing selected channel id for permission editor action!");
+                console.warn(tr("Missing selected channel id for permission editor action!"));
                 return;
             }
 
             if(value != undefined) {
-                console.log("Added permission " + type.name + " with properties: %o %o %o", value, skip, negate);
+                console.log(tr("Added permission %o with properties: %o %o %o"), type.name, value, skip, negate);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("channeladdperm", {
                         cid: channel.channelId,
@@ -658,7 +658,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed permission " + type.name);
+                console.log(tr("Removed permission %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("channeldelperm", {
                         cid: channel.channelId,
@@ -670,12 +670,12 @@ namespace Modals {
             let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
             let channel = globalClient.channelTree.findChannel(channel_id);
             if(!channel) {
-                console.warn("Missing selected channel id for permission editor action!");
+                console.warn(tr("Missing selected channel id for permission editor action!"));
                 return;
             }
 
             if(value != undefined) {
-                console.log("Added grant of %o for " + type.name, value);
+                console.log(tr("Added grant of %o for %s"), type.name, value);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("channeladdperm", {
                         cid: channel.channelId,
@@ -686,7 +686,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed grant permission for %s", type.name);
+                console.log(tr("Removed grant permission for %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("channeldelperm", {
                         cid: channel.channelId,
@@ -701,7 +701,7 @@ namespace Modals {
             let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
             let channel = globalClient.channelTree.findChannel(channel_id);
             if(!channel) {
-                console.warn("Missing selected channel id for permission editor action!");
+                console.warn(tr("Missing selected channel id for permission editor action!"));
                 return;
             }
 
@@ -719,12 +719,12 @@ namespace Modals {
             let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
             let group = globalClient.groups.channelGroup(group_id);
             if(!group) {
-                console.warn("Missing selected group id for permission editor action!");
+                console.warn(tr("Missing selected group id for permission editor action!"));
                 return;
             }
 
             if(value != undefined) {
-                console.log("Added permission " + type.name + " with properties: %o %o %o", value, skip, negate);
+                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("channelgroupaddperm", {
                         cgid: group.id,
@@ -735,7 +735,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed permission " + type.name);
+                console.log(tr("Removed permission %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
                         cgid: group.id,
@@ -747,12 +747,12 @@ namespace Modals {
             let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
             let group = globalClient.groups.channelGroup(group_id);
             if(!group) {
-                console.warn("Missing selected group id for permission editor action!");
+                console.warn(tr("Missing selected group id for permission editor action!"));
                 return;
             }
 
             if(value != undefined) {
-                console.log("Added grant of %o for " + type.name, value);
+                console.log(tr("Added grant of %o for %s"), type.name, value);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("channelgroupaddperm", {
                         cgid: group.id,
@@ -764,7 +764,7 @@ namespace Modals {
                 });
             }
             else {
-                console.log("Removed grant permission for %s", type.name);
+                console.log(tr("Removed grant permission for %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
                         cgid: group.id,
@@ -801,7 +801,7 @@ namespace Modals {
             let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
             let group = globalClient.groups.channelGroup(group_id);
             if(!group) {
-                console.warn("Missing selected group id for permission editor!");
+                console.warn(tr("Missing selected group id for permission editor!"));
                 return;
             }
             globalClient.groups.request_permissions(group).then(result => display_permissions(permission_tag, result)).catch(error => {
@@ -820,12 +820,12 @@ namespace Modals {
             let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
             let group = globalClient.groups.serverGroup(group_id);
             if(!group) {
-                console.warn("Missing selected group id for permission editor action!");
+                console.warn(tr("Missing selected group id for permission editor action!"));
                 return;
             }
 
             if(value != undefined) {
-                console.log("Added permission " + type.name + " with properties: %o %o %o", value, skip, negate);
+                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("servergroupaddperm", {
                         sgid: group.id,
@@ -836,7 +836,7 @@ namespace Modals {
                     }).then(resolve.bind(undefined, true)).catch(reject);
                 });
             } else {
-                console.log("Removed permission " + type.name);
+                console.log(tr("Removed permission %s"), type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     return globalClient.serverConnection.sendCommand("servergroupdelperm", {
                         sgid: group.id,
@@ -848,12 +848,12 @@ namespace Modals {
             let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
             let group = globalClient.groups.serverGroup(group_id);
             if(!group) {
-                console.warn("Missing selected group id for permission editor action!");
+                console.warn(tr("Missing selected group id for permission editor action!"));
                 return;
             }
 
             if(value != undefined) {
-                console.log("Added grant of %o for " + type.name, value);
+                console.log(tr("Added grant of %o for %s"), value, type.name);
                 return new Promise<boolean>((resolve, reject) => {
                     globalClient.serverConnection.sendCommand("servergroupaddperm", {
                         sgid: group.id,
@@ -902,7 +902,7 @@ namespace Modals {
             let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
             let group = globalClient.groups.serverGroup(group_id);
             if(!group) {
-                console.warn("Missing selected group id for permission editor!");
+                console.warn(tr("Missing selected group id for permission editor!"));
                 return;
             }
             globalClient.groups.request_permissions(group).then(result => display_permissions(permission_tag, result)).catch(error => {

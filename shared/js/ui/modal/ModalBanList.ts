@@ -32,7 +32,7 @@ namespace Modals {
         const modal = spawnBanListModal(() => update(), () => {
             spawnBanCreate(undefined, result => {
                 if(result.server_id < 0) result.server_id = undefined;
-                console.log("Adding ban %o", result);
+                console.log(tr("Adding ban %o"), result);
 
                 client.serverConnection.sendCommand("banadd", {
                     ip: result.ip,
@@ -45,13 +45,14 @@ namespace Modals {
                 }).then(() => {
                     update();
                 }).catch(error => {
-                    createErrorModal("Failed to add ban", "Failed to add ban.<br>Reason: " + (error instanceof CommandResult ? error.extra_message || error.message : error)).open();
+                    //TODO tr
+                    createErrorModal(tr("Failed to add ban"), "Failed to add ban.<br>Reason: " + (error instanceof CommandResult ? error.extra_message || error.message : error)).open();
                 });
             });
         }, ban => {
-            console.log("Editing ban %o", ban);
+            console.log(tr("Editing ban %o"), ban);
             spawnBanCreate(ban, result => {
-                console.log("Apply edit changes %o", result);
+                console.log(tr("Apply edit changes %o"), result);
                 if(result.server_id < 0) result.server_id = undefined;
 
                 client.serverConnection.sendCommand("banedit", {
@@ -66,24 +67,26 @@ namespace Modals {
                 }).then(() => {
                     update();
                 }).catch(error => {
-                    createErrorModal("Failed to edit ban", "Failed to edit ban.<br>Reason: " + (error instanceof CommandResult ? error.extra_message || error.message : error)).open();
+                    //TODO tr
+                    createErrorModal(tr("Failed to edit ban"), "Failed to edit ban.<br>Reason: " + (error instanceof CommandResult ? error.extra_message || error.message : error)).open();
                 });
             });
         }, ban => {
-            console.log("Deleting ban %o", ban);
+            console.log(tr("Deleting ban %o"), ban);
             client.serverConnection.sendCommand("bandel", {
                 banid: ban.banid,
                 sid: ban.server_id
             }).then(() => {
                 update();
             }).catch(error => {
-                createErrorModal("Failed to delete ban", "Failed to delete ban.<br>Reason: " + (error instanceof CommandResult ? error.extra_message || error.message : error)).open();
+                //TODO tr
+                createErrorModal(tr("Failed to delete ban"), "Failed to delete ban.<br>Reason: " + (error instanceof CommandResult ? error.extra_message || error.message : error)).open();
             });
         });
 
         update = () => {
             client.serverConnection.commandHandler["notifybanlist"] = json => {
-                console.log("Got banlist: ", json);
+                console.log(tr("Got banlist: %o"), json);
 
                 let bans: BanEntry[] = [];
                 for(const entry of json) {
@@ -159,7 +162,7 @@ namespace Modals {
                     callback_edit(entry);
                     return;
                 }
-            console.warn("Missing ban entry with id " + ban_id);
+            console.warn(tr("Missing ban entry with id %d"), ban_id);
         };
 
         const _callback_delete = ban_id => {
@@ -168,13 +171,13 @@ namespace Modals {
                     callback_delete(entry);
                     return;
                 }
-            console.warn("Missing ban entry with id " + ban_id);
+            console.warn(tr("Missing ban entry with id %d"), ban_id);
         };
 
         let update_function: () => any;
         let modal: Modal;
         modal = createModal({
-            header: "Banlist",
+            header: tr("Banlist"),
             body: () => {
                 let template = $("#tmpl_ban_list").renderTag();
                 template = $.spawn("div").append(template);
@@ -215,7 +218,7 @@ namespace Modals {
             const show_own_only = show_own_bans.prop("checked");
             const highlight_own = highlight_own_bans.prop("checked");
 
-            console.log("Search for filter %s", filter);
+            console.log(tr("Search for filter %s"), filter);
 
             let shown = 0, hidden = 0;
             elements.find(".ban-entry").each((_idx, _entry) => {

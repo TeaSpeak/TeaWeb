@@ -25,7 +25,7 @@ class ClientMover {
 
         this.selected_client = client;
         this.callback = callback;
-        console.log("Starting mouse move");
+        console.log(tr("Starting mouse move"));
 
         ClientMover.listener_root.on('mouseup', this._bound_finish = this.finish_listener.bind(this)).on('mousemove', this._bound_move = this.move_listener.bind(this));
 

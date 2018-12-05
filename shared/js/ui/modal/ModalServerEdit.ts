@@ -4,7 +4,7 @@ namespace Modals {
     export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => any) {
         let properties: ServerProperties = {} as ServerProperties; //The changes properties
         const modal = createModal({
-            header: "Manager the  Virtual Server",
+            header: tr("Manager the  Virtual Server"),
             body: () => {
                 let template = $("#tmpl_server_edit").renderTag(server.properties);
                 template = $.spawn("div").append(template);
@@ -16,10 +16,10 @@ namespace Modals {
                 footer.css("margin", "5px");
 
                 let buttonCancel = $.spawn("button");
-                buttonCancel.text("Cancel").addClass("button_cancel");
+                buttonCancel.text(tr("Cancel")).addClass("button_cancel");
 
                 let buttonOk = $.spawn("button");
-                buttonOk.text("Ok").addClass("button_ok");
+                buttonOk.text(tr("Ok")).addClass("button_ok");
 
                 footer.append(buttonCancel);
                 footer.append(buttonOk);

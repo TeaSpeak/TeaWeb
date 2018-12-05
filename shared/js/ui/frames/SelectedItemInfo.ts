@@ -92,7 +92,7 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
             }
         }
 
-        console.log("Using info manager: %o", this.current_manager);
+        console.log(tr("Using info manager: %o"), this.current_manager);
         if(this.current_manager)
             (this.current_manager as InfoManager<AvailableTypes>).createFrame(this, this.current_selected, this._tag_info);
     }
@@ -136,7 +136,7 @@ class Hostbanner {
                 this.html_tag.append(element).removeClass("disabled");
 
             }).catch(error => {
-                console.warn("Failed to load hostbanner: %o", error);
+                console.warn(tr("Failed to load hostbanner: %o"), error);
                 this.html_tag.empty().addClass("disabled");
             })
         } else {
@@ -160,7 +160,7 @@ class Hostbanner {
         return new Promise<JQuery<HTMLElement>>((resolve, reject) => {
             const node_image = image[0] as HTMLImageElement;
             node_image.onload = () => {
-                console.debug("Hostbanner has been loaded");
+                console.debug(tr("Hostbanner has been loaded"));
                 if(server.properties.virtualserver_hostbanner_gfx_interval > 0)
                     this.updater = setTimeout(() => this.update(), Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60) * 1000);
                 resolve(rendered);
@@ -395,9 +395,9 @@ class MusicInfoManager extends ClientInfoManager {
             if(bot.properties.player_state < MusicPlayerState.PLAYING) {
                 properties["music_player"] =  $("#tmpl_music_frame_empty").renderTag().css("align-self", "center");
             } else {
-                let frame = $.spawn("div").text("loading...") as JQuery<HTMLElement>;
+                let frame = $.spawn("div").text(tr("loading...")) as JQuery<HTMLElement>;
                 properties["music_player"] = frame;
-                properties["song_url"] = $.spawn("a").text("loading...");
+                properties["song_url"] = $.spawn("a").text(tr("loading..."));
 
                 bot.requestPlayerInfo().then(info => {
                     let timestamp = Date.now();
@@ -405,7 +405,7 @@ class MusicInfoManager extends ClientInfoManager {
                     console.log(info);
                     let _frame = $("#tmpl_music_frame").renderTag({
                         song_name: info.player_title ? info.player_title :
-                                    info.song_url ? info.song_url : "No title or url",
+                                    info.song_url ? info.song_url : tr("No title or url"),
                         song_url: info.song_url,
                         thumbnail: info.song_thumbnail && info.song_thumbnail.length > 0 ? info.song_thumbnail : undefined
                     }).css("align-self", "center");
@@ -425,7 +425,7 @@ class MusicInfoManager extends ClientInfoManager {
                                     bot_id: bot.properties.client_database_id,
                                     action: 1
                                 }).then(updated => this.triggerUpdate()).catch(error => {
-                                    createErrorModal("Failed to execute play", MessageHelper.formatMessage("Failed to execute play.<br>{}", error)).open();
+                                    createErrorModal(tr("Failed to execute play"), MessageHelper.formatMessage(tr("Failed to execute play.<br>{}"), error)).open();
                                     this.triggerUpdate();
                                 });
                             }
@@ -438,7 +438,7 @@ class MusicInfoManager extends ClientInfoManager {
                                     bot_id: bot.properties.client_database_id,
                                     action: 2
                                 }).then(updated => this.triggerUpdate()).catch(error => {
-                                    createErrorModal("Failed to execute pause", MessageHelper.formatMessage("Failed to execute pause.<br>{}", error)).open();
+                                    createErrorModal(tr("Failed to execute pause"), MessageHelper.formatMessage(tr("Failed to execute pause.<br>{}"), error)).open();
                                     this.triggerUpdate();
                                 });
                             }
@@ -450,7 +450,7 @@ class MusicInfoManager extends ClientInfoManager {
                                 bot_id: bot.properties.client_database_id,
                                 action: 0
                             }).then(updated => this.triggerUpdate()).catch(error => {
-                                createErrorModal("Failed to execute stop", MessageHelper.formatMessage("Failed to execute stop.<br>{}", error)).open();
+                                createErrorModal(tr("Failed to execute stop"), MessageHelper.formatMessage(tr("Failed to execute stop.<br>{}"), error)).open();
                                 this.triggerUpdate();
                             });
                         });
@@ -473,7 +473,7 @@ class MusicInfoManager extends ClientInfoManager {
                                 bot_id: bot.properties.client_database_id,
                                 action: 3
                             }).then(updated => this.triggerUpdate()).catch(error => {
-                                createErrorModal("Failed to execute forward", "Failed to execute pause.<br>{}".format(error)).open();
+                                createErrorModal(tr("Failed to execute forward"), tr("Failed to execute pause.<br>{}").format(error)).open();
                                 this.triggerUpdate();
                             });
                         });
@@ -482,12 +482,12 @@ class MusicInfoManager extends ClientInfoManager {
                                 bot_id: bot.properties.client_database_id,
                                 action: 4
                             }).then(updated => this.triggerUpdate()).catch(error => {
-                                createErrorModal("Failed to execute rewind", "Failed to execute pause.<br>{}".format(error)).open();
+                                createErrorModal(tr("Failed to execute rewind"),tr( "Failed to execute pause.<br>{}").format(error)).open();
                                 this.triggerUpdate();
                             });
                         });
                         _frame.find(".btn-settings").click(() => {
-                            createErrorModal("Not implemented", "This function is not implemented yet!").open();
+                            createErrorModal(tr("Not implemented"), tr("This function is not implemented yet!")).open();
                         });
                     }
 
@@ -624,9 +624,9 @@ class MusicInfoManager extends ClientInfoManager {
             //const translate_y = scale_y != scale || scale_y > 1 ? 0 : undefined || 50 - (50 * ((parent.height() - padding) / player_height));
             const transform = ("translate(0%, " + (scale * 50 - 50)  + "%) scale(" + scale.toPrecision(2)  + ")");
 
-            console.log("Parents: %o | %o", parent.width(), parent.height());
-            console.log("Player: %o | %o", player_width, player_height);
-            console.log("Scale: %f => translate: %o | %o", scale, translate_x, translate_y);
+            console.log(tr("Parents: %o | %o"), parent.width(), parent.height());
+            console.log(tr("Player: %o | %o"), player_width, player_height);
+            console.log(tr("Scale: %f => translate: %o | %o"), scale, translate_x, translate_y);
             player.css({
                 transform:  transform
             });

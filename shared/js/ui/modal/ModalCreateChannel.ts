@@ -4,7 +4,7 @@ namespace Modals {
     export function createChannelModal(channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (properties?: ChannelProperties, permissions?: PermissionValue[]) => any) {
         let properties: ChannelProperties = { } as ChannelProperties; //The changes properties
         const modal = createModal({
-            header: channel ? "Edit channel" : "Create channel",
+            header: channel ? tr("Edit channel") : tr("Create channel"),
             body: () => {
                 let template = $("#tmpl_channel_edit").renderTag(channel ? channel.properties : {
                     channel_flag_maxfamilyclients_unlimited: true,
@@ -19,10 +19,10 @@ namespace Modals {
                 footer.css("margin", "5px");
 
                 let buttonCancel = $.spawn("button");
-                buttonCancel.text("Cancel").addClass("button_cancel");
+                buttonCancel.text(tr("Cancel")).addClass("button_cancel");
 
                 let buttonOk = $.spawn("button");
-                buttonOk.text("Ok").addClass("button_ok");
+                buttonOk.text(tr("Ok")).addClass("button_ok");
 
                 footer.append(buttonCancel);
                 footer.append(buttonOk);
@@ -46,14 +46,14 @@ namespace Modals {
                 if(!element.prop("changed")) return;
                 let permission = permissions.resolveInfo(element.attr("permission"));
                 if(!permission) {
-                    log.error(LogCategory.PERMISSIONS, "Failed to resolve channel permission for name %o", element.attr("permission"));
+                    log.error(LogCategory.PERMISSIONS, tr("Failed to resolve channel permission for name %o"), element.attr("permission"));
                     element.prop("disabled", true);
                     return;
                 }
 
                 updated.push(new PermissionValue(permission, element.val()));
             });
-            console.log("Updated permissions %o", updated);
+            console.log(tr("Updated permissions %o"), updated);
         }).click(() => {
             modal.close();
             callback(properties, updated); //First may create the channel
@@ -171,7 +171,7 @@ namespace Modals {
 
     function applyPermissionListener(properties: ChannelProperties, tag: JQuery, button: JQuery, permissions: PermissionManager, channel?: ChannelEntry) {
         let apply_permissions = (channel_permissions: PermissionValue[]) => {
-            console.log("Got permissions: %o", channel_permissions);
+            console.log(tr("Got permissions: %o"), channel_permissions);
             let required_power = -2;
             for(let cperm of channel_permissions)
                 if(cperm.type.name == PermissionType.I_CHANNEL_NEEDED_MODIFY_POWER) {
@@ -183,14 +183,14 @@ namespace Modals {
                 let element = $(_element);
                 let permission = permissions.resolveInfo(element.attr("permission"));
                 if(!permission) {
-                    log.error(LogCategory.PERMISSIONS, "Failed to resolve channel permission for name %o", element.attr("permission"));
+                    log.error(LogCategory.PERMISSIONS, tr("Failed to resolve channel permission for name %o"), element.attr("permission"));
                     element.prop("disabled", true);
                     return;
                 }
 
                 let old_value: number = 0;
                 element.on("click keyup", () => {
-                    console.log("Permission triggered! %o", element.val() != old_value);
+                    console.log(tr("Permission triggered! %o"), element.val() != old_value);
                     element.prop("changed", element.val() != old_value);
                 });
 

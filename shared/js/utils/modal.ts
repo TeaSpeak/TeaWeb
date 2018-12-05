@@ -23,10 +23,10 @@ const ModalFunctions = {
             case "string": return $("<div>" + val + "</div>");
             case "object": return val as JQuery;
             case "undefined":
-                console.warn("Got undefined type!");
+                console.warn(tr("Got undefined type!"));
                 return $.spawn("div");
             default:
-                console.error("Invalid type " + typeof val);
+                console.error(("Invalid type %o"), typeof val);
                 return $();
         }
     },

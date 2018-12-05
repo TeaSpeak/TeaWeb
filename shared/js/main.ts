@@ -92,7 +92,10 @@ function main() {
 
     //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
     AudioController.initializeAudioController();
-    if(!TSIdentityHelper.setup()) { console.error("Could not setup the TeamSpeak identity parser!"); return; }
+    if(!TSIdentityHelper.setup()) {
+        console.error(tr( "Could not setup the TeamSpeak identity parser!"));
+        return;
+    }
 
     settings = new Settings();
     globalClient = new TSClient();
@@ -144,7 +147,7 @@ function main() {
     }
 
     ppt.initialize().catch(error => {
-        console.error("Failed to initialize ppt!");
+        console.error(tr("Failed to initialize ppt!"));
         //TODO error notification?
     });
 
@@ -180,9 +183,9 @@ app.loadedListener.push(() => {
     try {
         main();
         if(!audio.player.initialized()) {
-            log.info(LogCategory.VOICE, "Initialize audio controller later!");
+            log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
             if(!audio.player.initializeFromGesture) {
-                console.error("Missing audio.player.initializeFromGesture");
+                console.error(tr("Missing audio.player.initializeFromGesture"));
             } else
                 $(document).one('click', event => audio.player.initializeFromGesture());
         }

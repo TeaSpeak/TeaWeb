@@ -112,7 +112,7 @@ class GroupManager {
         if(json[0]["sgid"]) target = GroupTarget.SERVER;
         else if(json[0]["cgid"]) target = GroupTarget.CHANNEL;
         else {
-            console.error("Could not resolve group target! => " + json[0]);
+            console.error(tr("Could not resolve group target! => %o"), json[0]);
             return;
         }
 
@@ -128,6 +128,7 @@ class GroupManager {
                 case 1: type = GroupType.NORMAL; break;
                 case 2: type = GroupType.QUERY; break;
                 default:
+                    //TODO tr
                     console.error("Invalid group type: " + groupData["type"] + " for group " + groupData["name"]);
                     continue;
             }
@@ -179,7 +180,7 @@ class GroupManager {
     private onPermissionList(json: any[]) {
         let group = json[0]["sgid"] ? this.serverGroup(parseInt(json[0]["sgid"])) : this.channelGroup(parseInt(json[0]["cgid"]));
         if(!group) {
-            log.error(LogCategory.PERMISSIONS, "Got group permissions for group %o/%o, but its not a registered group!", json[0]["sgid"], json[0]["cgid"]);
+            log.error(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but its not a registered group!"), json[0]["sgid"], json[0]["cgid"]);
             return;
         }
         let requests: GroupPermissionRequest[] = [];
@@ -188,7 +189,7 @@ class GroupManager {
                 requests.push(req);
 
         if(requests.length == 0) {
-            log.warn(LogCategory.PERMISSIONS, "Got group permissions for group %o/%o, but it was never requested!", json[0]["sgid"], json[0]["cgid"]);
+            log.warn(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but it was never requested!"), json[0]["sgid"], json[0]["cgid"]);
             return;
         }
 

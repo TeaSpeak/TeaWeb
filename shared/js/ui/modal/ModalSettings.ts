@@ -7,7 +7,7 @@ namespace Modals {
     export function spawnSettingsModal() {
         let modal;
         modal = createModal({
-            header: "Settings",
+            header: tr("Settings"),
             body: () => {
                 let template = $("#tmpl_settings").renderTag();
                 template = $.spawn("div").append(template);
@@ -82,7 +82,7 @@ namespace Modals {
                         body: "",
                         header: () => {
                             let head = $.spawn("div");
-                            head.text("Type the key you wish");
+                            head.text(tr("Type the key you wish"));
                             head.css("background-color", "blue");
                             return head;
                         },
@@ -92,7 +92,7 @@ namespace Modals {
                     let listener = (event: ppt.KeyEvent) => {
                         if(event.type == ppt.EventType.KEY_TYPED) {
                             settings.changeGlobal('vad_ppt_key', undefined); //TODO remove that because its legacy shit
-                            console.log("Got key %o", event);
+                            console.log(tr("Got key %o"), event);
 
                             let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
                             ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
@@ -130,6 +130,7 @@ namespace Modals {
 
             let target_tag = vad_tag.find('input[type=radio][name="vad_type"][value="' + currentVAD + '"]');
             if(target_tag.length == 0) {
+                //TODO tr
                 console.warn("Failed to find tag for " + currentVAD + ". Using latest tag!");
                 target_tag = vad_tag.find('input[type=radio][name="vad_type"]').last();
             }
@@ -149,14 +150,14 @@ namespace Modals {
                 $.spawn("option")
                     .attr("device-id", "")
                     .attr("device-group", "")
-                    .text("No device")
+                    .text(tr("No device"))
                     .appendTo(tag_select);
 
                 navigator.mediaDevices.enumerateDevices().then(devices => {
                     const active_device = globalClient.voiceConnection.voiceRecorder.device_id();
 
                     for(const device of devices) {
-                        console.debug("Got device %s (%s): %s", device.deviceId, device.kind, device.label);
+                        console.debug(tr("Got device %s (%s): %s"), device.deviceId, device.kind, device.label);
                         if(device.kind !== 'audioinput') continue;
 
                         $.spawn("option")
@@ -167,10 +168,10 @@ namespace Modals {
                             .appendTo(tag_select);
                     }
                 }).catch(error => {
-                    console.error("Could not enumerate over devices!");
+                    console.error(tr("Could not enumerate over devices!"));
                     console.error(error);
                     setting_tag.find(".settings-device-error")
-                        .text("Could not get device list!")
+                        .text(tr("Could not get device list!"))
                         .css("display", "block");
                 });
 
@@ -184,7 +185,7 @@ namespace Modals {
                     let selected_tag = tag_select.find("option:selected");
                     let deviceId = selected_tag.attr("device-id");
                     let groupId = selected_tag.attr("device-group");
-                    console.log("Selected microphone device: id: %o group: %o", deviceId, groupId);
+                    console.log(tr("Selected microphone device: id: %o group: %o"), deviceId, groupId);
                     globalClient.voiceConnection.voiceRecorder.change_device(deviceId, groupId);
                 });
             }
@@ -204,10 +205,10 @@ namespace Modals {
                         .appendTo(tag_select);
                 }
             }).catch(error => {
-                console.error("Could not enumerate over devices!");
+                console.error(tr("Could not enumerate over devices!"));
                 console.error(error);
                 setting_tag.find(".settings-device-error")
-                    .text("Could not get device list!")
+                    .text(tr("Could not get device list!"))
                     .css("display", "block");
             });
 
@@ -220,11 +221,11 @@ namespace Modals {
                 tag_select.on('change', event => {
                     let selected_tag = tag_select.find("option:selected");
                     let deviceId = selected_tag.attr("device-id");
-                    console.log("Selected speaker device: id: %o", deviceId);
+                    console.log(tr("Selected speaker device: id: %o"), deviceId);
                     audio.player.set_device(deviceId).then(() => error_tag.css("display", "none")).catch(error => {
                         console.error(error);
                         error_tag
-                            .text("Failed to change device!")
+                            .text(tr("Failed to change device!"))
                             .css("display", "block");
                     });
                 });

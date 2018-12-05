@@ -91,14 +91,14 @@ class TSClient {
             host = addr;
             port = 9987;
         }
-        console.log("Start connection to " + host + ":" + port);
+        console.log(tr("Start connection to %s:%d"), host, port);
         this.channelTree.initialiseHead(addr, {host, port});
 
         if(password && !password.hashed) {
             helpers.hashPassword(password.password).then(password => {
                 this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password));
             }).catch(error => {
-                createErrorModal("Error while hashing password", "Failed to hash server password!<br>" + error).open();
+                createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>" + error).open();
             })
         } else
             this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password ? password.password : undefined));
@@ -133,7 +133,7 @@ class TSClient {
             this.groups.requestGroups();
         this.controlBar.updateProperties();
         if(!this.voiceConnection.current_encoding_supported())
-            createErrorModal("Codec encode type not supported!", "Codec encode type " + VoiceConnectionType[this.voiceConnection.type] + " not supported by this browser!<br>Choose another one!").open();
+            createErrorModal(tr("Codec encode type not supported!"), tr("Codec encode type " + VoiceConnectionType[this.voiceConnection.type] + " not supported by this browser!<br>Choose another one!")).open(); //TODO tr
     }
 
     get connected() : boolean {
@@ -166,17 +166,18 @@ class TSClient {
             case DisconnectReason.REQUESTED:
                 break;
             case DisconnectReason.CONNECT_FAILURE:
-                console.error("Could not connect to remote host! Exception");
+                console.error(tr("Could not connect to remote host! Exception"));
                 console.error(data);
 
                 if(native_client) {
                     createErrorModal(
-                        "Could not connect",
-                        "Could not connect to remote host (Connection refused)"
+                        tr("Could not connect"),
+                        tr("Could not connect to remote host (Connection refused)")
                     ).open();
                 } else {
+                    //TODO tr
                     createErrorModal(
-                        "Could not connect",
+                        tr("Could not connect"),
                         "Could not connect to remote host (Connection refused)<br>" +
                         "If you're sure that the remote host is up, than you may not allow unsigned certificates.<br>" +
                         "Click <a href='" + this.certAcceptUrl() + "'>here</a> to accept the remote certificate"
@@ -185,33 +186,33 @@ class TSClient {
                 sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
-                console.error("Lost connection to remote server!");
+                console.error(tr("Lost connection to remote server!"));
                 createErrorModal(
-                    "Connection closed",
-                    "The connection was closed by remote host"
+                    tr("Connection closed"),
+                    tr("The connection was closed by remote host")
                 ).open();
                 sound.play(Sound.CONNECTION_DISCONNECTED);
                 break;
             case DisconnectReason.CONNECTION_PING_TIMEOUT:
-                console.error("Connection ping timeout");
+                console.error(tr("Connection ping timeout"));
                 sound.play(Sound.CONNECTION_DISCONNECTED_TIMEOUT);
                 createErrorModal(
-                    "Connection lost",
-                    "Lost connection to remote host (Ping timeout)<br>Even possible?"
+                    tr("Connection lost"),
+                    tr("Lost connection to remote host (Ping timeout)<br>Even possible?")
                 ).open();
                 break;
             case DisconnectReason.SERVER_CLOSED:
-                chat.serverChat().appendError("Server closed ({0})", data.reasonmsg);
+                chat.serverChat().appendError(tr("Server closed ({0})"), data.reasonmsg);
                 createErrorModal(
-                    "Server closed",
-                    "The server is closed.<br>" +
+                    tr("Server closed"),
+                    "The server is closed.<br>" + //TODO tr
                             "Reason: " + data.reasonmsg
                 ).open();
                 sound.play(Sound.CONNECTION_DISCONNECTED);
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
-                chat.serverChat().appendError("Server requires password");
-                createInputModal("Server password", "Enter server password:", password => password.length != 0, password => {
+                chat.serverChat().appendError(tr("Server requires password"));
+                createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
                     this.startConnection(this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port,
                         this.serverConnection._handshakeHandler.identity,
@@ -220,20 +221,20 @@ class TSClient {
                 }).open();
                 break;
             case DisconnectReason.CLIENT_KICKED:
-                chat.serverChat().appendError("You got kicked from the server by {0}{1}",
+                chat.serverChat().appendError(tr("You got kicked from the server by {0}{1}"),
                     ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
                     data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
                 sound.play(Sound.SERVER_KICKED);
                 break;
             case DisconnectReason.CLIENT_BANNED:
-                chat.serverChat().appendError("You got banned from the server by {0}{1}",
+                chat.serverChat().appendError(tr("You got banned from the server by {0}{1}"),
                     ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
                     data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
                 sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
                 break;
             default:
-                console.error("Got uncaught disconnect!");
-                console.error("Type: " + type + " Data:");
+                console.error(tr("Got uncaught disconnect!"));
+                console.error(tr("Type: %o Data:"), type);
                 console.error(data);
                 break;
         }

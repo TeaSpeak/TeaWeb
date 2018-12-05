@@ -56,8 +56,8 @@ class ServerConnection {
     }
 
     on_connect: () => void = () => {
-        console.log("Socket connected");
-        chat.serverChat().appendMessage("Logging in...");
+        console.log(tr("Socket connected"));
+        chat.serverChat().appendMessage(tr("Logging in..."));
         this._handshakeHandler.startHandshake();
     };
 
@@ -76,12 +76,12 @@ class ServerConnection {
         this._handshakeHandler = handshake;
         this._handshakeHandler.setConnection(this);
         this._connected = false;
-        chat.serverChat().appendMessage("Connecting to " + address.host + ":" + address.port);
+        chat.serverChat().appendMessage(tr("Connecting to {0}:{1}"), true, address.host, address.port);
 
         const self = this;
         try {
             this._connectTimeoutHandler = setTimeout(() => {
-                console.log("Connect timeout triggered!");
+                console.log(tr("Connect timeout triggered!"));
                 this.disconnect();
                 this._client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
             }, timeout);
@@ -108,7 +108,7 @@ class ServerConnection {
 
             this._socket.onerror = e => {
                 if(this._socket != sockCpy) return;
-                console.log("Got error: (" + self._socket.readyState + ")");
+                console.log(tr("Got error: (%s)"), self._socket.readyState);
                 console.log(e);
             };
 
@@ -132,10 +132,10 @@ class ServerConnection {
         if(this._connectionState == ConnectionState.UNCONNECTED) return false;
         this.updateConnectionState(ConnectionState.UNCONNECTED);
 
-        if(this._socket) this._socket.close(3000 + 0xFF, "request disconnect");
+        if(this._socket) this._socket.close(3000 + 0xFF, tr("request disconnect"));
         this._socket = null;
         for(let future of this._retListener)
-            future.reject("Connection closed");
+            future.reject(tr("Connection closed"));
         this._retListener = [];
         this._retCodeIdx = 0;
         this._connected = false;
@@ -148,31 +148,31 @@ class ServerConnection {
             try {
                 json = JSON.parse(data);
             } catch(e) {
-                console.error("Could not parse message json!");
+                console.error(tr("Could not parse message json!"));
                 alert(e); // error in the above string (in this case, yes)!
                 return;
             }
             if(json["type"] === undefined) {
-                console.log("Missing data type!");
+                console.log(tr("Missing data type!"));
                 return;
             }
             if(json["type"] === "command") this.handleCommand(json);
             else if(json["type"] === "WebRTC") this._client.voiceConnection.handleControlPacket(json);
             else {
-                console.log("Unknown command type " + json["type"]);
+                console.log(tr("Unknown command type %o"), json["type"]);
             }
         }
     }
 
     handleCommand(json) {
-        let group = log.group(log.LogType.DEBUG, LogCategory.NETWORKING, "Handling command '%s'", json["command"]);
-        group.log("Handling command '" + json["command"] + "'");
-        group.group(log.LogType.TRACE, "Json:").collapsed(true).log("%o", json).end();
+        let group = log.group(log.LogType.DEBUG, LogCategory.NETWORKING, tr("Handling command '%s'"), json["command"]);
+        group.log(tr("Handling command '%s'"), json["command"]);
+        group.group(log.LogType.TRACE, tr("Json:")).collapsed(true).log("%o", json).end();
 
         try {
             let fn = this.commandHandler[json["command"]];
             if(fn === undefined) {
-                group.log("Missing command '" + json["command"] + "'");
+                group.log(tr("Missing command '%s'"), json["command"]);
                 return;
             }
             fn.call(this.commandHandler, json["data"]);
@@ -227,17 +227,17 @@ class ServerConnection {
                         let res = ex;
                         if(!res.success) {
                             if(res.id == 2568) { //Permission error
-                                res.message = "Insufficient client permissions. Failed on permission " + this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name;
-                                chat.serverChat().appendError("Insufficient client permissions. Failed on permission {}", this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
+                                res.message = tr("Insufficient client permissions. Failed on permission ") + this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name;
+                                chat.serverChat().appendError(tr("Insufficient client permissions. Failed on permission {}"), this._client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
                                 sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
                             } else {
                                 chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
                             }
                         }
-                    } else if(typeof(ex) == "string") {
-                        chat.serverChat().appendError("Command execution results in " + ex);
+                    } else if(typeof(ex) === "string") {
+                        chat.serverChat().appendError(tr("Command execution results in ") + ex);
                     } else {
-                        console.error("Invalid promise result type: " + typeof (ex) + ". Result:");
+                        console.error(tr("Invalid promise result type: %o. Result:"), typeof (ex));
                         console.error(ex);
                     }
                 }
@@ -327,7 +327,7 @@ class HandshakeHandler {
             //FIXME handle error this should never happen!
         }
         this.connection.sendCommand("handshakeindentityproof", {proof: proof}).catch(error => {
-            console.error("Got login error");
+            console.error(tr("Got login error"));
             console.log(error);
         }).then(() => this.handshake_finished()); //TODO handle error
     }
@@ -337,7 +337,7 @@ class HandshakeHandler {
             native.client_version()
                 .then( this.handshake_finished.bind(this))
                 .catch(error => {
-                    console.error("Failed to get version:");
+                    console.error(tr("Failed to get version:"));
                     console.error(error);
                     this.handshake_finished("?.?.?");
                 });
@@ -493,7 +493,7 @@ class ConnectionCommandHandler {
 
         let code : string = json["return_code"];
         if(code.length == 0) {
-            console.log("Invalid return code! (" + json + ")");
+            console.log(tr("Invalid return code! (%o)"), json);
             return;
         }
         let retListeners = this.connection["_retListener"];
@@ -512,7 +512,7 @@ class ConnectionCommandHandler {
 
     handleCommandServerInit(json){
         //We could setup the voice channel
-        console.log("Setting up voice ");
+        console.log(tr("Setting up voice"));
         this.connection._client.voiceConnection.createSession();
 
 
@@ -535,7 +535,7 @@ class ConnectionCommandHandler {
 
 
         chat.serverChat().name = this.connection._client.channelTree.server.properties["virtualserver_name"];
-        chat.serverChat().appendMessage("Connected as {0}", true, this.connection._client.getClient().createChatTag(true));
+        chat.serverChat().appendMessage(tr("Connected as {0}"), true, this.connection._client.getClient().createChatTag(true));
         sound.play(Sound.CONNECTION_CONNECTED);
         globalClient.onConnected();
     }
@@ -549,14 +549,14 @@ class ConnectionCommandHandler {
             let prev = tree.findChannel(json["channel_order"]);
             if(!prev && json["channel_order"] != 0) {
                 if(!ignoreOrder) {
-                    console.error("Invalid channel order id!");
+                    console.error(tr("Invalid channel order id!"));
                     return;
                 }
             }
 
             let parent = tree.findChannel(json["cpid"]);
             if(!parent && json["cpid"] != 0) {
-                console.error("Invalid channel parent");
+                console.error(tr("Invalid channel parent"));
                 return;
             }
             tree.moveChannel(channel, prev, parent); //TODO test if channel exists!
@@ -587,7 +587,7 @@ class ConnectionCommandHandler {
     }
 
     handleCommandChannelList(json) {
-        console.log("Got " + json.length + " new channels");
+        console.log(tr("Got %d new channels"), json.length);
         for(let index = 0; index < json.length; index++)
             this.createChannelFromJson(json[index], true);
     }
@@ -603,11 +603,11 @@ class ConnectionCommandHandler {
     handleCommandChannelDelete(json) {
         let tree = this.connection._client.channelTree;
 
-        console.log("Got " + json.length + " channel deletions");
+        console.log(tr("Got %d channel deletions"), json.length);
         for(let index = 0; index < json.length; index++) {
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
-                console.error("Invalid channel onDelete (Unknown channel)");
+                console.error(tr("Invalid channel onDelete (Unknown channel)"));
                 continue;
             }
             tree.deleteChannel(channel);
@@ -617,11 +617,11 @@ class ConnectionCommandHandler {
     handleCommandChannelHide(json) {
         let tree = this.connection._client.channelTree;
 
-        console.log("Got " + json.length + " channel hides");
+        console.log(tr("Got %d channel hides"), json.length);
         for(let index = 0; index < json.length; index++) {
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
-                console.error("Invalid channel on hide (Unknown channel)");
+                console.error(tr("Invalid channel on hide (Unknown channel)"));
                 continue;
             }
             tree.deleteChannel(channel);
@@ -659,15 +659,15 @@ class ConnectionCommandHandler {
                 else
                     sound.play(Sound.USER_ENTERED_CONNECT);
             if(old_channel) {
-                chat.serverChat().appendMessage("{0} appeared from {1} to {2}", true, client.createChatTag(true), old_channel.createChatTag(true), channel.createChatTag(true));
+                chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.createChatTag(true), channel.createChatTag(true));
             } else {
-                chat.serverChat().appendMessage("{0} connected to channel {1}", true, client.createChatTag(true), channel.createChatTag(true));
+                chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.createChatTag(true));
             }
         } else if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
             if(own_channel == channel)
                 sound.play(Sound.USER_ENTERED_MOVED);
 
-            chat.serverChat().appendMessage("{0} appeared from {1} to {2}, moved by {3}", true,
+            chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, moved by {3}"), true,
                 client.createChatTag(true),
                 old_channel ? old_channel.createChatTag(true) : undefined,
                 channel.createChatTag(true),
@@ -677,7 +677,7 @@ class ConnectionCommandHandler {
             if(own_channel == channel)
                 sound.play(Sound.USER_ENTERED_KICKED);
 
-            chat.serverChat().appendMessage("{0} appeared from {1} to {2}, kicked by {3}{4}", true,
+            chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, kicked by {3}{4}"), true,
                 client.createChatTag(true),
                 old_channel ? old_channel.createChatTag(true) : undefined,
                 channel.createChatTag(true),
@@ -685,7 +685,7 @@ class ConnectionCommandHandler {
                 json["reasonmsg"] > 0 ? " (" + json["msg"] + ")" : ""
             );
         } else {
-            console.warn("Unknown reasonid for " + json["reasonid"]);
+            console.warn(tr("Unknown reasonid for %o"), json["reasonid"]);
         }
 
         let updates: {
@@ -715,7 +715,7 @@ class ConnectionCommandHandler {
         let tree = this.connection._client.channelTree;
         let client = tree.findClient(json["clid"]);
         if(!client) {
-            console.error("Unknown client left!");
+            console.error(tr("Unknown client left!"));
             return 0;
         }
         if(client == this.connection._client.getClient()) {
@@ -738,12 +738,12 @@ class ConnectionCommandHandler {
 
 
         if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-            chat.serverChat().appendMessage("{0} disappeared from {1} to {2}", true, client.createChatTag(true), channel_from.createChatTag(true), channel_to.createChatTag(true));
+            chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.createChatTag(true), channel_to.createChatTag(true));
 
             if(channel_from == own_channel)
                 sound.play(Sound.USER_LEFT);
         } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_LEFT) {
-            chat.serverChat().appendMessage("{0} left the server{1}", true,
+            chat.serverChat().appendMessage(tr("{0} left the server{1}"), true,
                 client.createChatTag(true),
                 json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
             );
@@ -751,7 +751,7 @@ class ConnectionCommandHandler {
             if(channel_from == own_channel)
                 sound.play(Sound.USER_LEFT_DISCONNECT);
         } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK) {
-            chat.serverChat().appendError("{0} was kicked from the server by {1}.{2}",
+            chat.serverChat().appendError(tr("{0} was kicked from the server by {1}.{2}"),
                 client.createChatTag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
                 json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
@@ -759,7 +759,7 @@ class ConnectionCommandHandler {
             if(channel_from == own_channel)
                 sound.play(Sound.USER_LEFT_KICKED_SERVER);
         } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
-            chat.serverChat().appendError("{0} was kicked from your channel by {1}.{2}",
+            chat.serverChat().appendError(tr("{0} was kicked from your channel by {1}.{2}"),
                 client.createChatTag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
                 json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
@@ -773,7 +773,7 @@ class ConnectionCommandHandler {
             if(json["bantime"])
                 duration = "for " + formatDate(Number.parseInt(json["bantime"]));
 
-            chat.serverChat().appendError("{0} was banned {1} by {2}.{3}",
+            chat.serverChat().appendError(tr("{0} was banned {1} by {2}.{3}"),
                 client.createChatTag(true),
                 duration,
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
@@ -783,7 +783,7 @@ class ConnectionCommandHandler {
             if(channel_from == own_channel)
                 sound.play(Sound.USER_LEFT_BANNED);
         } else {
-            console.error("Unknown client left reason!");
+            console.error(tr("Unknown client left reason!"));
         }
 
         tree.deleteClient(client);
@@ -797,16 +797,16 @@ class ConnectionCommandHandler {
         let channel_from = tree.findChannel(json["cfid"]);
 
         if(!client) {
-            console.error("Unknown client move (Client)!");
+            console.error(tr("Unknown client move (Client)!"));
             return 0;
         }
 
         if(!channel_to) {
-            console.error("Unknown client move (Channel to)!");
+            console.error(tr("Unknown client move (Channel to)!"));
             return 0;
         }
         if(!channel_from) //Not critical
-            console.error("Unknown client move (Channel from)!");
+            console.error(tr("Unknown client move (Channel from)!"));
 
         let self = client instanceof LocalClientEntry;
         let current_clients;
@@ -822,7 +822,7 @@ class ConnectionCommandHandler {
 
         const own_channel = this.connection._client.getClient().currentChannel();
         if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
-            chat.serverChat().appendMessage(self ? "You was moved by {3} from channel {1} to {2}" : "{0} was moved from channel {1} to {2} by {3}", true,
+            chat.serverChat().appendMessage(self ? tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}"), true,
                 client.createChatTag(true),
                 channel_from ? channel_from.createChatTag(true) : undefined,
                 channel_to.createChatTag(true),
@@ -835,7 +835,7 @@ class ConnectionCommandHandler {
             else if(own_channel == channel_from)
                 sound.play(Sound.USER_LEFT_MOVED);
         } else if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-            chat.serverChat().appendMessage(self ? "You switched from channel {1} to {2}" : "{0} switched from channel {1} to {2}", true,
+            chat.serverChat().appendMessage(self ? tr("You switched from channel {1} to {2}") : tr("{0} switched from channel {1} to {2}"), true,
                 client.createChatTag(true),
                 channel_from ? channel_from.createChatTag(true) : undefined,
                 channel_to.createChatTag(true)
@@ -846,7 +846,7 @@ class ConnectionCommandHandler {
             else if(own_channel == channel_from)
                 sound.play(Sound.USER_LEFT);
         } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
-            chat.serverChat().appendMessage(self ? "You got kicked out of the channel {1} to channel {2} by {3}{4}" : "{0} got kicked from channel {1} to {2} by {3}{4}", true,
+            chat.serverChat().appendMessage(self ? tr("You got kicked out of the channel {1} to channel {2} by {3}{4}") : tr("{0} got kicked from channel {1} to {2} by {3}{4}"), true,
                 client.createChatTag(true),
                 channel_from ? channel_from.createChatTag(true) : undefined,
                 channel_to.createChatTag(true),
@@ -860,7 +860,7 @@ class ConnectionCommandHandler {
             else if(own_channel == channel_from)
                 sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
         } else {
-            console.warn("Unknown reason id " + json["reasonid"]);
+            console.warn(tr("Unknown reason id %o"), json["reasonid"]);
         }
     }
 
@@ -872,19 +872,19 @@ class ConnectionCommandHandler {
         let tree = this.connection._client.channelTree;
         let channel = tree.findChannel(json["cid"]);
         if(!channel) {
-            console.error("Unknown channel move (Channel)!");
+            console.error(tr("Unknown channel move (Channel)!"));
             return 0;
         }
 
         let prev = tree.findChannel(json["order"]);
         if(!prev && json["order"] != 0) {
-            console.error("Unknown channel move (prev)!");
+            console.error(tr("Unknown channel move (prev)!"));
             return 0;
         }
 
         let parent = tree.findChannel(json["cpid"]);
         if(!parent && json["cpid"] != 0) {
-            console.error("Unknown channel move (parent)!");
+            console.error(tr("Unknown channel move (parent)!"));
             return 0;
         }
 
@@ -897,7 +897,7 @@ class ConnectionCommandHandler {
         let tree = this.connection._client.channelTree;
         let channel = tree.findChannel(json["cid"]);
         if(!channel) {
-            console.error("Unknown channel edit (Channel)!");
+            console.error(tr("Unknown channel edit (Channel)!"));
             return 0;
         }
 
@@ -925,11 +925,11 @@ class ConnectionCommandHandler {
             let invoker = this.connection._client.channelTree.findClient(json["invokerid"]);
             let target = this.connection._client.channelTree.findClient(json["target"]);
             if(!invoker) { //TODO spawn chat (Client is may invisible)
-                console.error("Got private message from invalid client!");
+                console.error(tr("Got private message from invalid client!"));
                 return;
             }
             if(!target) { //TODO spawn chat (Client is may invisible)
-                console.error("Got private message from invalid client!");
+                console.error(tr("Got private message from invalid client!"));
                 return;
             }
             if(invoker == this.connection._client.getClient()) {
@@ -955,7 +955,7 @@ class ConnectionCommandHandler {
 
         let client = this.connection._client.channelTree.findClient(json["clid"]);
         if(!client) {
-            console.error("Tried to update an non existing client");
+            console.error(tr("Tried to update an non existing client"));
             return;
         }
 
@@ -1018,7 +1018,7 @@ class ConnectionCommandHandler {
 
         let bot = this.connection._client.channelTree.find_client_by_dbid(json["botid"]);
         if(!bot || !(bot instanceof MusicClientEntry)) {
-            log.warn(LogCategory.CLIENT, "Got music player info for unknown or invalid bot! (ID: %i, Entry: %o)", json["botid"], bot);
+            log.warn(LogCategory.CLIENT, tr("Got music player info for unknown or invalid bot! (ID: %i, Entry: %o)"), json["botid"], bot);
             return;
         }
 

@@ -132,11 +132,11 @@ class ServerEntry {
         spawn_context_menu(x, y, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-virtualserver_edit",
-                name: "Edit",
+                name: tr("Edit"),
                 callback: () => {
                     Modals.createServerModal(this, properties => {
-                        log.info(LogCategory.SERVER, "Changing server properties %o", properties);
-                        console.log("Changed properties: %o", properties);
+                        log.info(LogCategory.SERVER, tr("Changing server properties %o"), properties);
+                        console.log(tr("Changed properties: %o"), properties);
                         if (properties)
                             this.channelTree.client.serverConnection.sendCommand("serveredit", properties).then(() => {
                                 sound.play(Sound.SERVER_EDITED_SELF);
@@ -149,12 +149,13 @@ class ServerEntry {
     }
 
     updateVariables(is_self_notify: boolean, ...variables: {key: string, value: string}[]) {
-        let group = log.group(log.LogType.DEBUG, LogCategory.SERVER, "Update properties (%i)", variables.length);
+        let group = log.group(log.LogType.DEBUG, LogCategory.SERVER, tr("Update properties (%i)"), variables.length);
 
         let update_bannner = false;
         for(let variable of variables) {
             JSON.map_field_to(this.properties, variable.value, variable.key);
 
+            //TODO tr
             group.log("Updating server " + this.properties.virtualserver_name + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "virtualserver_name") {
                 this.htmlTag.find(".name").text(variable.value);

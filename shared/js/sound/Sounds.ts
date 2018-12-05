@@ -119,10 +119,10 @@ namespace sound {
     export function play(sound: Sound, options?: {
         background_notification?: boolean
     }) {
-        console.log("playback sound " + sound);
+        console.log(tr("playback sound %o"), sound);
         const file: SpeechFile = speech_mapping[sound];
         if(!file) {
-            console.warn("Missing sound " + sound);
+            console.warn(tr("Missing sound %o"), sound);
             return;
         }
         if(file.not_supported) {
@@ -138,7 +138,7 @@ namespace sound {
 
         if(context.decodeAudioData) {
             if(file.cached) {
-                console.log("Using cached buffer: %o", file.cached);
+                console.log(tr("Using cached buffer: %o"), file.cached);
                 const player = context.createBufferSource();
                 player.buffer = file.cached;
                 player.start(0);
@@ -158,13 +158,13 @@ namespace sound {
                 const decode_data = buffer => {
                     console.log(buffer);
                     try {
-                        console.log("Decoding data");
+                        console.log(tr("Decoding data"));
                         context.decodeAudioData(buffer, result => {
-                            console.log("Got decoded data");
+                            console.log(tr("Got decoded data"));
                             file.cached = result;
                             play(sound, options);
                         }, error => {
-                            console.error("Failed to decode audio data for " + sound);
+                            console.error(tr("Failed to decode audio data for %o"), sound);
                             console.error(error);
                             file.not_supported = true;
                             file.not_supported_timeout = Date.now() + 1000 * 60 * 60; //Try in 2min again!
@@ -184,14 +184,14 @@ namespace sound {
                     if (this.status == 200) {
                         decode_data(this.response);
                     } else {
-                        console.error("Failed to load audio file. (Response code " + this.status + ")");
+                        console.error(tr("Failed to load audio file. (Response code %o)"), this.status);
                         file.not_supported = true;
                         file.not_supported_timeout = Date.now() + 1000 * 60 * 60; //Try in 2min again!
                     }
                 };
 
                 xhr.onerror = error => {
-                    console.error("Failed to load audio file " + sound);
+                    console.error(tr("Failed to load audio file "), sound);
                     console.error(error);
                     file.not_supported = true;
                     file.not_supported_timeout = Date.now() + 1000 * 60 * 60; //Try in 2min again!
@@ -200,14 +200,14 @@ namespace sound {
                 xhr.send();
             }
         } else {
-            console.log("Replaying " + path);
+            console.log(tr("Replaying %s"), path);
             if(file.node) {
                 file.node.currentTime = 0;
                 file.node.play();
             } else {
                 if(!warned) {
                     warned = true;
-                    console.warn("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!");
+                    console.warn(tr("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!"));
                 }
                 const container = $("#sounds");
                 const node = $.spawn("audio").attr("src", path);

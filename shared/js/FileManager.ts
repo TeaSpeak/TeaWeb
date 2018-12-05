@@ -48,7 +48,7 @@ class DownloadFileTransfer {
             return;
         }
 
-        console.debug("Create new file download to " + this.remoteHost + ":" + this.remotePort + " (Key: " + this.transferKey + ", Expect " + this.totalSize + " bytes)");
+        console.debug(tr("Create new file download to %s:%s (Key: %s, Expect %d bytes)"), this.remoteHost, this.remotePort, this.transferId, this.totalSize);
         this._active = true;
         this._socket = new WebSocket("wss://" + this.remoteHost + ":" + this.remotePort);
         this._socket.onopen = this.onOpen.bind(this);
@@ -66,7 +66,7 @@ class DownloadFileTransfer {
 
     private onMessage(data: MessageEvent) {
         if(!this._active) {
-            console.error("Got data, but socket closed?");
+            console.error(tr("Got data, but socket closed?"));
             return;
         }
         this._parseActive = true;
@@ -92,14 +92,14 @@ class DownloadFileTransfer {
 
     private onError() {
         if(!this._active) return;
-        this.on_fail("an error occurent");
+        this.on_fail(tr("an error occurent"));
         this.disconnect();
     }
 
     private onClose() {
         if(!this._active) return;
 
-        if(!this._parseActive) this.on_fail("unexpected close (remote closed)");
+        if(!this._parseActive) this.on_fail(tr("unexpected close (remote closed)"));
         this.disconnect();
     }
 
@@ -164,7 +164,7 @@ class FileManager {
         }
 
         if(!entry) {
-            console.error("Invalid file list entry. Path: " + json[0]["path"]);
+            console.error(tr("Invalid file list entry. Path: %s"), json[0]["path"]);
             return;
         }
         for(let e of (json as Array<FileEntry>))
@@ -183,7 +183,7 @@ class FileManager {
         }
 
         if(!entry) {
-            console.error("Invalid file list entry finish. Path: " + json[0]["path"]);
+            console.error(tr("Invalid file list entry finish. Path: "), json[0]["path"]);
             return;
         }
         entry.callback(entry.entries);
@@ -333,8 +333,8 @@ class IconManager {
                 let array = new Uint8Array(0);
                 ft.on_fail = reason => {
                     this.load_finished(id);
-                    console.error("Could not download icon " + id + " -> " + reason);
-                    chat.serverChat().appendError("Fail to download icon {0}. ({1})", id, JSON.stringify(reason));
+                    console.error(tr("Could not download icon %s -> %s"), id, tr(reason));
+                    chat.serverChat().appendError(tr("Fail to download icon {0}. ({1})"), id, JSON.stringify(reason));
                     reject(reason);
                 };
                 ft.on_start = () => {};
@@ -355,8 +355,8 @@ class IconManager {
 
                 ft.startTransfer();
             }).catch(reason => {
-                console.error("Error while downloading icon! (" + JSON.stringify(reason) + ")");
-                chat.serverChat().appendError("Failed to request download for icon {0}. ({1})", id, JSON.stringify(reason));
+                console.error(tr("Error while downloading icon! (%s)"), tr(JSON.stringify(reason)));
+                chat.serverChat().appendError(tr("Failed to request download for icon {0}. ({1})"), id, tr(JSON.stringify(reason)));
                 reject(reason);
             });
         });
@@ -382,7 +382,7 @@ class IconManager {
         if(icon) {
             const type = image_type(icon.base64);
             const media = media_image_type(type);
-            console.debug("Icon has an image type of %o (media: %o)", type, media);
+            console.debug(tr("Icon has an image type of %o (media: %o)"), type, media);
             img.attr("src", "data:image/" + media + ";base64," + icon.base64);
             tag.append(img);
         } else {
@@ -395,9 +395,9 @@ class IconManager {
             this.loadIcon(id).then(icon => {
                 const type = image_type(icon.base64);
                 const media = media_image_type(type);
-                console.debug("Icon has an image type of %o (media: %o)", type, media);
+                console.debug(tr("Icon has an image type of %o (media: %o)"), type, media);
                 img.attr("src", "data:image/" + media + ";base64," + icon.base64);
-                console.debug("Icon " + id + " loaded :)");
+                console.debug(tr("Icon %o loaded :)"), id);
 
                 img.css("opacity", 0);
                 tag.append(img);
@@ -406,7 +406,7 @@ class IconManager {
                     img.animate({opacity: 1}, 150);
                 });
             }).catch(reason => {
-                console.error("Could not load icon " + id + ". Reason: " + reason);
+                console.error(tr("Could not load icon %o. Reason: %p"), id, reason);
                 loader.removeClass("icon_loading").addClass("icon client-warning").attr("tag", "Could not load icon " + id);
             });
         }
@@ -433,7 +433,7 @@ class AvatarManager {
     }
 
     downloadAvatar(client: ClientEntry) : Promise<DownloadFileTransfer> {
-        console.log("Downloading avatar %s", client.avatarId());
+        console.log(tr("Downloading avatar %s"), client.avatarId());
         return this.handle.requestFileDownload("", "/avatar_" + client.avatarId());
     }
 
@@ -480,8 +480,8 @@ class AvatarManager {
                 let array = new Uint8Array(0);
                 ft.on_fail = reason => {
                     this.load_finished(name);
-                    console.error("Could not download avatar " + client.properties.client_flag_avatar + " -> " + reason);
-                    chat.serverChat().appendError("Fail to download avatar for {0}. ({1})", client.clientNickName(), JSON.stringify(reason));
+                    console.error(tr("Could not download avatar %o -> %s"), client.properties.client_flag_avatar, reason);
+                    chat.serverChat().appendError(tr("Fail to download avatar for {0}. ({1})"), client.clientNickName(), JSON.stringify(reason));
                     reject(reason);
                 };
                 ft.on_start = () => {};
@@ -509,8 +509,8 @@ class AvatarManager {
                 ft.startTransfer();
             }).catch(reason => {
                 this.load_finished(name);
-                console.error("Error while downloading avatar! (" + JSON.stringify(reason) + ")");
-                chat.serverChat().appendError("Failed to request avatar download for {0}. ({1})", client.clientNickName(), JSON.stringify(reason));
+                console.error(tr("Error while downloading avatar! (%s)"), JSON.stringify(reason));
+                chat.serverChat().appendError(tr("Failed to request avatar download for {0}. ({1})"), client.clientNickName(), JSON.stringify(reason));
                 reject(reason);
             });
         });
@@ -532,7 +532,7 @@ class AvatarManager {
             else {
                 const type = image_type(avatar.base64);
                 const media = media_image_type(type);
-                console.debug("Avatar has an image type of %o (media: %o)", type, media);
+                console.debug(tr("avatar has an image type of %o (media: %o)"), type, media);
                 img.attr("src", "data:image/" + media + ";base64," + avatar.base64);
             }
             tag.append(img);
@@ -547,7 +547,7 @@ class AvatarManager {
                 else {
                     const type = image_type(avatar.base64);
                     const media = media_image_type(type);
-                    console.debug("Avatar has an image type of %o (media: %o)", type, media);
+                    console.debug(tr("Avatar has an image type of %o (media: %o)"), type, media);
                     img.attr("src", "data:image/" + media + ";base64," + avatar.base64);
                 }
                 console.debug("Avatar " + client.clientNickName() + " loaded :)");
@@ -559,9 +559,9 @@ class AvatarManager {
                     img.animate({opacity: 1}, 150);
                 });
             }).catch(reason => {
-                console.error("Could not load avatar for " + client.clientNickName() + ". Reason: " + reason);
+                console.error(tr("Could not load avatar for %s. Reason: %s"), client.clientNickName(), reason);
                 //TODO Broken image
-                loader.addClass("icon client-warning").attr("tag", "Could not load avatar " + client.clientNickName());
+                loader.addClass("icon client-warning").attr("tag", tr("Could not load avatar ") + client.clientNickName());
             });
         }
 

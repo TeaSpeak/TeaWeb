@@ -6,7 +6,7 @@ namespace Modals {
         const connectModal = createModal({
             header: function() {
                 let header = $.spawn("div");
-                header.text("Create a new connection");
+                header.text(tr("Create a new connection"));
                 return header;
             },
             body: function () {
@@ -81,7 +81,7 @@ namespace Modals {
                             connectIdentity = TSIdentityHelper.loadIdentityFromFileContains(reader.result as string);
 
                             console.log(connectIdentity.uid());
-                            if(!connectIdentity) tag.find(".error_message").text("Could not read identity! " + TSIdentityHelper.last_error());
+                            if(!connectIdentity) tag.find(".error_message").text(tr("Could not read identity! ") + TSIdentityHelper.last_error());
                             else {
                                 tag.find(".identity_string").val((connectIdentity as TeamSpeakIdentity).exported());
                                 settings.changeGlobal("connect_identity_teamspeak_identity", (connectIdentity as TeamSpeakIdentity).exported());
@@ -91,7 +91,7 @@ namespace Modals {
                             updateFields();
                         };
                         reader.onerror = ev => {
-                            tag.find(".error_message").text("Could not read identity file!").show();
+                            tag.find(".error_message").text(tr("Could not read identity file!")).show();
                             updateFields();
                         };
                         reader.readAsText(this.files[0]);
@@ -99,7 +99,7 @@ namespace Modals {
 
                     tag.find(".identity_string").on('change', function (this: HTMLInputElement) {
                         if(this.value.length == 0){
-                            tag.find(".error_message").text("Please select an identity!");
+                            tag.find(".error_message").text(tr("Please select an identity!"));
                             connectIdentity = undefined;
                         } else {
                             connectIdentity = TSIdentityHelper.loadIdentity(this.value);
@@ -119,7 +119,7 @@ namespace Modals {
                 {
                     const element = tag.find(".identity_config_" + IdentitifyType[IdentitifyType.TEAFORO]);
                     element.on('shown', ev => {
-                        console.log("Updating via shown");
+                        console.log(tr("Updating via shown"));
                         connectIdentity = forumIdentity;
 
                         if(connectIdentity) {
@@ -162,7 +162,6 @@ namespace Modals {
                     });
 
                     if(!settings.static("localhost_debug", false)) {
-                        console.trace("Removing debug connect option");
                         tag.find(".identity_select option[value=" + IdentitifyType[IdentitifyType.NICKNAME] + "]").remove();
                     }
                 }
@@ -179,7 +178,7 @@ namespace Modals {
 
                 let button = $.spawn("button");
                 button.addClass("connect_connect_button");
-                button.text("Connect");
+                button.text(tr("Connect"));
                 button.on("click", function () {
                     connectModal.close();
 

@@ -153,15 +153,15 @@ class CodecWrapperWorker extends BasicCodec {
 
     private onWorkerMessage(message: any) {
         if(Date.now() - message["timestamp"] > 5)
-            console.warn("Worker message stock time: %d", Date.now() - message["timestamp"]);
+            console.warn(tr("Worker message stock time: %d"), Date.now() - message["timestamp"]);
         if(!message["token"]) {
-            console.error("Invalid worker token!");
+            console.error(tr("Invalid worker token!"));
             return;
         }
 
         if(message["token"] == this._workerCallbackToken) {
             if(message["type"] == "loaded") {
-                console.log("[Codec] Got worker init response: Success: %o Message: %o", message["success"], message["message"]);
+                console.log(tr("[Codec] Got worker init response: Success: %o Message: %o"), message["success"], message["message"]);
                 if(message["success"]) {
                     if(this._workerCallbackResolve)
                         this._workerCallbackResolve();
@@ -176,7 +176,7 @@ class CodecWrapperWorker extends BasicCodec {
                 chat.serverChat().appendMessage(message["message"]);
                 return;
             }
-            console.log("Costume callback! (%o)", message);
+            console.log(tr("Costume callback! (%o)"), message);
             return;
         }
 
@@ -188,6 +188,7 @@ class CodecWrapperWorker extends BasicCodec {
             }
         }
 
+        //TODO tr
         console.error("Could not find worker token entry! (" + message["token"] + ")");
     }
 
@@ -198,7 +199,7 @@ class CodecWrapperWorker extends BasicCodec {
 
             this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerCodec.js");
             this._worker.onmessage = event => this.onWorkerMessage(event.data);
-            this._worker.onerror = (error: ErrorEvent) => reject("Failed to load worker (" + error.message + ")");
+            this._worker.onerror = (error: ErrorEvent) => reject("Failed to load worker (" + error.message + ")"); //TODO tr
         });
     }
 }

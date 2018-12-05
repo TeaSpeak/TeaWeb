@@ -49,8 +49,8 @@ abstract class BasicCodec implements Codec {
 
 
     encodeSamples(cache: CodecClientCache, pcm: AudioBuffer) {
-        this._encodeResampler.resample(pcm).catch(error => console.error("Could not resample PCM data for codec. Error:" + error))
-            .then(buffer => this.encodeSamples0(cache, buffer as any)).catch(error => console.error("Could not encode PCM data for codec. Error:" + error))
+        this._encodeResampler.resample(pcm).catch(error => console.error(tr("Could not resample PCM data for codec. Error: %o"), error))
+            .then(buffer => this.encodeSamples0(cache, buffer as any)).catch(error => console.error(tr("Could not encode PCM data for codec. Error: %o"), error))
 
     }
 
@@ -74,12 +74,12 @@ abstract class BasicCodec implements Codec {
                 if(result instanceof Uint8Array) {
                     let time = Date.now() - encodeBegin;
                     if(time > 20)
-                        console.error("Required time: %d", time);
+                        console.error(tr("Required time: %d"), time);
                     //if(time > 20)
                     //   chat.serverChat().appendMessage("Required decode time: " + time);
                     this.on_encoded_data(result);
                 }
-                else console.error("[Codec][" + this.name() + "] Could not encode buffer. Result: " + result);
+                else console.error("[Codec][" + this.name() + "] Could not encode buffer. Result: " + result); //TODO tr
             });
         }
         return true;

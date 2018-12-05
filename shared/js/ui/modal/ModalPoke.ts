@@ -10,7 +10,7 @@ namespace Modals {
     }, message) {
         let modal;
         modal = createModal({
-            header: "You have been poked!",
+            header: tr("You have been poked!"),
             body: () => {
                 let template = $("#tmpl_poke_popup").renderTag({
                     "invoker": ClientEntry.chatTag(invoker.id, invoker.name, invoker.unique_id, true),

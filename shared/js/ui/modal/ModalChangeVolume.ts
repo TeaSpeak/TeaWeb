@@ -7,7 +7,7 @@ namespace Modals {
         const connectModal = createModal({
             header: function() {
                 let header = $.spawn("div");
-                header.text("Change volume");
+                header.text(tr("Change volume"));
                 return header;
             },
             body: function () {
@@ -26,7 +26,7 @@ namespace Modals {
 
 
                 let buttonReset = $.spawn("button");
-                buttonReset.text("Reset");
+                buttonReset.text(tr("Reset"));
                 buttonReset.on("click", function () {
                     updateCallback(100);
                 });
@@ -34,7 +34,7 @@ namespace Modals {
 
 
                 let buttonCancel = $.spawn("button");
-                buttonCancel.text("Cancel");
+                buttonCancel.text(tr("Cancel"));
                 buttonCancel.on("click", function () {
                     updateCallback(current * 100);
                     connectModal.close();
@@ -43,7 +43,7 @@ namespace Modals {
 
 
                 let buttonOk = $.spawn("button");
-                buttonOk.text("OK");
+                buttonOk.text(tr("OK"));
                 buttonOk.on("click", function () {
                     connectModal.close();
                 });

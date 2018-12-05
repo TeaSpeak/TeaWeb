@@ -62,12 +62,12 @@ namespace MessageHelper {
             }
 
             if(objects.length < number)
-                console.warn("Message to format contains invalid index (" + number + ")");
+                console.warn(tr("Message to format contains invalid index (%o)"), number);
 
             result.push(...this.formatElement(objects[number]));
             found = found + 1 + offset;
             begin = found + 1;
-            console.log("Offset: " + offset + " Number: " + number);
+            console.log(tr("Offset: %d Number: %d"), offset, number);
         } while(found++);
 
         return result;
@@ -201,7 +201,7 @@ class ChatEntry {
             actions.push({
                 type: MenuEntryType.ENTRY,
                 icon: "",
-                name: "Clear",
+                name: tr("Clear"),
                 callback: () => {
                     _this.history = [];
                     _this.displayHistory();
@@ -211,7 +211,7 @@ class ChatEntry {
                 actions.push({
                     type: MenuEntryType.ENTRY,
                     icon: "client-tab_close_button",
-                    name: "Close",
+                    name: tr("Close"),
                     callback: () => {
                         chat.deleteChat(_this);
                     }
@@ -221,7 +221,7 @@ class ChatEntry {
             actions.push({
                 type: MenuEntryType.ENTRY,
                 icon: "client-tab_close_button",
-                name: "Close all private tabs",
+                name: tr("Close all private tabs"),
                 callback: () => {
                     //TODO Implement this?
                 }
@@ -244,7 +244,7 @@ class ChatEntry {
     }
 
     set name(newName : string) {
-        console.log("Change name!");
+        console.log(tr("Change name!"));
         this._name = newName;
         this.htmlTag.find(".name").text(this._name);
     }
@@ -253,7 +253,7 @@ class ChatEntry {
         if(this._closeable == flag) return;
 
         this._closeable = flag;
-        console.log("Set closeable: " + this._closeable);
+        console.log(tr("Set closeable: ") + this._closeable);
         if(flag) this.htmlTag.find(".btn_close").show();
         else this.htmlTag.find(".btn_close").hide();
     }
@@ -318,14 +318,14 @@ class ChatBox {
 
         this.createChat("chat_server", ChatType.SERVER).onMessageSend = (text: string) => {
             if(!globalClient.serverConnection) {
-                chat.serverChat().appendError("Could not send chant message (Not connected)");
+                chat.serverChat().appendError(tr("Could not send chant message (Not connected)"));
                 return;
             }
             globalClient.serverConnection.sendMessage(text, ChatType.SERVER);
         };
         this.createChat("chat_channel", ChatType.CHANNEL).onMessageSend = (text: string) => {
             if(!globalClient.serverConnection) {
-                chat.channelChat().appendError("Could not send chant message (Not connected)");
+                chat.channelChat().appendError(tr("Could not send chant message (Not connected)"));
                 return;
             }
 

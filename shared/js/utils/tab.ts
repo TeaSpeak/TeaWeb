@@ -17,7 +17,7 @@ if(typeof (customElements) !== "undefined") {
     customElements.define('x-tag', X_Tag, { extends: 'div' });
     customElements.define('x-content', X_Content, { extends: 'div' });
 } else {
-    console.warn("Could not defied tab customElements!");
+    console.warn(tr("Could not defied tab customElements!"));
 }
 
 var TabFunctions = {

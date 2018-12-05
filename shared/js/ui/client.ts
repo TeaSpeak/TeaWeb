@@ -209,7 +209,7 @@ class ClientEntry {
         return [{
             type: MenuEntryType.SUB_MENU,
             icon: "client-permission_server_groups",
-            name: "Set server group",
+            name: tr("Set server group"),
             sub_menu: [
                 {
                     type: MenuEntryType.ENTRY,
@@ -236,14 +236,14 @@ class ClientEntry {
         },{
             type: MenuEntryType.SUB_MENU,
             icon: "client-permission_channel",
-            name: "Set channel group",
+            name: tr("Set channel group"),
             sub_menu: [
                 ...channel_groups
             ]
         },{
             type: MenuEntryType.SUB_MENU,
             icon: "client-permission_client",
-            name: "Permissions",
+            name: tr("Permissions"),
             disabled: true,
             sub_menu: [ ]
         }];
@@ -256,7 +256,7 @@ class ClientEntry {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-change_nickname",
-                name: "<b>Open text chat</b>",
+                name: tr("<b>Open text chat</b>"),
                 callback: function () {
                     chat.activeChat = _this.chat(true);
                     chat.focus();
@@ -264,10 +264,11 @@ class ClientEntry {
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-poke",
-                name: "Poke client",
+                name: tr("Poke client"),
                 callback: function () {
-                    createInputModal("Poke client", "Poke message:<br>", text => true, result => {
+                    createInputModal(tr("Poke client"), tr("Poke message:<br>"), text => true, result => {
                         if(typeof(result) === "string") {
+                            //TODO tr
                             console.log("Poking client " + _this.clientNickName() + " with message " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientpoke", {
                                 clid: _this.clientId(),
@@ -280,10 +281,11 @@ class ClientEntry {
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-edit",
-                name: "Change description",
+                name: tr("Change description"),
                 callback: function () {
-                    createInputModal("Change client description", "New description:<br>", text => true, result => {
+                    createInputModal(tr("Change client description"), tr("New description:<br>"), text => true, result => {
                         if(typeof(result) === "string") {
+                            //TODO tr
                             console.log("Changing " + _this.clientNickName() + "'s description to " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientedit", {
                                 clid: _this.clientId(),
@@ -299,7 +301,7 @@ class ClientEntry {
             MenuEntry.HR(), {
                 type: MenuEntryType.ENTRY,
                 icon: "client-move_client_to_own_channel",
-                name: "Move client to your channel",
+                name: tr("Move client to your channel"),
                 callback: () => {
                     this.channelTree.client.serverConnection.sendCommand("clientmove", {
                         clid: this.clientId(),
@@ -309,10 +311,11 @@ class ClientEntry {
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-kick_channel",
-                name: "Kick client from channel",
+                name: tr("Kick client from channel"),
                 callback: () => {
-                    createInputModal("Kick client from channel", "Kick reason:<br>", text => true, result => {
+                    createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
                         if(result) {
+                            //TODO tr
                             console.log("Kicking client " + _this.clientNickName() + " from channel with reason " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientkick", {
                                 clid: _this.clientId(),
@@ -326,10 +329,11 @@ class ClientEntry {
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-kick_server",
-                name: "Kick client fom server",
+                name: tr("Kick client fom server"),
                 callback: () => {
-                    createInputModal("Kick client from server", "Kick reason:<br>", text => true, result => {
+                    createInputModal(tr("Kick client from server"), tr("Kick reason:<br>"), text => true, result => {
                         if(result) {
+                            //TODO tr
                             console.log("Kicking client " + _this.clientNickName() + " from server with reason " + result);
                             _this.channelTree.client.serverConnection.sendCommand("clientkick", {
                                 clid: _this.clientId(),
@@ -343,7 +347,7 @@ class ClientEntry {
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-ban_client",
-                name: "Ban client",
+                name: tr("Ban client"),
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
                     Modals.spawnBanClient(this.properties.client_nickname, (data) => {
@@ -379,7 +383,7 @@ class ClientEntry {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-volume",
-                name: "Change Volume",
+                name: tr("Change Volume"),
                 callback: () => {
                     Modals.spawnChangeVolume(this.audioController.volume, volume => {
                         settings.changeServer("volume_client_" + this.clientUid(), volume);
@@ -519,7 +523,7 @@ class ClientEntry {
     }
 
     updateVariables(...variables: {key: string, value: string}[]) {
-        let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, "Update properties (%i) of %s (%i)", variables.length, this.clientNickName(), this.clientId());
+        let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, tr("Update properties (%i) of %s (%i)"), variables.length, this.clientNickName(), this.clientId());
 
         let update_icon_status = false;
         let update_icon_speech = false;
@@ -529,6 +533,7 @@ class ClientEntry {
         for(let variable of variables) {
             JSON.map_field_to(this._properties, variable.value, variable.key);
 
+            //TODO tr
             group.log("Updating client " + this.clientId() + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "client_nickname") {
                 this.tag.find(".name").text(variable.value);
@@ -545,6 +550,7 @@ class ClientEntry {
             }
             if(variable.key == "client_unique_identifier") {
                 this.audioController.volume = parseFloat(settings.server("volume_client_" + this.clientUid(), "1"));
+                //TODO tr
                 console.error("Updated volume from config " + this.audioController.volume + " - " + "volume_client_" + this.clientUid() + " - " + settings.server("volume_client_" + this.clientUid(), "1"));
                 console.log(this.avatarId());
             }
@@ -705,17 +711,17 @@ class LocalClientEntry extends ClientEntry {
 
         spawn_context_menu(x, y,
             {
-                name: "<b>Change name</b>",
+                name: tr("<b>Change name</b>"),
                 icon: "client-change_nickname",
                 callback: () =>_self.openRename(),
                 type: MenuEntryType.ENTRY
             }, {
-                name: "Change description",
+                name: tr("Change description"),
                 icon: "client-edit",
                 callback: () => {
-                    createInputModal("Change own description", "New description:<br>", text => true, result => {
+                    createInputModal(tr("Change own description"), tr("New description:<br>"), text => true, result => {
                         if(result) {
-                            console.log("Changing own description to " + result);
+                            console.log(tr("Changing own description to %s"), result);
                             _self.channelTree.client.serverConnection.sendCommand("clientedit", {
                                 clid: _self.clientId(),
                                 client_description: result
@@ -773,9 +779,9 @@ class LocalClientEntry extends ClientEntry {
 
             elm.text(_self.clientNickName());
             _self.handle.serverConnection.updateClient("client_nickname", text).then((e) => {
-                chat.serverChat().appendMessage("Nickname successfully changed");
+                chat.serverChat().appendMessage(tr("Nickname successfully changed"));
             }).catch((e: CommandResult) => {
-                chat.serverChat().appendError("Could not change nickname (" + e.extra_message + ")");
+                chat.serverChat().appendError(tr("Could not change nickname ({})"),  e.extra_message);
                 _self.openRename();
             });
         });
@@ -825,11 +831,11 @@ class MusicClientEntry extends ClientEntry {
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
         spawn_context_menu(x, y,
             {
-                name: "<b>Change bot name</b>",
+                name: tr("<b>Change bot name</b>"),
                 icon: "client-change_nickname",
                 disabled: false,
                 callback: () => {
-                    createInputModal("Change music bots nickname", "New nickname:<br>", text => text.length >= 3 && text.length <= 31, result => {
+                    createInputModal(tr("Change music bots nickname"), tr("New nickname:<br>"), text => text.length >= 3 && text.length <= 31, result => {
                         if(result) {
                             this.channelTree.client.serverConnection.sendCommand("clientedit", {
                                 clid: this.clientId(),
@@ -841,11 +847,11 @@ class MusicClientEntry extends ClientEntry {
                 },
                 type: MenuEntryType.ENTRY
             }, {
-                name: "Change bot description",
+                name: tr("Change bot description"),
                 icon: "client-edit",
                 disabled: false,
                 callback: () => {
-                    createInputModal("Change music bots description", "New description:<br>", text => true, result => {
+                    createInputModal(tr("Change music bots description"), tr("New description:<br>"), text => true, result => {
                         if(typeof(result) === 'string') {
                             this.channelTree.client.serverConnection.sendCommand("clientedit", {
                                 clid: this.clientId(),
@@ -857,17 +863,17 @@ class MusicClientEntry extends ClientEntry {
                 },
                 type: MenuEntryType.ENTRY
             }, {
-                name: "Open music panel",
+                name: tr("Open music panel"),
                 icon: "client-edit",
                 disabled: true,
                 callback: () => {},
                 type: MenuEntryType.ENTRY
             }, {
-                name: "Quick url replay",
+                name: tr("Quick url replay"),
                 icon: "client-edit",
                 disabled: false,
                 callback: () => {
-                    createInputModal("Please enter the URL", "URL:", text => true, result => {
+                    createInputModal(tr("Please enter the URL"), tr("URL:"), text => true, result => {
                         if(result) {
                             this.channelTree.client.serverConnection.sendCommand("musicbotqueueadd", {
                                 bot_id: this.properties.client_database_id,
@@ -877,7 +883,8 @@ class MusicClientEntry extends ClientEntry {
                                 if(error instanceof CommandResult) {
                                     error = error.extra_message || error.message;
                                 }
-                                createErrorModal("Failed to replay url", "Failed to enqueue url:<br>" + error).open();
+                                //TODO tr
+                                createErrorModal(tr("Failed to replay url"), "Failed to enqueue url:<br>" + error).open();
                             });
                         }
                     }, { width: 400, maxLength: 255 }).open();
@@ -889,7 +896,7 @@ class MusicClientEntry extends ClientEntry {
             MenuEntry.HR(),{
                 type: MenuEntryType.ENTRY,
                 icon: "client-move_client_to_own_channel",
-                name: "Move client to your channel",
+                name: tr("Move client to your channel"),
                 callback: () => {
                     this.channelTree.client.serverConnection.sendCommand("clientmove", {
                         clid: this.clientId(),
@@ -899,11 +906,11 @@ class MusicClientEntry extends ClientEntry {
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-kick_channel",
-                name: "Kick client from channel",
+                name: tr("Kick client from channel"),
                 callback: () => {
-                    createInputModal("Kick client from channel", "Kick reason:<br>", text => true, result => {
+                    createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
                         if(result) {
-                            console.log("Kicking client " + this.clientNickName() + " from channel with reason " + result);
+                            console.log(tr("Kicking client %o from channel with reason %o"), this.clientNickName(), result);
                             this.channelTree.client.serverConnection.sendCommand("clientkick", {
                                 clid: this.clientId(),
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
@@ -917,7 +924,7 @@ class MusicClientEntry extends ClientEntry {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-volume",
-                name: "Change Volume",
+                name: tr("Change Volume"),
                 callback: () => {
                     Modals.spawnChangeVolume(this.audioController.volume, volume => {
                         settings.changeServer("volume_client_" + this.clientUid(), volume);
@@ -929,12 +936,12 @@ class MusicClientEntry extends ClientEntry {
             },
             MenuEntry.HR(),
             {
-                name: "Delete bot",
+                name: tr("Delete bot"),
                 icon: "client-delete",
                 disabled: false,
                 callback: () => {
-                    const tag = $.spawn("div").append(MessageHelper.formatMessage("Do you really want to delete {0}", this.createChatTag(false)));
-                    Modals.spawnYesNo("Are you sure?", $.spawn("div").append(tag), result => {
+                    const tag = $.spawn("div").append(MessageHelper.formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
+                    Modals.spawnYesNo(tr("Are you sure?"), $.spawn("div").append(tag), result => {
                        if(result) {
                            this.channelTree.client.serverConnection.sendCommand("musicbotdelete", {
                                bot_id: this.properties.client_database_id

@@ -5,7 +5,7 @@ namespace Modals {
 
         let modal: Modal;
         modal = createModal({
-            header: base && base.banid > 0 ? "Edit ban" : "Add ban",
+            header: base && base.banid > 0 ? tr("Edit ban") : tr("Add ban"),
             body: () => {
                 let template = $("#tmpl_ban_create").renderTag();
                 template = $.spawn("div").append(template);

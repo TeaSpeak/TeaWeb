@@ -45,11 +45,11 @@ if(!JSON.map_to) {
 
         for (let field of variables) {
             if (!json[field]) {
-                console.trace("Json does not contains %s", field);
+                console.trace(tr("Json does not contains %s"), field);
                 continue;
             }
             if (!validator(field, json[field])) {
-                console.trace("Validator results in false for %s", field);
+                console.trace(tr("Validator results in false for %s"), field);
                 continue;
             }
 
@@ -68,7 +68,7 @@ if(!JSON.map_field_to) {
             object[field as string] = parseFloat(value);
         else if(field_type == "boolean")
             object[field as string] = value == "1" || value == "true";
-        else console.warn("Invalid object type %s for entry %s", field_type, field);
+        else console.warn(tr("Invalid object type %s for entry %s"), field_type, field);
 
         return object;
     }
@@ -163,17 +163,17 @@ function formatDate(secs: number) : string {
 
     let result = "";
     if(years > 0)
-        result += years + " years ";
+        result += years + " " + tr("years") + " ";
     if(years > 0 || days > 0)
-        result += days + " days ";
+        result += days + " " + tr("days") + " ";
     if(years > 0 || days > 0 || hours > 0)
-        result += hours + " hours ";
+        result += hours + " " + tr("hours") + " ";
     if(years > 0 || days > 0 || hours > 0 || minutes > 0)
-        result += minutes + " minutes ";
+        result += minutes + " " + tr("minutes") + " ";
     if(years > 0 || days > 0 || hours > 0 || minutes > 0 || seconds > 0)
-        result += seconds + " seconds ";
+        result += seconds + " " + tr("seconds") + " ";
     else
-        result = "now ";
+        result = tr("now") + " ";
 
     return result.substr(0, result.length - 1);
 }

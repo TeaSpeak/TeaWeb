@@ -14,7 +14,7 @@ namespace Modals {
                 footer.css("text-align", "right");
 
                 let button_yes = $.spawn("button");
-                button_yes.text("Yes");
+                button_yes.text(tr("Yes"));
                 button_yes.click(() => {
                     modal.close();
                     callback(true);
@@ -22,7 +22,7 @@ namespace Modals {
                 footer.append(button_yes);
 
                 let button_no = $.spawn("button");
-                button_no.text("No");
+                button_no.text(tr("No"));
                 button_no.click(() => {
                     modal.close();
                     callback(false);

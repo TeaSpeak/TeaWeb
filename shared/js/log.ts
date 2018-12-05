@@ -17,6 +17,7 @@ namespace log {
         ERROR
     }
 
+    //TODO add translation
     let category_mapping = new Map<number, string>([
         [LogCategory.CHANNEL,       "Channel    "],
         [LogCategory.CLIENT,        "Client     "],

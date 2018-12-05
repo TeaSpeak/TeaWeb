@@ -14,9 +14,9 @@ class AudioController {
 
     static initializeAudioController() {
         if(!audio.player.initialize())
-            console.warn("Failed to initialize audio controller!");
+            console.warn(tr("Failed to initialize audio controller!"));
         sound.initialize().then(() => {
-            console.log("Sounds initialitzed");
+            console.log(tr("Sounds initialitzed"));
         });
         //this._globalReplayScheduler = setInterval(() => { AudioController.invokeNextReplay(); }, 20); //Fix me
     }
@@ -105,20 +105,20 @@ class AudioController {
 
     playBuffer(buffer: AudioBuffer) {
         if(!buffer) {
-            console.warn("[AudioController] Got empty or undefined buffer! Dropping it");
+            console.warn(tr("[AudioController] Got empty or undefined buffer! Dropping it"));
             return;
         }
         if(!this.speakerContext) {
-            console.warn("[AudioController] Failed to replay audio. Global audio context not initialized yet!");
+            console.warn(tr("[AudioController] Failed to replay audio. Global audio context not initialized yet!"));
             return;
         }
         if (buffer.sampleRate != this.speakerContext.sampleRate)
-            console.warn("[AudioController] Source sample rate isn't equal to playback sample rate! (" + buffer.sampleRate + " | " + this.speakerContext.sampleRate + ")");
+            console.warn(tr("[AudioController] Source sample rate isn't equal to playback sample rate! (%o | %o)"), buffer.sampleRate, this.speakerContext.sampleRate);
 
         this.applyVolume(buffer);
         this.audioCache.push(buffer);
         if(this.playerState == PlayerState.STOPPED || this.playerState == PlayerState.STOPPING) {
-            console.log("[Audio] Starting new playback");
+            console.log(tr("[Audio] Starting new playback"));
             this.playerState = PlayerState.PREBUFFERING;
             //New audio
         }
@@ -134,11 +134,11 @@ class AudioController {
                     } else break;
                 }
                 if(this.playerState == PlayerState.PREBUFFERING) {
-                    console.log("[Audio] Prebuffering succeeded (Replaying now)");
+                    console.log(tr("[Audio] Prebuffering succeeded (Replaying now)"));
                     this.onSpeaking();
                 } else {
                     if(this.allowBuffering)
-                        console.log("[Audio] Buffering succeeded (Replaying now)");
+                        console.log(tr("[Audio] Buffering succeeded (Replaying now)"));
                 }
                 this.playerState = PlayerState.PLAYING;
             case PlayerState.PLAYING:
@@ -153,7 +153,7 @@ class AudioController {
         let buffer: AudioBuffer;
         while(buffer = this.audioCache.pop_front()) {
             if(this.playingAudioCache.length >= this._latencyBufferLength * 1.5 + 3) {
-                console.log("Dropping buffer because playing queue grows to much");
+                console.log(tr("Dropping buffer because playing queue grows to much"));
                 continue; /* drop the data (we're behind) */
             }
             if(this._timeIndex < this.speakerContext.currentTime) this._timeIndex = this.speakerContext.currentTime;
@@ -196,7 +196,7 @@ class AudioController {
 
                 this.playerState = PlayerState.BUFFERING;
                 if(!this.allowBuffering)
-                    console.warn("[Audio] Detected a buffer underflow!");
+                    console.warn(tr("[Audio] Detected a buffer underflow!"));
                 this.reset_buffer_timeout(true);
             } else {
                 this.playerState = PlayerState.STOPPED;
@@ -211,7 +211,7 @@ class AudioController {
         if(restart)
             this._buffer_timeout = setTimeout(() => {
                 if(this.playerState == PlayerState.PREBUFFERING || this.playerState == PlayerState.BUFFERING) {
-                    console.warn("[Audio] Buffering exceeded timeout. Flushing and stopping replay");
+                    console.warn(tr("[Audio] Buffering exceeded timeout. Flushing and stopping replay"));
                     this.stopAudio();
                 }
                 this._buffer_timeout = undefined;

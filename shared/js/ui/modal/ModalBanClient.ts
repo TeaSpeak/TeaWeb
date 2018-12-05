@@ -12,7 +12,7 @@ namespace Modals {
     }) => void) {
         const connectModal = createModal({
             header: function() {
-                return "Ban client";
+                return tr("Ban client");
             },
             body: function () {
                 let tag = $("#tmpl_client_ban").renderTag({

@@ -1,3 +1,5 @@
+
+//FIXME fix display critical error before load
 namespace app {
     export enum Type {
         UNDEFINED,
@@ -157,6 +159,7 @@ function loadDebug() {
         ["wasm/TeaWeb-Identity.js"],
 
         //Load general API's
+        "js/i18n/localize.js",
         "js/log.js",
 
         "js/sound/Sounds.js",

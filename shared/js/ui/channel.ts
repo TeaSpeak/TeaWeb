@@ -377,21 +377,21 @@ class ChannelEntry {
         spawn_context_menu(x, y, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_switch",
-                name: "<b>Switch to channel</b>",
+                name: tr("<b>Switch to channel</b>"),
                 callback: () => this.joinChannel()
             },
             MenuEntry.HR(),
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_edit",
-                name: "Edit channel",
+                name: tr("Edit channel"),
                 invalidPermission: !channelModify,
                 callback: () => {
                     Modals.createChannelModal(this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
                         if(changes) {
                             changes["cid"] = this.channelId;
                             this.channelTree.client.serverConnection.sendCommand("channeledit", changes);
-                            log.info(LogCategory.CHANNEL, "Changed channel properties of channel %s: %o", this.channelName(), changes);
+                            log.info(LogCategory.CHANNEL, tr("Changed channel properties of channel %s: %o"), this.channelName(), changes);
                         }
 
                         if(permissions && permissions.length > 0) {
@@ -416,7 +416,7 @@ class ChannelEntry {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_delete",
-                name: "Delete channel",
+                name: tr("Delete channel"),
                 invalidPermission: !flagDelete,
                 callback: () => {
                     this.channelTree.client.serverConnection.sendCommand("channeldelete", {cid: this.channelId}).then(() => {
@@ -428,15 +428,17 @@ class ChannelEntry {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-addon-collection",
-                name: "Create music bot",
+                name: tr("Create music bot"),
                 callback: () => {
                     this.channelTree.client.serverConnection.sendCommand("musicbotcreate", {cid: this.channelId}).then(() => {
-                        createInfoModal("Bot successfully created", "But has been successfully created.").open();
+                        createInfoModal(tr("Bot successfully created"), tr("But has been successfully created.")).open();
                     }).catch(error => {
                         if(error instanceof CommandResult) {
                             error = error.extra_message || error.message;
                         }
-                        createErrorModal("Failed to create bot", "Failed to create the music bot:<br>" + error).open();
+
+                        //TODO tr
+                        createErrorModal(tr("Failed to create bot"), "Failed to create the music bot:<br>" + error).open();
                     });
                 }
             },
@@ -444,13 +446,13 @@ class ChannelEntry {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_create_sub",
-                name: "Create sub channel",
+                name: tr("Create sub channel"),
                 invalidPermission: !(channelCreate && this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_CHILD).granted(1)),
                 callback: () => this.channelTree.spawnCreateChannel(this)
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_create",
-                name: "Create channel",
+                name: tr("Create channel"),
                 invalidPermission: !channelCreate,
                 callback: () => this.channelTree.spawnCreateChannel()
             },
@@ -473,7 +475,7 @@ class ChannelEntry {
             if(options.indexOf("spacer") == -1) break parseType;
             options = options.substr(0, options.indexOf("spacer"));
 
-            console.log("Channel options: '" + options + "'");
+            console.log(tr("Channel options: '%o'"), options);
             if(options.length == 0) options = "l";
             else if(options.length > 1) options = options[0];
 
@@ -482,7 +484,7 @@ class ChannelEntry {
             else break parseType;
 
             this._formatedChannelName = this.properties.channel_name.substr(end + 1);
-            console.log("Got channel name: " + this._formatedChannelName);
+            console.log(tr("Got channel name: %o"), this._formatedChannelName);
         }
 
         let self = this.channelTag();
@@ -505,25 +507,25 @@ class ChannelEntry {
                 do {
                     channelName.text(name = name + name);
                 } while (channelName.parent().width() >= channelName.width() && ++index < 64);
-                if(index == 64) console.warn(LogCategory.CHANNEL, "Repeating spacer took too much repeats!");
+                if(index == 64) console.warn(LogCategory.CHANNEL, tr("Repeating spacer took too much repeats!"));
                 if(lastSuccess.length > 0) {
                     channelName.text(lastSuccess);
                     self.addClass("c");
                 }
             }
         }
-        console.log("Align: " + this._channelAlign);
+        console.log(tr("Align: %s"), this._channelAlign);
     }
 
     updateVariables(...variables: {key: string, value: string}[]) {
-        let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL, "Update properties (%i) of %s (%i)", variables.length, this.channelName(), this.getChannelId());
+        let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
 
         for(let variable of variables) {
             let key = variable.key;
             let value = variable.value;
             JSON.map_field_to(this.properties, value, variable.key);
 
-            group.log("Updating property " + key + " = '%s' -> %o", value, this.properties[key]);
+            group.log(tr("Updating property %s = '%s' -> %o"), key, value, this.properties[key]);
 
             if(key == "channel_name") {
                 this.__updateChannelName();
@@ -611,7 +613,7 @@ class ChannelEntry {
         if(this.properties.channel_flag_password == true &&
             !this._cachedPassword &&
             !this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).granted(1)) {
-            createInputModal("Channel password", "Channel password:", () => true, text => {
+            createInputModal(tr("Channel password"), tr("Channel password:"), () => true, text => {
                 if(typeof(text) == typeof(true)) return;
                 helpers.hashPassword(text as string).then(result => {
                     this._cachedPassword = result;
@@ -638,7 +640,6 @@ function chat_channel_contextmenu(_element: any, event: any) {
     event.preventDefault();
 
     let element = $(_element);
-    console.log("Context menue for " + element.attr("channelName"));
     let chid : number = Number.parseInt(element.attr("channelId"));
     let channel = globalClient.channelTree.findChannel(chid);
     if(!channel) {
