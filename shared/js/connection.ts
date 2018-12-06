@@ -1016,9 +1016,9 @@ class ConnectionCommandHandler {
     handleNotifyMusicPlayerInfo(json) {
         json = json[0];
 
-        let bot = this.connection._client.channelTree.find_client_by_dbid(json["botid"]);
+        let bot = this.connection._client.channelTree.find_client_by_dbid(json["bot_id"]);
         if(!bot || !(bot instanceof MusicClientEntry)) {
-            log.warn(LogCategory.CLIENT, tr("Got music player info for unknown or invalid bot! (ID: %i, Entry: %o)"), json["botid"], bot);
+            log.warn(LogCategory.CLIENT, tr("Got music player info for unknown or invalid bot! (ID: %i, Entry: %o)"), json["bot_id"], bot);
             return;
         }
 
