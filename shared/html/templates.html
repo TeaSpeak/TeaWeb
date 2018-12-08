@@ -5,7 +5,7 @@
         <title>TeaSpeak-Web client templates</title>
     </head>
     <body>
-        <!-- main frame -->
+        <!-- main frame TODO tr -->
         <script class="jsrender-template" id="tmpl_main" type="text/html">
             <div class="app-container">
                 <div class="app">
@@ -105,33 +105,33 @@
             <div style="margin-top: 5px;">
                 <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">
                     <div style="width: 68%; margin-bottom: 5px">
-                        <div>Remote address and port:</div>
+                        <div>{{tr "Remote address and port:" /}}</div>
                         <input type="text" style="width: 100%" class="connect_address" value="unknown">
                     </div>
                     <div style="width: 20%">
-                        <div>Server password:</div>
+                        <div>{{tr "Server password:" /}}</div>
                         <form name="server_password_form" onsubmit="return false;">
-                            <input type="password" if="connect_server_password_{{rnd '0~13377331'/}}" autocomplete="off" style="width: 100%" class="connect_password">
+                            <input type="password" id="connect_server_password_{{rnd '0~13377331'/}}" autocomplete="off" style="width: 100%" class="connect_password">
                         </form>
                     </div>
                 </div>
                 <div>
-                    <div>Nickname:</div>
+                    <div>{{tr "Nickname:" /}}</div>
                     <input type="text" style="width: 100%" class="connect_nickname" value="">
                 </div>
                 <hr>
                 <div class="group_box">
                     <div style="display: flex; justify-content: space-between;">
-                        <div style="text-align: right;">Identity Settings</div>
+                        <div style="text-align: right;">{{tr "Identity Settings" /}}</div>
                         <select class="identity_select">
-                            <option name="identity_type" value="TEAFORO">Forum Account</option>
-                            <option name="identity_type" value="TEAMSPEAK">TeamSpeak</option>
-                            <option name="identity_type" value="NICKNAME">Nickname (Debug purposes only!)</option> <!-- Only available on localhost for debug -->
+                            <option name="identity_type" value="TEAFORO">{{tr "Forum Account" /}}</option>
+                            <option name="identity_type" value="TEAMSPEAK">{{tr "TeamSpeak" /}}</option>
+                            <option name="identity_type" value="NICKNAME">{{tr "Nickname (Debug purposes only!)" /}}</option> <!-- Only available on localhost for debug -->
                         </select>
                     </div>
                     <hr>
                     <div class="identity_config_TEAMSPEAK identity_config">
-                        Please enter your exported TS3 Identity string bellow or select your exported Identity<br>
+                        {{tr "Please enter your exported TS3 Identity string bellow or select your exported Identity"/}}<br>
                         <div style="width: 100%; display: flex; justify-content: stretch; flex-direction: row">
                             <input placeholder="Identity string" style="min-width: 60%; flex-shrink: 1; flex-grow: 2; margin: 5px;" class="identity_string">
                             <div style="max-width: 200px; flex-grow: 1; flex-shrink: 4; margin: 5px"><input style="display: flex; width: 100%;" class="identity_file" type="file"></div>
@@ -139,16 +139,17 @@
                     </div>
                     <div class="identity_config_TEAFORO identity_config">
                         <div class="connected">
-                            You're using your forum account as verification
+                            {{tr "You're using your forum account as verification"/}}
                         </div>
                         <div class="disconnected">
+                            <!-- TODO tr -->
                             You cant use your TeaSpeak forum account.<br>
                             You're not connected!<br>
                             Click {{if !client}}<a href="{{:forum_path}}login.php">here</a>{{else}}<a href="#" class="native-teaforo-login">here</a>{{/if}} to login via the TeaSpeak forum.
                         </div>
                     </div>
                     <div class="identity_config_NICKNAME identity_config">
-                        This is just for debug and uses the name as unique identifier
+                        {{tr "This is just for debug and uses the name as unique identifier" /}}
                     </div>
 
                     <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>
@@ -160,84 +161,85 @@
         <script class="jsrender-template" id="tmpl_channel_edit" type="text/html">
             <div class="align_column general_properties">
                 <div class="properties">
-                    <a class="key">Name:</a>
+                    <a class="key">{{tr "Name:"/}}</a>
                     <input class="value channel_name" value="{{>channel_name}}"/>
 
-                    <a class="key">Password:</a>
+                    <a class="key">{{tr "Password:"/}}</a>
 
                     <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
                     <!-- Just display a random value here-->
                     <input class="value channel_password" type="password" id="field_channel_password_{{rnd '0~13377331'/}}" {{if channel_flag_password}} value="WolverinDEV"{{/if}}/>
 
-                    <a class="key">Topic:</a>
+                    <a class="key">{{tr "Topic:"/}}</a>
                     <input class="value channel_topic" value="{{>channel_topic}}"/>
 
-                    <a class="key">Description:</a>
+                    <a class="key">{{tr "Description:"/}}</a>
                     <textarea class="value channel_description" style="height: 150px; resize: none">{{>channel_description}}</textarea>
                 </div>
             </div>
             <div style="margin-bottom: 5px"></div>
             <x-tab>
                 <x-entry>
-                    <x-tag>Standard</x-tag>
+                    <x-tag>{{tr "Standard" /}}</x-tag>
                     <x-content>
                         <div class="settings_standard" style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly">
                             <div style="vertical-align: center; margin: 20px;">
-                                <a>Channel Type</a><br>
+                                <a>{{tr "Channel Type" /}}</a><br>
                                 <fieldset style="border: 2px solid gray;border-radius: 0px 6px 6px 6px;">
-                                    <div><input type="radio" name="channel_type" value="temp" {{if !channel_flag_semi_permanent && !channel_flag_permanent}}checked{{/if}}> Temporary</div>
-                                    <div><input type="radio" name="channel_type" value="semi" {{if channel_flag_semi_permanent}}checked{{/if}}> Semi-Permanent</div>
-                                    <div><input type="radio" name="channel_type" value="perm" {{if channel_flag_permanent}}checked{{/if}}> Permanent</div>
+                                    <div><input type="radio" name="channel_type" value="temp" {{if !channel_flag_semi_permanent && !channel_flag_permanent}}checked{{/if}}> {{tr "Temporary" /}}</div>
+                                    <div><input type="radio" name="channel_type" value="semi" {{if channel_flag_semi_permanent}}checked{{/if}}> {{tr "Semi-Permanent" /}}</div>
+                                    <div><input type="radio" name="channel_type" value="perm" {{if channel_flag_permanent}}checked{{/if}}> {{tr "Permanent" /}}</div>
                                     <hr style="width: 100%;">
-                                    <div><input type="checkbox" name="channel_default" id="default" value="def"> Default Channel</div>
+                                    <div><input type="checkbox" name="channel_default" id="default" value="def"> {{tr "Default Channel" /}}</div>
                                 </fieldset>
                             </div>
                             <div style="border-left:1px solid #000;height: auto;"></div>
                             <div style="flex-direction: column; align-content: stretch; vertical-align: center; margin: 20px;">
                                 <div>
-                                    <div>Sort this channel after:</div>
+                                    <div>{{tr "Sort this channel after:"/}}</div>
                                     <select class="order_id" style="width: 150px">
                                     </select>
                                 </div>
                                 <div style="margin-top: 20px">
-                                    <div>Needed Talk Power:</div>
+                                    <div>{{tr "Needed Talk Power:"/}}</div>
                                     <input type="number" min="0" value="0" name="talk_power" style="width: 150px">
-                                </div>
+                                </div>Description
                             </div>
                         </div>
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Audio</x-tag>
+                    <x-tag>{{tr "Audio" /}}</x-tag>
                     <x-content>
                         <div class="container">
                             <div class="settings_audio">
                                 <div class="group_box">
-                                    <div class="header">Presets</div>
+                                    <div class="header">{{tr "Presets" /}}</div>
                                     <div class="content">
                                         <fieldset style="">
-                                            <div><input type="radio" name="voice_template" value="voice_mobile"> Voice Mobile</div>
-                                            <div><input type="radio" name="voice_template" value="voice_desktop"> Voice Desktop</div>
-                                            <div><input type="radio" name="voice_template" value="music"> Music</div>
-                                            <div><input type="radio" name="voice_template" value="custom"> Custom</div>
+                                            <div><input type="radio" name="voice_template" value="voice_mobile"> {{tr "Voice Mobile"/}}</div>
+                                            <div><input type="radio" name="voice_template" value="voice_desktop"> {{tr "Voice Desktop"/}}</div>
+                                            <div><input type="radio" name="voice_template" value="music"> {{tr "Music"/}}</div>
+                                            <div><input type="radio" name="voice_template" value="custom"> {{tr "Custom"/}}</div>
                                         </fieldset>
                                     </div>
                                 </div>
                                 <div class="group_box">
-                                    <div class="header">Custom Settings</div>
+                                    <div class="header">{{tr "Custom Settings" /}}</div>
                                     <div class="content">
                                         <div class="custom">
-                                            <div>Codec:</div>
+                                            <div>{{tr "Codec:"/}}</div>
                                             <select class="voice_codec">
-                                                <option value="speex_narrow">Speex Narrowband <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="speex_wide">Speex Wideband <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="speex_ultra_wide">Speex Ultra-Wideband <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="celt">CELT Mono <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="opus_voice">Opus Voice</option>
-                                                <option value="opus_music">Opus Music</option>
+                                                <!-- TODO tr -->
+                                                <option value="speex_narrow">{{tr "Speex Narrowband" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="speex_wide">{{tr "Speex Wideband" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="speex_ultra_wide">{{tr "Speex Ultra-Wideband" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="celt">{{tr "CELT Mono" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
+                                                <option value="opus_voice">{{tr "Opus Voice" /}}</option>
+                                                <option value="opus_music">{{tr "Opus Music" /}}</option>
                                             </select>
 
-                                            <div>Quality:</div>
+                                            <div>{{tr "Quality:" /}}</div>
                                             <div class="quality">
                                                 <input class="voice_quality_slider" type="range" min="1" max="10" value="6">
                                                 <div class="voice_quality_number">6</div>
@@ -250,24 +252,24 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Permissions</x-tag>
+                    <x-tag>{{tr "Permissions" /}}</x-tag>
                     <x-content>
                         <div style="display: flex; justify-content: space-evenly" class="settings_permissions">
                             <div class="group_box">
-                                <div class="header">Regular needed powers:</div>
+                                <div class="header">{{tr "Regular needed powers:" /}}</div>
                                 <div class="content">
                                     <table class="channel_perm_tbl">
-                                        <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_join_power"></td></tr>
-                                        <tr><td class="key">View:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_view_power"></td></tr>
-                                        <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_subscribe_power"></td></tr>
-                                        <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_description_view_power"></td></tr>
-                                        <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_modify_power"></td></tr>
-                                        <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_delete_power"></td></tr>
+                                        <tr><td class="key">{{tr "Join:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_join_power"></td></tr>
+                                        <tr><td class="key">{{tr "View:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_view_power"></td></tr>
+                                        <tr><td class="key">{{tr "Subscribe:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_subscribe_power"></td></tr>
+                                        <tr><td class="key">{{tr "Desc. view:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_description_view_power"></td></tr>
+                                        <tr><td class="key">{{tr "Modify:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_modify_power"></td></tr>
+                                        <tr><td class="key">{{tr "Delete:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_delete_power"></td></tr>
                                     </table>
                                 </div>
                             </div>
                             <div class="group_box">
-                                <div class="header">File transfer needed powers:</div>
+                                <div class="header">{{tr "File transfer needed powers:" /}}</div>
                                 <div class="content">
                                     <table class="channel_perm_tbl">
                                         <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
@@ -282,40 +284,40 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Advanced</x-tag>
+                    <x-tag>{{tr "Advanced" /}}</x-tag>
                     <x-content>
                         <div class="container settings_advanced">
                             <div class="group_box">
-                                <div class="header">Other Settings</div>
+                                <div class="header">{{tr "Other Settings" /}}</div>
                                 <div class="content properties">
-                                    <div class="key">Phonetic Name:</div>
+                                    <div class="key">{{tr "Phonetic Name:" /}}</div>
                                     <input class="value channel_name_phonetic" value="{{>channel_name_phonetic}}">
 
-                                    <div class="key">Delete delay:</div>
+                                    <div class="key">{{tr "Delete delay:" /}}</div>
                                     <input class="value channel_delete_delay" type="number" min="0" max="99999999" value="{{:channel_delete_delay}}"> <!-- Implement max? -->
 
-                                    <div><input class="channel_codec_is_unencrypted" type="checkbox" style="margin-left: 0px" {{if !channel_codec_is_unencrypted}}checked{{/if}}> Voice Data encrypted</div>
+                                    <div><input class="channel_codec_is_unencrypted" type="checkbox" style="margin-left: 0px" {{if !channel_codec_is_unencrypted}}checked{{/if}}> {{tr "Voice Data encrypted" /}}</div>
                                 </div>
                             </div>
 
                             <div class="group_box">
-                                <div class="header">Max users</div>
+                                <div class="header">{{tr "Max users" /}}</div>
                                 <div class="content max_users">
                                     <fieldset>
-                                        <div><input type="radio" name="max_users" value="infinity" {{if channel_flag_maxclients_unlimited}}checked{{/if}}>Unlimited</div>
-                                        <div class="max_limited"><input type="radio" name="max_users" value="limited" {{if !channel_flag_maxclients_unlimited}}checked{{/if}}>Limited
+                                        <div><input type="radio" name="max_users" value="infinity" {{if channel_flag_maxclients_unlimited}}checked{{/if}}>{{tr "Unlimited" /}}</div>
+                                        <div class="max_limited"><input type="radio" name="max_users" value="limited" {{if !channel_flag_maxclients_unlimited}}checked{{/if}}>{{tr "Limited" /}}
                                             <input style="margin-left: 25px;" class="value channel_maxclients" value="{{:channel_maxclients}}" type="number" min="0" max="99999999"></div>
                                     </fieldset>
                                 </div>
                             </div>
 
                             <div class="group_box">
-                                <div class="header">Family Max users</div>
+                                <div class="header">{{tr "Family Max users" /}}</div>
                                 <div class="content max_users">
                                     <fieldset>
-                                        <div><input type="radio" name="max_users_family" value="inherited" {{if channel_flag_maxfamilyclients_inherited}}checked{{/if}}>Inherited</div>
-                                        <div><input type="radio" name="max_users_family" value="infinity" {{if channel_flag_maxfamilyclients_unlimited}}checked{{/if}}>Unlimited</div>
-                                        <div class="max_limited"><input type="radio" name="max_users_family" value="limited" {{if !channel_flag_maxfamilyclients_unlimited && !channel_flag_maxfamilyclients_inherited}}checked{{/if}}>Limited
+                                        <div><input type="radio" name="max_users_family" value="inherited" {{if channel_flag_maxfamilyclients_inherited}}checked{{/if}}>{{tr "Inherited" /}}</div>
+                                        <div><input type="radio" name="max_users_family" value="infinity" {{if channel_flag_maxfamilyclients_unlimited}}checked{{/if}}>{{tr "Unlimited" /}}</div>
+                                        <div class="max_limited"><input type="radio" name="max_users_family" value="limited" {{if !channel_flag_maxfamilyclients_unlimited && !channel_flag_maxfamilyclients_inherited}}{{tr "checked" /}}{{/if}}>{{tr "Limited" /}}
                                             <input style="margin-left: 25px;" class="value channel_maxfamilyclients" type="number" value="{{:channel_maxfamilyclients}}" min="0" max="99999999"></div>
                                     </fieldset>
                                 </div>
@@ -328,27 +330,27 @@
         <script class="jsrender-template" id="tmpl_server_edit" type="text/html">
             <div class="align_column properties_general server_properties">
                 <div class="properties">
-                    <a class="key">Name:</a>
+                    <a class="key">{{tr "Name:" /}}</a>
                     <input class="value virtualserver_name" value="{{>virtualserver_name}}"/>
-                    <a class="key">Phonetic Name:</a>
+                    <a class="key">{{tr "Phonetic Name:" /}}</a>
                     <input class="value virtualserver_name_phonetic" value="{{>virtualserver_name_phonetic}}"/>
 
-                    <a class="key">Password:</a>
+                    <a class="key">{{tr "Password:" /}}</a>
                     <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
                     <!-- Just display a random value here-->
                     <input class="value virtualserver_password" type="password" id="field_server_password_{{rnd '0~13377331'/}}" {{if virtualserver_flag_password}} value="WolverinDEV"{{/if}}/>
                 </div>
                 <hr>
                 <div class="properties">
-                    <a>Maximum Clients:</a>
+                    <a>{{tr "Maximum Clients:" /}}</a>
                     <div>
                         <input type="number" min="0" max="1024" value="{{:virtualserver_maxclients}}" class="value virtualserver_maxclients">
 
-                        <a>Reserved slots:</a>
+                        <a>{{tr "Reserved slots:" /}}</a>
                         <input type="number" min="0" max="{{*: data.virtualserver_maxclients - 1 }}" value="{{:virtualserver_reserved_slots}}" class="value virtualserver_reserved_slots">
                     </div>
 
-                    <div class="key">Welcome Message:</div>
+                    <div class="key">{{tr "Welcome Message:" /}}</div>
                     <textarea class="value virtualserver_welcomemessage">{{>virtualserver_welcomemessage}}</textarea>
                 </div>
                 <hr>
@@ -357,72 +359,72 @@
 
             <x-tab>
                 <x-entry>
-                    <x-tag>Host</x-tag>
+                    <x-tag>{{tr "Host" /}}</x-tag>
                     <x-content>
                         <div class="container properties_host">
                             <div class="group_box">
-                                <div class="header">Binding</div>
+                                <div class="header">{{tr "Binding" /}}</div>
                                 <div class="content">
                                     <div class="properties">
-                                        <div class="key">Host:</div>
+                                        <div class="key">{{tr "Host:" /}}</div>
                                         <input class="value virtualserver_host" value="{{>virtualserver_host}}"/>
 
-                                        <div class="key">Port:</div>
+                                        <div class="key">{{tr "Port:" /}}</div>
                                         <input type="number" min="1" max="65536" value="{{:virtualserver_port}}" class="value virtualserver_port">
                                     </div>
-                                    <a>Note: These settings require a virtual server restart to take effect!</a>
+                                    <a>{{tr "Note: These settings require a virtual server restart to take effect!" /}}</a>
                                 </div>
                             </div>
 
                             <div class="group_box">
-                                <div class="header">Host message</div>
+                                <div class="header">{{tr "Host message" /}}</div>
                                 <div class="content properties">
-                                    <div class="key">Message:</div>
+                                    <div class="key">{{tr "Message:" /}}</div>
                                     <input class="value virtualserver_hostmessage" value="{{>virtualserver_hostmessage}}"/>
 
-                                    <div class="key">Message Mode:</div>
+                                    <div class="key">{{tr "Message Mode:" /}}</div>
                                     <select class="value virtualserver_hostmessage_mode">
-                                        <option value="none">No message</option>
-                                        <option value="log">Show message in log</option>
-                                        <option value="modal">Show message as modal</option>
-                                        <option value="modal_exit">Show message as modal and disconnect the client</option>
+                                        <option value="none">{{tr "No message" /}}</option>
+                                        <option value="log">{{tr "Show message in log" /}}</option>
+                                        <option value="modal">{{tr "Show message as modal" /}}</option>
+                                        <option value="modal_exit">{{tr "Show message as modal and disconnect the client" /}}</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div class="group_box">
-                                <div class="header">Host banner</div>
+                                <div class="header">{{tr "Host banner" /}}</div>
                                 <div class="content properties">
-                                    <div class="key">URL:</div>
+                                    <div class="key">{{tr "URL:" /}}</div>
                                     <input class="value virtualserver_hostbanner_url" value="{{>virtualserver_hostbanner_url}}"/>
 
-                                    <div class="key">Banner Gfx URL:</div>
+                                    <div class="key">{{tr "Banner Gfx URL:" /}}</div>
                                     <input class="value virtualserver_hostbanner_gfx_url" value="{{>virtualserver_hostbanner_gfx_url}}"/>
 
-                                    <div class="key">Gfx Interval:</div>
+                                    <div class="key">{{tr "Gfx Interval:" /}}</div>
                                     <div class="value">
                                         <input type="number" min="60" value="{{:virtualserver_hostbanner_gfx_interval}}" class="value virtualserver_hostbanner_gfx_interval">
 
-                                        <a>Resize:</a>
+                                        <a>{{tr "Resize:" /}}</a>
                                         <select class="value virtualserver_hostbanner_mode">
-                                            <option value="none">Do not adjust</option>
-                                            <option value="ignore_ratio">Adjust but ignore ratio aspect</option>
-                                            <option value="keep_ratio">Adjust and keep ratio aspect</option>
+                                            <option value="none">{{tr "Do not adjust" /}}</option>
+                                            <option value="ignore_ratio">{{tr "Adjust but ignore ratio aspect" /}}</option>
+                                            <option value="keep_ratio">{{tr "Adjust and keep ratio aspect" /}}</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="group_box">
-                                <div class="header">Host Button</div>
+                                <div class="header">{{tr "Host Button" /}}</div>
                                 <div class="content properties">
-                                    <div class="key">Tooltip:</div>
+                                    <div class="key">{{tr "Tooltip:" /}}</div>
                                     <input class="value virtualserver_hostbutton_tooltip" value="{{>virtualserver_hostbutton_tooltip}}"/>
 
-                                    <div class="key">URL:</div>
+                                    <div class="key">{{tr "URL:" /}}</div>
                                     <input class="value virtualserver_hostbutton_url" value="{{>virtualserver_hostbutton_url}}"/>
 
-                                    <div class="key">Icon URL:</div>
+                                    <div class="key">{{tr "Icon URL:" /}}</div>
                                     <input class="value virtualserver_hostbutton_gfx_url" value="{{>virtualserver_hostbutton_gfx_url}}"/>
                                 </div>
                             </div>
@@ -430,36 +432,36 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Transfers</x-tag>
+                    <x-tag>{{tr "Transfers" /}}</x-tag>
                     <x-content>
                         <div class="container-file-transfer">
                             <div class="group_box">
-                                <div class="header">Upload</div>
+                                <div class="header">{{tr "Upload" /}}</div>
                                 <div class="content settings">
                                     <div class="setting">
-                                        <div class="key">Bandwidth Limit:</div>
+                                        <div class="key">{{tr "Bandwidth Limit:" /}}</div>
                                         <input type="number" class="value virtualserver_max_upload_total_bandwidth" value="{{>virtualserver_max_upload_total_bandwidth}}"/>
-                                        <div class="suffix">Bytes/s</div>
+                                        <div class="suffix">{{tr "Bytes/s" /}}</div>
                                     </div>
                                     <div class="setting">
-                                        <div class="key">Upload Quota:</div>
+                                        <div class="key">{{tr "Upload Quota:" /}}</div>
                                         <input type="number" class="value virtualserver_upload_quota" value="{{>virtualserver_upload_quota}}"/>
-                                        <div class="suffix">MiB</div>
+                                        <div class="suffix">{{tr "MiB" /}}</div>
                                     </div>
                                 </div>
                             </div>
                             <div class="group_box">
-                                <div class="header">Download</div>
+                                <div class="header">{{tr "Download" /}}</div>
                                 <div class="content settings">
                                     <div class="setting">
-                                        <div class="key">Bandwidth Limit:</div>
+                                        <div class="key">{{tr "Bandwidth Limit:" /}}</div>
                                         <input type="number" class="value virtualserver_max_download_total_bandwidth" value="{{>virtualserver_max_download_total_bandwidth}}"/>
-                                        <div class="suffix">Bytes/s</div>
+                                        <div class="suffix">{{tr "Bytes/s" /}}</div>
                                     </div>
                                     <div class="setting">
-                                        <div class="key">Download Quota:</div>
+                                        <div class="key">{{tr "Download Quota:" /}}</div>
                                         <input type="number" class="value virtualserver_download_quota" value="{{>virtualserver_download_quota}}"/>
-                                        <div class="suffix">MiB</div>
+                                        <div class="suffix">{{tr "MiB" /}}</div>
                                     </div>
                                 </div>
                             </div>
@@ -467,65 +469,65 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Anti-Flood</x-tag>
+                    <x-tag>{{tr "Anti-Flood" /}}</x-tag>
                     <x-content>
                         <div class="container properties_flood">
                             <div class="properties">
-                                <div class="key">Reduced points per tick:</div>
+                                <div class="key">{{tr "Reduced points per tick:" /}}</div>
                                 <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_tick_reduce}}" class="value virtualserver_antiflood_points_tick_reduce">
 
-                                <div class="key">Points needed to block commands:</div>
+                                <div class="key">{{tr "Points needed to block commands:" /}}</div>
                                 <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_needed_command_block}}" class="value virtualserver_antiflood_points_needed_command_block">
 
-                                <div class="key">Points needed to block IP:</div>
+                                <div class="key">{{tr "Points needed to block IP:" /}}</div>
                                 <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_needed_ip_block}}" class="value virtualserver_antiflood_points_needed_ip_block">
                             </div>
                         </div>
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Security</x-tag>
+                    <x-tag>{{tr "Security" /}}</x-tag>
                     <x-content>
                         <div class="container properties_security">
                             <div class="properties">
-                                <div class="key">Needed Security Level:</div>
+                                <div class="key">{{tr "Needed Security Level:" /}}</div>
                                 <input type="number" min="1" max="64" value="{{:virtualserver_needed_identity_security_level}}" class="value virtualserver_needed_identity_security_level">
-                                <div class="key">Channel voice data encryption:</div>
+                                <div class="key">{{tr "Channel voice data encryption:" /}}</div>
                                 <select class="value virtualserver_codec_encryption_mode">
-                                    <option value="unset">Edit per channel individually</option>
-                                    <option value="off">Globally disabled</option>
-                                    <option value="on">Globally enabled (recommended)</option>
+                                    <option value="unset">{{tr "Edit per channel individually" /}}</option>
+                                    <option value="off">{{tr "Globally disabled" /}}</option>
+                                    <option value="on">{{tr "Globally enabled (recommended)" /}}</option>
                                 </select>
                             </div>
                         </div>
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Misc</x-tag>
+                    <x-tag>{{tr "Misc" /}}</x-tag>
                     <x-content>
                         <div class="container properties_misc">
                             <div class="group_box">
-                                <div class="header">Default groups</div>
+                                <div class="header">{{tr "Default groups" /}}</div>
                                 <div class="content properties">
-                                    <div class="key">Server group</div>
+                                    <div class="key">{{tr "Server group" /}}</div>
                                     <select class="value default_server_group"></select>
 
-                                    <div class="key">Music bot group</div>
+                                    <div class="key">{{tr "Music bot group" /}}</div>
                                     <select class="value default_music_group"></select>
 
-                                    <div class="key">Channel group</div>
+                                    <div class="key">{{tr "Channel group" /}}</div>
                                     <select class="value default_channel_group"></select>
 
-                                    <div class="key">Channel Admin group</div>
+                                    <div class="key">{{tr "Channel Admin group" /}}</div>
                                     <select class="value default_channel_admin_group"></select>
                                 </div>
                             </div>
                             <div class="group_box">
-                                <div class="header">Complain</div>
+                                <div class="header">{{tr "Complain" /}}</div>
                                 <div class="content complains">
-                                    <div class="key">Autoban Count</div>
-                                    <div class="key">Autoban Time</div>
-                                    <div class="key">Remove Time</div>
+                                    <div class="key">{{tr "Autoban Count" /}}</div>
+                                    <div class="key">{{tr "Autoban Time" /}}</div>
+                                    <div class="key">{{tr "Remove Time" /}}</div>
 
                                     <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_count}}" class="value virtualserver_complain_autoban_count">
                                     <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_time}}" class="value virtualserver_complain_autoban_time">
@@ -533,21 +535,21 @@
                                 </div>
                             </div>
                             <div class="properties">
-                                <div class="key">Minimum clients is channel before silence:</div>
+                                <div class="key">{{tr "Minimum clients is channel before silence:" /}}</div>
                                 <input type="number" min="1" max="65536" value="{{:virtualserver_min_clients_in_channel_before_forced_silence}}" class="value virtualserver_min_clients_in_channel_before_forced_silence">
 
-                                <div class="key">Priority speaker dim modificator:</div>
+                                <div class="key">{{tr "Priority speaker dim modificator:" /}}</div>
                                 <input type="number" min="-100" max="0" value="{{:virtualserver_priority_speaker_dimm_modificator}}" class="value virtualserver_priority_speaker_dimm_modificator">
 
-                                <div class="key">Delete delay for temporary channels</div>
+                                <div class="key">{{tr "Delete delay for temporary channels" /}}</div>
                                 <input type="number" min="1" max="65536" value="{{:virtualserver_channel_temp_delete_delay_default}}" class="value virtualserver_channel_temp_delete_delay_default">
                             </div>
 
                             <div class="group_box">
-                                <div class="header">Server list</div>
+                                <div class="header">{{tr "Server list" /}}</div>
                                 <div class="content">
-                                    <input type="checkbox" class="value virtualserver_weblist_enabled" checked="{{:virtualserver_weblist_enabled}}"> Enable reporting to the TeamSpeak server list<br>
-                                    <input type="checkbox" class="value" checked="false" disabled> <del>Enable reporting to the TeaSpeak server list</del> (TeaSpeak does not support this setting)
+                                    <input type="checkbox" class="value virtualserver_weblist_enabled" checked="{{:virtualserver_weblist_enabled}}"> {{tr "Enable reporting to the TeamSpeak server list" /}}<br>
+                                    <input type="checkbox" class="value" checked="false" disabled> {{tr "<del>Enable reporting to the TeaSpeak server list</del> (TeaSpeak does not support this setting)" /}}
                                 </div>
                             </div>
                         </div>
@@ -560,28 +562,28 @@
                 </x-entry>
                 -->
                 <x-entry>
-                    <x-tag>Messages</x-tag>
+                    <x-tag>{{tr "Messages" /}}</x-tag>
                     <x-content>
                         <div> <!-- We have to move the shit one layer up  -->
                             <div class="container properties_messages">
                                 <div class="group_box">
-                                    <div class="header">Channel</div>
+                                    <div class="header">{{tr "Channel" /}}</div>
                                     <div class="content properties">
-                                        <div class="key">Default Topic:</div>
+                                        <div class="key">{{tr "Default Topic:" /}}</div>
                                         <textarea class="value virtualserver_default_channel_topic">{{>virtualserver_default_channel_topic}}</textarea>
 
-                                        <div class="key">Default Description</div>
+                                        <div class="key">{{tr "Default Description" /}}</div>
                                         <textarea class="value virtualserver_default_channel_description">{{>virtualserver_default_channel_description}}</textarea>
                                     </div>
                                 </div>
                                 <div class="group_box">
-                                    <div class="header">Client</div>
+                                    <div class="header">{{tr "Client" /}}</div>
                                     <div class="content properties">
-                                        <div class="key">Default Description</div>
+                                        <div class="key">{{tr "Default Description" /}}</div>
                                         <textarea class="value virtualserver_default_client_description">{{>virtualserver_default_client_description}}</textarea>
                                     </div>
                                 </div>
-                                Note: These settings require a virtual server restart to take effect!
+                                {{tr "Note: These settings require a virtual server restart to take effect!" /}}
                             </div>
                         </div>
                     </x-content>
@@ -593,44 +595,44 @@
         <script class="jsrender-template" id="tmpl_settings" type="text/html">
             <x-tab>
                 <x-entry>
-                    <x-tag>General</x-tag>
-                    <x-content>Didnt setuped yet!</x-content>
+                    <x-tag>{{tr "General"/}}</x-tag>
+                    <x-content>{{tr "Didnt setuped yet!"/}}</x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Audio</x-tag>
+                    <x-tag>{{tr "Audio" /}}</x-tag>
                     <x-content>
                         <div class="settings_audio">
                             <div class="group_box">
-                                <div class="header">Microphone</div>
+                                <div class="header">{{tr "Microphone" /}}</div>
                                 <div class="content settings-microphone">
                                     <div class="settings-device settings-device-microphone">
                                         <div class="settings-device-error"></div>
                                         <div class="settings-device-select">
-                                            <a>Device:</a>
+                                            <a>{{tr "Device:" /}}</a>
                                             <div><select class="audio-select-microphone"></select></div>
                                         </div>
                                     </div>
                                     <div class="settings-vad-container">
                                         <div class="group_box">
-                                            <div class="header">Voice Activity Detection</div>
+                                            <div class="header">{{tr "Voice Activity Detection"/}}</div>
                                             <div class="content">
                                                 <fieldset>
-                                                    <div><input type="radio" name="vad_type" value="pt" display="Always active"> Always active</div>
-                                                    <div><input type="radio" name="vad_type" value="vad" display="Voice activity detection"> Voice activity detection</div>
-                                                    <div><input type="radio" name="vad_type" value="ppt" display="Push to talk"> Push to talk</div>
+                                                    <div><input type="radio" name="vad_type" value="pt" display="Always active"> {{tr "Always active" /}}</div>
+                                                    <div><input type="radio" name="vad_type" value="vad" display="Voice activity detection"> {{tr "Voice activity detection"/}}</div>
+                                                    <div><input type="radio" name="vad_type" value="ppt" display="Push to talk"> {{tr "Push to talk"/}}</div>
                                                 </fieldset>
                                             </div>
                                         </div>
                                         <div class="settings-vad-impl">
                                             <div class="settings-vad-impl-entry setting-vad-pt">
-                                                There are no setting entries for an <b>always</b> online voice detection.
+                                                 {{tr "There are no setting entries for an <b>always</b> online voice detection."/}}
                                             </div>
                                             <div class="settings-vad-impl-entry setting-vad-ppt">
-                                                <a>Push to talk key:</a>
-                                                <button class="vat_ppt_key">Uninitialised</button>
+                                                <a>{{tr "Push to talk key:"/}}</a>
+                                                <button class="vat_ppt_key">{{tr "Uninitialised"/}}</button>
                                             </div>
                                             <div class="settings-vad-impl-entry setting-vad-vad">
-                                                <div>Voice activity threshold (<a class="vad_vad_slider_value">20</a>%)</div>
+                                                <div>{{tr "Voice activity threshold (<a class='vad_vad_slider_value'>20</a>%)"/}}</div>
                                                 <div class="vad_vad_threshold_selector">
                                                     <div class="vad_vad_bar">
                                                         <div style="width: 100%; height: 100%; position: absolute">
@@ -645,12 +647,12 @@
                                 </div>
                             </div>
                             <div class="group_box">
-                                <div class="header">Speaker</div>
+                                <div class="header">{{tr "Speaker" /}}</div>
                                 <div class="content settings-speaker">
                                     <div class="settings-device settings-device-speaker">
                                         <div class="settings-device-error"></div>
                                         <div class="settings-device-select">
-                                            <a>Device:</a>
+                                            <a>{{tr "Device:" /}}</a>
                                             <div><select class="audio-select-speaker"></select></div>
                                         </div>
                                     </div>
@@ -672,7 +674,7 @@
         <script class="jsrender-template" id="tmpl_server_permissions" type="text/html">
             <x-tab>
                 <x-entry>
-                    <x-tag>Server Groups</x-tag>
+                    <x-tag>{{tr "Server Groups" /}}</x-tag>
                     <x-content>
                         <div class="layout-group-server">
                             <div class="list-group-server">
@@ -686,7 +688,7 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Channel Groups</x-tag>
+                    <x-tag>{{tr "Channel Groups" /}}</x-tag>
                     <x-content>
                         <div class="layout-group-channel">
                             <div class="list-group-channel">
@@ -699,7 +701,7 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Channel permissions</x-tag>
+                    <x-tag>{{tr "Channel permissions" /}}</x-tag>
                     <x-content>
                         <div class="layout-channel">
                             <div class="list-channel">
@@ -712,23 +714,23 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Client permissions</x-tag>
+                    <x-tag>{{tr "Client permissions"/}}</x-tag>
                     <x-content>
                         <div class="layout-client">
                             <div class="client-info">
                                 <div class="client-select">
-                                    <a>Client unique ID:</a>
+                                    <a>{{tr "Client unique ID:"/}}</a>
                                     <input type="text" class="client-select-uid">
                                 </div>
                                 <hr>
                                 <div class="client-info">
-                                    <a>Nickname:</a>
+                                    <a>{{tr "Nickname:" /}}</a>
                                     <input class="client-name">
 
-                                    <a>Unique ID:</a>
+                                    <a>{{tr "Unique ID:" /}}</a>
                                     <input class="client-uid">
 
-                                    <a>Cleint database ID:</a>
+                                    <a>{{tr "Client database ID:" /}}</a>
                                     <input class="client-dbid">
                                 </div>
                             </div>
@@ -739,23 +741,23 @@
                     </x-content>
                 </x-entry>
                 <x-entry>
-                    <x-tag>Client channel permissions</x-tag>
+                    <x-tag>{{tr "Client channel permissions" /}}</x-tag>
                     <x-content>
                         <div class="layout-client-channel">
                             <div class="client-info">
                                 <div class="client-select">
-                                    <a>Client unique ID:</a>
+                                    <a>{{tr "Client unique ID:"/}}</a>
                                     <input type="text" class="client-select-uid">
                                 </div>
                                 <hr>
                                 <div class="client-info">
-                                    <a>Nickname:</a>
+                                    <a>{{tr "Nickname:"/}}</a>
                                     <input class="client-name">
 
-                                    <a>Unique ID:</a>
+                                    <a>{{tr "Unique ID:" /}}</a>
                                     <input class="client-uid">
 
-                                    <a>Cleint database ID:</a>
+                                    <a>{{tr "Client database ID:" /}}</a>
                                     <input class="client-dbid">
                                 </div>
                                 <hr>
@@ -773,7 +775,7 @@
         </script>
         <script class="jsrender-template" id="tmpl_server_group_assignment" type="text/html">
            <div class="group-assignment-list">
-               <a>Changing groups of <b>{{>client_name}}</b></a>
+               <a>{{tr "Changing groups of" /}} <b>{{>client_name}}</b></a>
                <div class="group-list">
                    {{for groups}}
                    <div class="group-entry">
@@ -832,17 +834,17 @@
             <div class="container-permissions">
                 <div class="align_row permission-explorer">
                     <div class="bar-filter">
-                        <div><a>Filter:</a></div>
+                        <div><a>{{tr "Filter:" /}}</a></div>
                         <div><input type="text" class="filter-input"></div>
-                        <div><input type="checkbox" class="filter-granted"><a>Show granted permissions only</a></div>
+                        <div><input type="checkbox" class="filter-granted"><a>{{tr "Show granted permissions only" /}}</a></div>
                     </div>
                     <div class="list">
                         <div class="entry header">
-                            <div>Permission Name</div>
-                            <div>Value</div>
-                            <div>Skip</div>
-                            <div>Negate</div>
-                            <div>Granted</div>
+                            <div>{{tr "Permission Name" /}}</div>
+                            <div>{{tr "Value" /}}</div>
+                            <div>{{tr "Skip" /}}</div>
+                            <div>{{tr "Negate" /}}</div>
+                            <div>{{tr "Granted" /}}</div>
                         </div>
 
                         <div class="entries">
@@ -879,7 +881,7 @@
                         <div class="overlay-disabled"></div>
                     </div>
                     <div>
-                        <button class="button-update"><div class="icon client-check_update"></div> Update</button>
+                        <button class="button-update"><div class="icon client-check_update"></div> {{tr "Update" /}}</button>
                     </div>
                 </div>
             </div>
@@ -891,9 +893,9 @@
                 <div class="frame-container">
                     <div class="top-menu">
                         <div class="manage-buttons">
-                            <button class="button-add">Add</button>
-                            <button class="button-edit">Edit</button>
-                            <button class="button-remove">Remove</button>
+                            <button class="button-add">{{tr "Add" /}}</button>
+                            <button class="button-edit">{{tr "Edit" /}}</button>
+                            <button class="button-remove">{{tr "Remove" /}}</button>
                         </div>
                         <div class="search">
                             <input type="text" class="entry-filter">
@@ -904,10 +906,10 @@
                             <table>
                                 <thead>
                                     <tr>
-                                        <th class="field-properties">Name/IP/UID/HWID</th>
-                                        <th class="field-reason">Reason</th>
-                                        <th class="field-invoker">Creator</th>
-                                        <th class="field-timestamp">Created / Expires</th>
+                                        <th class="field-properties">{{tr "Name/IP/UID/HWID"/}}</th>
+                                        <th class="field-reason">{{tr "Reason"/}}</th>
+                                        <th class="field-invoker">{{tr "Creator"/}}</th>
+                                        <th class="field-timestamp">{{tr "Created / Expires"/}}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="ban-entry-list">
@@ -944,13 +946,13 @@
                     </div>
                     <div class="bottom-menu">
                         <div class="left">
-                            <button class="button-refresh">Reload</button>
-                            <div><input type="checkbox" class="filter-flag-force-own"> Show only own bans</div>
-                            <div><input type="checkbox" class="filter-flag-highlight-own"> Highlight own bans</div>
+                            <button class="button-refresh">{{tr "Reload"/}}</button>
+                            <div><input type="checkbox" class="filter-flag-force-own"> {{tr "Show only own bans" /}}</div>
+                            <div><input type="checkbox" class="filter-flag-highlight-own"> {{tr "Highlight own bans" /}}</div>
                         </div>
                         <div class="right">
                             <a class="entry-count-info"></a>
-                            <button class="button-close">Close</button>
+                            <button class="button-close">{{tr "Close" /}}</button>
                         </div>
                     </div>
                 </div>
@@ -960,60 +962,62 @@
         <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
             <div class="align_column">
                 <div class="align_column" style="margin: 5px">
-                    <a>Name:</a>
+                    <a>{{tr "Name:" /}}</a>
                     <input value="{{>client_name}}" readonly>
                 </div>
                 <div class="align_column" style="margin: 5px">
-                    <a>Reason:</a>
+                    <a>{{tr "Reason:" /}}</a>
                     <textarea style="height: 32px; resize: vertical; max-height: 150px; min-height: 32px" maxlength="512" class="ban_reason"></textarea>
                 </div>
                 <div class="align_row" style="margin: 5px; justify-content: space-between">
-                    <a>Duration:</a>
+                    <a>{{tr "Duration:" /}}</a>
                     <div class="align_row">
                         <input type="number" value="1" class="ban_duration" style="margin-right: 7px" min="1">
                         <select class="ban_duration_type">
-                            <option value="sec">seconds</option>
-                            <option value="min">minutes</option>
-                            <option value="hours">hours</option>
-                            <option value="days">days</option>
-                            <option value="perm">permanent</option>
+                            <option value="sec">{{tr "seconds"/}}</option>
+                            <option value="min">{{tr "minutes"/}}</option>
+                            <option value="hours">{{tr "hours"/}}</option>
+                            <option value="days">{{tr "days"/}}</option>
+                            <option value="perm">{{tr "permanent"/}}</option>
                         </select>
                     </div>
                 </div>
                 <div class="group_box container-ban-type">
-                    <div class="header">Ban client by</div>
+                    <div class="header">{{tr "Ban client by"/}}</div>
                     <div class="content ban-types">
                         <div>
                             <input type="checkbox" class="ban-type-nickname">
-                            <a>Nickname</a>
+                            <a>{{tr "Nickname"/}}</a>
                             <div class="help-tip tip-right tip-small" checked>
                                 <p>
-                                    Bans the client by his current nickname.<br>
-                                    The currently nickname cant be used until the ban expired
+                                    {{tr "Bans the client by his current nickname.<br>
+                                    The currently nickname cant be used until the ban expired"/}}
                                 </p>
                             </div>
                         </div>
                         <div>
                             <input type="checkbox" class="ban-type-hardware-id" checked>
-                            <a>Hardware ID</a>
+                            <a>{{tr "Hardware ID" /}}</a>
                             <div class="help-tip tip-right tip-small">
                                 <p>
-                                    Bans the client by his hardware id.<br>
+                                    {{tr "Bans the client by his hardware id.<br>
                                     The hardware id has different meanings, depends on the users agent<br>
                                     TeaClient: The hardware id will be equal to the mac address<br>
                                     TeaWeb: The TeaSpeak web client hasn't a hardware id, it will be random<br>
-                                    TeamSpeak 3 client: The hardware id will be a result of some hashes from hardware specific properties
+                                    TeamSpeak 3 client: The hardware id will be a result of some hashes from hardware specific properties" /}}
                                 </p>
                             </div>
                         </div>
                         <div>
                             <input type="checkbox" class="ban-type-ip" checked>
-                            <a>IP Address</a>
+                            <a>{{tr "IP Address" /}}</a>
                         </div>
                     </div>
                 </div>
             </div>
         </script>
+
+        //TODO tr downwards
         <script class="jsrender-template" id="tmpl_ban_entry" type="text/html">
             <tr class="ban-entry {{if server_id == 0}}ban-entry-global{{/if}} {{if flag_own}}ban-entry-own{{/if}}" ban-id={{>banid}} server-id={{>server_id}}>
                 <td class="field-properties">
@@ -1025,8 +1029,8 @@
                 <td class="field-reason">{{>reason}}</td>
                 <td class="field-invoker">{{>invoker_name}}</td>
                 <td class="field-timestamp">
-                    <a class="timestamp-created">Created: {{fmt_date timestamp_created "DD.MM.YYYY HH:mm" /}}</a>
-                    <a class="timestamp-expire">Expire: {{if (!timestamp_expire || timestamp_expire.getTime() == 0) }}never{{else}}{{fmt_date timestamp_expire "DD.MM.YYYY HH:mm" /}}{{/if}}</a>
+                    <a class="timestamp-created">{{tr "Created:" /}} {{fmt_date timestamp_created "DD.MM.YYYY HH:mm" /}}</a>
+                    <a class="timestamp-expire">{{tr "Expire:" /}} {{if (!timestamp_expire || timestamp_expire.getTime() == 0) }}never{{else}}{{fmt_date timestamp_expire "DD.MM.YYYY HH:mm" /}}{{/if}}</a>
                 </td>
             </tr>
         </script>
@@ -1035,44 +1039,44 @@
             <div class="bancreate">
                 <div class="frame-container">
                     <div class="container container-ip">
-                        <a>IP:</a>
+                        <a>{{tr "IP:" /}}</a>
                         <input class="input-ip" type="text" maxlength="128">
                     </div>
                     <div class="container container-name">
-                        <a>Name:</a>
+                        <a>{{tr "Name:" /}}</a>
                         <input class="input-name" type="text" maxlength="128">
                         <div class="container-name-type">
-                            <a>Interpret IP/Name as:</a>
+                            <a>{{tr "Interpret IP/Name as:" /}}</a>
                             <select class="input-name-type">
-                                <option value="wildcard-4">Wildcard IPv4</option>
-                                <option value="wildcard-6">Wildcard IPv6</option>
-                                <option value="fixed" selected>Fixed string</option>
-                                <option value="regex">Regular Expression</option>
+                                <option value="wildcard-4">{{tr "Wildcard IPv4" /}}</option>
+                                <option value="wildcard-6">{{tr "Wildcard IPv6" /}}</option>
+                                <option value="fixed" selected>{{tr "Fixed string" /}}</option>
+                                <option value="regex">{{tr "Regular Expression" /}}</option>
                             </select>
                         </div>
                     </div>
                     <div class="container container-uid">
-                        <a>Unique ID:</a>
+                        <a>{{tr "Unique ID:" /}}</a>
                         <div><input class="input-uid" type="text" maxlength="64"></div>
                     </div>
                     <div class="container container-hwid">
-                        <a>Hardware ID:</a>
+                        <a>{{tr "Hardware ID:" /}}</a>
                         <input class="input-hwid" type="text" max="64">
                     </div>
                     <div class="container container-reason">
-                        <a>Reason</a>
+                        <a>{{tr "Reason" /}}</a>
                         <textarea class="input-reason"></textarea>
                     </div>
                     <div class="container container-time">
-                        <a>Duration</a>
+                        <a>{{tr "Duration" /}}</a>
                         <div class="container-time-input">
                             <input type="number" value="1" class="input-time" style="margin-right: 7px" min="1">
                             <select class="input-time-unit">
-                                <option value="sec">seconds</option>
-                                <option value="min">minutes</option>
-                                <option value="hours">hours</option>
-                                <option value="days">days</option>
-                                <option value="perm">permanent</option>
+                                <option value="sec">{{tr "seconds"/}}</option>
+                                <option value="min">{{tr "minutes"/}}</option>
+                                <option value="hours">{{tr "hours"/}}</option>
+                                <option value="days">{{tr "days"/}}</option>
+                                <option value="perm">{{tr "permanent"/}}</option>
                             </select>
                         </div>
                     </div>
@@ -1080,20 +1084,20 @@
                         <div>
                             <div class="container-global">
                                 <input type="checkbox" class="input-global">
-                                <a>Use this ban as a global ban</a>
+                                <a>{{tr "Use this ban as a global ban" /}}</a>
                                 <div class="help-tip tip-center tip-small">
                                     <p>
-                                        Global bans are bans which apply instance wide.<br>
+                                        {{tr "Global bans are bans which apply instance wide.<br>
                                         This means that (if this rule apply to a victim) cant join <b>any</b> virtual server!<br>
                                         Global bans are by default shown to every server admin group,<br>
-                                        but could only be created with query rights
+                                        but could only be created with query rights"/}}
                                     </p>
                                 </div>
                             </div>
                         </div>
                         <div class="container-buttons modal-button-group" style="text-align: right; margin-top: 3px; margin-bottom: 6px;">
-                            <button class="button-close">Cancel</button>
-                            <button class="button-success">OK</button>
+                            <button class="button-close">{{tr "Cancel"/}}</button>
+                            <button class="button-success">{{tr "OK"/}}</button>
                         </div>
                     </div>
                 </div>
@@ -1199,38 +1203,38 @@
         <script class="jsrender-template" id="tmpl_music_frame_empty" type="text/html">
             <div class="music-wrapper empty">
                 <img src="img/music/empty_disk.svg">
-                <a>Not playing any music</a>
+                <a>{{tr "Not playing any music"/}}</a>
             </div>
         </script>
 
         <script class="jsrender-template" id="tmpl_selected_client" type="text/html">
             <table class="select_info_table">
                 <tr>
-                    <td>Name:</td>
+                    <td>{{tr "Name:" /}}</td>
                     <td><node key="client_name"/></td>
                 </tr>
                 {{if property_client_description.length > 0}}
                 <tr>
-                    <td>Description:</td>
+                    <td>{{tr "Description:"/}}</td>
                     <td>{{>property_client_description}}</td>
                 </tr>
                 {{/if}}
                  <tr>
-                    <td>Version:</td>
+                    <td>{{tr "Version:"/}}</td>
                     <td><a title="{{>property_client_version}}">{{*: data.property_client_version.split(" ")[0]; }}</a> on {{>property_client_platform}}</td>
                 </tr>
                 <tr>
-                    <td>Online since:</td>
+                    <td>{{tr "Online since:"/}}</td>
                     <td class="update_onlinetime">{{:client_onlinetime}}</td>
                 </tr>
                 <tr>
-                    <td>Volume:</td>
+                    <td>{{tr "Volume:"/}}</td>
                     <td>{{:sound_volume}}%</td>
                 </tr>
 
                 {{if client_teaforum_id > 0}}
                 <tr>
-                    <td>TeaSpeak Account:</td>
+                    <td>{{tr "TeaSpeak Account:" /}}</td>
                     <td><a href="//forum.teaspeak.de/index.php?members/{{:property_client_teaforum_id}}" target="_blank">{{>property_client_teaforum_name}}</a></td>
                 </tr>
                 {{/if}}
@@ -1239,7 +1243,7 @@
             <div style="display: flex; flex-direction: column;">
                 <div style="display:flex;margin-top:5px;align-items:center">
                      <div class="icon client-permission_server_groups"></div>
-                     <div style="margin-left:3px;font-weight:bold">Server groups:</div>
+                     <div style="margin-left:3px;font-weight:bold">{{tr "Server groups:"/}}</div>
                 </div>
 
                 {{for group_server}}
@@ -1254,7 +1258,7 @@
             <div style="display: flex; flex-direction: column; margin-bottom: 20px">
                 <div style="display:flex;margin-top:10px;align-items:center">
                      <div class="icon client-permission_channel"></div>
-                     <div style="margin-left:3px;font-weight:bold">Channel group:</div>
+                     <div style="margin-left:3px;font-weight:bold">{{tr "Channel group:"/}}</div>
                 </div>
 
                 <div style="display: flex; margin-top: 1px; margin-left: 10px; align-items: center;">
@@ -1268,7 +1272,7 @@
             {{if property_client_away}}
             <div style="display: inline-flex">
                 <div class="icon_x32 client-away" style="margin-right: 5px"></div>
-                <a style="align-self: center">Away
+                <a style="align-self: center">{{tr "Away"/}}
                     {{if property_client_away_message && property_client_away_message.length > 0}}
                         ({{>property_client_away_message}})
                     {{/if}}
@@ -1280,7 +1284,7 @@
             {{if !property_client_output_hardware}}
                 <div style="display: inline-flex">
                     <div class="icon_x32 client-hardware_output_muted" style="margin-right: 5px"></div>
-                    <a style="align-self: center">Speakers/Headphones disabled</a>
+                    <a style="align-self: center">{{tr "Speakers/Headphones disabled"/}}</a>
                 </div>
             {{/if}}
 
@@ -1288,7 +1292,7 @@
             {{if !property_client_input_hardware}}
                 <div style="display: inline-flex">
                     <div class="icon_x32 client-hardware_input_muted" style="margin-right: 5px"></div>
-                    <a style="align-self: center">Microphone disabled</a>
+                    <a style="align-self: center">{{tr "Microphone disabled"/}}</a>
                 </div>
             {{/if}}
 
@@ -1296,7 +1300,7 @@
             {{if property_client_output_muted}}
                 <div style="display: inline-flex">
                     <div class="icon_x32 client-output_muted" style="margin-right: 5px"></div>
-                    <a style="align-self: center">Speakers/Headphones Muted</a>
+                    <a style="align-self: center">{{tr "Speakers/Headphones Muted"/}}</a>
                 </div>
             {{/if}}
 
@@ -1304,7 +1308,7 @@
             {{if property_client_input_muted}}
                 <div style="display: inline-flex">
                     <div class="icon_x32 client-input_muted" style="margin-right: 5px"></div>
-                    <a style="align-self: center">Microphone Muted</a>
+                    <a style="align-self: center">{{tr "Microphone Muted"/}}</a>
                 </div>
             {{/if}}
 
@@ -1317,31 +1321,31 @@
         <script class="jsrender-template" id="tmpl_selected_music" type="text/html">
             <table class="select_info_table">
                 <tr>
-                    <td>Name:</td>
+                    <td>{{tr "Name:"/}}</td>
                     <td><node key="client_name"/></td>
                 </tr>
                 {{if property_client_description.length > 0}}
                 <tr>
-                    <td>Description:</td>
+                    <td>{{tr "Description:"/}}</td>
                     <td>{{>property_client_description}}</td>
                 </tr>
                 {{/if}}
                 <tr>
-                    <td>Livetime:</td>
+                    <td>{{tr "Livetime:"/}}</td>
                     <td class="update_onlinetime">{{:client_onlinetime}}</td>
                 </tr>
                 <!-- player_volume -->
                 <tr>
-                    <td>Remote Volume:</td>
+                    <td>{{tr "Remote Volume:"/}}</td>
                     <td>{{*: data.property_player_volume * 100 }}%</td>
                 </tr>
                 <tr>
-                    <td>Local Volume:</td>
+                    <td>{{tr "Local Volume:"/}}</td>
                     <td>{{>sound_volume}}%</td>
                 </tr>
                 {{if song_url}}
                 <tr>
-                    <td>Currently replaying:</td>
+                    <td>{{tr "Currently replaying:"/}}</td>
                     <td><node key="song_url"></node></td>
                 </tr>
                 {{/if}}
@@ -1351,7 +1355,7 @@
             <div style="display: flex; flex-direction: column;">
                 <div style="display:flex;margin-top:5px;align-items:center">
                     <div class="icon client-permission_server_groups"></div>
-                    <div style="margin-left:3px;font-weight:bold">Server groups:</div>
+                    <div style="margin-left:3px;font-weight:bold">{{tr "Server groups:"/}}</div>
                 </div>
 
                 {{for group_server}}
@@ -1366,7 +1370,7 @@
             <div style="display: flex; flex-direction: column; margin-bottom: 20px">
                 <div style="display:flex;margin-top:10px;align-items:center">
                     <div class="icon client-permission_channel"></div>
-                    <div style="margin-left:3px;font-weight:bold">Channel group:</div>
+                    <div style="margin-left:3px;font-weight:bold">{{tr "Channel group:"/}}</div>
                 </div>
 
                 <div style="display: flex; margin-top: 1px; margin-left: 10px; align-items: center;">
@@ -1403,7 +1407,7 @@
                          style="width: 100%; height: auto;"
                          {{/if}}
 
-                    alt="Host banner"
+                    alt="{{tr "Host banner"/}}"
                     >
                 </a>
             </div>
@@ -1420,120 +1424,120 @@
 
                     <table class="select_info_table">
                         <tr>
-                            <td>Name:</td>
+                            <td>{{tr "Name:" /}}</td>
                             <td><node key="server_name"/></td>
                         </tr>
                         <tr>
-                            <td>Address:</td>
+                            <td>{{tr "Address:" /}}</td>
                             <td>{{>server_address}}</td>
                         </tr>
                         <tr>
-                            <td>Type:</td>
+                            <td>{{tr "Type:"/}}</td>
                             <td>TeaSpeak</td>
                         </tr>
                         <tr>
-                            <td>Version:</td>
+                            <td>{{tr "Version:"/}}</td>
                             <td><a title="{{>property_virtualserver_version}}">{{*: data.property_virtualserver_version.split(" ")[0]; }}</a> on {{>property_virtualserver_platform}}</td>
                         </tr>
                         <tr>
-                            <td>Uptime:</td>
+                            <td>{{tr "Uptime:"/}}</td>
                             <td class="update_onlinetime">{{:server_onlinetime}}</td>
                         </tr>
                         <tr>
-                            <td>Current Channels:</td>
+                            <td>{{tr "Current Channels:"/}}</td>
                             <td>{{:property_virtualserver_channelsonline}}</td>
                         </tr>
                         <tr>
-                            <td>Current Clients:</td>
+                            <td>{{tr "Current Clients:"/}}</td>
                             <td>{{:property_virtualserver_clientsonline}}</td>
                         </tr>
                         <tr>
-                            <td>Current Queries:</td>
+                            <td>{{tr "Current Queries:"/}}</td>
                             <td>{{:property_virtualserver_queryclientsonline}}</td>
                         </tr>
                     </table>
                 </div>
 
-                <button class="button-update btn_update">Update info</button>
+                <button class="button-update btn_update">{{tr "Update info"/}}</button>
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_selected_channel" type="text/html">
             <table class="select_info_table">
                 <tr>
-                    <td>Name:</td>
+                    <td>{{tr "Name:" /}}</td>
                     <td><node key="channel_name"/></td>
                 </tr>
                 {{if property_channel_topic}}
                 <tr>
-                    <td>Topic:</td>
+                    <td>{{tr "Topic:"/}}</td>
                     <td>{{>property_channel_topic}}</td>
                 </tr>
                 {{/if}}
                 <tr>
-                    <td>Codec:</td>
+                    <td>{{tr "Codec:"/}}</td>
                     <td>{{>property_channel_codec}}</td>
                 </tr>
                 <tr>
-                    <td>Codec Quality:</td>
+                    <td>{{tr "Codec Quality:"/}}</td>
                     <td>{{>property_channel_codec_quality}}</td>
                 </tr>
                 <tr>
-                    <td>Type:</td>
+                    <td>{{tr "Type:"/}}</td>
                     <td>{{>channel_type}}</td>
                 </tr>
                 <tr>
-                    <td>Current clients:</td>
+                    <td>{{tr "Current clients:"/}}</td>
                     <td>
                         {{>channel_clients}} /
                         {{if property_channel_maxclients == -1}}
-                            Unlimited
+                            {{tr "Unlimited"/}}
                         {{else}}
                             {{>property_channel_maxclients}}
                         {{/if}}
                     </td>
                 </tr>
                 <tr>
-                    <td>Subscription Status:</td>
+                    <td>{{tr "Subscription Status:"/}}</td>
                     <td>
                         {{if channel_subscribed}}
-                            Subscribed
+                            {{tr "Subscribed"/}}
                         {{else}}
-                            Unsubscribed
+                            {{tr "Unsubscribed"/}}
                         {{/if}}
                     </td>
                 </tr>
                 <tr>
-                    <td>Voice Data Encryption:</td>
+                    <td>{{tr "Voice Data Encryption:" /}}</td>
                     <td>
                         {{if property_channel_codec_is_unencrypted}}
-                            Unencrypted
+                            {{tr "Unencrypted"/}}
                         {{else}}
-                            Encrypted
+                            {{tr "Encrypted"/}}
                         {{/if}}
 
                         {{if server_encryption == 2}}
-                            (Overridden by the server with Encrypted)
+                            {{tr "(Overridden by the server with Encrypted)" /}}
                         {{/if}}
                         {{if server_encryption == 1}}
-                            (Overridden by the server with Unencrypted)
+                            {{tr "(Overridden by the server with Unencrypted)"/}}
                         {{/if}}
                     </td>
                 </tr>
             </table>
             <div style="margin-top: 10px">
-                <b style="margin-bottom: 2px">Description</b>
+                <b style="margin-bottom: 2px">{{tr "Description"/}}</b>
                 <node key="bbcode_channel_description"></node>
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_poke_popup" type="text/html">
             <div class="container-poke">
                 <div class="container-information">
-                    <a>You have been poked by </a><node key="invoker"></node><a>:</a>
+                    <a>{{tr "You have been poked by"/}} </a><node key="invoker"></node><a>:</a>
                 </div>
                 <div class="container-message">
                     <a class="message">{{>message}}</a>
                 </div>
-                <button class="button-close">close</button>
+                <button class="button-close">{{tr "Close" /}}</button>
             </div>
         </script>
     </body>

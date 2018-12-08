@@ -98,7 +98,7 @@ class TSClient {
             helpers.hashPassword(password.password).then(password => {
                 this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password));
             }).catch(error => {
-                createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>" + error).open();
+                createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
             })
         } else
             this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password ? password.password : undefined));

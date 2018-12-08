@@ -78,6 +78,10 @@ function setup_jsrender() : boolean {
         return moment(arguments[0]).format(arguments[1]);
     });
 
+    js_render.views.tags("tr", (...arguments) => {
+        return tr(arguments[0]);
+    });
+
     $(".jsrender-template").each((idx, _entry) => {
         if(!js_render.templates(_entry.id, _entry.innerHTML)) { //, _entry.innerHTML
             console.error("Failed to cache template " + _entry.id + " for js render!");
