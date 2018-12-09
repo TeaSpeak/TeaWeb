@@ -91,15 +91,33 @@ function setup_jsrender() : boolean {
     return true;
 }
 
-function main() {
+async function initialize() {
     if(!setup_jsrender()) return;
-
-    //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
-    AudioController.initializeAudioController();
-    if(!TSIdentityHelper.setup()) {
-        console.error(tr( "Could not setup the TeamSpeak identity parser!"));
+    try {
+        await i18n.initialize();
+    } catch(error) {
+        console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
+        displayCriticalError("Failed to setup the translation system");
         return;
     }
+
+    AudioController.initializeAudioController();
+    if(!TSIdentityHelper.setup()) {
+        console.error(tr("Could not setup the TeamSpeak identity parser!"));
+        return;
+    }
+
+    try {
+        await ppt.initialize();
+    } catch(error) {
+        console.error(tr("Failed to initialize ppt!\nError: %o"), error);
+        displayCriticalError(tr("Failed to initialize ppt!"));
+        return;
+    }
+}
+
+function main() {
+    //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
 
     settings = new Settings();
     globalClient = new TSClient();
@@ -150,11 +168,6 @@ function main() {
         }
     }
 
-    ppt.initialize().catch(error => {
-        console.error(tr("Failed to initialize ppt!"));
-        //TODO error notification?
-    });
-
     /*
     let tag = $("#tmpl_music_frame").renderTag({
         //thumbnail: "img/loading_image.svg"
@@ -183,8 +196,9 @@ function main() {
     });
 }
 
-app.loadedListener.push(() => {
+app.loadedListener.push(async () => {
     try {
+        await initialize();
         main();
         if(!audio.player.initialized()) {
             log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));

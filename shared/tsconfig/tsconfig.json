@@ -8,7 +8,7 @@
       {
         "transform": "../../build/trgen/ttsc_transformer.js",
         "type": "program",
-        "target_file": "../generated/i18n.translation",
+        "target_file": "../generated/messages_script.json",
         "verbose": true
       }
     ]

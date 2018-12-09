@@ -8,7 +8,8 @@
     "compile-sass": "sass --update .:.",
     "build-worker": "tsc -p shared/js/workers/tsconfig_worker_codec.json",
     "dtsgen": "node build/dtsgen/index.js",
-    "trgen": "node build/trgen/index.js"
+    "trgen": "node build/trgen/index.js",
+    "ttsc": "ttsc"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",

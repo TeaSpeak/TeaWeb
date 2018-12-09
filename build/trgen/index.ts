@@ -1,9 +1,12 @@
 import * as ts from "typescript";
-import * as generator from "./generator";
+import * as ts_generator from "./ts_generator";
+import * as jsrender_generator from "./jsrender_generator";
 import {readFileSync, writeFileSync} from "fs";
 import * as path from "path";
 import * as glob from "glob";
 import {isArray} from "util";
+import * as mkdirp from "mkdirp";
+import {TranslationEntry} from "./generator";
 
 console.log("TR GEN!");
 
@@ -65,7 +68,7 @@ if(config.verbose) {
     console.log("Input files:");
     for(const file of config.source_files)
         console.log(" - " + file);
-    console.log("Target file: " + config.target_file;
+    console.log("Target file: " + config.target_file);
 }
 
 const negate_files: string[] = [].concat.apply([], (config.excluded_files || []).map(file => glob.sync(config.base_bath + file))).map(file => path.normalize(file));
@@ -94,9 +97,10 @@ function print(nodes: ts.Node[] | ts.SourceFile) : string {
     );
 }
 
+const translations: TranslationEntry[] = [];
 config.source_files.forEach(file => {
     if(config.verbose)
-        console.log("iterating over %s", file)
+        console.log("iterating over %s (%s)", file, path.resolve(path.normalize(config.base_bath + file)));
     glob.sync(config.base_bath + file).forEach(_file => {
         _file = path.normalize(_file);
         for(const n_file of negate_files) {
@@ -106,37 +110,52 @@ config.source_files.forEach(file => {
             }
         }
 
-        let source = ts.createSourceFile(
-            _file,
-            readFileSync(_file).toString(),
-            ts.ScriptTarget.ES2016,
-            true
-        );
-        console.log(print(source));
+        const file_type = path.extname(_file);
+        if(file_type == ".ts") {
+            let source = ts.createSourceFile(
+                _file,
+                readFileSync(_file).toString(),
+                ts.ScriptTarget.ES2016,
+                true
+            );
+            console.log(print(source));
 
-        console.log("Compile " + _file);
+            console.log("Compile " + _file);
 
-        const messages = generator.generate(source, {
-            replace_cache: true
-        });
-        messages.forEach(message => {
-            console.log(message);
-        });
+            const messages = ts_generator.generate(source, {});
+            translations.push(...messages);
 
-        console.log("PRINT!");
-        console.log(print(source));
-        /*
-        result += "\n\n" + decl.print(decl.generate(source, {
-            remove_private: false
-        }));
-*/
+            /*
+            messages.forEach(message => {
+                console.log(message);
+            });
+
+            console.log("PRINT!");
+            console.log(print(source));
+            */
+        } else if(file_type == ".html") {
+            const messages = jsrender_generator.generate({}, {
+                content: readFileSync(_file).toString(),
+                name: _file
+            });
+            translations.push(...messages);
+            /*
+            messages.forEach(message => {
+                console.log(message);
+            });
+            */
+        } else {
+            console.log("Unknown file type \"%s\". Skipping file %s", file_type, _file);
+        }
     });
 });
 
-/*
-mkdirp(path.normalize(path.dirname(base_path + "/" + target_file)), error => {
-    if(error)
-        throw error;
-    writeFileSync(base_path + "/" + target_file, result);
-});
-*/
+if(config.target_file) {
+    mkdirp(path.normalize(path.dirname(config.base_bath + config.target_file)), error => {
+        if(error)
+            throw error;
+        writeFileSync(config.base_bath + config.target_file, JSON.stringify(translations, null, 2));
+    });
+} else {
+    console.log(JSON.stringify(translations, null, 2));
+}

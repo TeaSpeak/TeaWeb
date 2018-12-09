@@ -1,5 +1,5 @@
 import * as ts from "typescript";
-import * as generator from "./generator";
+import * as generator from "./ts_generator";
 
 import {readFileSync} from "fs";
 import * as glob from "glob";
@@ -48,7 +48,6 @@ function compile(fileNames: string[], options: ts.CompilerOptions): void {
     process.exit(exitCode);
 }
 
-console.log("Arguments: " + process.argv.slice(2));
 const config = ts.parseCommandLine(process.argv.slice(2), file => readFileSync(file).toString());
 console.dir(config);
 if(config.errors && config.errors.length > 0) {

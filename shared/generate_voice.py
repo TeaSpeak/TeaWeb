@@ -1,6 +1,7 @@
 """
-This should be executed as python 2.7 (because of pydub)
+This should be executed with python 2.7 (because of pydub)
 """
+
 import os
 import requests
 import json
@@ -25,7 +26,7 @@ def tts(text, file):
                           'Chrome/69.0.3497.100 Safari/537.36 OPR/56.0.3051.52',
             'content-type': 'application/x-www-form-urlencoded',
             'referer': 'https://www.naturalreaders.com/online/',
-            'authority': 'kfiuqykx63.execute-api.us-east-1.amazonaws.com'
+            'authority': 'kfiuqykx63.execute-api.us-east-1.amazonaws.com' #You may need to change that here
         },
         data=json.dumps({"t": text})
     )

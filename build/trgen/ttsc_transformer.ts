@@ -1,7 +1,11 @@
 import * as ts from "typescript";
-import * as generator from "./generator";
+import * as ts_generator from "./ts_generator";
+import * as path from "path";
+import * as mkdirp from "mkdirp";
+
 import {PluginConfig} from "ttypescript/lib/PluginCreator";
 import {writeFileSync} from "fs";
+import {TranslationEntry} from "./generator";
 
 interface Config {
     target_file?: string;
@@ -13,25 +17,30 @@ let process_config: Config;
 export default function(program: ts.Program, config?: PluginConfig) : (context: ts.TransformationContext) => (sourceFile: ts.SourceFile) => ts.SourceFile {
     process_config = config as any || {};
 
-    if(process_config.verbose)
+    const base_path = path.dirname(program.getCompilerOptions().project || program.getCurrentDirectory());
+    if(process_config.verbose) {
         console.log("TRGen transformer called");
+        console.log("Base path: %s", base_path);
+    }
 
     process.on('exit', function () {
+        const target = path.isAbsolute(process_config.target_file) ? process_config.target_file : path.join(base_path, process_config.target_file);
         if(process_config.target_file) {
             if(process_config.verbose)
-                console.log("Writing translation file to " + process_config.target_file);
+                console.log("Writing translation file to " + target);
 
-            writeFileSync(process_config.target_file, JSON.stringify(translations, null, 2));
+            mkdirp.sync(path.dirname(target));
+            writeFileSync(target, JSON.stringify(translations, null, 2));
         }
     });
 
     return ctx => transformer(ctx);
 }
 
-const translations: generator.TranslationEntry[] = [];
+const translations: TranslationEntry[] = [];
 const transformer = (context: ts.TransformationContext) => (rootNode: ts.SourceFile) => {
     console.log("Processing " + rootNode.fileName);
-    const result = generator.transform({
+    const result = ts_generator.transform({
         use_window: false,
         replace_cache: true
     }, context, rootNode);
