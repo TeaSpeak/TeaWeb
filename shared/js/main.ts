@@ -92,7 +92,30 @@ function setup_jsrender() : boolean {
 }
 
 async function initialize() {
-    if(!setup_jsrender()) return;
+    const display_load_error = message => {
+        if(typeof(display_critical_load) !== "undefined")
+            display_critical_load(message);
+        else
+            displayCriticalError(message);
+    };
+
+    try {
+        if(!setup_jsrender())
+            throw "invalid load";
+    } catch (error) {
+        display_load_error(tr("Failed to setup jsrender"));
+        console.error(tr("Failed to load jsrender! %o"), error);
+        return;
+    }
+
+    try { //Initialize main template
+        const main = $("#tmpl_main").renderTag();
+        $("body").append(main);
+    } catch(error) {
+        display_load_error(tr("Failed to setup main page!"));
+        return;
+    }
+
     try {
         await i18n.initialize();
     } catch(error) {

@@ -4,6 +4,9 @@
 /// <reference path="../../voice/AudioController.ts" />
 
 namespace Modals {
+    import info = log.info;
+    import TranslationRepository = i18n.TranslationRepository;
+
     export function spawnSettingsModal() {
         let modal;
         modal = createModal({
@@ -12,6 +15,7 @@ namespace Modals {
                 let template = $("#tmpl_settings").renderTag();
                 template = $.spawn("div").append(template);
                 initialiseSettingListeners(modal,template = template.tabify());
+                initialise_translations(template.find(".settings-translations"));
                 return template;
             },
             footer: () => {
@@ -22,7 +26,7 @@ namespace Modals {
                 footer.css("text-align", "right");
 
                 let buttonOk = $.spawn("button");
-                buttonOk.text("Ok");
+                buttonOk.text(tr("Ok"));
                 buttonOk.click(() => modal.close());
                 footer.append(buttonOk);
 
@@ -269,5 +273,174 @@ namespace Modals {
         */
         //Initialise speakers
 
+   }
+
+   function initialise_translations(tag: JQuery) {
+       { //Initialize the list
+           const tag_list = tag.find(".setting-list .list");
+           const tag_loading = tag.find(".setting-list .loading");
+           const template = $("#settings-translations-list-entry");
+           const restart_hint = tag.find(".setting-list .restart-note");
+           restart_hint.hide();
+
+           const update_list = () => {
+               tag_list.empty();
+
+               const currently_selected = i18n.config.translation_config().current_translation_url;
+               { //Default translation
+                   const tag = template.renderTag({
+                       type: "default",
+                       selected: !currently_selected || currently_selected == "default"
+                   });
+                   tag.on('click', () => {
+                       i18n.select_translation(undefined, undefined);
+                       tag_list.find(".selected").removeClass("selected");
+                       tag.addClass("selected");
+
+                       restart_hint.show();
+                   });
+                   tag.appendTo(tag_list);
+               }
+
+               {
+                    const display_repository_info = (repository: TranslationRepository) => {
+                        const info_modal = createModal({
+                            header: tr("Repository info"),
+                            body: () => {
+                                return $("#settings-translations-list-entry-info").renderTag({
+                                    type: "repository",
+                                    name: repository.name,
+                                    url: repository.url,
+                                    contact: repository.contact,
+                                    translations: repository.translations || []
+                                });
+                            },
+                            footer: () => {
+                                let footer = $.spawn("div");
+                                footer.addClass("modal-button-group");
+                                footer.css("margin-top", "5px");
+                                footer.css("margin-bottom", "5px");
+                                footer.css("text-align", "right");
+
+                                let buttonOk = $.spawn("button");
+                                buttonOk.text(tr("Close"));
+                                buttonOk.click(() => info_modal.close());
+                                footer.append(buttonOk);
+
+                                return footer;
+                            }
+                        });
+                        info_modal.open()
+                    };
+
+                   tag_loading.show();
+                   i18n.iterate_translations((repo, entry) => {
+                       let repo_tag = tag_list.find("[repository=\"" + repo.unique_id + "\"]");
+                       if(repo_tag.length == 0) {
+                           repo_tag = template.renderTag({
+                               type: "repository",
+                               name: repo.name || repo.url,
+                               id: repo.unique_id
+                           });
+
+                           repo_tag.find(".button-delete").on('click', e => {
+                               e.preventDefault();
+
+                               Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this repository?"), answer => {
+                                    if(answer) {
+                                        i18n.delete_repository(repo);
+                                        update_list();
+                                    }
+                               });
+                           });
+                           repo_tag.find(".button-info").on('click', e => {
+                               e.preventDefault();
+
+                               display_repository_info(repo);
+                           });
+
+                           tag_list.append(repo_tag);
+                       }
+
+                       const tag = template.renderTag({
+                           type: "translation",
+                           name: entry.info.name || entry.url,
+                           id: repo.unique_id,
+                           selected: i18n.config.translation_config().current_translation_url == entry.url
+                       });
+                       tag.find(".button-info").on('click', e => {
+                           e.preventDefault();
+
+                           const info_modal = createModal({
+                               header: tr("Translation info"),
+                               body: () => {
+                                   const tag = $("#settings-translations-list-entry-info").renderTag({
+                                       type: "translation",
+                                       name: entry.info.name,
+                                       url: entry.url,
+                                       repository_name: repo.name,
+                                       contributors: entry.info.contributors || []
+                                   });
+
+                                   tag.find(".button-info").on('click', () => display_repository_info(repo));
+
+                                   return tag;
+                               },
+                               footer: () => {
+                                   let footer = $.spawn("div");
+                                   footer.addClass("modal-button-group");
+                                   footer.css("margin-top", "5px");
+                                   footer.css("margin-bottom", "5px");
+                                   footer.css("text-align", "right");
+
+                                   let buttonOk = $.spawn("button");
+                                   buttonOk.text(tr("Close"));
+                                   buttonOk.click(() => info_modal.close());
+                                   footer.append(buttonOk);
+
+                                   return footer;
+                               }
+                           });
+                           info_modal.open()
+                       });
+                       tag.on('click', e => {
+                            if(e.isDefaultPrevented()) return;
+                            i18n.select_translation(repo, entry);
+                            tag_list.find(".selected").removeClass("selected");
+                            tag.addClass("selected");
+
+                           restart_hint.show();
+                       });
+                       tag.insertAfter(repo_tag)
+                   }, () => {
+                       tag_loading.hide();
+                   });
+               }
+
+           };
+
+           {
+               tag.find(".button-add-repository").on('click', () => {
+                   createInputModal("Enter URL", tr("Enter repository URL:<br>"), text => true, url => { //FIXME test valid url
+                       if(!url) return;
+
+                       tag_loading.show();
+                       i18n.load_repository(url as string).then(repository => {
+                           i18n.register_repository(repository);
+                           update_list();
+                       }).catch(error => {
+                           tag_loading.hide();
+                           createErrorModal("Failed to load repository", tr("Failed to query repository.<br>Ensure that this repository is valid and reachable.<br>Error: ") + error).open();
+                       })
+                   }).open();
+               });
+           }
+
+           restart_hint.find(".button-reload").on('click', () => {
+               location.reload();
+           });
+
+           update_list();
+       }
    }
 }

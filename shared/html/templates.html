@@ -13,16 +13,16 @@
                     <div style="height: 45px; width: 100%; border-radius: 2px 0px 0px 0px; border-bottom-width: 0px; background-color: lightgrey"
                          class="main_container">
                         <div id="control_bar" class="control_bar">
-                            <div class="button btn_connect" title="Connect to a server">
+                            <div class="button btn_connect" title="{{tr 'Connect to a server' /}}">
                                 <div class="icon_x32 client-connect"></div>
                             </div>
-                            <div class="button btn_disconnect" title="Disconnect from server" style="display: none">
+                            <div class="button btn_disconnect" title="{{tr 'Disconnect from server' /}}" style="display: none">
                                 <div class="icon_x32 client-disconnect"></div>
                             </div>
                             <!--<div class="button btn_disconnect"><div class="icon_x32 client-disconnect"></div></div>-->
                             <div class="divider"></div>
 
-                            <div class="button-dropdown btn_away" title="Toggle away status">
+                            <div class="button-dropdown btn_away" title="{{tr 'Toggle away status' /}}">
                                 <div class="buttons">
                                     <div class="button icon_x32 client-away btn_away_toggle"></div>
                                     <div class="button-dropdown">
@@ -30,19 +30,19 @@
                                     </div>
                                 </div>
                                 <div class="dropdown">
-                                    <div class="btn_away_toggle"><div class="icon client-away"></div><a>Toggle away status</a></div>
-                                    <div class="btn_away_message"><div class="icon client-away"></div><a>Set away message</a></div>
+                                    <div class="btn_away_toggle"><div class="icon client-away"></div><a>{{tr "Toggle away status" /}}</a></div>
+                                    <div class="btn_away_message"><div class="icon client-away"></div><a>{{ŧr "Set away message" /}}</a></div>
                                 </div>
                             </div>
                             <div class="button btn_mute_input">
-                                <div class="icon_x32 client-input_muted" title="Mute/unmute microphone"></div>
+                                <div class="icon_x32 client-input_muted" title="{{tr 'Mute/unmute microphone' /}}"></div>
                             </div>
                             <div class="button btn_mute_output">
-                                <div class="icon_x32 client-output_muted" title="Mute/unmute headphones"></div>
+                                <div class="icon_x32 client-output_muted" title="{{tr 'Mute/unmute headphones' /}}"></div>
                             </div>
                             <div class="divider"></div>
 
-                            <div class="button-dropdown btn_token" title="Use token">
+                            <div class="button-dropdown btn_token" title="{{tr 'Use token' /}}">
                                 <div class="buttons">
                                     <div class="button icon_x32 client-token btn_token_use"></div>
                                     <div class="button-dropdown">
@@ -50,20 +50,20 @@
                                     </div>
                                 </div>
                                 <div class="dropdown">
-                                    <div class="btn_token_list"><div class="icon client-token"></div><a>List tokens</a></div>
-                                    <div class="btn_token_use"><div class="icon client-token_use"></div><a>Use token</a></div>
+                                    <div class="btn_token_list"><div class="icon client-token"></div><a>{{tr "List tokens" /}}</a></div>
+                                    <div class="btn_token_use"><div class="icon client-token_use"></div><a>{{tr "Use token" /}}</a></div>
                                 </div>
                             </div>
 
                             <div style="width: 100%"></div>
-                            <div class="button btn_banlist" title="Banlist">
+                            <div class="button btn_banlist" title="{{tr 'Banlist' /}}">
                                 <div class="icon_x32 client-ban_list"></div>
                             </div>
-                            <div class="button btn_permissions" title="View/edit permissions">
+                            <div class="button btn_permissions" title="{{tr 'View/edit permissions' /}}">
                                 <div class="icon_x32 client-permission_overview"></div>
                             </div>
                             <div class="divider"></div>
-                            <div class="button btn_open_settings" title="Edit global client settings">
+                            <div class="button btn_open_settings" title="{{tr 'Edit global client settings' /}}">
                                 <div class="icon_x32 client-settings"></div>
                             </div>
                         </div>
@@ -661,8 +661,124 @@
                         </div>
                     </x-content>
                 </x-entry>
+                <x-entry>
+                    <x-tag>
+                        {{tr "Translations" /}}
+                    </x-tag>
+                    <x-content>
+                        <div class="settings-translations">
+                            <div class="group_box">
+                                <div class="header">{{tr "Available translations" /}}</div>
+                                <div class="content settings-microphone">
+                                    <div class="setting-list">
+                                        <div class="list">
+                                            <!--
+                                            <div class="entry default">{{tr "English (Default / Fallback)" /}}</div>
+                                            <div class="entry repository">
+                                                <div class="name">TeaSpeak Official</div>
+                                                <div class="button button-delete"><div class="icon client-delete"></div></div>
+                                                <div class="button button-info"><div class="icon client-about"></div></div>
+                                            </div>
+                                            <div class="entry translation selected">
+                                                <div class="name">German (Google Translate)</div>
+                                                <div class="button button-info"><div class="icon client-about"></div></div>
+                                            </div>
+                                            -->
+                                        </div>
+                                        <div class="management">
+                                            <div class="loading">Loading...</div><div class="space"></div><button class="button-add-repository">{{tr "Add repository" /}}</button>
+                                        </div>
+                                        <div class="restart-note">
+                                            <p>
+                                                {{tr "Attention: These settings get only affected after a restart or reload!" /}}
+                                            </p>
+                                            <button class="button-reload">{{tr "reload now" /}}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
+                </x-entry>
             </x-tab>
         </script>
+
+        <script class="jsrender-template" id="settings-translations-list-entry" type="text/html">
+            {{if type == "repository" }}
+                <div class="entry repository" repository="{{:id}}">
+                    <div class="name">{{> name}}</div>
+                    <div class="button button-delete"><div class="icon client-delete"></div></div>
+                    <div class="button button-info"><div class="icon client-about"></div></div>
+                </div>
+            {{else type == "default" }}
+                <div class="entry default {{if selected}}selected{{/if}}">{{tr "English (Default / Fallback)" /}}</div>
+            {{else}}
+                <div class="entry translation {{if selected}}selected{{/if}}" parent-repository="{{:id}}">
+                    <div class="name">{{> name}}</div>
+                    <div class="button button-info"><div class="icon client-about"></div></div>
+                </div>
+            {{/if}}
+        </script>
+
+        <script class="jsrender-template" id="settings-translations-list-entry-info" type="text/html">
+            <div class="entry-info-container">
+            {{if type == "repository" }}
+                <!--
+                        unique_id: string;
+                        url: string;
+                        name?: string;
+                        contact?: string;
+                        translations?: RepositoryTranslation[];
+                        load_timestamp?: number;
+                -->
+                <div class="property property-name"><div class="key">Name:</div><div class="value">{{>name}}</div></div>
+                <div class="property property-url"><div class="key">URL:</div><div class="value">{{>url}}</div></div>
+                <div class="property property-contact"><div class="key">Contact:</div><div class="value">{{>contact}}</div></div>
+                <div class="property property-translations"><div class="key">Translations:</div><div class="value">{{:translations.length}}</div></div>
+            {{else}}
+                <!--
+                    name: string;
+                    contributors: Contributor[];
+                -->
+                <div class="property property-name"><div class="key">Name:</div><div class="value">{{>name}}</div></div>
+                <div class="property property-url"><div class="key">URL:</div><div class="value">{{>url}}</div></div>
+                <div class="property property-repository">
+                    <div class="key">Repository:</div>
+                    <div class="value">
+                        <p>{{>repository_name}}</p>
+                        <div class="button button-info"><div class="icon client-about"></div></div>
+                    </div>
+                </div>
+                {{if !contributors }}
+                {{else contributors.length == 1}}
+                    <div class="property property-contributor">
+                        <div class="key">Contributor:</div>
+                        <div class="value">
+                            {{>contributors[0].name}}
+                            {{if contributors[0].email}}
+                            &nbsp&lt;{{>contributors[0].email}}&gt;
+                            {{/if}}
+                        </div>
+                    </div>
+                {{else}}
+                    <div class="property property-contributors">
+                        <div class="key">Contributors:</div>
+                        <div class="value">
+                            {{for contributors}}
+                            <div class="contributor">
+                                {{>name}}
+                                {{if email}}
+                                &nbsp&lt;{{>email}}&gt;
+                                {{/if}}
+                            </div>
+                            {{/for}}
+                        </div>
+                    </div>
+                {{/if}}
+            {{/if}}
+            </div>
+        </script>
+
         <script class="jsrender-template" id="tmpl_change_volume" type="text/html">
             <div style="display: flex; justify-content: center; vertical-align: center">
                 <input type="range" min="0" max="200" value="100" class="volume_slider" style="width: 100%">

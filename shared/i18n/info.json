@@ -3,6 +3,12 @@
     {
       "key": "de_DE",
       "path": "de_DE.translation"
+    },
+    {
+      "key": "de_DE_gt",
+      "path": "de_DE_google_translate.translation"
     }
-  ]
+  ],
+  "name": "Default TeaSpeak repository",
+  "contact": "i18n@teaspeak.de"
 }
