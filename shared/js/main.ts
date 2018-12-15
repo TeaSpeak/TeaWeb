@@ -100,6 +100,14 @@ async function initialize() {
     };
 
     try {
+        await i18n.initialize();
+    } catch(error) {
+        console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
+        displayCriticalError("Failed to setup the translation system");
+        return;
+    }
+
+    try {
         if(!setup_jsrender())
             throw "invalid load";
     } catch (error) {
@@ -113,14 +121,6 @@ async function initialize() {
         $("body").append(main);
     } catch(error) {
         display_load_error(tr("Failed to setup main page!"));
-        return;
-    }
-
-    try {
-        await i18n.initialize();
-    } catch(error) {
-        console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
-        displayCriticalError("Failed to setup the translation system");
         return;
     }
 

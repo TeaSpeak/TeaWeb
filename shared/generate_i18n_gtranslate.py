@@ -1,8 +1,11 @@
+#!/usr/bin/env python2.7
+
 """
 We want python 2.7 again...
 """
 
 import json
+import sys
 
 """
 from googletrans import Translator  # Use the free webhook
@@ -46,7 +49,10 @@ def translate_messages(source, destination, target_language):
     with open(source) as f:
         data = json.load(f)
 
-    result = {}
+    result = {
+        "translations": [],
+        "info": None
+    }
     try:
         with open(destination) as f:
             result = json.load(f)
@@ -60,7 +66,6 @@ def translate_messages(source, destination, target_language):
         translations = []
     else:
         print("Loaded {} old translations".format(len(translations)))
-    # TODO translate
 
     messages = []
     for message in data:
@@ -112,12 +117,18 @@ def translate_messages(source, destination, target_language):
     print("Done")
 
 
-def main():
-    #print(run_translate(["Hello World", "Bla bla bla", "Im a unicorn"], "en", "de"))
-    translate_messages("generated/messages_script.json", "test.json", "de")
-    translate_messages("generated/messages_template.json", "test.json", "de")
+def main(target_language):
+    target_file = "i18n/{}_google_translate.translation".format(target_language)
+
+    translate_messages("generated/messages_script.json", target_file, target_language)
+    translate_messages("generated/messages_template.json", target_file, target_language)
     pass
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Invalid argument count!")
+        print("Usage: ./generate_i18n_gtranslate.py <language>")
+        exit(1)
+
+    main(sys.argv[1])

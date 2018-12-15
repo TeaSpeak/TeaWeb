@@ -19,7 +19,7 @@ if [ ! -e ${LOADER_FILE} ]; then
     exit 1
 fi
 
-execute_tsc -p tsconfig/tsconfig_packed.json
+execute_ttsc -p tsconfig/tsconfig_packed.json
 if [ $? -ne 0 ]; then
     echo "Failed to generate packed file!"
     exit 1
