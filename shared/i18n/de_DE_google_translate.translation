@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "Auto translated messages for language de by the google translator",
+    "name": "German translation, based on Google Translate",
     "contributors": [
       {
         "name": "Google Translate, via script by Markus Hadenfeldt",
@@ -23,9 +23,10 @@
       }
     },
     {
-      "translated": "Klingt initialisiert",
+      "translated": "Audios initialisiert",
       "flags": [
-        "google-translate"
+        "google-translate",
+        "human-modified"
       ],
       "key": {
         "message": "Sounds initialitzed"
@@ -2291,9 +2292,10 @@
       }
     },
     {
-      "translated": "die Einstellungen",
+      "translated": "Einstellungen",
       "flags": [
-        "google-translate"
+        "google-translate",
+        "human-modified"
       ],
       "key": {
         "message": "Settings"

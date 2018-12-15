@@ -71,7 +71,7 @@ namespace i18n {
         const sloppy = fast_translate[message];
         if(sloppy) return sloppy;
 
-        console.log("Translating \"%s\". Default: \"%s\"", key, message);
+        log.info(LogCategory.I18N, "Translating \"%s\". Default: \"%s\"", key, message);
 
         let translated = message;
         for(const translation of translations) {
@@ -92,7 +92,6 @@ namespace i18n {
                 async: true,
                 success: result => {
                     try {
-                        console.dir(result);
                         const file = (typeof(result) === "string" ? JSON.parse(result) : result) as TranslationFile;
                         if(!file) {
                             reject("Invalid json");
@@ -191,6 +190,16 @@ namespace i18n {
             for(const repo of config.repositories)
                 (repo.repository || {load_timestamp: 0}).load_timestamp = 0;
 
+            if(config.repositories.length == 0) {
+                //Add the default TeaSpeak repository
+                load_repository(settings.static("i18n.default_repository", "i18n/")).then(repo => {
+                    log.info(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
+                    register_repository(repo);
+                }).catch(error => {
+                    log.warn(LogCategory.I18N, tr("Failed to add default repository. Error: %o"), error);
+                });
+            }
+
             return _cached_repository_config = config;
         }
 
@@ -242,7 +251,6 @@ namespace i18n {
     export function iterate_translations(callback_entry: (repository: TranslationRepository, entry: TranslationFile) => any, callback_finish: () => any) {
         let count = 0;
         const update_finish = () => {
-            console.error(count);
             if(count == 0 && callback_finish)
                 callback_finish();
         };
