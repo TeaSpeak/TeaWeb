@@ -21,30 +21,30 @@ function guid() {
 }
 
 namespace i18n {
-    interface TranslationKey {
+    export interface TranslationKey {
         message: string;
         line?: number;
         character?: number;
         filename?: string;
     }
 
-    interface Translation {
+    export interface Translation {
         key: TranslationKey;
         translated: string;
         flags?: string[];
     }
 
-    interface Contributor {
+    export interface Contributor {
         name: string;
         email: string;
     }
 
-    interface FileInfo {
+    export interface FileInfo {
         name: string;
         contributors: Contributor[];
     }
 
-    interface TranslationFile {
+    export interface TranslationFile {
         url: string;
 
         info: FileInfo;

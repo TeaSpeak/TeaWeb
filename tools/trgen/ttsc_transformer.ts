@@ -34,16 +34,34 @@ export default function(program: ts.Program, config?: PluginConfig) : (context: 
         }
     });
 
-    return ctx => transformer(ctx);
+    return ctx => transformer(ctx) as any;
 }
 
 const translations: TranslationEntry[] = [];
-const transformer = (context: ts.TransformationContext) => (rootNode: ts.SourceFile) => {
-    console.log("Processing " + rootNode.fileName);
-    const result = ts_generator.transform({
-        use_window: false,
-        replace_cache: true
-    }, context, rootNode);
-    translations.push(...result.translations);
-    return result.node;
+const transformer = (context: ts.TransformationContext) =>
+(rootNode: ts.Node) => {
+    const handler = (rootNode: ts.Node) => {
+        if(rootNode.kind == ts.SyntaxKind.Bundle) {
+            const bundle = rootNode as ts.Bundle;
+            const result = [];
+            for(const file of bundle.sourceFiles)
+                result.push(handler(file));
+            return ts.updateBundle(bundle, result as any, bundle.prepends as any);
+
+        } else if(rootNode.kind == ts.SyntaxKind.SourceFile) {
+            const file = rootNode as ts.SourceFile;
+
+            console.log("Processing " + file.fileName);
+            const result = ts_generator.transform({
+                use_window: false,
+                replace_cache: true
+            }, context, file);
+            translations.push(...result.translations);
+            return result.node;
+        } else {
+            console.warn("Invalid transform input: %s", ts.SyntaxKind[rootNode.kind]);
+        }
+    };
+
+    return handler(rootNode);
 };

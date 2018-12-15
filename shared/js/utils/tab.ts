@@ -1,3 +1,4 @@
+/// <reference path="../i18n/localize.ts" />
 
 interface JQuery<TElement = HTMLElement> {
     asTabWidget(copy?: boolean) : JQuery<TElement>;

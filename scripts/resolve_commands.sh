@@ -29,5 +29,3 @@ function execute_npm_command() {
     echo "Arguments: ${@:2}"
     ${!command_variable} ${@:2}
 }
-
-execute_npm_command $@

@@ -209,7 +209,6 @@ export function transform(config: Configuration, context: ts.TransformationConte
         //FIXME
         //if(generated_names.indexOf(name) != -1)
         //    return cache.name_generator(config, node, message);
-
         generated_names.push({name: name, node: node});
         return name;
     };

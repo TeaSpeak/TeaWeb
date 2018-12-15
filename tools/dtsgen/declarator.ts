@@ -252,7 +252,13 @@ generators[SyntaxKind.Constructor] = (settings, stack, node: ts.ConstructorDecla
 generators[SyntaxKind.FunctionDeclaration] = (settings, stack, node: ts.FunctionDeclaration) => {
     if(stack.flag_namespace && !has_modifier(node.modifiers, SyntaxKind.ExportKeyword)) return;
 
-    return ts.createFunctionDeclaration(node.decorators, append_declare(node.modifiers, !stack.flag_declare), node.asteriskToken, node.name, node.typeParameters, _generate_param_declare(settings, stack, node.parameters), node.type, undefined);
+    let return_type = node.type;
+    if(has_modifier(node.modifiers, SyntaxKind.AsyncKeyword)) {
+        if(!return_type)
+            return_type = ts.createTypeReferenceNode("Promise", [ts.createIdentifier("any") as any]);
+    }
+
+    return ts.createFunctionDeclaration(node.decorators, remove_modifier(append_declare(node.modifiers, !stack.flag_declare), SyntaxKind.AsyncKeyword), node.asteriskToken, node.name, node.typeParameters, _generate_param_declare(settings, stack, node.parameters), return_type, undefined);
 };
 
 

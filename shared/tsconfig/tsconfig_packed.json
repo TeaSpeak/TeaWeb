@@ -6,7 +6,15 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "none",
-    "outFile": "../generated/shared.js"
+    "outFile": "../generated/shared.js",
+    "plugins": [ /* ttypescript */
+      {
+        "transform": "../../tools/trgen/ttsc_transformer.js",
+        "type": "program",
+        "target_file": "../generated/messages_script.json",
+        "verbose": true
+      }
+    ]
   },
   "exclude": [
     "../js/workers",
