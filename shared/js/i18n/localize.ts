@@ -192,7 +192,7 @@ namespace i18n {
 
             if(config.repositories.length == 0) {
                 //Add the default TeaSpeak repository
-                load_repository(settings.static("i18n.default_repository", "i18n/")).then(repo => {
+                load_repository(StaticSettings.instance.static("i18n.default_repository", "i18n/")).then(repo => {
                     log.info(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
                     register_repository(repo);
                 }).catch(error => {
