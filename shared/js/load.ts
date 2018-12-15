@@ -1,5 +1,3 @@
-
-//FIXME fix display critical error before load
 namespace app {
     export enum Type {
         UNDEFINED,
@@ -55,30 +53,40 @@ namespace app {
 }
 
 /* define that here */
-let impl_display_critical_error: (message: string) => any;
+let _critical_triggered = false;
+const display_critical_load = message => {
+    if(_critical_triggered) return; /* only show the first error */
+    _critical_triggered = true;
+
+    let tag = document.getElementById("critical-load");
+    let detail = tag.getElementsByClassName("detail")[0];
+    detail.innerHTML = message;
+
+    tag.style.display = "block";
+    fadeoutLoader();
+};
+
+const loader_impl_display_critical_error = message => {
+    if(typeof(createErrorModal) !== 'undefined') {
+        createErrorModal("A critical error occurred while loading the page!", message, {closeable: false}).open();
+    } else {
+        display_critical_load(message);
+    }
+    fadeoutLoader();
+};
 
 interface Window {
     impl_display_critical_error: (_: string) => any;
 }
-if(!window.impl_display_critical_error) { /* default impl */
-    impl_display_critical_error = message => {
-        if(typeof(createErrorModal) !== 'undefined') {
-            createErrorModal("A critical error occurred while loading the page!", message, {closeable: false}).open();
-        } else {
-            let tag = document.getElementById("critical-load");
-            let detail = tag.getElementsByClassName("detail")[0];
-            detail.innerHTML = message;
 
-            tag.style.display = "block";
-        }
-        fadeoutLoader();
-    }
+if(!window.impl_display_critical_error) { /* default impl */
+    window.impl_display_critical_error = loader_impl_display_critical_error;
 }
 function displayCriticalError(message: string) {
     if(window.impl_display_critical_error)
         window.impl_display_critical_error(message);
     else
-        console.error("Could not display a critical message: " + message); /* this shall never happen! */
+        loader_impl_display_critical_error(message);
 }
 
 
@@ -280,14 +288,7 @@ function loadTemplates() {
         }
         while(tags.length > 0){
             let tag = tags.item(0);
-            if(tag.id == "tmpl_main") {
-                let main_node = document.createElement("div");
-                document.getElementsByTagName("body").item(0).appendChild(main_node);
-                main_node.outerHTML = tag.innerHTML;
-                tag.remove();
-            }
-            else
-                root.appendChild(tag);
+            root.appendChild(tag);
 
         }
     }).catch(error => {
@@ -344,11 +345,22 @@ function loadSide() {
         load_script("js/proto.js").then(loadDebug).catch(loadRelease);
         //Load the teaweb templates
         loadTemplates();
+    }).catch(error => {
+        displayCriticalError("Failed to load scripts.<br>Lookup the console for more details.");
+        console.error(error);
     });
 }
 
 //FUN: loader_ignore_age=0&loader_default_duration=1500&loader_default_age=5000
+let _fadeout_warned = false;
 function fadeoutLoader(duration = undefined, minAge = undefined, ignoreAge = undefined) {
+    if(typeof($) === "undefined") {
+        if(!_fadeout_warned)
+            console.warn("Could not fadeout loader screen. Missing jquery functions.");
+        _fadeout_warned = true;
+        return;
+    }
+
     let settingsDefined = typeof(StaticSettings) !== "undefined";
     if(!duration) {
         if(settingsDefined)
@@ -371,6 +383,7 @@ function fadeoutLoader(duration = undefined, minAge = undefined, ignoreAge = und
         setTimeout(() => fadeoutLoader(duration, 0, true), minAge - age);
         return;
     }
+
     $(".loader .bookshelf_wrapper").animate({top: 0, opacity: 0}, duration);
     $(".loader .half").animate({width: 0}, duration, () => {
         $(".loader").detach();
@@ -410,4 +423,9 @@ navigator.browserSpecs = (function(){
 })();
 
 console.log(navigator.browserSpecs); //Object { name: "Firefox", version: "42" }
-loadSide();
+try {
+    loadSide();
+} catch(error) {
+    displayCriticalError("Failed to invoke main loader function.");
+    console.error(error);
+}

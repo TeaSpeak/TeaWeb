@@ -7,7 +7,9 @@
   "scripts": {
     "compile-sass": "sass --update .:.",
     "build-worker": "tsc -p shared/js/workers/tsconfig_worker_codec.json",
-    "dtsgen": "node build/dtsgen/index.js"
+    "dtsgen": "node tools/dtsgen/index.js",
+    "trgen": "node tools/trgen/index.js",
+    "ttsc": "ttsc"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
@@ -17,10 +19,13 @@
     "@types/jquery": "3.3.5",
     "@types/moment": "^2.13.0",
     "@types/node": "^9.4.6",
+    "@types/sha256": "^0.2.0",
     "@types/websocket": "0.0.38",
     "electron": "^3.0.2",
     "gulp": "^3.9.1",
     "sass": "^1.14.1",
+    "sha256": "^0.2.0",
+    "ttypescript": "^1.5.5",
     "typescript": "^3.1.1"
   },
   "repository": {

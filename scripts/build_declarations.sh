@@ -20,7 +20,7 @@ BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
 
 #Building the generator
-cd build/dtsgen
+cd tools/dtsgen
 execute_tsc -p tsconfig.json
 if [ $? -ne 0 ]; then
     echo "Failed to build typescript declaration generator"

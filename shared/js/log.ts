@@ -5,7 +5,8 @@ enum LogCategory {
     PERMISSIONS,
     GENERAL,
     NETWORKING,
-    VOICE
+    VOICE,
+    I18N
 }
 
 namespace log {
@@ -17,7 +18,6 @@ namespace log {
         ERROR
     }
 
-    //TODO add translation
     let category_mapping = new Map<number, string>([
         [LogCategory.CHANNEL,       "Channel    "],
         [LogCategory.CLIENT,        "Client     "],
@@ -25,7 +25,8 @@ namespace log {
         [LogCategory.PERMISSIONS,   "Permission "],
         [LogCategory.GENERAL,       "General    "],
         [LogCategory.NETWORKING,    "Network    "],
-        [LogCategory.VOICE,         "Voice      "]
+        [LogCategory.VOICE,         "Voice      "],
+        [LogCategory.I18N,          "I18N       "]
     ]);
 
     function logDirect(type: LogType, message: string, ...optionalParams: any[]) {

@@ -75,6 +75,14 @@
 			"path" => "wasm/",
 			"local-path" => "./asm/generated/"
 		],
+		[ /* translations */
+			"type" => "i18n",
+			"search-pattern" => "/.*\.(translation|json)/",
+			"build-target" => "dev|rel",
+
+			"path" => "i18n/",
+			"local-path" => "./shared/i18n/"
+		],
 
 		/* vendors */
 		[

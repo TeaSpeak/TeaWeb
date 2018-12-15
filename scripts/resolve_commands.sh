@@ -1,26 +1,31 @@
 #!/usr/bin/env bash
 
 function execute_tsc() {
-    if [ "$command_tsc" == "" ]; then
-        if [ "$node_bin" == "" ]; then
-            node_bin=$(npm bin)
-        fi
+    execute_npm_command tsc $@
+}
 
-        if [ ! -e "${node_bin}/tsc" ]; then
-            echo "Could not find tsc command"
+function execute_ttsc() {
+    execute_npm_command ttsc $@
+}
+
+function execute_npm_command() {
+    command_name=$1
+    command_variable="command_$command_name"
+    #echo "Variable names $command_variable"
+
+    if [ "${!command_variable}" == "" ]; then
+        node_bin=$(npm bin)
+        #echo "Node root ${node_bin}"
+
+        if [ ! -e "${node_bin}/${command_name}" ]; then
+            echo "Could not find \"$command_name\" command"
             echo "May type npm install"
             exit 1
         fi
 
-        command_tsc="${node_bin}/tsc"
-
-        output=$(${command_tsc} -v)
-        if [ $? -ne 0 ]; then
-            echo "Failed to execute a simple tsc command!"
-            echo "$output"
-            exit 1
-        fi
+        eval "${command_variable}=\"${node_bin}/${command_name}\""
     fi
 
-    ${command_tsc} $@
+    echo "Arguments: ${@:2}"
+    ${!command_variable} ${@:2}
 }

@@ -32,3 +32,16 @@ namespace T {
         export function Y() {}
     }
 }
+
+namespace T {
+    export async function async_void() {}
+    export async function async_any() : Promise<any> {
+        return "" as any;
+    }
+    export async function async_number() : Promise<number> {
+        return 0;
+    }
+    export async function async_number_string() : Promise<number | string> {
+        return 0;
+    }
+}

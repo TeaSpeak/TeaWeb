@@ -60,14 +60,14 @@ if [ "$type" == "release" ]; then #Compile everything for release mode
     fi
 elif [ "$type" == "development" ]; then
     echo "Building shared source"
-    execute_tsc -p ./shared/tsconfig/tsconfig.json
+    execute_ttsc -p ./shared/tsconfig/tsconfig.json
     if [ $? -ne 0 ]; then
         echo "Failed to compile shared sources"
         exit 1
     fi
 
     echo "Building web client source"
-    execute_tsc -p ./web/tsconfig/tsconfig.json
+    execute_ttsc -p ./web/tsconfig/tsconfig.json
     if [ $? -ne 0 ]; then
         echo "Failed to compile web sources"
         exit 1

@@ -3,7 +3,15 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "sourceMap": true
+    "sourceMap": true,
+    "plugins": [ /* ttypescript */
+      {
+        "transform": "../../tools/trgen/ttsc_transformer.js",
+        "type": "program",
+        "target_file": "../generated/messages_script.json",
+        "verbose": true
+      }
+    ]
   },
   "exclude": [
     "../js/workers"

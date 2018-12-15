@@ -323,6 +323,8 @@ class ChatBox {
             }
             globalClient.serverConnection.sendMessage(text, ChatType.SERVER);
         };
+        this.serverChat().name = tr("Server chat");
+
         this.createChat("chat_channel", ChatType.CHANNEL).onMessageSend = (text: string) => {
             if(!globalClient.serverConnection) {
                 chat.channelChat().appendError(tr("Could not send chant message (Not connected)"));
@@ -331,6 +333,7 @@ class ChatBox {
 
             globalClient.serverConnection.sendMessage(text, ChatType.CHANNEL, globalClient.getClient().currentChannel());
         };
+        this.channelChat().name = tr("Channel chat");
 
         globalClient.permissions.initializedListener.push(flag => {
             if(flag) this.activeChat0(this._activeChat);

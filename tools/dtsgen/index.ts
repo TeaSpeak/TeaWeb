@@ -31,6 +31,10 @@ while(args.length > 0) {
         config_file = args[1];
         base_path = path.normalize(path.dirname(config_file));
         args = args.slice(2);
+    } else if(args[0] == "-b" || args[0] == "--base") {
+        base_path = args[1];
+        base_path = path.normalize(base_path);
+        args = args.slice(2);
     } else {
         console.error("Invalid command line option %s", args[0]);
         process.exit(1);

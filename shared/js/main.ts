@@ -78,6 +78,10 @@ function setup_jsrender() : boolean {
         return moment(arguments[0]).format(arguments[1]);
     });
 
+    js_render.views.tags("tr", (...arguments) => {
+        return tr(arguments[0]);
+    });
+
     $(".jsrender-template").each((idx, _entry) => {
         if(!js_render.templates(_entry.id, _entry.innerHTML)) { //, _entry.innerHTML
             console.error("Failed to cache template " + _entry.id + " for js render!");
@@ -87,15 +91,56 @@ function setup_jsrender() : boolean {
     return true;
 }
 
-function main() {
-    if(!setup_jsrender()) return;
+async function initialize() {
+    const display_load_error = message => {
+        if(typeof(display_critical_load) !== "undefined")
+            display_critical_load(message);
+        else
+            displayCriticalError(message);
+    };
 
-    //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
-    AudioController.initializeAudioController();
-    if(!TSIdentityHelper.setup()) {
-        console.error(tr( "Could not setup the TeamSpeak identity parser!"));
+    try {
+        await i18n.initialize();
+    } catch(error) {
+        console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
+        displayCriticalError("Failed to setup the translation system");
         return;
     }
+
+    try {
+        if(!setup_jsrender())
+            throw "invalid load";
+    } catch (error) {
+        display_load_error(tr("Failed to setup jsrender"));
+        console.error(tr("Failed to load jsrender! %o"), error);
+        return;
+    }
+
+    try { //Initialize main template
+        const main = $("#tmpl_main").renderTag();
+        $("body").append(main);
+    } catch(error) {
+        display_load_error(tr("Failed to setup main page!"));
+        return;
+    }
+
+    AudioController.initializeAudioController();
+    if(!TSIdentityHelper.setup()) {
+        console.error(tr("Could not setup the TeamSpeak identity parser!"));
+        return;
+    }
+
+    try {
+        await ppt.initialize();
+    } catch(error) {
+        console.error(tr("Failed to initialize ppt!\nError: %o"), error);
+        displayCriticalError(tr("Failed to initialize ppt!"));
+        return;
+    }
+}
+
+function main() {
+    //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
 
     settings = new Settings();
     globalClient = new TSClient();
@@ -146,11 +191,6 @@ function main() {
         }
     }
 
-    ppt.initialize().catch(error => {
-        console.error(tr("Failed to initialize ppt!"));
-        //TODO error notification?
-    });
-
     /*
     let tag = $("#tmpl_music_frame").renderTag({
         //thumbnail: "img/loading_image.svg"
@@ -179,8 +219,9 @@ function main() {
     });
 }
 
-app.loadedListener.push(() => {
+app.loadedListener.push(async () => {
     try {
+        await initialize();
         main();
         if(!audio.player.initialized()) {
             log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
