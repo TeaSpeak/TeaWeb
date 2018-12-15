@@ -313,6 +313,7 @@ namespace i18n {
     }
 
     export async function initialize() {
+        const rcfg = config.repository_config(); /* initialize */
         const cfg = config.translation_config();
 
         if(cfg.current_translation_url) {
