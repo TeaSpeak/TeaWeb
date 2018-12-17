@@ -53,11 +53,21 @@
 .channelTree div * {vertical-align: middle;display:inline-block;height: 16px;padding: 0px;}
 .channelTree div img  {border: 0;}
 .channelTree div > span {position: absolute; right: 0;}
-.channelTree .name {
-    vertical-align: middle;
-    margin-top: 1px;
-    height: 14px;
-    display: inline;
+.channelTree {
+    .name, .group_prefix, .group_suffix, .away {
+        vertical-align: middle;
+        margin-top: 1px;
+        height: 14px;
+        display: inline;
+    }
+
+    .group_prefix {
+        margin-right: 3px;
+    }
+
+    .group_suffix {
+        margin-left: 3px;
+    }
 }
 .channelTree .own_name {
     font-weight: bold;

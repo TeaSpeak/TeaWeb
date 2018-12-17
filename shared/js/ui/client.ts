@@ -408,7 +408,9 @@ class ClientEntry {
 
         tag.append($.spawn("div").addClass("icon_client_state").attr("title", "Client state"));
 
+        tag.append($.spawn("div").addClass("group_prefix").attr("title", "Server groups prefixes").hide());
         tag.append($.spawn("div").addClass("name").text(this.clientNickName()));
+        tag.append($.spawn("div").addClass("group_suffix").attr("title", "Server groups suffix").hide());
         tag.append($.spawn("div").addClass("away").text(this.clientNickName()));
 
         let clientIcons = $.spawn("span");
@@ -561,7 +563,7 @@ class ClientEntry {
             if(variable.key == "client_icon_id")
                 this.updateClientIcon();
             if(variable.key =="client_channel_group_id" || variable.key == "client_servergroups")
-                this.updateGroupIcons();
+                this.update_displayed_client_groups();
         }
 
         /* process updates after variables have been set */
@@ -577,11 +579,39 @@ class ClientEntry {
         group.end();
     }
 
-    updateGroupIcons() {
+    update_displayed_client_groups() {
         this.tag.find("span .group_icons").children().detach();
+
         for(let id of this.assignedServerGroupIds())
             this.updateGroupIcon(this.channelTree.client.groups.serverGroup(id));
+
         this.updateGroupIcon(this.channelTree.client.groups.channelGroup(this.properties.client_channel_group_id));
+
+        let prefix_groups: string[] = [];
+        let suffix_groups: string[] = [];
+        for(const group_id of this.assignedServerGroupIds()) {
+            const group = this.channelTree.client.groups.serverGroup(group_id);
+            if(!group) continue;
+
+            if(group.properties.namemode == 1)
+                prefix_groups.push(group.name);
+            else if(group.properties.namemode == 2)
+                suffix_groups.push(group.name);
+        }
+
+        const tag_group_prefix = this.tag.find(".group_prefix");
+        const tag_group_suffix = this.tag.find(".group_suffix");
+        if(prefix_groups.length > 0) {
+            tag_group_prefix.text("[" + prefix_groups.join("][") + "]").show();
+        } else {
+            tag_group_prefix.hide()
+        }
+
+        if(suffix_groups.length > 0) {
+            tag_group_suffix.text("[" + suffix_groups.join("][") + "]").show();
+        } else {
+            tag_group_suffix.hide()
+        }
     }
 
     updateClientVariables(){

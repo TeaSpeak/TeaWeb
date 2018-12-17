@@ -143,9 +143,9 @@ class GroupManager {
                 group.updateProperty(key, groupData[key]);
             }
 
-            group.requiredMemberRemovePower = groupData["n_member_removep"];
-            group.requiredMemberAddPower = groupData["n_member_addp"];
-            group.requiredModifyPower = groupData["n_modifyp"];
+            group.requiredMemberRemovePower = parseInt(groupData["n_member_removep"]);
+            group.requiredMemberAddPower = parseInt(groupData["n_member_addp"]);
+            group.requiredModifyPower = parseInt(groupData["n_modifyp"]);
 
             if(target == GroupTarget.SERVER)
                 this.serverGroups.push(group);
@@ -154,6 +154,8 @@ class GroupManager {
         }
 
         console.log("Got " + json.length + " new " + target + " groups:");
+        for(const client of this.handle.channelTree.clients)
+            client.update_displayed_client_groups();
     }
 
     request_permissions(group: Group) : Promise<PermissionValue[]> { //database_empty_result
