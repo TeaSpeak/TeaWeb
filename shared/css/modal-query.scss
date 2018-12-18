@@ -1,0 +1,59 @@
+.query-create {
+	display: flex;
+	flex-direction: column;
+
+	.row-name {
+		width: 100%;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		input {
+			flex-grow: 1;
+			flex-shrink: 1;
+			margin-left: 5px;
+		}
+	}
+
+	.buttons {
+		margin-top: 5px;
+		text-align: right;
+	}
+}
+
+.query-created {
+	display: flex;
+	flex-direction: column;
+
+	.property-row {
+		width: 100%;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+		align-items: center;
+
+		margin-top: 2px;
+
+		input {
+			flex-grow: 1;
+			flex-shrink: 1;
+			margin-left: 5px;
+		}
+
+		a:first-of-type {
+			width: 150px;
+		}
+
+		div:last-of-type {
+			margin-left: 5px;
+			cursor: pointer;
+		}
+	}
+
+	.buttons {
+		margin-top: 5px;
+		text-align: right;
+	}
+}

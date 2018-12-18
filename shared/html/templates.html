@@ -19,7 +19,24 @@
                             <div class="button btn_disconnect" title="{{tr 'Disconnect from server' /}}" style="display: none">
                                 <div class="icon_x32 client-disconnect"></div>
                             </div>
-                            <!--<div class="button btn_disconnect"><div class="icon_x32 client-disconnect"></div></div>-->
+
+                            <!--
+                            <div class="button-dropdown btn_bookmark" title="{{tr 'Bookmarks' /}}">
+                                <div class="buttons">
+                                    <div class="button icon_x32 client-bookmark_manager btn_bookmark_list"></div>
+                                    <div class="button-dropdown">
+                                        <div class="arrow"></div>
+                                    </div>
+                                </div>
+                                <div class="dropdown bookmark-dropdown" style="width: 300px">
+                                    <div class="btn_bookmark_list"><div class="icon client-bookmark_manager"></div><a>{{tr "Manage bookmarks" /}}</a></div>
+                                    <div class="btn_bookmark_add"><div class="icon client-bookmark_add"></div><a>{{tr "Add current server to bookmarks" /}}</a></div>
+                                    <div class="btn_bookmark_remove"><div class="icon client-bookmark_remove"></div><a>{{tr "Remove current server to bookmarks" /}}</a></div>
+                                    <hr>
+
+                                </div>
+                            </div>
+                            -->
                             <div class="divider"></div>
 
                             <div class="button-dropdown btn_away" title="{{tr 'Toggle away status' /}}">
@@ -61,6 +78,20 @@
                             </div>
                             <div class="button btn_permissions" title="{{tr 'View/edit permissions' /}}">
                                 <div class="icon_x32 client-permission_overview"></div>
+                            </div>
+
+                            <!-- the query button -->
+                            <div class="button-dropdown btn_query" title="{{tr 'Show/hide server queries' /}}">
+                                <div class="buttons">
+                                    <div class="button icon_x32 client-server_query btn_query_toggle"></div>
+                                    <div class="button-dropdown">
+                                        <div class="arrow"></div>
+                                    </div>
+                                </div>
+                                <div class="dropdown display_left">
+                                    <div class="btn_query_toggle"><div class="icon client-away"></div><a>{{tr "Show/hide server queries" /}}</a></div>
+                                    <div class="btn_query_create"><div class="icon client-away"></div><a>{{tr "Create server query login" /}}</a></div>
+                                </div>
                             </div>
                             <div class="divider"></div>
                             <div class="button btn_open_settings" title="{{tr 'Edit global client settings' /}}">
@@ -1654,6 +1685,39 @@
                     <a class="message">{{>message}}</a>
                 </div>
                 <button class="button-close">{{tr "Close" /}}</button>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_query_create" type="text/html">
+            <div class="query-create">
+                <a>{{tr "Set the login name for your Server Query account." /}}</a>
+                <a>{{tr "You'll receive your password within the next step." /}}</a>
+                <div class="row-name">
+                    <a>Name:</a>
+                    <input type="text" maxlength="64" minlength="3" class="input-name">
+                </div>
+                <div class="buttons">
+                    <button class="button-close">{{tr "Close" /}}</button>
+                    <button class="button-create">{{tr "Create" /}}</button>
+                </div>
+            </div>
+        </script>
+        <script class="jsrender-template" id="tmpl_query_created" type="text/html">
+            <div class="query-created">
+                <a>{{tr "Your server query credentials:" /}}</a>
+                <div class="property-row">
+                    <a>Name:</a>
+                    <input class="query_name" type="text" maxlength="64" minlength="3" value="{{>username}}">
+                    <div class="btn_copy_name icon client-copy" title="{{tr 'Copy username' /}}"></div>
+                </div>
+                <div class="property-row">
+                    <a>Password:</a>
+                    <input class="query_password" type="text" value="{{>password}}">
+                    <div class="btn_copy_password icon client-copy" title="{{tr 'Copy password' /}}"></div>
+                </div>
+                <div class="buttons">
+                    <button class="button-close">{{tr "Close" /}}</button>
+                </div>
             </div>
         </script>
     </body>

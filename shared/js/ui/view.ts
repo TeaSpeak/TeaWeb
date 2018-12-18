@@ -18,6 +18,7 @@ class ChannelTree {
     currently_selected_context_callback: (event) => any = undefined;
     readonly client_mover: ClientMover;
 
+    private _show_queries: boolean;
     private channel_last?: ChannelEntry;
     private channel_first?: ChannelEntry;
 
@@ -290,6 +291,10 @@ class ChannelTree {
         if(newClient) client = newClient; //Got new client :)
         else
             this.clients.push(client);
+
+        if(!this._show_queries && client.properties.client_type == ClientType.CLIENT_QUERY)
+            client.tag.hide();
+
         client.channelTree = this;
         client["_channel"] = channel;
 
@@ -708,5 +713,24 @@ class ChannelTree {
                 this.currently_selected.joinChannel();
             }
         }
+    }
+
+    toggle_server_queries(flag: boolean) {
+        if(this._show_queries == flag) return;
+        this._show_queries = flag;
+
+        //FIXME resize channels
+        const channels: ChannelEntry[] = []
+        for(const client of this.clients)
+            if(client.properties.client_type == ClientType.CLIENT_QUERY) {
+                if(this._show_queries)
+                    client.tag.show();
+                else
+                    client.tag.hide();
+                if(channels.indexOf(client.currentChannel()) == -1)
+                    channels.push(client.currentChannel());
+            }
+        for(const channel of channels)
+            channel.adjustSize();
     }
 }

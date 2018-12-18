@@ -13,11 +13,13 @@
         client_away_message Value: ''
  */
 import openBanList = Modals.openBanList;
+import spawnConnectModal = Modals.spawnConnectModal;
 
 class ControlBar {
     private _muteInput: boolean;
     private _muteOutput: boolean;
     private _away: boolean;
+    private _query_visible: boolean;
     private _awayMessage: string;
 
     private codec_supported: boolean = false;
@@ -64,10 +66,34 @@ class ControlBar {
             away.find(".btn_away_toggle").on('click', this.on_away_toggle.bind(this));
             away.find(".btn_away_message").on('click', this.on_away_set_message.bind(this));
         }
+        {
+            let bookmark = this.htmlTag.find(".btn_bookmark");
+            bookmark.find(".button-dropdown").on('click', () => {
+                bookmark.find(".dropdown").addClass("displayed");
+            });
+            bookmark.on('mouseleave', () => {
+                bookmark.find(".dropdown").removeClass("displayed");
+            });
+
+            this.update_bookmarks()
+        }
+        {
+            let query = this.htmlTag.find(".btn_query");
+            query.find(".button-dropdown").on('click', () => {
+                query.find(".dropdown").addClass("displayed");
+            });
+            query.on('mouseleave', () => {
+                query.find(".dropdown").removeClass("displayed");
+            });
+
+            query.find(".btn_query_toggle").on('click', this.on_query_visibility_toggle.bind(this));
+            query.find(".btn_query_create").on('click', this.on_query_create.bind(this))
+        }
 
         //Need an initialise
         this.muteInput = settings.global("mute_input") == "1";
         this.muteOutput = settings.global("mute_output") == "1";
+        this.query_visibility = settings.global("show_server_queries") == "1";
     }
 
 
@@ -270,5 +296,63 @@ class ControlBar {
         if(!this.handle.serverConnection) return;
 
         openBanList(this.handle);
+    }
+
+    update_bookmarks() {
+        //<div class="btn_bookmark_connect" target="localhost"><a>Localhost</a></div>
+        let tag_bookmark = this.htmlTag.find(".btn_bookmark .dropdown");
+        tag_bookmark.find(".bookmark, .bookmark_directory").detach();
+
+        for(const bookmark of bookmarks.bookmarks().content) {
+            if(bookmark.type == bookmarks.BookmarkType.ENTRY) {
+                tag_bookmark.append(
+                    $.spawn("div")
+                        .addClass("bookmark")
+                        /* /.attr("bookmark-uuid", bookmark.unique_id) */
+                        .text(bookmark.display_name)
+                        .on('click', event => {
+                            spawnConnectModal()
+
+                        })
+                )
+            }
+            //TODO add bookmark directories here
+        }
+    }
+
+    get query_visibility() {
+        return this._query_visible;
+    }
+
+    set query_visibility(flag: boolean) {
+        if(this._query_visible == flag) return;
+
+        this._query_visible = flag;
+        settings.global("show_server_queries", flag);
+        this.update_query_visibility_button();
+        this.handle.channelTree.toggle_server_queries(flag);
+    }
+
+    private on_query_visibility_toggle() {
+        this.query_visibility = !this._query_visible;
+        this.update_query_visibility_button();
+    }
+
+    private update_query_visibility_button() {
+        let tag = this.htmlTag.find(".btn_query_toggle");
+        if(this._query_visible) {
+            tag.addClass("activated");
+        } else {
+            tag.removeClass("activated");
+        }
+    }
+
+    private on_query_create() {
+        if(this.handle.permissions.neededPermission(PermissionType.B_CLIENT_CREATE_MODIFY_SERVERQUERY_LOGIN).granted(1)) {
+            Modals.spawnQueryCreate();
+        } else {
+            createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to create a server query login")).open();
+            sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
+        }
     }
 }

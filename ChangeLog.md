@@ -1,4 +1,18 @@
 # Changelog:
+* **18.12.18**
+    - Added bookmarks and bookmarks management
+    - Added query user visibility button and creation (Query management will follow soon)
+    - Fixed overflow within the group assignment dialog
+    
+* **17.12.18**
+    - Implemented group prefix and suffix
+    
+* **15.12.18**
+    - Implemented a translation system with default translated language sets for  
+        - German
+        - Turkish
+        - Russian
+        
 * **3.12.18**
     - Fixed url connect parameters
     

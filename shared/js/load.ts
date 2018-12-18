@@ -180,6 +180,7 @@ function loadDebug() {
         "js/crypto/hex.js",
 
         //Load UI
+        "js/ui/modal/ModalQuery.js",
         "js/ui/modal/ModalConnect.js",
         "js/ui/modal/ModalSettings.js",
         "js/ui/modal/ModalCreateChannel.js",
@@ -219,6 +220,7 @@ function loadDebug() {
 
         //Load general stuff
         "js/settings.js",
+        "js/bookmarks.js",
         "js/contextMenu.js",
         "js/connection.js",
         "js/FileManager.js",
