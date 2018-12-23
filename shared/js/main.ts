@@ -21,9 +21,9 @@ const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
 function getUserMediaFunction() {
-    if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
-        return (settings, success, fail) => { navigator.mediaDevices.getUserMedia(settings).then(success).catch(fail); };
-    return navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    if((navigator as any).mediaDevices && (navigator as any).mediaDevices.getUserMedia)
+        return (settings, success, fail) => { (navigator as any).mediaDevices.getUserMedia(settings).then(success).catch(fail); };
+    return (navigator as any).getUserMedia || (navigator as any).webkitGetUserMedia || (navigator as any).mozGetUserMedia;
 }
 
 function setup_close() {

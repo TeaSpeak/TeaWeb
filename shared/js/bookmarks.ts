@@ -29,7 +29,7 @@ namespace bookmarks {
     }
 
     export interface Bookmark {
-        type: BookmarkType.ENTRY;
+        type: /* BookmarkType.ENTRY */ BookmarkType;
 
         /* readonly directory: DirectoryBookmark; */
         server_properties: ServerProperties;
@@ -44,7 +44,7 @@ namespace bookmarks {
     }
 
     export interface DirectoryBookmark {
-        type: BookmarkType.DIRECTORY;
+        type: /* BookmarkType.DIRECTORY */ BookmarkType;
 
         readonly content: (Bookmark | DirectoryBookmark)[];
         unique_id: string;
@@ -93,7 +93,7 @@ namespace bookmarks {
             if(entry.unique_id == uuid)
                 return entry;
             if(entry.type == BookmarkType.DIRECTORY) {
-                const result = find_bookmark_recursive(entry, uuid);
+                const result = find_bookmark_recursive(entry as DirectoryBookmark, uuid);
                 if(result) return result;
             }
         }
@@ -147,7 +147,7 @@ namespace bookmarks {
         else
             for(const entry of parent.content)
                 if(entry.type == BookmarkType.DIRECTORY)
-                    delete_bookmark_recursive(entry, bookmark)
+                    delete_bookmark_recursive(entry as DirectoryBookmark, bookmark)
     }
 
     export function delete_bookmark(bookmark: Bookmark | DirectoryBookmark) {
