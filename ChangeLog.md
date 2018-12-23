@@ -1,4 +1,7 @@
 # Changelog:
+* **23.12.18**
+    - Added query account management (since server 1.2.32b)
+    
 * **18.12.18**
     - Added bookmarks and bookmarks management
     - Added query user visibility button and creation (Query management will follow soon)
