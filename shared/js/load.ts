@@ -181,6 +181,7 @@ function loadDebug() {
 
         //Load UI
         "js/ui/modal/ModalQuery.js",
+        "js/ui/modal/ModalQueryManage.js",
         "js/ui/modal/ModalConnect.js",
         "js/ui/modal/ModalSettings.js",
         "js/ui/modal/ModalCreateChannel.js",

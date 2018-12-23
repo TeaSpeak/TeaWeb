@@ -87,7 +87,8 @@ class ControlBar {
             });
 
             query.find(".btn_query_toggle").on('click', this.on_query_visibility_toggle.bind(this));
-            query.find(".btn_query_create").on('click', this.on_query_create.bind(this))
+            query.find(".btn_query_create").on('click', this.on_query_create.bind(this));
+            query.find(".btn_query_manage").on('click', this.on_query_manage.bind(this));
         }
 
         //Need an initialise
@@ -295,7 +296,12 @@ class ControlBar {
     private onBanlist() {
         if(!this.handle.serverConnection) return;
 
-        openBanList(this.handle);
+        if(this.handle.permissions.neededPermission(PermissionType.B_CLIENT_BAN_LIST).granted(1)) {
+            openBanList(this.handle);
+        } else {
+            createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to view the ban list")).open();
+            sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
+        }
     }
 
     update_bookmarks() {
@@ -353,6 +359,14 @@ class ControlBar {
         } else {
             createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to create a server query login")).open();
             sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
+        }
+    }
+
+    private on_query_manage() {
+        if(globalClient && globalClient.connected) {
+            Modals.spawnQueryManage(globalClient);
+        } else {
+            createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
         }
     }
 }

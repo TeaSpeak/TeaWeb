@@ -89,8 +89,9 @@
                                     </div>
                                 </div>
                                 <div class="dropdown display_left">
-                                    <div class="btn_query_toggle"><div class="icon client-away"></div><a>{{tr "Show/hide server queries" /}}</a></div>
-                                    <div class="btn_query_create"><div class="icon client-away"></div><a>{{tr "Create server query login" /}}</a></div>
+                                    <div class="btn_query_toggle"><div class="icon client-toggle_server_query_clients"></div><a>{{tr "Show/hide server queries" /}}</a></div>
+                                    <div class="btn_query_manage"><div class="icon client-server_query"></div><a>{{tr "Manage server queries" /}}</a></div>
+                                    <!-- <div class="btn_query_create"><div class="icon client-away"></div><a>{{tr "Create server query login" /}}</a></div> -->
                                 </div>
                             </div>
                             <div class="divider"></div>
@@ -1105,7 +1106,7 @@
                 </div>
             </div>
         </script>
-
+9
         <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
             <div class="align_column">
                 <div class="align_column" style="margin: 5px">
@@ -1718,6 +1719,52 @@
                 <div class="buttons">
                     <button class="button-close">{{tr "Close" /}}</button>
                 </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_query_manager" type="text/html">
+            <div class="query-management">
+                <div class="container">
+                    <div class="header">
+                        <div class="buttons">
+                            <button class="button button-query-create">{{tr "Create account" /}}</button>
+                            <button class="button button-query-delete">{{tr "Delete account" /}}</button>
+                            <button class="button button-query-rename">{{tr "Rename account" /}}</button>
+                            <button class="button button-query-change-password">{{tr "Change password" /}}</button>
+                        </div>
+                        <div class="search">
+                            <input class="input input-search" type="text" placeholder="search">
+                        </div>
+                    </div>
+                    <div class="query-list">
+                        <div class="query-list-header">
+                            <div class="column column-username">{{tr "Username" /}}</div>
+                            <div class="column column-unique-id">{{tr "Unique ID" /}}</div>
+                            <div class="column column-bound-server">{{tr "Bounded Server" /}}</div>
+                        </div>
+                        <div class="query-list-entries-container">
+                            <div class="query-list-entries">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <div class="info">
+                            <a>loading...</a>
+                        </div>
+                        <div class="buttons">
+                            <button class="button-refresh">{{tr "Refresh" /}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+
+        <script class="jsrender-template" id="tmpl_query_manager-list_entry" type="text/html">
+            <div class="entry">
+                <div class="column column-username">{{>username}}</div>
+                <div class="column column-unique-id">{{>unique_id}}</div>
+                <div class="column column-bound-server">{{>bounded_server}}</div>
             </div>
         </script>
     </body>

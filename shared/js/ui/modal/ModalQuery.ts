@@ -3,7 +3,7 @@
 /// <reference path="../../client.ts" />
 
 namespace Modals {
-    export function spawnQueryCreate() {
+    export function spawnQueryCreate(callback_created?: (user, pass) => any) {
         let modal;
         modal = createModal({
             header: tr("Create a server query login"),
@@ -20,17 +20,24 @@ namespace Modals {
                     }
 
                     //client_login_password
-                    globalClient.serverConnection.commandHandler["notifyclientserverqueryloginpassword"] = json => {
+                    globalClient.serverConnection.commandHandler["notifyquerycreated"] = json => {
                         json = json[0];
 
                         spawnQueryCreated({
                             username: name,
                             password: json.client_login_password
-                        });
+                        }, true);
+
+                        if(callback_created)
+                            callback_created(name, json.client_login_password);
                     };
 
-                    globalClient.serverConnection.sendCommand("clientsetserverquerylogin", {
+                    globalClient.serverConnection.sendCommand("querycreate", {
                         client_login_name: name
+                    }).catch(error => {
+                        if(error instanceof CommandResult)
+                            error = error.extra_message || error.message;
+                        createErrorModal(tr("Unable to create account"), tr("Failed to create account<br>Message: ") + error).open();
                     });
 
                     modal.close();
@@ -47,10 +54,10 @@ namespace Modals {
     export function spawnQueryCreated(credentials: {
         username: string,
         password: string
-    }) {
+    }, yust_created: boolean) {
         let modal;
         modal = createModal({
-            header: tr("Server query credentials"),
+            header: yust_created ? tr("Server query credentials") : tr("New server query credentials"),
             body: () => {
                 let template = $("#tmpl_query_created").renderTag(credentials);
                 template = $.spawn("div").append(template);

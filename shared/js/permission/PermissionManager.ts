@@ -644,11 +644,12 @@ class PermissionManager {
         for(let perm of this.neededPermissions)
             if(perm.type.id == key || perm.type.name == key || perm.type == key)
                 return perm;
+
         log.debug(LogCategory.PERMISSIONS, tr("Could not resolve grant permission %o. Creating a new one."), key);
         let info = key instanceof PermissionInfo ? key : this.resolveInfo(key);
         if(!info) {
             log.warn(LogCategory.PERMISSIONS, tr("Requested needed permission with invalid key! (%o)"), key);
-            return undefined;
+            return new NeededPermissionValue(undefined, -2);
         }
         let result = new NeededPermissionValue(info, -2);
         this.neededPermissions.push(result);
