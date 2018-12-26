@@ -2,6 +2,7 @@
 
 BASEDIR=$(dirname "$0")
 source "${BASEDIR}/resolve_commands.sh"
+cd "$BASEDIR/../"
 
 function generate_link() {
     if [ ! -L $2 ] || [ "${BASH_ARGV[0]}" == "force" ]; then
@@ -16,17 +17,14 @@ function replace_tribble() {
     #${1} => file name
     echo "$(cat ${1} | sed -E 's/\/\/\/[ ]+<reference [a-zA-Z.-=_ ]+\/>.*/\n/')" > ${1}
 }
-BASEDIR=$(dirname "$0")
-cd "$BASEDIR/../"
+
 
 #Building the generator
-cd tools/dtsgen
-execute_tsc -p tsconfig.json
+./tools/build_dtsgen.sh
 if [ $? -ne 0 ]; then
     echo "Failed to build typescript declaration generator"
     exit 1
 fi
-cd ../../
 
 #Easy going: Each "module" has it's exports and imports
 #So lets first build the exports and ignore any errors

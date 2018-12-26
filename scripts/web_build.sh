@@ -34,6 +34,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+#Lets build some tools
+#dtsgen should be already build by build_declarations.sh
+./tools/build_trsgen.sh
+if [ $? -ne 0 ]; then
+    echo "Failed to build typescript translation generator"
+    exit 1
+fi
+
 #Now lets build the declarations
 echo "Building declarations"
 ./scripts/build_declarations.sh
