@@ -14,10 +14,8 @@
 	openssl rsa -in forum_private.pem -outform PEM -pubout -out forum_public.pem
 	openssl rsa -in forum_private.pem -out private_unencrypted.pem -outform PEM    #Export the private key as unencripted
 	 */
-	function authPath()
-	{
+	function authPath() {
 		if (file_exists("auth")) {
-			error_log("DEBUG MODE!");
 			return "auth/";
 		} else return "";
 	}
@@ -54,7 +52,8 @@
 		else if (file_exists(__DIR__ . "/auth/xf"))
 			$dir = __DIR__ . "/auth/xf";
 		else
-			die("Could not resolve XF");
+			return null;
+
 		require($dir . '/src/XF.php');
 
 		XF::start($dir);
@@ -116,6 +115,7 @@
 
 		$response = [];
 		$response["success"] = false;
+		if(!$app) goto _return;
 
 		if (!isset($username) || !isset($password)) {
 			$response["msg"] = "missing credentials";
@@ -190,6 +190,8 @@
 	function logout()
 	{
 		$app = getXF();
+		if(!$app) return false;
+
 		$session = $app->session();
 		$session->expunge();
 
@@ -202,6 +204,8 @@
 	function test_session($sessionId = null)
 	{
 		$app = getXF();
+		if(!$app) return -1;
+
 		if(!isset($sessionId)) {
 			if (!isset($_COOKIE[$app->session()->getCookieName()]))
 				return 1;
@@ -216,6 +220,8 @@
 	function redirectOnInvalidSession()
 	{
 		$app = getXF();
+		if(!$app) return;
+
 		$status = test_session();
 		if ($status != 0) {
 			$type = "undefined";

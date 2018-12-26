@@ -1,15 +1,14 @@
 <?php
 	$testXF = false;
-
+	$localhost = false;
 	$_INCLIDE_ONLY = true;
+
 	if (file_exists('auth.php'))
 		include_once('auth.php');
 	else if (file_exists('auth/auth.php'))
 		include_once('auth/auth.php');
 	else {
-		//die("Could not resolve auth.php!");
-		function authPath()
-		{
+		function authPath() {
 			return "";
 		}
 
@@ -22,7 +21,7 @@
         }
 	}
 	$localhost |= gethostname() == "WolverinDEV";
-	if (!$localhost || $testXF) {
+	if(!$localhost || $testXF) {
 		//redirectOnInvalidSession();
 	}
 
@@ -74,8 +73,8 @@
 
 				spawnProperty('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
 				spawnProperty('localhost_debug', $localhost ? "true" : "false");
-				spawnProperty('forum_user_data', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]]);
-				spawnProperty('forum_user_sign', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]]);
+                spawnProperty('forum_user_data', isset($GLOBALS["COOKIE_NAME_USER_DATA"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]] : "");
+				spawnProperty('forum_user_sign', isset($GLOBALS["COOKIE_NAME_USER_SIGN"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]] : "");
 				spawnProperty('forum_path', authPath());
 
 				$version = file_get_contents("./version");

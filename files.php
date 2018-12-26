@@ -181,7 +181,8 @@
 			"search-depth" => 1,
 
 			"path" => "./",
-			"local-path" => "./auth/"
+			"local-path" => "./auth/",
+			"req-parm" => ["-xf"]
 		],
 		[ /* javascript  */
 			"web-only" => true,
@@ -190,7 +191,8 @@
 			"build-target" => "dev|rel",
 
 			"path" => "js/",
-			"local-path" => "./auth/js/"
+			"local-path" => "./auth/js/",
+			"req-parm" => ["-xf"]
 		],
 		[ /* web css files */
 			"web-only" => true,
@@ -199,7 +201,8 @@
 			"build-target" => "dev|rel",
 
 			"path" => "css/",
-			"local-path" => "./auth/css/"
+			"local-path" => "./auth/css/",
+			"req-parm" => ["-xf"]
 		],
 		[ /* certificates */
 			"web-only" => true,
@@ -208,7 +211,8 @@
 			"build-target" => "dev|rel",
 
 			"path" => "certs/",
-			"local-path" => "./auth/certs/"
+			"local-path" => "./auth/certs/",
+			"req-parm" => ["-xf"]
 		],
 	];
 
@@ -238,7 +242,7 @@
 		public $hash;
 	}
 
-	function find_files($flag = 0b11, $local_path_prefix = "./", $type = "dev") { //TODO Use cache here!
+	function find_files($flag = 0b11, $local_path_prefix = "./", $type = "dev", $args = []) { //TODO Use cache here!
 		global $APP_FILE_LIST;
 		$result = [];
 
@@ -246,7 +250,17 @@
 			if(isset($entry["web-only"]) && $entry["web-only"] && ($flag & 0b01) == 0) continue;
 			if(isset($entry["client-only"]) && $entry["client-only"] && ($flag & 0b10) == 0) continue;
 			if(isset($entry["build-target"]) && array_search($type, explode("|", $entry["build-target"])) === false) continue;
-
+			if(isset($entry["req-parm"])) {
+				if(!is_array($entry["req-parm"]))
+					$entry["req-parm"] = [$entry["req-parm"]];
+				$valid = true;
+				foreach($entry["req-parm"] as $parm) {
+					if(array_search($parm, $args) === false)
+						$valid = false;
+				}
+				if(!$valid)
+					continue;
+			}
 			$entries = list_dir($local_path_prefix . $entry["local-path"], $entry["search-pattern"], isset($entry["search-depth"]) ? $entry["search-depth"] : -1);
 			foreach ($entries as $f_entry) {
 				if(isset($entry["search-exclude"]) && preg_match($entry["search-exclude"], $f_entry)) continue;
@@ -289,23 +303,12 @@
 		if($_SERVER["argv"][1] == "help") {
 			help:
 			echo "php " . $_SERVER["argv"][0] . " <type> <args...>" . PHP_EOL;
-			echo "  generate <web/client> <dev/package>" . PHP_EOL;
-			echo "  list <web/client> <dev/package>" . PHP_EOL;
+			echo "  generate <web/client> <dev/package> [-xf]" . PHP_EOL;
+			echo "  list <web/client> <dev/package> [-xf]" . PHP_EOL;
 			exit(1);
-		} else if($_SERVER["argv"][1] == "list") {
-			if(count($_SERVER["argv"]) < 3) {
-				error_log("Invalid parameter count!");
-				goto help;
-			}
-
-			echo ("type\thash\tpath\tname\n");
-			foreach (find_files(0b10) as $file) {
-				echo $file->type . "\t" . $file->hash . "\t" . $file->path . "\t" . $file->name . "\n";
-			}
-			echo "html\t".sha1("main")."\t.\tindex.html\n";
-			return;
-		} else if($_SERVER["argv"][1] == "generate") {
+		} else if($_SERVER["argv"][1] == "generate" || $_SERVER["argv"][1] == "list") {
 			$state = 0;
+			$dry_run = $_SERVER["argv"][1] == "list";
 
 			$flagset = 0b00;
 			$environment = "";
@@ -339,10 +342,12 @@
 			}
 
 			{
-				exec($command = "rm -r " . $environment, $output, $state);
-				exec($command = "mkdir -p " . $environment, $output, $state); if($state) goto handle_error;
+				if(!$dry_run) {
+					exec($command = "rm -r " . $environment, $output, $state);
+					exec($command = "mkdir -p " . $environment, $output, $state); if($state) goto handle_error;
+				}
 
-				$files = find_files($flagset, "./", $type);
+				$files = find_files($flagset, "./", $type, array_slice($_SERVER["argv"], 4));
 				$original_path = realpath(".");
 				if(!chdir($environment)) {
 					error_log("Failed to enter directory " . $environment . "!");
@@ -350,7 +355,7 @@
 				}
 
 				foreach($files as $file) {
-					if(!is_dir($file->path)) {
+					if(!$dry_run && !is_dir($file->path)) {
 						exec($command = "mkdir -p " . $file->path, $output, $state);
 						if($state) goto handle_error;
 					}
@@ -362,8 +367,12 @@
 					$path = "";
 					for($index = 0; $index < $parent; $index++)
 						$path = $path  . "../";
-					exec($command = "ln -s " . $path . $file->local_path . " " . $file->path, $output, $state);
-					if($state) goto handle_error;
+
+					$command = "ln -s " . $path . $file->local_path . " " . $file->path;
+					if(!$dry_run) {
+						exec($command, $output, $state);
+						if($state) goto handle_error;
+					}
 					echo $command . PHP_EOL;
 				}
 				if(!chdir($original_path)) {
@@ -373,23 +382,23 @@
 				echo "Generated!" . PHP_EOL;
 			}
 
-			{
+			if(!$dry_run) {
 				exec("./scripts/git_index.sh sort-tag", $output, $state);
 				file_put_contents($environment . DIRECTORY_SEPARATOR . "version", $output);
-			}
 
-			if ($_SERVER["argv"][2] == "client") {
-				if(!chdir("client-api/environment")) {
-					error_log("Failed to enter directory client-api/environment!");
-					exit(1);
+				if ($_SERVER["argv"][2] == "client") {
+					if(!chdir("client-api/environment")) {
+						error_log("Failed to enter directory client-api/environment!");
+						exit(1);
+					}
+					if(!is_dir("versions/beta"))
+						exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
+					if(!is_dir("versions/stable"))
+						exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
+
+					exec($command = "ln -s ../api.php ./", $output, $state); $state = 0; //Dont handle an error here!
+					if($state) goto handle_error;
 				}
-				if(!is_dir("versions/beta"))
-					exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
-				if(!is_dir("versions/stable"))
-					exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
-
-				exec($command = "ln -s ../api.php ./", $output, $state); $state = 0; //Dont handle an error here!
-				if($state) goto handle_error;
 			}
 
 			exit(0);
