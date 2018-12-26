@@ -18,8 +18,8 @@ include_directories(libraries/opus/include/)
 add_definitions(-DLTM_DESC)
 
 #cmake .. -DCMAKE_CXX_COMPILER="emcc" -DCMAKE_C_COMPILER="emcc" -DCMAKE_C_LINK_EXECUTABLE="emcc"
-add_executable(TeaWeb-Identity.js identity/Identity.cpp identity/TeamSpeakIdentity.cpp)
-target_link_libraries(TeaWeb-Identity.js ${CMAKE_CURRENT_SOURCE_DIR}/libraries/tomcrypt/libtomcrypt.a ${CMAKE_CURRENT_SOURCE_DIR}/libraries/tommath/build/libtommathStatic.a)
+add_executable(TeaWeb-Identity identity/Identity.cpp identity/TeamSpeakIdentity.cpp)
+target_link_libraries(TeaWeb-Identity ${CMAKE_CURRENT_SOURCE_DIR}/libraries/tomcrypt/libtomcrypt.a ${CMAKE_CURRENT_SOURCE_DIR}/libraries/tommath/build/libtommathStatic.a)
 
-add_executable(TeaWeb-Worker-Codec-Opus.js src/opus.cpp)
-target_link_libraries(TeaWeb-Worker-Codec-Opus.js ${CMAKE_CURRENT_SOURCE_DIR}/libraries/opus/.libs/libopus.a)
+add_executable(TeaWeb-Worker-Codec-Opus src/opus.cpp)
+target_link_libraries(TeaWeb-Worker-Codec-Opus ${CMAKE_CURRENT_SOURCE_DIR}/libraries/opus/.libs/libopus.a)
