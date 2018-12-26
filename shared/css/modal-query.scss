@@ -1,0 +1,173 @@
+.query-create {
+	display: flex;
+	flex-direction: column;
+
+	.row-name {
+		width: 100%;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		input {
+			flex-grow: 1;
+			flex-shrink: 1;
+			margin-left: 5px;
+		}
+	}
+
+	.buttons {
+		margin-top: 5px;
+		text-align: right;
+	}
+}
+
+.query-created {
+	display: flex;
+	flex-direction: column;
+
+	.property-row {
+		width: 100%;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+		align-items: center;
+
+		margin-top: 2px;
+
+		input {
+			flex-grow: 1;
+			flex-shrink: 1;
+			margin-left: 5px;
+		}
+
+		a:first-of-type {
+			width: 150px;
+		}
+
+		div:last-of-type {
+			margin-left: 5px;
+			cursor: pointer;
+		}
+	}
+
+	.buttons {
+		margin-top: 5px;
+		text-align: right;
+	}
+}
+
+.query-management {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+
+	.container {
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.header, .footer {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+		.header {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.buttons {
+				flex-grow: 0;
+			}
+
+			.search {
+				margin-left: 5px;
+				flex-grow: 1;
+
+				input {
+					width: 100%;
+				}
+			}
+		}
+
+		.query-list {
+			margin-top: 5px;
+
+			display: flex;
+			flex-grow: 1;
+			flex-direction: column;
+			justify-content: stretch;
+
+			.column {
+				&.column-username {
+					width: calc(50% - 75px)
+				}
+
+				&.column-unique-id {
+					width: calc(50% - 75px)
+				}
+
+				&.column-bound-server {
+					width: 150px;
+					flex-grow: 0;
+				}
+			}
+
+			.query-list-header {
+				flex-grow: 0;
+				flex-shrink: 0;
+				display: flex;
+				flex-direction: row;
+				height: 20px;
+
+				.column {
+					border: 1px solid lightgray;
+					text-align: center;
+				}
+			}
+
+			.query-list-entries-container {
+				flex-grow: 1;
+				display: flex;
+				flex-direction: column;
+				justify-content: start;
+				overflow-y: auto;
+				min-height: 250px;
+
+				.entry {
+					display: flex;
+					flex-direction: row;
+
+					.column {
+						margin-left: 2px;
+					}
+
+					cursor: pointer;
+
+					&.selected {
+						background-color: blue;
+					}
+				}
+
+				&.scrollbar {
+					.column-username {
+						width: calc(50% - 75px + 30px)
+					}
+
+					.column-unique-id {
+						width: calc(50% - 75px + 30px)
+					}
+				}
+			}
+		}
+
+		.footer {
+			margin-top: 5px;
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+		}
+	}
+}

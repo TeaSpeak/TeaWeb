@@ -402,10 +402,24 @@ interface ClientNameFromUid {
     response: ClientNameInfo[]
 }
 
+interface QueryListEntry {
+    username: string;
+    unique_id: string;
+    bounded_server: number;
+}
+
+interface QueryList {
+    flag_own: boolean;
+    flag_all: boolean;
+
+    queries: QueryListEntry[];
+}
+
 class CommandHelper {
     readonly connection: ServerConnection;
 
     private _callbacks_namefromuid: ClientNameFromUid[] = [];
+    private _who_am_i: any;
 
     constructor(connection) {
         this.connection = connection;
@@ -430,6 +444,63 @@ class CommandHelper {
 
         this._callbacks_namefromuid.push(req);
         return req.promise;
+    }
+
+    request_query_list(server_id: number = undefined) : Promise<QueryList> {
+        return new Promise<QueryList>((resolve, reject) => {
+            this.connection.commandHandler["notifyquerylist"] = json => {
+                const result = {} as QueryList;
+
+                result.flag_all = json[0]["flag_all"];
+                result.flag_own = json[0]["flag_own"];
+                result.queries = [];
+
+                for(const entry of json) {
+                    const rentry = {} as QueryListEntry;
+                    rentry.bounded_server = entry["client_bounded_server"];
+                    rentry.username = entry["client_login_name"];
+                    rentry.unique_id = entry["client_unique_identifier"];
+
+                    result.queries.push(rentry);
+                }
+
+                resolve(result);
+                this.connection.commandHandler["notifyquerylist"] = undefined;
+            };
+
+            let data = {};
+            if(server_id !== undefined)
+                data["server_id"] = server_id;
+
+            this.connection.sendCommand("querylist", data).catch(error => {
+                if(error instanceof CommandResult) {
+                    if(error.id == 0x0501) {
+                        resolve(undefined);
+                        return;
+                    }
+                }
+                reject(error);
+            })
+        });
+    }
+
+    /**
+     * @deprecated
+     *  Its just a workaround for the query management.
+     *  There is no garante that the whoami trick will work forever
+     */
+    current_virtual_server_id() : Promise<number> {
+        if(this._who_am_i)
+            return Promise.resolve(parseInt(this._who_am_i["virtualserver_id"]));
+
+        return new Promise<number>((resolve, reject) => {
+            this.connection.commandHandler[""] = json => {
+                this._who_am_i = json[0];
+                resolve(parseInt(this._who_am_i["virtualserver_id"]));
+                this.connection.commandHandler[""] = undefined;
+            };
+            this.connection.sendCommand("whoami");
+        });
     }
 
     private handle_notifyclientnamefromuid(json: any[]) {

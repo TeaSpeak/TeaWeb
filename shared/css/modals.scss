@@ -520,6 +520,7 @@
 	.group-list {
 		border: lightgray solid 1px;
 		padding: 3px;
+		overflow-y: auto;
 
 		.group-entry {
 			display: flex;

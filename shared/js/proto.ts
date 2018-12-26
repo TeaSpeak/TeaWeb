@@ -13,6 +13,7 @@ interface JSON {
 interface JQuery<TElement = HTMLElement> {
     render(values?: any) : string;
     renderTag(values?: any) : JQuery<TElement>;
+    hasScrollBar() : boolean;
 }
 
 interface JQueryStatic<TElement extends Node = HTMLElement> {
@@ -106,8 +107,8 @@ if(typeof ($) !== "undefined") {
             return $(document.createElement(tagName) as any);
         }
     }
-    if(!$.prototype.renderTag) {
-        $.prototype.renderTag = function (values?: any) : JQuery {
+    if(!$.fn.renderTag) {
+        $.fn.renderTag = function (values?: any) : JQuery {
             let result;
             if(this.render) {
                 result = $(this.render(values));
@@ -126,6 +127,11 @@ if(typeof ($) !== "undefined") {
             return result;
         }
     }
+    if(!$.fn.hasScrollBar)
+        $.fn.hasScrollBar = function() {
+            return this.get(0).scrollHeight > this.height();
+        }
+
 }
 
 if (!String.prototype.format) {

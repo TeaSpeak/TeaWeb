@@ -294,12 +294,14 @@ class ChannelEntry {
 
         const sub = this.siblings(false);
         sub.forEach(function (e) {
-            subSize += e.rootTag().outerHeight(true);
+            if(e.rootTag().is(":visible"))
+                subSize += e.rootTag().outerHeight(true);
         });
 
         const clients = this.clients(false);
         clients.forEach(function (e) {
-            clientSize += e.tag.outerHeight(true);
+            if(e.tag.is(":visible"))
+                clientSize += e.tag.outerHeight(true);
         });
 
         this._tag_root.css({height: size + subSize + clientSize});

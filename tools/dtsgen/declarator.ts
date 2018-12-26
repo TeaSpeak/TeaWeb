@@ -321,11 +321,30 @@ generators[SyntaxKind.ClassDeclaration] = (settings, stack, node: ts.ClassDeclar
     return ts.createClassDeclaration(node.decorators, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, node.typeParameters, node.heritageClauses, members as any);
 };
 
+generators[SyntaxKind.PropertySignature] = (settings, stack, node: ts.PropertySignature) => {
+    console.log(SyntaxKind[node.type.kind]);
+    let type: ts.TypeNode = node.type;
+    switch (node.type.kind) {
+        case SyntaxKind.LiteralType:
+            type = ts.createIdentifier("any") as any;
+    }
+
+    return ts.createPropertySignature(node.modifiers, node.name, node.questionToken, type, undefined);
+};
+
 generators[SyntaxKind.InterfaceDeclaration] = (settings, stack, node: ts.InterfaceDeclaration) => {
     if(settings.remove_private.field && has_private(node.modifiers)) return;
     if(stack.flag_namespace && !has_modifier(node.modifiers, SyntaxKind.ExportKeyword)) return;
 
-    return node;
+    const members: any[] = [];
+    for(const member of node.members) {
+        if(generators[member.kind])
+            members.push(generators[member.kind](settings, stack, member));
+        else
+            members.push(member);
+    }
+
+    return ts.createInterfaceDeclaration(undefined, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, node.typeParameters, node.heritageClauses, members);
 };
 
 generators[SyntaxKind.VariableDeclaration] = (settings, stack, node: ts.VariableDeclaration) => {

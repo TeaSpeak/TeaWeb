@@ -103,9 +103,7 @@ $background:lightgray;
 			background-color: $background;
 			border-radius: 5px;
 			align-items: center;
-			border: 2px solid rgba(0, 0, 0, 0);
-
-			border-color: $border_color_activated;
+			border: 2px solid $border_color_activated;
 			width: 230px;
 
 			user-select: none;
@@ -134,12 +132,22 @@ $background:lightgray;
 			& > div:last-of-type {
 				border-radius: 0 0 2px 2px;
 			}
+
+			&.display_left {
+				margin-left: -165px;
+			}
 		}
 
 		&:hover {
 			.dropdown.displayed {
 				display: block;
 			}
+		}
+	}
+
+	.bookmark-dropdown {
+		hr:last-child {
+			display: none;
 		}
 	}
 }
