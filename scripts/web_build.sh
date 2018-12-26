@@ -36,7 +36,7 @@ fi
 
 #Lets build some tools
 #dtsgen should be already build by build_declarations.sh
-./tools/build_trsgen.sh
+./tools/build_trgen.sh
 if [ $? -ne 0 ]; then
     echo "Failed to build typescript translation generator"
     exit 1
