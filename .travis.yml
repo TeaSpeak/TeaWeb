@@ -9,7 +9,7 @@ jobs:
       - docker images
       - docker pull $DOCKER_USERNAME/teaweb:build
       - docker images
-      - "docker run --rm $DOCKER_USERNAME/teaweb:build /bin/bash -c \"/root/build_teaweb.sh travis\""
+      - "docker run --rm $DOCKER_USERNAME/teaweb:build /bin/bash -c \"export GIT_AUTHTOKEN=\"$GIT_AUTHTOKEN\"; /root/build_teaweb.sh travis\""
       if: branch = master
     - stage: test teaweb build
       script:

@@ -324,7 +324,9 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
                 console.log("BBCode parse error: %o", result.errorQueue);
             }
 
-            tag_channel_description.html(result.html);
+            tag_channel_description.html(result.html)
+                .css("overflow-y", "auto")
+                .css("flex-grow", "1");
         });
 
         let rendered = $("#tmpl_selected_channel").renderTag([properties]);
