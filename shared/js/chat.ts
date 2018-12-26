@@ -25,7 +25,7 @@ namespace MessageHelper {
             return this.htmlEscape(object).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 || idx + 1 == array.length ? "inline" : "") + "block").html(entry));
         } else if(typeof(object) === "object") {
             if(object instanceof $)
-                return [object];
+                return [object as any];
             return this.formatElement("<unknwon object>");
         } else if(typeof(object) === "function") return this.formatElement(object());
         else if(typeof(object) === "undefined") return this.formatElement("<undefined>");
