@@ -69,6 +69,9 @@ namespace Modals {
                     setTimeout(() => {
                         modal.htmlTag.find(".tab-profiles").parent(".entry").trigger('click');
                     }, 100);
+                    modal.close_listener.push(() => {
+                        tag.find(".profile-select-container select").trigger('change');
+                    });
                     return true;
                 });
 
