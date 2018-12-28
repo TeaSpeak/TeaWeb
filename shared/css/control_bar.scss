@@ -62,17 +62,6 @@ $background:lightgray;
 				align-items: center;
 				border: 2px solid rgba(0, 0, 0, 0);
 				border-left: 0;
-
-				.arrow {
-					border: solid black;
-					border-width: 0 3px 3px 0;
-					display: inline-block;
-					padding: 3px;
-					transform: rotate(45deg);
-					-webkit-transform: rotate(45deg);
-
-					vertical-align: text-bottom;
-				}
 			}
 
 			&:hover {
@@ -148,6 +137,63 @@ $background:lightgray;
 	.bookmark-dropdown {
 		hr:last-child {
 			display: none;
+		}
+
+		.hidden {
+			display: none!important;
+		}
+
+		.disabled {
+
+		}
+
+		.bookmark, .directory {
+			display: flex!important;
+			flex-direction: row;
+
+			align-items: center;
+			justify-content: stretch;
+
+			.name {
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+
+			.icon, .arrow {
+				flex-grow: 0;
+				flex-shrink: 0;
+			}
+
+			.arrow {
+				margin-right: 5px;
+			}
+		}
+
+		.directory {
+			&:hover {
+				> .sub-container, > .sub-container .sub-menu {
+					display: block;
+				}
+			}
+
+			&:not(:hover) {
+				.sub-container {
+					display: none;
+				}
+			}
+
+			.sub-container {
+				padding-right: 3px;
+				position: relative;
+			}
+
+			.sub-menu {
+				display: none;
+				left: 100%;
+				top: -13px;
+				position: absolute;
+				margin-left: 3px;
+			}
 		}
 	}
 }

@@ -110,14 +110,19 @@ function load_script(path: string | string[]) : Promise<Boolean> {
         });
     } else {
         return new Promise((resolve, reject) => {
-            const tag = document.createElement("script");
+            const tag: HTMLScriptElement = document.createElement("script");
             tag.type = "application/javascript";
+            tag.async = true;
+            tag.defer = true;
             tag.onerror = error => {
                 console.log(error);
                 tag.remove();
                 reject(error);
             };
-            tag.onload = () => resolve();
+            tag.onload = () => {
+                console.debug("Script %o loaded", path);
+                resolve();
+            };
             document.getElementById("scripts").appendChild(tag);
             tag.src = path;
         });
@@ -179,9 +184,14 @@ function loadDebug() {
         "js/crypto/sha.js",
         "js/crypto/hex.js",
 
+        //load the profiles
+        "js/profiles/ConnectionProfile.js",
+        "js/profiles/Identity.js",
+
         //Load UI
         "js/ui/modal/ModalQuery.js",
         "js/ui/modal/ModalQueryManage.js",
+        "js/ui/modal/ModalBookmarks.js",
         "js/ui/modal/ModalConnect.js",
         "js/ui/modal/ModalSettings.js",
         "js/ui/modal/ModalCreateChannel.js",
@@ -227,12 +237,14 @@ function loadDebug() {
         "js/FileManager.js",
         "js/client.js",
         "js/chat.js",
-        "js/Identity.js",
 
         "js/PPTListener.js",
         ...custom_scripts
     ]).then(() => load_wait_scripts([
-        "js/codec/CodecWrapperWorker.js"
+        "js/codec/CodecWrapperWorker.js",
+        "js/profiles/identities/NameIdentity.js", //Depends on Identity
+        "js/profiles/identities/TeaForumIdentity.js", //Depends on Identity
+        "js/profiles/identities/TeamSpeakIdentity.js", //Depends on Identity
     ])).then(() => load_wait_scripts([
         "js/main.js"
     ])).then(() => {

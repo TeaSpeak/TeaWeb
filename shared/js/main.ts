@@ -1,6 +1,5 @@
 /// <reference path="chat.ts" />
 /// <reference path="client.ts" />
-/// <reference path="Identity.ts" />
 /// <reference path="utils/modal.ts" />
 /// <reference path="ui/modal/ModalConnect.ts" />
 /// <reference path="ui/modal/ModalCreateChannel.ts" />
@@ -15,8 +14,6 @@ let settings: Settings;
 let globalClient: TSClient;
 let chat: ChatBox;
 
-let forumIdentity: TeaForumIdentity;
-
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
@@ -27,31 +24,34 @@ function getUserMediaFunction() {
 }
 
 function setup_close() {
-    if(settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) return;
-
     window.onbeforeunload = event => {
-        if(!globalClient.serverConnection || !globalClient.serverConnection.connected) return;
+        if(profiles.requires_save())
+            profiles.save();
 
-        if(!native_client) {
-            event.returnValue = "Are you really sure?<br>You're still connected!";
-        } else {
-            event.preventDefault();
-            event.returnValue = "question";
+        if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) {
+            if(!globalClient.serverConnection || !globalClient.serverConnection.connected) return;
 
-            const {remote} = require('electron');
-            const dialog = remote.dialog;
+            if(!native_client) {
+                event.returnValue = "Are you really sure?<br>You're still connected!";
+            } else {
+                event.preventDefault();
+                event.returnValue = "question";
 
-            dialog.showMessageBox(remote.getCurrentWindow(), {
+                const {remote} = require('electron');
+                const dialog = remote.dialog;
+
+                dialog.showMessageBox(remote.getCurrentWindow(), {
                     type: 'question',
                     buttons: ['Yes', 'No'],
                     title: 'Confirm',
                     message: 'Are you really sure?\nYou\'re still connected!'
-            }, choice => {
-                if(choice === 0) {
-                    window.onbeforeunload = undefined;
-                    remote.getCurrentWindow().close();
-                }
-            });
+                }, choice => {
+                    if(choice === 0) {
+                        window.onbeforeunload = undefined;
+                        remote.getCurrentWindow().close();
+                    }
+                });
+            }
         }
     };
 }
@@ -125,10 +125,11 @@ async function initialize() {
     }
 
     AudioController.initializeAudioController();
-    if(!TSIdentityHelper.setup()) {
+    if(!profiles.identities.setup_teamspeak()) {
         console.error(tr("Could not setup the TeamSpeak identity parser!"));
         return;
     }
+    profiles.load();
 
     try {
         await ppt.initialize();
@@ -145,9 +146,7 @@ function main() {
     settings = new Settings();
     globalClient = new TSClient();
     /** Setup the XF forum identity **/
-    if(settings.static("forum_user_data")) {
-        forumIdentity = new TeaForumIdentity(settings.static("forum_user_data"), settings.static("forum_user_sign"));
-    }
+    profiles.identities.setup_forum();
 
     chat = new ChatBox($("#chat"));
     globalClient.setup();
@@ -160,6 +159,8 @@ function main() {
     //Modals.spawnSettingsModal();
     //Modals.createChannelModal(undefined);
 
+    /*
+    //FIXME
     if(settings.static("default_connect_url")) {
         switch (settings.static("default_connect_type")) {
             case "teaforo":

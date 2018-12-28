@@ -29,6 +29,7 @@ namespace MessageHelper {
             return this.formatElement("<unknwon object>");
         } else if(typeof(object) === "function") return this.formatElement(object());
         else if(typeof(object) === "undefined") return this.formatElement("<undefined>");
+        else if(typeof(object) === "number") return [$.spawn("a").text(object)];
         return this.formatElement("<unknown object type " + typeof object + ">");
     }
 

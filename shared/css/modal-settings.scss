@@ -245,3 +245,137 @@
 		}
 	}
 }
+
+.modal .settings-profiles {
+	margin: 5px;
+	> div:not(:first-of-type) {
+		margin-top: 5px;
+	}
+
+	.profile-status-container {
+		display: flex;
+		flex-direction: row;
+
+		justify-content: space-between;
+	}
+
+	.profile-list {
+		user-select: none;
+
+		display: flex;
+		flex-direction: column;
+
+		.list {
+			display: flex;
+			flex-direction: column;
+			justify-content: start;
+
+			overflow-y: auto;
+
+			border: solid 1px lightgray;
+			padding: 2px;
+			background: #33333318;
+
+			height: 50%;
+			min-height: 50%;
+			max-height: 50%;
+
+			.entry {
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+				cursor: pointer;
+
+				&.default {
+					.name {
+						font-weight: bold;
+					}
+				}
+
+				.name {
+					flex-grow: 1;
+					flex-shrink: 1;
+				}
+
+				&.selected {
+					background: #0000FF77;
+				}
+
+
+				.button {
+					cursor: pointer;
+
+					&:hover {
+						background-color: #00000010;
+					}
+				}
+			}
+		}
+
+		.management {
+			width: 100%;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			margin-top: 5px;
+			float: right;
+
+			.space {
+				flex-grow: 1;
+			}
+
+			button:not(:first-of-type) {
+				margin-left: 5px;
+			}
+		}
+	}
+
+	.general-settings {
+		display: flex;
+		flex-direction: column;
+		justify-content: start;
+
+		.setting {
+			&:not(:first-of-type) {
+				margin-top: 5px;
+			}
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.key {
+				flex-grow: 0;
+				flex-shrink: 0;
+				width: 200px;
+			}
+
+			input, div {
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+
+			.select-container {
+				text-align: right;
+			}
+		}
+	}
+
+	.identity-settings {
+		display: none;
+
+		&.active {
+			display: block;
+		}
+
+		&.identity-settings-teaforo {
+			/*
+			.connected, .disconnected {
+				display: none
+			}
+			*/
+		}
+	}
+}

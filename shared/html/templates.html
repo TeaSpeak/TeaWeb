@@ -20,15 +20,14 @@
                                 <div class="icon_x32 client-disconnect"></div>
                             </div>
 
-                            <!--
                             <div class="button-dropdown btn_bookmark" title="{{tr 'Bookmarks' /}}">
                                 <div class="buttons">
                                     <div class="button icon_x32 client-bookmark_manager btn_bookmark_list"></div>
                                     <div class="button-dropdown">
-                                        <div class="arrow"></div>
+                                        <div class="arrow down"></div>
                                     </div>
                                 </div>
-                                <div class="dropdown bookmark-dropdown" style="width: 300px">
+                                <div class="dropdown bookmark-dropdown" style="width: 350px">
                                     <div class="btn_bookmark_list"><div class="icon client-bookmark_manager"></div><a>{{tr "Manage bookmarks" /}}</a></div>
                                     <div class="btn_bookmark_add"><div class="icon client-bookmark_add"></div><a>{{tr "Add current server to bookmarks" /}}</a></div>
                                     <div class="btn_bookmark_remove"><div class="icon client-bookmark_remove"></div><a>{{tr "Remove current server to bookmarks" /}}</a></div>
@@ -36,14 +35,14 @@
 
                                 </div>
                             </div>
-                            -->
+
                             <div class="divider"></div>
 
                             <div class="button-dropdown btn_away" title="{{tr 'Toggle away status' /}}">
                                 <div class="buttons">
                                     <div class="button icon_x32 client-away btn_away_toggle"></div>
                                     <div class="button-dropdown">
-                                        <div class="arrow"></div>
+                                        <div class="arrow down"></div>
                                     </div>
                                 </div>
                                 <div class="dropdown">
@@ -63,7 +62,7 @@
                                 <div class="buttons">
                                     <div class="button icon_x32 client-token btn_token_use"></div>
                                     <div class="button-dropdown">
-                                        <div class="arrow"></div>
+                                        <div class="arrow down"></div>
                                     </div>
                                 </div>
                                 <div class="dropdown">
@@ -85,7 +84,7 @@
                                 <div class="buttons">
                                     <div class="button icon_x32 client-server_query btn_query_toggle"></div>
                                     <div class="button-dropdown">
-                                        <div class="arrow"></div>
+                                        <div class="arrow down"></div>
                                     </div>
                                 </div>
                                 <div class="dropdown display_left">
@@ -134,7 +133,7 @@
         </script>
         <!-- Template for the connect modal -->
         <script class="jsrender-template" id="tmpl_connect" type="text/html">
-            <div style="margin-top: 5px;">
+            <div class="modal-connect">
                 <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">
                     <div style="width: 68%; margin-bottom: 5px">
                         <div>{{tr "Remote address and port:" /}}</div>
@@ -151,41 +150,15 @@
                     <div>{{tr "Nickname:" /}}</div>
                     <input type="text" style="width: 100%" class="connect_nickname" value="">
                 </div>
-                <hr>
-                <div class="group_box">
-                    <div style="display: flex; justify-content: space-between;">
-                        <div style="text-align: right;">{{tr "Identity Settings" /}}</div>
-                        <select class="identity_select">
-                            <option name="identity_type" value="TEAFORO">{{tr "Forum Account" /}}</option>
-                            <option name="identity_type" value="TEAMSPEAK">{{tr "TeamSpeak" /}}</option>
-                            <option name="identity_type" value="NICKNAME">{{tr "Nickname (Debug purposes only!)" /}}</option> <!-- Only available on localhost for debug -->
-                        </select>
-                    </div>
+                <div class="profile-select-container">
+                    <div style="text-align: right;">{{tr "Connection profile:" /}}</div>
+                    <select class="profile-select"> </select>
+                </div>
+                <div class="profile-invalid">
                     <hr>
-                    <div class="identity_config_TEAMSPEAK identity_config">
-                        {{tr "Please enter your exported TS3 Identity string bellow or select your exported Identity"/}}<br>
-                        <div style="width: 100%; display: flex; justify-content: stretch; flex-direction: row">
-                            <input placeholder="Identity string" style="min-width: 60%; flex-shrink: 1; flex-grow: 2; margin: 5px;" class="identity_string">
-                            <div style="max-width: 200px; flex-grow: 1; flex-shrink: 4; margin: 5px"><input style="display: flex; width: 100%;" class="identity_file" type="file"></div>
-                        </div>
-                    </div>
-                    <div class="identity_config_TEAFORO identity_config">
-                        <div class="connected">
-                            {{tr "You're using your forum account as verification"/}}
-                        </div>
-                        <div class="disconnected">
-                            <!-- TODO tr -->
-                            You cant use your TeaSpeak forum account.<br>
-                            You're not connected!<br>
-                            Click {{if !client}}<a href="{{:forum_path}}login.php">here</a>{{else}}<a href="#" class="native-teaforo-login">here</a>{{/if}} to login via the TeaSpeak forum.
-                        </div>
-                    </div>
-                    <div class="identity_config_NICKNAME identity_config">
-                        {{tr "This is just for debug and uses the name as unique identifier" /}}
-                    </div>
-
-                    <div style="background-color: red; border-radius: 1px; display: none" class="error_message"></div>
-                </div> <!-- <a href="<?php echo authPath() . "login.php"; ?>">Login</a> via the TeaSpeak forum. -->
+                    <div>The selected connect profile is invalid</div>
+                    <div><div>Click&nbsp;</div><a href="#" class="button-manage-profiles">here</a><div>&nbsp;to manage your connect profiles</div></div>
+                </div>
             </div>
         </script>
 
@@ -701,7 +674,7 @@
                         <div class="settings-translations">
                             <div class="group_box">
                                 <div class="header">{{tr "Available translations" /}}</div>
-                                <div class="content settings-microphone">
+                                <div class="content">
                                     <div class="setting-list">
                                         <div class="list">
                                             <!--
@@ -732,7 +705,113 @@
                         </div>
                     </x-content>
                 </x-entry>
+                <x-entry>
+                    <x-tag class="tab-profiles">
+                        {{tr "Profiles" /}}
+                    </x-tag>
+                    <x-content>
+                        <div class="settings-profiles">
+                            <div class="group_box">
+                                <div class="header">{{tr "Available profiles" /}}</div>
+                                <div class="content">
+                                    <div class="profile-list">
+                                        <div class="list">
+                                            <!--
+                                            <div class="entry default">{{tr "English (Default / Fallback)" /}}</div>
+                                            <div class="entry repository">
+                                                <div class="name">TeaSpeak Official</div>
+                                                <div class="button button-delete"><div class="icon client-delete"></div></div>
+                                                <div class="button button-info"><div class="icon client-about"></div></div>
+                                            </div>
+                                            <div class="entry translation selected">
+                                                <div class="name">German (Google Translate)</div>
+                                                <div class="button button-info"><div class="icon client-about"></div></div>
+                                            </div>
+                                            -->
+                                        </div>
+                                        <div class="management">
+                                            <button class="button-set-default">{{tr "Set selected as default" /}}</button>
+                                            <button class="button-delete">{{tr "Delete selected" /}}</button>
+                                            <div class="space"></div>
+                                            <button class="button-add-profile">{{tr "Create profile" /}}</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group_box">
+                                <div class="header">{{tr "Profile settings" /}}</div>
+                                <div class="content">
+                                    <div class="profile-settings">
+                                        <div class="general-settings">
+                                            <div class="setting">
+                                                <div class="key">{{tr "Profile name:" /}}</div>
+                                                <input class="value setting-name">
+                                            </div>
+                                            <div class="setting">
+                                                <div class="key">{{tr "Default nickname:" /}}</div>
+                                                <input class="value setting-default-nickname">
+                                            </div>
+                                            <div class="setting">
+                                                <div class="key">{{tr "Default server password:" /}}</div>
+                                                <input class="value setting-default-password">
+                                            </div>
+                                            <div class="setting">
+                                                <div class="key">{{tr "Identify Type:" /}}</div>
+                                                <div class="select-container">
+                                                    <select>
+                                                        <option name="identity-type" value="teaforo">{{tr "Forum Account" /}}</option>
+                                                        <option name="identity-type" value="teamspeak">{{tr "TeamSpeak" /}}</option>
+                                                        <option name="identity-type" value="nickname">{{tr "Nickname (Debug purposes only!)" /}}</option> <!-- Only available on localhost for debug -->
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <hr>
+                                        <div class="identity-settings identity-settings-teamspeak">
+                                            {{tr "Please enter your exported TS3 Identity string bellow or select your exported Identity"/}}<br>
+                                            <div style="width: 100%; display: flex; justify-content: stretch; flex-direction: row">
+                                                <input placeholder="Identity string" style="min-width: 60%; flex-shrink: 1; flex-grow: 2; margin: 5px;" class="identity_string">
+                                                <div style="max-width: 200px; flex-grow: 1; flex-shrink: 4; margin: 5px"><input style="display: flex; width: 100%;" class="identity_file" type="file"></div>
+                                            </div>
+                                            <div class="error-message">
+
+                                            </div>
+                                        </div>
+                                        <div class="identity-settings identity-settings-teaforo">
+                                            <div class="connected">
+                                                {{tr "You're using your forum account as verification"/}}
+                                            </div>
+                                            <div class="disconnected">
+                                                <!-- TODO tr -->
+                                                You cant use your TeaSpeak forum account. You're not connected!<br>
+                                                Click {{if !client}}<a href="{{:forum_path}}login.php">here</a>{{else}}<a href="#" class="native-teaforo-login">here</a>{{/if}} to login via the TeaSpeak forum.
+                                            </div>
+                                        </div>
+                                        <div class="identity-settings identity-settings-nickname">
+                                            <a>
+                                                {{tr "This is just for debug and uses the name as unique identifier" /}}
+                                            </a>
+                                            <div>
+                                                <a>{{tr "Username:" /}}</a>
+                                                <input class="setting-name" placeholder="WolverinDEV">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
+                </x-entry>
             </x-tab>
+        </script>
+
+        <script class="jsrender-template" id="settings-profile-list-entry" type="text/html">
+            <div class="entry profile {{if id == 'default'}}default{{/if}}">
+                <div class="name">{{>profile_name}}</div>
+                <!-- <div class="button button-delete"><div class="icon client-delete"></div></div> -->
+                <div title="{{tr 'Profile is valid' /}}" class="icon client-delete status status-invalid"></div>
+                <div title="{{tr 'Profile is invalid' /}}" class="icon client-apply status status-valid"></div>
+            </div>
         </script>
 
         <script class="jsrender-template" id="settings-translations-list-entry" type="text/html">
@@ -1106,7 +1185,7 @@
                 </div>
             </div>
         </script>
-9
+
         <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
             <div class="align_column">
                 <div class="align_column" style="margin: 5px">
@@ -1765,6 +1844,124 @@
                 <div class="column column-username">{{>username}}</div>
                 <div class="column column-unique-id">{{>unique_id}}</div>
                 <div class="column column-bound-server">{{>bounded_server}}</div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_manage_bookmarks" type="text/html">
+            <div class="modal-bookmarks">
+                <div class="group_box">
+                    <div class="header">{{tr "Bookmarks" /}}</div>
+                    <div class="content bookmark-list">
+                        <div class="list">
+                            <div class="entry bookmark">
+                                <div class="name">TeaSpeak official</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="button-create">{{tr "Create new bookmark/directory" /}}</button>
+                    <button class="button-delete">{{tr "Delete selected bookmark/directory" /}}</button>
+                </div>
+                <hr>
+                <div class="group_box">
+                    <div class="header">{{tr "Bookmark settings" /}}</div>
+                    <div class="content">
+                        <div class="bookmark-setting bookmark-setting-bookmark">
+                            <div class="property">
+                                <div class="key">{{tr "Bookmark name:" /}}</div>
+                                <input class="setting-bookmark-name">
+                            </div>
+                            <div class="property">
+                                <div class="key">{{tr "Connect profile:" /}}</div>
+                                <select class="setting-bookmark-profile"></select>
+                            </div>
+                            <div class="group_box">
+                                <div class="header">{{tr "Server Properties" /}}</div>
+                                <div class="content">
+                                    <div class="property">
+                                        <div class="key">{{tr "Server address:" /}}</div>
+                                        <input class="setting-server-host">
+                                    </div>
+                                    <div class="property">
+                                        <div class="key">{{tr "Server Port:" /}}</div>
+                                        <input class="setting-server-port" type="number">
+                                    </div>
+                                    <div class="property">
+                                        <div class="key">{{tr "Server Password:" /}}</div>
+                                        <input class="setting-server-password" type="password" id="bookmark_server_password_{{rnd '0~13377331'/}}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="group_box">
+                                <div class="header">{{tr "Connect Properties (Not yet supported)" /}}</div>
+                                <div class="content">
+                                    <div class="property">
+                                        <div class="key">{{tr "Username:" /}}</div>
+                                        <input class="setting-username" disabled>
+                                    </div>
+                                    <div class="property">
+                                        <div class="key">{{tr "Default channel:" /}}</div>
+                                        <div class="default-channel-container">
+                                            <input class="setting-channel" disabled>
+                                            <button class="button-set-to-current" disabled>{{tr "current channel" /}}</button>
+                                        </div>
+                                    </div>
+                                    <div class="property">
+                                        <div class="key">{{tr "Channel password:" /}}</div>
+                                        <input class="setting-channel-password" type="password" id="bookmark_channel_password_{{rnd '0~13377331'/}}" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bookmark-setting bookmark-setting-directory">
+                            <div class="property">
+                                <div class="key">{{tr "Directory name:" /}}</div>
+                                <input class="setting-bookmark-name">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_manage_bookmarks-list_entry" type="text/html">
+            {{if type == "bookmark" }}
+            <div class="entry bookmark">
+                <div class="name">{{>name}}</div>
+            </div>
+            {{else type == "directory" }}
+            <div class="entry directory">
+                <div class="name">{{>name}}</div>
+                <div class="members"> </div>
+            </div>
+            {{/if}}
+        </script>
+
+
+        <script class="jsrender-template" id="tmpl_manage_bookmarks-create" type="text/html">
+            <div class="modal-bookmark-create">
+                <div class="property">
+                    <div class="key">Bookmark Type:</div>
+                    <select class="bookmark-type">
+                        <option value="bookmark">Bookmark</option>
+                        <option value="directory">Directory</option>
+                    </select>
+                </div>
+                <div class="property">
+                    <div class="key">Parent Directory:</div>
+                    <select class="bookmark-parent">
+                        <option bookmark-uuid=""></option>
+                    </select>
+                </div>
+                <div class="property">
+                    <div class="key">Bookmark Name:</div>
+                    <input class="bookmark-name">
+                </div>
+                <hr>
+                <div class="buttons">
+                    <button class="button-create">Create</button>
+                </div>
             </div>
         </script>
     </body>

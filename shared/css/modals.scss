@@ -101,15 +101,21 @@
 
 
 .group_box {
-	display: grid;
-	grid-template-rows: min-content;
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
 
 	.header {
+		flex-grow: 0;
+		flex-shrink: 0;
 		float: left;
 		margin-bottom: 2px;
 	}
 
 	.content {
+		flex-grow: 1;
+		flex-shrink: 1;
+
 		background: rgba(0, 0, 0, .035);
 		border: lightgray solid 1px;
 		border-radius: 0 2px;
@@ -372,6 +378,7 @@
 	border: solid black;
 	border-width: 0 3px 3px 0;
 	padding: 3px;
+	height: 10px;
 
 	&.right {
 		transform: rotate(-45deg);

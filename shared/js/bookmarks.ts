@@ -1,21 +1,14 @@
 namespace bookmarks {
     function guid() {
         function s4() {
-            return Math.floor((1 + Math.random()) * 0x10000)
+            return Math
+                .floor((1 + Math.random()) * 0x10000)
                 .toString(16)
                 .substring(1);
         }
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
 
-    export interface ConnectIdentity {
-        identity_type: IdentitifyType;
-    }
-    
-    export interface ForumConnectIdentity extends ConnectIdentity { }
-    export interface NicknameConnectIdentity extends ConnectIdentity { }
-    export interface TeamSpeakConnectIdentity extends ConnectIdentity { }
-    
     export interface ServerProperties {
         server_address: string;
         server_port: number;
@@ -41,6 +34,7 @@ namespace bookmarks {
         default_channel_password_hash?: string;
         default_channel_password?: string;
 
+        connect_profile: string;
     }
 
     export interface DirectoryBookmark {
@@ -104,12 +98,28 @@ namespace bookmarks {
         return find_bookmark_recursive(bookmarks(), uuid);
     }
 
+    export function parent_bookmark(bookmark: Bookmark) : DirectoryBookmark {
+        const books: (DirectoryBookmark | Bookmark)[] = [bookmarks()];
+        while(!books.length) {
+            const directory = books.pop_front();
+            if(directory.type == BookmarkType.DIRECTORY) {
+                const cast = <DirectoryBookmark>directory;
+
+                if(cast.content.indexOf(bookmark) != -1)
+                    return cast;
+                books.push(...cast.content);
+            }
+        }
+        return bookmarks();
+    }
+
     export function create_bookmark(display_name: string, directory: DirectoryBookmark, server_properties: ServerProperties, nickname: string) : Bookmark {
         const bookmark = {
             display_name: display_name,
             server_properties: server_properties,
             nickname: nickname,
             type: BookmarkType.ENTRY,
+            connect_profile: "default",
             unique_id: guid()
         } as Bookmark;
 
@@ -132,7 +142,7 @@ namespace bookmarks {
 
     //TODO test if the new parent is within the old bookmark
     export function change_directory(parent: DirectoryBookmark, bookmark: Bookmark | DirectoryBookmark) {
-        delete_bookmark(bookmark)
+        delete_bookmark(bookmark);
         parent.content.push(bookmark)
     }
 

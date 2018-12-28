@@ -18,6 +18,7 @@ enum DisconnectReason {
     CONNECTION_PING_TIMEOUT,
     CLIENT_KICKED,
     CLIENT_BANNED,
+    HANDSHAKE_FAILED,
     SERVER_CLOSED,
     SERVER_REQUIRES_PASSWORD,
     UNKNOWN
@@ -76,7 +77,7 @@ class TSClient {
         this.controlBar.initialise();
     }
 
-    startConnection(addr: string, identity: Identity, name?: string, password?: {password: string, hashed: boolean}) {
+    startConnection(addr: string, profile: profiles.ConnectionProfile, name?: string, password?: {password: string, hashed: boolean}) {
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
 
@@ -96,17 +97,17 @@ class TSClient {
 
         if(password && !password.hashed) {
             helpers.hashPassword(password.password).then(password => {
-                this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password));
+                this.serverConnection.startConnection({host, port}, new HandshakeHandler(profile, name, password));
             }).catch(error => {
                 createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
             })
         } else
-            this.serverConnection.startConnection({host, port}, new HandshakeHandler(identity, name, password ? password.password : undefined));
+            this.serverConnection.startConnection({host, port}, new HandshakeHandler(profile, name, password ? password.password : undefined));
     }
 
 
     getClient() : LocalClientEntry { return this._ownEntry; }
-    getClientId(){ return this._clientId; } //TODO here
+    getClientId() { return this._clientId; } //TODO here
 
     set clientId(id: number) {
         this._clientId = id;
@@ -141,6 +142,13 @@ class TSClient {
     }
 
     private certAcceptUrl() {
+        //TODO here
+        const properties = {
+            connect_direct: true,
+            connect_profile: this.serverConnection._handshakeHandler.profile.id,
+            connect_url: this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port
+        };
+
         // document.URL
         let callback = document.URL;
         if(document.location.search.length == 0)
@@ -148,7 +156,11 @@ class TSClient {
         else
             callback += "&default_connect_url=true";
         //
-        switch (this.serverConnection._handshakeHandler.identity.type()) {
+
+        //this.serverConnection._handshakeHandler.profile
+        callback += "&connect_profile=" + encodeURIComponent(this.serverConnection._handshakeHandler.profile.id);
+        /*
+        switch (this.serverConnection._handshakeHandler.profile.type()) {
             case IdentitifyType.TEAFORO:
                 callback += "&default_connect_type=teaforo";
                 break;
@@ -156,6 +168,7 @@ class TSClient {
                 callback += "&default_connect_type=teamspeak";
                 break;
         }
+        */
         callback += "&default_connect_url=" + encodeURIComponent(this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port);
 
         return "https://" + this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port + "/?forward_url=" + encodeURIComponent(callback);
@@ -166,8 +179,7 @@ class TSClient {
             case DisconnectReason.REQUESTED:
                 break;
             case DisconnectReason.CONNECT_FAILURE:
-                console.error(tr("Could not connect to remote host! Exception"));
-                console.error(data);
+                console.error(tr("Could not connect to remote host! Exception: %o"), data);
 
                 if(native_client) {
                     createErrorModal(
@@ -184,6 +196,14 @@ class TSClient {
                     ).open();
                 }
                 sound.play(Sound.CONNECTION_REFUSED);
+                break;
+            case DisconnectReason.HANDSHAKE_FAILED:
+                //TODO sound
+                console.error(tr("Failed to process handshake: %o"), data);
+                createErrorModal(
+                    tr("Could not connect"),
+                    tr("Failed to process handshake: ") + data as string
+                ).open();
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 console.error(tr("Lost connection to remote server!"));
@@ -215,7 +235,7 @@ class TSClient {
                 createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
                     this.startConnection(this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port,
-                        this.serverConnection._handshakeHandler.identity,
+                        this.serverConnection._handshakeHandler.profile,
                         this.serverConnection._handshakeHandler.name,
                         {password: password as string, hashed: false});
                 }).open();

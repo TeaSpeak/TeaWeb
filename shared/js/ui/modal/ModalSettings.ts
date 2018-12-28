@@ -4,18 +4,26 @@
 /// <reference path="../../voice/AudioController.ts" />
 
 namespace Modals {
-    import info = log.info;
     import TranslationRepository = i18n.TranslationRepository;
+    import ConnectionProfile = profiles.ConnectionProfile;
+    import IdentitifyType = profiles.identities.IdentitifyType;
 
-    export function spawnSettingsModal() {
+    export function spawnSettingsModal() : Modal{
         let modal;
         modal = createModal({
             header: tr("Settings"),
             body: () => {
-                let template = $("#tmpl_settings").renderTag();
+                let template = $("#tmpl_settings").renderTag({
+                    client: native_client,
+                    valid_forum_identity: profiles.identities.valid_static_forum_identity(),
+                    forum_path: settings.static("forum_path"),
+                });
+
                 template = $.spawn("div").append(template);
                 initialiseSettingListeners(modal,template = template.tabify());
                 initialise_translations(template.find(".settings-translations"));
+                initialise_profiles(modal, template.find(".settings-profiles"));
+
                 return template;
             },
             footer: () => {
@@ -35,6 +43,7 @@ namespace Modals {
             width: 750
         });
         modal.open();
+        return modal;
     }
 
     function initialiseSettingListeners(modal: Modal, tag: JQuery) {
@@ -275,172 +284,418 @@ namespace Modals {
 
    }
 
-   function initialise_translations(tag: JQuery) {
-       { //Initialize the list
-           const tag_list = tag.find(".setting-list .list");
-           const tag_loading = tag.find(".setting-list .loading");
-           const template = $("#settings-translations-list-entry");
-           const restart_hint = tag.find(".setting-list .restart-note");
-           restart_hint.hide();
+    function initialise_translations(tag: JQuery) {
+    { //Initialize the list
+       const tag_list = tag.find(".setting-list .list");
+       const tag_loading = tag.find(".setting-list .loading");
+       const template = $("#settings-translations-list-entry");
+       const restart_hint = tag.find(".setting-list .restart-note");
+       restart_hint.hide();
 
-           const update_list = () => {
-               tag_list.empty();
+       const update_list = () => {
+           tag_list.empty();
 
-               const currently_selected = i18n.config.translation_config().current_translation_url;
-               { //Default translation
+           const currently_selected = i18n.config.translation_config().current_translation_url;
+           { //Default translation
+               const tag = template.renderTag({
+                   type: "default",
+                   selected: !currently_selected || currently_selected == "default"
+               });
+               tag.on('click', () => {
+                   i18n.select_translation(undefined, undefined);
+                   tag_list.find(".selected").removeClass("selected");
+                   tag.addClass("selected");
+
+                   restart_hint.show();
+               });
+               tag.appendTo(tag_list);
+           }
+
+           {
+                const display_repository_info = (repository: TranslationRepository) => {
+                    const info_modal = createModal({
+                        header: tr("Repository info"),
+                        body: () => {
+                            return $("#settings-translations-list-entry-info").renderTag({
+                                type: "repository",
+                                name: repository.name,
+                                url: repository.url,
+                                contact: repository.contact,
+                                translations: repository.translations || []
+                            });
+                        },
+                        footer: () => {
+                            let footer = $.spawn("div");
+                            footer.addClass("modal-button-group");
+                            footer.css("margin-top", "5px");
+                            footer.css("margin-bottom", "5px");
+                            footer.css("text-align", "right");
+
+                            let buttonOk = $.spawn("button");
+                            buttonOk.text(tr("Close"));
+                            buttonOk.click(() => info_modal.close());
+                            footer.append(buttonOk);
+
+                            return footer;
+                        }
+                    });
+                    info_modal.open()
+                };
+
+               tag_loading.show();
+               i18n.iterate_translations((repo, entry) => {
+                   let repo_tag = tag_list.find("[repository=\"" + repo.unique_id + "\"]");
+                   if(repo_tag.length == 0) {
+                       repo_tag = template.renderTag({
+                           type: "repository",
+                           name: repo.name || repo.url,
+                           id: repo.unique_id
+                       });
+
+                       repo_tag.find(".button-delete").on('click', e => {
+                           e.preventDefault();
+
+                           Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this repository?"), answer => {
+                                if(answer) {
+                                    i18n.delete_repository(repo);
+                                    update_list();
+                                }
+                           });
+                       });
+                       repo_tag.find(".button-info").on('click', e => {
+                           e.preventDefault();
+
+                           display_repository_info(repo);
+                       });
+
+                       tag_list.append(repo_tag);
+                   }
+
                    const tag = template.renderTag({
-                       type: "default",
-                       selected: !currently_selected || currently_selected == "default"
+                       type: "translation",
+                       name: entry.info.name || entry.url,
+                       id: repo.unique_id,
+                       selected: i18n.config.translation_config().current_translation_url == entry.url
                    });
-                   tag.on('click', () => {
-                       i18n.select_translation(undefined, undefined);
-                       tag_list.find(".selected").removeClass("selected");
-                       tag.addClass("selected");
+                   tag.find(".button-info").on('click', e => {
+                       e.preventDefault();
+
+                       const info_modal = createModal({
+                           header: tr("Translation info"),
+                           body: () => {
+                               const tag = $("#settings-translations-list-entry-info").renderTag({
+                                   type: "translation",
+                                   name: entry.info.name,
+                                   url: entry.url,
+                                   repository_name: repo.name,
+                                   contributors: entry.info.contributors || []
+                               });
+
+                               tag.find(".button-info").on('click', () => display_repository_info(repo));
+
+                               return tag;
+                           },
+                           footer: () => {
+                               let footer = $.spawn("div");
+                               footer.addClass("modal-button-group");
+                               footer.css("margin-top", "5px");
+                               footer.css("margin-bottom", "5px");
+                               footer.css("text-align", "right");
+
+                               let buttonOk = $.spawn("button");
+                               buttonOk.text(tr("Close"));
+                               buttonOk.click(() => info_modal.close());
+                               footer.append(buttonOk);
+
+                               return footer;
+                           }
+                       });
+                       info_modal.open()
+                   });
+                   tag.on('click', e => {
+                        if(e.isDefaultPrevented()) return;
+                        i18n.select_translation(repo, entry);
+                        tag_list.find(".selected").removeClass("selected");
+                        tag.addClass("selected");
 
                        restart_hint.show();
                    });
-                   tag.appendTo(tag_list);
-               }
-
-               {
-                    const display_repository_info = (repository: TranslationRepository) => {
-                        const info_modal = createModal({
-                            header: tr("Repository info"),
-                            body: () => {
-                                return $("#settings-translations-list-entry-info").renderTag({
-                                    type: "repository",
-                                    name: repository.name,
-                                    url: repository.url,
-                                    contact: repository.contact,
-                                    translations: repository.translations || []
-                                });
-                            },
-                            footer: () => {
-                                let footer = $.spawn("div");
-                                footer.addClass("modal-button-group");
-                                footer.css("margin-top", "5px");
-                                footer.css("margin-bottom", "5px");
-                                footer.css("text-align", "right");
-
-                                let buttonOk = $.spawn("button");
-                                buttonOk.text(tr("Close"));
-                                buttonOk.click(() => info_modal.close());
-                                footer.append(buttonOk);
-
-                                return footer;
-                            }
-                        });
-                        info_modal.open()
-                    };
-
-                   tag_loading.show();
-                   i18n.iterate_translations((repo, entry) => {
-                       let repo_tag = tag_list.find("[repository=\"" + repo.unique_id + "\"]");
-                       if(repo_tag.length == 0) {
-                           repo_tag = template.renderTag({
-                               type: "repository",
-                               name: repo.name || repo.url,
-                               id: repo.unique_id
-                           });
-
-                           repo_tag.find(".button-delete").on('click', e => {
-                               e.preventDefault();
-
-                               Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this repository?"), answer => {
-                                    if(answer) {
-                                        i18n.delete_repository(repo);
-                                        update_list();
-                                    }
-                               });
-                           });
-                           repo_tag.find(".button-info").on('click', e => {
-                               e.preventDefault();
-
-                               display_repository_info(repo);
-                           });
-
-                           tag_list.append(repo_tag);
-                       }
-
-                       const tag = template.renderTag({
-                           type: "translation",
-                           name: entry.info.name || entry.url,
-                           id: repo.unique_id,
-                           selected: i18n.config.translation_config().current_translation_url == entry.url
-                       });
-                       tag.find(".button-info").on('click', e => {
-                           e.preventDefault();
-
-                           const info_modal = createModal({
-                               header: tr("Translation info"),
-                               body: () => {
-                                   const tag = $("#settings-translations-list-entry-info").renderTag({
-                                       type: "translation",
-                                       name: entry.info.name,
-                                       url: entry.url,
-                                       repository_name: repo.name,
-                                       contributors: entry.info.contributors || []
-                                   });
-
-                                   tag.find(".button-info").on('click', () => display_repository_info(repo));
-
-                                   return tag;
-                               },
-                               footer: () => {
-                                   let footer = $.spawn("div");
-                                   footer.addClass("modal-button-group");
-                                   footer.css("margin-top", "5px");
-                                   footer.css("margin-bottom", "5px");
-                                   footer.css("text-align", "right");
-
-                                   let buttonOk = $.spawn("button");
-                                   buttonOk.text(tr("Close"));
-                                   buttonOk.click(() => info_modal.close());
-                                   footer.append(buttonOk);
-
-                                   return footer;
-                               }
-                           });
-                           info_modal.open()
-                       });
-                       tag.on('click', e => {
-                            if(e.isDefaultPrevented()) return;
-                            i18n.select_translation(repo, entry);
-                            tag_list.find(".selected").removeClass("selected");
-                            tag.addClass("selected");
-
-                           restart_hint.show();
-                       });
-                       tag.insertAfter(repo_tag)
-                   }, () => {
-                       tag_loading.hide();
-                   });
-               }
-
-           };
-
-           {
-               tag.find(".button-add-repository").on('click', () => {
-                   createInputModal("Enter URL", tr("Enter repository URL:<br>"), text => true, url => { //FIXME test valid url
-                       if(!url) return;
-
-                       tag_loading.show();
-                       i18n.load_repository(url as string).then(repository => {
-                           i18n.register_repository(repository);
-                           update_list();
-                       }).catch(error => {
-                           tag_loading.hide();
-                           createErrorModal("Failed to load repository", tr("Failed to query repository.<br>Ensure that this repository is valid and reachable.<br>Error: ") + error).open();
-                       })
-                   }).open();
+                   tag.insertAfter(repo_tag)
+               }, () => {
+                   tag_loading.hide();
                });
            }
 
-           restart_hint.find(".button-reload").on('click', () => {
-               location.reload();
-           });
+       };
 
-           update_list();
+       {
+           tag.find(".button-add-repository").on('click', () => {
+               createInputModal("Enter URL", tr("Enter repository URL:<br>"), text => true, url => { //FIXME test valid url
+                   if(!url) return;
+
+                   tag_loading.show();
+                   i18n.load_repository(url as string).then(repository => {
+                       i18n.register_repository(repository);
+                       update_list();
+                   }).catch(error => {
+                       tag_loading.hide();
+                       createErrorModal("Failed to load repository", tr("Failed to query repository.<br>Ensure that this repository is valid and reachable.<br>Error: ") + error).open();
+                   })
+               }).open();
+           });
        }
-   }
+
+       restart_hint.find(".button-reload").on('click', () => {
+           location.reload();
+       });
+
+       update_list();
+    }
+    }
+
+    function initialise_profiles(modal: Modal, tag: JQuery) {
+        const settings_tag = tag.find(".profile-settings");
+        let selected_profile: ConnectionProfile;
+        let nickname_listener: () => any;
+        let status_listener: () => any;
+
+        const display_settings = (profile: ConnectionProfile) => {
+            selected_profile = profile;
+
+            settings_tag.find(".setting-name").val(profile.profile_name);
+            settings_tag.find(".setting-default-nickname").val(profile.default_username);
+            settings_tag.find(".setting-default-password").val(profile.default_password);
+
+            {
+                //change listener
+                const select_tag = settings_tag.find(".select-container select")[0] as HTMLSelectElement;
+                const type = profile.selected_identity_type.toLowerCase();
+
+                select_tag.onchange = () => {
+                    console.log("Selected: " + select_tag.value);
+                    settings_tag.find(".identity-settings.active").removeClass("active");
+                    settings_tag.find(".identity-settings-" + select_tag.value).addClass("active");
+
+                    profile.selected_identity_type = select_tag.value.toLowerCase();
+                    const selected_type = profile.selected_type();
+                    const identity = profile.selected_identity();
+
+                    profiles.mark_need_save();
+
+                    if(selected_type == IdentitifyType.TEAFORO) {
+                        const forum_tag = settings_tag.find(".identity-settings-teaforo");
+
+                        forum_tag.find(".connected .disconnected").hide();
+                        if(identity && identity.valid()) {
+                            forum_tag.find(".connected").show();
+                        } else {
+                            forum_tag.find(".disconnected").show();
+                        }
+                    } else if(selected_type == IdentitifyType.TEAMSPEAK) {
+                        console.log("Set: " + identity);
+                        const teamspeak_tag = settings_tag.find(".identity-settings-teamspeak");
+                        if(identity)
+                            teamspeak_tag.find(".identity_string").val((identity as profiles.identities.TeamSpeakIdentity).exported());
+                        else
+                            teamspeak_tag.find(".identity_string").val("");
+                    } else if(selected_type == IdentitifyType.NICKNAME) {
+                        const name_tag = settings_tag.find(".identity-settings-nickname");
+                        if(identity)
+                            name_tag.find("input").val(identity.name());
+                        else
+                            name_tag.find("input").val("");
+                    }
+                };
+
+                select_tag.value = type;
+                select_tag.onchange(undefined);
+            }
+        };
+
+        const update_profile_list = () => {
+            const profile_list = tag.find(".profile-list .list").empty();
+            const profile_template = $("#settings-profile-list-entry");
+            for(const profile of profiles.profiles()) {
+                const list_tag = profile_template.renderTag({
+                    profile_name: profile.profile_name,
+                    id: profile.id
+                });
+
+                const profile_status_update = () => {
+                    list_tag.find(".status").hide();
+                    if(profile.valid())
+                        list_tag.find(".status-valid").show();
+                    else
+                        list_tag.find(".status-invalid").show();
+                };
+                list_tag.on('click', event => {
+                    /* update ui */
+                    profile_list.find(".selected").removeClass("selected");
+                    list_tag.addClass("selected");
+
+                    if(profile == selected_profile) return;
+                    nickname_listener = () => list_tag.find(".name").text(profile.profile_name);
+                    status_listener = profile_status_update;
+
+                    display_settings(profile);
+                });
+
+
+                profile_list.append(list_tag);
+                if((!selected_profile && profile.id == "default") || selected_profile == profile)
+                    setTimeout(() => list_tag.trigger('click'), 1);
+                profile_status_update();
+            }
+        };
+
+        /* identity settings */
+        {
+            { //TeamSpeak change listener
+                const teamspeak_tag = settings_tag.find(".identity-settings-teamspeak");
+                const display_error = (error?: string) => {
+                    if(error){
+                        teamspeak_tag.find(".error-message").show().html(error);
+                    } else
+                        teamspeak_tag.find(".error-message").hide();
+                    status_listener();
+                };
+
+                teamspeak_tag.find(".identity_file").on('change', event => {
+                    if(!selected_profile) return;
+
+                    const element = event.target as HTMLInputElement;
+                    const file_reader = new FileReader();
+                    file_reader.onload = function() {
+                        const identity = profiles.identities.TSIdentityHelper.loadIdentityFromFileContains(file_reader.result as string);
+                        if(!identity) {
+                            display_error(tr("Failed to parse identity.<br>Reason: ") + profiles.identities.TSIdentityHelper.last_error());
+                            return;
+                        } else {
+                            teamspeak_tag.find(".identity_string").val(identity.exported());
+                            selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
+                            profiles.mark_need_save();
+                            display_error(undefined);
+                        }
+                    };
+
+                    file_reader.onerror = ev => {
+                        console.error(tr("Failed to read give identity file: %o"), ev);
+                        display_error(tr("Failed to read file!"));
+                        return;
+                    };
+
+                    if(element.files && element.files.length > 0)
+                        file_reader.readAsText(element.files[0]);
+                });
+
+                teamspeak_tag.find(".identity_string").on('change', event => {
+                    if(!selected_profile) return;
+
+                    const element = event.target as HTMLInputElement;
+                    if(element.value.length == 0) {
+                        display_error("Please provide an identity");
+                    } else {
+                        const identity = profiles.identities.TSIdentityHelper.loadIdentity(element.value);
+                        if(!identity) {
+                            display_error("Failed to parse identity string!");
+                            return;
+                        }
+
+                        selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
+                        profiles.mark_need_save();
+                        display_error(undefined);
+                    }
+                });
+            }
+
+            { //The forum
+                const teaforo_tag = settings_tag.find(".identity-settings-teaforo");
+                if(native_client) {
+                    teaforo_tag.find(".native-teaforo-login").on('click', event => {
+                        setTimeout(() => {
+                            const forum = require("teaforo.js");
+                            const call = () => {
+                                if(modal.shown) {
+                                    display_settings(selected_profile);
+                                    status_listener();
+                                }
+                            };
+                            forum.register_callback(call);
+                            forum.open();
+                        }, 0);
+                    });
+                }
+            }
+            //TODO add the name!
+        }
+
+        /* general settings */
+        {
+            settings_tag.find(".setting-name").on('change', event => {
+                const value = settings_tag.find(".setting-name").val() as string;
+                if(value && selected_profile) {
+                    selected_profile.profile_name = value;
+                    if(nickname_listener)
+                        nickname_listener();
+                    profiles.mark_need_save();
+                    status_listener();
+                }
+            });
+            settings_tag.find(".setting-default-nickname").on('change', event => {
+                const value = settings_tag.find(".setting-default-nickname").val() as string;
+                if(value && selected_profile) {
+                    selected_profile.default_username = value;
+                    profiles.mark_need_save();
+                    status_listener();
+                }
+            });
+            settings_tag.find(".setting-default-password").on('change', event => {
+                const value = settings_tag.find(".setting-default-password").val() as string;
+                if(value && selected_profile) {
+                    selected_profile.default_username = value;
+                    profiles.mark_need_save();
+                    status_listener();
+                }
+            });
+        }
+
+        /* general buttons */
+        {
+            tag.find(".button-add-profile").on('click', event => {
+                createInputModal(tr("Please enter a name"), tr("Please enter a name for the new profile:<br>"), text => text.length > 0 && !profiles.find_profile_by_name(text), value => {
+                    if(value) {
+                        display_settings(profiles.create_new_profile(value as string));
+                        update_profile_list();
+                        profiles.mark_need_save();
+                    }
+                }).open();
+            });
+
+            tag.find(".button-set-default").on('click', event => {
+                if(selected_profile && selected_profile.id != 'default') {
+                    profiles.set_default_profile(selected_profile);
+                    update_profile_list();
+                    profiles.mark_need_save();
+                }
+            });
+
+            tag.find(".button-delete").on('click', event => {
+                if(selected_profile && selected_profile.id != 'default') {
+                    event.preventDefault();
+                    spawnYesNo(tr("Are you sure?"), tr ("Do you really want to delete this profile?"), result => {
+                        if(result) {
+                            profiles.delete_profile(selected_profile);
+                            update_profile_list();
+                        }
+                    });
+                }
+            });
+        }
+
+        modal.close_listener.push(() => {
+            if(profiles.requires_save())
+                profiles.save();
+        });
+        update_profile_list();
+    }
 }

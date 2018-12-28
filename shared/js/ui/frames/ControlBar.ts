@@ -69,13 +69,16 @@ class ControlBar {
         {
             let bookmark = this.htmlTag.find(".btn_bookmark");
             bookmark.find(".button-dropdown").on('click', () => {
-                bookmark.find(".dropdown").addClass("displayed");
+                bookmark.find("> .dropdown").addClass("displayed");
             });
             bookmark.on('mouseleave', () => {
-                bookmark.find(".dropdown").removeClass("displayed");
+                bookmark.find("> .dropdown").removeClass("displayed");
             });
+            bookmark.find(".btn_bookmark_list").on('click', this.on_bookmark_manage.bind(this));
+            bookmark.find(".btn_bookmark_add").on('click', this.on_bookmark_server_add.bind(this));
 
-            this.update_bookmarks()
+            this.update_bookmarks();
+            this.update_bookmark_status();
         }
         {
             let query = this.htmlTag.find(".btn_query");
@@ -304,26 +307,97 @@ class ControlBar {
         }
     }
 
+    private on_bookmark_server_add() {
+        if(globalClient && globalClient.connected) {
+            createInputModal(tr("Enter bookmarks name"), tr("Please enter the bookmarks name:<br>"), text => true, result => {
+                if(result) {
+                    const bookmark = bookmarks.create_bookmark(result as string, bookmarks.bookmarks(), {
+                        server_port: globalClient.serverConnection._remote_address.port,
+                        server_address: globalClient.serverConnection._remote_address.host,
+
+                        server_password: "",
+                        server_password_hash: ""
+                    }, globalClient.getClient().clientNickName());
+                    bookmarks.save_bookmark(bookmark);
+                    this.update_bookmarks()
+                }
+            }).open();
+        } else {
+            createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
+        }
+    }
+
+    update_bookmark_status() {
+        this.htmlTag.find(".btn_bookmark_add").removeClass("hidden").addClass("disabled");
+        this.htmlTag.find(".btn_bookmark_remove").addClass("hidden");
+    }
+
+
     update_bookmarks() {
         //<div class="btn_bookmark_connect" target="localhost"><a>Localhost</a></div>
         let tag_bookmark = this.htmlTag.find(".btn_bookmark .dropdown");
-        tag_bookmark.find(".bookmark, .bookmark_directory").detach();
+        tag_bookmark.find(".bookmark, .directory").detach();
+
+        const build_entry = (bookmark: bookmarks.DirectoryBookmark | bookmarks.Bookmark) => {
+            if(bookmark.type == bookmarks.BookmarkType.ENTRY) {
+                const mark = <bookmarks.Bookmark>bookmark;
+                return $.spawn("div")
+                        .addClass("bookmark")
+                        .append(
+                            $.spawn("div").addClass("icon client-server")
+                        )
+                        .append(
+                            $.spawn("div")
+                                .addClass("name")
+                                .text(bookmark.display_name)
+                                .on('click', event => {
+                                    this.htmlTag.find(".btn_bookmark").find(".dropdown").removeClass("displayed");
+                                    this.handle.startConnection(
+                                        mark.server_properties.server_address + ":" + mark.server_properties.server_port,
+                                        profiles.find_profile(mark.connect_profile) || profiles.default_profile(),
+                                        mark.nickname,
+                                        {
+                                            password: mark.server_properties.server_password_hash,
+                                            hashed: true
+                                        }
+                                    );
+                                })
+                        )
+            } else {
+                const mark = <bookmarks.DirectoryBookmark>bookmark;
+                const container = $.spawn("div").addClass("sub-menu dropdown");
+
+                for(const member of mark.content)
+                    container.append(build_entry(member));
+
+                return $.spawn("div")
+                        .addClass("directory")
+                        .append(
+                            $.spawn("div").addClass("icon client-folder")
+                        )
+                        .append(
+                            $.spawn("div")
+                                .addClass("name")
+                                .text(bookmark.display_name)
+                        )
+                        .append(
+                            $.spawn("div").addClass("arrow right")
+                        )
+                        .append(
+                            $.spawn("div").addClass("sub-container")
+                                .append(container)
+                        )
+            }
+        };
 
         for(const bookmark of bookmarks.bookmarks().content) {
-            if(bookmark.type == bookmarks.BookmarkType.ENTRY) {
-                tag_bookmark.append(
-                    $.spawn("div")
-                        .addClass("bookmark")
-                        /* /.attr("bookmark-uuid", bookmark.unique_id) */
-                        .text(bookmark.display_name)
-                        .on('click', event => {
-                            spawnConnectModal()
-
-                        })
-                )
-            }
-            //TODO add bookmark directories here
+            const entry = build_entry(bookmark);
+            tag_bookmark.append(entry);
         }
+    }
+
+    private on_bookmark_manage() {
+        Modals.spawnBookmarkModal();
     }
 
     get query_visibility() {

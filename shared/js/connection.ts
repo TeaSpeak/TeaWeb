@@ -277,59 +277,50 @@ class ServerConnection {
     }
 }
 
-class HandshakeHandler {
-    readonly identity: Identity;
-    readonly name?: string;
-    private connection: ServerConnection;
-    server_password: string;
+interface HandshakeIdentityHandler {
+    connection: ServerConnection;
 
-    constructor(identity: Identity, name?: string, password?: string) {
-        this.identity = identity;
+    start_handshake();
+    register_callback(callback: (success: boolean, message?: string) => any);
+}
+
+class HandshakeHandler {
+    private connection: ServerConnection;
+    private handshake_handler: HandshakeIdentityHandler;
+
+    readonly profile: profiles.ConnectionProfile;
+    readonly name: string;
+    readonly server_password: string;
+
+    constructor(profile: profiles.ConnectionProfile, name: string, password: string) {
+        this.profile = profile;
         this.server_password = password;
         this.name = name;
     }
 
     setConnection(con: ServerConnection) {
         this.connection = con;
-        this.connection.commandHandler["handshakeidentityproof"] = this.handleCommandHandshakeIdentityProof.bind(this);
     }
 
     startHandshake() {
-        let data: any = {
-            intention: 0,
-            authentication_method: this.identity.type()
-        };
-        if(this.identity.type() == IdentitifyType.TEAMSPEAK) {
-            data.publicKey = (this.identity as TeamSpeakIdentity).publicKey();
-        } else if(this.identity.type() == IdentitifyType.TEAFORO) {
-            data.data = (this.identity as TeaForumIdentity).identityDataJson;
-        } else if(this.identity.type() == IdentitifyType.NICKNAME) {
-            data["client_nickname"] = this.identity.name();
+        this.handshake_handler = this.profile.spawn_identity_handshake_handler(this.connection);
+        if(!this.handshake_handler) {
+            this.handshake_failed("failed to create identity handler");
+            return;
         }
 
-        this.connection.sendCommand("handshakebegin", data).catch(error => {
-            console.log(error);
-            //TODO here
-        }).then(() => {
-            if(this.identity.type() == IdentitifyType.NICKNAME) {
+        this.handshake_handler.register_callback((flag, message) => {
+            if(flag)
                 this.handshake_finished();
-            }
+            else
+                this.handshake_failed(message);
         });
+
+        this.handshake_handler.start_handshake();
     }
 
-    private handleCommandHandshakeIdentityProof(json) {
-        let proof: string;
-        if(this.identity.type() == IdentitifyType.TEAMSPEAK) {
-            proof = (this.identity as TeamSpeakIdentity).signMessage(json[0]["message"]);
-        } else if(this.identity.type() == IdentitifyType.TEAFORO) {
-            proof = (this.identity as TeaForumIdentity).identitySign;
-        } else if(this.identity.type() == IdentitifyType.NICKNAME) {
-            //FIXME handle error this should never happen!
-        }
-        this.connection.sendCommand("handshakeindentityproof", {proof: proof}).catch(error => {
-            console.error(tr("Got login error"));
-            console.log(error);
-        }).then(() => this.handshake_finished()); //TODO handle error
+    private handshake_failed(message: string) {
+        this.connection._client.handleDisconnect(DisconnectReason.HANDSHAKE_FAILED, message);
     }
 
     private handshake_finished(version?: string) {
@@ -348,7 +339,7 @@ class HandshakeHandler {
         const browser_name = (navigator.browserSpecs || {})["name"] || " ";
         let data = {
             //TODO variables!
-            client_nickname: this.name ? this.name : this.identity.name(),
+            client_nickname: this.name,
             client_platform: (browser_name ? browser_name + " " : "") + navigator.platform,
             client_version: "TeaWeb " + git_version + " (" + navigator.userAgent + ")",
 
