@@ -45,7 +45,7 @@ namespace profiles.identities {
         private identitySign: string;
 
         valid() : boolean {
-            return this.identityData.length > 0 && this.identityDataJson.length > 0 && this.identitySign.length > 0;
+            return this.identityDataJson.length > 0 && this.identityDataJson.length > 0 && this.identitySign.length > 0;
         }
 
         constructor(data: string, sign: string) {
