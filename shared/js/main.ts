@@ -120,6 +120,7 @@ async function initialize() {
         const main = $("#tmpl_main").renderTag();
         $("body").append(main);
     } catch(error) {
+        console.error(error);
         display_load_error(tr("Failed to setup main page!"));
         return;
     }
@@ -159,39 +160,14 @@ function main() {
     //Modals.spawnSettingsModal();
     //Modals.createChannelModal(undefined);
 
-    /*
-    //FIXME
-    if(settings.static("default_connect_url")) {
-        switch (settings.static("default_connect_type")) {
-            case "teaforo":
-                if(forumIdentity && forumIdentity.valid())
-                    globalClient.startConnection(settings.static("default_connect_url"), forumIdentity);
-                else
-                    Modals.spawnConnectModal({
-                        url: settings.static<string>("default_connect_url"),
-                        enforce: true
-                    }, { identity: IdentitifyType.TEAFORO, enforce: true});
-                break;
+    if(settings.static("connect_default") && settings.static("connect_address", "")) {
+        const profile_uuid = settings.static("connect_profile") as string;
+        const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
+        const address = settings.static("connect_address", "");
+        const username = settings.static("connect_username", "Another TeaSpeak user");
 
-            case "teamspeak":
-                let connectIdentity = TSIdentityHelper.loadIdentity(settings.global("connect_identity_teamspeak_identity", ""));
-                if(!connectIdentity || !connectIdentity.valid())
-                    Modals.spawnConnectModal({
-                        url: settings.static<string>("default_connect_url"),
-                        enforce: true
-                    }, { identity: IdentitifyType.TEAMSPEAK, enforce: true});
-                else
-                    globalClient.startConnection(settings.static("default_connect_url"), connectIdentity);
-                break;
-
-            default:
-                Modals.spawnConnectModal({
-                    url: settings.static<string>("default_connect_url"),
-                    enforce: true
-                });
-        }
+        globalClient.startConnection(address, profile, username);
     }
-
     /*
     let tag = $("#tmpl_music_frame").renderTag({
         //thumbnail: "img/loading_image.svg"
@@ -220,21 +196,26 @@ function main() {
     });
 }
 
-app.loadedListener.push(async () => {
-    try {
-        await initialize();
-        main();
-        if(!audio.player.initialized()) {
-            log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
-            if(!audio.player.initializeFromGesture) {
-                console.error(tr("Missing audio.player.initializeFromGesture"));
-            } else
-                $(document).one('click', event => audio.player.initializeFromGesture());
+loader.register_task(loader.Stage.LOADED, {
+    name: "async main invoke",
+    function: async () => {
+        try {
+            await initialize();
+            main();
+            if(!audio.player.initialized()) {
+                log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
+                if(!audio.player.initializeFromGesture) {
+                    console.error(tr("Missing audio.player.initializeFromGesture"));
+                } else
+                    $(document).one('click', event => audio.player.initializeFromGesture());
+            }
+        } catch (ex) {
+            console.error(ex.stack);
+            if(ex instanceof ReferenceError || ex instanceof TypeError)
+                ex = ex.name + ": " + ex.message;
+            displayCriticalError("Failed to invoke main function:<br>" + ex);
         }
-    } catch (ex) {
-        console.error(ex.stack);
-        if(ex instanceof ReferenceError || ex instanceof TypeError)
-            ex = ex.name + ": " + ex.message;
-        displayCriticalError("Failed to invoke main function:<br>" + ex);
-    }
+    },
+    priority: 10
 });
+
