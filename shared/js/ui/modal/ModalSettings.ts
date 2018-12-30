@@ -2,6 +2,7 @@
 /// <reference path="../../utils/tab.ts" />
 /// <reference path="../../proto.ts" />
 /// <reference path="../../voice/AudioController.ts" />
+/// <reference path="../../profiles/Identity.ts" />
 
 namespace Modals {
     import TranslationRepository = i18n.TranslationRepository;
