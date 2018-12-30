@@ -46,6 +46,16 @@ namespace loader {
     }
 
     export function register_task(stage: Stage, task: Task) {
+        if(current_stage > stage) {
+            console.warn("Register loading task, but it had already been finished. Executing task anyways!");
+            task.function().catch(error => {
+                console.error("Failed to execute delayed loader task!");
+                console.log(" - %s: %o", task.name, error);
+
+                displayCriticalError(error);
+            });
+            return;
+        }
         const task_array = tasks[stage] || (tasks[stage] = []);
         task_array.push(task);
         task_array.sort((a, b) => a.priority < b.priority ? 1 : 0);
@@ -126,17 +136,18 @@ namespace loader {
         if(Array.isArray(path)) { //We have some fallback
             return load_script(path[0]).catch(error => {
                 if(error instanceof SyntaxError)
-                    return error.source;
+                    return Promise.reject(error.source);
 
                 if(path.length > 1)
                     return load_script(path.slice(1));
 
-                return error;
+                return Promise.reject(error);
             });
         } else {
             return new Promise<void>((resolve, reject) =>  {
                 const tag: HTMLScriptElement = document.createElement("script");
 
+                let error = false;
                 const error_handler = (event: ErrorEvent) => {
                     if(event.filename == tag.src) { //Our tag throw an uncaught error
                         //console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
@@ -144,23 +155,22 @@ namespace loader {
 
                         reject(new SyntaxError(event.error));
                         event.preventDefault();
+                        error = true;
                     }
                 };
                 window.addEventListener('error', error_handler as any);
 
                 tag.type = "application/javascript";
                 tag.async = true;
-                tag.defer = true;
                 tag.onerror = error => {
                     window.removeEventListener('error', error_handler as any);
-                    console.error("ERROR: %o", error);
                     tag.remove();
                     reject(error);
                 };
                 tag.onload = () => {
                     window.removeEventListener('error', error_handler as any);
                     console.debug("Script %o loaded", path);
-                    resolve();
+                    setTimeout(resolve, 100);
                 };
                 document.getElementById("scripts").appendChild(tag);
                 tag.src = path;
@@ -460,7 +470,6 @@ async function load_templates() {
 
         }
     } catch(error) {
-        console.dir(error);
         displayCriticalError("Failed to find template tag!");
         throw "template error";
     }
