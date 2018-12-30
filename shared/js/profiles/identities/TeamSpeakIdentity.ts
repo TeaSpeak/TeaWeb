@@ -52,9 +52,14 @@ namespace profiles.identities {
         }
 
         export function loadIdentity(key: string) : TeamSpeakIdentity {
-            let handle = funcationParseIdentity(key);
-            if(!handle) return undefined;
-            return new TeamSpeakIdentity(handle, "TeaWeb user");
+            try {
+                let handle = funcationParseIdentity(key);
+                if(!handle) return undefined;
+                return new TeamSpeakIdentity(handle, "TeaWeb user");
+            } catch(error) {
+                console.error(error);
+            }
+            return undefined;
         }
 
         export function loadIdentityFromFileContains(contains: string) : TeamSpeakIdentity {

@@ -166,7 +166,17 @@ function main() {
         const address = settings.static("connect_address", "");
         const username = settings.static("connect_username", "Another TeaSpeak user");
 
-        globalClient.startConnection(address, profile, username);
+        if(profile.valid()) {
+            globalClient.startConnection(address, profile, username);
+        } else {
+            Modals.spawnConnectModal({
+                url: address,
+                enforce: true
+            }, {
+                profile: profile,
+                enforce: true
+            });
+        }
     }
     /*
     let tag = $("#tmpl_music_frame").renderTag({

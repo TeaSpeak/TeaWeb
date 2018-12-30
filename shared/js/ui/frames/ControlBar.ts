@@ -352,15 +352,26 @@ class ControlBar {
                                 .text(bookmark.display_name)
                                 .on('click', event => {
                                     this.htmlTag.find(".btn_bookmark").find(".dropdown").removeClass("displayed");
-                                    this.handle.startConnection(
-                                        mark.server_properties.server_address + ":" + mark.server_properties.server_port,
-                                        profiles.find_profile(mark.connect_profile) || profiles.default_profile(),
-                                        mark.nickname,
-                                        {
-                                            password: mark.server_properties.server_password_hash,
-                                            hashed: true
-                                        }
-                                    );
+                                    const profile = profiles.find_profile(mark.connect_profile) || profiles.default_profile();
+                                    if(profile.valid()) {
+                                        this.handle.startConnection(
+                                            mark.server_properties.server_address + ":" + mark.server_properties.server_port,
+                                            profile,
+                                            mark.nickname,
+                                            {
+                                                password: mark.server_properties.server_password_hash,
+                                                hashed: true
+                                            }
+                                        );
+                                    } else {
+                                        Modals.spawnConnectModal({
+                                            url: mark.server_properties.server_address + ":" + mark.server_properties.server_port,
+                                            enforce: true
+                                        }, {
+                                            profile: profile,
+                                            enforce: true
+                                        })
+                                    }
                                 })
                         )
             } else {

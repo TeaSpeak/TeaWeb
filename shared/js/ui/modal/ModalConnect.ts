@@ -98,6 +98,7 @@ namespace Modals {
 
                 tag.find(".connect_nickname").on("keyup", () => updateFields());
 
+                setTimeout(() => updateFields(), 100);
                 //connect_address
                 return tag;
             },

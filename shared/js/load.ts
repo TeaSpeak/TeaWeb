@@ -33,11 +33,17 @@ namespace loader {
         /*
             invoking main task
          */
-        LOADED
+        LOADED,
+
+        DONE
     }
 
     let current_stage: Stage = Stage.INITIALIZING;
     const tasks: {[key:number]:Task[]} = {};
+
+    export function finished() {
+        return current_stage == Stage.DONE;
+    }
 
     export function register_task(stage: Stage, task: Task) {
         const task_array = tasks[stage] || (tasks[stage] = []);
@@ -409,9 +415,11 @@ const loader_webassembly = {
         };
 
         Module['onAbort'] = message => {
-            Module['onAbort'] = undefined;
-            Module['_initialized'] = false;
-            displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>");
+            if(!loader.finished()) {
+                Module['onAbort'] = undefined;
+                Module['_initialized'] = false;
+                displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>");
+            }
         };
 
         Module['locateFile'] = file => "wasm/" + file;

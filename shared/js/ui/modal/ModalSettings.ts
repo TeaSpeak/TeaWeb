@@ -594,9 +594,14 @@ namespace Modals {
                     const element = event.target as HTMLInputElement;
                     if(element.value.length == 0) {
                         display_error("Please provide an identity");
+                        selected_profile.set_identity(IdentitifyType.TEAMSPEAK, undefined as any);
+                        profiles.mark_need_save();
                     } else {
                         const identity = profiles.identities.TSIdentityHelper.loadIdentity(element.value);
                         if(!identity) {
+                            selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
+                            profiles.mark_need_save();
+
                             display_error("Failed to parse identity string!");
                             return;
                         }
