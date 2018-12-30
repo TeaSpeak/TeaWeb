@@ -485,7 +485,7 @@ namespace Modals {
                     if(selected_type == IdentitifyType.TEAFORO) {
                         const forum_tag = settings_tag.find(".identity-settings-teaforo");
 
-                        forum_tag.find(".connected .disconnected").hide();
+                        forum_tag.find(".connected, .disconnected").hide();
                         if(identity && identity.valid()) {
                             forum_tag.find(".connected").show();
                         } else {

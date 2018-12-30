@@ -109,7 +109,7 @@ namespace loader {
             let buffer = "";
             let _or = " or ";
             for(let entry of path)
-                buffer += _or + formatPath(entry);
+                buffer += _or + script_name(entry);
             return buffer.slice(_or.length);
         } else return "<code>" + path + "</code>";
     }
@@ -134,7 +134,7 @@ namespace loader {
                 return error;
             });
         } else {
-            return new Promise((resolve, reject) => {
+            return new Promise<void>((resolve, reject) =>  {
                 const tag: HTMLScriptElement = document.createElement("script");
 
                 const error_handler = (event: ErrorEvent) => {
@@ -272,7 +272,7 @@ const loader_javascript = {
             loader.register_task(loader.Stage.JAVASCRIPT, {
                 name: "scripts release",
                 priority: 20,
-                function: loadRelease /* fixme */
+                function: loader_javascript.loadRelease
             });
         }
     },
