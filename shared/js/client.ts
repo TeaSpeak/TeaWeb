@@ -142,34 +142,25 @@ class TSClient {
     }
 
     private certAcceptUrl() {
-        //TODO here
         const properties = {
-            connect_direct: true,
+            connect_default: true,
             connect_profile: this.serverConnection._handshakeHandler.profile.id,
-            connect_url: this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port
+            connect_address: this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port
         };
+
+
+        const parameters: string[] = [];
+        for(const key in properties)
+            parameters.push(encodeURIComponent(key) + "=" + encodeURIComponent(properties[key]));
+
+
 
         // document.URL
         let callback = document.URL;
         if(document.location.search.length == 0)
-            callback += "?default_connect_url=true";
+            callback += "?" + parameters.join("&");
         else
-            callback += "&default_connect_url=true";
-        //
-
-        //this.serverConnection._handshakeHandler.profile
-        callback += "&connect_profile=" + encodeURIComponent(this.serverConnection._handshakeHandler.profile.id);
-        /*
-        switch (this.serverConnection._handshakeHandler.profile.type()) {
-            case IdentitifyType.TEAFORO:
-                callback += "&default_connect_type=teaforo";
-                break;
-            case IdentitifyType.TEAMSPEAK:
-                callback += "&default_connect_type=teamspeak";
-                break;
-        }
-        */
-        callback += "&default_connect_url=" + encodeURIComponent(this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port);
+            callback += "&" + parameters.join("&");
 
         return "https://" + this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port + "/?forward_url=" + encodeURIComponent(callback);
     }
