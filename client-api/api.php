@@ -73,7 +73,7 @@
 				echo ("type\thash\tpath\tname\n");
 				foreach (list_dir($UI_RAW_BASE_PATH) as $file) {
 					$type_idx = strrpos($file, ".");
-					$type = substr($file, $type_idx + 1);
+					$type = $type_idx > 0 ? substr($file, $type_idx + 1) : "";
 					if($type == "php") $type = "html";
 
 					$name_idx = strrpos($file, "/");
@@ -81,9 +81,10 @@
 					$path = $name_idx > 0 ? substr($file, 0, $name_idx) : ".";
 
 					$name_idx = strrpos($name, ".");
-					$name = substr($name, 0, $name_idx);
+					if($name_idx > 0)
+						$name = substr($name, 0, $name_idx);
 
-					echo $type . "\t" . sha1_file($UI_RAW_BASE_PATH . $file) . "\t" . $path . "\t" . $name . "." . $type . "\n";
+					echo $type . "\t" . sha1_file($UI_RAW_BASE_PATH . $file) . "\t" . $path . "\t" . $name . (strlen($type) > 0 ? "." . $type : "") . "\n";
 				}
 				die;
 			} else if($_GET["type"] === "file") {

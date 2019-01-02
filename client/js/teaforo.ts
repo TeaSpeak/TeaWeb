@@ -1,9 +1,11 @@
+import TeaForumIdentity = profiles.identities.TeaForumIdentity;
+
 const ipc = require("electron").ipcRenderer;
 let callback_listener: (() => any)[] = [];
 
 ipc.on('teaforo-update', (event, data: forum.UserData) => {
     console.log("Got data update: %o", data);
-    forumIdentity = data ? new TeaForumIdentity(data.application_data, data.application_data_sign) : undefined;
+    profiles.identities.set_static_identity(data ? new TeaForumIdentity(data.application_data, data.application_data_sign) : undefined);
     try {
         for(let listener of callback_listener)
             setImmediate(listener);

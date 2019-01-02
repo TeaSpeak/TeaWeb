@@ -87,6 +87,10 @@ namespace profiles.identities {
 
     let static_identity: TeaForumIdentity;
 
+    export function set_static_identity(identity: TeaForumIdentity) {
+        static_identity = identity;
+    }
+
     export function setup_forum() {
         const user_data = settings.static("forum_user_data") as string;
         const user_sign = settings.static("forum_user_sign") as string;

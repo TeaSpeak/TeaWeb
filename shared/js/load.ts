@@ -56,9 +56,9 @@ namespace loader {
             });
             return;
         }
-        const task_array = tasks[stage] || (tasks[stage] = []);
+        const task_array = tasks[stage] || [];
         task_array.push(task);
-        task_array.sort((a, b) => a.priority < b.priority ? 1 : 0);
+        tasks[stage] = task_array.sort((a, b) => a.priority > b.priority ? 1 : 0);
     }
 
     export async function execute() {
@@ -78,6 +78,7 @@ namespace loader {
             const promises: Promise<void>[] = [];
             for(const task of current_tasks) {
                 try {
+                    console.debug("Executing loader %s (%d)", task.name, task.priority);
                     promises.push(task.function().catch(error => {
                         errors.push({
                             task: task,
@@ -559,6 +560,23 @@ loader.register_task(loader.Stage.INITIALIZING, {
     },
     priority: 50
 });
+
+/* TeaClient */
+if(window.require) {
+    const path = require("path");
+    const remote = require('electron').remote;
+    module.paths.push(path.join(remote.app.getAppPath(), "/modules"));
+    module.paths.push(path.join(path.dirname(remote.getGlobal("browser-root")), "js"));
+
+    const connector = require("renderer");
+    console.log(connector);
+
+    loader.register_task(loader.Stage.INITIALIZING, {
+        name: "teaclient initialize",
+        function: connector.initialize,
+        priority: 40
+    });
+}
 
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "webassembly tester",
