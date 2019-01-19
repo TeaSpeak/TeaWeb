@@ -95,9 +95,13 @@ class ClientEntry {
         if(this._listener_initialized) return;
         this._listener_initialized = true;
 
+        this.tag.on('mouseup', event => {
+            if(!this.channelTree.client_mover.is_active()) {
+                this.channelTree.onSelect(this);
+            }
+        });
         this.tag.click(event => {
             console.log("Clicked!");
-            this.channelTree.onSelect(this);
         });
 
         if(!(this instanceof LocalClientEntry) && !(this instanceof MusicClientEntry))
@@ -117,9 +121,7 @@ class ClientEntry {
                 }
 
                 this.channelTree.onSelect(this, true);
-                this.showContextMenu(event.pageX, event.pageY, () => {
-                    this.channelTree.onSelect(undefined, true);
-                });
+                this.showContextMenu(event.pageX, event.pageY, () => {});
                 return false;
             });
         }
@@ -127,21 +129,30 @@ class ClientEntry {
         this.tag.mousedown(event => {
             if(event.which != 1) return; //Only the left button
 
-            this.channelTree.client_mover.activate(this, target => {
-                if(!target) return;
-                if(target == this._channel) return;
+            let clients = this.channelTree.currently_selected as (ClientEntry | ClientEntry[]);
+            if(clients != this && !($.isArray(clients) && clients.indexOf(this) != -1))
+               clients = $.isArray(clients) ? [...clients, this] : [clients, this];
 
-                const source = this._channel;
-                const self = this.channelTree.client.getClient();
-                this.channelTree.client.serverConnection.sendCommand("clientmove", {
-                    clid: this.clientId(),
-                    cid: target.getChannelId()
-                }).then(event => {
-                    if(this.clientId() == this.channelTree.client.clientId)
-                        sound.play(Sound.CHANNEL_JOINED);
-                    else if(target !== source && target != self.currentChannel())
-                        sound.play(Sound.USER_MOVED);
-                });
+            this.channelTree.client_mover.activate(clients, target => {
+                if(!target) return;
+
+                for(const client of $.isArray(clients) ? clients : [clients]) {
+                    if(target == client._channel) continue;
+
+                    const source = client._channel;
+                    const self = this.channelTree.client.getClient();
+                    this.channelTree.client.serverConnection.sendCommand("clientmove", {
+                        clid: client.clientId(),
+                        cid: target.getChannelId()
+                    }).then(event => {
+                        if(client.clientId() == this.channelTree.client.clientId)
+                            sound.play(Sound.CHANNEL_JOINED);
+                        else if(target !== source && target != self.currentChannel())
+                            sound.play(Sound.USER_MOVED);
+                    });
+                }
+
+                this.channelTree.onSelect();
             }, event);
         });
     }

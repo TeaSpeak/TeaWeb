@@ -362,8 +362,9 @@ class ChannelTree {
         return a == b;
     }
 
-    onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry, enforce_single?: boolean) {
-        if(this.currently_selected && ppt.key_pressed(ppt.SpecialKey.SHIFT) && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
+    onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry, enforce_single?: boolean, flag_shift?: boolean) {
+        console.log("Select: " + entry);
+        if(this.currently_selected && (ppt.key_pressed(ppt.SpecialKey.SHIFT) || flag_shift) && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
             if(!entry) return; //Nowhere
 
             if($.isArray(this.currently_selected)) {

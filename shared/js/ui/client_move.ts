@@ -5,7 +5,7 @@ class ClientMover {
     static readonly move_element = $("#mouse-move");
     readonly channel_tree: ChannelTree;
 
-    selected_client: ClientEntry;
+    selected_client: ClientEntry | ClientEntry[];
 
     hovered_channel: HTMLDivElement;
     callback: (channel?: ChannelEntry) => any;
@@ -20,7 +20,23 @@ class ClientMover {
         this.channel_tree = tree;
     }
 
-    activate(client: ClientEntry, callback: (channel?: ChannelEntry) => any, event: any) {
+    is_active() { return this._active; }
+
+    private hover_text() {
+        if($.isArray(this.selected_client)) {
+            let result = "";
+            for(const client of this.selected_client)
+                result = result + ", " + client.clientNickName();
+            if(result.length < 2)
+                return result;
+            return result.substr(2);
+        } else if(this.selected_client) {
+            return (<ClientEntry>this.selected_client).clientNickName();
+        } else
+            return "";
+    }
+
+    activate(client: ClientEntry | ClientEntry[], callback: (channel?: ChannelEntry) => any, event: any) {
         this.finish_listener(undefined);
 
         this.selected_client = client;
@@ -32,7 +48,7 @@ class ClientMover {
         {
             const content = ClientMover.move_element.find(".container");
             content.empty();
-            content.append($.spawn("a").text(client.clientNickName()));
+            content.append($.spawn("a").text(this.hover_text()));
         }
         this.move_listener(event);
     }
@@ -54,8 +70,15 @@ class ClientMover {
             this._active = Math.sqrt(d_x * d_x + d_y * d_y) > 5 * 5;
 
             if(this._active) {
+                if($.isArray(this.selected_client)) {
+                    this.channel_tree.onSelect(this.selected_client[0], true);
+                    for(const client of this.selected_client.slice(1))
+                        this.channel_tree.onSelect(client, false, true);
+                } else {
+                    this.channel_tree.onSelect(this.selected_client, true);
+                }
+
                 ClientMover.move_element.show();
-                this.channel_tree.onSelect(this.selected_client, true);
             }
         }
 

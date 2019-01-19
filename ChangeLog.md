@@ -1,4 +1,9 @@
 # Changelog:
+* **19.01.19**
+    - Added multi user movement
+    - Improved connection profile error handling
+    - Added possibility to move the deviders
+    
 * **23.12.18**
     - Added query account management (since server 1.2.32b)
     
