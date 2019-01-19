@@ -48,7 +48,7 @@ namespace profiles.identities {
         }
 
         valid(): boolean {
-            return this._name != undefined && this._name != "";
+            return this._name != undefined && this._name.length >= 3;
         }
 
         decode(data) {

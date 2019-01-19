@@ -14,8 +14,10 @@ namespace profiles {
             this.id = id;
         }
 
-        selected_identity() : identities.Identity {
-            const current_type = this.selected_type();
+        selected_identity(current_type?: identities.IdentitifyType) : identities.Identity {
+            if(!current_type)
+                current_type = this.selected_type();
+
             if(current_type === undefined)
                 return undefined;
 
@@ -61,7 +63,10 @@ namespace profiles {
         }
 
         valid() : boolean {
-            return this.selected_identity() !== undefined && this.default_username !== undefined;
+            const identity = this.selected_identity();
+            if(!identity || !identity.valid()) return false;
+
+            return this.default_username !== undefined;
         }
     }
 

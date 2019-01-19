@@ -483,8 +483,9 @@ namespace Modals {
 
                     profiles.mark_need_save();
 
+                    let tag: JQuery;
                     if(selected_type == IdentitifyType.TEAFORO) {
-                        const forum_tag = settings_tag.find(".identity-settings-teaforo");
+                        const forum_tag = tag = settings_tag.find(".identity-settings-teaforo");
 
                         forum_tag.find(".connected, .disconnected").hide();
                         if(identity && identity.valid()) {
@@ -494,18 +495,21 @@ namespace Modals {
                         }
                     } else if(selected_type == IdentitifyType.TEAMSPEAK) {
                         console.log("Set: " + identity);
-                        const teamspeak_tag = settings_tag.find(".identity-settings-teamspeak");
+                        const teamspeak_tag = tag = settings_tag.find(".identity-settings-teamspeak");
                         if(identity)
                             teamspeak_tag.find(".identity_string").val((identity as profiles.identities.TeamSpeakIdentity).exported());
                         else
                             teamspeak_tag.find(".identity_string").val("");
                     } else if(selected_type == IdentitifyType.NICKNAME) {
-                        const name_tag = settings_tag.find(".identity-settings-nickname");
+                        const name_tag = tag = settings_tag.find(".identity-settings-nickname");
                         if(identity)
                             name_tag.find("input").val(identity.name());
                         else
                             name_tag.find("input").val("");
                     }
+
+                    if(tag)
+                        tag.trigger('show');
                 };
 
                 select_tag.value = type;
@@ -549,18 +553,18 @@ namespace Modals {
             }
         };
 
+        const display_error = (error?: string) => {
+            if(error){
+                settings_tag.find(".error-message").show().html(error);
+            } else
+                settings_tag.find(".error-message").hide();
+            status_listener();
+        };
+
         /* identity settings */
         {
             { //TeamSpeak change listener
                 const teamspeak_tag = settings_tag.find(".identity-settings-teamspeak");
-                const display_error = (error?: string) => {
-                    if(error){
-                        teamspeak_tag.find(".error-message").show().html(error);
-                    } else
-                        teamspeak_tag.find(".error-message").hide();
-                    status_listener();
-                };
-
                 teamspeak_tag.find(".identity_file").on('change', event => {
                     if(!selected_profile) return;
 
@@ -612,6 +616,16 @@ namespace Modals {
                         display_error(undefined);
                     }
                 });
+
+                teamspeak_tag.on('show', event => {
+                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK);
+                    if(!profile)
+                        display_error("invalid profile");
+                    else if(!profile.valid())
+                        display_error("profile isn't valid");
+                    else
+                        display_error();
+                });
             }
 
             { //The forum
@@ -631,8 +645,36 @@ namespace Modals {
                         }, 0);
                     });
                 }
+
+                teaforo_tag.on('show', event => {
+                    display_error(); /* clear error */
+                });
             }
-            //TODO add the name!
+
+            { //The name
+                const name_tag = settings_tag.find(".identity-settings-nickname");
+                name_tag.find(".setting-name").on('change keyup', event => {
+                    const name = name_tag.find(".setting-name").val() as string;
+                    selected_profile.set_identity(IdentitifyType.NICKNAME, new profiles.identities.NameIdentity(name));
+                    profiles.mark_need_save();
+
+                    if(name.length < 3) {
+                        display_error("Name must be at least 3 characters long!");
+                        return;
+                    }
+                    display_error();
+                });
+
+                name_tag.on('show', event => {
+                    const profile = selected_profile.selected_identity(IdentitifyType.NICKNAME);
+                    if(!profile)
+                        display_error("invalid profile");
+                    else if(!profile.valid())
+                        display_error("Name must be at least 3 characters long!");
+                    else
+                        display_error();
+                });
+            }
         }
 
         /* general settings */
