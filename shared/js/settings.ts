@@ -1,11 +1,15 @@
 /// <reference path="client.ts" />
 
 if(typeof(customElements) !== "undefined") {
-    class X_Properties extends HTMLElement {}
-    class X_Property extends HTMLElement {}
+    try {
+        class X_Properties extends HTMLElement {}
+        class X_Property extends HTMLElement {}
 
-    customElements.define('x-properties', X_Properties, { extends: 'div' });
-    customElements.define('x-property', X_Property, { extends: 'div' });
+        customElements.define('x-properties', X_Properties, { extends: 'div' });
+        customElements.define('x-property', X_Property, { extends: 'div' });
+    } catch(error) {
+        console.warn("failed to define costum elements");
+    }
 }
 
 class StaticSettings {

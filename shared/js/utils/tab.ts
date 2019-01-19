@@ -7,16 +7,21 @@ interface JQuery<TElement = HTMLElement> {
     changeElementType(type: string) : JQuery<TElement>;
 }
 
-if(typeof (customElements) !== "undefined") {
-    class X_Tab extends HTMLElement {}
-    class X_Entry extends HTMLElement {}
-    class X_Tag extends HTMLElement {}
-    class X_Content extends HTMLElement {}
 
-    customElements.define('x-tab', X_Tab, { extends: 'div' });
-    customElements.define('x-entry', X_Entry, { extends: 'div' });
-    customElements.define('x-tag', X_Tag, { extends: 'div' });
-    customElements.define('x-content', X_Content, { extends: 'div' });
+if(typeof (customElements) !== "undefined") {
+    try {
+        class X_Tab extends HTMLElement {}
+        class X_Entry extends HTMLElement {}
+        class X_Tag extends HTMLElement {}
+        class X_Content extends HTMLElement {}
+
+        customElements.define('x-tab', X_Tab, { extends: 'div' });
+        customElements.define('x-entry', X_Entry, { extends: 'div' });
+        customElements.define('x-tag', X_Tag, { extends: 'div' });
+        customElements.define('x-content', X_Content, { extends: 'div' });
+    } catch(error) {
+        console.warn("failed to define costum elements");
+    }
 } else {
     console.warn(tr("Could not defied tab customElements!"));
 }

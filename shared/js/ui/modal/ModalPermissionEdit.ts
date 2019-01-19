@@ -2,6 +2,16 @@
 /// <reference path="../../proto.ts" />
 /// <reference path="../../client.ts" />
 
+/*
+    TODO: Check needed permissions and may not even try to request, because we dont have the permission. Permissions:
+        b_virtualserver_servergroup_permission_list
+        b_virtualserver_channel_permission_list
+        b_virtualserver_client_permission_list
+        b_virtualserver_channelgroup_permission_list
+        b_virtualserver_channelclient_permission_list
+        b_virtualserver_playlist_permission_list
+ */
+
 namespace Modals {
     async function build_permission_editor() : Promise<JQuery[]> {
         let root_entry: any = {};

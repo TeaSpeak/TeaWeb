@@ -150,7 +150,7 @@ namespace loader {
 
                 let error = false;
                 const error_handler = (event: ErrorEvent) => {
-                    if(event.filename == tag.src) { //Our tag throw an uncaught error
+                    if(event.filename == tag.src && event.message.indexOf("Illegal constructor") == -1) { //Our tag throw an uncaught error
                         //console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
                         window.removeEventListener('error', error_handler as any);
 
@@ -340,6 +340,7 @@ const loader_javascript = {
             "js/ui/server.js",
             "js/ui/view.js",
             "js/ui/client_move.js",
+            "js/ui/context_divider.js",
 
             "js/ui/frames/SelectedItemInfo.js",
             "js/ui/frames/ControlBar.js",

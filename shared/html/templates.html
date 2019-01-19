@@ -9,9 +9,8 @@
         <script class="jsrender-template" id="tmpl_main" type="text/html">
             <div class="app-container">
                 <div class="app">
-                    <!-- Container -->
-                    <div style="height: 45px; width: 100%; border-radius: 2px 0px 0px 0px; border-bottom-width: 0px; background-color: lightgrey"
-                         class="main_container">
+                    <!-- navigation bar -->
+                    <div class="container-control-bar">
                         <div id="control_bar" class="control_bar">
                             <div class="button btn_connect" title="{{tr 'Connect to a server' /}}">
                                 <div class="icon_x32 client-connect"></div>
@@ -100,12 +99,15 @@
                         </div>
                     </div>
 
-                    <div style="flex-direction: row; height: 100%; width: 100%; display: flex; justify-content: stretch;">
+                    <div class="container-app-main">
                         <div class="container-channel-chat">
-                            <div class="container-channel" class="main_container">
+                            <!-- Channel tree -->
+                            <div class="container-channel main_container">
                                 <div class="channelTree" id="channelTree"></div>
                             </div>
-                            <!-- Channel tree -->
+
+                            <div class="container-seperator horizontal"></div>
+                            <!-- Chat window -->
                             <div class="main_container container-chat">
                                 <div id="chat">
                                     <div class="messages">
@@ -118,8 +120,9 @@
                                         <button>Send</button>
                                     </div>
                                 </div>
-                            </div> <!-- Chat window -->
+                            </div>
                         </div>
+                        <div class="container-seperator vertical"></div>
                         <div class="main_container container-info">
                             <div id="select_info" class="select_info" style="width: 100%; max-width: 100%">
                                 <div class="container-banner"></div>

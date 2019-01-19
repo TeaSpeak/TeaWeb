@@ -117,7 +117,7 @@ async function initialize() {
     }
 
     try { //Initialize main template
-        const main = $("#tmpl_main").renderTag();
+        const main = $("#tmpl_main").renderTag().dividerfy();
         $("body").append(main);
     } catch(error) {
         console.error(error);
