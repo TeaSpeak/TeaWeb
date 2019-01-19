@@ -289,16 +289,8 @@ $separator_thickness: 4px;
 	}
 
 	.container-channel-chat {
-		/*
-		> div {
-			min-height: 100px;
-			min-width: 100px;
-			max-width: 100%;
-		}
-		*/
-
 		min-width: 100px;
-		//max-width: 60%; /* tmp chat fix */
+		width: 60%;
 
 		display: flex;
 		flex-direction: column;
@@ -337,8 +329,7 @@ $separator_thickness: 4px;
 		background: white;
 
 		min-width: 100px;
-		//max-width: 40%;
-		//width: 40%;
+		width: 40%;
 
 		display: flex;
 		flex-direction: row;

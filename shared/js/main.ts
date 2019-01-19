@@ -99,6 +99,8 @@ async function initialize() {
             displayCriticalError(message);
     };
 
+    settings = new Settings();
+
     try {
         await i18n.initialize();
     } catch(error) {
@@ -118,6 +120,7 @@ async function initialize() {
 
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag().dividerfy();
+
         $("body").append(main);
     } catch(error) {
         console.error(error);
@@ -144,7 +147,6 @@ async function initialize() {
 function main() {
     //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
 
-    settings = new Settings();
     globalClient = new TSClient();
     /** Setup the XF forum identity **/
     profiles.identities.setup_forum();
