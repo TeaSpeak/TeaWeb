@@ -44,7 +44,6 @@
     font-size: 12px;
     /*white-space: pre;*/
     line-height: 1;
-    padding: 2px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -377,4 +376,14 @@ html, body {
 	min-height: 500px;
 	min-width: 500px;
 	overflow: hidden;
+}
+
+.icon-playlist-manage {
+	display: inline-block;
+	width: 32px;
+	height: 32px;
+
+	background: url('../img/music/playlist.svg') no-repeat;
+	background-position: -11px -9px;
+	background-size: 50px;
 }

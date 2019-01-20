@@ -162,14 +162,20 @@ function main() {
     //Modals.spawnSettingsModal();
     //Modals.createChannelModal(undefined);
 
-    if(settings.static("connect_default") && settings.static("connect_address", "")) {
+    if(settings.static("connect_default", false) && settings.static("connect_address", "")) {
         const profile_uuid = settings.static("connect_profile") as string;
         const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
         const address = settings.static("connect_address", "");
         const username = settings.static("connect_username", "Another TeaSpeak user");
 
+        const password = settings.static("connect_password", "");
+        const password_hashed = settings.static("connect_password_hashed", false);
+
         if(profile.valid()) {
-            globalClient.startConnection(address, profile, username);
+            globalClient.startConnection(address, profile, username, password.length > 0 ? {
+                password: password,
+                hashed: password_hashed
+            } : undefined);
         } else {
             Modals.spawnConnectModal({
                 url: address,

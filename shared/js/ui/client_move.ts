@@ -24,14 +24,18 @@ class ClientMover {
 
     private hover_text() {
         if($.isArray(this.selected_client)) {
-            let result = "";
-            for(const client of this.selected_client)
-                result = result + ", " + client.clientNickName();
-            if(result.length < 2)
-                return result;
-            return result.substr(2);
+            return this.selected_client.filter(client => !!client).map(client => client.clientNickName()).join(", ");
         } else if(this.selected_client) {
             return (<ClientEntry>this.selected_client).clientNickName();
+        } else
+            return "";
+    }
+
+    private bbcode_text() {
+        if($.isArray(this.selected_client)) {
+            return this.selected_client.filter(client => !!client).map(client => client.create_bbcode()).join(", ");
+        } else if(this.selected_client) {
+            return (<ClientEntry>this.selected_client).create_bbcode();
         } else
             return "";
     }
@@ -125,6 +129,21 @@ class ClientMover {
                 this.callback(this.channel_tree.findChannel(channel_id));
             }
             this.callback = undefined;
+        }
+
+        /* test for the chat box */
+        {
+            const elements = document.elementsFromPoint(event.pageX, event.pageY);
+            console.error(elements);
+            while(elements.length > 0) {
+                if(elements[0].classList.contains("client-chat-box-field")) break;
+                elements.pop_front();
+            }
+
+            if(elements.length > 0) {
+                const element = $(<HTMLTextAreaElement>elements[0]);
+                element.val((element.val() || "") + this.bbcode_text());
+            }
         }
     }
 

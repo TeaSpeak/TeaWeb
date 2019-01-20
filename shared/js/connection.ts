@@ -3,6 +3,14 @@
 /// <reference path="sound/Sounds.ts" />
 /// <reference path="ui/modal/ModalPoke.ts" />
 
+import noExitRuntime = Module.noExitRuntime;
+
+enum ErrorID {
+    PERMISSION_ERROR = 2568,
+    EMPTY_RESULT = 0x0501,
+    PLAYLIST_IS_IN_USE = 0x2103
+}
+
 class CommandResult {
     success: boolean;
     id: number;
@@ -406,6 +414,47 @@ interface QueryList {
     queries: QueryListEntry[];
 }
 
+interface Playlist {
+    playlist_id: number;
+    playlist_bot_id: number;
+    playlist_title: string;
+    playlist_type: number;
+    playlist_owner_dbid: number;
+    playlist_owner_name: string;
+
+    needed_power_modify: number;
+    needed_power_permission_modify: number;
+    needed_power_delete: number;
+    needed_power_song_add: number;
+    needed_power_song_move: number;
+    needed_power_song_remove: number;
+}
+
+interface PlaylistInfo {
+    playlist_id: number,
+    playlist_title: string,
+    playlist_description: string,
+    playlist_type: number,
+
+    playlist_owner_dbid: number,
+    playlist_owner_name: string,
+
+    playlist_flag_delete_played: boolean,
+    playlist_flag_finished: boolean,
+    playlist_replay_mode: number,
+    playlist_current_song_id: number,
+}
+
+interface PlaylistSong {
+    song_id: number;
+    song_previous_song_id: number;
+    song_invoker: string;
+    song_url: string;
+    song_url_loader: string;
+    song_loaded: boolean;
+    song_metadata: string;
+}
+
 class CommandHelper {
     readonly connection: ServerConnection;
 
@@ -465,11 +514,143 @@ class CommandHelper {
 
             this.connection.sendCommand("querylist", data).catch(error => {
                 if(error instanceof CommandResult) {
-                    if(error.id == 0x0501) {
+                    if(error.id == ErrorID.EMPTY_RESULT) {
                         resolve(undefined);
+                        this.connection.commandHandler["notifyquerylist"] = undefined;
                         return;
                     }
                 }
+                reject(error);
+            })
+        });
+    }
+
+    request_playlist_list() : Promise<Playlist[]> {
+        return new Promise((resolve, reject) => {
+            const notify_handler = json => {
+                const result: Playlist[] = [];
+
+                for(const entry of json) {
+                    try {
+                        result.push({
+                            playlist_id: parseInt(entry["playlist_id"]),
+                            playlist_bot_id: parseInt(entry["playlist_bot_id"]),
+                            playlist_title: entry["playlist_title"],
+                            playlist_type: parseInt(entry["playlist_type"]),
+                            playlist_owner_dbid: parseInt(entry["playlist_owner_dbid"]),
+                            playlist_owner_name: entry["playlist_owner_name"],
+
+                            needed_power_modify: parseInt(entry["needed_power_modify"]),
+                            needed_power_permission_modify: parseInt(entry["needed_power_permission_modify"]),
+                            needed_power_delete: parseInt(entry["needed_power_delete"]),
+                            needed_power_song_add: parseInt(entry["needed_power_song_add"]),
+                            needed_power_song_move: parseInt(entry["needed_power_song_move"]),
+                            needed_power_song_remove: parseInt(entry["needed_power_song_remove"])
+                        });
+                    } catch(error) {
+                        log.error(LogCategory.NETWORKING, tr("Failed to parse playlist entry: %o"), error);
+                    }
+                }
+
+                this.connection.commandHandler.unset_handler("notifyplaylistlist", notify_handler);
+                resolve(result);
+            };
+
+            this.connection.commandHandler.set_handler("notifyplaylistlist", notify_handler);
+            this.connection.sendCommand("playlistlist").catch(error => {
+                if(error instanceof CommandResult) {
+                    if(error.id == ErrorID.EMPTY_RESULT) {
+                        this.connection.commandHandler.unset_handler("notifyplaylistlist", notify_handler);
+                        resolve([]);
+                        return;
+                    }
+                }
+                reject(error);
+            })
+        });
+    }
+
+    request_playlist_songs(playlist_id: number) : Promise<PlaylistSong[]> {
+        return new Promise((resolve, reject) => {
+            const notify_handler = json => {
+                if(json[0]["playlist_id"] != playlist_id) {
+                    log.error(LogCategory.NETWORKING, tr("Received invalid notification for playlist songs"));
+                    return;
+                }
+
+                const result: PlaylistSong[] = [];
+
+                for(const entry of json) {
+                    try {
+                        result.push({
+                            song_id: parseInt(entry["song_id"]),
+                            song_invoker: entry["song_invoker"],
+                            song_previous_song_id: parseInt(entry["song_previous_song_id"]),
+                            song_url: entry["song_url"],
+                            song_url_loader: entry["song_url_loader"],
+
+                            song_loaded: entry["song_loaded"] == true || entry["song_loaded"] == "1",
+                            song_metadata: entry["song_metadata"]
+                        });
+                    } catch(error) {
+                        log.error(LogCategory.NETWORKING, tr("Failed to parse playlist song entry: %o"), error);
+                    }
+                }
+
+                this.connection.commandHandler.unset_handler("notifyplaylistsonglist", notify_handler);
+                resolve(result);
+            };
+
+            this.connection.commandHandler.set_handler("notifyplaylistsonglist", notify_handler);
+            this.connection.sendCommand("playlistsonglist", {playlist_id: playlist_id}).catch(error => {
+                if(error instanceof CommandResult) {
+                    if(error.id == ErrorID.EMPTY_RESULT) {
+                        this.connection.commandHandler.unset_handler("notifyplaylistsonglist", notify_handler);
+                        resolve([]);
+                        return;
+                    }
+                }
+                reject(error);
+            })
+        });
+    }
+
+    request_playlist_info(playlist_id: number) : Promise<PlaylistInfo> {
+        return new Promise((resolve, reject) => {
+            const notify_handler = json => {
+                if(json[0]["playlist_id"] != playlist_id) {
+                    log.error(LogCategory.NETWORKING, tr("Received invalid notification for playlist info"));
+                    return;
+                }
+
+                json = json[0];
+
+                try {
+                    //resolve
+                    resolve({
+                        playlist_id: parseInt(json["playlist_id"]),
+                        playlist_title: json["playlist_title"],
+                        playlist_description: json["playlist_description"],
+                        playlist_type: parseInt(json["playlist_type"]),
+
+                        playlist_owner_dbid: parseInt(json["playlist_owner_dbid"]),
+                        playlist_owner_name: json["playlist_owner_name"],
+
+                        playlist_flag_delete_played: json["playlist_flag_delete_played"] == true || json["playlist_flag_delete_played"] == "1",
+                        playlist_flag_finished: json["playlist_flag_finished"] == true || json["playlist_flag_finished"] == "1",
+                        playlist_replay_mode: parseInt(json["playlist_replay_mode"]),
+                        playlist_current_song_id: parseInt(json["playlist_current_song_id"]),
+                    });
+                } catch(error) {
+                    log.error(LogCategory.NETWORKING, tr("Failed to parse playlist info: %o"), error);
+                    reject("failed to parse info");
+                }
+
+                this.connection.commandHandler.unset_handler("notifyplaylistinfo", notify_handler);
+            };
+
+            this.connection.commandHandler.set_handler("notifyplaylistinfo", notify_handler);
+            this.connection.sendCommand("playlistinfo", {playlist_id: playlist_id}).catch(error => {
                 reject(error);
             })
         });
@@ -548,6 +729,15 @@ class ConnectionCommandHandler {
         this["notifyservergroupclientadded"] = this.handleNotifyServerGroupClientAdd;
         this["notifyservergroupclientdeleted"] = this.handleNotifyServerGroupClientRemove;
         this["notifyclientchannelgroupchanged"] = this.handleNotifyClientChannelGroupChanged;
+    }
+
+    set_handler(command: string, handler: any) {
+        this[command] = handler;
+    }
+
+    unset_handler(command: string, handler?: any) {
+        if(handler && this[command] != handler) return;
+        this[command] = undefined;
     }
 
     handleCommandResult(json) {
@@ -721,9 +911,9 @@ class ConnectionCommandHandler {
                 else
                     sound.play(Sound.USER_ENTERED_CONNECT);
             if(old_channel) {
-                chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.createChatTag(true), channel.createChatTag(true));
+                chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.generate_tag(true), channel.generate_tag(true));
             } else {
-                chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.createChatTag(true));
+                chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.generate_tag(true));
             }
         } else if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
             if(own_channel == channel)
@@ -731,8 +921,8 @@ class ConnectionCommandHandler {
 
             chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, moved by {3}"), true,
                 client.createChatTag(true),
-                old_channel ? old_channel.createChatTag(true) : undefined,
-                channel.createChatTag(true),
+                old_channel ? old_channel.generate_tag(true) : undefined,
+                channel.generate_tag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
             );
         } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
@@ -741,8 +931,8 @@ class ConnectionCommandHandler {
 
             chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, kicked by {3}{4}"), true,
                 client.createChatTag(true),
-                old_channel ? old_channel.createChatTag(true) : undefined,
-                channel.createChatTag(true),
+                old_channel ? old_channel.generate_tag(true) : undefined,
+                channel.generate_tag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
                 json["reasonmsg"] > 0 ? " (" + json["msg"] + ")" : ""
             );
@@ -800,7 +990,7 @@ class ConnectionCommandHandler {
 
 
         if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-            chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.createChatTag(true), channel_to.createChatTag(true));
+            chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.generate_tag(true), channel_to.generate_tag(true));
 
             if(channel_from == own_channel)
                 sound.play(Sound.USER_LEFT);
@@ -886,8 +1076,8 @@ class ConnectionCommandHandler {
         if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
             chat.serverChat().appendMessage(self ? tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}"), true,
                 client.createChatTag(true),
-                channel_from ? channel_from.createChatTag(true) : undefined,
-                channel_to.createChatTag(true),
+                channel_from ? channel_from.generate_tag(true) : undefined,
+                channel_to.generate_tag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"])
             );
             if(self)
@@ -899,8 +1089,8 @@ class ConnectionCommandHandler {
         } else if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
             chat.serverChat().appendMessage(self ? tr("You switched from channel {1} to {2}") : tr("{0} switched from channel {1} to {2}"), true,
                 client.createChatTag(true),
-                channel_from ? channel_from.createChatTag(true) : undefined,
-                channel_to.createChatTag(true)
+                channel_from ? channel_from.generate_tag(true) : undefined,
+                channel_to.generate_tag(true)
             );
             if(self) {} //If we do an action we wait for the error response
             else if(own_channel == channel_to)
@@ -910,8 +1100,8 @@ class ConnectionCommandHandler {
         } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
             chat.serverChat().appendMessage(self ? tr("You got kicked out of the channel {1} to channel {2} by {3}{4}") : tr("{0} got kicked from channel {1} to {2} by {3}{4}"), true,
                 client.createChatTag(true),
-                channel_from ? channel_from.createChatTag(true) : undefined,
-                channel_to.createChatTag(true),
+                channel_from ? channel_from.generate_tag(true) : undefined,
+                channel_to.generate_tag(true),
                 ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
                 json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
             );
@@ -996,19 +1186,19 @@ class ConnectionCommandHandler {
             }
             if(invoker == this.connection._client.getClient()) {
                 sound.play(Sound.MESSAGE_SEND, { background_notification: true });
-                target.chat(true).appendMessage("{0}: {1}", true, this.connection._client.getClient().createChatTag(true), json["msg"]);
+                target.chat(true).appendMessage("{0}: {1}", true, this.connection._client.getClient().createChatTag(true), MessageHelper.bbcode_chat(json["msg"]));
             } else {
                 sound.play(Sound.MESSAGE_RECEIVED, { background_notification: true });
-                invoker.chat(true).appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), json["msg"]);
+                invoker.chat(true).appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
             }
         } else if(mode == 2) {
             if(json["invokerid"] == this.connection._client.clientId)
                 sound.play(Sound.MESSAGE_SEND, { background_notification: true });
             else
                 sound.play(Sound.MESSAGE_RECEIVED, { background_notification: true });
-            chat.channelChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), json["msg"])
+            chat.channelChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]))
         } else if(mode == 3) {
-            chat.serverChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), json["msg"]);
+            chat.serverChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
         }
     }
 

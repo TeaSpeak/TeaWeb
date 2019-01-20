@@ -320,6 +320,8 @@ const loader_javascript = {
             //Load UI
             "js/ui/modal/ModalQuery.js",
             "js/ui/modal/ModalQueryManage.js",
+            "js/ui/modal/ModalPlaylistList.js",
+            "js/ui/modal/ModalPlaylistEdit.js",
             "js/ui/modal/ModalBookmarks.js",
             "js/ui/modal/ModalConnect.js",
             "js/ui/modal/ModalSettings.js",
@@ -341,6 +343,7 @@ const loader_javascript = {
             "js/ui/view.js",
             "js/ui/client_move.js",
             "js/ui/context_divider.js",
+            "js/ui/htmltags.js",
 
             "js/ui/frames/SelectedItemInfo.js",
             "js/ui/frames/ControlBar.js",

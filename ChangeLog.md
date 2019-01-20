@@ -1,8 +1,18 @@
 # Changelog:
+* **20.01.19**
+    - Added the possibility to change the remote volume of a bot
+    - Added a playlist management system
+    - Added BBCodes to the chat
+    - Added client links to BBCodes
+    - Added channel links to BBCodes
+    - Added the possibility to drag client into the chat
+    - Added function "create invite code" to the server
+    - Added parameters `connect_password` and `connect_password_hashed` to URL to pass passwords
+    
 * **19.01.19**
     - Added multi user movement
     - Improved connection profile error handling
-    - Added possibility to move the deviders
+    - Added possibility to move the dividers
     
 * **23.12.18**
     - Added query account management (since server 1.2.32b)

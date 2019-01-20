@@ -42,6 +42,7 @@ class ControlBar {
         this.htmlTag.find(".btn_open_settings").on('click', this.onOpenSettings.bind(this));
         this.htmlTag.find(".btn_permissions").on('click', this.onPermission.bind(this));
         this.htmlTag.find(".btn_banlist").on('click', this.onBanlist.bind(this));
+        this.htmlTag.find(".button-playlist-manage").on('click', this.on_playlist_manage.bind(this));
         {
             let tokens = this.htmlTag.find(".btn_token");
             tokens.find(".button-dropdown").on('click', () => {
@@ -452,6 +453,14 @@ class ControlBar {
             Modals.spawnQueryManage(globalClient);
         } else {
             createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
+        }
+    }
+
+    private on_playlist_manage() {
+        if(this.handle && this.handle.connected) {
+            Modals.spawnPlaylistManage(this.handle);
+        } else {
+            createErrorModal(tr("You have to be connected"), tr("You have to be connected to use this function!")).open();
         }
     }
 }

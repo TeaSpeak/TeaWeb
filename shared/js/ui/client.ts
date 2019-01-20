@@ -130,8 +130,13 @@ class ClientEntry {
             if(event.which != 1) return; //Only the left button
 
             let clients = this.channelTree.currently_selected as (ClientEntry | ClientEntry[]);
-            if(clients != this && !($.isArray(clients) && clients.indexOf(this) != -1))
-               clients = $.isArray(clients) ? [...clients, this] : [clients, this];
+
+            if(ppt.key_pressed(ppt.SpecialKey.SHIFT)) {
+                if(clients != this && !($.isArray(clients) && clients.indexOf(this) != -1))
+                    clients = $.isArray(clients) ? [...clients, this] : [clients, this];
+            } else {
+                clients = this;
+            }
 
             this.channelTree.client_mover.activate(clients, target => {
                 if(!target) return;
@@ -435,33 +440,21 @@ class ClientEntry {
         return this._tag;
     }
 
+    static bbcodeTag(id: number, name: string, uid: string) : string {
+        return "[url=client://" + id + "/" + uid + "~" + encodeURIComponent(name) + "]" + name + "[/url]";
+    }
+
     static chatTag(id: number, name: string, uid: string, braces: boolean = false) : JQuery {
-        let tag = $.spawn("div");
+        return $(htmltags.generate_client({
+            client_name: name,
+            client_id: id,
+            client_unique_id: uid,
+            add_braces: braces
+        }));
+    }
 
-        tag.css("cursor", "pointer")
-            .css("font-weight", "bold")
-            .css("color", "darkblue")
-            .css("display", "inline-block")
-            .css("margin", 0);
-
-        if(braces)
-            tag.text("\"" + name + "\"");
-        else
-            tag.text(name);
-
-        tag.contextmenu(event => {
-            if(event.isDefaultPrevented()) return;
-
-            event.preventDefault();
-            let client = globalClient.channelTree.findClient(id);
-            if(!client) return;
-            if(client.properties.client_unique_identifier != uid) return;
-            client.showContextMenu(event.pageX, event.pageY);
-        });
-        tag.attr("clientId", id);
-        tag.attr("clientUid", uid);
-        tag.attr("clientName", name);
-        return tag;
+    create_bbcode() : string {
+        return ClientEntry.bbcodeTag(this.clientId(), this.clientNickName(), this.clientUid());
     }
 
     createChatTag(braces: boolean = false) : JQuery {
@@ -832,6 +825,9 @@ class LocalClientEntry extends ClientEntry {
 class MusicClientProperties extends ClientProperties {
     player_state: number = 0;
     player_volume: number = 0;
+
+    client_playlist_id: number = 0;
+    client_disabled: boolean = false;
 }
 
 class MusicClientPlayerInfo {
@@ -903,13 +899,36 @@ class MusicClientEntry extends ClientEntry {
                     }, { width: 400, maxLength: 255 }).open();
                 },
                 type: MenuEntryType.ENTRY
-            }, {
+            },
+            /*
+            {
                 name: tr("Open music panel"),
                 icon: "client-edit",
                 disabled: true,
                 callback: () => {},
                 type: MenuEntryType.ENTRY
-            }, {
+            },
+            */
+            {
+                name: tr("Open bot's playlist"),
+                icon: "client-edit",
+                disabled: false,
+                callback: () => {
+                    this.channelTree.client.serverConnection.helper.request_playlist_list().then(lists => {
+                        for(const entry of lists) {
+                            if(entry.playlist_id == this.properties.client_playlist_id) {
+                                Modals.spawnPlaylistEdit(this.channelTree.client, entry);
+                                return;
+                            }
+                        }
+                        createErrorModal(tr("Invalid permissions"), tr("You dont have to see the bots playlist.")).open();
+                    }).catch(error => {
+                        createErrorModal(tr("Failed to query playlist."), tr("Failed to query playlist info.")).open();
+                    });
+                },
+                type: MenuEntryType.ENTRY
+            },
+            {
                 name: tr("Quick url replay"),
                 icon: "client-edit",
                 disabled: false,
@@ -965,13 +984,33 @@ class MusicClientEntry extends ClientEntry {
             {
                 type: MenuEntryType.ENTRY,
                 icon: "client-volume",
-                name: tr("Change Volume"),
+                name: tr("Change local volume"),
                 callback: () => {
                     Modals.spawnChangeVolume(this.audioController.volume, volume => {
                         settings.changeServer("volume_client_" + this.clientUid(), volume);
                         this.audioController.volume = volume;
                         if(globalClient.selectInfo.currentSelected == this)
-                            globalClient.selectInfo.update();
+                            (<MusicInfoManager>globalClient.selectInfo.current_manager()).update_local_volume(volume);
+                    });
+                }
+            },
+            {
+                type: MenuEntryType.ENTRY,
+                icon: "client-volume",
+                name: tr("Change remote volume"),
+                callback: () => {
+                    let max_volume = this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_MUSIC_CREATE_MODIFY_MAX_VOLUME).value;
+                    if(max_volume < 0)
+                        max_volume = 100;
+
+                    Modals.spawnChangeRemoteVolume(this.properties.player_volume, max_volume / 100, value => {
+                        this.channelTree.client.serverConnection.sendCommand("clientedit", {
+                            clid: this.clientId(),
+                            player_volume: value,
+                        }).then(() => {
+                            if(globalClient.selectInfo.currentSelected == this)
+                                (<MusicInfoManager>globalClient.selectInfo.current_manager()).update_remote_volume(value);
+                        });
                     });
                 }
             },

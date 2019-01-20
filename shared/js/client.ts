@@ -151,7 +151,7 @@ class TSClient {
 
         const parameters: string[] = [];
         for(const key in properties)
-            parameters.push(encodeURIComponent(key) + "=" + encodeURIComponent(properties[key]));
+            parameters.push(key + "=" + encodeURIComponent(properties[key]));
 
 
 

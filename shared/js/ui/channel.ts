@@ -433,14 +433,13 @@ class ChannelEntry {
                 name: tr("Create music bot"),
                 callback: () => {
                     this.channelTree.client.serverConnection.sendCommand("musicbotcreate", {cid: this.channelId}).then(() => {
-                        createInfoModal(tr("Bot successfully created"), tr("But has been successfully created.")).open();
+                        createInfoModal(tr("Bot successfully created"), tr("Bot has been successfully created.")).open();
                     }).catch(error => {
                         if(error instanceof CommandResult) {
                             error = error.extra_message || error.message;
                         }
 
-                        //TODO tr
-                        createErrorModal(tr("Failed to create bot"), "Failed to create the music bot:<br>" + error).open();
+                        createErrorModal(tr("Failed to create bot"), MessageHelper.formatMessage(tr("Failed to create the music bot:<br>{0}"), error)).open();
                     });
                 }
             },
@@ -583,26 +582,16 @@ class ChannelEntry {
         tag.addClass("client-channel_" + type + "_subscribed");
     }
 
-    createChatTag(braces: boolean = false) : JQuery {
-        let tag = $.spawn("div");
+    generate_bbcode() {
+        return "[url=channel://" + this.channelId + "/" + encodeURIComponent(this.properties.channel_name) + "]" + this.formatedChannelName() + "[/url]";
+    }
 
-        tag.css("display", "inline-block");
-        tag.css("cursor", "pointer");
-        tag.css("font-weight", "bold");
-        tag.css("color", "darkblue");
-        if(braces)
-            tag.text("\"" + this.channelName() + "\"");
-        else
-            tag.text(this.channelName());
-        tag.contextmenu(event => {
-            if(event.isDefaultPrevented()) return;
-            event.preventDefault();
-            this.showContextMenu(event.pageX, event.pageY);
-        });
-
-        tag.attr("channelId", this.channelId);
-        tag.attr("channelName", this.channelName());
-        return tag;
+    generate_tag(braces: boolean = false) : JQuery {
+        return $(htmltags.generate_channel({
+            channel_name: this.properties.channel_name,
+            channel_id: this.channelId,
+            add_braces: braces
+        }));
     }
 
     channelType() : ChannelType {

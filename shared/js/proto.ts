@@ -129,6 +129,7 @@ if(typeof ($) !== "undefined") {
     }
     if(!$.fn.hasScrollBar)
         $.fn.hasScrollBar = function() {
+            if(this.length <= 0) return false;
             return this.get(0).scrollHeight > this.height();
         }
 

@@ -57,7 +57,7 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
     private _tag_info: JQuery<HTMLElement>;
     private _tag_banner: JQuery<HTMLElement>;
 
-    private current_manager: InfoManagerBase = undefined;
+    private _current_manager: InfoManagerBase = undefined;
     private managers: InfoManagerBase[] = [];
     private banner_manager: Hostbanner;
 
@@ -77,9 +77,9 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     setCurrentSelected(entry: AvailableTypes) {
         if(this.current_selected == entry) return;
-        if(this.current_manager) {
-            (this.current_manager as InfoManager<AvailableTypes>).finalizeFrame(this.current_selected, this._tag_info);
-            this.current_manager = null;
+        if(this._current_manager) {
+            (this._current_manager as InfoManager<AvailableTypes>).finalizeFrame(this.current_selected, this._tag_info);
+            this._current_manager = null;
             this.current_selected = null;
         }
         this._tag_info.empty();
@@ -87,14 +87,14 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
         this.current_selected = entry;
         for(let manager of this.managers) {
             if(manager.available(this.current_selected)) {
-                this.current_manager = manager;
+                this._current_manager = manager;
                 break;
             }
         }
 
-        console.log(tr("Using info manager: %o"), this.current_manager);
-        if(this.current_manager)
-            (this.current_manager as InfoManager<AvailableTypes>).createFrame(this, this.current_selected, this._tag_info);
+        console.log(tr("Using info manager: %o"), this._current_manager);
+        if(this._current_manager)
+            (this._current_manager as InfoManager<AvailableTypes>).createFrame(this, this.current_selected, this._tag_info);
     }
 
     get currentSelected() {
@@ -102,13 +102,17 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
     }
 
     update(){
-        if(this.current_manager && this.current_selected)
-            (this.current_manager as InfoManager<AvailableTypes>).updateFrame(this.current_selected, this._tag_info);
+        if(this._current_manager && this.current_selected)
+            (this._current_manager as InfoManager<AvailableTypes>).updateFrame(this.current_selected, this._tag_info);
     }
 
     update_banner() {
         this.banner_manager.update();
     }
+
+    current_manager() { return this._current_manager; }
+
+    html_tag() { return this._htmlTag; }
 }
 
 class Hostbanner {
@@ -302,7 +306,7 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
         html_tag.empty();
         let properties: any = {};
 
-        properties["channel_name"] = channel.createChatTag();
+        properties["channel_name"] = channel.generate_tag(false);
         properties["channel_type"] = ChannelType.normalize(channel.channelType());
         properties["channel_clients"] = channel.channelTree.clientsByChannel(channel).length;
         properties["channel_subscribed"] = true; //TODO
@@ -634,6 +638,18 @@ class MusicInfoManager extends ClientInfoManager {
             });
             console.log("Transform: " + transform);
         }
+
+        this.registerInterval(setInterval(() => {
+            html_tag.find(".update_onlinetime").text(formatDate(bot.calculateOnlineTime()));
+        }, 1000));
+    }
+
+    update_local_volume(volume: number) {
+        this.handle.html_tag().find(".property-volume-local").text(Math.floor(volume * 100) + "%");
+    }
+
+    update_remote_volume(volume: number) {
+        this.handle.html_tag().find(".property-volume-remote").text(Math.floor(volume * 100) + "%")
     }
 
     available<V>(object: V): boolean {

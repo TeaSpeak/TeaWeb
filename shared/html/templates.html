@@ -71,6 +71,9 @@
                             </div>
 
                             <div style="width: 100%"></div>
+                            <div class="button button-playlist-manage" title="{{tr 'Playlists' /}}">
+                                <div class="icon-playlist-manage"></div>
+                            </div>
                             <div class="button btn_banlist" title="{{tr 'Banlist' /}}">
                                 <div class="icon_x32 client-ban_list"></div>
                             </div>
@@ -116,7 +119,7 @@
                                     <div class="chats"></div>
                                     <div class="input">
                                         <!--<div contentEditable="true" class="input_box"></div>-->
-                                        <textarea class="input_box" title=""></textarea>
+                                        <textarea class="input_box client-chat-box-field" placeholder="{{tr 'enter a chat message...' /}}"></textarea>
                                         <button>Send</button>
                                     </div>
                                 </div>
@@ -126,6 +129,7 @@
                         <div class="main_container container-info">
                             <div id="select_info" class="select_info" style="width: 100%; max-width: 100%">
                                 <div class="container-banner"></div>
+                                <!-- <div class="container-seperator horizontal" seperator-id="seperator-hostbanner-info"></div> -->
                                 <div class="container-select-info"></div>
                             </div>
                         </div> <!-- Selection info -->
@@ -893,7 +897,7 @@
 
         <script class="jsrender-template" id="tmpl_change_volume" type="text/html">
             <div style="display: flex; justify-content: center; vertical-align: center">
-                <input type="range" min="0" max="200" value="100" class="volume_slider" style="width: 100%">
+                <input type="range" min="0" max="{{>max_volume}}" value="100" class="volume_slider" style="width: 100%">
                 <div class="display_volume" style="width: 60px; align-self: center; text-align: center">&plusmn;0 %</div>
             </div>
         </script>
@@ -1558,18 +1562,25 @@
                     <td>{{>property_client_description}}</td>
                 </tr>
                 {{/if}}
+                {{if property_client_uptime_mode == 0}}
                 <tr>
                     <td>{{tr "Livetime:"/}}</td>
                     <td class="update_onlinetime">{{:client_onlinetime}}</td>
                 </tr>
+                {{else}}
+                <tr>
+                    <td>{{tr "Online since" /}}</td>
+                    <td>{{tr "Server start" /}}</td>
+                </tr>
+                {{/if}}
                 <!-- player_volume -->
                 <tr>
                     <td>{{tr "Remote Volume:"/}}</td>
-                    <td>{{*: data.property_player_volume * 100 }}%</td>
+                    <td class="property-volume-remote">{{*: Math.floor(data.property_player_volume * 100) }}%</td>
                 </tr>
                 <tr>
                     <td>{{tr "Local Volume:"/}}</td>
-                    <td>{{>sound_volume}}%</td>
+                    <td class="property-volume-local">{{>sound_volume}}%</td>
                 </tr>
                 {{if song_url}}
                 <tr>
@@ -1829,7 +1840,7 @@
                     </div>
                     <div class="footer">
                         <div class="info">
-                            <a>loading...</a>
+                            <a>{{tr "loading..." /}}</a>
                         </div>
                         <div class="buttons">
                             <button class="button-refresh">{{tr "Refresh" /}}</button>
@@ -1845,6 +1856,289 @@
                 <div class="column column-username">{{>username}}</div>
                 <div class="column column-unique-id">{{>unique_id}}</div>
                 <div class="column column-bound-server">{{>bounded_server}}</div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_playlist_list" type="text/html">
+            <div class="playlist-management">
+                <div class="container">
+                    <div class="header">
+                        <div class="buttons">
+                            <button class="button button-playlist-create">{{tr "Create playlist" /}}</button>
+                            <button class="button button-playlist-delete">{{tr "Delete playlist" /}}</button>
+                            <button class="button button-playlist-edit">{{tr "Edit playlist" /}}</button>
+                        </div>
+                        <div class="search">
+                            <input class="input input-search" type="text" placeholder="search">
+                        </div>
+                    </div>
+                    <div class="playlist-list">
+                        <div class="playlist-list-header">
+                            <div class="column column-id">{{tr "ID" /}}</div>
+                            <div class="column column-title">{{tr "Title" /}}</div>
+                            <div class="column column-creator">{{tr "Creator" /}}</div>
+                            <div class="column column-type">{{tr "Type" /}}</div>
+                            <div class="column column-used">{{tr "Used" /}}</div>
+                        </div>
+                        <div class="playlist-list-entries-container">
+                            <div class="playlist-list-entries">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="footer">
+                        <div class="info">
+                            <a>{{tr "loading..." /}}</a>
+                        </div>
+                        <div class="buttons">
+                            <div class="highlight-own">
+                                <div>Highlight own playlists</div>
+                                <input class="button-highlight-own" type="checkbox">
+                            </div>
+                            <button class="button-refresh">{{tr "Refresh" /}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_playlist_list-list_entry" type="text/html">
+            <div class="entry" playlist-owner-dbid="{{>playlist_owner_dbid}}">
+                <div class="column column-id">{{>playlist_id}}</div>
+                <div class="column column-title">{{>playlist_title}}</div>
+                <div class="column column-creator">{{>playlist_owner_name}}</div>
+                <div class="column column-type">
+                    {{if playlist_type == 0}}
+                        bot bound
+                    {{else playlist_type == 1}}
+                        global
+                    {{else}}
+                        {{>playlist_type}}
+                    {{/if}}
+                </div>
+                <div class="column column-used">
+                    {{if playlist_bot_id > 0}}
+                    <div title="{{tr 'Playlist is in use by bot ' /}}{{>playlist_bot_id}}" class="icon client-apply"></div>
+                    {{else}}
+                    <div title="{{tr 'Playlist isnt use' /}}" class="icon client-delete"></div>
+                    {{/if}}
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_playlist_edit" type="text/html">
+            <div class="playlist-edit">
+                <div class="container">
+                    <div class="general-properties">
+                        <div class="property property-owner">
+                            <div class="key">{{tr "Playlist owner:" /}}</div>
+                            <div class="value"></div>
+                        </div>
+                        <div class="property property-title">
+                            <div class="key">{{tr "Title:" /}}</div>
+                            <input type="text" class="value">
+                        </div>
+                        <div class="property property-description">
+                            <div class="key">{{tr "Description:" /}}</div>
+                            <textarea class="value"></textarea>
+                        </div>
+                        <div class="property property-type">
+                            <div class="key">{{tr "Type:" /}}</div>
+                            <select>
+                                <option value="0">{{tr "Bot bound" /}}</option>
+                                <option value="1">{{tr "Global" /}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <x-tab>
+                        <x-entry>
+                            <x-tag>{{tr "Songs" /}}</x-tag>
+                            <x-content>
+                                <div class="container-songs">
+                                    <div class="song-list">
+                                        <div class="song-list-header">
+                                            <div class="column column-id">{{tr "ID" /}}</div>
+                                            <div class="column column-url">{{tr "Url" /}}</div>
+                                            <div class="column column-loaded">{{tr "loaded" /}}</div>
+                                            <div class="column column-buttons"></div>
+                                        </div>
+                                        <div class="song-list-entries-container">
+                                            <div class="song-list-entries">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="footer">
+                                        <div class="buttons">
+                                            <button class="button-song-add">{{tr "Add song" /}}</button>
+                                            <button class="button-refresh">{{tr "Refresh" /}}</button>
+                                        </div>
+                                        <div class="info-message"></div>
+                                    </div>
+                                </div>
+                            </x-content>
+                        </x-entry>
+                        <x-entry>
+                            <x-tag>{{tr "Playback settings"/}}</x-tag>
+                            <x-content>
+                                <div class="playback-properties">
+                                    <div class="property property-replay-mode">
+                                        <div class="key">{{tr "Replay mode" /}}</div>
+                                        <select class="value">
+                                            <option value="0">{{tr "Normal"/}}</option>
+                                            <option value="1">{{tr "Loop list"/}}</option>
+                                            <option value="2">{{tr "Loop single entry"/}}</option>
+                                            <option value="3">{{tr "Shuffle"/}}</option>
+                                        </select>
+                                    </div>
+                                    <div class="property property-flag-delete-played">
+                                        <div class="key">{{tr "Delete played songs:" /}}</div>
+                                        <div class="checkbox-container">
+                                            <input type="checkbox" class="value">
+                                        </div>
+                                    </div>
+                                    <div class="property property-current-song">
+                                        <div class="key">{{tr "Current replaying song:" /}}</div>
+                                        <div class="value">0</div>
+                                    </div>
+                                    <div class="property property-flag-finished">
+                                        <div class="key">{{tr "Playlist finished:" /}}</div>
+                                        <div class="checkbox-container">
+                                            <input type="checkbox" class="value">
+                                            <!-- TODO add info text here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </x-content>
+                        </x-entry>
+                        <x-entry>
+                            <x-tag>{{tr "Permissions" /}}</x-tag>
+                            <x-content>
+                                <div class="container-permissions">
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Access/modify powers" /}}</div>
+                                        <div class="content permissions-list">
+                                            <div class="permission" permission="i_playlist_needed_view_power">
+                                                <div class="key">{{tr "View power" /}}</div>
+                                                <input type="number" min="0" value="0" class="value">
+                                            </div>
+                                            <div class="permission" permission="i_playlist_needed_modify_power">
+                                                <div class="key">{{tr "Modify" /}}</div>
+                                                <input type="number" min="0" value="0" class="value">
+                                            </div>
+                                            <div class="permission" permission="i_playlist_needed_permission_modify_power">
+                                                <div class="key">{{tr "Permission modify" /}}</div>
+                                                <input type="number" min="0" value="0" class="value">
+                                            </div>
+                                            <div class="permission" permission="i_playlist_needed_delete_power">
+                                                <div class="key">{{tr "Delete" /}}</div>
+                                                <input type="number" min="0" value="0" class="value">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Song management powers" /}}</div>
+                                        <div class="content permissions-list">
+                                            <div class="permission" permission="i_playlist_song_needed_add_power">
+                                                <div class="key">{{tr "Song add" /}}</div>
+                                                <input type="number" min="0" value="0" class="value">
+                                            </div>
+                                            <div class="permission" permission="i_playlist_song_needed_move_power">
+                                                <div class="key">{{tr "Song reorder" /}}</div>
+                                                <input type="number" min="0" value="0" class="value">
+                                            </div>
+                                            <div class="permission" permission="i_playlist_song_needed_remove_power">
+                                                <div class="key">{{tr "Song delete" /}}</div>
+                                                <input type="number" min="0" value="0" class="value">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="container-no-permissions">
+                                    <div class="text">You dont have permissions to see playlist permissions!</div>
+                                </div>
+                            </x-content>
+                        </x-entry>
+                    </x-tab>
+                    <div class="buttons">
+                        <button class="button-save">{{tr "Save" /}}</button>
+                        <button class="button-close">{{tr "Close" /}}</button>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_playlist_edit-song_entry" type="text/html">
+            <div class="entry">
+                <div class="column column-id">{{>song_id}}</div>
+                <div class="column column-url">{{>song_url}}</div>
+                <div class="column column-loaded">{{>song_loaded}}</div>
+                <div class="column column-buttons">
+                    <div class="button button-delete"><div class="icon client-delete"></div></div>
+                    <div class="button button-info"><div class="icon client-about"></div></div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_playlist_edit-song_info" type="text/html">
+            <div class="container-song-info">
+                <div class="properties">
+                    <div class="property property-song-id">
+                        <div class="key">{{tr "Song ID:" /}}</div>
+                        <div class="value">{{>song_id}}</div>
+                    </div>
+                    <div class="property property-song-order">
+                        <div class="key">{{tr "Song order:" /}}</div>
+                        <div class="value">{{>song_previous_song_id}}</div>
+                    </div>
+                    <div class="property property-song-url">
+                        <div class="key">{{tr "URL:" /}}</div>
+                        <div class="value">{{>song_url}}</div>
+                    </div>
+                    <div class="property property-song-url-loader">
+                        <div class="key">{{tr "URL resolver:"/}}</div>
+                        <div class="value">{{if song_url_loader}}{{>song_url_loader}}{{else}}{{tr "unset" /}}{{/if}}</div>
+                    </div>
+                    <div class="property property-song-loaded">
+                        <div class="key">{{tr "Song loaded:" /}}</div>
+                        <div class="value">{{if song_loaded}}{{tr "yes" /}}{{else}}{{tr "no" /}}{{/if}}</div>
+                    </div>
+                    {{if song_loaded}}
+                        {{if metadata && false}}
+                            {{tr "Display metdata here!" /}}
+                        {{else}}
+                            <div class="property property-metadata-raw">
+                                <div class="line">
+                                    <div class="key">{{tr "Metadata:" /}}</div>
+                                    <div class="value"><button class="toggle-metadata">show</button></div>
+                                </div>
+                                <textarea>{{>song_metadata}}</textarea>
+                            </div>
+                        {{/if}}
+                    {{/if}}
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_playlist_edit-song_add" type="text/html">
+            <div class="container-song-add">
+                <div class="properties">
+                    <div class="property property-url">
+                        <div class="key">{{tr "URL:" /}}</div>
+                        <input class="value" />
+                    </div>
+                    <div class="property property-loader">
+                        <div class="key">{{tr "URL loader:" /}}</div>
+                        <input class="value" type="text" list="song-loader-list" />
+                        <datalist id="song-loader-list">
+                            <option>YouTube</option>
+                            <option>FFMpeg</option>
+                            <!-- <option>ChannelProvider</option> --> <!-- requires a special url, may add a UI with file select? -->
+                        </datalist>
+                    </div>
+                </div>
+                <div class="container-buttons">
+                    <button class="button-add">{{tr "Add URL" /}}</button>
+                    <button class="button-cancel">{{tr "Cancel" /}}</button>
+                </div>
             </div>
         </script>
 

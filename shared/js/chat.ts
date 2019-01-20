@@ -13,24 +13,26 @@ namespace MessageHelper {
         return message.replace(/ /g, '&nbsp;').split(/<br>/);
     }
 
-    export function formatElement(object: any) : JQuery[] {
+    export function formatElement(object: any, escape_html: boolean = true) : JQuery[] {
         if($.isArray(object)) {
             let result = [];
             for(let element of object)
-                result.push(...this.formatElement(element));
+                result.push(...formatElement(element, escape_html));
             return result;
         } else if(typeof(object) == "string") {
             if(object.length == 0) return [];
 
-            return this.htmlEscape(object).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 || idx + 1 == array.length ? "inline" : "") + "block").html(entry));
+            return escape_html ?
+                htmlEscape(object).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 || idx + 1 == array.length ? "inline" : "") + "block").html(entry == "" && idx != 0 ? "&nbsp;" : entry)) :
+                [$.spawn("div").css("display", "inline-block").html(object)];
         } else if(typeof(object) === "object") {
             if(object instanceof $)
                 return [object as any];
-            return this.formatElement("<unknwon object>");
-        } else if(typeof(object) === "function") return this.formatElement(object());
-        else if(typeof(object) === "undefined") return this.formatElement("<undefined>");
+            return formatElement("<unknwon object>");
+        } else if(typeof(object) === "function") return formatElement(object(), escape_html);
+        else if(typeof(object) === "undefined") return formatElement("<undefined>");
         else if(typeof(object) === "number") return [$.spawn("a").text(object)];
-        return this.formatElement("<unknown object type " + typeof object + ">");
+        return formatElement("<unknown object type " + typeof object + ">");
     }
 
     export function formatMessage(pattern: string, ...objects: any[]) : JQuery[] {
@@ -40,7 +42,7 @@ namespace MessageHelper {
         do {
             found = pattern.indexOf('{', found);
             if(found == -1 || pattern.length <= found + 1) {
-                result.push(...this.formatElement(pattern.substr(begin)));
+                result.push(...formatElement(pattern.substr(begin)));
                 break;
             }
 
@@ -50,7 +52,7 @@ namespace MessageHelper {
                 continue;
             }
 
-            result.push(...this.formatElement(pattern.substr(begin, found - begin))); //Append the text
+            result.push(...formatElement(pattern.substr(begin, found - begin))); //Append the text
 
             let number;
             let offset = 0;
@@ -65,13 +67,37 @@ namespace MessageHelper {
             if(objects.length < number)
                 console.warn(tr("Message to format contains invalid index (%o)"), number);
 
-            result.push(...this.formatElement(objects[number]));
+            result.push(...formatElement(objects[number]));
             found = found + 1 + offset;
             begin = found + 1;
             console.log(tr("Offset: %d Number: %d"), offset, number);
         } while(found++);
 
         return result;
+    }
+
+    export function bbcode_chat(message: string) : JQuery[] {
+        let result = XBBCODE.process({
+            text: message,
+            escapeHtml: true,
+            addInLineBreaks: false,
+
+            /* TODO make this configurable and allow IMG */
+            tag_whitelist: [
+                "b",
+                "i",
+                "u",
+                "color",
+                "url"
+            ]
+        });
+
+        if(result.error) {
+            console.log("BBCode parse error: %o", result.errorQueue);
+            return formatElement(message);
+        }
+
+        return result.html.split("\n").map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 ? "inline" : "") + "block").html(entry == "" && idx != 0 ? "&nbsp;" : entry));
     }
 }
 

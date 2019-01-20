@@ -352,6 +352,14 @@ class ChannelTree {
         return undefined;
     }
 
+    find_client_by_unique_id?(unique_id: string) : ClientEntry {
+        for(let index = 0; index < this.clients.length; index++) {
+            if(this.clients[index].properties.client_unique_identifier == unique_id)
+                return this.clients[index];
+        }
+        return undefined;
+    }
+
     private static same_selected_type(a, b) {
         if(a instanceof ChannelEntry)
             return b instanceof ChannelEntry;
@@ -602,7 +610,7 @@ class ChannelTree {
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
             }).then(channel => {
-                chat.serverChat().appendMessage(tr("Channel {} successfully created!"), true, channel.createChatTag());
+                chat.serverChat().appendMessage(tr("Channel {} successfully created!"), true, channel.generate_tag(true));
                 sound.play(Sound.CHANNEL_CREATED);
             });
         });

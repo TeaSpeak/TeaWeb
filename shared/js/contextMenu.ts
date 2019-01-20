@@ -1,4 +1,7 @@
 $(document).bind("mousedown", function (e) {
+    let menu = $(".context-menu");
+    if(!menu.is(":visible")) return;
+
     if ($(e.target).parents(".context-menu").length == 0) {
         despawn_context_menu();
     }
