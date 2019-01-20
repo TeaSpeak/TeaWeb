@@ -17,5 +17,5 @@ jobs:
       - docker images
       - docker pull $DOCKER_USERNAME/teaweb:build
       - docker images
-      - docker run --rm teaweb:build /bin/bash -c /root/build_teaweb.sh
+      - docker run --rm $DOCKER_USERNAME/teaweb:build /bin/bash -c /root/build_teaweb.sh
       if: branch != master
