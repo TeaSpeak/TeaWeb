@@ -387,12 +387,19 @@ enum MusicPlayerState {
 }
 
 class MusicInfoManager extends ClientInfoManager {
+    notify_status: (json) => any;
+
     createFrame<_>(handle: InfoBar<_>, channel: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
         super.createFrame(handle, channel, html_tag);
         this.updateFrame(channel, html_tag);
     }
 
     updateFrame(bot: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
+        if(this.notify_status) {
+            this.handle.handle.serverConnection.commandHandler.unset_handler("notifymusicstatusupdate", this.notify_status);
+            this.notify_status = undefined;
+        }
+
         this.resetIntervals();
         html_tag.empty();
 
@@ -563,20 +570,39 @@ class MusicInfoManager extends ClientInfoManager {
                         frame.find(".timeline").attr("time-max", info.player_max_index);
                         let timeline = frame.find(".timeline");
                         let time_bar = timeline.find(".played");
+                        let buffered_bar = timeline.find(".buffered");
                         let slider = timeline.find(".slider");
 
                         let player_time = _frame.find(".player_time");
-                        let update_handler = () => {
-                            let time_index = info.player_replay_index + (bot.properties.player_state == 2 ? Date.now() - timestamp : 0);
+
+                        let update_handler = (played?: number, buffered?: number) => {
+                            let time_index = played || info.player_replay_index + (bot.properties.player_state == 2 ? Date.now() - timestamp : 0);
+                            let buffered_index = buffered || 0;
 
                             time_bar.css("width", time_index / info.player_max_index * 100 + "%");
+                            buffered_bar.css("width", buffered_index / info.player_max_index * 100 + "%");
                             if(!slider.prop("editing") && !slider.prop("edited")) {
                                 player_time.text(format_time(Math.floor(time_index / 1000)));
                                 slider.css("margin-left", time_index / info.player_max_index * 100 + "%");
                             }
-                       };
-                        this.registerInterval(setInterval(update_handler, 1000));
+                        };
+
+                        let interval = setInterval(update_handler, 1000);
+                        this.registerInterval(interval);
                         update_handler();
+
+                        /* register subscription */
+                        this.handle.handle.serverConnection.sendCommand("musicbotsetsubscription", {bot_id: bot.properties.client_database_id}).catch(error => {
+                            console.error("Failed to subscribe to displayed music bot! Using pseudo timeline");
+                        }).then(() => {
+                            clearInterval(interval);
+                        });
+
+                        this.notify_status = json => {
+                            json = json[0];
+                            update_handler(parseInt(json["player_replay_index"]), parseInt(json["player_buffered_index"]));
+                        };
+                        this.handle.handle.serverConnection.commandHandler.set_handler("notifymusicstatusupdate", this.notify_status);
                     }
                 });
             }
@@ -654,6 +680,15 @@ class MusicInfoManager extends ClientInfoManager {
 
     available<V>(object: V): boolean {
         return typeof object == "object" && object instanceof MusicClientEntry;
+    }
+
+    finalizeFrame(object: ClientEntry, frame: JQuery<HTMLElement>) {
+        if(this.notify_status) {
+            this.handle.handle.serverConnection.commandHandler.unset_handler("notifymusicstatusupdate", this.notify_status);
+            this.notify_status = undefined;
+        }
+
+        super.finalizeFrame(object, frame);
     }
 
 }
