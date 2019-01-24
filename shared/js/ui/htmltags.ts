@@ -163,32 +163,35 @@ namespace htmltags {
             XBBCODE.addTags({
                 function: {
                     openTag: (params, content) => {
-                        if(params.match(url_channel_regex)) {
-                            const groups = url_channel_regex.exec(params);
+                        if(params) {
+                            if(params.match(url_channel_regex)) {
+                                const groups = url_channel_regex.exec(params);
 
-                            return generate_channel_open({
-                                add_braces: false,
-                                channel_id: parseInt(groups[1]),
-                                channel_name: decodeURIComponent(groups[2])
-                            });
-                        } else if(params.match(url_client_regex)) {
-                            const groups = url_client_regex.exec(params);
+                                return generate_channel_open({
+                                    add_braces: false,
+                                    channel_id: parseInt(groups[1]),
+                                    channel_name: decodeURIComponent(groups[2])
+                                });
+                            } else if(params.match(url_client_regex)) {
+                                const groups = url_client_regex.exec(params);
 
-                            return generate_client_open({
-                                add_braces: false,
-                                client_id: parseInt(groups[1]),
-                                client_unique_id: groups[2],
-                                client_name: decodeURIComponent(groups[3])
-                            });
+                                return generate_client_open({
+                                    add_braces: false,
+                                    client_id: parseInt(groups[1]),
+                                    client_unique_id: groups[2],
+                                    client_name: decodeURIComponent(groups[3])
+                                });
+                            }
                         }
                         return origin_url.openTag(params, content);
                     },
                     closeTag: (params, content) => {
-                        if(params.match(url_client_regex))
-                            return "</div>";
-                        if(params.match(url_channel_regex))
-                            return "</div>";
-
+                        if(params) {
+                            if(params.match(url_client_regex))
+                                return "</div>";
+                            if(params.match(url_channel_regex))
+                                return "</div>";
+                        }
                         return origin_url.closeTag(params, content);
                     }
                 },
