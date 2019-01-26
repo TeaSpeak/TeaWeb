@@ -8,3 +8,6 @@ declare interface X {
     type: any;
     c: YY.B;
 }
+declare class X {
+    static x();
+}

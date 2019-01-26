@@ -265,7 +265,7 @@ generators[SyntaxKind.FunctionDeclaration] = (settings, stack, node: ts.Function
 generators[SyntaxKind.MethodDeclaration] = (settings, stack, node: ts.MethodDeclaration) => {
     if(settings.remove_private.method && has_private(node.modifiers)) return;
 
-    return ts.createMethod(node.decorators, node.modifiers, node.asteriskToken, node.name, node.questionToken, node.typeParameters, _generate_param_declare(settings, stack, node.parameters), node.type, undefined);
+    return ts.createMethod(node.decorators, remove_modifier(node.modifiers, SyntaxKind.AsyncKeyword), node.asteriskToken, node.name, node.questionToken, node.typeParameters, _generate_param_declare(settings, stack, node.parameters), node.type, undefined);
 };
 
 generators[SyntaxKind.GetAccessor] = (settings, stack, node: ts.GetAccessorDeclaration) => {

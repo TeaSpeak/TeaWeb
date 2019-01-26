@@ -7,3 +7,7 @@ interface X {
     type: "",
     c: YY.B
 }
+
+class X {
+    static async x();
+}
