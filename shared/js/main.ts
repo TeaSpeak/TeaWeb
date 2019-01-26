@@ -288,7 +288,7 @@ function main() {
 
     setup_close();
 
-    let _resize_timeout: number;
+    let _resize_timeout: NodeJS.Timer;
     $(window).on('resize', () => {
         if(_resize_timeout)
             clearTimeout(_resize_timeout);
