@@ -70,7 +70,7 @@ namespace profiles {
         }
     }
 
-    function decode_profile(data) : ConnectionProfile | string {
+    async function decode_profile(data) : Promise<ConnectionProfile | string> {
         data = JSON.parse(data);
         if(data.version !== 1)
             return "invalid version";
@@ -87,7 +87,7 @@ namespace profiles {
                 const _data = data.identity_data[key];
                 if(type == undefined) continue;
 
-                const identity = identities.decode_identity(type, _data);
+                const identity = await identities.decode_identity(type, _data);
                 if(identity == undefined) continue;
 
                 result.identities[key.toLowerCase()] = identity;
@@ -103,7 +103,7 @@ namespace profiles {
     }
 
     let available_profiles: ConnectionProfile[] = [];
-    export function load() {
+    export async function load() {
         available_profiles = [];
 
         const profiles_json = localStorage.getItem("profiles");
@@ -117,7 +117,7 @@ namespace profiles {
         }
         if(profiles_data.version == 1) {
             for(const profile_data of profiles_data.profiles) {
-                const profile = decode_profile(profile_data);
+                const profile = await decode_profile(profile_data);
                 if(typeof(profile) === 'string') {
                     console.error(tr("Failed to load profile. Reason: %s, Profile data: %s"), profile, profiles_data);
                     continue;

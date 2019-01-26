@@ -93,7 +93,7 @@ namespace Modals {
                             select_invalid_tag.hide();
                         updateFields();
                     });
-                    select_tag.val('default').trigger('change');
+                    select_tag.val(connect_profile && connect_profile.enforce ? connect_profile.profile.id : connect_profile && connect_profile.profile ? connect_profile.profile.id : 'default').trigger('change');
                 }
 
                 tag.find(".connect_nickname").on("keyup", () => updateFields());

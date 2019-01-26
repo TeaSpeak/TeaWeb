@@ -496,10 +496,9 @@ namespace Modals {
                     } else if(selected_type == IdentitifyType.TEAMSPEAK) {
                         console.log("Set: " + identity);
                         const teamspeak_tag = tag = settings_tag.find(".identity-settings-teamspeak");
+                        teamspeak_tag.find(".identity_string").val("");
                         if(identity)
-                            teamspeak_tag.find(".identity_string").val((identity as profiles.identities.TeamSpeakIdentity).exported());
-                        else
-                            teamspeak_tag.find(".identity_string").val("");
+                            (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
                     } else if(selected_type == IdentitifyType.NICKNAME) {
                         const name_tag = tag = settings_tag.find(".identity-settings-nickname");
                         if(identity)
@@ -571,16 +570,16 @@ namespace Modals {
                     const element = event.target as HTMLInputElement;
                     const file_reader = new FileReader();
                     file_reader.onload = function() {
-                        const identity = profiles.identities.TSIdentityHelper.loadIdentityFromFileContains(file_reader.result as string);
-                        if(!identity) {
-                            display_error(tr("Failed to parse identity.<br>Reason: ") + profiles.identities.TSIdentityHelper.last_error());
-                            return;
-                        } else {
-                            teamspeak_tag.find(".identity_string").val(identity.exported());
+                        const identity_promise = profiles.identities.TeaSpeakIdentity.import_ts(file_reader.result, true);
+                        identity_promise.then(identity => {
+                            (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
                             selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
                             profiles.mark_need_save();
                             display_error(undefined);
-                        }
+                        }).catch(error => {
+                            display_error(tr("Failed to parse identity.<br>Reason: ") + error);
+                            return;
+                        });
                     };
 
                     file_reader.onerror = ev => {
@@ -602,18 +601,16 @@ namespace Modals {
                         selected_profile.set_identity(IdentitifyType.TEAMSPEAK, undefined as any);
                         profiles.mark_need_save();
                     } else {
-                        const identity = profiles.identities.TSIdentityHelper.loadIdentity(element.value);
-                        if(!identity) {
+                        const identity_promise = profiles.identities.TeaSpeakIdentity.import_ts(element.value, false);
+                        identity_promise.then(identity => {
+                            (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
                             selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
                             profiles.mark_need_save();
-
-                            display_error("Failed to parse identity string!");
+                            display_error(undefined);
+                        }).catch(error => {
+                            display_error(tr("Failed to parse identity.<br>Reason: ") + error);
                             return;
-                        }
-
-                        selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
-                        profiles.mark_need_save();
-                        display_error(undefined);
+                        });
                     }
                 });
 

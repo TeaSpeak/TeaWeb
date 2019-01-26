@@ -13,12 +13,12 @@ namespace profiles.identities {
         valid() : boolean;
 
         encode?() : string;
-        decode(data: string) : boolean;
+        decode(data: string) : Promise<void>;
 
         spawn_identity_handshake_handler(connection: ServerConnection) : HandshakeIdentityHandler;
     }
 
-    export function decode_identity(type: IdentitifyType, data: string) : Identity {
+    export async function decode_identity(type: IdentitifyType, data: string) : Promise<Identity> {
         let identity: Identity;
         switch (type) {
             case IdentitifyType.NICKNAME:
@@ -28,14 +28,19 @@ namespace profiles.identities {
                 identity = new TeaForumIdentity(undefined, undefined);
                 break;
             case IdentitifyType.TEAMSPEAK:
-                identity = new TeamSpeakIdentity(undefined, undefined);
+                identity = new TeaSpeakIdentity(undefined, undefined);
                 break;
         }
         if(!identity)
             return undefined;
 
-        if(!identity.decode(data))
+        try {
+            await identity.decode(data)
+        } catch(error) {
+            /* todo better error handling! */
+            console.error(error);
             return undefined;
+        }
 
         return identity;
     }
@@ -50,7 +55,7 @@ namespace profiles.identities {
                 identity = new TeaForumIdentity(undefined, undefined);
                 break;
             case IdentitifyType.TEAMSPEAK:
-                identity = new TeamSpeakIdentity(undefined, undefined);
+                identity = new TeaSpeakIdentity(undefined, undefined);
                 break;
         }
         return identity;

@@ -21,7 +21,7 @@
 		],
 		[ /* shared generated worker codec */
 			"type" => "js",
-			"search-pattern" => "/WorkerCodec.js$/",
+			"search-pattern" => "/(WorkerCodec.js|WorkerPOW.js)$/",
 			"build-target" => "dev|rel",
 
 			"path" => "js/workers/",
@@ -74,6 +74,14 @@
 
 			"path" => "wasm/",
 			"local-path" => "./asm/generated/"
+		],
+		[ /* own webassembly files */
+			"type" => "wasm",
+			"search-pattern" => "/.*\.(wasm)/",
+			"build-target" => "dev|rel",
+
+			"path" => "wat/",
+			"local-path" => "./shared/wat/"
 		],
 		[ /* translations */
 			"type" => "i18n",

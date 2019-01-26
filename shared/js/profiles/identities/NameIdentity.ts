@@ -51,13 +51,13 @@ namespace profiles.identities {
             return this._name != undefined && this._name.length >= 3;
         }
 
-        decode(data) {
+        decode(data) : Promise<void> {
             data = JSON.parse(data);
             if(data.version !== 1)
-                return false;
+                throw "invalid version";
 
             this._name = data["name"];
-            return true;
+            return;
         }
 
         encode?() : string {

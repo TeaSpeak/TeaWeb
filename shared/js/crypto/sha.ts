@@ -392,6 +392,8 @@ namespace sha {
         return result.buffer;
     }
     export function sha1(message: string | ArrayBuffer) : PromiseLike<ArrayBuffer> {
+        if(!(typeof(message) === "string" || message instanceof ArrayBuffer)) throw "Invalid type!";
+
         let buffer = message instanceof ArrayBuffer ? message : encode_text(message as string);
 
         if(!crypto || !crypto.subtle || !crypto.subtle.digest || /Edge/.test(navigator.userAgent))

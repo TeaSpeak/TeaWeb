@@ -61,15 +61,15 @@ namespace profiles.identities {
         uid() : string { return "TeaForo#" + this.identityData["user_id"]; }
         type() : IdentitifyType { return IdentitifyType.TEAFORO; }
 
-        decode(data) {
+        decode(data) : Promise<void> {
             data = JSON.parse(data);
             if(data.version !== 1)
-                return false;
+                throw "invalid version";
 
             this.identityDataJson = data["identity_data"];
             this.identitySign = data["identity_sign"];
             this.identityData = JSON.parse(this.identityData);
-            return true;
+            return;
         }
 
         encode?() : string {

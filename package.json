@@ -9,7 +9,8 @@
     "build-worker": "tsc -p shared/js/workers/tsconfig_worker_codec.json",
     "dtsgen": "node tools/dtsgen/index.js",
     "trgen": "node tools/trgen/index.js",
-    "ttsc": "ttsc"
+    "ttsc": "ttsc",
+    "rebuild-structure-web-dev": "php files.php generate web dev"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
@@ -26,7 +27,8 @@
     "sass": "^1.14.1",
     "sha256": "^0.2.0",
     "ttypescript": "^1.5.5",
-    "typescript": "^3.1.1"
+    "typescript": "^3.1.1",
+    "wat2wasm": "^1.0.2"
   },
   "repository": {
     "type": "git",

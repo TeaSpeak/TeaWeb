@@ -1,4 +1,8 @@
 # Changelog:
+* **26.01.19**
+    - Improved TeaSpeak identities (now generates automatic and are saveable)
+    - Fixed `connect_profile` parameter within URL
+    
 * **20.01.19**
     - Added the possibility to change the remote volume of a bot
     - Added a playlist management system

@@ -331,6 +331,8 @@ interface PPTKeySettings extends ppt.KeyDescriptor{
 class PushToTalkVAD extends VoiceActivityDetector {
     private _key: ppt.KeyDescriptor;
     private _key_hook: ppt.KeyHook;
+    private _timeout: NodeJS.Timer;
+    private _delay = /* 300 */ 0; //TODO configurable
 
     private _pushed: boolean = false;
 
@@ -338,8 +340,21 @@ class PushToTalkVAD extends VoiceActivityDetector {
         super();
         this._key = key;
         this._key_hook = {
-            callback_release: () => this._pushed = false,
-            callback_press: () => this._pushed = true,
+            callback_release: () => {
+                if(this._timeout)
+                    clearTimeout(this._timeout);
+
+                if(this._delay > 0)
+                    this._timeout = setTimeout(() => this._pushed = false, this._delay);
+                else
+                    this._pushed = false;
+            },
+            callback_press: () => {
+                if(this._timeout)
+                    clearTimeout(this._timeout);
+
+                this._pushed = true;
+            },
 
             cancel: false
         } as ppt.KeyHook;

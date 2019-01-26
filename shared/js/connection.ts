@@ -295,6 +295,7 @@ interface HandshakeIdentityHandler {
 class HandshakeHandler {
     private connection: ServerConnection;
     private handshake_handler: HandshakeIdentityHandler;
+    private failed = false;
 
     readonly profile: profiles.ConnectionProfile;
     readonly name: string;
@@ -328,6 +329,9 @@ class HandshakeHandler {
     }
 
     private handshake_failed(message: string) {
+        if(this.failed) return;
+
+        this.failed = true;
         this.connection._client.handleDisconnect(DisconnectReason.HANDSHAKE_FAILED, message);
     }
 
