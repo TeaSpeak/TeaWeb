@@ -319,7 +319,6 @@ namespace sound {
             console.log(tr("Replaying %s"), path);
             if(file.node) {
                 file.node.currentTime = 0;
-                file.node.
                 file.node.play();
             } else {
                 if(!warned) {
