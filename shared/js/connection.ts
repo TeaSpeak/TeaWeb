@@ -1189,17 +1189,17 @@ class ConnectionCommandHandler {
                 return;
             }
             if(invoker == this.connection._client.getClient()) {
-                sound.play(Sound.MESSAGE_SEND);
+                sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
                 target.chat(true).appendMessage("{0}: {1}", true, this.connection._client.getClient().createChatTag(true), MessageHelper.bbcode_chat(json["msg"]));
             } else {
-                sound.play(Sound.MESSAGE_RECEIVED);
+                sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
                 invoker.chat(true).appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
             }
         } else if(mode == 2) {
             if(json["invokerid"] == this.connection._client.clientId)
-                sound.play(Sound.MESSAGE_SEND);
+                sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
             else
-                sound.play(Sound.MESSAGE_RECEIVED);
+                sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
             chat.channelChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]))
         } else if(mode == 3) {
             chat.serverChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));

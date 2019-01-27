@@ -83,10 +83,14 @@ namespace sound {
         speech_mapping[key] = {key: key, filename: file} as SpeechFile;
     }
 
-    export function get_sound_volume(sound: Sound) : number {
+    export function get_sound_volume(sound: Sound, default_volume?: number) : number {
         let result = speech_volume[sound];
-        if(typeof(result) === "undefined")
-            result = 1;
+        if(typeof(result) === "undefined") {
+            if(typeof(default_volume) !== "undefined")
+                result = default_volume;
+            else
+                result = 1;
+        }
         return result;
     }
 
@@ -213,6 +217,8 @@ namespace sound {
     export interface PlaybackOptions {
         ignore_muted?: boolean;
         ignore_overlap?: boolean;
+
+        default_volume?: number;
     }
 
     export function play(sound: Sound, options?: PlaybackOptions) {
@@ -234,7 +240,7 @@ namespace sound {
 
         const path = "audio/" + file.filename;
         const context = audio.player.context();
-        const volume = get_sound_volume(sound);
+        const volume = get_sound_volume(sound, options.default_volume);
 
         console.log(tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), sound, volume, master_volume);
         if(volume == 0) return;
