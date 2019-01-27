@@ -640,8 +640,16 @@
                                                  {{tr "There are no setting entries for an <b>always</b> online voice detection."/}}
                                             </div>
                                             <div class="settings-vad-impl-entry setting-vad-ppt">
-                                                <a>{{tr "Push to talk key:"/}}</a>
-                                                <button class="vat_ppt_key">{{tr "Uninitialised"/}}</button>
+                                                <div class="property ppt-key">
+                                                    <div class="key">{{tr "Push to talk key:"/}}</div>
+                                                    <div class="value"><button class="vat_ppt_key">{{tr "Uninitialised"/}}</button></div>
+                                                </div>
+                                                <div class="property ppt-delay">
+                                                    <div class="key">{{tr "Key release delay:" /}}</div>
+                                                    <div class="value">
+                                                        <input type="number" min="0" max="5000">
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="settings-vad-impl-entry setting-vad-vad">
                                                 <div>{{tr "Voice activity threshold (<a class='vad_vad_slider_value'>20</a>%)"/}}</div>
@@ -666,6 +674,68 @@
                                         <div class="settings-device-select">
                                             <a>{{tr "Device:" /}}</a>
                                             <div><select class="audio-select-speaker"></select></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="group_box sound">
+                                <div class="header">{{tr "Sound Settings" /}}</div>
+                                <div class="content">
+                                    <div class="sound-settings">
+                                        <div class="property">
+                                            <div class="key">Master volume:</div>
+                                            <div class="value master-volume">
+                                                <input type="range" min="0" max="100" value="100">
+                                                <a>(66%)</a>
+                                            </div>
+                                        </div>
+                                        <div class="property">
+                                            <div class="key">
+                                                Overlap same sounds:
+                                            </div>
+                                            <div class="value overlap-sounds">
+                                                <input type="checkbox">
+                                                <div class="help-tip-container"> <!-- lets be absolute -->
+                                                    <div class="help-tip tip-right tip-small">
+                                                        <p>
+                                                            {{tr "This options deferments if a sound overlaps itself when played twice.<br>" +
+                                                            "An example would be when you move multiple clients, you hear that sound n-times.<br>" +
+                                                            "If this option is disabled, you hear that sound just once."
+                                                            /}}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="property">
+                                            <div class="key muted-sounds">
+                                                Mute sounds when output is muted:
+                                            </div>
+                                            <div class="value muted-sounds">
+                                                <input type="checkbox">
+                                                <div class="help-tip-container"> <!-- lets be absolute -->
+                                                    <div class="help-tip tip-right tip-small">
+                                                        <p>
+                                                            {{tr "Mute all system sounds, when you've muted your output.<br>If this option isn't disabled you'll still receive system sounds like 'user joined your channel'."/}}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="sound-list">
+                                            <div class="sound-list-header">
+                                                <div class="column sound-name">{{tr "Name" /}}</div>
+                                                <div class="column sound-activated">{{tr "Activated" /}}</div>
+                                            </div>
+                                            <div class="sound-list-entries-container">
+                                                <div class="sound-list-entries">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="sound-list-filter">
+                                            <a>Filter:</a>
+                                            <input type="text">
                                         </div>
                                     </div>
                                 </div>
@@ -808,6 +878,15 @@
                     </x-content>
                 </x-entry>
             </x-tab>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_settings-sound_entry" type="text/html">
+            <div class="entry">
+                <div class="column sound-name"><div class="icon client-play button-playback"></div> {{>name}}</div>
+                <div class="column sound-activated">
+                    <input type="checkbox" {{if activated}}checked{{/if}}>
+                </div>
+            </div>
         </script>
 
         <script class="jsrender-template" id="settings-profile-list-entry" type="text/html">

@@ -64,28 +64,131 @@ namespace sound {
         cached?: AudioBuffer;
         node?: HTMLAudioElement;
 
+        replaying: boolean;
     }
+
     let warned = false;
     let speech_mapping: {[key: string]:SpeechFile} = {};
 
+    let volume_require_save = false;
+    let speech_volume: {[key: string]:number} = {};
+    let master_volume: number;
+
+    let overlap_sounds: boolean;
+    let ignore_muted: boolean;
+
+    let master_mixed: GainNode;
+
     function register_sound(key: string, file: string) {
         speech_mapping[key] = {key: key, filename: file} as SpeechFile;
+    }
+
+    export function get_sound_volume(sound: Sound) : number {
+        let result = speech_volume[sound];
+        if(typeof(result) === "undefined")
+            result = 1;
+        return result;
+    }
+
+    export function set_sound_volume(sound: Sound, volume: number) {
+        volume_require_save = volume_require_save || speech_volume[sound] != volume;
+        speech_volume[sound] = volume == 1 ? undefined : volume;
+    }
+
+    export function get_master_volume() : number {
+        return master_volume;
+    }
+
+    export function set_master_volume(volume: number) {
+        volume_require_save = volume_require_save || master_volume != volume;
+        master_volume = volume;
+        if(master_mixed.gain.setValueAtTime)
+            master_mixed.gain.setValueAtTime(volume, 0);
+        else
+            master_mixed.gain.value = volume;
+    }
+
+    export function overlap_activated() : boolean {
+        return overlap_sounds;
+    }
+
+    export function set_overlap_activated(flag: boolean) {
+        volume_require_save = volume_require_save || overlap_sounds != flag;
+        overlap_sounds = flag;
+    }
+
+    export function ignore_output_muted() : boolean {
+        return ignore_muted;
+    }
+
+    export function set_ignore_output_muted(flag: boolean) {
+        volume_require_save = volume_require_save || ignore_muted != flag;
+        ignore_muted = flag;
+    }
+
+    export function reinitialisize_audio() {
+        const context = audio.player.context();
+        const destination = audio.player.destination();
+
+        if(master_mixed)
+            master_mixed.disconnect();
+
+        master_mixed = context.createGain();
+        if(master_mixed.gain.setValueAtTime)
+            master_mixed.gain.setValueAtTime(master_volume, 0);
+        else
+            master_mixed.gain.value = master_volume;
+        master_mixed.connect(destination);
+    }
+
+    export function save() {
+        if(volume_require_save) {
+            volume_require_save = false;
+
+            const data: any = {};
+            data.version = 1;
+
+            for(const sound in Sound) {
+                if(typeof(speech_volume[sound]) !== "undefined")
+                    data[sound] = speech_volume[sound];
+            }
+            data.master = master_volume;
+            data.overlap = overlap_sounds;
+            data.ignore_muted = ignore_muted;
+
+            settings.changeGlobal("sound_volume", JSON.stringify(data));
+            console.error(data);
+        }
     }
 
     export function initialize() : Promise<void> {
         $.ajaxSetup({
             beforeSend: function(jqXHR,settings){
                 if (settings.dataType === 'binary'){
-                    console.log("Settins binary");
                     settings.xhr().responseType = 'arraybuffer';
                     settings.processData = false;
                 }
             }
         });
 
+        /* volumes */
+        {
+            const data = JSON.parse(settings.static_global("sound_volume", "{}"));
+            for(const sound in Sound) {
+                if(typeof(data[sound]) !== "undefined")
+                    speech_volume[sound] = data[sound];
+            }
+
+            console.error(data);
+            master_volume = data.master || 1;
+            overlap_sounds = data.overlap || true;
+            ignore_muted = data.ignore_muted || true;
+        }
+
         register_sound("message.received", "effects/message_received.wav");
         register_sound("message.send", "effects/message_send.wav");
 
+        reinitialisize_audio();
         return new Promise<void>(resolve => {
             $.ajax({
                 url: "audio/speech/mapping.json",
@@ -107,26 +210,23 @@ namespace sound {
         })
     }
 
-    function str2ab(str) {
-        var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-        var bufView = new Uint16Array(buf);
-        for (var i = 0, strLen=str.length; i<strLen; i++) {
-            bufView[i] = str.charCodeAt(i);
-        }
-        return buf;
+    export interface PlaybackOptions {
+        ignore_muted?: boolean;
+        ignore_overlap?: boolean;
     }
 
-    export function play(sound: Sound, options?: {
-        background_notification?: boolean
-    }) {
-        console.log(tr("playback sound %o"), sound);
+    export function play(sound: Sound, options?: PlaybackOptions) {
+        if(!options) {
+            options = {};
+        }
+
         const file: SpeechFile = speech_mapping[sound];
         if(!file) {
             console.warn(tr("Missing sound %o"), sound);
             return;
         }
         if(file.not_supported) {
-            if(!file.not_supported_timeout || Date.now() < file.not_supported_timeout) //Test if the not supported isnt may timeouted
+            if(!file.not_supported_timeout || Date.now() < file.not_supported_timeout) //Test if the not supported isn't may timeouted
                 return;
             file.not_supported = false;
             file.not_supported_timeout = undefined;
@@ -134,14 +234,29 @@ namespace sound {
 
         const path = "audio/" + file.filename;
         const context = audio.player.context();
-        const volume = options && options.background_notification ? .5 : 1;
+        const volume = get_sound_volume(sound);
+
+        console.log(tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), sound, volume, master_volume);
+        if(volume == 0) return;
+        if(master_volume == 0) return;
+        if(!options.ignore_muted && !ignore_muted && globalClient.controlBar.muteOutput) return;
 
         if(context.decodeAudioData) {
             if(file.cached) {
+                if(!options.ignore_overlap && file.replaying && !overlap_sounds) {
+                    console.log(tr("Dropping requested playback for sound %s because it would overlap."), sound);
+                    return;
+                }
+
                 console.log(tr("Using cached buffer: %o"), file.cached);
                 const player = context.createBufferSource();
                 player.buffer = file.cached;
                 player.start(0);
+
+                file.replaying = true;
+                player.onended = event => {
+                    file.replaying = false;
+                };
 
                 if(volume != 1 && context.createGain) {
                     const gain = context.createGain();
@@ -151,9 +266,10 @@ namespace sound {
                         gain.gain.value = volume;
 
                     player.connect(gain);
-                    gain.connect(audio.player.destination());
-                } else
-                    player.connect(audio.player.destination());
+                    gain.connect(master_mixed);
+                } else {
+                    player.connect(master_mixed);
+                }
             } else {
                 const decode_data = buffer => {
                     console.log(buffer);
@@ -203,6 +319,7 @@ namespace sound {
             console.log(tr("Replaying %s"), path);
             if(file.node) {
                 file.node.currentTime = 0;
+                file.node.
                 file.node.play();
             } else {
                 if(!warned) {

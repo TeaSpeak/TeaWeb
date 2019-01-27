@@ -18,6 +18,16 @@
 	.group_box {
 		display: flex;
 		flex-direction: column;
+		flex-shrink: 0;
+
+		&.sound {
+			flex-shrink: 1;
+
+			.content {
+				display: flex;
+				flex-direction: column;
+			}
+		}
 	}
 
 	.settings-device {
@@ -94,6 +104,180 @@
 
 			.settings-vad-impl-entry {
 				display: none;
+			}
+		}
+
+		.property {
+			display: flex;
+			flex-direction: row;
+
+			.key {
+				width: 120px;
+				margin-right: 5px;
+			}
+
+			&.ppt-delay {
+				margin-top: 5px;
+				.value {
+					display: inline-block;
+					position: relative;
+
+					&:after {
+						position: absolute;
+						top: 1px;
+						right: .5em;
+						transition: all .05s ease-in-out;
+					}
+
+					&:hover::after {
+						right: 1.5em;
+					}
+
+					&::after {
+						content: 'ms';
+					}
+				}
+			}
+		}
+	}
+
+	.sound-settings {
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.property {
+			width: 100%;
+			flex-shrink: 0;
+			flex-grow: 0;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.key {
+				width: 150px;
+
+				&.muted-sounds {
+					width: 230px;
+				}
+			}
+
+			.value {
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+
+				flex-shrink: 1;
+				flex-grow: 1;
+
+				&.master-volume {
+					input {
+						width: 100%;
+					}
+
+					a {
+						margin-left: 5px;
+						width: 50px;
+						text-align: right;
+					}
+				}
+			}
+		}
+
+		.sound-list {
+			margin-top: 5px;
+
+			display: flex;
+			flex-grow: 1;
+			flex-direction: column;
+			justify-content: stretch;
+
+			.column {
+				&.sound-name {
+					width: calc(100% - 150px);
+				}
+
+				&.sound-activated {
+					width: 150px;
+					flex-grow: 0;
+
+					input {
+						margin-left: 75px;
+					}
+				}
+			}
+
+			.sound-list-header {
+				flex-grow: 0;
+				flex-shrink: 0;
+				display: flex;
+				flex-direction: row;
+				height: 20px;
+
+				.column {
+					border: 1px solid lightgray;
+					text-align: center;
+				}
+			}
+
+			.sound-list-entries-container {
+				flex-grow: 1;
+				display: flex;
+				flex-direction: column;
+				justify-content: start;
+				overflow-y: auto;
+
+				min-height: 400px;
+				max-height: 400px;
+
+				.entry {
+					display: flex;
+					flex-direction: row;
+
+					.column {
+						margin-left: 2px;
+					}
+
+					cursor: pointer;
+
+					&.selected {
+						background-color: blue;
+					}
+
+					&:hover {
+						background-color: #00000022;
+					}
+
+					.button-playback:hover {
+						background-color: #00000022;
+					}
+				}
+
+				&.scrollbar {
+					.column {
+						&.sound-name {
+							width: calc(100% - 150px + 60px)
+						}
+					}
+				}
+			}
+		}
+
+		.sound-list-filter {
+			margin-top: 3px;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			input {
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+
+			a {
+				margin-right: 8px;
 			}
 		}
 	}

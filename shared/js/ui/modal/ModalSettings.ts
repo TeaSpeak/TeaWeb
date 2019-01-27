@@ -75,6 +75,8 @@ namespace Modals {
                         ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
 
                         vad_tag.find(".vat_ppt_key").text(ppt.key_description(ppt_settings));
+                        vad_tag.find(".ppt-delay input").val(ppt_settings.delay === undefined ? 300 : ppt_settings.delay);
+
                         break;
                     case "vad":
                         let slider = vad_tag.find(".vad_vad_slider");
@@ -122,6 +124,15 @@ namespace Modals {
                     };
                     ppt.register_key_listener(listener);
                     modal.open();
+                });
+
+                vad_tag.find(".ppt-delay input").on('change', event => {
+                    let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
+                    ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+                    ppt_settings.delay = (<HTMLInputElement>event.target).valueAsNumber;
+                    settings.changeGlobal('vad_ppt_settings', ppt_settings);
+
+                    globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
                 });
             }
 
@@ -244,6 +255,89 @@ namespace Modals {
                     });
                 });
             }
+        }
+
+        { /* initialize sounds */
+            const sound_tag = tag.find(".sound-settings");
+
+            { /* master volume */
+                const master_tag = sound_tag.find(".master-volume");
+                master_tag.find("input").on('change input', event => {
+                    const value = parseInt((<HTMLInputElement>event.target).value);
+                    master_tag.find('a').text("(" + value + "%)");
+
+                    sound.set_master_volume(value / 100);
+                }).val((sound.get_master_volume() * 100).toString()).trigger('change');
+            }
+
+            {
+                const overlap_tag = sound_tag.find(".overlap-sounds input");
+                overlap_tag.on('change', event => {
+                    const activated = (<HTMLInputElement>event.target).checked;
+                    sound.set_overlap_activated(activated);
+                }).prop("checked", sound.overlap_activated());
+            }
+
+            {
+                const muted_tag = sound_tag.find(".muted-sounds input");
+                muted_tag.on('change', event => {
+                    const activated = (<HTMLInputElement>event.target).checked;
+                    sound.set_ignore_output_muted(!activated);
+                }).prop("checked", !sound.ignore_output_muted());
+            }
+
+            { /* sound elements */
+                const template_tag = $("#tmpl_settings-sound_entry");
+                const entry_tag = sound_tag.find(".sound-list-entries");
+
+                for(const _sound in Sound) {
+                    const sound_name = Sound[_sound];
+
+                    console.log(sound.get_sound_volume(sound_name as Sound));
+                    const data = {
+                        name: sound_name,
+                        activated: sound.get_sound_volume(sound_name as Sound) > 0
+                    };
+
+                    const entry = template_tag.renderTag(data);
+                    entry.find("input").on('change', event => {
+                        const activated = (<HTMLInputElement>event.target).checked;
+                        console.log(tr("Sound %s had changed to %o"), sound_name, activated);
+                        sound.set_sound_volume(sound_name as Sound, activated ? 1 : 0);
+                    });
+
+                    entry.find(".button-playback").on('click', event => {
+                        sound.play(sound_name as Sound);
+                    });
+
+                    entry_tag.append(entry);
+                }
+
+                setTimeout(() => {
+                    const entry_container = sound_tag.find(".sound-list-entries-container");
+                    if(entry_container.hasScrollBar())
+                        entry_container.addClass("scrollbar");
+                }, 100);
+
+                /* filter */
+                const filter_tag = sound_tag.find(".sound-list-filter input");
+                filter_tag.on('change keyup', event => {
+                    const filter = ((<HTMLInputElement>event.target).value || "").toLowerCase();
+                    if(!filter)
+                        entry_tag.find(".entry").show();
+                    else {
+                        entry_tag.find(".entry").each((_, _entry) => {
+                            const entry = $(_entry);
+                            if(entry.text().toLowerCase().indexOf(filter) == -1)
+                                entry.hide();
+                            else
+                                entry.show();
+                        });
+                    }
+                });
+            }
+
+            modal.close_listener.push(sound.save);
         }
 
         //Initialise microphones
@@ -570,7 +664,7 @@ namespace Modals {
                     const element = event.target as HTMLInputElement;
                     const file_reader = new FileReader();
                     file_reader.onload = function() {
-                        const identity_promise = profiles.identities.TeaSpeakIdentity.import_ts(file_reader.result, true);
+                        const identity_promise = profiles.identities.TeaSpeakIdentity.import_ts(file_reader.result as string, true);
                         identity_promise.then(identity => {
                             (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
                             selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);

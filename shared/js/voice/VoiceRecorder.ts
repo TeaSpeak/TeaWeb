@@ -145,9 +145,12 @@ class VoiceRecorder {
             if(ppt_settings.key_windows === undefined)
                 ppt_settings.key_windows = false;
 
+            if(ppt_settings.delay === undefined)
+                ppt_settings.delay = 300;
+
             if(!(this.getVADHandler() instanceof PushToTalkVAD))
                 this.setVADHandler(new PushToTalkVAD(ppt_settings));
-            else (this.getVADHandler() as PushToTalkVAD).key = ppt_settings;
+            else (this.getVADHandler() as PushToTalkVAD).settings = ppt_settings;
         } else if(type == "pt") {
             if(!(this.getVADHandler() instanceof PassThroughVAD))
                 this.setVADHandler(new PassThroughVAD());
@@ -324,28 +327,28 @@ class VoiceActivityDetectorVAD extends VoiceActivityDetector {
     }
 }
 
-interface PPTKeySettings extends ppt.KeyDescriptor{
+interface PPTKeySettings extends ppt.KeyDescriptor {
     version?: number;
+    delay: number;
 }
 
 class PushToTalkVAD extends VoiceActivityDetector {
-    private _key: ppt.KeyDescriptor;
+    private _settings: PPTKeySettings;
     private _key_hook: ppt.KeyHook;
     private _timeout: NodeJS.Timer;
-    private _delay = /* 300 */ 0; //TODO configurable
 
     private _pushed: boolean = false;
 
-    constructor(key: ppt.KeyDescriptor) {
+    constructor(settings: PPTKeySettings) {
         super();
-        this._key = key;
+        this._settings = settings;
         this._key_hook = {
             callback_release: () => {
                 if(this._timeout)
                     clearTimeout(this._timeout);
 
-                if(this._delay > 0)
-                    this._timeout = setTimeout(() => this._pushed = false, this._delay);
+                if(this._settings.delay > 0)
+                    this._timeout = setTimeout(() => this._pushed = false, this._settings.delay);
                 else
                     this._pushed = false;
             },
@@ -358,9 +361,17 @@ class PushToTalkVAD extends VoiceActivityDetector {
 
             cancel: false
         } as ppt.KeyHook;
-        Object.assign(this._key_hook, this._key);
+
+        this.initialize_hook();
     }
 
+    private initialize_hook() {
+        this._key_hook.key_code = this._settings.key_code;
+        this._key_hook.key_alt = this._settings.key_alt;
+        this._key_hook.key_ctrl = this._settings.key_ctrl;
+        this._key_hook.key_shift = this._settings.key_shift;
+        this._key_hook.key_windows = this._settings.key_windows;
+    }
 
     initialise() {
         ppt.register_key_hook(this._key_hook);
@@ -376,11 +387,13 @@ class PushToTalkVAD extends VoiceActivityDetector {
         this._pushed = flag;
     }
 
-    set key(key: ppt.KeyDescriptor) {
+    set settings(settings: PPTKeySettings) {
         ppt.unregister_key_hook(this._key_hook);
-        Object.assign(this._key, key);
-        Object.assign(this._key_hook, key);
+
+        this._settings = settings;
+        this.initialize_hook();
         this._pushed = false;
+
         ppt.register_key_hook(this._key_hook);
     }
 

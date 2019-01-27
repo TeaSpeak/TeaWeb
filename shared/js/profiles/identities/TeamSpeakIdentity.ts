@@ -46,7 +46,7 @@ namespace profiles.identities {
                 buffer[index++] = 0x01; /* length */
                 buffer[index++] = 0x20;
             }
-            { /* Public kex X */
+            try { /* Public kex X */
                 buffer[index++] = 0x02; /* type */
                 buffer[index++] = 0x20; /* length */
 
@@ -58,8 +58,13 @@ namespace profiles.identities {
 
                 for(let i = 0; i < 32; i++)
                     buffer[index++] = raw.charCodeAt(i);
+            } catch(error) {
+                if(error instanceof DOMException)
+                    throw "failed to parse x coordinate (invalid base64)";
+                throw error;
             }
-            { /* Public kex Y */
+
+            try { /* Public kex Y */
                 buffer[index++] = 0x02; /* type */
                 buffer[index++] = 0x20; /* length */
 
@@ -71,20 +76,32 @@ namespace profiles.identities {
 
                 for(let i = 0; i < 32; i++)
                     buffer[index++] = raw.charCodeAt(i);
+            } catch(error) {
+                if(error instanceof DOMException)
+                    throw "failed to parse y coordinate (invalid base64)";
+                throw error;
             }
-            if(!public_key) { /* Public kex K */
-                buffer[index++] = 0x02; /* type */
-                buffer[index++] = 0x20; /* length */
 
-                const raw = atob(Base64DecodeUrl(key_data.d, false));
-                if(raw.charCodeAt(0) > 0x7F) {
-                    buffer[index - 1] += 1;
-                    buffer[index++] = 0;
+            if(!public_key) {
+                try { /* Public kex K */
+                    buffer[index++] = 0x02; /* type */
+                    buffer[index++] = 0x20; /* length */
+
+                    const raw = atob(Base64DecodeUrl(key_data.d, false));
+                    if(raw.charCodeAt(0) > 0x7F) {
+                        buffer[index - 1] += 1;
+                        buffer[index++] = 0;
+                    }
+
+                    for(let i = 0; i < 32; i++)
+                        buffer[index++] = raw.charCodeAt(i);
+                } catch(error) {
+                    if(error instanceof DOMException)
+                        throw "failed to parse y coordinate (invalid base64)";
+                    throw error;
                 }
-
-                for(let i = 0; i < 32; i++)
-                    buffer[index++] = raw.charCodeAt(i);
             }
+
             buffer[1] = index - 2; /* set the final sequence length */
 
             return base64ArrayBuffer(buffer.buffer.slice(0, index));
@@ -127,7 +144,15 @@ namespace profiles.identities {
          * @param buffer base64 encoded ASN.1 string
          */
         export function decode_tomcrypt_key(buffer: string) {
-            const decoded = asn1.decode(atob(buffer));
+            let decoded;
+
+            try {
+                decoded = asn1.decode(atob(buffer));
+            } catch(error) {
+                if(error instanceof DOMException)
+                    throw "failed to parse key buffer (invalid base64)";
+                throw error;
+            }
 
             let {x, y, k} = {
                 x: decoded.children[2].content(Infinity, asn1.TagType.VisibleString),
@@ -373,7 +398,7 @@ namespace profiles.identities {
         static async generate_new() : Promise<TeaSpeakIdentity> {
             const key = await crypto.subtle.generateKey({name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
             const private_key = await CryptoHelper.export_ecc_key(key.privateKey, false);
-            console.log("Private key: %s (%d)", private_key, atob(private_key).length);
+
             const identity = new TeaSpeakIdentity(private_key, "0", undefined, false);
             await identity.initialize();
             return identity;
@@ -405,7 +430,7 @@ namespace profiles.identities {
 
                 if(!identity) throw "missing identity keyword";
                 if(identity[0] == "\"" && identity[identity.length - 1] == "\"")
-                    identity = identity.substr(1, identity.length - 1);
+                    identity = identity.substr(1, identity.length - 2);
 
                 const result = parse_string(identity);
                 result.name = name || result.name;

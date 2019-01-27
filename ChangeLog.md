@@ -1,4 +1,9 @@
 # Changelog:
+* **27.01.19**
+    - Made sounds configurable
+    - Added option to mute sounds when output is muted
+    - Added push to talk delay option
+    
 * **26.01.19**
     - Improved TeaSpeak identities (now generates automatic and are saveable)
     - Fixed `connect_profile` parameter within URL

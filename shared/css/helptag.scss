@@ -1,3 +1,11 @@
+.help-tip-container {
+	/* position: relative; */
+
+	.help-tip {
+		position: absolute;
+	}
+}
+
 .help-tip {
 	z-index: 100;
 
@@ -21,7 +29,7 @@
 		color:#fff;
 	}
 
-	&:hover {
+	&:hover, &.show {
 		p {
 			display:block;
 			transform-origin: 100% 0%;
