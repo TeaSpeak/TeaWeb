@@ -126,11 +126,29 @@ namespace profiles {
             }
         }
 
-        if(!find_profile("default")) { //Create a default profile
-            const profile = create_new_profile("default","default");
-            profile.default_password = "";
-            profile.default_username = "Another TeaSpeak user";
-            profile.profile_name = "Default Profile";
+        if(!find_profile("default")) { //Create a default profile and teaforo profile
+            {
+                const profile = create_new_profile("default","default");
+                profile.default_password = "";
+                profile.default_username = "Another TeaSpeak user";
+                profile.profile_name = "Default Profile";
+
+                /* generate default identity */
+                try {
+                    const identity = await identities.TeaSpeakIdentity.generate_new();
+                    profile.set_identity(identities.IdentitifyType.TEAMSPEAK, identity);
+                    profile.selected_identity_type = identities.IdentitifyType[identities.IdentitifyType.TEAMSPEAK];
+                } catch(error) {
+                    createErrorModal(tr("Failed to generate default identity"), tr("Failed to generate default identity!<br>Please manually generate the identity within your settings => profiles")).open();
+                }
+            }
+
+            { /* forum identity (works only when connected to the forum) */
+                const profile = create_new_profile("TeaSpeak Forum","teaforo");
+                profile.default_password = "";
+                profile.default_username = "Another TeaSpeak user";
+                profile.profile_name = "TeaSpeak Forum profile";
+            }
 
             save();
         }

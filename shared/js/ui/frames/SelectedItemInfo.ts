@@ -500,6 +500,17 @@ class MusicInfoManager extends ClientInfoManager {
                             });
                         });
                         _frame.find(".btn-settings").click(() => {
+                            this.handle.handle.serverConnection.helper.request_playlist_list().then(lists => {
+                                for(const entry of lists) {
+                                    if(entry.playlist_id == bot.properties.client_playlist_id) {
+                                        Modals.spawnPlaylistEdit(bot.channelTree.client, entry);
+                                        return;
+                                    }
+                                }
+                                createErrorModal(tr("Invalid permissions"), tr("You don't have to see the bots playlist.")).open();
+                            }).catch(error => {
+                                createErrorModal(tr("Failed to query playlist."), tr("Failed to query playlist info.")).open();
+                            });
                             createErrorModal(tr("Not implemented"), tr("This function is not implemented yet!")).open();
                         });
                     }

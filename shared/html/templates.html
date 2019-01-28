@@ -159,11 +159,14 @@
                 </div>
                 <div class="profile-select-container">
                     <div style="text-align: right;">{{tr "Connection profile:" /}}</div>
-                    <select class="profile-select"> </select>
+                    <div class="profile-container">
+                        <select class="profile-select"> </select>
+                        <button class="button-manage-profiles">{{tr "Manage profiles" /}}</button>
+                    </div>
                 </div>
                 <div class="profile-invalid">
                     <hr>
-                    <div>The selected connect profile is invalid</div>
+                    <div>{{tr "The selected connect profile is invalid" /}}</div>
                     <div><div>Click&nbsp;</div><a href="#" class="button-manage-profiles">here</a><div>&nbsp;to manage your connect profiles</div></div>
                 </div>
             </div>
@@ -608,7 +611,44 @@
             <x-tab>
                 <x-entry>
                     <x-tag>{{tr "General"/}}</x-tag>
-                    <x-content>{{tr "Didnt setuped yet!"/}}</x-content>
+                    <x-content>
+                        <div class="settings-general">
+                            <div class="group_box">
+                                <div class="header">{{tr "TeaSpeak Forum Connection" /}}</div>
+                                <div class="content settings-teaspeak-forum">
+                                    <div class="not-connected">
+                                        <div>{{tr "You're currently not connected with your TeaSpeak Forum account" /}}</div>
+                                        <button class="button-login">{{tr "login" /}}</button>
+                                    </div>
+                                    <div class="connected">
+                                        <div class="connected-info">{{tr "You're connected via TeaSpeak forum" /}}</div>
+                                        <div class="container-info-action">
+                                            <div class="container-info">
+                                                <div class="property username">
+                                                    <div class="key">{{tr "Username:" /}}</div>
+                                                    <div class="value">WolverinDEV</div>
+                                                </div>
+                                                <div class="property premium">
+                                                    <div class="key">{{tr "Premium:" /}}</div>
+                                                    <div class="value">YES</div>
+                                                </div>
+                                            </div>
+                                            <div class="divider"></div>
+                                            <div class="container-actions">
+                                                <button class="button-logout">logout</button>
+                                            </div>
+                                        </div>
+                                        <!--
+                                        <div class="property synchronized">
+                                            <div class="key">{{tr "Synchronized:" /}}</div>
+                                            <div class="value">NO <button class="button-enable-disable-sync">{{tr "enable synchronization" /}}</button></div>
+                                        </div>
+                                        -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>{{tr "Audio" /}}</x-tag>
@@ -845,10 +885,38 @@
                                         </div>
                                         <hr>
                                         <div class="identity-settings identity-settings-teamspeak">
-                                            {{tr "Please enter your exported TS3 Identity string bellow or select your exported Identity"/}}<br>
-                                            <div style="width: 100%; display: flex; justify-content: stretch; flex-direction: row">
-                                                <input placeholder="Identity string" style="min-width: 60%; flex-shrink: 1; flex-grow: 2; margin: 5px;" class="identity_string">
-                                                <div style="max-width: 200px; flex-grow: 1; flex-shrink: 4; margin: 5px"><input style="display: flex; width: 100%;" class="identity_file" type="file"></div>
+                                            <!--
+                                            <div class="import">
+                                                {{tr "Please enter your exported TS3 Identity string bellow or select your exported Identity"/}}<br>
+                                                <div style="width: 100%; display: flex; justify-content: stretch; flex-direction: row">
+                                                    <input placeholder="Identity string" style="min-width: 60%; flex-shrink: 1; flex-grow: 2; margin: 5px;" class="identity_string">
+                                                    <div style="max-width: 200px; flex-grow: 1; flex-shrink: 4; margin: 5px"><input style="display: flex; width: 100%;" class="identity_file" type="file"></div>
+                                                </div>
+                                            </div>
+                                            -->
+                                            <div class="identity-info" style="display: none">
+                                                <div class="property unique-id">
+                                                    <div class="key">{{tr "UniqueID:" /}}</div>
+                                                    <div class="value">
+                                                        <input type="text" value="xxjnc14LmvTk+Lyrm8OOeo4tOqw=" readonly/>
+                                                    </div>
+                                                </div>
+                                                <div class="property level">
+                                                    <div class="key">{{tr "Level:" /}}</div>
+                                                    <div class="value">
+                                                        <input type="text" value="39" readonly/> <button class="button-improve">{{tr "Improve" /}}</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="identity-undefined">
+                                                <div>{{tr "You have'nt generated/imported an identity.<br>Generate a new one or import one." /}}</div>
+                                            </div>
+                                            <div class="manage">
+                                                <button class="button-generate">{{tr "Generate new" /}}</button>
+                                                <div class="export-import">
+                                                    <button class="button-import">{{tr "Import identity" /}}</button>
+                                                    <button class="button-export">{{tr "Export identity" /}}</button>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="identity-settings identity-settings-teaforo">
@@ -857,8 +925,9 @@
                                             </div>
                                             <div class="disconnected">
                                                 <!-- TODO tr -->
-                                                You cant use your TeaSpeak forum account. You're not connected!<br>
-                                                Click {{if !client}}<a href="{{:forum_path}}login.php">here</a>{{else}}<a href="#" class="native-teaforo-login">here</a>{{/if}} to login via the TeaSpeak forum.
+                                                <!-- <a href="#" class="native-teaforo-login">here</a> -->
+                                                You cant use your TeaSpeak forum account. You're not connected with your forum Account!<br>
+                                                Setup your connection <a class="forum-setup" href="#">here</a>.
                                             </div>
                                         </div>
                                         <div class="identity-settings identity-settings-nickname">
@@ -885,6 +954,80 @@
                 <div class="column sound-name"><div class="icon client-play button-playback"></div> {{>name}}</div>
                 <div class="column sound-activated">
                     <input type="checkbox" {{if activated}}checked{{/if}}>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_settings-teamspeak_import" type="text/html">
+            <div class="container-teamspeak-import">
+                <div class="error">{{tr "Failed to import identity (my little error)" /}}</div>
+                <div class="load-data">
+                    <div>{{tr "Import an identity from TeamSpeak or an exported identity" /}}</div>
+                    <div class="buttons">
+                        <button class="button-load-text">{{tr "Load from text" /}}</button>
+                        <button class="button-load-file">{{tr "Load from file" /}}</button>
+                        <input class="input-file" type="file">
+                    </div>
+                </div>
+                <div class="success">
+                    {{tr "Identity successfully loaded. Ready to import" /}}
+                </div>
+                <div class="footer">
+                    <button class="button-import">{{tr "Import" /}}</button>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_settings-teamspeak_improve" type="text/html">
+            <div class="container-teamspeak-improve">
+                <div class="property identity-unique-id">
+                    <div class="key">{{tr "Identity:" /}}</div>
+                    <div class="value"><input value="" readonly></div>
+                </div>
+                <div class="property identity-level">
+                    <div class="key">{{tr "Current level: " /}}</div>
+                    <div class="value"><input value="loading" readonly></div>
+                </div>
+                <div class="property identity-target-level">
+                    <div class="key">
+                        <div class="help-tagged">{{tr "Target level: " /}}</div>
+                        <div class="help-tip-container"> <!-- lets be absolute -->
+                            <div class="help-tip tip-right tip-small">
+                                <p>
+                                    {{tr "A value of zero means unlimited. Improve until you abort"/}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="value"><input value="0" type="number" min="0" max="160"></div>
+                </div>
+                <div class="property threads">
+                    <div class="key">
+                        <div class="help-tagged">{{tr "Threads: " /}}</div>
+                        <div class="help-tip-container"> <!-- lets be absolute -->
+                            <div class="help-tip tip-right tip-small">
+                                <p>
+                                    {{tr "The number of threads used to improve your identity<br>The optimal value is equal to the amount of kernal threads."/}}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="value"><input value="2" type="number" min="1" max="32"></div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="property hash-rate">
+                        <div class="key">{{tr "Hashes/second:" /}}</div>
+                        <div class="value"><input value="0" readonly></div>
+                    </div>
+                    <div class="property time-elapsed">
+                        <div class="key">{{tr "Elapsed time:" /}}</div>
+                        <div class="value"><input value="00:00" readonly></div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="button-close">{{tr "Close" /}}</button>
+                    <button class="button-start-stop">{{tr "Start" /}}</button>
                 </div>
             </div>
         </script>

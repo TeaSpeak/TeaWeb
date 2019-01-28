@@ -9,8 +9,196 @@ namespace Modals {
     import ConnectionProfile = profiles.ConnectionProfile;
     import IdentitifyType = profiles.identities.IdentitifyType;
 
-    export function spawnSettingsModal() : Modal{
-        let modal;
+    function spawnTeamSpeakIdentityImprove(identity: profiles.identities.TeaSpeakIdentity) : Modal {
+        let modal: Modal;
+        let elapsed_timer: NodeJS.Timer;
+
+        modal = createModal({
+            header: tr("Improve identity"),
+            body: () => {
+                let template = $("#tmpl_settings-teamspeak_improve").renderTag();
+                template = $.spawn("div").append(template);
+
+                let active;
+                const button_start_stop = template.find(".button-start-stop");
+                const button_close = template.find(".button-close");
+                const input_current_level = template.find(".property.identity-level input");
+                const input_target_level = template.find(".property.identity-target-level input");
+                const input_threads = template.find(".property.threads input");
+                const input_hash_rate = template.find(".property.hash-rate input");
+                const input_elapsed = template.find(".property.time-elapsed input");
+
+                button_close.on('click', event => {
+                    if(active)
+                        button_start_stop.trigger('click');
+
+                    if(modal.shown)
+                        modal.close();
+                });
+
+                button_start_stop.on('click', event => {
+                    if(active)
+                        button_start_stop.text(tr("Start"));
+                    else
+                        button_start_stop.text(tr("Stop"));
+
+                    input_threads.prop("disabled", !active);
+                    input_target_level.prop("disabled", !active);
+                    if(active) {
+                        input_hash_rate.val(0);
+                        clearInterval(elapsed_timer);
+                        active = false;
+                        return;
+                    }
+                    active = true;
+                    input_hash_rate.val("nan");
+
+                    const threads = parseInt(input_threads.val() as string);
+                    const target_level = parseInt(input_target_level.val() as string);
+                    if(target_level == 0) {
+                        identity.improve_level(-1, threads, () => active, current_level => {
+                            input_current_level.val(current_level);
+                        }).catch(error => {
+                            console.error(error);
+                            createErrorModal(tr("Failed to improve identity"), tr("Failed to improve identity.<br>Error:") + error).open();
+                            if(active)
+                                button_start_stop.trigger('click');
+                        });
+                    } else {
+                        identity.improve_level(target_level, threads, () => active, current_level => {
+                            input_current_level.val(current_level);
+                        }).then(success => {
+                            if(success) {
+                                identity.level().then(level => {
+                                    input_current_level.val(level);
+                                    createInfoModal(tr("Identity successfully improved"), MessageHelper.formatMessage(tr("Identity successfully improved to level {}"), level)).open();
+                                }).catch(error => {
+                                    input_current_level.val("error: " + error);
+                                });
+                            }
+                            if(active)
+                                button_start_stop.trigger('click');
+                        }).catch(error => {
+                            console.error(error);
+                            createErrorModal(tr("Failed to improve identity"), tr("Failed to improve identity.<br>Error:") + error).open();
+                            if(active)
+                                button_start_stop.trigger('click');
+                        });
+                    }
+
+                    const begin = Date.now();
+                    elapsed_timer = setInterval(() => {
+                        const time = (Date.now() - begin) / 1000;
+                        let seconds = Math.floor(time % 60).toString();
+                        let minutes = Math.floor(time / 60).toString();
+
+                        if(seconds.length < 2)
+                            seconds = "0" + seconds;
+
+                        if(minutes.length < 2)
+                            minutes = "0" + minutes;
+
+                        input_elapsed.val(minutes + ":" + seconds);
+                    }, 1000);
+                });
+
+
+                template.find(".property.identity-unique-id input").val(identity.uid());
+                identity.level().then(level => {
+                    input_current_level.val(level);
+                }).catch(error => {
+                    input_current_level.val("error: " + error);
+                });
+                return template;
+            },
+            footer: undefined,
+            width: 750
+        });
+        modal.close_listener.push(() => modal.htmlTag.find(".button-close").trigger('click'));
+        modal.open();
+        return modal;
+    }
+
+    function spawnTeamSpeakIdentityImport(callback: (identity: profiles.identities.TeaSpeakIdentity) => any) : Modal {
+        let modal: Modal;
+        let loaded_identity: profiles.identities.TeaSpeakIdentity;
+
+        modal = createModal({
+            header: tr("Import identity"),
+            body: () => {
+                let template = $("#tmpl_settings-teamspeak_import").renderTag();
+                template = $.spawn("div").append(template);
+
+                template.find(".button-load-file").on('click', event => template.find(".input-file").trigger('click'));
+
+                const button_import = template.find(".button-import");
+                const set_error = message => {
+                    template.find(".success").hide();
+                    if(message) {
+                        template.find(".error").text(message).show();
+                        button_import.prop("disabled", true);
+                    } else
+                        template.find(".error").hide();
+                };
+
+                const import_identity = (data: string, ini: boolean) => {
+                    profiles.identities.TeaSpeakIdentity.import_ts(data, ini).then(identity => {
+                        loaded_identity = identity;
+                        set_error("");
+                        button_import.prop("disabled", false);
+                        template.find(".success").show();
+                    }).catch(error => {
+                        set_error("Failed to load identity: " + error);
+                    });
+                };
+
+                { /* file select button */
+                    template.find(".input-file").on('change', event => {
+                        const element = event.target as HTMLInputElement;
+                        const file_reader = new FileReader();
+
+                        file_reader.onload = function() {
+                            import_identity(file_reader.result as string, true);
+                        };
+
+                        file_reader.onerror = ev => {
+                            console.error(tr("Failed to read give identity file: %o"), ev);
+                            set_error(tr("Failed to read file!"));
+                            return;
+                        };
+
+                        if(element.files && element.files.length > 0)
+                            file_reader.readAsText(element.files[0]);
+                    });
+                }
+
+                { /* text input */
+                    template.find(".button-load-text").on('click', event => {
+                        createInputModal("Import identity from text", "Please paste your idenity bellow<br>", text => text.length > 0 && text.indexOf('V') != -1, result => {
+                            if(result)
+                                import_identity(result as string, false);
+                        }).open();
+                    });
+                }
+
+                button_import.on('click', event => {
+                    modal.close();
+                    callback(loaded_identity);
+                });
+
+                set_error("");
+                button_import.prop("disabled", true);
+                return template;
+            },
+            footer: undefined,
+            width: 750
+        });
+        modal.open();
+        return modal;
+    }
+
+    export function spawnSettingsModal() : Modal {
+        let modal: Modal;
         modal = createModal({
             header: tr("Settings"),
             body: () => {
@@ -21,9 +209,10 @@ namespace Modals {
                 });
 
                 template = $.spawn("div").append(template);
-                initialiseSettingListeners(modal,template = template.tabify());
+                initialiseVoiceListeners(modal, (template = template.tabify()).find(".settings_audio"));
                 initialise_translations(template.find(".settings-translations"));
                 initialise_profiles(modal, template.find(".settings-profiles"));
+                initialise_global(modal, template.find(".settings-general"));
 
                 return template;
             },
@@ -47,13 +236,33 @@ namespace Modals {
         return modal;
     }
 
-    function initialiseSettingListeners(modal: Modal, tag: JQuery) {
-        //Voice
-        initialiseVoiceListeners(modal, tag.find(".settings_audio"));
+    function initialise_global(modal: Modal, tag: JQuery) {
+        console.log(tag);
+        {/* setup the forum */
+            const identity = profiles.identities.static_forum_identity();
+            if(identity && identity.valid()) {
+                tag.find(".not-connected").hide();
+
+                tag.find(".property.username .value").text(identity.name());
+                const premium_tag = tag.find(".property.premium .value").text("");
+                if(identity.is_stuff() || identity.is_premium())
+                    premium_tag.append($.spawn("div").addClass("premium").text(tr("yes")));
+                else
+                    premium_tag.append($.spawn("div").addClass("non-premium").text(tr("no")));
+            } else {
+                tag.find(".connected").hide();
+            }
+            tag.find(".button-logout").on('click', event => {
+                window.location.href = settings.static("forum_path") + "auth.php?type=logout";
+            });
+            tag.find(".button-login").on('click', event => {
+                window.location.href = settings.static("forum_path") + "login.php";
+            });
+        }
     }
 
     function initialiseVoiceListeners(modal: Modal, tag: JQuery) {
-        let currentVAD = settings.global("vad_type", "ppt");
+        let currentVAD = settings.global("vad_type", "vad");
 
         { //Initialized voice activation detection
             const vad_tag = tag.find(".settings-vad-container");
@@ -658,64 +867,98 @@ namespace Modals {
         {
             { //TeamSpeak change listener
                 const teamspeak_tag = settings_tag.find(".identity-settings-teamspeak");
-                teamspeak_tag.find(".identity_file").on('change', event => {
-                    if(!selected_profile) return;
+                const identity_info_tag = teamspeak_tag.find(".identity-info");
+                const button_export = teamspeak_tag.find(".button-export");
+                const button_import = teamspeak_tag.find(".button-import");
+                const button_generate = teamspeak_tag.find(".button-generate");
+                const button_improve = teamspeak_tag.find(".button-improve");
 
-                    const element = event.target as HTMLInputElement;
-                    const file_reader = new FileReader();
-                    file_reader.onload = function() {
-                        const identity_promise = profiles.identities.TeaSpeakIdentity.import_ts(file_reader.result as string, true);
-                        identity_promise.then(identity => {
-                            (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
-                            selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
-                            profiles.mark_need_save();
-                            display_error(undefined);
+                button_import.on('click', event => {
+                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+
+                    const set_identity = (identity: profiles.identities.TeaSpeakIdentity) => {
+                        selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity);
+                        teamspeak_tag.trigger('show');
+                        createInfoModal(tr("Identity imported"), tr("Your identity has been successfully imported!")).open();
+                    };
+
+                    if(profile && profile.valid()) {
+                        spawnYesNo(tr("Are you sure"), tr("Do you really want to import a new identity and override the old identity?"), result => {
+                            if(result)
+                                spawnTeamSpeakIdentityImport(set_identity);
+                        });
+                    } else
+                        spawnTeamSpeakIdentityImport(set_identity);
+                });
+                button_export.on('click', event => {
+                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    if(!profile) return;
+
+                    createInputModal(tr("File name"), tr("Please enter the file name"), text => !!text, name => {
+                        if(name) {
+                            profile.export_ts(true).then(data => {
+                                const element = $.spawn("a")
+                                    .text("donwload")
+                                    .attr("href", "data:test/plain;charset=utf-8," + encodeURIComponent(data))
+                                    .attr("download", name + ".ini")
+                                    .css("display", "none")
+                                    .appendTo($("body"));
+                                element[0].click();
+                                element.detach();
+                            }).catch(error => {
+                                console.error(error);
+                                createErrorModal(tr("Failed to export identity"), tr("Failed to export and save identity.<br>Error: ") + error).open();
+                            });
+                        }
+                    }).open();
+                });
+
+                button_generate.on('click', event => {
+                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    const generate_identity = () => {
+                        profiles.identities.TeaSpeakIdentity.generate_new().then(identity => {
+                            selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity);
+                            teamspeak_tag.trigger('show');
+                            createInfoModal(tr("Identity generate"), tr("A new identity had been successfully generated")).open();
                         }).catch(error => {
-                            display_error(tr("Failed to parse identity.<br>Reason: ") + error);
-                            return;
+                            createErrorModal(tr("Failed to generate identity"), tr("Failed to generate a new identity.<br>Error:") + error).open();
                         });
                     };
 
-                    file_reader.onerror = ev => {
-                        console.error(tr("Failed to read give identity file: %o"), ev);
-                        display_error(tr("Failed to read file!"));
-                        return;
-                    };
-
-                    if(element.files && element.files.length > 0)
-                        file_reader.readAsText(element.files[0]);
-                });
-
-                teamspeak_tag.find(".identity_string").on('change', event => {
-                    if(!selected_profile) return;
-
-                    const element = event.target as HTMLInputElement;
-                    if(element.value.length == 0) {
-                        display_error("Please provide an identity");
-                        selected_profile.set_identity(IdentitifyType.TEAMSPEAK, undefined as any);
-                        profiles.mark_need_save();
-                    } else {
-                        const identity_promise = profiles.identities.TeaSpeakIdentity.import_ts(element.value, false);
-                        identity_promise.then(identity => {
-                            (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
-                            selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity as any);
-                            profiles.mark_need_save();
-                            display_error(undefined);
-                        }).catch(error => {
-                            display_error(tr("Failed to parse identity.<br>Reason: ") + error);
-                            return;
+                    if(profile && profile.valid()) {
+                        spawnYesNo(tr("Are you sure"), tr("Do you really want to generate a new identity and override the old identity?"), result => {
+                            if(result)
+                                generate_identity();
                         });
-                    }
+                    } else
+                        generate_identity();
                 });
 
+                button_improve.on('click', event => {
+                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    if(!profile) return;
+
+                    spawnTeamSpeakIdentityImprove(profile).close_listener.push(() => teamspeak_tag.trigger('show'));
+                });
+
+                /* updates the data */
                 teamspeak_tag.on('show', event => {
-                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK);
-                    if(!profile)
-                        display_error("invalid profile");
-                    else if(!profile.valid())
-                        display_error("profile isn't valid");
-                    else
-                        display_error();
+                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+
+                    if(!profile || !profile.valid()) {
+                        identity_info_tag.hide();
+                        teamspeak_tag.find(".identity-undefined").show();
+                        button_export.prop("disabled", true);
+                    } else {
+                        identity_info_tag.show();
+                        teamspeak_tag.find(".identity-undefined").hide();
+                        button_export.prop("disabled", false);
+
+                        identity_info_tag.find(".property.unique-id input").val(profile.uid());
+                        const input_level = identity_info_tag.find(".property.level input").val("loading...");
+                        profile.level().then(level => input_level.val(level.toString())).catch(error => input_level.val("error: " + error));
+                    }
+                    display_error();
                 });
             }
 

@@ -430,6 +430,82 @@
 	}
 }
 
+.modal .settings-general {
+	padding: 5px;
+
+	.not-connected {
+		/* display: none; */
+	}
+
+	.connected {
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.connected-info {
+			color: green;
+		}
+
+		.property {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.key {
+				flex-grow: 0;
+				flex-shrink: 0;
+				width: 140px;
+			}
+
+			&.premium {
+				.premium {
+					color: green;
+				}
+
+				.non-premium {
+					color: red;
+				}
+			}
+		}
+
+		.container-info-action {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.divider {
+				flex-grow: 0;
+				flex-shrink: 0;
+				width: 2px;
+
+				background: lightgray;
+			}
+
+			.container-info, .container-actions {
+				flex-grow: 1;
+				flex-shrink: 1;
+				width: 50%;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: stretch;
+			}
+
+			.container-actions {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+
+				button {
+					width: 150px;
+
+					align-self: center;
+				}
+			}
+		}
+	}
+}
+
 .modal .settings-profiles {
 	margin: 5px;
 	> div:not(:first-of-type) {
@@ -565,5 +641,158 @@
 			}
 			*/
 		}
+
+		&.identity-settings-teamspeak {
+			.property {
+				&:not(:first-of-type) {
+					margin-top: 5px;
+				}
+
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+
+				.key {
+					width: 200px;
+				}
+
+				.value {
+					flex-grow: 1;
+					flex-shrink: 1;
+
+					input {
+						width: 100%;
+					}
+				}
+
+				&.level {
+					.value {
+						display: flex;
+						flex-direction: row;
+						justify-content: stretch;
+
+						button {
+							margin-left: 5px;
+						}
+					}
+				}
+			}
+
+			.identity-undefined {
+				text-align: center;
+			}
+
+			.manage {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+				margin-top: 5px;
+			}
+		}
+	}
+}
+
+.container-teamspeak-import {
+	.error {
+		color: red;
+		/* margin-bottom: 5px; */
+	}
+
+	.success {
+		color: green;
+	}
+
+	.input-file {
+		display: none;
+	}
+
+	.load-data {
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.buttons {
+			flex-grow: 1;
+			flex-shrink: 1;
+			display: flex;
+			flex-direction: row;
+			justify-content: end;
+
+			button:not(:first-of-type) {
+				margin-left: 20px;
+			}
+		}
+	}
+
+	.footer {
+		margin-top: 5px;
+		text-align: right;
+		margin-bottom: 5px;
+
+		.button-import {
+			width: 100px;
+		}
+	}
+}
+
+.container-teamspeak-improve {
+	display: flex;
+	flex-direction: column;
+
+	.property {
+		&:not(:first-of-type) {
+			margin-top: 5px;
+		}
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.key {
+			display: flex;
+			flex-direction: row;
+			flex-grow: 0;
+			flex-shrink: 0;
+			width: 120px;
+
+			.help-tagged {
+				width: 80px;
+			}
+		}
+
+		.value {
+			flex-grow: 1;
+			flex-shrink: 2;
+
+			input {
+				width: 100%;
+			}
+		}
+	}
+
+	.row {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+
+		.property {
+			margin-top: 0px;
+		}
+	}
+
+	.buttons {
+		margin-top: 5px;
+		margin-bottom: 5px;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+
+		button  {
+			width: 100px;
+		}
+	}
+
+	.help-tip-container {
+		margin-left: 5px;
 	}
 }

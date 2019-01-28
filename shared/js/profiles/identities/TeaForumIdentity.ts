@@ -40,43 +40,67 @@ namespace profiles.identities {
     }
 
     export class TeaForumIdentity implements Identity {
-        private identityData: string;
-        private identityDataJson: string;
-        private identitySign: string;
+        private identity_data: string;
+        private identity_data_raw: string;
+        private identity_data_sign: string;
 
         valid() : boolean {
-            return this.identityDataJson.length > 0 && this.identityDataJson.length > 0 && this.identitySign.length > 0;
+            return this.identity_data_raw.length > 0 && this.identity_data_raw.length > 0 && this.identity_data_sign.length > 0;
         }
 
         constructor(data: string, sign: string) {
-            this.identityDataJson = data;
-            this.identityData = data ? JSON.parse(this.identityDataJson) : undefined;
-            this.identitySign = sign;
+            this.identity_data_raw = data;
+            this.identity_data_sign = sign;
+            try {
+                this.identity_data = data ? JSON.parse(this.identity_data_raw) : undefined;
+            } catch(error) { }
         }
 
-        data_json() : string { return this.identityDataJson; }
-        data_sign() : string { return this.identitySign; }
+        data_json() : string { return this.identity_data_raw; }
+        data_sign() : string { return this.identity_data_sign; }
 
-        name() : string { return this.identityData["user_name"]; }
-        uid() : string { return "TeaForo#" + this.identityData["user_id"]; }
+        name() : string { return this.identity_data["user_name"]; }
+        uid() : string { return "TeaForo#" + this.identity_data["user_id"]; }
         type() : IdentitifyType { return IdentitifyType.TEAFORO; }
+
+        forum_user_id() { return this.identity_data["user_id"]; }
+        forum_user_group() { return this.identity_data["user_group_id"]; }
+        is_stuff() : boolean { return this.identity_data["is_staff"]; }
+        is_premium() : boolean { return (<number[]>this.identity_data["user_groups"]).indexOf(5) != -1; }
+        data_age() : Date { return new Date(this.identity_data["data_age"]); }
+
+        /*
+            $user_data["user_id"] = $user->user_id;
+            $user_data["user_name"] = $user->username;
+            $user_data["user_group"] = $user->user_group_id;
+            $user_data["user_groups"] = $user->secondary_group_ids;
+
+            $user_data["trophy_points"] = $user->trophy_points;
+            $user_data["register_date"] = $user->register_date;
+            $user_data["is_staff"] = $user->is_staff;
+            $user_data["is_admin"] = $user->is_admin;
+            $user_data["is_super_admin"] = $user->is_super_admin;
+            $user_data["is_banned"] = $user->is_banned;
+
+            $user_data["data_age"] = milliseconds();
+         */
 
         decode(data) : Promise<void> {
             data = JSON.parse(data);
             if(data.version !== 1)
                 throw "invalid version";
 
-            this.identityDataJson = data["identity_data"];
-            this.identitySign = data["identity_sign"];
-            this.identityData = JSON.parse(this.identityData);
+            this.identity_data_raw = data["identity_data"];
+            this.identity_data_sign = data["identity_sign"];
+            this.identity_data = JSON.parse(this.identity_data);
             return;
         }
 
         encode?() : string {
             return JSON.stringify({
                 version: 1,
-                identity_data: this.identityDataJson,
-                identity_sign: this.identitySign
+                identity_data: this.identity_data_raw,
+                identity_sign: this.identity_data_sign
             });
         }
 

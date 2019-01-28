@@ -243,10 +243,11 @@
 	}
 
 	if(!$_INCLIDE_ONLY) {
+		$app = getXF();
+		if(!$app) return;
+
 		if (isset($_GET["type"])) {
 			error_log("Got authX request!");
-			var_dump($_GET);
-			var_dump($_POST);
 			if ($_GET["type"] == "login") {
 				die(json_encode(checkLogin($_POST["user"], $_POST["pass"])));
 			} else if ($_GET["type"] == "logout") {
@@ -256,8 +257,12 @@
 					header("Location: login.php");
 				else
 					header("Location: https://web.teaspeak.de/");
+
+				$session = $app->session();
 				setcookie($session->getCookieName(), '', time() - 3600, '/');
 				setcookie("session", '', time() - 3600, '/');
+				setcookie("user_data", '', time() - 3600, '/');
+				setcookie("user_sign", '', time() - 3600, '/');
 			} else die("unknown type!");
 		} else if(isset($_POST["action"])) {
 			error_log("Got auth post request!");

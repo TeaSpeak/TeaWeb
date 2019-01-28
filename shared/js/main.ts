@@ -216,7 +216,7 @@ function base64ArrayBuffer(arrayBuffer) {
     return base64
 }
 
-function Base64EncodeUrl(str) {
+function Base64EncodeUrl(str){
     return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
 }
 

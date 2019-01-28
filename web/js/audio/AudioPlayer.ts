@@ -54,7 +54,10 @@ namespace audio.player  {
     }
 
     export function destination() : AudioNode {
-        return context().destination;
+        const ctx = context();
+        if(!ctx) throw tr("Audio player isn't initialized yet!");
+
+        return ctx.destination;
     }
 
     export function on_ready(cb: () => any) {

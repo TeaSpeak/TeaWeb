@@ -580,7 +580,7 @@ namespace profiles.identities {
             return await this.improve_level(-1, threads, () => active);
         }
 
-        async improve_level(target: number, threads: number, active_callback: () => boolean) : Promise<Boolean> {
+        async improve_level(target: number, threads: number, active_callback: () => boolean, callback_level?: (current: number) => any) : Promise<Boolean> {
             if(!this._initialized || !this.public_key)
                 throw "not initialized";
             if(target == -1) /* get the highest level possible */
@@ -652,6 +652,8 @@ namespace profiles.identities {
 
                                         console.log("Found new best at %s (%d). Old was %d", this.hash_number, worker.current_level(), best_level);
                                         best_level = worker.current_level();
+                                        if(callback_level)
+                                            callback_level(best_level);
                                     }
 
                                     if(active) {

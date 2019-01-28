@@ -89,7 +89,8 @@ if(!$.fn.dividerfy) {
                         apply_view(config.property, config.previous, config.next);
                     }
                 } catch(e) {
-                    console.error(e);
+                    if(!(e instanceof SyntaxError))
+                        console.error(e);
                 }
             }
         });

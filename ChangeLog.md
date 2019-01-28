@@ -3,6 +3,10 @@
     - Made sounds configurable
     - Added option to mute sounds when output is muted
     - Added push to talk delay option
+    - Have improvements related to identity management
+    - First load of the app generates identity
+    - Default VAD is not longer PPT, changed to Voice activity detection via threshold
+    - Added identity improve gui
     
 * **26.01.19**
     - Improved TeaSpeak identities (now generates automatic and are saveable)

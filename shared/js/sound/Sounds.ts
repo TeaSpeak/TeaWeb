@@ -192,7 +192,7 @@ namespace sound {
         register_sound("message.received", "effects/message_received.wav");
         register_sound("message.send", "effects/message_send.wav");
 
-        reinitialisize_audio();
+        audio.player.on_ready(reinitialisize_audio);
         return new Promise<void>(resolve => {
             $.ajax({
                 url: "audio/speech/mapping.json",
