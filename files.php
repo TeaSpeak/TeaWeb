@@ -19,6 +19,16 @@
 			"path" => "js/",
 			"local-path" => "./shared/js/"
 		],
+		[ /* shared javascript mapping files (development mode only) */
+			"type" => "js",
+			"search-pattern" => "/.*\.(js.map|ts)$/",
+			"search-exclude" => "/(.*\/)?workers\/.*/",
+			"build-target" => "dev",
+
+			"path" => "js/",
+			"local-path" => "./shared/js/",
+			"req-parm" => ["-js-map"]
+		],
 		[ /* shared generated worker codec */
 			"type" => "js",
 			"search-pattern" => "/(WorkerCodec.js|WorkerPOW.js)$/",
