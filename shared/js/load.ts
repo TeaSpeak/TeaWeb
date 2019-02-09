@@ -292,12 +292,12 @@ namespace loader {
 
                             if(rule.cssText.indexOf("%%base_path%%") != -1) {
                                 rules_remove.push(index);
-                                rules_add.push(rule_text.replace("%%base_path%%", document.location.href));
+                                rules_add.push(rule_text.replace("%%base_path%%", document.location.origin + document.location.pathname));
                             }
                         }
 
                         for(const index of rules_remove.sort((a, b) => b > a ? 1 : 0))
-                            css.removeRule(index);
+                            css.deleteRule(index);
                         for(const rule of rules_add)
                             css.insertRule(rule);
                     }
@@ -774,7 +774,6 @@ loader.register_task(loader.Stage.INITIALIZING, {
     priority: 20
 });
 
-
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "app type test",
     function: loader_javascript.detect_type,
@@ -806,6 +805,17 @@ loader.register_task(loader.Stage.LOADED, {
         fadeoutLoader();
     },
     priority: 10
+});
+
+loader.register_task(loader.Stage.LOADED, {
+    name: "error task",
+    function: async () => {
+        if(Settings.instance.static("dummy_load_error", false)) {
+            displayCriticalError("The tea is cold!");
+            throw "The tea is cold!";
+        }
+    },
+    priority: 20
 });
 
 loader.execute().then(() => {
