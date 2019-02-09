@@ -209,7 +209,7 @@ class ChatEntry {
         let tag = $.spawn("div");
         tag.addClass("chat");
 
-        tag.append("<div class=\"chatIcon icon clicon " + this.chatIcon() + "\"></div>");
+        tag.append("<div class=\"chatIcon icon " + this.chatIcon() + "\"></div>");
         tag.append("<a class='name'>" + this._name + "</a>");
 
         let closeTag = $.spawn("div");
@@ -288,7 +288,7 @@ class ChatEntry {
     set unread(flag : boolean) {
         if(this._unread == flag) return;
         this._unread = flag;
-        this.htmlTag.find(".chatIcon").attr("class", "chatIcon icon clicon " + this.chatIcon());
+        this.htmlTag.find(".chatIcon").attr("class", "chatIcon icon " + this.chatIcon());
         if(flag) {
             this.htmlTag.find(".name").css("color", "blue");
         } else {

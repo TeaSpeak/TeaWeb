@@ -1,5 +1,5 @@
 #chat {
-    font-family: Arial;
+    font-family: Arial, serif;
     font-size: 12px;
     /*white-space: pre;*/
     line-height: 1;
@@ -44,7 +44,6 @@
         max-width: 100%;
         flex-shrink: 0;
         flex-grow: 0;
-        /*height: 24px;*/
         overflow: auto;
         overflow-y: hidden;
         white-space: nowrap;
@@ -56,11 +55,12 @@
             background: #5f5f5f5f;
             display: inline-block;
             border: 1px solid #6f6f6f;
-            border-radius: 0px 0px 2px 2px;
+            border-radius: 0 0 2px 2px;
             vertical-align: middle;
             padding-right: 5px;
             padding-left: 2px;
             cursor: pointer;
+            height: 18px;
 
             &.active {
                 background: #11111111;
@@ -76,6 +76,10 @@
                     text-decoration: none;
                     cursor: pointer;
                 }
+            }
+
+            .name, .chatIcon {
+                display: inline-block;
             }
         }
     }
