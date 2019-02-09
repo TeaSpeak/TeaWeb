@@ -138,6 +138,8 @@ async function initialize() {
         displayCriticalError(tr("Failed to initialize ppt!"));
         return;
     }
+
+    setup_close();
 }
 
 function ab2str(buf) {
@@ -236,14 +238,6 @@ function main() {
     chat = new ChatBox($("#chat"));
     globalClient.setup();
 
-
-    if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false) && !native_client) {
-
-    }
-    //Modals.spawnConnectModal();
-    //Modals.spawnSettingsModal();
-    //Modals.createChannelModal(undefined);
-
     if(settings.static("connect_default", false) && settings.static("connect_address", "")) {
         const profile_uuid = settings.static("connect_profile") as string;
         console.log("UUID: %s", profile_uuid);
@@ -269,29 +263,7 @@ function main() {
             });
         }
     }
-    /*
-    let tag = $("#tmpl_music_frame").renderTag({
-        //thumbnail: "img/loading_image.svg"
-    });
 
-
-
-    $("#music-test").replaceWith(tag);
-
-    /*
-    createInputModal("Please enter some input", "A text with A", text => text.indexOf('a') != -1, result => {
-        console.error("Result: %o", result);
-    }, {
-    }).open();
-    */
-    //Modals.spawnSettingsModal();
-
-    setTimeout(() => {
-        //Modals.spawnPlaylistManage(globalClient);
-        //Modals.openBanList(globalClient);
-        //Modals.spawnPermissionEdit().open();
-        //Modals.createServerModal(globalClient.channelTree.server, () => {});
-    }, 1000);
     let _resize_timeout: NodeJS.Timer;
     $(window).on('resize', () => {
         if(_resize_timeout)
