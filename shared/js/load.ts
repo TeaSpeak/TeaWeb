@@ -1,3 +1,14 @@
+namespace app {
+    export enum Type {
+        UNKNOWN,
+        CLIENT_RELEASE,
+        CLIENT_DEBUG,
+        WEB_DEBUG,
+        WEB_RELEASE
+    }
+    export let type: Type = Type.UNKNOWN;
+}
+
 namespace loader {
     type Task = {
         name: string,
@@ -14,6 +25,10 @@ namespace loader {
             setting up the loading process
          */
         SETUP,
+        /*
+            loading all style sheet files
+         */
+        STYLE,
         /*
             loading all javascript files
          */
@@ -113,7 +128,7 @@ namespace loader {
         console.debug("[loader] finished loader.");
     }
 
-    type Script = string | string[];
+    type SourcePath = string | string[];
 
     function script_name(path: string | string[]) {
         if(Array.isArray(path)) {
@@ -133,7 +148,7 @@ namespace loader {
         }
     }
 
-    export async function load_script(path: Script) : Promise<void> {
+    export async function load_script(path: SourcePath) : Promise<void> {
         if(Array.isArray(path)) { //We have some fallback
             return load_script(path[0]).catch(error => {
                 if(error instanceof SyntaxError)
@@ -161,28 +176,35 @@ namespace loader {
                 };
                 window.addEventListener('error', error_handler as any);
 
+                const timeout_handle = setTimeout(() => {
+                    reject("timeout");
+                }, 5000);
                 tag.type = "application/javascript";
                 tag.async = true;
+                tag.defer = true;
                 tag.onerror = error => {
+                    clearTimeout(timeout_handle);
                     window.removeEventListener('error', error_handler as any);
                     tag.remove();
                     reject(error);
                 };
                 tag.onload = () => {
+                    clearTimeout(timeout_handle);
                     window.removeEventListener('error', error_handler as any);
                     console.debug("Script %o loaded", path);
                     setTimeout(resolve, 100);
                 };
+
                 document.getElementById("scripts").appendChild(tag);
                 tag.src = path;
             });
         }
     }
 
-    export async function load_scripts(paths: Script[]) : Promise<void> {
+    export async function load_scripts(paths: SourcePath[]) : Promise<void> {
         const promises: Promise<void>[] = [];
         const errors: {
-           script: Script,
+           script: SourcePath,
            error: any
         }[] = [];
 
@@ -204,6 +226,111 @@ namespace loader {
 
             displayCriticalError("Failed to load script " + script_name(errors[0].script) + " <br>" + "View the browser console for more information!");
             throw "failed to load script " + script_name(errors[0].script);
+        }
+    }
+
+    export async function load_style(path: SourcePath) : Promise<void> {
+        if(Array.isArray(path)) { //We have some fallback
+            return load_script(path[0]).catch(error => {
+                if(error instanceof SyntaxError)
+                    return Promise.reject(error.source);
+
+                if(path.length > 1)
+                    return load_script(path.slice(1));
+
+                return Promise.reject(error);
+            });
+        } else {
+            return new Promise<void>((resolve, reject) =>  {
+                const tag: HTMLLinkElement = document.createElement("link");
+
+                let error = false;
+                const error_handler = (event: ErrorEvent) => {
+                    console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
+                    if(event.filename == tag.href) { //FIXME!
+                        window.removeEventListener('error', error_handler as any);
+
+                        reject(new SyntaxError(event.error));
+                        event.preventDefault();
+                        error = true;
+                    }
+                };
+                window.addEventListener('error', error_handler as any);
+
+                const timeout_handle = setTimeout(() => {
+                    reject("timeout");
+                }, 5000);
+
+                tag.type = "text/css";
+                tag.rel="stylesheet";
+
+                tag.onerror = error => {
+                    clearTimeout(timeout_handle);
+                    window.removeEventListener('error', error_handler as any);
+                    tag.remove();
+                    console.error("File load error for file %s: %o", path, error);
+                    reject("failed to load file " + path);
+                };
+                tag.onload = () => {
+                    {
+                        const css: CSSStyleSheet = tag.sheet as CSSStyleSheet;
+                        const rules = css.cssRules;
+                        const rules_remove: number[] = [];
+                        const rules_add: string[] = [];
+
+                        for(let index = 0; index < rules.length; index++) {
+                            const rule = rules.item(index);
+                            let rule_text = rule.cssText;
+
+                            if(rule.cssText.indexOf("%%base_path%%") != -1) {
+                                rules_remove.push(index);
+                                rules_add.push(rule_text.replace("%%base_path%%", document.location.href));
+                            }
+                        }
+
+                        for(const index of rules_remove.sort((a, b) => b > a ? 1 : 0))
+                            css.removeRule(index);
+                        for(const rule of rules_add)
+                            css.insertRule(rule);
+                    }
+
+                    clearTimeout(timeout_handle);
+                    window.removeEventListener('error', error_handler as any);
+                    console.debug("Style sheet %o loaded", path);
+                    setTimeout(resolve, 100);
+                };
+
+                document.getElementById("style").appendChild(tag);
+                tag.href = path;
+            });
+        }
+    }
+
+    export async function load_styles(paths: SourcePath[]) : Promise<void> {
+        const promises: Promise<void>[] = [];
+        const errors: {
+            sheet: SourcePath,
+            error: any
+        }[] = [];
+
+        for(const sheet of paths)
+            promises.push(load_style(sheet).catch(error => {
+                errors.push({
+                    sheet: sheet,
+                    error: error
+                });
+                return Promise.resolve();
+            }));
+
+        await Promise.all([...promises]);
+
+        if(errors.length > 0) {
+            console.error("Failed to load the following style sheet:");
+            for(const sheet of errors)
+                console.log(" - %o: %o", sheet.sheet, sheet.error);
+
+            displayCriticalError("Failed to load style sheet " + script_name(errors[0].sheet) + " <br>" + "View the browser console for more information!");
+            throw "failed to load style sheet " + script_name(errors[0].sheet);
         }
     }
 }
@@ -247,6 +374,28 @@ function displayCriticalError(message: string) {
 
 /* all javascript loaders */
 const loader_javascript = {
+    detect_type: async () => {
+        /* test if js/proto.js is available. If so we're in debug mode */
+        const request = new XMLHttpRequest();
+        request.open('GET', 'js/proto.js', true);
+
+        await new Promise((resolve, reject) => {
+            request.onreadystatechange = () => {
+                if (request.readyState === 4){
+                    if (request.status === 404) {
+                        app.type = app.Type.WEB_RELEASE;
+                    } else {
+                        app.type = app.Type.WEB_DEBUG;
+                    }
+                    resolve();
+                }
+            };
+            request.onerror = () => {
+                reject("Failed to detect app type");
+            };
+            request.send();
+        });
+    },
     load_scripts: async () => {
         /*
       if(window.require !== undefined) {
@@ -261,8 +410,21 @@ const loader_javascript = {
     */
 
         if(!window.require) {
-            //await loader.load_script(["vendor/jquery/jquery.min.js"]);
+            await loader.load_script(["vendor/jquery/jquery.min.js"]);
         }
+
+        /* bootstrap material design and libs */
+        await loader.load_script(["vendor/popper/popper.js"]);
+
+        //depends on popper
+        await loader.load_script(["vendor/bootstrap-material/bootstrap-material-design.js"]);
+
+        loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+            name: "materialize body",
+            priority: 10,
+            function: async () => { $(document).ready(function() { $('body').bootstrapMaterialDesign(); }); }
+        });
+
         await loader.load_script("vendor/jsrender/jsrender.min.js");
         await loader.load_scripts([
             ["vendor/bbcode/xbbcode.js"],
@@ -270,20 +432,17 @@ const loader_javascript = {
             ["https://webrtc.github.io/adapter/adapter-latest.js"]
         ]);
 
-        try {
-            await loader.load_script("js/proto.js");
-            //we're loading for debug
-
-            loader.register_task(loader.Stage.JAVASCRIPT, {
-                name: "scripts debug",
-                priority: 20,
-                function: loader_javascript.load_scripts_debug
-            });
-        } catch(error) {
+        if(app.type == app.Type.WEB_RELEASE || app.type == app.Type.CLIENT_RELEASE) {
             loader.register_task(loader.Stage.JAVASCRIPT, {
                 name: "scripts release",
                 priority: 20,
                 function: loader_javascript.loadRelease
+            });
+        } else {
+            loader.register_task(loader.Stage.JAVASCRIPT, {
+                name: "scripts debug",
+                priority: 20,
+                function: loader_javascript.load_scripts_debug
             });
         }
     },
@@ -297,10 +456,12 @@ const loader_javascript = {
             })
         }
 
+        /* load the main app */
         await loader.load_scripts([
             ["wasm/TeaWeb-Identity.js"],
 
             //Load general API's
+            "js/proto.js",
             "js/i18n/localize.js",
             "js/log.js",
 
@@ -328,7 +489,6 @@ const loader_javascript = {
             "js/ui/modal/ModalSettings.js",
             "js/ui/modal/ModalCreateChannel.js",
             "js/ui/modal/ModalServerEdit.js",
-            "js/ui/modal/ModalConnect.js",
             "js/ui/modal/ModalChangeVolume.js",
             "js/ui/modal/ModalBanClient.js",
             "js/ui/modal/ModalBanCreate.js",
@@ -372,10 +532,9 @@ const loader_javascript = {
             "js/client.js",
             "js/chat.js",
 
-            "js/PPTListener.js"
-        ]);
+            "js/PPTListener.js",
 
-        await loader.load_scripts([
+
             "js/codec/CodecWrapperWorker.js",
             "js/profiles/identities/NameIdentity.js", //Depends on Identity
             "js/profiles/identities/TeaForumIdentity.js", //Depends on Identity
@@ -450,6 +609,59 @@ const loader_webassembly = {
     })
 };
 
+const loader_style = {
+    load_style: async () => {
+        await loader.load_styles([
+            "vendor/bbcode/xbbcode.css"
+        ]);
+
+        if(app.type == app.Type.WEB_DEBUG || app.type == app.Type.CLIENT_DEBUG) {
+            await loader_style.load_style_debug();
+        } else {
+            await loader_style.load_style_release();
+        }
+
+        /* the material design */
+        await loader.load_style("css/theme/bootstrap-material-design.css");
+    },
+
+    load_style_debug: async () => {
+        await loader.load_styles([
+            "css/static/main.css",
+            "css/static/helptag.css",
+            "css/static/scroll.css",
+            "css/static/ts/tab.css",
+            "css/static/ts/chat.css",
+            "css/static/ts/client.css",
+            "css/static/ts/icons.css",
+            "css/static/general.css",
+            "css/static/modals.css",
+            "css/static/modal-bookmarks.css",
+            "css/static/modal-connect.css",
+            "css/static/modal-channel.css",
+            "css/static/modal-query.css",
+            "css/static/modal-playlist.css",
+            "css/static/modal-banlist.css",
+            "css/static/modal-bancreate.css",
+            "css/static/modal-settings.css",
+            "css/static/modal-poke.css",
+            "css/static/modal-server.css",
+            "css/static/modal-permissions.css",
+            "css/static/music/info_plate.css",
+            "css/static/frame/SelectInfo.css",
+            "css/static/control_bar.css",
+            "css/static/context_menu.css",
+            "css/static/htmltags.css"
+        ]);
+    },
+
+    load_style_release: async () => {
+        await loader.load_styles([
+            "css/static/base.css",
+            "css/static/main.css",
+        ]);
+    }
+}
 
 async function load_templates() {
     try {
@@ -527,9 +739,7 @@ function fadeoutLoader(duration = undefined, minAge = undefined, ignoreAge = und
 }
 
 
-if(typeof Module === "undefined")
-    this["Module"] = {};
-
+window["Module"] = window["Module"] || {};
 navigator.browserSpecs = (function(){
     let ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
     if(/trident/i.test(M[1])){
@@ -595,6 +805,13 @@ loader.register_task(loader.Stage.INITIALIZING, {
     priority: 10
 });
 
+
+loader.register_task(loader.Stage.INITIALIZING, {
+    name: "app type test",
+    function: loader_javascript.detect_type,
+    priority: 20
+});
+
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "javascript webassembly",
     function: loader_webassembly.awaiter,
@@ -605,6 +822,12 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 loader.register_task(loader.Stage.JAVASCRIPT, {
     name: "javascript",
     function: loader_javascript.load_scripts,
+    priority: 10
+});
+
+loader.register_task(loader.Stage.STYLE, {
+    name: "style",
+    function: loader_style.load_style,
     priority: 10
 });
 

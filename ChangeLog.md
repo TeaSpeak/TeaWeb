@@ -1,4 +1,14 @@
 # Changelog:
+* **XX.XX.19**
+    - Improved UI now using the material design framework based on bootstrap
+    - Fixed several UI overflow or small screen issues
+    - Improved permission editor performance
+    - Added hash rate to identity improve
+    - Merged CSS files in release mode
+    
+* **04.02.19**
+    - Fixed channel permissions
+    
 * **27.01.19**
     - Made sounds configurable
     - Added option to mute sounds when output is muted

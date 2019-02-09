@@ -33,6 +33,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <meta name="description" content="TeaSpeak Web Client, connect to any TeaSpeak server without installing anything." />
 
         <?php
             if(!$WEB_CLIENT) {
@@ -42,54 +43,25 @@
             }
         ?>
 
-        <link rel="stylesheet" href="css/main.css" type="text/css">
-        <link rel="stylesheet" href="css/helptag.css" type="text/css">
-        <link rel="stylesheet" href="css/scroll.css" type="text/css">
-        <link rel="stylesheet" href="css/ts/tab.css" type="text/css">
-        <link rel="stylesheet" href="css/ts/chat.css" type="text/css">
-        <link rel="stylesheet" href="css/ts/client.css" type="text/css">
-        <link rel="stylesheet" href="css/ts/icons.css" type="text/css">
-        <link rel="stylesheet" href="css/general.css" type="text/css">
-        <link rel="stylesheet" href="css/modals.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-bookmarks.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-connect.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-channel.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-query.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-playlist.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-banlist.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-bancreate.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-settings.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-poke.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-server.css" type="text/css">
-        <link rel="stylesheet" href="css/modal-permissions.css" type="text/css">
-        <link rel="stylesheet" href="css/loader.css" type="text/css">
-        <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
-        <link rel="stylesheet" href="css/frame/SelectInfo.css" type="text/css">
-        <link rel="stylesheet" href="css/control_bar.css" type="text/css">
-        <link rel="stylesheet" href="css/context_menu.css" type="text/css">
-        <link rel="stylesheet" href="css/htmltags.css" type="text/css">
-        <link rel="stylesheet" href="vendor/bbcode/xbbcode.css" type="text/css">
-        <!-- https://localhost:9987/?forward_url=http%3A%2F%2Flocalhost%3A63344%2FWeb-Client%2Findex.php%3F_ijt%3D82b1uhmnh0a5l1n35nnjps5eid%26loader_ignore_age%3D1%26connect_default_host%3Dlocalhost%26default_connect_type%3Dforum%26default_connect_url%3Dtrue%26default_connect_type%3Dteamspeak%26default_connect_url%3Dlocalhost%253A9987 -->
-        <!-- PHP generated properies -->
-        <!-- localhost:63342/TeaSpeak-Web/index.php?_ijt=o48hmliefjoa8cer8v7mpl98pj&connect_default_host=192.168.43.141 -->
+        <!-- PHP generated properties -->
         <x-properties id="properties">
-            <!-- <x-property key="" value=""/> -->
 			<?php
-				function spawnProperty($name, $value)
+				function spawn_property($name, $value)
 				{
-					echo '<x-property key="' . $name . '" value="' . urlencode($value) . '"></x-property>';
+				    if(isset($value))
+					    echo "\t\t\t<x-property key=\"" . $name . "\" value=\"" . urlencode($value) . "\"></x-property>\r\n";
 				}
 
-				spawnProperty('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
-				spawnProperty('localhost_debug', $localhost ? "true" : "false");
-                spawnProperty('forum_user_data', isset($GLOBALS["COOKIE_NAME_USER_DATA"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]] : "");
-				spawnProperty('forum_user_sign', isset($GLOBALS["COOKIE_NAME_USER_SIGN"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]] : "");
-				spawnProperty('forum_path', authPath());
+				spawn_property('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
+				spawn_property('localhost_debug', $localhost ? "true" : "false");
+				spawn_property('forum_user_data', isset($GLOBALS["COOKIE_NAME_USER_DATA"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]] : null);
+				spawn_property('forum_user_sign', isset($GLOBALS["COOKIE_NAME_USER_SIGN"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]] : null);
+				spawn_property('forum_path', authPath());
 
 				$version = file_get_contents("./version");
 				if ($version === false)
 				    $version = "unknown";
-				spawnProperty("version", $version);
+				spawn_property("version", $version);
 			?>
         </x-properties>
 
@@ -106,28 +78,44 @@
             gtag('config', 'UA-113151733-4');
         </script>
 
-        <!-- material design -->
-        <!-- <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous"> -->
-        <link rel="stylesheet" href="css/bootstrap-material-design.css">
-        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-        <script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
-        <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
-        <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
+        <!-- required static style for the critical page and the enable javascript page -->
+        <style>
+            .fulloverlay {
+                z-index: 10000;
+                display: none;
+                position: fixed;
 
-        <script>
-            //const exports = {};
-        </script>
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+
+                background-color: gray;
+                text-align: center;
+            }
+
+            .fulloverlay .container {
+                position: relative;
+                display: inline-block;
+                top: 30%
+            }
+
+            .no-js {
+                display: block;
+            }
+        </style>
+
+        <div id="style">
+            <link rel="stylesheet" href="css/loader/loader.css">
+        </div>
         <div id="scripts">
             <script type="application/javascript" src="js/load.js" defer></script>
         </div>
     </head>
     <body>
-		<?php
-            if(true) {
-        ?>
         <!-- No javascript error -->
-        <div style="display: block; position: fixed; top: 0px; bottom: 0px; left: 0px; right: 0px; background-color: gray; z-index: 1000; text-align: center;" class="no-js">
-            <div style="position: relative; display: inline-block; top: 30%">
+        <div class="fulloverlay no-js">
+            <div class="container">
                 <img src="img/script.svg" height="128px">
                 <h1>Please enable JavaScript</h1>
                 <h3>TeaSpeak web could not run without it!</h3>
@@ -139,7 +127,6 @@
             while (elements.length > 0) //Removing these elements (even self)
                 elements.item(0).remove();
         </script>
-		<?php } ?>
 
         <!-- Loading screen -->
         <div class="loader">
@@ -159,8 +146,8 @@
         </div>
 
         <!-- Critical load error -->
-        <div style="display: none; position: fixed; top: 0; bottom: 0; left: 0; right: 0; background-color: gray; z-index: 1000; text-align: center;" id="critical-load">
-            <div style="position: relative; display: inline-block; top: 30%">
+        <div class="fulloverlay" id="critical-load">
+            <div class="container">
                 <img src="img/script.svg" height="128px">
                 <h1 style="color: red">Got some trouble while loading important files!</h1>
                 <h3 class="detail"></h3>
@@ -176,23 +163,26 @@
         </div>
     </body>
 
-	<?php
-        if($WEB_CLIENT) {
-			$TAG = "<footer>
-                    <div class=\"container\" style=\"display: flex; flex-direction: row; align-content: space-between;\">
-                        <div style=\"align-self: center; position: fixed; left: 5px;\">Open source on <a href=\"https://github.com/TeaSpeak/TeaSpeak-Web\" style=\"display: inline-block; position: relative\">github.com</a></div>
-                        <div style=\"align-self: center;\">TeaSpeak Web client (" . $version . ") by WolverinDEV</div>
-                        <div style=\"align-self: center; position: fixed; right: 5px;\">";
+    <?php
+        $footer_style = "display: none;";
+        $footer_forum = '';
+
+		if($WEB_CLIENT) {
+			$footer_style = "display: block;";
 
 			if (logged_in()) {
-				$TAG = $TAG . "<a href=\"" . authPath() . "auth.php?type=logout\">logout</a>";
+				$footer_forum = "<a href=\"" . authPath() . "auth.php?type=logout\">logout</a>";
 			} else {
-				$TAG = $TAG . "<a href=\"" . authPath() . "login.php\">Login</a> via the TeaSpeak forum.";
+				$footer_forum = "<a href=\"" . authPath() . "login.php\">Login</a> via the TeaSpeak forum.";
 			}
-
-			echo $TAG . "</div>
-            </div>
-        </footer>";
 		}
     ?>
+
+    <footer style="<?php echo $footer_style; ?>">
+        <div class="container" style="display: flex; flex-direction: row; align-content: space-between;">
+            <div style="align-self: center; position: fixed; left: 5px;">Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web" style="display: inline-block; position: relative">github.com</a></div>
+            <div style="align-self: center;">TeaSpeak Web client (<?php echo $version; ?>) by WolverinDEV</div>
+            <div style="align-self: center; position: fixed; right: 5px;"><?php echo $footer_forum; ?></div>
+        </div>
+    </footer>
 </html>

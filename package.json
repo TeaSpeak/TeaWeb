@@ -10,6 +10,7 @@
     "dtsgen": "node tools/dtsgen/index.js",
     "trgen": "node tools/trgen/index.js",
     "ttsc": "ttsc",
+    "csso": "csso",
     "rebuild-structure-web-dev": "php files.php generate web dev"
   },
   "author": "TeaSpeak (WolverinDEV)",
@@ -22,6 +23,7 @@
     "@types/node": "^9.4.6",
     "@types/sha256": "^0.2.0",
     "@types/websocket": "0.0.38",
+    "csso-cli": "^2.0.2",
     "electron": "^3.0.2",
     "gulp": "^3.9.1",
     "sass": "^1.14.1",
@@ -37,5 +39,8 @@
   "bugs": {
     "url": "https://github.com/TeaSpeak/TeaWeb/issues"
   },
-  "homepage": "https://www.teaspeak.de"
+  "homepage": "https://www.teaspeak.de",
+  "dependencies": {
+    "clean-css": "^4.2.1"
+  }
 }

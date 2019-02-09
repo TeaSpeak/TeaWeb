@@ -37,13 +37,37 @@
 			"path" => "js/workers/",
 			"local-path" => "./shared/js/workers/"
 		],
-		[ /* shared css files */
+		[ /* shared developer single css files */
+			"type" => "css",
+			"search-pattern" => "/.*\.css$/",
+			"build-target" => "dev",
+
+			"path" => "css/",
+			"local-path" => "./shared/css/"
+		],
+		[ /* shared release css files */
+			"type" => "css",
+			"search-pattern" => "/.*\.css$/",
+			"build-target" => "rel",
+
+			"path" => "css/",
+			"local-path" => "./shared/generated/"
+		],
+		[ /* shared release css files */
+			"type" => "css",
+			"search-pattern" => "/.*\.css$/",
+			"build-target" => "rel",
+
+			"path" => "css/loader/",
+			"local-path" => "./shared/css/loader/"
+		],
+		[ /* shared release css files */
 			"type" => "css",
 			"search-pattern" => "/.*\.css$/",
 			"build-target" => "dev|rel",
 
-			"path" => "css/",
-			"local-path" => "./shared/css/"
+			"path" => "css/theme/",
+			"local-path" => "./shared/css/theme/"
 		],
 		[ /* shared sound files */
 			"type" => "wav",

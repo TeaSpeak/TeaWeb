@@ -44,12 +44,6 @@
 .channelTree div.c {justify-content: center;}
 .channelTree div.r {justify-content: flex-end;}
 
-.channelTree div.solidline{ background: url('../images/viewer/spacer_solidline.gif') repeat-x left center;margin: 0px; }
-.channelTree div.dashline{ background: url('../images/viewer/spacer_dashline.gif') repeat-x left center;margin: 0px; }
-.channelTree div.dashdotline{ background: url('../images/viewer/spacer_dashdotline.gif') repeat-x left center;margin: 0px; }
-.channelTree div.dashdotdotline{ background: url('../images/viewer/spacer_dashdotdotline.gif') repeat-x left center;margin: 0px; }
-.channelTree div.dotline{ background: url('../images/viewer/spacer_dotline.gif') repeat-x left center;margin: 0px; }
-
 .channelTree div * {vertical-align: middle;display:inline-block;height: 16px;padding: 0px;}
 .channelTree div img  {border: 0;}
 .channelTree div > span {position: absolute; right: 0;}
@@ -143,7 +137,7 @@
     background: #005cbf;
 }
 
-.clicon {width:16px;height:16px;background:url('../../img/ts/basic_icons.png') no-repeat;background-size: 16px 608px;}
+.clicon {width:16px;height:16px;background:url('%%base_path%%/img/ts/basic_icons.png') no-repeat;background-size: 16px 608px;}
 .host {background-position: 0 -448px}
 
 .server_open {background-position: 0 -352px}
