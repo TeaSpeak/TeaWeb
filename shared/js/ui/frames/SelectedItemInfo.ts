@@ -160,6 +160,13 @@ class Hostbanner {
             properties["property_" + key] = server.properties[key];
 
         const rendered = $("#tmpl_selected_hostbanner").renderTag(properties);
+
+        console.debug(tr("Hostbanner has been loaded"));
+        if(server.properties.virtualserver_hostbanner_gfx_interval > 0)
+            this.updater = setTimeout(() => this.update(), Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60) * 1000);
+
+        return Promise.resolve(rendered);
+        /*
         const image = rendered.find("img");
         return new Promise<JQuery<HTMLElement>>((resolve, reject) => {
             const node_image = image[0] as HTMLImageElement;
@@ -173,6 +180,7 @@ class Hostbanner {
                 reject(event);
             }
         });
+        */
     }
 }
 

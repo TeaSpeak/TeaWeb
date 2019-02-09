@@ -2159,7 +2159,7 @@
             {{/if}}
 
             {{if property_client_flag_avatar && property_client_flag_avatar.length > 0}}
-                <div style="margin-top: 10px;">
+                <div style="margin-top: 10px;" class="client-avatar">
                     <node key="client_avatar"/>
                 </div>
             {{/if}}
@@ -2238,9 +2238,10 @@
         </script>
         <script class="jsrender-template" id="tmpl_selected_hostbanner" type="text/html">
             <div class="hostbanner">
-                <a href="{{:property_virtualserver_hostbanner_url}}" target="_blank" style="display: flex; flex-direction: row; justify-content: center;">
+                <a href="{{:property_virtualserver_hostbanner_url}}" target="_blank" style="display: flex; flex-direction: row; justify-content: center; height: 100%">
 
-                    <img src="
+                    <div style="
+                        background:center no-repeat url(
                                     {{:property_virtualserver_hostbanner_gfx_url}}
                                     {{if property_virtualserver_hostbanner_gfx_interval > 0}}
                                         {{*
@@ -2251,17 +2252,22 @@
                                         }}
                                         ?ts={{*:date}}
                                     {{/if}}
-                                 "
-                         {{if property_virtualserver_hostbanner_mode == 0}}
+                        );
 
-                         {{else property_virtualserver_hostbanner_mode == 1}}
-                         style="width: 100%; height: 100%;"
-                         {{else property_virtualserver_hostbanner_mode == 2}}
-                         style="width: 100%; height: auto;"
-                         {{/if}}
+                        background-position: center;
+                        {{if property_virtualserver_hostbanner_mode == 0}}
 
-                    alt="{{tr "Host banner"/}}"
-                    >
+                        {{else property_virtualserver_hostbanner_mode == 1}}
+                            width: 100%; height: auto;
+                        {{else property_virtualserver_hostbanner_mode == 2}}
+                            background-size:contain;
+                            width:100%;
+                            height:100%
+                        {{/if}}
+                        "
+
+                         alt="{{tr "Host banner"/}}"
+                    ></div>
                 </a>
             </div>
         </script>

@@ -97,7 +97,9 @@
             .fulloverlay .container {
                 position: relative;
                 display: inline-block;
-                top: 30%
+                top: 30%;
+
+                max-width: unset!important; /* override bootstrap */
             }
 
             .no-js {
@@ -148,8 +150,8 @@
         <!-- Critical load error -->
         <div class="fulloverlay" id="critical-load">
             <div class="container">
-                <img src="img/script.svg" height="128px">
-                <h1 style="color: red">Got some trouble while loading important files!</h1>
+                <img src="img/loading_error_right.svg" height="192px">
+                <h1 style="color: red">Ooops, we encountered some trouble while loading important files!</h1>
                 <h3 class="detail"></h3>
             </div>
         </div>
