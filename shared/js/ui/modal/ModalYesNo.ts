@@ -1,38 +1,44 @@
 /// <reference path="../../utils/modal.ts" />
 
 namespace Modals {
-    export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_: boolean) => any) {
-        let modal;
-        modal = createModal({
-            header: header,
-            body: body,
-            footer: () => {
-                let footer = $.spawn("div");
-                footer.addClass("modal-button-group");
-                footer.css("margin-top", "5px");
-                footer.css("margin-bottom", "5px");
-                footer.css("text-align", "right");
+    export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_: boolean) => any, properties?: {
+        text_yes?: string,
+        text_no?: string
+    }) {
+        properties = properties || {};
 
-                let button_yes = $.spawn("button");
-                button_yes.text(tr("Yes"));
-                button_yes.click(() => {
-                    modal.close();
-                    callback(true);
-                });
-                footer.append(button_yes);
+        const props = ModalFunctions.warpProperties({});
+        props.template_properties || (props.template_properties = {});
+        props.template_properties.text_yes = properties.text_yes || tr("Yes");
+        props.template_properties.text_no = properties.text_no || tr("No");
+        props.template = "#tmpl_modal_yesno";
 
-                let button_no = $.spawn("button");
-                button_no.text(tr("No"));
-                button_no.click(() => {
-                    modal.close();
-                    callback(false);
-                });
-                footer.append(button_no);
+        props.header = header;
+        props.template_properties.question = ModalFunctions.jqueriefy(body);
 
-                return footer;
-            },
-            width: 750
+        const modal = createModal(props);
+        let submited = false;
+        const button_yes = modal.htmlTag.find(".button-yes");
+        const button_no = modal.htmlTag.find(".button-no");
+
+        button_yes.on('click', event => {
+            if(!submited) {
+                submited = true;
+                callback(true);
+            }
+            modal.close();
         });
+
+        button_no.on('click', event => {
+            if(!submited) {
+                submited = true;
+                callback(false);
+            }
+            modal.close();
+        });
+
+        modal.close_listener.push(() => button_no.trigger('click'));
         modal.open();
+        return modal;
     }
 }

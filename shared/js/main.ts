@@ -248,14 +248,13 @@ function main() {
         const profile_uuid = settings.static("connect_profile") as string;
         console.log("UUID: %s", profile_uuid);
         const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
-        console.log("UUID: %s", profile.id);
         const address = settings.static("connect_address", "");
         const username = settings.static("connect_username", "Another TeaSpeak user");
 
         const password = settings.static("connect_password", "");
         const password_hashed = settings.static("connect_password_hashed", false);
 
-        if(profile.valid()) {
+        if(profile && profile.valid()) {
             globalClient.startConnection(address, profile, username, password.length > 0 ? {
                 password: password,
                 hashed: password_hashed
@@ -279,15 +278,20 @@ function main() {
 
     $("#music-test").replaceWith(tag);
 
-    Modals.spawnSettingsModal();
     /*
-    Modals.spawnYesNo("Are your sure?", "Do you really want to exit?", flag => {
-        console.log("Response: " + flag);
-    })
+    createInputModal("Please enter some input", "A text with A", text => text.indexOf('a') != -1, result => {
+        console.error("Result: %o", result);
+    }, {
+    }).open();
     */
+    //Modals.spawnSettingsModal();
 
-    setup_close();
-
+    setTimeout(() => {
+        //Modals.spawnPlaylistManage(globalClient);
+        //Modals.openBanList(globalClient);
+        //Modals.spawnPermissionEdit().open();
+        //Modals.createServerModal(globalClient.channelTree.server, () => {});
+    }, 1000);
     let _resize_timeout: NodeJS.Timer;
     $(window).on('resize', () => {
         if(_resize_timeout)

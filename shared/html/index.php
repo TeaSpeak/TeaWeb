@@ -32,6 +32,8 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
         <?php
             if(!$WEB_CLIENT) {
                 echo "<title>TeaClient</title>";
@@ -51,12 +53,15 @@
         <link rel="stylesheet" href="css/modals.css" type="text/css">
         <link rel="stylesheet" href="css/modal-bookmarks.css" type="text/css">
         <link rel="stylesheet" href="css/modal-connect.css" type="text/css">
+        <link rel="stylesheet" href="css/modal-channel.css" type="text/css">
         <link rel="stylesheet" href="css/modal-query.css" type="text/css">
         <link rel="stylesheet" href="css/modal-playlist.css" type="text/css">
         <link rel="stylesheet" href="css/modal-banlist.css" type="text/css">
         <link rel="stylesheet" href="css/modal-bancreate.css" type="text/css">
         <link rel="stylesheet" href="css/modal-settings.css" type="text/css">
         <link rel="stylesheet" href="css/modal-poke.css" type="text/css">
+        <link rel="stylesheet" href="css/modal-server.css" type="text/css">
+        <link rel="stylesheet" href="css/modal-permissions.css" type="text/css">
         <link rel="stylesheet" href="css/loader.css" type="text/css">
         <link rel="stylesheet" href="css/music/info_plate.css" type="text/css">
         <link rel="stylesheet" href="css/frame/SelectInfo.css" type="text/css">
@@ -100,6 +105,15 @@
             gtag('js', new Date());
             gtag('config', 'UA-113151733-4');
         </script>
+
+        <!-- material design -->
+        <!-- <link rel="stylesheet" href="https://unpkg.com/bootstrap-material-design@4.1.1/dist/css/bootstrap-material-design.min.css" integrity="sha384-wXznGJNEXNG1NFsbm0ugrLFMQPWswR3lds2VeinahP8N0zJw9VWSopbjv2x7WCvX" crossorigin="anonymous"> -->
+        <link rel="stylesheet" href="css/bootstrap-material-design.css">
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script src="https://unpkg.com/popper.js@1.12.6/dist/umd/popper.js" integrity="sha384-fA23ZRQ3G/J53mElWqVJEGJzU0sTs+SvzG8fXVWP+kJQ1lwFAOkcUOysnlKJC33U" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/bootstrap-material-design@4.1.1/dist/js/bootstrap-material-design.js" integrity="sha384-CauSuKpEqAFajSpkdjv3z9t8E7RlpJ1UP0lKM/+NdtSarroVKu069AlsRPKkFBz9" crossorigin="anonymous"></script>
+        <script>$(document).ready(function() { $('body').bootstrapMaterialDesign(); });</script>
+
         <script>
             //const exports = {};
         </script>

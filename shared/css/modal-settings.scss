@@ -1,3 +1,6 @@
+$small_device: 800px; /* tested out via audio tab */
+
+
 .modal .settings_audio {
 	display: flex;
 	flex-direction: column;
@@ -7,12 +10,17 @@
 	user-select: none;
 
 	margin: 3px;
+
 	> div {
 		margin: 2px;
 	}
 
 	a {
 		align-self: center;
+	}
+
+	.settings-device-error {
+		display: none;
 	}
 
 	.group_box {
@@ -24,7 +32,7 @@
 			flex-shrink: 1;
 
 			.content {
-				display: flex;
+				display: block;
 				flex-direction: column;
 			}
 		}
@@ -32,33 +40,18 @@
 
 	.settings-device {
 		display: flex;
-		flex-direction: column;
-		width: 100%;
-
-		a {
-			flex-grow: 0;
-		}
-
-		.settings-device-error {
-			display: none;
-
-			width: 100%;
-			margin-bottom: 3px;
-			padding: 2px;
-
-			align-self: center;
-			text-align: center;
-
-			vertical-align: center;
-			border: darkred 2px solid;
-			border-radius: 4px;
-			background: #be00006b;
-		}
+		flex-direction: row;
+		justify-items: stretch;
 
 		.settings-device-select {
+			flex-grow: 1;
+			flex-shrink: 1;
+
 			display: flex;
 			flex-direction: row;
 			justify-content: stretch;
+
+			margin-right: 5px;
 
 			> div {
 				flex-grow: 1;
@@ -75,11 +68,35 @@
 
 	.settings-vad-container {
 		display: flex;
-		flex-direction: row;
 		margin-top: 5px;
+		min-height: 150px;
+		flex-direction: column;
+		width: 100%;
 
 		> div {
-			width: 50%;
+			width: 100%;
+
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		/* for "normal" devices */
+		@media (min-width: $small_device) {
+			flex-direction: row;
+
+			> div {
+				width: unset;
+			}
+		}
+
+		.group_box {
+			min-width: 250px;
+		}
+
+		.content {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-around;
 		}
 
 		fieldset {
@@ -94,6 +111,12 @@
 		}
 
 		.settings-vad-impl {
+			.setting-vad-ppt {
+				@media (min-width: $small_device) {
+					margin-bottom: -35px;
+				}
+			}
+
 			display: flex;
 			justify-content: space-around;
 			padding: 5px;
@@ -104,6 +127,74 @@
 
 			.settings-vad-impl-entry {
 				display: none;
+			}
+
+			.setting-vad-vad {
+				.vad_vad_bar {
+					position: relative;
+					width: 100%;
+					height: 20px;
+
+					background-image: linear-gradient(to right, green, yellow, red);
+					background-repeat: no-repeat;
+					background-size: 100%;
+					background-position: 0 100%;
+
+					display: flex;
+					flex-direction: column;
+
+					.bmd-form-group {
+						display: flex;
+						padding: 0px;
+					}
+
+					.container-hider {
+						position: absolute;
+						height: 100%;
+						width: 100%;
+
+						display: flex;
+						flex-direction: row-reverse;
+
+						.hider {
+							width: 50%;
+							height: 100%;
+
+							background-color: grey;
+						}
+					}
+				}
+
+				/* The slider itself */
+				.vad_vad_slider {
+					margin: 0;
+					background-color: gray;
+					-webkit-appearance: none; /* Override default CSS styles */
+					appearance: none;
+					width: 100%;
+					height: 100%;
+					outline: none;
+					opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+					-webkit-transition: .2s; /* 0.2 seconds transition on hover */
+					transition: opacity .2s;
+				}
+
+				/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
+				.vad_vad_slider::-webkit-slider-thumb {
+					-webkit-appearance: none; /* Override default look */
+					appearance: none;
+					width: 2px; /* Set a specific slider handle width */
+					height: 20px; /* Slider handle height */
+					background: #000000FF; /* Green background */
+					cursor: pointer; /* Cursor on hover */
+				}
+
+				.vad_vad_slider::-moz-range-thumb {
+					width: 2px; /* Set a specific slider handle width */
+					height: 100%; /* Slider handle height */
+					background: #000000FF; /* Green background */
+					cursor: pointer; /* Cursor on hover */
+				}
 			}
 		}
 
@@ -116,8 +207,19 @@
 				margin-right: 5px;
 			}
 
+			&.ppt-key {
+				.key {
+					align-self: center;
+				}
+
+				button {
+					min-width: 100px;
+				}
+			}
+
 			&.ppt-delay {
 				margin-top: 5px;
+
 				.value {
 					display: inline-block;
 					position: relative;
@@ -156,11 +258,14 @@
 			justify-content: stretch;
 
 			.key {
-				width: 150px;
+				/*
+				width: 250px;
 
 				&.muted-sounds {
 					width: 230px;
 				}
+				*/
+				margin-right: 10px;
 			}
 
 			.value {
@@ -180,6 +285,19 @@
 						margin-left: 5px;
 						width: 50px;
 						text-align: right;
+					}
+				}
+
+				.bmd-form-group {
+					padding: 0;
+
+					label {
+						margin: 0;
+						top: -7px;
+					}
+
+					.bmd-switch-track {
+						top: 0;
 					}
 				}
 			}
@@ -202,8 +320,17 @@
 					width: 150px;
 					flex-grow: 0;
 
-					input {
-						margin-left: 75px;
+					.bmd-form-group {
+						padding: 0;
+
+						label {
+							margin: 0 0 0 75px;
+							top: -7px;
+						}
+
+						.bmd-switch-track {
+							top: 0;
+						}
 					}
 				}
 			}
@@ -213,7 +340,7 @@
 				flex-shrink: 0;
 				display: flex;
 				flex-direction: row;
-				height: 20px;
+				align-items: center;
 
 				.column {
 					border: 1px solid lightgray;
@@ -264,6 +391,7 @@
 			}
 		}
 
+		/*
 		.sound-list-filter {
 			margin-top: 3px;
 
@@ -280,11 +408,13 @@
 				margin-right: 8px;
 			}
 		}
+		*/
 	}
 }
 
 .modal .settings-translations {
 	margin: 5px;
+
 	.setting-list {
 		user-select: none;
 
@@ -311,7 +441,8 @@
 				flex-direction: row;
 				justify-content: stretch;
 
-				.default { }
+				.default {
+				}
 
 				.name {
 					flex-grow: 1;
@@ -423,6 +554,7 @@
 				display: flex;
 				flex-direction: column;
 			}
+
 			.contributor {
 				display: block;
 			}
@@ -508,6 +640,7 @@
 
 .modal .settings-profiles {
 	margin: 5px;
+
 	> div:not(:first-of-type) {
 		margin-top: 5px;
 	}
@@ -620,10 +753,6 @@
 				flex-grow: 1;
 				flex-shrink: 1;
 			}
-
-			.select-container {
-				text-align: right;
-			}
 		}
 	}
 
@@ -643,6 +772,26 @@
 		}
 
 		&.identity-settings-teamspeak {
+			.level {
+				padding-right: 5px;
+				padding-left: 5px;
+
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+
+				.container-input {
+					flex-grow: 1;
+					flex-shrink: 1;
+
+					display: flex;
+					flex-direction: row;
+					justify-content: stretch;
+
+					margin-right: 10px;
+				}
+			}
+
 			.property {
 				&:not(:first-of-type) {
 					margin-top: 5px;
@@ -662,18 +811,6 @@
 
 					input {
 						width: 100%;
-					}
-				}
-
-				&.level {
-					.value {
-						display: flex;
-						flex-direction: row;
-						justify-content: stretch;
-
-						button {
-							margin-left: 5px;
-						}
 					}
 				}
 			}
@@ -739,45 +876,15 @@
 	display: flex;
 	flex-direction: column;
 
-	.property {
-		&:not(:first-of-type) {
-			margin-top: 5px;
-		}
-
+	.bmd-label-static {
 		display: flex;
 		flex-direction: row;
-		justify-content: stretch;
-
-		.key {
-			display: flex;
-			flex-direction: row;
-			flex-grow: 0;
-			flex-shrink: 0;
-			width: 120px;
-
-			.help-tagged {
-				width: 80px;
-			}
-		}
-
-		.value {
-			flex-grow: 1;
-			flex-shrink: 2;
-
-			input {
-				width: 100%;
-			}
-		}
 	}
 
-	.row {
-		display: flex;
-		flex-direction: row;
+	.form-row {
+		margin-right: 0!important;
+		margin-left: 0!important;
 		justify-content: space-between;
-
-		.property {
-			margin-top: 0px;
-		}
 	}
 
 	.buttons {
@@ -787,7 +894,7 @@
 		flex-direction: row;
 		justify-content: space-between;
 
-		button  {
+		button {
 			width: 100px;
 		}
 	}

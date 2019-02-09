@@ -180,10 +180,9 @@ namespace Modals {
             header: tr("Banlist"),
             body: () => {
                 let template = $("#tmpl_ban_list").renderTag();
-                template = $.spawn("div").append(template);
 
                 apply_filter(template.find(".entry-filter"), template.find(".filter-flag-force-own"), template.find(".filter-flag-highlight-own"), template.find(".ban-entry-list"));
-                update_function = apply_buttons(template.find(".manage-buttons"), template.find(".ban-entry-list"), callback_add, _callback_edit, _callback_delete);
+                update_function = apply_buttons(template.find(".manage-buttons"), template.find(".entry-container .entries"), callback_add, _callback_edit, _callback_delete);
                 template.find(".button-close").on('click', _ => modal.close());
                 template.find(".button-refresh").on('click', () => callback_update());
                 return template;
@@ -195,17 +194,18 @@ namespace Modals {
         modal.open();
         modal.close_listener.push(() => entries = []);
 
+        const template_entry = $("#tmpl_ban_entry");
         result.addbans = (bans: BanEntry[]) => {
             for(const entry of bans) {
                 entries.push(entry);
-                $("#tmpl_ban_entry").renderTag(entry).appendTo(modal.htmlTag.find(".ban-entry-list"));
+                template_entry.renderTag(entry).appendTo(modal.htmlTag.find(".entry-container .entries"));
             }
             modal.htmlTag.find(".entry-filter").trigger("change");
             update_function();
         };
         result.clear = () => {
             entries = [];
-            modal.htmlTag.find(".ban-entry-list").children().detach();
+            modal.htmlTag.find(".entry-container .entries").children().detach();
             update_function();
         };
 
@@ -253,24 +253,24 @@ namespace Modals {
 
     function apply_buttons(tag: JQuery, elements: JQuery, cb_add: () => any, cb_edit: (id: number) => any, cb_delete: (id: number) => any) : () => any {
         const update = () => {
-            console.log(elements.find("tr.selected").length);
-            $(".button-edit, .button-remove").prop("disabled", elements.find("tr.selected").length == 0);
+            console.log(elements.find(".ban-entry.selected").length);
+            $(".button-edit, .button-remove").prop("disabled", elements.find(".ban-entry.selected").length == 0);
         };
 
         tag.find(".button-add").on('click', event => cb_add());
         tag.find(".button-edit").on('click', event => {
-            const selected = elements.find("tr.selected");
+            const selected = elements.find(".ban-entry.selected");
             if(!selected) return;
             cb_edit(parseInt(selected.attr("ban-id")));
         });
         tag.find(".button-remove").on('click', event => {
-            const selected = elements.find("tr.selected");
+            const selected = elements.find(".ban-entry.selected");
             if(!selected) return;
             cb_delete(parseInt(selected.attr("ban-id")));
         });
 
         const element_selected = element => {
-            elements.find("tr").removeClass("selected");
+            elements.find(".ban-entry").removeClass("selected");
             if(element.is(":visible"))
                 element.addClass("selected");
 
@@ -296,7 +296,7 @@ namespace Modals {
         };
 
         return () => {
-            elements.find("tr").each((_idx, _entry) => {
+            elements.find(".ban-entry").each((_idx, _entry) => {
                 _entry.addEventListener("click", click_handler);
                 _entry.addEventListener("contextmenu", context_handler)
             });

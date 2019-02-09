@@ -81,7 +81,6 @@ namespace Modals {
             header: tr("Manage playlists"),
             body: () => {
                 let template = $("#tmpl_playlist_list").renderTag();
-                template = $.spawn("div").append(template);
 
                 /* first open the modal */
                 setTimeout(() => {

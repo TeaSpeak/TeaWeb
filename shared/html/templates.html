@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <link rel="stylesheet" type="text/css" href="../css/modals.scss"/>
         <meta charset="UTF-8">
         <title>TeaSpeak-Web client templates</title>
     </head>
@@ -119,8 +120,14 @@
                                     <div class="chats"></div>
                                     <div class="input">
                                         <!--<div contentEditable="true" class="input_box"></div>-->
-                                        <textarea class="input_box client-chat-box-field" placeholder="{{tr 'enter a chat message...' /}}"></textarea>
-                                        <button>Send</button>
+                                        <div class="form-group">
+                                            <textarea id="input-chat-input"
+                                                   type="text"
+                                                   class="form-control input-message"
+                                                   placeholder="{{tr 'enter a chat message...' /}}"
+                                                   autocomplete="off"></textarea>
+                                        </div>
+                                        <button class="btn btn-primary button-send">{{tr "Send" /}}</button>
                                     </div>
                                 </div>
                             </div>
@@ -138,51 +145,171 @@
             </div>
             <div id="contextMenu" class="context-menu"></div>
         </script>
-        <!-- Template for the connect modal -->
-        <script class="jsrender-template" id="tmpl_connect" type="text/html">
-            <div class="modal-connect">
-                <div style="display: flex; flex-direction: row; width: 100%; justify-content: space-between">
-                    <div style="width: 68%; margin-bottom: 5px">
-                        <div>{{tr "Remote address and port:" /}}</div>
-                        <input type="text" style="width: 100%" class="connect_address" value="unknown">
+
+        <script class="jsrender-template" id="tmpl_modal" type="text/html">
+            <div class="modal fade" tabindex="-1" role="dialog" style="padding-right: 8%; padding-left: 8%;" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: unset;">
+                    <div class="modal-content" style="{{if full_size}}flex-grow: 1{{/if}}">
+                        <div class="modal-header {{if header_class}}{{:header_class}}{{/if}}">
+                            <node key="modal_header"></node>
+                            {{if closeable}}
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{/if}}
+                        </div>
+                        <div class="modal-body">
+                            <node key="modal_body"></node>
+                        </div>
+                        {{if modal_footer}}
+                        <div class="modal-footer">
+                            <node key="modal_footer"></node>
+                        </div>
+                        {{/if}}
                     </div>
-                    <div style="width: 20%">
-                        <div>{{tr "Server password:" /}}</div>
-                        <form name="server_password_form" onsubmit="return false;">
-                            <input type="password" id="connect_server_password_{{rnd '0~13377331'/}}" autocomplete="off" style="width: 100%" class="connect_password">
-                        </form>
-                    </div>
-                </div>
-                <div>
-                    <div>{{tr "Nickname:" /}}</div>
-                    <input type="text" style="width: 100%" class="connect_nickname" value="">
-                </div>
-                <div class="profile-select-container">
-                    <div style="text-align: right;">{{tr "Connection profile:" /}}</div>
-                    <div class="profile-container">
-                        <select class="profile-select"> </select>
-                        <button class="button-manage-profiles">{{tr "Manage profiles" /}}</button>
-                    </div>
-                </div>
-                <div class="profile-invalid">
-                    <hr>
-                    <div>{{tr "The selected connect profile is invalid" /}}</div>
-                    <div><div>Click&nbsp;</div><a href="#" class="button-manage-profiles">here</a><div>&nbsp;to manage your connect profiles</div></div>
                 </div>
             </div>
         </script>
 
+        <script class="jsrender-template" id="tmpl_modal_input" type="text/html">
+            <div class="modal fade" tabindex="-1" role="dialog" style="padding-right: 8%; padding-left: 8%;" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: unset;">
+                    <div class="modal-content">
+                        <div class="modal-header modal-header-input">
+                            <node key="modal_header"></node>
+                            {{if closeable}}
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                            {{/if}}
+                        </div>
+                        <div class="modal-body modal-body-input">
+                            <node key="question"></node>
+                            <div class="form-group container-value {{if field_title}}with-title{{/if}}">
+                                {{if field_title}}
+                                    <label for="input-modal-input" class="bmd-label-floating">{{>field_title}}</label>
+                                {{/if}}
+                                <!-- placeholder="ts.teaspeak.de" -->
+                                <!-- aria-describedby="input-connect-address-help" -->
+                                <input id="input-modal-input"
+                                       type="text"
+                                       class="form-control"
+                                       {{if field_placeholder}} placeholder="{{>field_placeholder}}"{{/if}}
+                                       autocomplete="off"
+                                >
+                                {{if error_message || field_label}}
+                                <div class="container-help-feedback">
+                                    {{if error_message}}
+                                        <div class="invalid-feedback">{{>error_message}}</div>
+                                    {{/if}}
+                                    {{if field_label}}
+                                        <span class="bmd-help">{{>field_label}}</span>
+                                    {{/if}}
+                                </div>
+                                {{/if}}
+                            </div>
+                        </div>
+                        <div class="modal-footer modal-footer-button-group">
+                            <button type="button" class="btn btn-warning button-cancel">{{tr "Cancel" /}}</button>
+                            <button type="button" class="btn btn-raised btn-success button-submit">{{tr "Ok" /}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_modal_yesno" type="text/html">
+            <div class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" style="max-width: 80%" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header modal-header-warning bg-warning">
+                            <node key="modal_header"></node>
+                        </div>
+                        <div class="modal-body modal-body-input">
+                            <node key="question"></node>
+                        </div>
+                        <div class="modal-footer modal-footer-button-group">
+                            <button type="button" class="btn btn-danger button-no">{{>text_no}}</button>
+                            <button type="button" class="btn btn-raised btn-success button-yes">{{>text_yes}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <!-- Template for the connect modal -->
+        <script class="jsrender-template" id="tmpl_connect" type="text/html">
+            <modal>
+                <modal-header>
+                    <h5 class="modal-title">{{tr "Connect to a server" /}}</h5>
+                </modal-header>
+                <modal-body class="modal-connect">
+                    <div class="container-address-password">
+                        <div class="form-group container-address">
+                            <label for="input-connect-address">{{tr "Server Address" /}}</label>
+                            <input id="input-connect-address" type="text" class="form-control" aria-describedby="input-connect-address-help" placeholder="ts.teaspeak.de" autocomplete="off">
+                            <div class="invalid-feedback">{{tr "Please enter a valid server address" /}}</div>
+                        </div>
+                        <div class="form-group container-password">
+                            <label for="input-connect-password-{{>password_id}}" class="bmd-label-floating">{{tr "Server password" /}}</label>
+                            <form autocomplete="off" onsubmit="return false;">
+                                <input id="input-connect-password-{{>password_id}}" type="password" class="form-control" autocomplete="off">
+                            </form>
+                        </div>
+                    </div>
+                    <div class="form-group container-nickname">
+                        <label for="input-connect-nickname">{{tr "Nickname" /}}</label>
+                        <input id="input-connect-nickname" type="text" class="form-control" aria-describedby="input-connect-nickname-help" placeholder="Another TeaSpeak user">
+                        <div class="invalid-feedback">{{tr "Please enter a valid server nickname" /}}</div>
+                        <!-- <small id="input-connect-nickname-help" class="form-text text-muted">We'll never share your email with anyone else.</small> -->
+                    </div>
+                    <div class="container-profile-manage">
+                        <div class="form-group container-select-profile">
+                            <label for="select-connect-profile" class="bmd-label-floating">{{tr "Connect Profile" /}}</label>
+                            <select class="form-control" id="select-connect-profile"> </select>
+                            <div class="invalid-feedback">{{tr "Selected profile is invalid. Select another one or fix the profile." /}}</div>
+                        </div>
+                        <span class="form-group bmd-form-group container-manage"> <!-- needed to match padding for floating labels -->
+                            <button type="button" class="btn btn-raised button-manage-profiles">{{tr "Manage profiles" /}}</button>
+                        </span>
+                    </div>
+                </modal-body>
+                <modal-footer>
+                    <button type="button" class="btn btn-raised btn-success button-connect">Connect</button>
+                </modal-footer>
+            </modal>
+        </script>
+
+
         <!-- Template for channel create & edit-->
         <script class="jsrender-template" id="tmpl_channel_edit" type="text/html">
             <div class="align_column general_properties">
+                <div class="form-group">
+                    <label class="bmd-label-static">{{tr "Name:" /}}</label>
+                    <input class="form-control channel_name" value="{{>channel_name}}"/>
+                </div>
+                <div class="form-group">
+                    <label class="bmd-label-floating">{{tr "Channel password" /}}</label>
+
+                    <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
+                    <!-- Just display a random value here-->
+                    <input class="form-control channel_password" type="password" id="field_channel_password_{{rnd '0~13377331'/}}" {{if channel_flag_password}} value="WolverinDEV"{{/if}}/>
+                </div>
+                <div class="form-group">
+                    <label class="bmd-label-static">{{tr "Topic:" /}}</label>
+                    <input class="form-control channel_topic" value="{{>channel_topic}}"/>
+                </div>
+                <div class="form-group">
+                    <label class="bmd-label-static">{{tr "Description:" /}}</label>
+                    <textarea class="form-control channel_description" style="min-height: 30px; max-height: 500px; resize: vertical;">{{>channel_description}}</textarea>
+                </div>
+                <!--
                 <div class="properties">
                     <a class="key">{{tr "Name:"/}}</a>
                     <input class="value channel_name" value="{{>channel_name}}"/>
 
                     <a class="key">{{tr "Password:"/}}</a>
 
-                    <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
-                    <!-- Just display a random value here-->
                     <input class="value channel_password" type="password" id="field_channel_password_{{rnd '0~13377331'/}}" {{if channel_flag_password}} value="WolverinDEV"{{/if}}/>
 
                     <a class="key">{{tr "Topic:"/}}</a>
@@ -191,34 +318,61 @@
                     <a class="key">{{tr "Description:"/}}</a>
                     <textarea class="value channel_description" style="height: 150px; resize: none">{{>channel_description}}</textarea>
                 </div>
+                -->
             </div>
             <div style="margin-bottom: 5px"></div>
             <x-tab>
                 <x-entry>
                     <x-tag>{{tr "Standard" /}}</x-tag>
                     <x-content>
-                        <div class="settings_standard" style="display: flex; flex-direction: row; width: 100%; justify-content: space-evenly">
-                            <div style="vertical-align: center; margin: 20px;">
-                                <a>{{tr "Channel Type" /}}</a><br>
-                                <fieldset style="border: 2px solid gray;border-radius: 0px 6px 6px 6px;">
-                                    <div><input type="radio" name="channel_type" value="temp" {{if !channel_flag_semi_permanent && !channel_flag_permanent}}checked{{/if}}> {{tr "Temporary" /}}</div>
-                                    <div><input type="radio" name="channel_type" value="semi" {{if channel_flag_semi_permanent}}checked{{/if}}> {{tr "Semi-Permanent" /}}</div>
-                                    <div><input type="radio" name="channel_type" value="perm" {{if channel_flag_permanent}}checked{{/if}}> {{tr "Permanent" /}}</div>
-                                    <hr style="width: 100%;">
-                                    <div><input type="checkbox" name="channel_default" id="default" value="def"> {{tr "Default Channel" /}}</div>
-                                </fieldset>
-                            </div>
-                            <div style="border-left:1px solid #000;height: auto;"></div>
-                            <div style="flex-direction: column; align-content: stretch; vertical-align: center; margin: 20px;">
+                        <div class="container-channel-settings-standard settings_standard">
+                            <div class="container-left">
                                 <div>
-                                    <div>{{tr "Sort this channel after:"/}}</div>
-                                    <select class="order_id" style="width: 150px">
+                                    <a>{{tr "Channel Type" /}}</a><br>
+
+                                    <fieldset class="container-channel-type">
+                                        <div class="radio"> <!-- May add class disabled-->
+                                            <label>
+                                                <input type="radio" name="channel_type" value="temp" {{if !channel_flag_semi_permanent && !channel_flag_permanent}}checked{{/if}}/>
+                                                {{tr "Temporary" /}}
+                                            </label>
+                                        </div>
+
+                                        <div class="radio"> <!-- May add class disabled-->
+                                            <label>
+                                                <input type="radio" name="channel_type" value="semi" {{if channel_flag_semi_permanent}}checked{{/if}}/>
+                                                {{tr "Semi-Permanent" /}}
+                                            </label>
+                                        </div>
+
+                                        <div class="radio"> <!-- May add class disabled-->
+                                            <label>
+                                                <input type="radio" name="channel_type" value="perm" {{if channel_flag_semi_permanent}}checked{{/if}}/>
+                                                {{tr "Permanent" /}}
+                                            </label>
+                                        </div>
+
+                                        <hr style="width: 100%;">
+                                        <div class="switch">
+                                            <label>
+                                                <input type="checkbox" name="channel_default" id="default" value="def">
+                                                {{tr "Default Channel" /}}
+                                            </label>
+                                        </div>
+                                    </fieldset>
+                                </div>
+                            </div>
+                            <div class="container-divider"></div>
+                            <div class="container-right">
+                                <div class="form-group">
+                                    <label class="bmd-label-static">{{tr "Sort this channel after:"/}}</label>
+                                    <select class="form-control order_id">
                                     </select>
                                 </div>
-                                <div style="margin-top: 20px">
-                                    <div>{{tr "Needed Talk Power:"/}}</div>
-                                    <input type="number" min="0" value="0" name="talk_power" style="width: 150px">
-                                </div>Description
+                                <div class="form-group">
+                                    <label class="bmd-label-static">{{tr "Needed Talk Power:"/}}</label>
+                                    <input class="form-control" type="number" min="0" value="0" name="talk_power">
+                                </div>
                             </div>
                         </div>
                     </x-content>
@@ -226,38 +380,76 @@
                 <x-entry>
                     <x-tag>{{tr "Audio" /}}</x-tag>
                     <x-content>
-                        <div class="container">
-                            <div class="settings_audio">
+                        <div class="container-channel-settings-audio">
+                            <div class="container-presets">
                                 <div class="group_box">
                                     <div class="header">{{tr "Presets" /}}</div>
                                     <div class="content">
                                         <fieldset style="">
-                                            <div><input type="radio" name="voice_template" value="voice_mobile"> {{tr "Voice Mobile"/}}</div>
-                                            <div><input type="radio" name="voice_template" value="voice_desktop"> {{tr "Voice Desktop"/}}</div>
-                                            <div><input type="radio" name="voice_template" value="music"> {{tr "Music"/}}</div>
-                                            <div><input type="radio" name="voice_template" value="custom"> {{tr "Custom"/}}</div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="voice_template" value="voice_mobile"/>
+                                                    {{tr "Voice Mobile" /}}
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="voice_template" value="voice_desktop"/>
+                                                    {{tr "Voice Desktop" /}}
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="voice_template" value="music"/>
+                                                    {{tr "Music" /}}
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label>
+                                                    <input type="radio" name="voice_template" value="custom"/>
+                                                    {{tr "Custom" /}}
+                                                </label>
+                                            </div>
                                         </fieldset>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="container-divider"></div>
+                            <div class="container-custom">
                                 <div class="group_box">
                                     <div class="header">{{tr "Custom Settings" /}}</div>
                                     <div class="content">
                                         <div class="custom">
-                                            <div>{{tr "Codec:"/}}</div>
-                                            <select class="voice_codec">
-                                                <!-- TODO tr -->
-                                                <option value="speex_narrow">{{tr "Speex Narrowband" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="speex_wide">{{tr "Speex Wideband" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="speex_ultra_wide">{{tr "Speex Ultra-Wideband" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="celt">{{tr "CELT Mono" /}} <div class="icon_entry icon client-conflict-icon" title="You don't support this codec"></div></option>
-                                                <option value="opus_voice">{{tr "Opus Voice" /}}</option>
-                                                <option value="opus_music">{{tr "Opus Music" /}}</option>
-                                            </select>
+                                            <div class="form-group">
+                                                <label class="bmd-label-static">Codec:</label>
+                                                <select class="form-control voice_codec">
+                                                    <option value="speex_narrow">
+                                                        {{tr "Speex Narrowband" /}}
+                                                    </option>
+                                                    <option value="speex_wide">
+                                                        {{tr "Speex Wideband" /}}
+                                                    </option>
+                                                    <option value="speex_ultra_wide">
+                                                        {{tr "Speex Ultra-Wideband" /}}
+                                                    </option>
+                                                    <option value="celt">
+                                                        {{tr "CELT Mono" /}}
+                                                    </option>
+                                                    <option value="opus_voice">
+                                                        {{tr "Opus Voice" /}}
+                                                    </option>
+                                                    <option value="opus_music">
+                                                        {{tr "Opus Music" /}}
+                                                    </option>
+                                                </select>
+                                            </div>
 
-                                            <div>{{tr "Quality:" /}}</div>
-                                            <div class="quality">
-                                                <input class="voice_quality_slider" type="range" min="1" max="10" value="6">
-                                                <div class="voice_quality_number">6</div>
+                                            <div class="form-group">
+                                                <label class="bmd-label-static">
+                                                    {{tr "Quality:" /}}
+                                                </label>
+                                                <input class="form-control voice_quality_slider" type="range" min="1" max="10" value="6">
+                                                <small class="text-muted voice_quality_number"></small>
                                             </div>
                                         </div>
                                     </div>
@@ -269,30 +461,77 @@
                 <x-entry>
                     <x-tag>{{tr "Permissions" /}}</x-tag>
                     <x-content>
-                        <div style="display: flex; justify-content: space-evenly" class="settings_permissions">
-                            <div class="group_box">
-                                <div class="header">{{tr "Regular needed powers:" /}}</div>
-                                <div class="content">
-                                    <table class="channel_perm_tbl">
-                                        <tr><td class="key">{{tr "Join:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_join_power"></td></tr>
-                                        <tr><td class="key">{{tr "View:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_view_power"></td></tr>
-                                        <tr><td class="key">{{tr "Subscribe:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_subscribe_power"></td></tr>
-                                        <tr><td class="key">{{tr "Desc. view:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_description_view_power"></td></tr>
-                                        <tr><td class="key">{{tr "Modify:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_modify_power"></td></tr>
-                                        <tr><td class="key">{{tr "Delete:" /}}</td><td><input type="number" min="0" value="0" class="value" permission="i_channel_needed_delete_power"></td></tr>
-                                    </table>
+                        <div class="container-channel-settings-permission settings_permissions">
+                            <div class="container-left">
+                                <div class="group_box">
+                                    <div class="header">{{tr "Regular needed powers:" /}}</div>
+                                    <div class="content">
+                                        <div class="form-group">
+                                            <label>{{tr "Join:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_channel_needed_join_power">
+                                            <span class="bmd-help">{{tr "Required power to join this channel" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "View:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_channel_needed_view_power">
+                                            <span class="bmd-help">{{tr "Required power to see this channel" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Subscribe:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_channel_needed_description_view_power">
+                                            <span class="bmd-help">{{tr "Required power to subscribe to this channel" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Modify:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_channel_needed_modify_power">
+                                            <span class="bmd-help">{{tr "Required power to modify this channel permissions" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Delete:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_channel_needed_delete_power">
+                                            <span class="bmd-help">{{tr "Required power to delete this channel" /}}</span>
+                                        </div>
+                                        <div class="form-group form-placeholder">
+                                            <input class="form-control">
+                                        </div> <!-- placeholder -->
+                                    </div>
                                 </div>
                             </div>
-                            <div class="group_box">
-                                <div class="header">{{tr "File transfer needed powers:" /}}</div>
-                                <div class="content">
-                                    <table class="channel_perm_tbl">
-                                        <tr><td class="key">Join:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                        <tr><td class="key">Subscribe:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                        <tr><td class="key">Desc. view:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                        <tr><td class="key">Modify:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                        <tr><td class="key">Delete:</td><td><input type="number" min="0" value="0" class="value"></td></tr>
-                                    </table>
+                            <div class="container-right">
+                                <div class="group_box">
+                                    <div class="header">{{tr "File transfer needed powers:" /}}</div>
+                                    <div class="content">
+                                        <div class="form-group">
+                                            <label>{{tr "Browse:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_ft_needed_file_browse_power">
+                                            <span class="bmd-help">{{tr "Required power to browse all files and directories" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Upload:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_ft_needed_file_upload_power">
+                                            <span class="bmd-help">{{tr "Required power to upload files" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Download:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_ft_needed_file_download_power">
+                                            <span class="bmd-help">{{tr "Required power to download files" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Rename:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_ft_needed_file_rename_power">
+                                            <span class="bmd-help">{{tr "Required power to rename files within this channel" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Directory create:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_ft_needed_directory_create_power">
+                                            <span class="bmd-help">{{tr "Required power to create a directory" /}}</span>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Delete:" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value" permission="i_ft_needed_file_delete_power">
+                                            <span class="bmd-help">{{tr "Required power to delete a directory or file" /}}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -301,40 +540,101 @@
                 <x-entry>
                     <x-tag>{{tr "Advanced" /}}</x-tag>
                     <x-content>
-                        <div class="container settings_advanced">
-                            <div class="group_box">
-                                <div class="header">{{tr "Other Settings" /}}</div>
-                                <div class="content properties">
-                                    <div class="key">{{tr "Phonetic Name:" /}}</div>
-                                    <input class="value channel_name_phonetic" value="{{>channel_name_phonetic}}">
+                        <div class="container container-channel-settings-advanced settings_advanced">
+                            <div class="container-other">
+                                <div class="group_box">
+                                    <div class="header">{{tr "Other Settings" /}}</div>
+                                    <div class="content">
+                                        <div class="form-group">
+                                            <label class="bmd-label-static">
+                                                {{tr "Phonetic Name:" /}}
+                                            </label>
+                                            <input class="form-control channel_name_phonetic" value="{{>channel_name_phonetic}}">
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="bmd-label-static">
+                                                {{tr "Delete delay:" /}}
+                                            </label>
+                                            <!-- TODO Implement max? -->
+                                            <input class="form-control channel_delete_delay" type="number" min="0" max="99999999" value="{{if channel_delete_delay}}{{:channel_delete_delay}}{{else}}0{{/if}}">
+                                        </div>
 
-                                    <div class="key">{{tr "Delete delay:" /}}</div>
-                                    <input class="value channel_delete_delay" type="number" min="0" max="99999999" value="{{:channel_delete_delay}}"> <!-- Implement max? -->
-
-                                    <div><input class="channel_codec_is_unencrypted" type="checkbox" style="margin-left: 0px" {{if !channel_codec_is_unencrypted}}checked{{/if}}> {{tr "Voice Data encrypted" /}}</div>
+                                        <div class="form-group">
+                                            <div class="switch">
+                                                <label>
+                                                    <input class="channel_codec_is_unencrypted" type="checkbox" name="channel_default" value="def" {{if !channel_codec_is_unencrypted}}checked{{/if}}>
+                                                    {{tr "Encrypt voice data" /}}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="group_box">
-                                <div class="header">{{tr "Max users" /}}</div>
-                                <div class="content max_users">
-                                    <fieldset>
-                                        <div><input type="radio" name="max_users" value="infinity" {{if channel_flag_maxclients_unlimited}}checked{{/if}}>{{tr "Unlimited" /}}</div>
-                                        <div class="max_limited"><input type="radio" name="max_users" value="limited" {{if !channel_flag_maxclients_unlimited}}checked{{/if}}>{{tr "Limited" /}}
-                                            <input style="margin-left: 25px;" class="value channel_maxclients" value="{{:channel_maxclients}}" type="number" min="0" max="99999999"></div>
-                                    </fieldset>
+                            <div class="container-max-users">
+                                <div class="group_box">
+                                    <div class="header">{{tr "Max users" /}}</div>
+                                    <div class="content max_users">
+                                        <fieldset style="">
+                                            <div class="form-row">
+                                                <div class="radio">
+                                                    <label>
+                                                        <input type="radio" name="max_users" value="infinity" {{if channel_flag_maxclients_unlimited}}checked{{/if}}/>
+                                                        {{tr "Unlimited" /}}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <div class="radio">
+                                                        <label>
+                                                            <input type="radio" name="max_users" value="limited" {{if !channel_flag_maxclients_unlimited}}checked{{/if}}/>
+                                                            <a>{{tr "Limited" /}}</a>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div style="margin-left: 5px" class="form-group">
+                                                    <input class="form-control channel_maxclients" value="{{if channel_maxclients}}{{:channel_maxclients}}{{else}}0{{/if}}" type="number" min="0" max="99999999">
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
                                 </div>
-                            </div>
 
-                            <div class="group_box">
-                                <div class="header">{{tr "Family Max users" /}}</div>
-                                <div class="content max_users">
-                                    <fieldset>
-                                        <div><input type="radio" name="max_users_family" value="inherited" {{if channel_flag_maxfamilyclients_inherited}}checked{{/if}}>{{tr "Inherited" /}}</div>
-                                        <div><input type="radio" name="max_users_family" value="infinity" {{if channel_flag_maxfamilyclients_unlimited}}checked{{/if}}>{{tr "Unlimited" /}}</div>
-                                        <div class="max_limited"><input type="radio" name="max_users_family" value="limited" {{if !channel_flag_maxfamilyclients_unlimited && !channel_flag_maxfamilyclients_inherited}}{{tr "checked" /}}{{/if}}>{{tr "Limited" /}}
-                                            <input style="margin-left: 25px;" class="value channel_maxfamilyclients" type="number" value="{{:channel_maxfamilyclients}}" min="0" max="99999999"></div>
-                                    </fieldset>
+                                <div class="group_box">
+                                    <div class="header">{{tr "Family Max users" /}}</div>
+                                    <div class="content max_users">
+                                        <fieldset>
+                                            <div class="form-row">
+                                                <div class="radio">
+                                                    <label>
+                                                        <input type="radio" name="max_users_family" value="inherited" {{if channel_flag_maxfamilyclients_inherited}}checked{{/if}}/>
+                                                        {{tr "Inherited" /}}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="radio">
+                                                    <label>
+                                                        <input type="radio" name="max_users_family" value="infinity" {{if channel_flag_maxfamilyclients_unlimited}}checked{{/if}}/>
+                                                        {{tr "Unlimited" /}}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <div class="radio">
+                                                        <label>
+                                                            <input type="radio" name="max_users_family" value="limited" {{if !channel_flag_maxfamilyclients_unlimited && !channel_flag_maxfamilyclients_inherited}}{{tr "checked" /}}{{/if}}/>
+                                                            <a>{{tr "Limited" /}}</a>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div style="margin-left: 5px" class="form-group">
+                                                    <input class="form-control channel_maxfamilyclients" value="{{if channel_maxfamilyclients}}{{:channel_maxfamilyclients}}{{else}}0{{/if}}" type="number" min="0" max="99999999">
+                                                </div>
+                                            </div>
+                                        </fieldset>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -343,267 +643,332 @@
             </x-tab>
         </script>
         <script class="jsrender-template" id="tmpl_server_edit" type="text/html">
-            <div class="align_column properties_general server_properties">
-                <div class="properties">
-                    <a class="key">{{tr "Name:" /}}</a>
-                    <input class="value virtualserver_name" value="{{>virtualserver_name}}"/>
-                    <a class="key">{{tr "Phonetic Name:" /}}</a>
-                    <input class="value virtualserver_name_phonetic" value="{{>virtualserver_name_phonetic}}"/>
-
-                    <a class="key">{{tr "Password:" /}}</a>
-                    <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
-                    <!-- Just display a random value here-->
-                    <input class="value virtualserver_password" type="password" id="field_server_password_{{rnd '0~13377331'/}}" {{if virtualserver_flag_password}} value="WolverinDEV"{{/if}}/>
-                </div>
-                <hr>
-                <div class="properties">
-                    <a>{{tr "Maximum Clients:" /}}</a>
-                    <div>
-                        <input type="number" min="0" max="1024" value="{{:virtualserver_maxclients}}" class="value virtualserver_maxclients">
-
-                        <a>{{tr "Reserved slots:" /}}</a>
-                        <input type="number" min="0" max="{{*: data.virtualserver_maxclients - 1 }}" value="{{:virtualserver_reserved_slots}}" class="value virtualserver_reserved_slots">
+            <modal>
+                <modal-header>
+                    <h5 class="modal-title">{{tr "Manager the  Virtual Server" /}}</h5>
+                </modal-header>
+                <modal-body>
+                    <div class="container-server-settings-general">
+                        <div class="form-group">
+                            <label>{{tr "Name:" /}}</label>
+                            <input class="form-control virtualserver_name" value="{{>virtualserver_name}}"/>
+                        </div>
+                        <div class="form-group">
+                            <label>{{tr "Phonetic Name:" /}}</label>
+                            <input class="form-control virtualserver_name_phonetic" value="{{>virtualserver_name_phonetic}}"/>
+                        </div>
+                        <div class="form-group">
+                            <label>{{tr "Password:" /}}</label>
+                            <input class="form-control virtualserver_password" autocomplete="nope" type="password" id="field_server_password_{{rnd '0~13377331'/}}" {{if virtualserver_flag_password}} value="WolverinDEV"{{/if}}/>
+                        </div>
+                        <hr>
+                        <div class="container-server-settings-slots form-row">
+                            <div class="form-group">
+                                <label>{{tr "Maximum Clients:" /}}</label>
+                                <input type="number" min="0" max="1024" value="{{:virtualserver_maxclients}}" class="form-control virtualserver_maxclients">
+                            </div>
+                            <div class="form-group">
+                                <label>{{tr "Reserved slots:" /}}</label>
+                                <input type="number" min="0" max="{{*: data.virtualserver_maxclients - 1 }}" value="{{:virtualserver_reserved_slots}}" class="form-control virtualserver_reserved_slots">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>{{tr "Welcome Message:" /}}</label>
+                            <textarea class="form-control virtualserver_welcomemessage">{{>virtualserver_welcomemessage}}</textarea>
+                        </div>
+                        <hr>
                     </div>
-
-                    <div class="key">{{tr "Welcome Message:" /}}</div>
-                    <textarea class="value virtualserver_welcomemessage">{{>virtualserver_welcomemessage}}</textarea>
-                </div>
-                <hr>
-            </div>
-            <div style="margin-bottom: 5px"></div>
-
-            <x-tab>
-                <x-entry>
-                    <x-tag>{{tr "Host" /}}</x-tag>
-                    <x-content>
-                        <div class="container properties_host">
-                            <div class="group_box">
-                                <div class="header">{{tr "Binding" /}}</div>
-                                <div class="content">
-                                    <div class="properties">
-                                        <div class="key">{{tr "Host:" /}}</div>
-                                        <input class="value virtualserver_host" value="{{>virtualserver_host}}"/>
-
-                                        <div class="key">{{tr "Port:" /}}</div>
-                                        <input type="number" min="1" max="65536" value="{{:virtualserver_port}}" class="value virtualserver_port">
+                    <div style="margin-bottom: 5px"></div>
+                    <x-tab>
+                        <x-entry>
+                            <x-tag>{{tr "Host" /}}</x-tag>
+                            <x-content>
+                                <div class="container-server-settings-host properties_host">
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Binding" /}}</div>
+                                        <div class="content">
+                                            <div class="form-group">
+                                                <label>{{tr "Host:" /}}</label>
+                                                <input class="form-control virtualserver_host" value="{{>virtualserver_host}}"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>{{tr "Port:" /}}</label>
+                                                <input type="number" min="1" max="65536" value="{{>virtualserver_port}}" class="form-control virtualserver_port"/>
+                                            </div>
+                                            <a>{{tr "Note: These settings require a virtual server restart to take effect!" /}}</a>
+                                        </div>
                                     </div>
-                                    <a>{{tr "Note: These settings require a virtual server restart to take effect!" /}}</a>
+
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Host message" /}}</div>
+                                        <div class="content">
+                                            <div class="form-group">
+                                                <label class="bmd-label-static">{{tr "Message:" /}}</label>
+                                                <textarea class="form-control virtualserver_hostmessage" value="{{>virtualserver_hostmessage}}"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>{{tr "Message Mode:" /}}</label>
+                                                <select class="form-control virtualserver_hostmessage_mode">
+                                                    <option value="none">{{tr "No message" /}}</option>
+                                                    <option value="log">{{tr "Show message in log" /}}</option>
+                                                    <option value="modal">{{tr "Show message as modal" /}}</option>
+                                                    <option value="modal_exit">{{tr "Show message as modal and disconnect the client" /}}</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Host banner" /}}</div>
+                                        <div class="properties-hostbanner content">
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <label>{{tr "URL:" /}}</label>
+                                                    <input type="url" class="form-control virtualserver_hostbanner_url" value="{{>virtualserver_hostbanner_url}}"/>
+                                                </div>
+
+                                                <div class="form-group">
+                                                    <label>{{tr "Banner Gfx URL:" /}}</label>
+                                                    <input type="url" class="form-control virtualserver_hostbanner_gfx_url" value="{{>virtualserver_hostbanner_gfx_url}}"/>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <label>{{tr "Gfx Interval" /}}</label>
+                                                    <input type="number" pattern="^(0|[0-9]+0)$" value="{{:virtualserver_hostbanner_gfx_interval}}" class="form-control virtualserver_hostbanner_gfx_interval">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>{{tr "Resize" /}}</label>
+                                                    <select class="form-control virtualserver_hostbanner_mode">
+                                                        <option value="none">{{tr "Do not adjust" /}}</option>
+                                                        <option value="ignore_ratio">{{tr "Adjust but ignore ratio aspect" /}}</option>
+                                                        <option value="keep_ratio">{{tr "Adjust and keep ratio aspect" /}}</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Host Button" /}}</div>
+                                        <div class="properties-hostbutton content">
+                                            <div class="form-group">
+                                                <label>{{tr "Tooltip:" /}}</label>
+                                                <input class="form-control virtualserver_hostbutton_tooltip" value="{{>virtualserver_hostbutton_tooltip}}"/>
+                                            </div>
+                                            <div class="form-row">
+                                                <div class="form-group">
+                                                    <label>{{tr "URL:" /}}</label>
+                                                    <input type="url" class="form-control virtualserver_hostbutton_url" value="{{>virtualserver_hostbutton_url}}"/>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>{{tr "Icon URL:" /}}</label>
+                                                    <input type="url" class="form-control virtualserver_hostbutton_gfx_url" value="{{>virtualserver_hostbutton_gfx_url}}"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            </x-content>
+                        </x-entry>
+                        <x-entry>
+                            <x-tag>{{tr "Transfers" /}}</x-tag>
+                            <x-content>
+                                <div class="container-server-settings-file-transfer properties_transfer">
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Upload" /}}</div>
+                                        <div class="content">
+                                            <div class="form-group">
+                                                <label>{{tr "Bandwidth Limit (Bytes/s):" /}}</label>
+                                                <input type="number" class="form-control virtualserver_max_upload_total_bandwidth" value="{{>virtualserver_max_upload_total_bandwidth}}"/>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>{{tr "Upload Quota (MiB):"/}}</label>
+                                                <input type="number" class="form-control virtualserver_upload_quota" value="{{>virtualserver_upload_quota}}"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Download" /}}</div>
+                                        <div class="content">
+                                            <div class="form-group">
+                                                <label>{{tr "Bandwidth Limit:"/}}</label>
+                                                <input type="number" class="form-control virtualserver_max_download_total_bandwidth" value="{{>virtualserver_max_download_total_bandwidth}}"/>
+                                            </div>
 
-                            <div class="group_box">
-                                <div class="header">{{tr "Host message" /}}</div>
-                                <div class="content properties">
-                                    <div class="key">{{tr "Message:" /}}</div>
-                                    <input class="value virtualserver_hostmessage" value="{{>virtualserver_hostmessage}}"/>
-
-                                    <div class="key">{{tr "Message Mode:" /}}</div>
-                                    <select class="value virtualserver_hostmessage_mode">
-                                        <option value="none">{{tr "No message" /}}</option>
-                                        <option value="log">{{tr "Show message in log" /}}</option>
-                                        <option value="modal">{{tr "Show message as modal" /}}</option>
-                                        <option value="modal_exit">{{tr "Show message as modal and disconnect the client" /}}</option>
-                                    </select>
+                                            <div class="form-group">
+                                                <label>{{tr "Download Quota:"/}}</label>
+                                                <input type="number" class="form-control virtualserver_download_quota" value="{{>virtualserver_download_quota}}"/>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-
-                            <div class="group_box">
-                                <div class="header">{{tr "Host banner" /}}</div>
-                                <div class="content properties">
-                                    <div class="key">{{tr "URL:" /}}</div>
-                                    <input class="value virtualserver_hostbanner_url" value="{{>virtualserver_hostbanner_url}}"/>
-
-                                    <div class="key">{{tr "Banner Gfx URL:" /}}</div>
-                                    <input class="value virtualserver_hostbanner_gfx_url" value="{{>virtualserver_hostbanner_gfx_url}}"/>
-
-                                    <div class="key">{{tr "Gfx Interval:" /}}</div>
-                                    <div class="value">
-                                        <input type="number" min="60" value="{{:virtualserver_hostbanner_gfx_interval}}" class="value virtualserver_hostbanner_gfx_interval">
-
-                                        <a>{{tr "Resize:" /}}</a>
-                                        <select class="value virtualserver_hostbanner_mode">
-                                            <option value="none">{{tr "Do not adjust" /}}</option>
-                                            <option value="ignore_ratio">{{tr "Adjust but ignore ratio aspect" /}}</option>
-                                            <option value="keep_ratio">{{tr "Adjust and keep ratio aspect" /}}</option>
+                            </x-content>
+                        </x-entry>
+                        <x-entry>
+                            <x-tag>{{tr "Anti-Flood" /}}</x-tag>
+                            <x-content>
+                                <div class="container-server-settings-anti-flood properties_flood">
+                                    <div class="form-group">
+                                        <label>{{tr "Reduced points per tick:" /}}</label>
+                                        <input type="number" min="1" max="65536" class="form-control virtualserver_antiflood_points_tick_reduce" value="{{>virtualserver_antiflood_points_tick_reduce}}"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{tr "Points needed to block commands:" /}}</label>
+                                        <input type="number" min="1" max="65536" class="form-control virtualserver_antiflood_points_needed_command_block" value="{{>virtualserver_antiflood_points_needed_command_block}}"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{tr "Points needed to block IP:" /}}</label>
+                                        <input type="number" min="1" max="65536" class="form-control virtualserver_antiflood_points_needed_ip_block" value="{{>virtualserver_antiflood_points_needed_ip_block}}"/>
+                                    </div>
+                                </div>
+                            </x-content>
+                        </x-entry>
+                        <x-entry>
+                            <x-tag>{{tr "Security" /}}</x-tag>
+                            <x-content>
+                                <div class="container-server-settings-security properties_security">
+                                    <div class="form-group">
+                                        <label>{{tr "Needed Security Level:" /}}</label>
+                                        <input type="number" min="1" max="64" value="{{:virtualserver_needed_identity_security_level}}" class="form-control virtualserver_needed_identity_security_level">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{tr "Channel voice data encryption:" /}}</label>
+                                        <select class="form-control virtualserver_codec_encryption_mode">
+                                            <option value="unset">{{tr "Edit per channel individually" /}}</option>
+                                            <option value="off">{{tr "Globally disabled" /}}</option>
+                                            <option value="on">{{tr "Globally enabled (recommended)" /}}</option>
                                         </select>
                                     </div>
                                 </div>
-                            </div>
+                            </x-content>
+                        </x-entry>
+                        <x-entry>
+                            <x-tag>{{tr "Misc" /}}</x-tag>
+                            <x-content>
+                                <div class="container-server-settings-misc properties_misc">
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Default groups" /}}</div>
+                                        <div class="content">
+                                            <div class="form-group">
+                                                <label>{{tr "Server group" /}}</label>
+                                                <select class="form-control default_server_group"></select>
+                                            </div>
 
-                            <div class="group_box">
-                                <div class="header">{{tr "Host Button" /}}</div>
-                                <div class="content properties">
-                                    <div class="key">{{tr "Tooltip:" /}}</div>
-                                    <input class="value virtualserver_hostbutton_tooltip" value="{{>virtualserver_hostbutton_tooltip}}"/>
+                                            <div class="form-group">
+                                                <label>{{tr "Music bot group" /}}</label>
+                                                <select class="form-control default_music_group"></select>
+                                            </div>
 
-                                    <div class="key">{{tr "URL:" /}}</div>
-                                    <input class="value virtualserver_hostbutton_url" value="{{>virtualserver_hostbutton_url}}"/>
+                                            <div class="form-group">
+                                                <label>{{tr "Channel group" /}}</label>
+                                                <select class="form-control default_channel_group"></select>
+                                            </div>
 
-                                    <div class="key">{{tr "Icon URL:" /}}</div>
-                                    <input class="value virtualserver_hostbutton_gfx_url" value="{{>virtualserver_hostbutton_gfx_url}}"/>
-                                </div>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <x-entry>
-                    <x-tag>{{tr "Transfers" /}}</x-tag>
-                    <x-content>
-                        <div class="container-file-transfer">
-                            <div class="group_box">
-                                <div class="header">{{tr "Upload" /}}</div>
-                                <div class="content settings">
-                                    <div class="setting">
-                                        <div class="key">{{tr "Bandwidth Limit:" /}}</div>
-                                        <input type="number" class="value virtualserver_max_upload_total_bandwidth" value="{{>virtualserver_max_upload_total_bandwidth}}"/>
-                                        <div class="suffix">{{tr "Bytes/s" /}}</div>
+                                            <div class="form-group">
+                                                <label>{{tr "Channel Admin group" /}}</label>
+                                                <select class="form-control default_channel_admin_group"></select>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="setting">
-                                        <div class="key">{{tr "Upload Quota:" /}}</div>
-                                        <input type="number" class="value virtualserver_upload_quota" value="{{>virtualserver_upload_quota}}"/>
-                                        <div class="suffix">{{tr "MiB" /}}</div>
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Complain" /}}</div>
+                                        <div class="content container-complains">
+                                            <div class="form-group">
+                                                <label>{{tr "Autoban Count" /}}</label>
+                                                <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_count}}" class="form-control virtualserver_complain_autoban_count">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>{{tr "Autoban Time" /}}</label>
+                                                <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_time}}" class="form-control virtualserver_complain_autoban_time">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>{{tr "Remove Time" /}}</label>
+                                                <input type="number" min="1" max="65536" value="{{:virtualserver_complain_remove_time}}" class="form-control virtualserver_complain_remove_time">
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="group_box">
-                                <div class="header">{{tr "Download" /}}</div>
-                                <div class="content settings">
-                                    <div class="setting">
-                                        <div class="key">{{tr "Bandwidth Limit:" /}}</div>
-                                        <input type="number" class="value virtualserver_max_download_total_bandwidth" value="{{>virtualserver_max_download_total_bandwidth}}"/>
-                                        <div class="suffix">{{tr "Bytes/s" /}}</div>
+                                    <div class="container-general">
+                                        <div class="form-group">
+                                            <label>{{tr "Minimum clients is channel before silence:" /}}</label>
+                                            <input type="number" min="1" max="65536" value="{{:virtualserver_min_clients_in_channel_before_forced_silence}}" class="form-control virtualserver_min_clients_in_channel_before_forced_silence">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>{{tr "Priority speaker dim modificator:" /}}</label>
+                                            <input type="number" min="-100" max="0" value="{{:virtualserver_priority_speaker_dimm_modificator}}" class="form-control virtualserver_priority_speaker_dimm_modificator">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>{{tr "Delete delay for temporary channels" /}}</label>
+                                            <input type="number" min="1" max="65536" value="{{:virtualserver_channel_temp_delete_delay_default}}" class="form-control virtualserver_channel_temp_delete_delay_default">
+                                        </div>
                                     </div>
-                                    <div class="setting">
-                                        <div class="key">{{tr "Download Quota:" /}}</div>
-                                        <input type="number" class="value virtualserver_download_quota" value="{{>virtualserver_download_quota}}"/>
-                                        <div class="suffix">{{tr "MiB" /}}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <x-entry>
-                    <x-tag>{{tr "Anti-Flood" /}}</x-tag>
-                    <x-content>
-                        <div class="container properties_flood">
-                            <div class="properties">
-                                <div class="key">{{tr "Reduced points per tick:" /}}</div>
-                                <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_tick_reduce}}" class="value virtualserver_antiflood_points_tick_reduce">
 
-                                <div class="key">{{tr "Points needed to block commands:" /}}</div>
-                                <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_needed_command_block}}" class="value virtualserver_antiflood_points_needed_command_block">
-
-                                <div class="key">{{tr "Points needed to block IP:" /}}</div>
-                                <input type="number" min="1" max="65536" value="{{:virtualserver_antiflood_points_needed_ip_block}}" class="value virtualserver_antiflood_points_needed_ip_block">
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <x-entry>
-                    <x-tag>{{tr "Security" /}}</x-tag>
-                    <x-content>
-                        <div class="container properties_security">
-                            <div class="properties">
-                                <div class="key">{{tr "Needed Security Level:" /}}</div>
-                                <input type="number" min="1" max="64" value="{{:virtualserver_needed_identity_security_level}}" class="value virtualserver_needed_identity_security_level">
-                                <div class="key">{{tr "Channel voice data encryption:" /}}</div>
-                                <select class="value virtualserver_codec_encryption_mode">
-                                    <option value="unset">{{tr "Edit per channel individually" /}}</option>
-                                    <option value="off">{{tr "Globally disabled" /}}</option>
-                                    <option value="on">{{tr "Globally enabled (recommended)" /}}</option>
-                                </select>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <x-entry>
-                    <x-tag>{{tr "Misc" /}}</x-tag>
-                    <x-content>
-                        <div class="container properties_misc">
-                            <div class="group_box">
-                                <div class="header">{{tr "Default groups" /}}</div>
-                                <div class="content properties">
-                                    <div class="key">{{tr "Server group" /}}</div>
-                                    <select class="value default_server_group"></select>
-
-                                    <div class="key">{{tr "Music bot group" /}}</div>
-                                    <select class="value default_music_group"></select>
-
-                                    <div class="key">{{tr "Channel group" /}}</div>
-                                    <select class="value default_channel_group"></select>
-
-                                    <div class="key">{{tr "Channel Admin group" /}}</div>
-                                    <select class="value default_channel_admin_group"></select>
-                                </div>
-                            </div>
-                            <div class="group_box">
-                                <div class="header">{{tr "Complain" /}}</div>
-                                <div class="content complains">
-                                    <div class="key">{{tr "Autoban Count" /}}</div>
-                                    <div class="key">{{tr "Autoban Time" /}}</div>
-                                    <div class="key">{{tr "Remove Time" /}}</div>
-
-                                    <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_count}}" class="value virtualserver_complain_autoban_count">
-                                    <input type="number" min="1" max="65536" value="{{:virtualserver_complain_autoban_time}}" class="value virtualserver_complain_autoban_time">
-                                    <input type="number" min="1" max="65536" value="{{:virtualserver_complain_remove_time}}" class="value virtualserver_complain_remove_time">
-                                </div>
-                            </div>
-                            <div class="properties">
-                                <div class="key">{{tr "Minimum clients is channel before silence:" /}}</div>
-                                <input type="number" min="1" max="65536" value="{{:virtualserver_min_clients_in_channel_before_forced_silence}}" class="value virtualserver_min_clients_in_channel_before_forced_silence">
-
-                                <div class="key">{{tr "Priority speaker dim modificator:" /}}</div>
-                                <input type="number" min="-100" max="0" value="{{:virtualserver_priority_speaker_dimm_modificator}}" class="value virtualserver_priority_speaker_dimm_modificator">
-
-                                <div class="key">{{tr "Delete delay for temporary channels" /}}</div>
-                                <input type="number" min="1" max="65536" value="{{:virtualserver_channel_temp_delete_delay_default}}" class="value virtualserver_channel_temp_delete_delay_default">
-                            </div>
-
-                            <div class="group_box">
-                                <div class="header">{{tr "Server list" /}}</div>
-                                <div class="content">
-                                    <input type="checkbox" class="value virtualserver_weblist_enabled" checked="{{:virtualserver_weblist_enabled}}"> {{tr "Enable reporting to the TeamSpeak server list" /}}<br>
-                                    <input type="checkbox" class="value" checked="false" disabled> {{tr "<del>Enable reporting to the TeaSpeak server list</del> (TeaSpeak does not support this setting)" /}}
-                                </div>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <!-- TeaSpeak don't have any configurable log section
-                <x-entry>
-                    <x-tag>Log</x-tag>
-                    <x-content>TODO!</x-content>
-                </x-entry>
-                -->
-                <x-entry>
-                    <x-tag>{{tr "Messages" /}}</x-tag>
-                    <x-content>
-                        <div> <!-- We have to move the shit one layer up  -->
-                            <div class="container properties_messages">
-                                <div class="group_box">
-                                    <div class="header">{{tr "Channel" /}}</div>
-                                    <div class="content properties">
-                                        <div class="key">{{tr "Default Topic:" /}}</div>
-                                        <textarea class="value virtualserver_default_channel_topic">{{>virtualserver_default_channel_topic}}</textarea>
-
-                                        <div class="key">{{tr "Default Description" /}}</div>
-                                        <textarea class="value virtualserver_default_channel_description">{{>virtualserver_default_channel_description}}</textarea>
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Server list" /}}</div>
+                                        <div class="content">
+                                            <div class="switch">
+                                                <label>
+                                                    <input type="checkbox" class="virtualserver_weblist_enabled" checked="{{:virtualserver_weblist_enabled}}">
+                                                    {{tr "Enable reporting to the TeamSpeak server list" /}}
+                                                </label>
+                                            </div>
+                                            <div class="switch">
+                                                <label>
+                                                    <input type="checkbox" disabled>
+                                                    {{tr "<del>Enable reporting to the TeaSpeak server list</del> (TeaSpeak does not support this setting)" /}}
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="group_box">
-                                    <div class="header">{{tr "Client" /}}</div>
-                                    <div class="content properties">
-                                        <div class="key">{{tr "Default Description" /}}</div>
-                                        <textarea class="value virtualserver_default_client_description">{{>virtualserver_default_client_description}}</textarea>
+                            </x-content>
+                        </x-entry>
+                        <!-- TeaSpeak don't have any configurable log section
+                        <x-entry>
+                            <x-tag>Log</x-tag>
+                            <x-content>TODO!</x-content>
+                        </x-entry>
+                        -->
+                        <x-entry>
+                            <x-tag>{{tr "Messages" /}}</x-tag>
+                            <x-content>
+                                <div class="container-server-settings-messages properties_messages">
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Channel" /}}</div>
+                                        <div class="content">
+                                            <div class="form-group">
+                                                <label>{{tr "Default Topic:" /}}</label>
+                                                <textarea class="form-control virtualserver_default_channel_topic">{{>virtualserver_default_channel_topic}}</textarea>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>{{tr "Default Description" /}}</label>
+                                                <textarea class="form-control virtualserver_default_channel_description">{{>virtualserver_default_channel_description}}</textarea>
+                                            </div>
+                                        </div>
                                     </div>
+                                    <div class="group_box">
+                                        <div class="header">{{tr "Client" /}}</div>
+                                        <div class="content">
+                                            <div class="form-group">
+                                                <label>{{tr "Default Description" /}}</label>
+                                                <textarea class="form-control virtualserver_default_client_description">{{>virtualserver_default_client_description}}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {{tr "Note: These settings require a virtual server restart to take effect!" /}}
                                 </div>
-                                {{tr "Note: These settings require a virtual server restart to take effect!" /}}
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-            </x-tab>
+                            </x-content>
+                        </x-entry>
+                    </x-tab>
+                </modal-body>
+                <modal-footer>
+                    <button class="btn btn-danger button_cancel">{{tr "Cancel" /}}</button>
+                    <button class="btn btn-raised btn-success button_ok">{{tr "Save" /}}</button>
+                </modal-footer>
+            </modal>
         </script>
 
         <!-- Template for the settings -->
@@ -618,8 +983,9 @@
                                 <div class="content settings-teaspeak-forum">
                                     <div class="not-connected">
                                         <div>{{tr "You're currently not connected with your TeaSpeak Forum account" /}}</div>
-                                        <button class="button-login">{{tr "login" /}}</button>
+                                        <button class="btn btn-primary btn-raised button-login">{{tr "login" /}}</button>
                                     </div>
+                                    <!-- TODO new style! -->
                                     <div class="connected">
                                         <div class="connected-info">{{tr "You're connected via TeaSpeak forum" /}}</div>
                                         <div class="container-info-action">
@@ -654,14 +1020,23 @@
                     <x-tag>{{tr "Audio" /}}</x-tag>
                     <x-content>
                         <div class="settings_audio">
+                            <div class="settings-device-error alert alert-warning alert-dismissible fade show" role="alert">
+                                <div class="message"></div>
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+
                             <div class="group_box">
                                 <div class="header">{{tr "Microphone" /}}</div>
                                 <div class="content settings-microphone">
-                                    <div class="settings-device settings-device-microphone">
-                                        <div class="settings-device-error"></div>
-                                        <div class="settings-device-select">
-                                            <a>{{tr "Device:" /}}</a>
-                                            <div><select class="audio-select-microphone"></select></div>
+                                    <div class="form-row settings-device settings-device-microphone">
+                                        <div class="form-group settings-device-select">
+                                            <label for="select-settings-microphone-device" class="bmd-label-static">{{tr "Device:" /}}</label>
+                                            <select id="select-settings-microphone-device" class="form-control audio-select-microphone"></select>
+                                        </div>
+                                        <div class="form-group bmd-form-group">
+                                            <button class="btn btn-secondary button-device-update">update</button>
                                         </div>
                                     </div>
                                     <div class="settings-vad-container">
@@ -669,9 +1044,18 @@
                                             <div class="header">{{tr "Voice Activity Detection"/}}</div>
                                             <div class="content">
                                                 <fieldset>
-                                                    <div><input type="radio" name="vad_type" value="pt" display="Always active"> {{tr "Always active" /}}</div>
-                                                    <div><input type="radio" name="vad_type" value="vad" display="Voice activity detection"> {{tr "Voice activity detection"/}}</div>
-                                                    <div><input type="radio" name="vad_type" value="ppt" display="Push to talk"> {{tr "Push to talk"/}}</div>
+                                                    <div class="custom-control custom-radio">
+                                                        <input type="radio" id="select-settings-vad-type-1" value="pt" name="vad_type" class="custom-control-input">
+                                                        <label class="custom-control-label" for="select-settings-vad-type-1">{{tr "Always active" /}}</label>
+                                                    </div>
+                                                    <div class="custom-control custom-radio">
+                                                        <input type="radio" id="select-settings-vad-type-2" value="vad" name="vad_type" class="custom-control-input">
+                                                        <label class="custom-control-label" for="select-settings-vad-type-2">{{tr "Voice activity detection"/}}</label>
+                                                    </div>
+                                                    <div class="custom-control custom-radio">
+                                                        <input type="radio" id="select-settings-vad-type-3" value="ppt" name="vad_type" class="custom-control-input">
+                                                        <label class="custom-control-label" for="select-settings-vad-type-3">{{tr "Push to talk"/}}</label>
+                                                    </div>
                                                 </fieldset>
                                             </div>
                                         </div>
@@ -682,21 +1066,21 @@
                                             <div class="settings-vad-impl-entry setting-vad-ppt">
                                                 <div class="property ppt-key">
                                                     <div class="key">{{tr "Push to talk key:"/}}</div>
-                                                    <div class="value"><button class="vat_ppt_key">{{tr "Uninitialised"/}}</button></div>
-                                                </div>
-                                                <div class="property ppt-delay">
-                                                    <div class="key">{{tr "Key release delay:" /}}</div>
                                                     <div class="value">
-                                                        <input type="number" min="0" max="5000">
+                                                        <button type="button" class="btn btn-raised btn-primary vat_ppt_key">{{tr "Uninitialised"/}}</button>
                                                     </div>
+                                                </div>
+                                                <div class="form-group ppt-delay">
+                                                    <label for="input-settings-ppt-delay" class="bmd-label-static">{{tr "Key release delay:" /}}</label>
+                                                    <input id="input-settings-ppt-delay" class="form-control value" type="number" min="0" max="5000"/>
                                                 </div>
                                             </div>
                                             <div class="settings-vad-impl-entry setting-vad-vad">
                                                 <div>{{tr "Voice activity threshold (<a class='vad_vad_slider_value'>20</a>%)"/}}</div>
                                                 <div class="vad_vad_threshold_selector">
                                                     <div class="vad_vad_bar">
-                                                        <div style="width: 100%; height: 100%; position: absolute">
-                                                            <div class="vad_vad_bar_filler"></div>
+                                                        <div class="container-hider">
+                                                            <div class="hider vad_vad_bar_filler"></div>
                                                         </div>
                                                         <input type="range" min="0" max="100" value="50" class="vad_vad_slider">
                                                     </div>
@@ -710,10 +1094,12 @@
                                 <div class="header">{{tr "Speaker" /}}</div>
                                 <div class="content settings-speaker">
                                     <div class="settings-device settings-device-speaker">
-                                        <div class="settings-device-error"></div>
-                                        <div class="settings-device-select">
-                                            <a>{{tr "Device:" /}}</a>
-                                            <div><select class="audio-select-speaker"></select></div>
+                                        <div class="form-group settings-device-select">
+                                            <label for="select-settings-speaker-device" class="bmd-label-static">{{tr "Device:" /}}</label>
+                                            <select id="select-settings-speaker-device" class="form-control audio-select-speaker"></select>
+                                        </div>
+                                        <div class="form-group bmd-form-group">
+                                            <button class="btn btn-secondary button-device-update">update</button>
                                         </div>
                                     </div>
                                 </div>
@@ -732,19 +1118,23 @@
                                         </div>
                                         <div class="property">
                                             <div class="key">
-                                                Overlap same sounds:
+                                                {{tr "Overlap same sounds:" /}}
                                             </div>
                                             <div class="value overlap-sounds">
-                                                <input type="checkbox">
-                                                <div class="help-tip-container"> <!-- lets be absolute -->
-                                                    <div class="help-tip tip-right tip-small">
-                                                        <p>
-                                                            {{tr "This options deferments if a sound overlaps itself when played twice.<br>" +
-                                                            "An example would be when you move multiple clients, you hear that sound n-times.<br>" +
-                                                            "If this option is disabled, you hear that sound just once."
-                                                            /}}
-                                                        </p>
-                                                    </div>
+                                                <div class="switch">
+                                                    <label>
+                                                        <input type="checkbox" checked>
+                                                        <div class="help-tip-container"> <!-- lets be absolute -->
+                                                            <div class="help-tip tip-right tip-small">
+                                                                <p>
+                                                                    {{tr "This options deferments if a sound overlaps itself when played twice.<br>" +
+                                                                    "An example would be when you move multiple clients, you hear that sound n-times.<br>" +
+                                                                    "If this option is disabled, you hear that sound just once."
+                                                                    /}}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </label>
                                                 </div>
                                             </div>
                                         </div>
@@ -753,13 +1143,17 @@
                                                 Mute sounds when output is muted:
                                             </div>
                                             <div class="value muted-sounds">
-                                                <input type="checkbox">
-                                                <div class="help-tip-container"> <!-- lets be absolute -->
-                                                    <div class="help-tip tip-right tip-small">
-                                                        <p>
-                                                            {{tr "Mute all system sounds, when you've muted your output.<br>If this option isn't disabled you'll still receive system sounds like 'user joined your channel'."/}}
-                                                        </p>
-                                                    </div>
+                                                <div class="switch">
+                                                    <label>
+                                                        <input type="checkbox" checked>
+                                                        <div class="help-tip-container"> <!-- lets be absolute -->
+                                                            <div class="help-tip tip-right tip-small">
+                                                                <p>
+                                                                    {{tr "Mute all system sounds, when you've muted your output.<br>If this option isn't disabled you'll still receive system sounds like 'user joined your channel'."/}}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+                                                    </label>
                                                 </div>
                                             </div>
                                         </div>
@@ -773,9 +1167,10 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="sound-list-filter">
-                                            <a>Filter:</a>
-                                            <input type="text">
+
+                                        <div class="form-group sound-list-filter">
+                                            <label for="input-settings-sounds-filter" class="bmd-label-floating">{{tr "Filter" /}}</label>
+                                            <input id="input-settings-sounds-filter" class="form-control" type="text"/>
                                         </div>
                                     </div>
                                 </div>
@@ -808,7 +1203,9 @@
                                             -->
                                         </div>
                                         <div class="management">
-                                            <div class="loading">Loading...</div><div class="space"></div><button class="button-add-repository">{{tr "Add repository" /}}</button>
+                                            <div class="loading">Loading...</div>
+                                            <div class="space"></div>
+                                            <button class="btn btn-secondary button-add-repository">{{tr "Add repository" /}}</button>
                                         </div>
                                         <div class="restart-note">
                                             <p>
@@ -847,10 +1244,10 @@
                                             -->
                                         </div>
                                         <div class="management">
-                                            <button class="button-set-default">{{tr "Set selected as default" /}}</button>
-                                            <button class="button-delete">{{tr "Delete selected" /}}</button>
+                                            <button class="btn btn-primary button-set-default">{{tr "Set selected as default" /}}</button>
+                                            <button class="btn btn-danger button-delete">{{tr "Delete selected" /}}</button>
                                             <div class="space"></div>
-                                            <button class="button-add-profile">{{tr "Create profile" /}}</button>
+                                            <button class="btn btn-success button-add-profile">{{tr "Create profile" /}}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -860,27 +1257,26 @@
                                 <div class="content">
                                     <div class="profile-settings">
                                         <div class="general-settings">
-                                            <div class="setting">
-                                                <div class="key">{{tr "Profile name:" /}}</div>
-                                                <input class="value setting-name">
+                                            <div class="form-group">
+                                                <label for="input-settings-profile-name" class="bmd-label-static">{{tr "Profile name:" /}}</label>
+                                                <input id="input-settings-profile-name" class="form-control setting-name">
                                             </div>
-                                            <div class="setting">
-                                                <div class="key">{{tr "Default nickname:" /}}</div>
-                                                <input class="value setting-default-nickname">
+                                            <div class="form-group">
+                                                <label for="input-settings-profile-default-name" class="bmd-label-static">{{tr "Default nickname:" /}}</label>
+                                                <input id="input-settings-profile-default-name" class="form-control setting-default-nickname">
                                             </div>
-                                            <div class="setting">
-                                                <div class="key">{{tr "Default server password:" /}}</div>
-                                                <input class="value setting-default-password">
+                                            <div class="form-group">
+                                                <!-- TODO use random ids -->
+                                                <label for="input-settings-profile-default-password" class="bmd-label-floating">{{tr "Default server password" /}}</label>
+                                                <input type="password" id="input-settings-profile-default-password" class="form-control setting-default-password">
                                             </div>
-                                            <div class="setting">
-                                                <div class="key">{{tr "Identify Type:" /}}</div>
-                                                <div class="select-container">
-                                                    <select>
-                                                        <option name="identity-type" value="teaforo">{{tr "Forum Account" /}}</option>
-                                                        <option name="identity-type" value="teamspeak">{{tr "TeamSpeak" /}}</option>
-                                                        <option name="identity-type" value="nickname">{{tr "Nickname (Debug purposes only!)" /}}</option> <!-- Only available on localhost for debug -->
-                                                    </select>
-                                                </div>
+                                            <div class="form-group select-container">
+                                                <label for="input-settings-profile-identity-type" class="bmd-label-static">{{tr "Identify Type:" /}}</label>
+                                                <select id="input-settings-profile-identity-type" class="form-control">
+                                                    <option name="identity-type" value="teaforo">{{tr "Forum Account" /}}</option>
+                                                    <option name="identity-type" value="teamspeak">{{tr "TeamSpeak" /}}</option>
+                                                    <option name="identity-type" value="nickname">{{tr "Nickname (Debug purposes only!)" /}}</option> <!-- Only available on localhost for debug -->
+                                                </select>
                                             </div>
                                         </div>
                                         <hr>
@@ -895,16 +1291,17 @@
                                             </div>
                                             -->
                                             <div class="identity-info" style="display: none">
-                                                <div class="property unique-id">
-                                                    <div class="key">{{tr "UniqueID:" /}}</div>
-                                                    <div class="value">
-                                                        <input type="text" value="xxjnc14LmvTk+Lyrm8OOeo4tOqw=" readonly/>
-                                                    </div>
+                                                <div class="form-group unique-id">
+                                                    <label>{{tr "UniqueID:" /}}</label>
+                                                    <input class="form-control" type="text" value="xxjnc14LmvTk+Lyrm8OOeo4tOqw=" readonly/>
                                                 </div>
-                                                <div class="property level">
-                                                    <div class="key">{{tr "Level:" /}}</div>
-                                                    <div class="value">
-                                                        <input type="text" value="39" readonly/> <button class="button-improve">{{tr "Improve" /}}</button>
+                                                <div class="form-row level">
+                                                    <div class="form-group container-input">
+                                                        <label>{{tr "Level:" /}}</label>
+                                                        <input class="form-control" type="text" value="39" readonly/>
+                                                    </div>
+                                                    <div class="form-group bmd-form-group">
+                                                        <button class="btn btn-raised button-improve">{{tr "Improve" /}}</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -912,10 +1309,10 @@
                                                 <div>{{tr "You have'nt generated/imported an identity.<br>Generate a new one or import one." /}}</div>
                                             </div>
                                             <div class="manage">
-                                                <button class="button-generate">{{tr "Generate new" /}}</button>
+                                                <button class="btn btn-primary button-generate">{{tr "Generate new" /}}</button>
                                                 <div class="export-import">
-                                                    <button class="button-import">{{tr "Import identity" /}}</button>
-                                                    <button class="button-export">{{tr "Export identity" /}}</button>
+                                                    <button class="btn btn-secondary button-import">{{tr "Import identity" /}}</button>
+                                                    <button class="btn btn-primary button-export">{{tr "Export identity" /}}</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -926,20 +1323,24 @@
                                             <div class="disconnected">
                                                 <!-- TODO tr -->
                                                 <!-- <a href="#" class="native-teaforo-login">here</a> -->
-                                                You cant use your TeaSpeak forum account. You're not connected with your forum Account!<br>
-                                                Setup your connection <a class="forum-setup" href="#">here</a>.
+                                                <div class="error-forum-not-connected alert alert-warning fade show" role="alert">
+                                                    You cant use your TeaSpeak forum account. You're not connected with your forum Account!<br>
+                                                    Setup your connection <a class="forum-setup" href="#">here</a>.
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="identity-settings identity-settings-nickname">
                                             <a>
                                                 {{tr "This is just for debug and uses the name as unique identifier" /}}
                                             </a>
-                                            <div>
-                                                <a>{{tr "Username:" /}}</a>
-                                                <input class="setting-name" placeholder="WolverinDEV">
+                                            <div class="form-group">
+                                                <label for="input-settings-profile-name-name" class="bmd-label-floating">{{tr "Username" /}}</label>
+                                                <input id="input-settings-profile-name-name" class="form-control setting-name">
                                             </div>
                                         </div>
-                                        <div class="error-message"> </div>
+                                        <div class="settings-profile-error alert alert-warning fade show" role="alert">
+                                            <div class="message"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -953,7 +1354,11 @@
             <div class="entry">
                 <div class="column sound-name"><div class="icon client-play button-playback"></div> {{>name}}</div>
                 <div class="column sound-activated">
-                    <input type="checkbox" {{if activated}}checked{{/if}}>
+                    <div class="switch">
+                        <label>
+                            <input type="checkbox" {{if activated}}checked{{/if}}>
+                        </label>
+                    </div>
                 </div>
             </div>
         </script>
@@ -980,16 +1385,16 @@
 
         <script class="jsrender-template" id="tmpl_settings-teamspeak_improve" type="text/html">
             <div class="container-teamspeak-improve">
-                <div class="property identity-unique-id">
-                    <div class="key">{{tr "Identity:" /}}</div>
-                    <div class="value"><input value="" readonly></div>
+                <div class="form-group identity-unique-id">
+                    <label>{{tr "Identity:" /}}</label>
+                    <input class="form-control" value="" readonly>
                 </div>
-                <div class="property identity-level">
-                    <div class="key">{{tr "Current level: " /}}</div>
-                    <div class="value"><input value="loading" readonly></div>
+                <div class="form-group identity-level">
+                    <label>{{tr "Current level: " /}}</label>
+                    <input class="form-control" value="loading" readonly>
                 </div>
-                <div class="property identity-target-level">
-                    <div class="key">
+                <div class="form-group identity-target-level">
+                    <div class="bmd-label-static">
                         <div class="help-tagged">{{tr "Target level: " /}}</div>
                         <div class="help-tip-container"> <!-- lets be absolute -->
                             <div class="help-tip tip-right tip-small">
@@ -999,10 +1404,10 @@
                             </div>
                         </div>
                     </div>
-                    <div class="value"><input value="0" type="number" min="0" max="160"></div>
+                    <input class="form-control" value="0" type="number" min="0" max="160">
                 </div>
-                <div class="property threads">
-                    <div class="key">
+                <div class="form-group threads">
+                    <div class="bmd-label-static">
                         <div class="help-tagged">{{tr "Threads: " /}}</div>
                         <div class="help-tip-container"> <!-- lets be absolute -->
                             <div class="help-tip tip-right tip-small">
@@ -1012,22 +1417,22 @@
                             </div>
                         </div>
                     </div>
-                    <div class="value"><input value="2" type="number" min="1" max="32"></div>
+                    <input class="form-control" value="2" type="number" min="1" max="32">
                 </div>
                 <hr>
-                <div class="row">
-                    <div class="property hash-rate">
-                        <div class="key">{{tr "Hashes/second:" /}}</div>
-                        <div class="value"><input value="0" readonly></div>
+                <div class="form-row">
+                    <div class="form-group hash-rate">
+                        <label>{{tr "Hashes/second:" /}}</label>
+                        <input class="form-control" value="0" readonly>
                     </div>
-                    <div class="property time-elapsed">
-                        <div class="key">{{tr "Elapsed time:" /}}</div>
-                        <div class="value"><input value="00:00" readonly></div>
+                    <div class="form-group time-elapsed">
+                        <label>{{tr "Elapsed time:" /}}</label>
+                        <input class="form-control" value="00:00" readonly>
                     </div>
                 </div>
                 <div class="buttons">
-                    <button class="button-close">{{tr "Close" /}}</button>
-                    <button class="button-start-stop">{{tr "Start" /}}</button>
+                    <button class="btn btn-secondary btn-raised button-close">{{tr "Close" /}}</button>
+                    <button class="btn btn-success btn-raised button-start-stop">{{tr "Start" /}}</button>
                 </div>
             </div>
         </script>
@@ -1129,13 +1534,13 @@
             <x-tab>
                 <x-entry>
                     <x-tag>{{tr "Server Groups" /}}</x-tag>
-                    <x-content>
+                    <x-content class="tab-group-server">
                         <div class="layout-group-server">
                             <div class="list-group-server">
                                 <div class="entries"></div>
                             </div>
                             <div class="horizontal-stretch">
-                                <node key="permissions_group_server"/>
+                                <permission-editor class="group-server" />
                             </div>
                             <div class="list-group-server-clients"></div>
                         </div>
@@ -1143,76 +1548,92 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>{{tr "Channel Groups" /}}</x-tag>
-                    <x-content>
+                    <x-content class="tab-group-channel">
                         <div class="layout-group-channel">
                             <div class="list-group-channel">
                                 <div class="entries"></div>
                             </div>
                             <div class="horizontal-stretch">
-                                <node key="permissions_group_channel"/>
+                                <permission-editor class="group-channel" />
                             </div>
                         </div>
                     </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>{{tr "Channel permissions" /}}</x-tag>
-                    <x-content>
+                    <x-content class="tab-channel">
                         <div class="layout-channel">
                             <div class="list-channel">
                                 <div class="entries"></div>
                             </div>
                             <div class="horizontal-stretch">
-                                <node key="permissions_channel"/>
+                                <permission-editor class="channel" />
                             </div>
                         </div>
                     </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>{{tr "Client permissions"/}}</x-tag>
-                    <x-content>
+                    <x-content class="tab-client">
                         <div class="layout-client">
                             <div class="client-info">
-                                <div class="client-select">
-                                    <a>{{tr "Client unique ID:"/}}</a>
-                                    <input type="text" class="client-select-uid">
+                                <div class="client-select form-group">
+                                    <label class="bmd-label-floating">{{tr "Client unique ID"/}}</label>
+                                    <input type="text" class="form-control client-select-uid">
+                                    <div class="invalid-feedback">{{tr "Invalid unique id" /}}</div>
                                 </div>
                                 <hr>
                                 <div class="client-info">
-                                    <a>{{tr "Nickname:" /}}</a>
-                                    <input class="client-name">
+                                    <div class="form-group">
+                                        <label>{{tr "Nickname:" /}}</label>
+                                        <input class="form-control client-name">
+                                    </div>
 
-                                    <a>{{tr "Unique ID:" /}}</a>
-                                    <input class="client-uid">
+                                    <div class="form-group">
+                                        <label>{{tr "Unique ID:" /}}</label>
+                                        <input class="form-control client-uid">
+                                    </div>
 
-                                    <a>{{tr "Client database ID:" /}}</a>
-                                    <input class="client-dbid">
+                                    <div class="form-group">
+                                        <label>{{tr "Client database ID:" /}}</label>
+                                        <input class="form-control client-dbid">
+                                    </div>
                                 </div>
                             </div>
                             <div class="horizontal-stretch">
-                                <node key="permissions_client"/>
+                                <permission-editor class="client" />
                             </div>
                         </div>
                     </x-content>
                 </x-entry>
                 <x-entry>
                     <x-tag>{{tr "Client channel permissions" /}}</x-tag>
-                    <x-content>
+                    <x-content class="tab-client-channel">
                         <div class="layout-client-channel">
-                            <div class="client-info">
-                                <div class="client-select">
-                                    <a>{{tr "Client unique ID:"/}}</a>
-                                    <input type="text" class="client-select-uid">
-                                </div>
-                                <hr>
+                            <div class="container-client-channel">
                                 <div class="client-info">
-                                    <a>{{tr "Nickname:"/}}</a>
-                                    <input class="client-name">
+                                    <div class="client-select form-group">
+                                        <label class="bmd-label-floating">{{tr "Client unique ID"/}}</label>
+                                        <input type="text" class="form-control client-select-uid">
+                                        <div class="invalid-feedback">{{tr "Invalid unique id" /}}</div>
+                                    </div>
+                                    <hr>
+                                    <div class="client-info">
+                                        <div class="form-group">
+                                            <label>{{tr "Nickname:" /}}</label>
+                                            <input class="form-control client-name">
+                                        </div>
 
-                                    <a>{{tr "Unique ID:" /}}</a>
-                                    <input class="client-uid">
+                                        <div class="form-group">
+                                            <label>{{tr "Unique ID:" /}}</label>
+                                            <input class="form-control client-uid">
+                                        </div>
 
-                                    <a>{{tr "Client database ID:" /}}</a>
-                                    <input class="client-dbid">
+                                        <div class="form-group">
+                                            <label>{{tr "Client database ID:" /}}</label>
+                                            <input class="form-control client-dbid">
+                                        </div>
+                                    </div>
                                 </div>
                                 <hr>
                                 <div class="list-channel">
@@ -1220,7 +1641,7 @@
                                 </div>
                             </div>
                             <div class="horizontal-stretch">
-                                <node key="permissions_client_channel"/>
+                                <permission-editor class="client-channel" />
                             </div>
                         </div>
                     </x-content>
@@ -1246,33 +1667,35 @@
         </script>
 
         <script class="jsrender-template" id="tmpl_permission_entry" type="text/html">
-            {{if type == "entry"}}
-            <div class="entry {{if unset}}unset{{/if}} permission {{>permission_name}}">
-                <div class="permission-name filter-key">{{>permission_name}}</div>
-                <div class="permission-value">
-                    {{if permission_name.startsWith("b_") }}
-                    <label class="checkbox">
-                        <input type="checkbox">
-                        <span class="checkmark"></span>
-                    </label>
-                    {{else}}
-                    <input type="number" min-value="-1" max-value="9999999999" />
-                    {{/if}}
-                </div>
-                <div class="permission-skip">
+            {{if type == "permission"}}
+            <div class="entry permission">
+                <div class="column-name">{{>permission_name}}</div>
+                {{if permission_name.startsWith("b_") }}
+                <div class="column-value">
                     <label class="checkbox">
                         <input type="checkbox">
                         <span class="checkmark"></span>
                     </label>
                 </div>
-                <div class="permission-negate">
+                {{else}}
+                <div class="column-value form-group">
+                    <input class="form-control" type="number" min-value="-1" max-value="9999999999" />
+                </div>
+                {{/if}}
+                <div class="column-skip">
                     <label class="checkbox">
                         <input type="checkbox">
                         <span class="checkmark"></span>
                     </label>
                 </div>
-                <div class="permission-grant">
-                    <input type="number" min-value="-1" max-value="9999999999" />
+                <div class="column-negate">
+                    <label class="checkbox">
+                        <input type="checkbox">
+                        <span class="checkmark"></span>
+                    </label>
+                </div>
+                <div class="column-granted form-group">
+                    <input class="form-control" type="number" min-value="-1" max-value="9999999999" />
                 </div>
             </div>
             {{else}}
@@ -1284,61 +1707,49 @@
             </div>
             {{/if}}
         </script>
-        <script class="jsrender-template" id="tmpl_permission_explorer" type="text/html">
+        <script class="jsrender-template" id="tmpl_permission_editor" type="text/html">
             <div class="container-permissions">
-                <div class="align_row permission-explorer">
-                    <div class="bar-filter">
-                        <div><a>{{tr "Filter:" /}}</a></div>
-                        <div><input type="text" class="filter-input"></div>
-                        <div><input type="checkbox" class="filter-granted"><a>{{tr "Show granted permissions only" /}}</a></div>
-                    </div>
-                    <div class="list">
-                        <div class="entry header">
-                            <div>{{tr "Permission Name" /}}</div>
-                            <div>{{tr "Value" /}}</div>
-                            <div>{{tr "Skip" /}}</div>
-                            <div>{{tr "Negate" /}}</div>
-                            <div>{{tr "Granted" /}}</div>
+                <div class="permission-explorer">
+                    <div class="container-filter">
+                        <div class="form-group container-input">
+                            <label class="bmd-label-floating">{{tr "filter permissions" /}}</label>
+                            <input type="text" class="form-control filter-input"/>
+                            <!-- <small class="form-text text-muted">{{tr "Filter permissions by permission name" /}}</small> -->
                         </div>
-
-                        <div class="entries">
-                            {{for permissions tmpl="tmpl_permission_entry" /}}
-                        </div>
-                        <!--
-                        <div class="entry">
-                            <div>this_is_a_test_permission</div>
-                            <div>value</div>
-                            <div>skip</div>
-                            <div>negate</div>
-                            <div>granted</div>
-                        </div>
-                        <div class="entry group">
-                            <div class="title"><div class="arrow right"></div><a>Test group</a></div>
-                            <div class="group-entries">
-                                <div class="entry">
-                                    <div>Grouped entry A</div>
-                                    <div>value</div>
-                                    <div>skip</div>
-                                    <div>negate</div>
-                                    <div>granted</div>
-                                </div>
-                                <div class="entry">
-                                    <div>Grouped entry B</div>
-                                    <div>value</div>
-                                    <div>skip</div>
-                                    <div>negate</div>
-                                    <div>granted</div>
-                                </div>
+                        <div class="form-group bmd-form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" value="" class="filter-granted">
+                                    {{tr "Show granted permissions only" /}}
+                                </label>
                             </div>
                         </div>
-                        -->
-                        <div class="overlay-disabled"></div>
                     </div>
-                    <div>
-                        <button class="button-update"><div class="icon client-check_update"></div> {{tr "Update" /}}</button>
+                    <div class="container-mode container-mode-permissions">
+                        <div class="container-permission-list">
+                            <div class="entry header">
+                                <div class="column-name">{{tr "Permission Name" /}}</div>
+                                <div class="column-value">{{tr "Value" /}}</div>
+                                <div class="column-skip">{{tr "Skip" /}}</div>
+                                <div class="column-negate">{{tr "Negate" /}}</div>
+                                <div class="column-granted">{{tr "Granted" /}}</div>
+                            </div>
+
+                            <div class="entries"> </div>
+                        </div>
+                    </div>
+                    <div class="container-mode container-mode-no-permissions">
+                        <div class="container-text">
+                            <a>{{tr "You dont have the permission to view this permissions" /}}</a>
+                        </div>
+                    </div>
+                    <div class="container-mode container-mode-unset"> </div>
+                    <div class="container-footer">
+                        <button class="btn btn-secondary btn-raised button-update"><div class="icon client-check_update"></div> {{tr "Update" /}}</button>
                     </div>
                 </div>
             </div>
+            <div class="container-error-permissions"></div>
         </script>
 
         <!-- General management templates -->
@@ -1346,69 +1757,63 @@
             <div class="banlist">
                 <div class="frame-container">
                     <div class="top-menu">
-                        <div class="manage-buttons">
-                            <button class="button-add">{{tr "Add" /}}</button>
-                            <button class="button-edit">{{tr "Edit" /}}</button>
-                            <button class="button-remove">{{tr "Remove" /}}</button>
+                        <div class="form-group bmd-form-group manage-buttons">
+                            <button class="btn btn-success button-add">{{tr "Add" /}}</button>
+                            <button class="btn btn-primary button-edit">{{tr "Edit" /}}</button>
+                            <button class="btn btn-danger button-remove">{{tr "Remove" /}}</button>
                         </div>
-                        <div class="search">
-                            <input type="text" class="entry-filter">
+                        <div class="search form-group">
+                            <label class="bmd-label-floating">{{tr "filter" /}}</label>
+                            <input type="text" class="form-control entry-filter">
                         </div>
                     </div>
                     <div class="entry-container">
-                        <div class="table-container">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th class="field-properties">{{tr "Name/IP/UID/HWID"/}}</th>
-                                        <th class="field-reason">{{tr "Reason"/}}</th>
-                                        <th class="field-invoker">{{tr "Creator"/}}</th>
-                                        <th class="field-timestamp">{{tr "Created / Expires"/}}</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="ban-entry-list">
-                                    <!--
-                                    <tr class="ban-entry">
-                                        <td class="field-properties">
-                                            <a class="property property-name">name=WolverasdasdinDEV</a>
-                                            <a class="property property-ip">ip=WolverasdasdinDEV</a>
-                                            <a class="property property-unique-id">uid=WolverasdasdinDEV</a>
-                                            <a class="property property-hardware-id">hwid=WolverasdasdinDEV</a>
-                                        </td>
-                                        <td class="field-reason">Insult</td>
-                                        <td class="field-invoker">WolverinDEV</td>
-                                        <td class="field-timestamp">1.1.2013 12:22 / 1.21.2013 12:22</td>
-                                    </tr>
-                                    <tr class="ban-entry">
-                                        <td class="field-properties">
-                                            <a class="property property-name">name=WolverasdasdinDEV</a>
-                                            <a class="property property-ip">ip=WolverasdasdinDEV</a>
-                                            <a class="property property-unique-id">uid=WolverasdasdinDEV</a>
-                                            <a class="property property-hardware-id">hwid=WolverasdasdinDEV</a>
-                                        </td>
-                                        <td class="field-reason">Insult</td>
-                                        <td class="field-invoker">WolverinDEV</td>
-                                        <td class="field-timestamp">
-                                            <a class="timestamp-created">Created: 1.1.2013 12:22</a>
-                                            <a class="timestamp-expires">Expires: 1.21.2013 12:22</a>
-                                        </td>
-                                    </tr>
-                                    -->
-                                </tbody>
-                            </table>
+                        <div class="ban-entry header">
+                            <div class="column column-keys">{{tr "Name/IP/UID/HWID"/}}</div>
+                            <div class="column column-reason">{{tr "Reason"/}}</div>
+                            <div class="column column-creator">{{tr "Creator"/}}</div>
+                            <div class="column column-time">{{tr "Created / Expires"/}}</div>
                         </div>
+                        <div class="entries"> </div>
                     </div>
                     <div class="bottom-menu">
                         <div class="left">
-                            <button class="button-refresh">{{tr "Reload"/}}</button>
-                            <div><input type="checkbox" class="filter-flag-force-own"> {{tr "Show only own bans" /}}</div>
-                            <div><input type="checkbox" class="filter-flag-highlight-own"> {{tr "Highlight own bans" /}}</div>
+                            <button class="btn btn-primary button-refresh btn-raised">{{tr "Reload"/}}</button>
+                            <div class="switch">
+                                <label>
+                                    <input type="checkbox" class="filter-flag-force-own">
+                                    {{tr "Show only own bans" /}}
+                                </label>
+                            </div>
+                            <div class="switch">
+                                <label>
+                                    <input type="checkbox" class="filter-flag-highlight-own">
+                                    {{tr "Highlight own bans" /}}
+                                </label>
+                            </div>
                         </div>
                         <div class="right">
                             <a class="entry-count-info"></a>
-                            <button class="button-close">{{tr "Close" /}}</button>
+                            <button class="btn btn-secondary btn-raised button-close">{{tr "Close" /}}</button>
                         </div>
                     </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_ban_entry" type="text/html">
+            <div class="ban-entry {{if server_id == 0}}ban-entry-global{{/if}} {{if flag_own}}ban-entry-own{{/if}}" ban-id={{>banid}} server-id={{>server_id}}>
+                <div class="column column-keys">
+                    {{if name }}<a class="property property-name">name={{>name}}</a>{{/if}}
+                    {{if ip }} <a class="property property-ip">ip={{>ip}}</a>{{/if}}
+                    {{if unique_id }} <a class="property property-unique-id">uid={{>unique_id}}</a>{{/if}}
+                    {{if hardware_id }}<a class="property property-hardware-id">hwid={{>hardware_id}}</a>{{/if}}
+                </div>
+                <div class="column column-reason">{{>reason}}</div>
+                <div class="column column-creator">{{>invoker_name}}</div>
+                <div class="column column-time">
+                    <div class="timestamp-created"><a>{{tr "Created:" /}}</a> {{fmt_date timestamp_created "DD.MM.YYYY HH:mm" /}}</div>
+                    <div class="timestamp-expire"><a>{{tr "Expire:" /}}</a> {{if (!timestamp_expire || timestamp_expire.getTime() == 0) }}never{{else}}{{fmt_date timestamp_expire "DD.MM.YYYY HH:mm" /}}{{/if}}</div>
                 </div>
             </div>
         </script>
@@ -1471,37 +1876,22 @@
             </div>
         </script>
 
-        //TODO tr downwards
-        <script class="jsrender-template" id="tmpl_ban_entry" type="text/html">
-            <tr class="ban-entry {{if server_id == 0}}ban-entry-global{{/if}} {{if flag_own}}ban-entry-own{{/if}}" ban-id={{>banid}} server-id={{>server_id}}>
-                <td class="field-properties">
-                    {{if name }}<a class="property property-name">name={{>name}}</a>{{/if}}
-                    {{if ip }} <a class="property property-ip">ip={{>ip}}</a>{{/if}}
-                    {{if unique_id }} <a class="property property-unique-id">uid={{>unique_id}}</a>{{/if}}
-                    {{if hardware_id }}<a class="property property-hardware-id">hwid={{>hardware_id}}</a>{{/if}}
-                </td>
-                <td class="field-reason">{{>reason}}</td>
-                <td class="field-invoker">{{>invoker_name}}</td>
-                <td class="field-timestamp">
-                    <a class="timestamp-created">{{tr "Created:" /}} {{fmt_date timestamp_created "DD.MM.YYYY HH:mm" /}}</a>
-                    <a class="timestamp-expire">{{tr "Expire:" /}} {{if (!timestamp_expire || timestamp_expire.getTime() == 0) }}never{{else}}{{fmt_date timestamp_expire "DD.MM.YYYY HH:mm" /}}{{/if}}</a>
-                </td>
-            </tr>
-        </script>
         <!--  `hwid` VARCHAR(" CLIENT_UID_LENGTH "), `uid` VARCHAR(" CLIENT_UID_LENGTH "), `name` VARCHAR(" CLIENT_NAME_LENGTH "), `ip` VARCHAR(128) -->
         <script class="jsrender-template" id="tmpl_ban_create" type="text/html">
             <div class="bancreate">
                 <div class="frame-container">
-                    <div class="container container-ip">
-                        <a>{{tr "IP:" /}}</a>
-                        <input class="input-ip" type="text" maxlength="128">
+                    <div class="form-group">
+                        <label class="bmd-label-static">{{tr "IP:" /}}</label>
+                        <input class="form-control input-ip" type="text" maxlength="128">
                     </div>
-                    <div class="container container-name">
-                        <a>{{tr "Name:" /}}</a>
-                        <input class="input-name" type="text" maxlength="128">
-                        <div class="container-name-type">
-                            <a>{{tr "Interpret IP/Name as:" /}}</a>
-                            <select class="input-name-type">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="bmd-label-static">{{tr "Name:" /}}</label>
+                            <input class="form-control input-name" type="text" maxlength="128">
+                        </div>
+                        <div class="form-group">
+                            <label class="bmd-label-static">{{tr "Interpret IP/Name as:" /}}</label>
+                            <select class="form-control input-name-type">
                                 <option value="wildcard-4">{{tr "Wildcard IPv4" /}}</option>
                                 <option value="wildcard-6">{{tr "Wildcard IPv6" /}}</option>
                                 <option value="fixed" selected>{{tr "Fixed string" /}}</option>
@@ -1509,23 +1899,25 @@
                             </select>
                         </div>
                     </div>
-                    <div class="container container-uid">
-                        <a>{{tr "Unique ID:" /}}</a>
-                        <div><input class="input-uid" type="text" maxlength="64"></div>
+                    <div class="form-group">
+                        <label class="bmd-label-static">{{tr "Unique ID:" /}}</label>
+                        <div><input class="form-control input-uid" type="text" maxlength="64"></div>
                     </div>
-                    <div class="container container-hwid">
-                        <a>{{tr "Hardware ID:" /}}</a>
-                        <input class="input-hwid" type="text" max="64">
+                    <div class="form-group">
+                        <label class="bmd-label-static">{{tr "Hardware ID:" /}}</label>
+                        <input class="form-control input-hwid" type="text" max="64">
                     </div>
-                    <div class="container container-reason">
-                        <a>{{tr "Reason" /}}</a>
-                        <textarea class="input-reason"></textarea>
+                    <div class="form-group container-reason">
+                        <label class="bmd-label-static">{{tr "Reason" /}}</label>
+                        <textarea class="form-control input-reason"></textarea>
                     </div>
-                    <div class="container container-time">
-                        <a>{{tr "Duration" /}}</a>
-                        <div class="container-time-input">
-                            <input type="number" value="1" class="input-time" style="margin-right: 7px" min="1">
-                            <select class="input-time-unit">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>{{tr "Duration:" /}}</label>
+                            <input type="number" value="1" class="form-control input-time" style="margin-right: 7px" min="1">
+                        </div>
+                        <div class="form-group input-time-unit">
+                            <select class="form-control input-time-unit">
                                 <option value="sec">{{tr "seconds"/}}</option>
                                 <option value="min">{{tr "minutes"/}}</option>
                                 <option value="hours">{{tr "hours"/}}</option>
@@ -1535,23 +1927,23 @@
                         </div>
                     </div>
                     <div class="footer">
-                        <div>
-                            <div class="container-global">
+                        <div class="switch">
+                            <label>
                                 <input type="checkbox" class="input-global">
-                                <a>{{tr "Use this ban as a global ban" /}}</a>
+                                {{tr "Use this ban as a global ban" /}}
                                 <div class="help-tip tip-center tip-small">
                                     <p>
                                         {{tr "Global bans are bans which apply instance wide.<br>" +
-                                             "This means that (if this rule apply to a victim) cant join <b>any</b> virtual server!<br>" +
-                                             "Global bans are by default shown to every server admin group,<br>" +
-                                             "but could only be created with query rights"/}}
+                                        "This means that (if this rule apply to a victim) cant join <b>any</b> virtual server!<br>" +
+                                        "Global bans are by default shown to every server admin group,<br>" +
+                                        "but could only be created with query rights"/}}
                                     </p>
                                 </div>
-                            </div>
+                            </label>
                         </div>
-                        <div class="container-buttons modal-button-group" style="text-align: right; margin-top: 3px; margin-bottom: 6px;">
-                            <button class="button-close">{{tr "Cancel"/}}</button>
-                            <button class="button-success">{{tr "OK"/}}</button>
+                        <div class="bmd-form-group">
+                            <button class="btn btn-danger button-close">{{tr "Cancel"/}}</button>
+                            <button class="btn btn-success btn-raised button-success">{{tr "OK"/}}</button>
                         </div>
                     </div>
                 </div>
@@ -2006,67 +2398,70 @@
             <div class="query-create">
                 <a>{{tr "Set the login name for your Server Query account." /}}</a>
                 <a>{{tr "You'll receive your password within the next step." /}}</a>
-                <div class="row-name">
-                    <a>Name:</a>
-                    <input type="text" maxlength="64" minlength="3" class="input-name">
+                <div class="form-group row-name">
+                    <label>Name:</label>
+                    <input type="text" maxlength="64" minlength="3" class="form-control input-name">
                 </div>
                 <div class="buttons">
-                    <button class="button-close">{{tr "Close" /}}</button>
-                    <button class="button-create">{{tr "Create" /}}</button>
+                    <button class="btn btn-danger button-close">{{tr "Close" /}}</button>
+                    <button class="btn btn-success btn-raised button-create">{{tr "Create" /}}</button>
                 </div>
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_query_created" type="text/html">
             <div class="query-created">
                 <a>{{tr "Your server query credentials:" /}}</a>
-                <div class="property-row">
-                    <a>Name:</a>
-                    <input class="query_name" type="text" maxlength="64" minlength="3" value="{{>username}}">
-                    <div class="btn_copy_name icon client-copy" title="{{tr 'Copy username' /}}"></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>{{tr "Name:" /}}</label>
+                        <input class="form-control query_name" type="text" maxlength="64" minlength="3" value="{{>username}}">
+                    </div>
+                    <div class="btn_copy_name icon_x32 client-copy" title="{{tr 'Copy username' /}}"></div>
                 </div>
-                <div class="property-row">
-                    <a>Password:</a>
-                    <input class="query_password" type="text" value="{{>password}}">
-                    <div class="btn_copy_password icon client-copy" title="{{tr 'Copy password' /}}"></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>{{tr "Password:" /}}</label>
+                        <input class="form-control query_password" type="text" maxlength="64" minlength="3" value="{{>password}}">
+                    </div>
+                    <div class="btn_copy_password icon_x32 client-copy" title="{{tr 'Copy username' /}}"></div>
                 </div>
                 <div class="buttons">
-                    <button class="button-close">{{tr "Close" /}}</button>
+                    <button class="btn btn-primary button-close">{{tr "Close" /}}</button>
                 </div>
             </div>
         </script>
 
         <script class="jsrender-template" id="tmpl_query_manager" type="text/html">
             <div class="query-management">
-                <div class="container">
-                    <div class="header">
-                        <div class="buttons">
-                            <button class="button button-query-create">{{tr "Create account" /}}</button>
-                            <button class="button button-query-delete">{{tr "Delete account" /}}</button>
-                            <button class="button button-query-rename">{{tr "Rename account" /}}</button>
-                            <button class="button button-query-change-password">{{tr "Change password" /}}</button>
-                        </div>
-                        <div class="search">
-                            <input class="input input-search" type="text" placeholder="search">
+                <div class="header">
+                    <div class="form-group bmd-form-group buttons">
+                        <button class="btn btn-success button button-query-create">{{tr "Create account" /}}</button>
+                        <button class="btn btn-danger button button-query-delete">{{tr "Delete account" /}}</button>
+                        <button class="btn btn-primary button button-query-rename">{{tr "Rename account" /}}</button>
+                        <button class="btn btn-primary button button-query-change-password">{{tr "Change password" /}}</button>
+                    </div>
+                    <div class="form-group search">
+                        <label class="bmd-label-floating">{{tr "search" /}}</label>
+                        <input class="form-control input input-search" type="text">
+                    </div>
+                </div>
+                <div class="query-list">
+                    <div class="query-list-header">
+                        <div class="column column-username">{{tr "Username" /}}</div>
+                        <div class="column column-unique-id">{{tr "Unique ID" /}}</div>
+                        <div class="column column-bound-server">{{tr "Bounded Server" /}}</div>
+                    </div>
+                    <div class="query-list-entries-container">
+                        <div class="query-list-entries">
                         </div>
                     </div>
-                    <div class="query-list">
-                        <div class="query-list-header">
-                            <div class="column column-username">{{tr "Username" /}}</div>
-                            <div class="column column-unique-id">{{tr "Unique ID" /}}</div>
-                            <div class="column column-bound-server">{{tr "Bounded Server" /}}</div>
-                        </div>
-                        <div class="query-list-entries-container">
-                            <div class="query-list-entries">
-                            </div>
-                        </div>
+                </div>
+                <div class="footer">
+                    <div class="info">
+                        <a>{{tr "loading..." /}}</a>
                     </div>
-                    <div class="footer">
-                        <div class="info">
-                            <a>{{tr "loading..." /}}</a>
-                        </div>
-                        <div class="buttons">
-                            <button class="button-refresh">{{tr "Refresh" /}}</button>
-                        </div>
+                    <div class="buttons">
+                        <button class="btn btn-primary button-refresh">{{tr "Refresh" /}}</button>
                     </div>
                 </div>
             </div>
@@ -2083,40 +2478,45 @@
 
         <script class="jsrender-template" id="tmpl_playlist_list" type="text/html">
             <div class="playlist-management">
-                <div class="container">
-                    <div class="header">
-                        <div class="buttons">
-                            <button class="button button-playlist-create">{{tr "Create playlist" /}}</button>
-                            <button class="button button-playlist-delete">{{tr "Delete playlist" /}}</button>
-                            <button class="button button-playlist-edit">{{tr "Edit playlist" /}}</button>
-                        </div>
-                        <div class="search">
-                            <input class="input input-search" type="text" placeholder="search">
+                <div class="header">
+                    <div class="form-group bmd-form-group buttons">
+                        <button class="btn btn-success button button-playlist-create">{{tr "Create playlist" /}}</button>
+                        <button class="btn btn-danger button button-playlist-delete">{{tr "Delete playlist" /}}</button>
+                        <button class="btn btn-primary button-playlist-edit">{{tr "Edit playlist" /}}</button>
+                    </div>
+                    <div class="form-group search">
+                        <label class="bmd-label-floating">{{tr "search" /}}</label>
+                        <input class="form-control input input-search" type="text">
+                    </div>
+                </div>
+                <div class="playlist-list">
+                    <div class="playlist-list-header">
+                        <div class="column column-id">{{tr "ID" /}}</div>
+                        <div class="column column-title">{{tr "Title" /}}</div>
+                        <div class="column column-creator">{{tr "Creator" /}}</div>
+                        <div class="column column-type">{{tr "Type" /}}</div>
+                        <div class="column column-used">{{tr "Used" /}}</div>
+                    </div>
+                    <div class="playlist-list-entries-container">
+                        <div class="playlist-list-entries">
                         </div>
                     </div>
-                    <div class="playlist-list">
-                        <div class="playlist-list-header">
-                            <div class="column column-id">{{tr "ID" /}}</div>
-                            <div class="column column-title">{{tr "Title" /}}</div>
-                            <div class="column column-creator">{{tr "Creator" /}}</div>
-                            <div class="column column-type">{{tr "Type" /}}</div>
-                            <div class="column column-used">{{tr "Used" /}}</div>
-                        </div>
-                        <div class="playlist-list-entries-container">
-                            <div class="playlist-list-entries">
-                            </div>
-                        </div>
+                </div>
+                <div class="footer">
+                    <div class="info">
+                        <a>{{tr "loading..." /}}</a>
                     </div>
-                    <div class="footer">
-                        <div class="info">
-                            <a>{{tr "loading..." /}}</a>
-                        </div>
-                        <div class="buttons">
-                            <div class="highlight-own">
-                                <div>Highlight own playlists</div>
-                                <input class="button-highlight-own" type="checkbox">
+                    <div class="buttons">
+                        <div class="form-group highlight-own">
+                            <div class="switch">
+                                <label>
+                                    <input type="checkbox" class="button-highlight-own">
+                                    {{tr "Highlight own playlists" /}}
+                                </label>
                             </div>
-                            <button class="button-refresh">{{tr "Refresh" /}}</button>
+                        </div>
+                        <div class="form-group bmd-form-group">
+                            <button class="btn btn-secondary btn-raised button-refresh">{{tr "Refresh" /}}</button>
                         </div>
                     </div>
                 </div>
@@ -2149,141 +2549,144 @@
 
         <script class="jsrender-template" id="tmpl_playlist_edit" type="text/html">
             <div class="playlist-edit">
-                <div class="container">
-                    <div class="general-properties">
-                        <div class="property property-owner">
-                            <div class="key">{{tr "Playlist owner:" /}}</div>
-                            <div class="value"></div>
-                        </div>
-                        <div class="property property-title">
-                            <div class="key">{{tr "Title:" /}}</div>
-                            <input type="text" class="value">
-                        </div>
-                        <div class="property property-description">
-                            <div class="key">{{tr "Description:" /}}</div>
-                            <textarea class="value"></textarea>
-                        </div>
-                        <div class="property property-type">
-                            <div class="key">{{tr "Type:" /}}</div>
-                            <select>
-                                <option value="0">{{tr "Bot bound" /}}</option>
-                                <option value="1">{{tr "Global" /}}</option>
-                            </select>
-                        </div>
+                <div class="general-properties">
+                    <div class="form-group property-owner">
+                        <label>{{tr "Playlist owner:" /}}</label>
+                        <input type="text" class="form-control value" readonly>
                     </div>
-                    <x-tab>
-                        <x-entry>
-                            <x-tag>{{tr "Songs" /}}</x-tag>
-                            <x-content>
-                                <div class="container-songs">
-                                    <div class="song-list">
-                                        <div class="song-list-header">
-                                            <div class="column column-id">{{tr "ID" /}}</div>
-                                            <div class="column column-url">{{tr "Url" /}}</div>
-                                            <div class="column column-loaded">{{tr "loaded" /}}</div>
-                                            <div class="column column-buttons"></div>
-                                        </div>
-                                        <div class="song-list-entries-container">
-                                            <div class="song-list-entries">
-                                            </div>
-                                        </div>
+                    <div class="form-group property-title">
+                        <label>{{tr "Title:" /}}</label>
+                        <input type="text" class="form-control value">
+                    </div>
+                    <div class="form-group property-description">
+                        <label>{{tr "Description:" /}}</label>
+                        <textarea class="form-control value"></textarea>
+                    </div>
+                    <div class="form-group property-type">
+                        <label>{{tr "Type:" /}}</label>
+                        <select class="form-control">
+                            <option value="0">{{tr "Bot bound" /}}</option>
+                            <option value="1">{{tr "Global" /}}</option>
+                        </select>
+                    </div>
+                </div>
+                <x-tab>
+                    <x-entry>
+                        <x-tag>{{tr "Songs" /}}</x-tag>
+                        <x-content>
+                            <div class="container-songs">
+                                <div class="song-list">
+                                    <div class="song-list-header">
+                                        <div class="column column-id">{{tr "ID" /}}</div>
+                                        <div class="column column-url">{{tr "Url" /}}</div>
+                                        <div class="column column-loaded">{{tr "loaded" /}}</div>
+                                        <div class="column column-buttons"></div>
                                     </div>
-                                    <div class="footer">
-                                        <div class="buttons">
-                                            <button class="button-song-add">{{tr "Add song" /}}</button>
-                                            <button class="button-refresh">{{tr "Refresh" /}}</button>
+                                    <div class="song-list-entries-container">
+                                        <div class="song-list-entries">
                                         </div>
-                                        <div class="info-message"></div>
                                     </div>
                                 </div>
-                            </x-content>
-                        </x-entry>
-                        <x-entry>
-                            <x-tag>{{tr "Playback settings"/}}</x-tag>
-                            <x-content>
-                                <div class="playback-properties">
-                                    <div class="property property-replay-mode">
-                                        <div class="key">{{tr "Replay mode" /}}</div>
-                                        <select class="value">
-                                            <option value="0">{{tr "Normal"/}}</option>
-                                            <option value="1">{{tr "Loop list"/}}</option>
-                                            <option value="2">{{tr "Loop single entry"/}}</option>
-                                            <option value="3">{{tr "Shuffle"/}}</option>
-                                        </select>
+                                <div class="footer">
+                                    <div class="buttons">
+                                        <button class="btn btn-success button-song-add">{{tr "Add song" /}}</button>
+                                        <button class="btn btn-secondary button-refresh">{{tr "Refresh" /}}</button>
                                     </div>
-                                    <div class="property property-flag-delete-played">
-                                        <div class="key">{{tr "Delete played songs:" /}}</div>
-                                        <div class="checkbox-container">
-                                            <input type="checkbox" class="value">
-                                        </div>
+                                    <div class="info-message"></div>
+                                </div>
+                            </div>
+                        </x-content>
+                    </x-entry>
+                    <x-entry>
+                        <x-tag>{{tr "Playback settings"/}}</x-tag>
+                        <x-content>
+                            <div class="playback-properties">
+                                <div class="form-group property-replay-mode">
+                                    <label>{{tr "Replay mode" /}}</label>
+                                    <select class="form-control value">
+                                        <option value="0">{{tr "Normal"/}}</option>
+                                        <option value="1">{{tr "Loop list"/}}</option>
+                                        <option value="2">{{tr "Loop single entry"/}}</option>
+                                        <option value="3">{{tr "Shuffle"/}}</option>
+                                    </select>
+                                </div>
+                                <div class="form-group property-flag-delete-played">
+                                    <div class="switch">
+                                        <label>
+                                            <input type="checkbox">
+                                            {{tr "Delete played song:" /}}
+                                        </label>
                                     </div>
-                                    <div class="property property-current-song">
-                                        <div class="key">{{tr "Current replaying song:" /}}</div>
-                                        <div class="value">0</div>
-                                    </div>
-                                    <div class="property property-flag-finished">
-                                        <div class="key">{{tr "Playlist finished:" /}}</div>
-                                        <div class="checkbox-container">
-                                            <input type="checkbox" class="value">
+                                </div>
+                                <div class="form-group property-current-song">
+                                    <label>{{tr "Current replaying song:" /}}</label>
+                                    <input type="text" class="form-control value"/>
+                                </div>
+                                <div class="form-group property-flag-finished">
+                                    <div class="switch">
+                                        <label>
+                                            {{tr "Playlist finished status" /}}
+                                            <input type="checkbox">
                                             <!-- TODO add info text here -->
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </x-content>
+                    </x-entry>
+                    <x-entry>
+                        <x-tag>{{tr "Permissions" /}}</x-tag>
+                        <x-content>
+                            <div class="container-permissions">
+                                <div class="group_box">
+                                    <div class="header">{{tr "Access/modify powers" /}}</div>
+                                    <div class="content permissions-list">
+                                        <div class="form-group permission" permission="i_playlist_needed_view_power">
+                                            <label>{{tr "View power" /}}</label>
+
+                                    <input type="number" min="0" value="0" class="form-control value">
+                                        </div>
+                                        <div class="form-group permission" permission="i_playlist_needed_modify_power">
+                                            <label>{{tr "Modify" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value">
+                                        </div>
+                                        <div class="form-group permission" permission="i_playlist_needed_permission_modify_power">
+                                            <label>{{tr "Permission modify" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value">
+                                        </div>
+                                        <div class="form-group permission" permission="i_playlist_needed_delete_power">
+                                            <label>{{tr "Delete" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value">
                                         </div>
                                     </div>
                                 </div>
-                            </x-content>
-                        </x-entry>
-                        <x-entry>
-                            <x-tag>{{tr "Permissions" /}}</x-tag>
-                            <x-content>
-                                <div class="container-permissions">
-                                    <div class="group_box">
-                                        <div class="header">{{tr "Access/modify powers" /}}</div>
-                                        <div class="content permissions-list">
-                                            <div class="permission" permission="i_playlist_needed_view_power">
-                                                <div class="key">{{tr "View power" /}}</div>
-                                                <input type="number" min="0" value="0" class="value">
-                                            </div>
-                                            <div class="permission" permission="i_playlist_needed_modify_power">
-                                                <div class="key">{{tr "Modify" /}}</div>
-                                                <input type="number" min="0" value="0" class="value">
-                                            </div>
-                                            <div class="permission" permission="i_playlist_needed_permission_modify_power">
-                                                <div class="key">{{tr "Permission modify" /}}</div>
-                                                <input type="number" min="0" value="0" class="value">
-                                            </div>
-                                            <div class="permission" permission="i_playlist_needed_delete_power">
-                                                <div class="key">{{tr "Delete" /}}</div>
-                                                <input type="number" min="0" value="0" class="value">
-                                            </div>
+                                <div class="group_box">
+                                    <div class="header">{{tr "Song management powers" /}}</div>
+                                    <div class="content permissions-list">
+                                        <div class="form-group permission" permission="i_playlist_song_needed_add_power">
+                                            <label>{{tr "Song add" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value">
                                         </div>
-                                    </div>
-                                    <div class="group_box">
-                                        <div class="header">{{tr "Song management powers" /}}</div>
-                                        <div class="content permissions-list">
-                                            <div class="permission" permission="i_playlist_song_needed_add_power">
-                                                <div class="key">{{tr "Song add" /}}</div>
-                                                <input type="number" min="0" value="0" class="value">
-                                            </div>
-                                            <div class="permission" permission="i_playlist_song_needed_move_power">
-                                                <div class="key">{{tr "Song reorder" /}}</div>
-                                                <input type="number" min="0" value="0" class="value">
-                                            </div>
-                                            <div class="permission" permission="i_playlist_song_needed_remove_power">
-                                                <div class="key">{{tr "Song delete" /}}</div>
-                                                <input type="number" min="0" value="0" class="value">
-                                            </div>
+                                        <div class="form-group permission" permission="i_playlist_song_needed_move_power">
+                                            <label>{{tr "Song reorder" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value">
+                                        </div>
+                                        <div class="form-group permission" permission="i_playlist_song_needed_remove_power">
+                                            <label>{{tr "Song delete" /}}</label>
+                                            <input type="number" min="0" value="0" class="form-control value">
                                         </div>
                                     </div>
                                 </div>
-                                <div class="container-no-permissions">
-                                    <div class="text">You dont have permissions to see playlist permissions!</div>
-                                </div>
-                            </x-content>
-                        </x-entry>
-                    </x-tab>
-                    <div class="buttons">
-                        <button class="button-save">{{tr "Save" /}}</button>
-                        <button class="button-close">{{tr "Close" /}}</button>
-                    </div>
+                            </div>
+                            <div class="container-no-permissions">
+                                <div class="text">You dont have permissions to see playlist permissions!</div>
+                            </div>
+                        </x-content>
+                    </x-entry>
+                </x-tab>
+                <div class="buttons">
+                    <button class="btn btn-success button-save">{{tr "Save" /}}</button>
+                    <button class="btn btn-secondary button-close">{{tr "Close" /}}</button>
                 </div>
             </div>
         </script>
@@ -2377,64 +2780,68 @@
                     </div>
                 </div>
                 <div class="buttons">
-                    <button class="button-create">{{tr "Create new bookmark/directory" /}}</button>
-                    <button class="button-delete">{{tr "Delete selected bookmark/directory" /}}</button>
+                    <button class="btn btn-raised btn-secondary button-create">{{tr "Create new bookmark/directory" /}}</button>
+                    <button class="btn btn-danger button-delete">{{tr "Delete selected bookmark/directory" /}}</button>
                 </div>
                 <hr>
                 <div class="group_box">
                     <div class="header">{{tr "Bookmark settings" /}}</div>
                     <div class="content">
                         <div class="bookmark-setting bookmark-setting-bookmark">
-                            <div class="property">
-                                <div class="key">{{tr "Bookmark name:" /}}</div>
-                                <input class="setting-bookmark-name">
+                            <div class="form-group">
+                                <label for="input-bookmark-name" class="bmd-label-static">{{tr "Bookmark name:" /}}</label>
+                                <input id="input-bookmark-name" class="form-control setting-bookmark-name">
                             </div>
-                            <div class="property">
-                                <div class="key">{{tr "Connect profile:" /}}</div>
-                                <select class="setting-bookmark-profile"></select>
+                            <div class="form-group">
+                                <label for="input-bookmark-profile" class="bmd-label-static">{{tr "Connect profile:" /}}</label>
+                                <select id="input-bookmark-profile" class="form-control setting-bookmark-profile"></select>
                             </div>
                             <div class="group_box">
                                 <div class="header">{{tr "Server Properties" /}}</div>
                                 <div class="content">
-                                    <div class="property">
-                                        <div class="key">{{tr "Server address:" /}}</div>
-                                        <input class="setting-server-host">
+                                    <div class="form-group">
+                                        <label for="input-bookmark-server-host" class="bmd-label-static">{{tr "Server address:" /}}</label>
+                                        <input id="input-bookmark-server-host" class="form-control setting-server-host">
                                     </div>
-                                    <div class="property">
-                                        <div class="key">{{tr "Server Port:" /}}</div>
-                                        <input class="setting-server-port" type="number">
+                                    <div class="form-group">
+                                        <label for="input-bookmark-server-port" class="bmd-label-static">{{tr "Server port:" /}}</label>
+                                        <input type="number" min="1" max="65665" id="input-bookmark-server-port" class="form-control setting-server-port">
                                     </div>
-                                    <div class="property">
-                                        <div class="key">{{tr "Server Password:" /}}</div>
-                                        <input class="setting-server-password" type="password" id="bookmark_server_password_{{rnd '0~13377331'/}}">
+                                    <div class="form-group">
+                                        <!-- TODO generated id because of password field (id="bookmark_server_password_{{rnd '0~13377331'/}}") -->
+                                        <label for="input-bookmark-server-password" class="bmd-label-floating">{{tr "Server password" /}}</label>
+                                        <input id="input-bookmark-server-password" class="form-control setting-server-password" autocomplete="nope" type="password">
                                     </div>
                                 </div>
                             </div>
                             <div class="group_box">
                                 <div class="header">{{tr "Connect Properties (Not yet supported)" /}}</div>
                                 <div class="content">
-                                    <div class="property">
-                                        <div class="key">{{tr "Username:" /}}</div>
-                                        <input class="setting-username" disabled>
+                                    <div class="form-group">
+                                        <label for="input-bookmark-username" class="bmd-label-floating">{{tr "Default Username" /}}</label>
+                                        <input id="input-bookmark-username" class="form-control setting-username" disabled>
                                     </div>
-                                    <div class="property">
-                                        <div class="key">{{tr "Default channel:" /}}</div>
-                                        <div class="default-channel-container">
-                                            <input class="setting-channel" disabled>
-                                            <button class="button-set-to-current" disabled>{{tr "current channel" /}}</button>
+                                    <div class="form-row container-default-channel-select">
+                                        <div class="form-group container-default-channel">
+                                            <label for="input-bookmark-channel" class="bmd-label-floating">{{tr "Default Channel" /}}</label>
+                                            <input id="input-bookmark-channel" class="form-control setting-channel" disabled>
+                                        </div>
+                                        <div class="form-group bmd-form-group">
+                                            <button class="btn btn-primary button-set-to-current" disabled>{{tr "Current Channel" /}}</button>
                                         </div>
                                     </div>
-                                    <div class="property">
-                                        <div class="key">{{tr "Channel password:" /}}</div>
-                                        <input class="setting-channel-password" type="password" id="bookmark_channel_password_{{rnd '0~13377331'/}}" disabled>
+                                    <div class="form-group">
+                                        <!-- TODO generated id because of password field (id="bookmark_server_password_{{rnd '0~13377331'/}}") -->
+                                        <label for="input-bookmark-channel-password" class="bmd-label-floating">{{tr "Default channel password" /}}</label>
+                                        <input id="input-bookmark-channel-password" class="form-control setting-channel-password" type="password" disabled>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div class="bookmark-setting bookmark-setting-directory">
-                            <div class="property">
-                                <div class="key">{{tr "Directory name:" /}}</div>
-                                <input class="setting-bookmark-name">
+                            <div class="form-group">
+                                <label for="input-bookmark-dirname" class="bmd-label-static">{{tr "Directory name:" /}}</label>
+                                <input id="input-bookmark-dirname" class="form-control setting-bookmark-name">
                             </div>
                         </div>
                     </div>

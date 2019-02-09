@@ -12,59 +12,535 @@
         b_virtualserver_playlist_permission_list
  */
 
+interface JQuery<TElement = HTMLElement> {
+    dropdown: any;
+}
+
 namespace Modals {
-    async function build_permission_editor() : Promise<JQuery[]> {
-        let root_entry: any = {};
-        root_entry.entries = [];
+    namespace PermissionEditor {
+        export interface PermissionEntry {
+            tag: JQuery;
+            tag_value: JQuery;
+            tag_grant: JQuery;
+            tag_flag_negate: JQuery;
+            tag_flag_skip: JQuery;
 
-        { /* lets build the stuff (~5ms) */
-            let groups = globalClient.permissions.groupedPermissions();
-            let entry_stack: any[] = [root_entry];
+            id: number;
+            filter: string;
+            is_bool: boolean;
 
-            let insert_group = (group: GroupedPermissions) => {
-                let group_entry: any = {};
-                group_entry.type = "group";
-                group_entry.name = group.group.name;
-                group_entry.entries = [];
-                entry_stack.last().entries.push(group_entry);
-
-                entry_stack.push(group_entry);
-                for(let child of group.children)
-                    insert_group(child);
-                entry_stack.pop();
-
-                for(let perm of group.permissions) {
-                    let entry: any = {};
-                    entry.type = "entry";
-                    entry.permission_name = perm.name;
-                    entry.unset = true;
-                    group_entry.entries.push(entry);
-                }
-            };
-            groups.forEach(entry => insert_group(entry));
         }
 
-        root_entry.permissions = root_entry.entries;
-        const start = Date.now();
-        console.log("begin render");
-        const rendered = $("#tmpl_permission_explorer").renderTag(root_entry);
-        console.log("end (%o)", Date.now() - start);
+        export interface PermissionValue {
+            remove: boolean; /* if set remove the set permission (value or granted) */
 
-        const result: JQuery[] = [];
+            granted?: number;
+            value?: number;
 
-        for(let i = 0; i < 4; i++)
-            await new Promise(resolve => setTimeout(() => {
-                const start = Date.now();
-                console.log("begin");
-                result.push(rendered.clone());
-                console.log("end (%o)", Date.now() - start);
-                resolve();
-            }, 5));
-        result.push(rendered);
+            flag_skip?: boolean;
+            flag_negate?: boolean;
+        }
 
-        return result;
+        export type change_listener_t = (permission: PermissionInfo, value?: PermissionEditor.PermissionValue) => Promise<any>;
     }
+    enum PermissionEditorMode {
+        VISIBLE,
+        NO_PERMISSION,
+        UNSET
+    }
+    
+    class PermissionEditor {
+        readonly permissions: GroupedPermissions[];
 
+        container: JQuery;
+
+        private mode_container_permissions: JQuery;
+        private mode_container_error_permission: JQuery;
+        private mode_container_unset: JQuery;
+
+        /* references within the container tag */
+        private permission_value_map: {[key:number]:PermissionValue} = {};
+        private permission_map: {[key:number]: PermissionEditor.PermissionEntry};
+        private listener_change: PermissionEditor.change_listener_t = () => Promise.resolve();
+        private listener_update: () => any;
+
+        constructor(permissions: GroupedPermissions[]) {
+            this.permissions = permissions;
+        }
+
+        build_tag() {
+            this.permission_map = {};
+
+            this.container = $("#tmpl_permission_editor").renderTag();
+            /* search for that as long we've not that much nodes */
+            this.mode_container_permissions = this.container.find(".container-mode-permissions");
+            this.mode_container_error_permission = this.container.find(".container-mode-no-permissions");
+            this.mode_container_unset = this.container.find(".container-mode-unset");
+            this.set_mode(PermissionEditorMode.UNSET);
+
+            /* the filter */
+            {
+                const tag_filter_input = this.container.find(".filter-input");
+                const tag_filter_granted = this.container.find(".filter-granted");
+
+                tag_filter_granted.on('change', event => tag_filter_input.trigger('change'));
+                tag_filter_input.on('keyup change', event => {
+                    let filter_mask = tag_filter_input.val() as string;
+                    let req_granted = tag_filter_granted.prop("checked");
+
+                    /* we've to disable this function because its sometimes laggy */
+                    const org_fn = $.fn.dropdown && $.fn.dropdown.Constructor ? $.fn.dropdown.Constructor._clearMenus : undefined;
+                    if(org_fn)
+                        $.fn.dropdown.Constructor._clearMenus = () => {};
+
+                    /* update each permission */
+                    {
+                        const start = Date.now();
+
+                        for(const permission_id of Object.keys(this.permission_map)) {
+                            const permission: PermissionEditor.PermissionEntry = this.permission_map[permission_id];
+                            let shown = filter_mask.length == 0 || permission.filter.indexOf(filter_mask) != -1;
+                            if(shown && req_granted) {
+                                const value: PermissionValue = this.permission_value_map[permission_id];
+                                shown = value && (value.hasValue() || value.hasGrant());
+                            }
+
+                            permission.tag.attr("match", shown ? 1 : 0);
+                            /* this is faster then .hide() or .show() */
+                            if(shown)
+                                permission.tag.css('display', 'flex');
+                            else
+                                permission.tag.css('display', 'none');
+                        }
+
+                        const end = Date.now();
+                        console.error("Filter update required %oms", end - start);
+                    }
+
+                    /* update group visibility (hide empty groups) */
+                    {
+                        const start = Date.now();
+
+                        this.container.find(".group").each((idx, _entry) => {
+                            let entry = $(_entry);
+                            let target = entry.find(".entry:not(.group)[match=\"1\"]").length > 0;
+                            /* this is faster then .hide() or .show() */
+                            if(target)
+                                entry.css('display', 'flex');
+                            else
+                                entry.css('display', 'none');
+                        });
+
+                        const end = Date.now();
+                        console.error("Group update required %oms", end - start);
+                    }
+
+                    if(org_fn)
+                        $.fn.dropdown.Constructor._clearMenus = org_fn;
+                });
+            }
+
+            /* update button */
+            {
+                this.container.find(".button-update").on('click', this.trigger_update.bind(this));
+            }
+
+            /* global context menu listener */
+            {
+                this.container.on('contextmenu', event => {
+                    if(event.isDefaultPrevented()) return;
+                    event.preventDefault();
+
+                    /* TODO allow collapse and expend all */
+                });
+            }
+
+            /* actual permissions */
+            {
+                const tag_entries = this.container.find(".entries");
+
+                const template_entry = $("#tmpl_permission_entry");
+                const build_group = (group: GroupedPermissions) : JQuery => {
+                    const tag_group = template_entry.renderTag({
+                        type: "group",
+                        name: group.group.name
+                    });
+                    const tag_group_entries = tag_group.find(".group-entries");
+
+                    const update_collapse_status = (status: boolean, recursive: boolean) => {
+                        const tag = recursive ? this.container.find(".entry.group") : tag_group;
+
+                        /* this is faster then .hide() or .show() */
+                        if(status) {
+                            tag.find("> .group-entries").css('display', 'block');
+                        } else {
+                            tag.find("> .group-entries").css('display', 'none');
+                        }
+
+                        tag.find("> .title .arrow").toggleClass("down", status).toggleClass("right", !status);
+                    };
+
+                    /* register collapse and context listener */
+                    {
+                        const tag_arrow = tag_group.find(".arrow");
+                        tag_arrow.on('click', event => {
+                            if(event.isDefaultPrevented()) return;
+                            event.preventDefault();
+
+                            update_collapse_status(tag_arrow.hasClass("right"), false);
+                        });
+
+                        const tag_title = tag_group.find(".title");
+                        tag_title.on('contextmenu', event => {
+                            if(event.isDefaultPrevented()) return;
+                            event.preventDefault();
+
+                            spawn_context_menu(event.pageX, event.pageY, {
+                                type: MenuEntryType.ENTRY,
+                                icon: "",
+                                name: tr("Expend group"),
+                                callback: () => update_collapse_status(true, false)
+                            }, {
+                                type: MenuEntryType.ENTRY,
+                                icon: "",
+                                name: tr("Expend all"),
+                                callback: () => update_collapse_status(true, true)
+                            }, {
+                                type: MenuEntryType.ENTRY,
+                                icon: "",
+                                name: tr("Collapse group"),
+                                callback: () => update_collapse_status(false, false)
+                            }, {
+                                type: MenuEntryType.ENTRY,
+                                icon: "",
+                                name: tr("Collapse all"),
+                                callback: () => update_collapse_status(false, true)
+                            });
+                        });
+                    }
+
+                    /* build the permissions */
+                    {
+                        for(const permission of group.permissions) {
+                            const tag_permission = template_entry.renderTag({
+                                type: "permission",
+                                permission_name: permission.name,
+                                permission_id: permission.id,
+                                permission_description: permission.description,
+                            });
+
+                            const tag_value = tag_permission.find(".column-value input");
+                            const tag_granted = tag_permission.find(".column-granted input");
+                            const tag_flag_skip = tag_permission.find(".column-skip input");
+                            const tag_flag_negate = tag_permission.find(".column-negate input");
+
+                            /* double click listener */
+                            {
+                                tag_permission.on('dblclick', event => {
+                                    if(event.isDefaultPrevented()) return;
+                                    event.preventDefault();
+
+                                    if(tag_permission.hasClass("value-unset")) {
+                                        tag_flag_skip.prop("checked", false);
+                                        tag_flag_negate.prop("checked", false);
+
+                                        tag_permission.removeClass("value-unset");
+                                        if(permission.name.startsWith("b_")) {
+                                            tag_permission.find(".column-value input")
+                                                .prop("checked", true)
+                                                .trigger('change');
+                                        } else {
+                                            /* TODO auto value */
+                                            tag_value.val('').focus();
+                                        }
+                                    } else if(!permission.name.startsWith("b_")) {
+                                        tag_value.focus();
+                                    }
+                                });
+
+                                tag_permission.find(".column-granted").on('dblclick', event => {
+                                    if(event.isDefaultPrevented()) return;
+                                    event.preventDefault();
+
+                                    if(tag_permission.hasClass("grant-unset")) {
+                                        tag_permission.removeClass("grant-unset");
+                                        tag_granted.focus();
+                                    }
+                                });
+                            }
+
+                            /* focus out listener */
+                            {
+                                tag_granted.on('focusout', event => {
+                                    try {
+                                        const value = tag_granted.val() as string;
+                                        if(isNaN(parseInt(value)))
+                                            throw "";
+                                    } catch(_) {
+                                        tag_granted.val("");
+                                        tag_permission.addClass("grant-unset");
+
+                                        const element = this.permission_value_map[permission.id];
+                                        if(element && element.hasGrant()) {
+                                            this.listener_change(permission, {
+                                                remove: true,
+                                                granted: -2
+                                            }).then(() => {
+                                                element.granted_value = undefined;
+                                            }).catch(() => {
+                                                tag_granted.val(element.granted_value);
+                                            });
+                                        }
+                                    }
+                                });
+
+                                tag_value.on('focusout', event => {
+                                    try {
+                                        if(isNaN(parseInt(tag_value.val() as string)))
+                                            throw "";
+                                    } catch(_) {
+                                        const element = this.permission_value_map[permission.id];
+                                        if(element && element.hasValue()) {
+                                            tag_value.val(element.value);
+                                        } else {
+                                            tag_value.val("");
+                                            tag_permission.addClass("value-unset");
+                                        }
+                                    }
+                                })
+                            }
+
+                            /* change listener */
+                            {
+                                tag_flag_negate.on('change', () => tag_value.trigger('change'));
+                                tag_flag_skip.on('change', () => tag_value.trigger('change'));
+
+                                tag_granted.on('change', event => {
+                                    const value = parseInt(tag_granted.val() as string);
+                                    if(isNaN(value)) return;
+
+                                    this.listener_change(permission, {
+                                        remove: false,
+                                        granted: value,
+                                    }).then(() => {
+                                        const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
+                                        element.granted_value = value;
+                                    }).catch(() => {
+                                        const element = this.permission_value_map[permission.id];
+                                        tag_granted.val(element && element.hasGrant() ? element.granted_value : "");
+                                        tag_permission.toggleClass("grant-unset", !element || !element.hasGrant());
+                                    });
+                                });
+
+                                tag_value.on('change', event => {
+                                    const value = permission.is_boolean() ? tag_value.prop("checked") ? 1 : 0 : parseInt(tag_value.val() as string);
+                                    if(isNaN(value)) return;
+
+                                    const flag_negate = tag_flag_negate.prop("checked");
+                                    const flag_skip = tag_flag_skip.prop("checked");
+
+                                    this.listener_change(permission, {
+                                        remove: false,
+                                        value: value,
+                                        flag_negate: flag_negate,
+                                        flag_skip: flag_skip
+                                    }).then(() => {
+                                        const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
+
+                                        element.value = value;
+                                        element.flag_skip = flag_skip;
+                                        element.flag_negate = flag_negate;
+                                    }).catch(error => {
+                                        const element = this.permission_value_map[permission.id];
+
+                                        /* reset or set the fields */
+                                        if(permission.is_boolean())
+                                            tag_value.prop('checked', element && element.hasValue() && element.value > 0);
+                                        else
+                                            tag_value.val(element && element.hasValue() ? element.value : "");
+                                        tag_flag_negate.prop("checked", element && element.flag_negate);
+                                        tag_flag_skip.prop("checked", element && element.flag_skip);
+                                        tag_permission.toggleClass("value-unset", !element || !element.hasValue());
+                                    });
+                                });
+                            }
+
+                            /* context menu */
+                            {
+                                tag_permission.on('contextmenu', event => {
+                                    if(event.isDefaultPrevented()) return;
+                                    event.preventDefault();
+
+                                    let entries: ContextMenuEntry[] = [];
+                                    if(tag_permission.hasClass("value-unset")) {
+                                        entries.push({
+                                            type: MenuEntryType.ENTRY,
+                                            icon: "",
+                                            name: tr("Add permission"),
+                                            callback: () => tag_permission.trigger('dblclick')
+                                        });
+                                    } else {
+                                        entries.push({
+                                            type: MenuEntryType.ENTRY,
+                                            icon: "",
+                                            name: tr("Remove permission"),
+                                            callback: () => {
+                                                this.listener_change(permission, {
+                                                    remove: true,
+                                                    value: -2
+                                                }).then(() => {
+                                                    const element = this.permission_value_map[permission.id];
+                                                    if(!element) return; /* This should never happen, if so how are we displaying this permission?! */
+
+                                                    element.value = undefined;
+                                                    element.flag_negate = false;
+                                                    element.flag_skip = false;
+
+                                                    tag_permission.toggleClass("value-unset", true);
+                                                }).catch(() => {
+                                                    const element = this.permission_value_map[permission.id];
+
+                                                    /* reset or set the fields */
+                                                    tag_value.val(element && element.hasValue() ? element.value : "");
+                                                    tag_flag_negate.prop("checked", element && element.flag_negate);
+                                                    tag_flag_skip.prop("checked", element && element.flag_skip);
+                                                    tag_permission.toggleClass("value-unset", !element || !element.hasValue());
+                                                });
+                                            }
+                                        });
+                                    }
+
+                                    if(tag_permission.hasClass("grant-unset")) {
+                                        entries.push({
+                                            type: MenuEntryType.ENTRY,
+                                            icon: "",
+                                            name: tr("Add grant permission"),
+                                            callback: () => tag_permission.find(".column-granted").trigger('dblclick')
+                                        });
+                                    } else {
+                                        entries.push({
+                                            type: MenuEntryType.ENTRY,
+                                            icon: "",
+                                            name: tr("Remove grant permission"),
+                                            callback: () =>
+                                                tag_granted.val('').trigger('focusout') /* empty values are handled within focus out */
+                                        });
+                                    }
+                                    entries.push(MenuEntry.HR());
+                                    entries.push({
+                                        type: MenuEntryType.ENTRY,
+                                        icon: "",
+                                        name: tr("Expend all"),
+                                        callback: () => update_collapse_status(true, true)
+                                    });
+                                    entries.push({
+                                        type: MenuEntryType.ENTRY,
+                                        icon: "",
+                                        name: tr("Collapse all"),
+                                        callback: () => update_collapse_status(false, true)
+                                    });
+                                    entries.push(MenuEntry.HR());
+                                    entries.push({
+                                        type: MenuEntryType.ENTRY,
+                                        icon: "",
+                                        name: tr("Show permission description"),
+                                        callback: () => {
+                                            createInfoModal(
+                                                tr("Permission description"),
+                                                tr("Permission description for permission ") + permission.name + ": <br>" + permission.description
+                                            ).open();
+                                        }
+                                    });
+                                    entries.push({
+                                        type: MenuEntryType.ENTRY,
+                                        icon: "",
+                                        name: tr("Copy permission name"),
+                                        callback: () => {
+                                            copy_to_clipboard(permission.name);
+                                        }
+                                    });
+
+                                    spawn_context_menu(event.pageX, event.pageY, ...entries);
+                                });
+                            }
+
+                            this.permission_map[permission.id] = {
+                                tag: tag_permission,
+                                id: permission.id,
+                                filter: permission.name,
+                                tag_flag_negate: tag_flag_negate,
+                                tag_flag_skip: tag_flag_skip,
+                                tag_grant: tag_granted,
+                                tag_value: tag_value,
+                                is_bool: permission.is_boolean()
+                            };
+
+                            tag_group_entries.append(tag_permission);
+                        }
+                    }
+
+                    /* append the subgroups */
+                    for(const child of group.children) {
+                        tag_group_entries.append(build_group(child));
+                    }
+
+                    return tag_group;
+                };
+
+                /* build the groups */
+                for(const group of this.permissions)
+                    tag_entries.append(build_group(group));
+            }
+        }
+
+        set_permissions(permissions?: PermissionValue[]) {
+            permissions = permissions || [];
+            this.permission_value_map = {};
+
+            for(const permission of permissions)
+                this.permission_value_map[permission.type.id] = permission;
+
+            for(const permission_id of Object.keys(this.permission_map)) {
+                const permission: PermissionEditor.PermissionEntry = this.permission_map[permission_id];
+                const value: PermissionValue = this.permission_value_map[permission_id];
+
+                permission.tag
+                    .toggleClass("value-unset", !value || !value.hasValue())
+                    .toggleClass("grant-unset", !value || !value.hasGrant());
+
+                if(value && value.hasValue()) {
+                    if(value.type.is_boolean())
+                        permission.tag_value.prop("checked", value.value);
+                    else
+                        permission.tag_value.val(value.value);
+                    permission.tag_flag_skip.prop("checked", value.flag_skip);
+                    permission.tag_flag_negate.prop("checked", value.flag_negate);
+                }
+                if(value && value.hasGrant()) {
+                    permission.tag_grant.val(value.granted_value);
+                }
+            }
+        }
+
+        set_listener(listener?: PermissionEditor.change_listener_t) {
+            this.listener_change = listener || (() => Promise.resolve());
+        }
+
+        set_listener_update(listener?: () => any) {
+            this.listener_update = listener;
+        }
+
+        trigger_update() {
+            if(this.listener_update)
+                this.listener_update();
+        }
+
+        set_mode(mode: PermissionEditorMode) {
+            this.mode_container_permissions.css('display', mode == PermissionEditorMode.VISIBLE ? 'flex' : 'none');
+            this.mode_container_error_permission.css('display', mode == PermissionEditorMode.NO_PERMISSION ? 'flex' : 'none');
+            this.mode_container_unset.css('display', mode == PermissionEditorMode.UNSET ? 'block' : 'none');
+        }
+    }
 
     export function spawnPermissionEdit() : Modal {
         const connectModal = createModal({
@@ -74,380 +550,44 @@ namespace Modals {
             body: function () {
                 let properties: any = {};
 
-                const tags: JQuery[] = [$.spawn("div"), $.spawn("div"), $.spawn("div"), $.spawn("div"), $.spawn("div")];
-
-                properties["permissions_group_server"] = tags[0];
-                properties["permissions_group_channel"] = tags[1];
-                properties["permissions_channel"] = tags[2];
-                properties["permissions_client"] = tags[3];
-                properties["permissions_client_channel"] = tags[4];
-
-                let tag = $.spawn("div").append($("#tmpl_server_permissions").renderTag(properties)).tabify(false);
-                setTimeout(() => {
-                    console.log("HEAVY 1");
-                   build_permission_editor().then(result => {
-                       console.log("Result!");
-                       for(let i = 0; i < 5; i++)
-                           tags[i].replaceWith(result[i]);
+                let tag = $("#tmpl_server_permissions").renderTag(properties);
+                const pe = new PermissionEditor(globalClient.permissions.groupedPermissions());
+                pe.build_tag();
+                /* initialisation */
+                {
+                    const pe_server = tag.find("permission-editor.group-server");
+                    pe_server.append(pe.container); /* fuck off workaround to initialize form listener */
+                }
 
 
-                       setTimeout(() => {
-                           console.log("HEAVY 2");
-                           const task_queue: (() => Promise<any>)[] = [];
-
-                           task_queue.push(apply_server_groups.bind(undefined, tag.find(".layout-group-server")));
-                           task_queue.push(apply_channel_groups.bind(undefined, tag.find(".layout-group-channel")));
-                           task_queue.push(apply_channel_permission.bind(undefined, tag.find(".layout-channel")));
-                           task_queue.push(apply_client_permission.bind(undefined, tag.find(".layout-client")));
-                           task_queue.push(apply_client_channel_permission.bind(undefined, tag.find(".layout-client-channel")));
-
-                           const task_invokder = () => {
-                               if(task_queue.length == 0) return;
-                               task_queue.pop_front()().then(() => setTimeout(task_invokder, 0));
-                           };
-                           setTimeout(task_invokder, 5);
-                       }, 5);
-                   });
-                }, 5);
-
-                return tag;
+                apply_server_groups(pe, tag.find(".tab-group-server"));
+                apply_channel_groups(pe, tag.find(".tab-group-channel"));
+                apply_channel_permission(pe, tag.find(".tab-channel"));
+                apply_client_permission(pe, tag.find(".tab-client"));
+                apply_client_channel_permission(pe, tag.find(".tab-client-channel"));
+                return tag.tabify(false);
             },
-            footer: function () {
-                let tag = $.spawn("div");
-                tag.css("text-align", "right");
-                tag.css("margin-top", "3px");
-                tag.css("margin-bottom", "6px");
-                tag.addClass("modal-button-group");
-
-                let buttonOk = $.spawn("button");
-                buttonOk.text(tr("Close")).addClass("btn_close");
-                tag.append(buttonOk);
-                return tag;
-            },
+            footer: undefined,
 
             width: "90%",
-            height: "80%"
+            height: "80%",
+            trigger_tab: false,
+            full_size: true
         });
 
-        connectModal.htmlTag.find(".btn_close").on('click', () => {
+        const tag = connectModal.htmlTag;
+        tag.find(".btn_close").on('click', () => {
             connectModal.close();
         });
 
         return connectModal;
     }
 
-    async function display_permissions(permission_tag: JQuery, permissions: PermissionValue[]) {
-        permission_tag.find(".permission").addClass("unset").find(".permission-grant input").val("");
+    function build_channel_tree(channel_list: JQuery, select_callback: (channel: ChannelEntry) => any) {
+        const root = globalClient.channelTree.get_first_channel();
+        if(!root) return;
 
-        const permission_chunks: PermissionValue[][] = [];
-        while(permissions.length > 0) {
-            permission_chunks.push(permissions.slice(0, 20));
-            permissions = permissions.slice(20);
-        }
-
-        await new Promise(resolve => {
-            const process_chunk = () => {
-                if(permission_chunks.length == 0) {
-                    resolve();
-                    return;
-                }
-
-                for(let perm of permission_chunks.pop_front()) {
-                    let tag = permission_tag.find("." + perm.type.name);
-                    if(perm.value != undefined) {
-                        tag.removeClass("unset");
-                        {
-                            let value = tag.find(".permission-value input");
-                            if(value.attr("type") == "checkbox")
-                                value.prop("checked", perm.value == 1);
-                            else
-                                value.val(perm.value);
-                        }
-                        tag.find(".permission-skip input").prop("checked", perm.flag_skip);
-                        tag.find(".permission-negate input").prop("checked", perm.flag_negate);
-                    }
-                    if(perm.granted_value != undefined) {
-                        tag.find(".permission-grant input").val(perm.granted_value);
-                    }
-                }
-
-                setTimeout(process_chunk, 0);
-            };
-            setTimeout(process_chunk, 0);
-        });
-
-        permission_tag.find(".filter-input").trigger('change');
-    }
-
-    async function make_permission_editor(tag: JQuery, default_number: number, cb_edit: (type: PermissionInfo, value?: number, skip?: boolean, negate?: boolean) => Promise<boolean>, cb_grant_edit: (type: PermissionInfo, value?: number) => Promise<boolean>) {
-        tag = tag.hasClass("permission-explorer") ? tag : tag.find(".permission-explorer");
-        const list = tag.find(".list");
-        //list.css("max-height", document.body.clientHeight * .7)
-
-        await new Promise(resolve => setTimeout(() => {
-            list.find(".arrow").each((idx, _entry) => {
-                let entry = $(_entry);
-                let entries = entry.parentsUntil(".group").first().parent().find("> .group-entries");
-                entry.on('click', () => {
-                    if(entry.hasClass("right")) {
-                        entries.show();
-                    } else {
-                        entries.hide();
-                    }
-                    entry.toggleClass("right down");
-                });
-            });
-
-            resolve();
-        }, 0));
-
-        await new Promise(resolve => setTimeout(() => {
-            tag.find(".filter-input, .filter-granted").on('keyup change', event => {
-                let filter_mask = tag.find(".filter-input").val() as string;
-                let req_granted = tag.find('.filter-granted').prop("checked");
-
-                tag.find(".permission").each((idx, _entry) => {
-                    let entry = $(_entry);
-                    let key = entry.find("> .filter-key");
-
-                    let should_hide = filter_mask.length != 0 && key.text().indexOf(filter_mask) == -1;
-                    if(req_granted) {
-                        if(entry.hasClass("unset") && entry.find(".permission-grant input").val() == "")
-                            should_hide = true;
-                    }
-                    entry.attr("match", should_hide ? 0 : 1);
-                    if(should_hide)
-                        entry.hide();
-                    else
-                        entry.show();
-                });
-                tag.find(".group").each((idx, _entry) => {
-                    let entry = $(_entry);
-                    let target = entry.find(".entry:not(.group)[match=\"1\"]").length > 0;
-                    if(target)
-                        entry.show();
-                    else
-                        entry.hide();
-                });
-            });
-
-            resolve();
-        }, 0));
-
-        const expend_all = (parent) => {
-            (parent || list).find(".arrow").addClass("right").removeClass("down").trigger('click');
-        };
-        const collapse_all = (parent) => {
-            (parent || list).find(".arrow").removeClass("right").addClass("down").trigger('click');
-        };
-
-
-        await new Promise(resolve => setTimeout(() => {
-            list.on('contextmenu', event => {
-                if (event.isDefaultPrevented()) return;
-                event.preventDefault();
-
-                spawn_context_menu(event.pageX, event.pageY, {
-                    type: MenuEntryType.ENTRY,
-                    icon: "",
-                    name: "Expend all",
-                    callback: () => expend_all.bind(this, [undefined])
-                },{
-                    type: MenuEntryType.ENTRY,
-                    icon: "",
-                    name: "Collapse all",
-                    callback: collapse_all.bind(this, [undefined])
-                });
-            });
-
-            resolve();
-        }, 0));
-
-        await new Promise(resolve => setTimeout(() => {
-            tag.find(".title").each((idx, _entry) => {
-                let entry = $(_entry);
-                entry.on('click', () => {
-                    tag.find(".selected").removeClass("selected");
-                    $(_entry).addClass("selected");
-                });
-
-                entry.on('contextmenu', event => {
-                    if (event.isDefaultPrevented()) return;
-                    event.preventDefault();
-
-                    spawn_context_menu(event.pageX, event.pageY, {
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Expend group"),
-                        callback: () => expend_all.bind(this, entry)
-                    }, {
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Expend all"),
-                        callback: () => expend_all.bind(this, undefined)
-                    }, {
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Collapse group"),
-                        callback: collapse_all.bind(this, entry)
-                    }, {
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Collapse all"),
-                        callback: () => expend_all.bind(this, undefined)
-                    });
-                });
-            });
-
-            resolve();
-        }, 0));
-
-        await new Promise(resolve => setTimeout(() => {
-            tag.find(".permission").each((idx, _entry) => {
-                let entry = $(_entry);
-
-                entry.on('click', () => {
-                    tag.find(".selected").removeClass("selected");
-                    $(_entry).addClass("selected");
-                });
-
-                entry.on('dblclick', event => {
-                    entry.removeClass("unset");
-
-                    let value = entry.find("> .permission-value input");
-                    if(value.attr("type") == "number")
-                        value.focus().val(default_number).trigger('change');
-                    else
-                        value.prop("checked", true).trigger('change');
-                });
-
-                entry.on('contextmenu', event => {
-                    if(event.isDefaultPrevented()) return;
-                    event.preventDefault();
-
-                    let entries: ContextMenuEntry[] = [];
-
-                    if(entry.hasClass("unset")) {
-                        entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
-                            name: tr("Add permission"),
-                            callback: () => entry.trigger('dblclick')
-                        });
-                    } else {
-                        entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
-                            name: tr("Remove permission"),
-                            callback: () => {
-                                entry.addClass("unset");
-                                entry.find(".permission-value input").val("").trigger('change');
-                            }
-                        });
-                    }
-                    if(entry.find("> .permission-grant input").val() == "") {
-                        entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
-                            name: tr("Add grant permission"),
-                            callback: () => {
-                                let value = entry.find("> .permission-grant input");
-                                value.focus().val(default_number).trigger('change');
-                            }
-                        });
-                    } else {
-                        entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
-                            name: tr("Remove permission"),
-                            callback: () => {
-                                entry.find("> .permission-grant input").val("").trigger('change');
-                            }
-                        });
-                    }
-                    entries.push(MenuEntry.HR());
-                    entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Expend all"),
-                        callback: () => expend_all.bind(this, undefined)
-                    });
-                    entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Collapse all"),
-                        callback: collapse_all.bind(this, undefined)
-                    });
-                    entries.push(MenuEntry.HR());
-                    entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Show permission description"),
-                        callback: () => {
-                            createErrorModal(tr("Not implemented!"), tr("This function isnt implemented yet!")).open();
-                        }
-                    });
-                    entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
-                        name: tr("Copy permission name"),
-                        callback: () => {
-                            copy_to_clipboard(entry.find(".permission-name").text() as string);
-                        }
-                    });
-
-                    spawn_context_menu(event.pageX, event.pageY, ...entries);
-                });
-
-                entry.find(".permission-value input, .permission-negate input, .permission-skip input").on('change', event => {
-                    let permission = globalClient.permissions.resolveInfo(entry.find(".permission-name").text());
-                    if(!permission) {
-                        console.error(tr("Attempted to edit a not known permission! (%s)"), entry.find(".permission-name").text());
-                        return;
-                    }
-
-                    if(entry.hasClass("unset")) {
-                        cb_edit(permission, undefined, undefined, undefined).catch(error => {
-                            tag.find(".button-update").trigger('click');
-                        });
-                    } else {
-                        let input = entry.find(".permission-value input");
-                        let value = input.attr("type") == "number" ? input.val() : (input.prop("checked") ? "1" : "0");
-                        if(value == "" || isNaN(value as number)) value = 0;
-                        else value = parseInt(value as string);
-                        let negate = entry.find(".permission-negate input").prop("checked");
-                        let skip = entry.find(".permission-skip input").prop("checked");
-
-                        cb_edit(permission, value, skip, negate).catch(error => {
-                            tag.find(".button-update").trigger('click');
-                        });
-                    }
-                });
-
-                entry.find(".permission-grant input").on('change', event => {
-                    let permission = globalClient.permissions.resolveInfo(entry.find(".permission-name").text());
-                    if(!permission) {
-                        console.error(tr("Attempted to edit a not known permission! (%s)"), entry.find(".permission-name").text());
-                        return;
-                    }
-
-                    let value = entry.find(".permission-grant input").val();
-                    if(value && value != "" && !isNaN(value as number)) {
-                        cb_grant_edit(permission, parseInt(value as string)).catch(error => {
-                            tag.find(".button-update").trigger('click');
-                        });
-                    } else cb_grant_edit(permission, undefined).catch(error => {
-                        tag.find(".button-update").trigger('click');
-                    });
-                });
-            });
-
-            resolve();
-        }, 0));
-    }
-
-    function build_channel_tree(channel_list: JQuery, update_button: JQuery) {
-        for(let channel of globalClient.channelTree.channels) {
+        const build_channel = (channel: ChannelEntry) => {
             let tag = $.spawn("div").addClass("channel").attr("channel-id", channel.channelId);
             globalClient.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(tag);
             {
@@ -456,335 +596,530 @@ namespace Modals {
                 //    name.addClass("default");
                 name.appendTo(tag);
             }
-            tag.appendTo(channel_list);
 
             tag.on('click', event => {
                 channel_list.find(".selected").removeClass("selected");
                 tag.addClass("selected");
-                update_button.trigger('click');
+                select_callback(channel);
             });
-        }
+
+            return tag;
+        };
+
+        const build_channels = (root: ChannelEntry) => {
+            build_channel(root).appendTo(channel_list);
+            for(const child of root.children())
+                build_channels(child);
+            while(root.channel_next) {
+                root = root.channel_next;
+                build_channel(root).appendTo(channel_list);
+            }
+        };
+        build_channels(root);
         setTimeout(() => channel_list.find('.channel').first().trigger('click'), 0);
     }
 
-    async function apply_client_channel_permission(tag: JQuery) {
-        let permission_tag = tag.find(".permission-explorer");
-        let channel_list = tag.find(".list-channel .entries");
-        permission_tag.addClass("disabled");
+    function apply_client_channel_permission(editor: PermissionEditor, tab_tag: JQuery) {
+        let current_cldbid: number = 0;
+        let current_channel: ChannelEntry;
 
-        await make_permission_editor(permission_tag, 75, (type, value, skip, negate) => {
-            let cldbid = parseInt(tag.find(".client-dbid").val() as string);
-            if(isNaN(cldbid)) return Promise.reject("invalid cldbid");
-
-            let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
-            let channel = globalClient.channelTree.findChannel(channel_id);
-            if(!channel) {
-                console.warn(tr("Missing selected channel id for permission editor action!"));
-                return Promise.reject(tr("invalid channel"));
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("channelclientaddperm", {
-                        cldbid: cldbid,
-                        cid: channel.channelId,
-                        permid: type.id,
-                        permvalue: value,
-                        permskip: skip,
-                        permnegate: negate
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed permission %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("channelclientdelperm", {
-                        cldbid: cldbid,
-                        cid: channel.channelId,
-                        permid: type.id
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        }, (type, value) => {
-            let cldbid = parseInt(tag.find(".client-dbid").val() as string);
-            if(isNaN(cldbid)) return Promise.reject("invalid cldbid");
-
-            let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
-            let channel = globalClient.channelTree.findChannel(channel_id);
-            if(!channel) {
-                console.warn(tr("Missing selected channel id for permission editor action!"));
-                return Promise.reject(tr("invalid channel"));
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added grant of %o for %s"),type.name, value);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("channelclientaddperm", {
-                        cldbid: cldbid,
-                        cid: channel.channelId,
-                        permid: type.id | (1 << 15),
-                        permvalue: value,
-                        permskip: false,
-                        permnegate: false
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed grant permission for %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("channelclientdelperm", {
-                        cldbid: cldbid,
-                        cid: channel.channelId,
-                        permid: type.id | (1 << 15)
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        });
-
-        build_channel_tree(channel_list, permission_tag.find(".button-update"));
-        permission_tag.find(".button-update").on('click', event => {
-            let val = tag.find('.client-select-uid').val();
-            globalClient.serverConnection.helper.info_from_uid(val as string).then(result => {
-                if(!result || result.length == 0) return Promise.reject("invalid data");
-                permission_tag.removeClass("disabled");
-
-                tag.find(".client-name").val(result[0].client_nickname);
-                tag.find(".client-uid").val(result[0].client_unique_id);
-                tag.find(".client-dbid").val(result[0].client_database_id);
-
-                let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
-                let channel = globalClient.channelTree.findChannel(channel_id);
-                if(!channel) {
-                    console.warn(tr("Missing selected channel id for permission editor action!"));
-                    return Promise.reject();
+        /* the editor */
+        {
+            const pe_client = tab_tag.find("permission-editor.client-channel");
+            tab_tag.on('show', event => {
+                console.error("Channel tab show");
+                pe_client.append(editor.container);
+                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
+                    if(current_cldbid && current_channel)
+                        editor.set_mode(PermissionEditorMode.VISIBLE);
+                    else
+                        editor.set_mode(PermissionEditorMode.UNSET);
+                } else {
+                    editor.set_mode(PermissionEditorMode.NO_PERMISSION);
+                    return;
                 }
 
-                return globalClient.permissions.requestClientChannelPermissions(channel.channelId, result[0].client_database_id).then(result => display_permissions(permission_tag, result));
-            }).catch(error => {
-                console.log(error); //TODO error handling?
-                permission_tag.addClass("disabled");
+
+                editor.set_listener_update(() => {
+                    if(!current_cldbid || !current_channel) return;
+
+                    globalClient.permissions.requestClientChannelPermissions(current_cldbid, current_channel.channelId).then(result => {
+                        editor.set_permissions(result);
+                        editor.set_mode(PermissionEditorMode.VISIBLE);
+                    }).catch(error => {
+                        console.log(error); //TODO handling?
+                    });
+                });
+
+                editor.set_listener((permission, value) => {
+                    if (!current_cldbid)
+                        return Promise.reject("unset client");
+                    if (!current_channel)
+                        return Promise.reject("unset channel");
+
+                    if (value.remove) {
+                        /* remove the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing client channel permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelclientdelperm", {
+                                cldbid: current_cldbid,
+                                cid: current_channel.channelId,
+                                permid: permission.id,
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing client channel grant permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelclientdelperm", {
+                                cldbid: current_cldbid,
+                                cid: current_channel.channelId,
+                                permid: permission.id_grant(),
+                            });
+                        }
+                    } else {
+                        /* add the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating client channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"),
+                                permission.name,
+                                permission.id,
+                                value.value,
+                                value.flag_skip,
+                                value.flag_negate
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelclientaddperm", {
+                                cldbid: current_cldbid,
+                                cid: current_channel.channelId,
+                                permid: permission.id,
+                                permvalue: value.value,
+                                permskip: value.flag_skip,
+                                permnegate: value.flag_negate
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating client channel grant permission %s. permission.{id: %o, value: %o}"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelclientaddperm", {
+                                cldbid: current_cldbid,
+                                cid: current_channel.channelId,
+                                permid: permission.id_grant(),
+                                permvalue: value.granted,
+                                permskip: false,
+                                permnegate: false
+                            });
+                        }
+                    }
+                });
+
+                /* FIXME: Use cached permissions */
+                editor.trigger_update();
             });
-        });
-        tag.find(".client-select-uid").on('change', event => {
-            tag.find(".button-update").trigger('click');
-        });
-    }
+        }
 
-    async function apply_client_permission(tag: JQuery) {
-        let permission_tag = tag.find(".permission-explorer");
-        permission_tag.addClass("disabled");
+        build_channel_tree(tab_tag.find(".list-channel .entries"), channel => {
+            if(current_channel == channel) return;
 
-        await make_permission_editor(permission_tag, 75, (type, value, skip, negate) => {
-            let cldbid = parseInt(tag.find(".client-dbid").val() as string);
-            if(isNaN(cldbid)) return Promise.reject("invalid cldbid");
-            if(value != undefined) {
-                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("clientaddperm", {
-                        cldbid: cldbid,
-                        permid: type.id,
-                        permvalue: value,
-                        permskip: skip,
-                        permnegate: negate
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed permission %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("clientdelperm", {
-                        cldbid: cldbid,
-                        permid: type.id
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        }, (type, value) => {
-            let cldbid = parseInt(tag.find(".client-dbid").val() as string);
-            if(isNaN(cldbid)) return Promise.reject("invalid cldbid");
+            current_channel = channel;
 
-            if(value != undefined) {
-                console.log(tr("Added grant of %o for %s"), type.name, value);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("clientaddperm", {
-                        cldbid: cldbid,
-                        permid: type.id | (1 << 15),
-                        permvalue: value,
-                        permskip: false,
-                        permnegate: false
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed grant permission for %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("clientdelperm", {
-                        cldbid: cldbid,
-                        permid: type.id | (1 << 15)
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        });
-
-        tag.find(".client-select-uid").on('change', event => {
-            tag.find(".button-update").trigger('click');
-        });
-
-        permission_tag.find(".button-update").on('click', event => {
-            let val = tag.find('.client-select-uid').val();
-            globalClient.serverConnection.helper.info_from_uid(val as string).then(result => {
-                if(!result || result.length == 0) return Promise.reject("invalid data");
-                permission_tag.removeClass("disabled");
-
-                tag.find(".client-name").val(result[0].client_nickname);
-                tag.find(".client-uid").val(result[0].client_unique_id);
-                tag.find(".client-dbid").val(result[0].client_database_id);
-
-                return globalClient.permissions.requestClientPermissions(result[0].client_database_id).then(result => display_permissions(permission_tag, result));
-            }).catch(error => {
-                console.log(error); //TODO error handling?
-                permission_tag.addClass("disabled");
-            });
-        });
-    }
-
-    async function apply_channel_permission(tag: JQuery) {
-        let channel_list = tag.find(".list-channel .entries");
-        let permission_tag = tag.find(".permission-explorer");
-
-        await make_permission_editor(tag, 75, (type, value, skip, negate) => {
-            let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
-            let channel = globalClient.channelTree.findChannel(channel_id);
-            if(!channel) {
-                console.warn(tr("Missing selected channel id for permission editor action!"));
-                return;
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added permission %o with properties: %o %o %o"), type.name, value, skip, negate);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("channeladdperm", {
-                        cid: channel.channelId,
-                        permid: type.id,
-                        permvalue: value,
-                        permskip: skip,
-                        permnegate: negate
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed permission %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("channeldelperm", {
-                        cid: channel.channelId,
-                        permid: type.id
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        }, (type, value) => {
-            let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
-            let channel = globalClient.channelTree.findChannel(channel_id);
-            if(!channel) {
-                console.warn(tr("Missing selected channel id for permission editor action!"));
-                return;
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added grant of %o for %s"), type.name, value);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("channeladdperm", {
-                        cid: channel.channelId,
-                        permid: type.id | (1 << 15),
-                        permvalue: value,
-                        permskip: false,
-                        permnegate: false
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed grant permission for %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("channeldelperm", {
-                        cid: channel.channelId,
-                        permid: type.id | (1 << 15)
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        });
-
-        build_channel_tree(channel_list, permission_tag.find(".button-update"));
-        permission_tag.find(".button-update").on('click', event => {
-            let channel_id: number = parseInt(channel_list.find(".selected").attr("channel-id"));
-            let channel = globalClient.channelTree.findChannel(channel_id);
-            if(!channel) {
-                console.warn(tr("Missing selected channel id for permission editor action!"));
-                return;
-            }
-
-            globalClient.permissions.requestChannelPermissions(channel.channelId).then(result => display_permissions(permission_tag, result)).catch(error => {
-                console.log(error); //TODO handling?
-            });
-        });
-    }
-
-    async function apply_channel_groups(tag: JQuery) {
-        let group_list = tag.find(".list-group-channel .entries");
-        let permission_tag = tag.find(".permission-explorer");
-
-        await make_permission_editor(tag, 75, (type, value, skip, negate) => {
-            let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
-            let group = globalClient.groups.channelGroup(group_id);
-            if(!group) {
-                console.warn(tr("Missing selected group id for permission editor action!"));
-                return;
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("channelgroupaddperm", {
-                        cgid: group.id,
-                        permid: type.id,
-                        permvalue: value,
-                        permskip: skip,
-                        permnegate: negate
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed permission %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
-                        cgid: group.id,
-                        permid: type.id
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        }, (type, value) => {
-            let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
-            let group = globalClient.groups.channelGroup(group_id);
-            if(!group) {
-                console.warn(tr("Missing selected group id for permission editor action!"));
-                return;
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added grant of %o for %s"), type.name, value);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("channelgroupaddperm", {
-                        cgid: group.id,
-                        permid: type.id | (1 << 15),
-                        permvalue: value,
-                        permskip: false,
-                        permnegate: false
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-            else {
-                console.log(tr("Removed grant permission for %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
-                        cgid: group.id,
-                        permid: type.id | (1 << 15)
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
+            /* TODO: Test for visibility */
+            editor.trigger_update();
         });
 
         {
+            const tag_select_uid = tab_tag.find(".client-select input");
+            const tag_select_error = tab_tag.find(".client-select .invalid-feedback");
+
+            const tag_client_name = tab_tag.find(".client-name");
+            const tag_client_uid = tab_tag.find(".client-uid");
+            const tag_client_dbid = tab_tag.find(".client-dbid");
+
+            const resolve_client = () => {
+                let client_uid = tag_select_uid.val() as string;
+                globalClient.serverConnection.helper.info_from_uid(client_uid).then(result => {
+                    if(!result || result.length == 0) return Promise.reject("invalid data");
+                    tag_select_uid.attr('pattern', null).removeClass('is-invalid');
+
+                    tag_client_name.val(result[0].client_nickname );
+                    tag_client_uid.val(result[0].client_unique_id);
+                    tag_client_dbid.val(result[0].client_database_id);
+
+                    current_cldbid = result[0].client_database_id;
+                    editor.trigger_update();
+                }).catch(error => {
+                    console.log(error);
+                    if(error instanceof CommandResult) {
+                        if(error.id == ErrorID.EMPTY_RESULT)
+                            error = "unknown client";
+                        else
+                            error = error.extra_message || error.message;
+                    }
+
+                    tag_client_name.val("");
+                    tag_client_uid.val("");
+                    tag_client_dbid.val("");
+
+                    tag_select_error.text(error);
+                    tag_select_uid.attr('pattern', '^[a]{1000}$').addClass('is-invalid');
+                    editor.set_mode(PermissionEditorMode.UNSET);
+                });
+            };
+
+            tab_tag.find(".client-select-uid").on('change', event => resolve_client());
+        }
+    }
+
+    function apply_client_permission(editor: PermissionEditor, tab_tag: JQuery) {
+        let current_cldbid: number = 0;
+
+        /* the editor */
+        {
+            const pe_client = tab_tag.find("permission-editor.client");
+            tab_tag.on('show', event => {
+                console.error("Channel tab show");
+
+                pe_client.append(editor.container);
+                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
+                    if(current_cldbid)
+                        editor.set_mode(PermissionEditorMode.VISIBLE);
+                    else
+                        editor.set_mode(PermissionEditorMode.UNSET);
+                } else {
+                    editor.set_mode(PermissionEditorMode.NO_PERMISSION);
+                    return;
+                }
+
+                editor.set_listener_update(() => {
+                    if(!current_cldbid) return;
+
+                    globalClient.permissions.requestClientPermissions(current_cldbid).then(result => {
+                        editor.set_permissions(result);
+                        editor.set_mode(PermissionEditorMode.VISIBLE);
+                    }).catch(error => {
+                        console.log(error); //TODO handling?
+                    });
+                });
+
+                editor.set_listener((permission, value) => {
+                    if (!current_cldbid)
+                        return Promise.reject("unset client");
+
+                    if (value.remove) {
+                        /* remove the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing client permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                                cldbid: current_cldbid,
+                                permid: permission.id,
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing client grant permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                                cldbid: current_cldbid,
+                                permid: permission.id_grant(),
+                            });
+                        }
+                    } else {
+                        /* add the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating client permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"),
+                                permission.name,
+                                permission.id,
+                                value.value,
+                                value.flag_skip,
+                                value.flag_negate
+                            );
+
+                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                                cldbid: current_cldbid,
+                                permid: permission.id,
+                                permvalue: value.value,
+                                permskip: value.flag_skip,
+                                permnegate: value.flag_negate
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating client grant permission %s. permission.{id: %o, value: %o}"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                                cldbid: current_cldbid,
+                                permid: permission.id_grant(),
+                                permvalue: value.granted,
+                                permskip: false,
+                                permnegate: false
+                            });
+                        }
+                    }
+                });
+
+                /* FIXME: Use cached permissions */
+                editor.trigger_update();
+            });
+        }
+
+
+        const tag_select_uid = tab_tag.find(".client-select input");
+        const tag_select_error = tab_tag.find(".client-select .invalid-feedback");
+
+        const tag_client_name = tab_tag.find(".client-name");
+        const tag_client_uid = tab_tag.find(".client-uid");
+        const tag_client_dbid = tab_tag.find(".client-dbid");
+
+        const resolve_client = () => {
+            let client_uid = tag_select_uid.val() as string;
+            globalClient.serverConnection.helper.info_from_uid(client_uid).then(result => {
+                if(!result || result.length == 0) return Promise.reject("invalid data");
+                tag_select_uid.attr('pattern', null).removeClass('is-invalid');
+
+                tag_client_name.val(result[0].client_nickname );
+                tag_client_uid.val(result[0].client_unique_id);
+                tag_client_dbid.val(result[0].client_database_id);
+
+                current_cldbid = result[0].client_database_id;
+                editor.trigger_update();
+            }).catch(error => {
+                console.log(error);
+                if(error instanceof CommandResult) {
+                    if(error.id == ErrorID.EMPTY_RESULT)
+                        error = "unknown client";
+                    else
+                        error = error.extra_message || error.message;
+                }
+
+                tag_client_name.val("");
+                tag_client_uid.val("");
+                tag_client_dbid.val("");
+
+                tag_select_error.text(error);
+                tag_select_uid.attr('pattern', '^[a]{1000}$').addClass('is-invalid');
+                editor.set_mode(PermissionEditorMode.UNSET);
+            });
+        };
+
+        tab_tag.find(".client-select-uid").on('change', event => resolve_client());
+    }
+
+    function apply_channel_permission(editor: PermissionEditor, tab_tag: JQuery) {
+        let current_channel: ChannelEntry | undefined;
+
+        /* the editor */
+        {
+            const pe_channel = tab_tag.find("permission-editor.channel");
+            tab_tag.on('show', event => {
+                console.error("Channel tab show");
+                pe_channel.append(editor.container);
+                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNEL_PERMISSION_LIST).granted(1))
+                    editor.set_mode(PermissionEditorMode.VISIBLE);
+                else {
+                    editor.set_mode(PermissionEditorMode.NO_PERMISSION);
+                    return;
+                }
+
+                editor.set_listener_update(() => {
+                    if(!current_channel) return;
+
+                    globalClient.permissions.requestChannelPermissions(current_channel.channelId).then(result => editor.set_permissions(result)).catch(error => {
+                        console.log(error); //TODO handling?
+                    });
+                });
+
+                editor.set_listener((permission, value) => {
+                    if (!current_channel)
+                        return Promise.reject("unset channel");
+
+                    if (value.remove) {
+                        /* remove the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing channel permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channeldelperm", {
+                                cid: current_channel.channelId,
+                                permid: permission.id,
+                            });
+                        } else {
+                            /* TODO Remove this because its totally useless. Remove this from the UI as well */
+                            log.info(LogCategory.PERMISSIONS, tr("Removing channel grant permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channeldelperm", {
+                                cid: current_channel.channelId,
+                                permid: permission.id_grant(),
+                            });
+                        }
+                    } else {
+                        /* add the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"),
+                                permission.name,
+                                permission.id,
+                                value.value,
+                                value.flag_skip,
+                                value.flag_negate
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channeladdperm", {
+                                cid: current_channel.channelId,
+                                permid: permission.id,
+                                permvalue: value.value,
+                                permskip: value.flag_skip,
+                                permnegate: value.flag_negate
+                            });
+                        } else {
+                            /* TODO Remove this because its totally useless. Remove this from the UI as well */
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating channel grant permission %s. permission.{id: %o, value: %o}"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channeladdperm", {
+                                cid: current_channel.channelId,
+                                permid: permission.id_grant(),
+                                permvalue: value.granted,
+                                permskip: false,
+                                permnegate: false
+                            });
+                        }
+                    }
+                });
+
+                /* FIXME: Use cached permissions */
+                editor.trigger_update();
+            });
+        }
+
+        let channel_list = tab_tag.find(".list-channel .entries");
+        build_channel_tree(channel_list, channel => {
+            current_channel = channel;
+            editor.trigger_update();
+        });
+    }
+
+    function apply_channel_groups(editor: PermissionEditor, tab_tag: JQuery) {
+        let current_group;
+
+        /* the editor */
+        {
+            const pe_server = tab_tag.find("permission-editor.group-channel");
+            tab_tag.on('show', event => {
+                console.error("Channel group tab show");
+                pe_server.append(editor.container);
+                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_PERMISSION_LIST).granted(1))
+                    editor.set_mode(PermissionEditorMode.VISIBLE);
+                else {
+                    editor.set_mode(PermissionEditorMode.NO_PERMISSION);
+                    return;
+                }
+
+                editor.set_listener_update(() => {
+                    if(!current_group) return;
+
+                    globalClient.groups.request_permissions(current_group).then(result => editor.set_permissions(result)).catch(error => {
+                        console.log(error); //TODO handling?
+                    });
+                });
+
+                editor.set_listener((permission, value) => {
+                    if (!current_group)
+                        return Promise.reject("unset channel group");
+
+                    if (value.remove) {
+                        /* remove the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing channel group permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
+                                cgid: current_group.id,
+                                permid: permission.id,
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing channel group grant permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
+                                cgid: current_group.id,
+                                permid: permission.id_grant(),
+                            });
+                        }
+                    } else {
+                        /* add the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating channel group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"),
+                                permission.name,
+                                permission.id,
+                                value.value,
+                                value.flag_skip,
+                                value.flag_negate
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelgroupaddperm", {
+                                cgid: current_group.id,
+                                permid: permission.id,
+                                permvalue: value.value,
+                                permskip: value.flag_skip,
+                                permnegate: value.flag_negate
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating channel group grant permission %s. permission.{id: %o, value: %o}"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("channelgroupaddperm", {
+                                cgid: current_group.id,
+                                permid: permission.id_grant(),
+                                permvalue: value.granted,
+                                permskip: false,
+                                permnegate: false
+                            });
+                        }
+                    }
+                });
+
+                /* FIXME: Use cached permissions */
+                editor.trigger_update();
+            });
+        }
+
+
+        /* list all channel groups */
+        {
+            let group_list = tab_tag.find(".list-group-channel .entries");
+
             for(let group of globalClient.groups.channelGroups.sort(GroupManager.sorter())) {
                 let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
                 globalClient.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
@@ -799,93 +1134,35 @@ namespace Modals {
                 tag.appendTo(group_list);
 
                 tag.on('click', event => {
+                    current_group = group;
                     group_list.find(".selected").removeClass("selected");
                     tag.addClass("selected");
-                    permission_tag.find(".button-update").trigger('click');
+
+                    //TODO trigger only if the editor is in channel group mode!
+                    editor.trigger_update();
                 });
             }
+
+            /* because the server menu is the first which will be shown */
+            setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
         }
-
-        //button-update
-        permission_tag.find(".button-update").on('click', event => {
-            let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
-            let group = globalClient.groups.channelGroup(group_id);
-            if(!group) {
-                console.warn(tr("Missing selected group id for permission editor!"));
-                return;
-            }
-            globalClient.groups.request_permissions(group).then(result => display_permissions(permission_tag, result)).catch(error => {
-                console.log(error); //TODO handling?
-            });
-        });
-
-        setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
     }
 
-    async function apply_server_groups(tag: JQuery) {
-        let group_list = tag.find(".list-group-server .entries");
-        let permission_tag = tag.find(".permission-explorer");
+    /*
+        b_virtualserver_servergroup_permission_list
+        b_virtualserver_channel_permission_list
+        b_virtualserver_client_permission_list
+        b_virtualserver_channelgroup_permission_list
+        b_virtualserver_channelclient_permission_list
+        b_virtualserver_playlist_permission_list
+     */
+    function apply_server_groups(editor: PermissionEditor, tab_tag: JQuery) {
+        let current_group;
 
-        await make_permission_editor(tag, 75, (type, value, skip, negate) => {
-            let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
-            let group = globalClient.groups.serverGroup(group_id);
-            if(!group) {
-                console.warn(tr("Missing selected group id for permission editor action!"));
-                return;
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added permission %s with properties: %o %o %o"), type.name, value, skip, negate);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("servergroupaddperm", {
-                        sgid: group.id,
-                        permid: type.id,
-                        permvalue: value,
-                        permskip: skip,
-                        permnegate: negate
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            } else {
-                console.log(tr("Removed permission %s"), type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("servergroupdelperm", {
-                        sgid: group.id,
-                        permid: type.id
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        }, (type, value) => {
-            let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
-            let group = globalClient.groups.serverGroup(group_id);
-            if(!group) {
-                console.warn(tr("Missing selected group id for permission editor action!"));
-                return;
-            }
-
-            if(value != undefined) {
-                console.log(tr("Added grant of %o for %s"), value, type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    globalClient.serverConnection.sendCommand("servergroupaddperm", {
-                        sgid: group.id,
-                        permid: type.id | (1 << 15),
-                        permvalue: value,
-                        permskip: false,
-                        permnegate: false
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-            else {
-                console.log("Removed grant permission for %s", type.name);
-                return new Promise<boolean>((resolve, reject) => {
-                    return globalClient.serverConnection.sendCommand("servergroupdelperm", {
-                        sgid: group.id,
-                        permid: type.id | (1 << 15)
-                    }).then(resolve.bind(undefined, true)).catch(reject);
-                });
-            }
-        });
-
+        /* list all groups */
         {
+            let group_list = tab_tag.find(".list-group-server .entries");
+
             for(let group of globalClient.groups.serverGroups.sort(GroupManager.sorter())) {
                 let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
                 globalClient.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
@@ -900,26 +1177,101 @@ namespace Modals {
                 tag.appendTo(group_list);
 
                 tag.on('click', event => {
+                    current_group = group;
                     group_list.find(".selected").removeClass("selected");
                     tag.addClass("selected");
-                    permission_tag.find(".button-update").trigger('click');
+                    editor.trigger_update();
                 });
             }
+
+            /* because the server menu is the first which will be shown */
+            setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
         }
 
-        //button-update
-        permission_tag.find(".button-update").on('click', event => {
-            let group_id: number = parseInt(group_list.find(".selected").attr("group-id"));
-            let group = globalClient.groups.serverGroup(group_id);
-            if(!group) {
-                console.warn(tr("Missing selected group id for permission editor!"));
-                return;
-            }
-            globalClient.groups.request_permissions(group).then(result => display_permissions(permission_tag, result)).catch(error => {
-                console.log(error); //TODO handling?
-            });
-        });
+        /* the editor */
+        {
+            const pe_server = tab_tag.find("permission-editor.group-server");
+            tab_tag.on('show', event => {
+                console.error("Server tab show");
+                pe_server.append(editor.container);
+                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_PERMISSION_LIST).granted(1))
+                    editor.set_mode(PermissionEditorMode.VISIBLE);
+                else {
+                    editor.set_mode(PermissionEditorMode.NO_PERMISSION);
+                    return;
+                }
+                editor.set_listener_update(() => {
+                    globalClient.groups.request_permissions(current_group).then(result => editor.set_permissions(result)).catch(error => {
+                        console.log(error); //TODO handling?
+                    });
+                });
 
-        setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
+                editor.set_listener((permission, value) => {
+                    if (!current_group)
+                        return Promise.reject("unset server group");
+
+                    if (value.remove) {
+                        /* remove the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing server group permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("servergroupdelperm", {
+                                sgid: current_group.id,
+                                permid: permission.id,
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Removing server group grant permission %s. permission.id: %o"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("servergroupdelperm", {
+                                sgid: current_group.id,
+                                permid: permission.id_grant(),
+                            });
+                        }
+                    } else {
+                        /* add the permission */
+                        if (typeof (value.value) !== "undefined") {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating server group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"),
+                                permission.name,
+                                permission.id,
+                                value.value,
+                                value.flag_skip,
+                                value.flag_negate
+                            );
+
+                            return globalClient.serverConnection.sendCommand("servergroupaddperm", {
+                                sgid: current_group.id,
+                                permid: permission.id,
+                                permvalue: value.value,
+                                permskip: value.flag_skip,
+                                permnegate: value.flag_negate
+                            });
+                        } else {
+                            log.info(LogCategory.PERMISSIONS, tr("Adding or updating server group grant permission %s. permission.{id: %o, value: %o}"),
+                                permission.name,
+                                permission.id_grant(),
+                                value.granted,
+                            );
+
+                            return globalClient.serverConnection.sendCommand("servergroupaddperm", {
+                                sgid: current_group.id,
+                                permid: permission.id_grant(),
+                                permvalue: value.granted,
+                                permskip: false,
+                                permnegate: false
+                            });
+                        }
+                    }
+                });
+
+                editor.trigger_update();
+            });
+        }
     }
 }

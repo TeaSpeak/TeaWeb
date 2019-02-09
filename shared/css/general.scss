@@ -50,7 +50,7 @@
 }
 
 /* The Modal (background) */
-.modal {
+.modal_disabled {
     display: none; /* Hidden by default */
     position: fixed; /* Stay in place */
     z-index: 1; /* Sit on top */
@@ -61,74 +61,74 @@
     overflow: auto; /* Enable scroll if needed */
     background-color: rgb(0,0,0); /* Fallback color */
     background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
 
-/* Modal Header */
-.modal-header {
-    padding: 2px 16px;
-    min-height: 30px;
-    vertical-align: middle;
-    display: flex;
-    align-items: center;
+	/* Modal Header */
+	.modal-header {
+		padding: 2px 16px;
+		min-height: 30px;
+		vertical-align: middle;
+		display: flex;
+		align-items: center;
 
-    border: grey solid;
-    border-width: 0 0 1px 0;
+		border: grey solid;
+		border-width: 0 0 1px 0;
 
-    background-color: lightgreen;
-}
+		background-color: lightgreen;
+	}
 
-/* Modal Body */
-.modal-body:not(:empty) {
-	display: flex;
-    padding: 2px 16px;
-	flex-grow: 1;
-	flex-direction: column;
-	justify-content: stretch;
-}
+	/* Modal Body */
+	.modal-body:not(:empty) {
+		display: flex;
+		padding: 2px 16px;
+		flex-grow: 1;
+		flex-direction: column;
+		justify-content: stretch;
+	}
 
-/* Modal Footer */
-.modal-footer:not(:empty) {
-    padding: 2px 16px;
-}
+	/* Modal Footer */
+	.modal-footer:not(:empty) {
+		padding: 2px 16px;
+	}
 
-/* The Close Button */
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    position: absolute;
-    top: 0px;
-    right: 4px;
-}
+	/* The Close Button */
+	.close {
+		color: #aaa;
+		float: right;
+		font-size: 28px;
+		font-weight: bold;
+		position: absolute;
+		top: 0px;
+		right: 4px;
+	}
 
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
+	.close:hover,
+	.close:focus {
+		color: black;
+		text-decoration: none;
+		cursor: pointer;
+	}
 
-/* Modal Content */
-.modal-content:not(:empty) {
-    position: absolute;
-    display: inline-flex;
-    flex-direction: column;
-    justify-content: stretch;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 0;
-    border: 2px solid #888;
-    width: auto;
-    max-width: 90%;
-    box-shadow: 0 4px 15px 0 rgba(0,0,0,0.2), 2px 6px 20px 0 rgba(0,0,0,0.19);
-    animation-name: modalFlyIn;
-    animation-duration: 0.4s;
-    top: 10%;
-	max-height: 80%;
+	/* Modal Content */
+	.modal-content:not(:empty) {
+		position: absolute;
+		display: inline-flex;
+		flex-direction: column;
+		justify-content: stretch;
+		background-color: #fefefe;
+		margin: auto;
+		padding: 0;
+		border: 2px solid #888;
+		width: auto;
+		max-width: 90%;
+		box-shadow: 0 4px 15px 0 rgba(0,0,0,0.2), 2px 6px 20px 0 rgba(0,0,0,0.19);
+		animation-name: modalFlyIn;
+		animation-duration: 0.4s;
+		top: 10%;
+		max-height: 80%;
 
-    left: 0;
-    right: 0;
+		left: 0;
+		right: 0;
+	}
 }
 
 /* Add Animation */
@@ -191,50 +191,6 @@ fieldset {
     border-width: 2px;
     border-radius: 0px 6px 6px 6px;
 }
-
-.vad_vad_bar {
-    position: relative;
-    width: 100%;
-    height: 20px;
-}
-
-.vad_vad_bar .vad_vad_bar_filler {
-    background-color: green;
-    width: 50%;
-    height: 100%;
-}
-
-/* The slider itself */
-.vad_vad_slider {
-    margin: 0px;
-    background-color: gray;
-    -webkit-appearance: none;  /* Override default CSS styles */
-    appearance: none;
-    width: 100%;
-    height: 100%;
-    outline: none;
-    opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
-    -webkit-transition: .2s; /* 0.2 seconds transition on hover */
-    transition: opacity .2s;
-}
-
-/* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
-.vad_vad_slider::-webkit-slider-thumb {
-    -webkit-appearance: none; /* Override default look */
-    appearance: none;
-    width: 2px; /* Set a specific slider handle width */
-    height: 20px; /* Slider handle height */
-    background: #000000; /* Green background */
-    cursor: pointer; /* Cursor on hover */
-}
-
-.vad_vad_slider::-moz-range-thumb {
-    width: 2px; /* Set a specific slider handle width */
-    height: 100%; /* Slider handle height */
-    background: #000000; /* Green background */
-    cursor: pointer; /* Cursor on hover */
-}
-
 code {
     background-color: lightgray;
     padding: 2px;
@@ -378,6 +334,11 @@ html, body {
 	overflow: hidden;
 }
 
+body {
+	padding: 8px;
+	background: darkgray!important;
+}
+
 .icon-playlist-manage {
 	display: inline-block;
 	width: 32px;
@@ -393,4 +354,9 @@ x-content {
 	flex-shrink: 1;
 	display: flex;
 	flex-direction: column;
+	height: auto;
+}
+
+[class*=" bmd-label"], [class^=bmd-label] {
+	color: rgba(0, 0, 0, .6)!important;
 }

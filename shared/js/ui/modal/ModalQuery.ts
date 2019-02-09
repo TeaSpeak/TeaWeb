@@ -54,10 +54,10 @@ namespace Modals {
     export function spawnQueryCreated(credentials: {
         username: string,
         password: string
-    }, yust_created: boolean) {
+    }, just_created: boolean) {
         let modal;
         modal = createModal({
-            header: yust_created ? tr("Server query credentials") : tr("New server query credentials"),
+            header: just_created ? tr("Server query credentials") : tr("New server query credentials"),
             body: () => {
                 let template = $("#tmpl_query_created").renderTag(credentials);
                 template = $.spawn("div").append(template);

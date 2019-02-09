@@ -14,6 +14,14 @@ interface JQuery<TElement = HTMLElement> {
     render(values?: any) : string;
     renderTag(values?: any) : JQuery<TElement>;
     hasScrollBar() : boolean;
+
+
+    visible_height() : number;
+
+    /* bootstrap */
+    alert() : JQuery<TElement>;
+    modal(properties: any) : this;
+    bootstrapMaterialDesign() : this;
 }
 
 interface JQueryStatic<TElement extends Node = HTMLElement> {
@@ -133,6 +141,20 @@ if(typeof ($) !== "undefined") {
             return this.get(0).scrollHeight > this.height();
         }
 
+    if(!$.fn.visible_height)
+        $.fn.visible_height = function (this: JQuery<HTMLElement>) {
+            const original_style = this.attr("style");
+            this.css({
+                position:   'absolute!important',
+                visibility: 'hidden!important',
+                display:    'block!important'
+            });
+
+            const result = this.height();
+            console.log(original_style);
+            this.attr("style", original_style || "");
+            return result;
+        }
 }
 
 if (!String.prototype.format) {

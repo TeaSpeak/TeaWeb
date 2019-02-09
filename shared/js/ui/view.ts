@@ -147,7 +147,7 @@ class ChannelTree {
         let previous_channel = null;
         if(channel.hasParent()) {
             let parent = channel.parent_channel();
-            let siblings = parent.siblings();
+            let siblings = parent.children();
             if(siblings.length == 0) {
                 elm = parent.rootTag();
                 previous_channel = null;
@@ -242,7 +242,7 @@ class ChannelTree {
                 channel.channel_next.channel_previous = channel;
         } else {
             if(parent) {
-                let siblings = parent.siblings();
+                let siblings = parent.children();
                 if(siblings.length <= 1) { //Self should be already in there
                     let left = channel.rootTag();
                     left.appendTo(parent.siblingTag());
@@ -630,7 +630,7 @@ class ChannelTree {
             }
         }
 
-        const children = channel.siblings();
+        const children = channel.children();
         if(children.length > 0) {
             this.onSelect(children[0], true);
             return;
@@ -664,7 +664,7 @@ class ChannelTree {
 
                 if(previous) {
                     while(true) {
-                        const siblings = previous.siblings();
+                        const siblings = previous.children();
                         if(siblings.length == 0) break;
                         previous = siblings.last();
                     }
@@ -741,5 +741,9 @@ class ChannelTree {
             }
         for(const channel of channels)
             channel.adjustSize();
+    }
+
+    get_first_channel?() : ChannelEntry {
+        return this.channel_first;
     }
 }

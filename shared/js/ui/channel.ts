@@ -110,7 +110,7 @@ class ChannelEntry {
     getChannelId(){ return this.channelId; }
     channelClass() { return "channel_full"; }
 
-    siblings(deep = false) : ChannelEntry[] {
+    children(deep = false) : ChannelEntry[] {
         const result: ChannelEntry[] = [];
         if(this.channelTree == null) return [];
 
@@ -292,7 +292,7 @@ class ChannelEntry {
         let subSize = 0;
         let clientSize = 0;
 
-        const sub = this.siblings(false);
+        const sub = this.children(false);
         sub.forEach(function (e) {
             if(e.rootTag().is(":visible"))
                 subSize += e.rootTag().outerHeight(true);

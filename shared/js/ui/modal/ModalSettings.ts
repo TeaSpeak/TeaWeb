@@ -22,11 +22,11 @@ namespace Modals {
                 let active;
                 const button_start_stop = template.find(".button-start-stop");
                 const button_close = template.find(".button-close");
-                const input_current_level = template.find(".property.identity-level input");
-                const input_target_level = template.find(".property.identity-target-level input");
-                const input_threads = template.find(".property.threads input");
-                const input_hash_rate = template.find(".property.hash-rate input");
-                const input_elapsed = template.find(".property.time-elapsed input");
+                const input_current_level = template.find(".identity-level input");
+                const input_target_level = template.find(".identity-target-level input");
+                const input_threads = template.find(".threads input");
+                const input_hash_rate = template.find(".hash-rate input");
+                const input_elapsed = template.find(".time-elapsed input");
 
                 button_close.on('click', event => {
                     if(active)
@@ -37,10 +37,10 @@ namespace Modals {
                 });
 
                 button_start_stop.on('click', event => {
-                    if(active)
-                        button_start_stop.text(tr("Start"));
-                    else
-                        button_start_stop.text(tr("Stop"));
+                    button_start_stop
+                        .toggleClass('btn-success', active)
+                        .toggleClass('btn-danger', !active)
+                        .text(active ? tr("Start") : tr("Stop"));
 
                     input_threads.prop("disabled", !active);
                     input_target_level.prop("disabled", !active);
@@ -58,6 +58,8 @@ namespace Modals {
                     if(target_level == 0) {
                         identity.improve_level(-1, threads, () => active, current_level => {
                             input_current_level.val(current_level);
+                        }, hash_rate => {
+                            input_hash_rate.val(hash_rate);
                         }).catch(error => {
                             console.error(error);
                             createErrorModal(tr("Failed to improve identity"), tr("Failed to improve identity.<br>Error:") + error).open();
@@ -67,6 +69,8 @@ namespace Modals {
                     } else {
                         identity.improve_level(target_level, threads, () => active, current_level => {
                             input_current_level.val(current_level);
+                        }, hash_rate => {
+                            input_hash_rate.val(hash_rate);
                         }).then(success => {
                             if(success) {
                                 identity.level().then(level => {
@@ -103,7 +107,7 @@ namespace Modals {
                 });
 
 
-                template.find(".property.identity-unique-id input").val(identity.uid());
+                template.find(".identity-unique-id input").val(identity.uid());
                 identity.level().then(level => {
                     input_current_level.val(level);
                 }).catch(error => {
@@ -208,7 +212,6 @@ namespace Modals {
                     forum_path: settings.static("forum_path"),
                 });
 
-                template = $.spawn("div").append(template);
                 initialiseVoiceListeners(modal, (template = template.tabify()).find(".settings_audio"));
                 initialise_translations(template.find(".settings-translations"));
                 initialise_profiles(modal, template.find(".settings-profiles"));
@@ -216,20 +219,7 @@ namespace Modals {
 
                 return template;
             },
-            footer: () => {
-                let footer = $.spawn("div");
-                footer.addClass("modal-button-group");
-                footer.css("margin-top", "5px");
-                footer.css("margin-bottom", "5px");
-                footer.css("text-align", "right");
-
-                let buttonOk = $.spawn("button");
-                buttonOk.text(tr("Ok"));
-                buttonOk.click(() => modal.close());
-                footer.append(buttonOk);
-
-                return footer;
-            },
+            footer: undefined,
             width: 750
         });
         modal.open();
@@ -295,7 +285,7 @@ namespace Modals {
                         globalClient.voiceConnection.voiceRecorder.update(true);
                         vad.percentage_listener = per => {
                             vad_tag.find(".vad_vad_bar_filler")
-                                .css("width", per + "%");
+                                .css("width", (100 - per) + "%");
                         };
                         break;
                 }
@@ -372,15 +362,24 @@ namespace Modals {
             setTimeout(() => target_tag.trigger('change'), 0);
         }
 
+        const display_error = (message: string) => {
+            const alert = tag.find(".settings-device-error").first();
+            alert.clone()
+                .alert()
+                .css("display", "block")
+                .insertAfter(alert)
+                .find(".message")
+                .text(message);
+        };
+
         { //Initialize microphone
 
             const setting_tag = tag.find(".settings-microphone");
             const tag_select = setting_tag.find(".audio-select-microphone");
-            console.log(setting_tag);
-            console.log(setting_tag.find(".settings-device-error"));
-            console.log(setting_tag.find(".settings-device-error").html());
 
-            { //List devices
+            const update_devices = () => { //List devices
+                tag_select.empty();
+
                 $.spawn("option")
                     .attr("device-id", "")
                     .attr("device-group", "")
@@ -391,7 +390,7 @@ namespace Modals {
                     const active_device = globalClient.voiceConnection.voiceRecorder.device_id();
 
                     for(const device of devices) {
-                        console.debug(tr("Got device %s (%s): %s"), device.deviceId, device.kind, device.label);
+                        console.debug(tr("Got device %s (%s): %s (%o)"), device.deviceId, device.kind, device.label);
                         if(device.kind !== 'audioinput') continue;
 
                         $.spawn("option")
@@ -404,15 +403,13 @@ namespace Modals {
                 }).catch(error => {
                     console.error(tr("Could not enumerate over devices!"));
                     console.error(error);
-                    setting_tag.find(".settings-device-error")
-                        .text(tr("Could not get device list!"))
-                        .css("display", "block");
+                    display_error(tr("Could not get microphone device list!"));
                 });
 
                 if(tag_select.find("option:selected").length == 0)
                     tag_select.find("option").prop("selected", true);
 
-            }
+            };
 
             {
                 tag_select.on('change', event => {
@@ -423,47 +420,53 @@ namespace Modals {
                     globalClient.voiceConnection.voiceRecorder.change_device(deviceId, groupId);
                 });
             }
+
+            update_devices();
+            setting_tag.find(".button-device-update").on('click', event => update_devices());
         }
 
         { //Initialize speaker
             const setting_tag = tag.find(".settings-speaker");
             const tag_select = setting_tag.find(".audio-select-speaker");
-            const active_device = audio.player.current_device();
-
-            audio.player.available_devices().then(devices => {
-                for(const device of devices) {
-                    $.spawn("option")
-                        .attr("device-id", device.device_id)
-                        .text(device.name)
-                        .prop("selected", device.device_id == active_device.device_id)
-                        .appendTo(tag_select);
-                }
-            }).catch(error => {
-                console.error(tr("Could not enumerate over devices!"));
-                console.error(error);
-                setting_tag.find(".settings-device-error")
-                    .text(tr("Could not get device list!"))
-                    .css("display", "block");
-            });
 
 
-            if(tag_select.find("option:selected").length == 0)
-                tag_select.find("option").prop("selected", true);
+            const update_devices = () => {
+                tag_select.empty();
+
+                const active_device = audio.player.current_device();
+                audio.player.available_devices().then(devices => {
+                    for(const device of devices) {
+                        $.spawn("option")
+                            .attr("device-id", device.device_id)
+                            .text(device.name)
+                            .prop("selected", device.device_id == active_device.device_id)
+                            .appendTo(tag_select);
+                    }
+                }).catch(error => {
+                    console.error(tr("Could not enumerate over devices!"));
+                    console.error(error);
+                    display_error(tr("Could not get speaker device list!"));
+                });
+
+
+                if(tag_select.find("option:selected").length == 0)
+                    tag_select.find("option").prop("selected", true);
+            }
 
             {
-                const error_tag = setting_tag.find(".settings-device-error");
                 tag_select.on('change', event => {
                     let selected_tag = tag_select.find("option:selected");
                     let deviceId = selected_tag.attr("device-id");
                     console.log(tr("Selected speaker device: id: %o"), deviceId);
-                    audio.player.set_device(deviceId).then(() => error_tag.css("display", "none")).catch(error => {
+                    audio.player.set_device(deviceId).catch(error => {
                         console.error(error);
-                        error_tag
-                            .text(tr("Failed to change device!"))
-                            .css("display", "block");
+                        display_error(tr("Failed to change device!"));
                     });
                 });
             }
+
+            update_devices();
+            setting_tag.find(".button-device-update").on('click', event => update_devices());
         }
 
         { /* initialize sounds */
@@ -857,9 +860,9 @@ namespace Modals {
 
         const display_error = (error?: string) => {
             if(error){
-                settings_tag.find(".error-message").show().html(error);
+                settings_tag.find(".settings-profile-error").show().find(".message").html(error);
             } else
-                settings_tag.find(".error-message").hide();
+                settings_tag.find(".settings-profile-error").hide();
             status_listener();
         };
 
@@ -954,8 +957,8 @@ namespace Modals {
                         teamspeak_tag.find(".identity-undefined").hide();
                         button_export.prop("disabled", false);
 
-                        identity_info_tag.find(".property.unique-id input").val(profile.uid());
-                        const input_level = identity_info_tag.find(".property.level input").val("loading...");
+                        identity_info_tag.find(".unique-id input").val(profile.uid());
+                        const input_level = identity_info_tag.find(".level input").val("loading...");
                         profile.level().then(level => input_level.val(level.toString())).catch(error => input_level.val("error: " + error));
                     }
                     display_error();

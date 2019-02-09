@@ -511,7 +511,6 @@ class MusicInfoManager extends ClientInfoManager {
                             }).catch(error => {
                                 createErrorModal(tr("Failed to query playlist."), tr("Failed to query playlist info.")).open();
                             });
-                            createErrorModal(tr("Not implemented"), tr("This function is not implemented yet!")).open();
                         });
                     }
 

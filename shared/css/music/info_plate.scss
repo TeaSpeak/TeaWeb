@@ -15,6 +15,10 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 		perspective-origin: 50% 50%;
 		perspective: 1200px;
 
+		label {
+			margin-bottom: 0!important; /* bootstrap fix */
+ 		}
+
 		.flip-card,
 		.static-card {
 			background: white;

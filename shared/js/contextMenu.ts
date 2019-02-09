@@ -1,5 +1,8 @@
+let context_menu: JQuery;
+
 $(document).bind("mousedown", function (e) {
-    let menu = $(".context-menu");
+    let menu = context_menu || (context_menu = $(".context-menu"));
+
     if(!menu.is(":visible")) return;
 
     if ($(e.target).parents(".context-menu").length == 0) {
@@ -9,7 +12,8 @@ $(document).bind("mousedown", function (e) {
 
 let contextMenuCloseFn = undefined;
 function despawn_context_menu() {
-    let menu = $(".context-menu");
+    let menu = context_menu || (context_menu = $(".context-menu"));
+
     if(!menu.is(":visible")) return;
     menu.hide(100);
     if(contextMenuCloseFn) contextMenuCloseFn();
@@ -102,7 +106,9 @@ function generate_tag(entry: ContextMenuEntry) : JQuery {
 }
 
 function spawn_context_menu(x, y, ...entries: ContextMenuEntry[]) {
-    const menu = $("#contextMenu").finish().empty();
+    let menu = context_menu || (context_menu = $(".context-menu"));
+    menu.finish().empty();
+
     contextMenuCloseFn = undefined;
 
     for(let entry of entries){

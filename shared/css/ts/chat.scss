@@ -9,101 +9,115 @@
     flex-direction: column;
 
 	flex-grow: 1;
-}
 
-#chat div {
-    vertical-align: middle;
-}
+    div, a {
+        vertical-align: middle;
+    }
 
-#chat .messages {
-    border-color: #6f6f6f;
-    border-radius: 2px 2px 2px 0px;
-    border-style: solid;
-    overflow-y: auto;
-    flex-grow: 1;
-}
+    .messages {
+        border-color: #6f6f6f;
+        border-radius: 2px 2px 2px 0;
+        border-style: solid;
+        overflow-y: auto;
+        flex-grow: 1;
 
-#chat .message_box {
-    flex-wrap: wrap;
-    display: flex;
-    align-items: flex-start;
-    height: auto;
-}
+        .message_box {
+            flex-wrap: wrap;
+            display: flex;
+            align-items: flex-start;
+            height: auto;
 
-#chat .message {
-    width: 100%;
-    display: inline-block;
-}
+            .message {
+                width: 100%;
+                display: inline-block;
 
-#chat .message *{
-    display: inline-block;
-    vertical-align: top;
-}
+                * {
+                    display: inline-block;
+                    vertical-align: top;
+                }
+            }
+        }
+    }
 
-#chat .chats {
-    max-width: 100%;
-    flex-shrink: 0;
-    flex-grow: 0;
-    /*height: 24px;*/
-    overflow: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    margin-top: -1px;
-    display: flex;
-    user-select: none;
-}
 
-#chat .chat {
-    background: #5f5f5f5f;
-    display: inline-block;
-    border: #6f6f6f;
-    border-width: 1px;
-    border-style: solid;
-    border-radius: 0px 0px 2px 2px;
-    vertical-align: middle;
-    padding-right: 5px;
-    padding-left: 2px;
-    cursor: pointer;
-}
+    .chats {
+        max-width: 100%;
+        flex-shrink: 0;
+        flex-grow: 0;
+        /*height: 24px;*/
+        overflow: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        margin-top: -1px;
+        display: flex;
+        user-select: none;
 
-#chat .active {
-    background: #11111111;
-}
+        .chat {
+            background: #5f5f5f5f;
+            display: inline-block;
+            border: 1px solid #6f6f6f;
+            border-radius: 0px 0px 2px 2px;
+            vertical-align: middle;
+            padding-right: 5px;
+            padding-left: 2px;
+            cursor: pointer;
 
-#chat a {
-    vertical-align: middle;
-}
+            &.active {
+                background: #11111111;
+            }
 
-#chat .btn_close {
-    float: none;
-    margin-right: -5px;
-    margin-left: 8px;
-}
+            .btn_close {
+                float: none;
+                margin-right: -5px;
+                margin-left: 8px;
 
-#chat .btn_close:hover,
-#chat .btn_close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
+                &:hover, &:focus {
+                    color: black;
+                    text-decoration: none;
+                    cursor: pointer;
+                }
+            }
+        }
+    }
 
-#chat .input {
-    width: 100%;
-    margin-top: 2px;
-    display: flex;
-    height: auto;
-    position: relative;
-    flex-shrink: 0;
-}
+    .input {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
 
-#chat .input .input_box {
-    width: 100%;
+        height: auto;
+        width: 100%;
+        margin-top: 2px;
+        position: relative;
+        flex-shrink: 0;
 
-    display:inline-block;
-    border: solid 1px #000;
-    height: 22px;
-    min-height: 22px;
-    max-height: 80px;
-    overflow-y: auto;
-    resize: vertical;
+        .bmd-form-group {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            margin-right: 5px;
+            padding-top: 0;
+        }
+
+
+        .form-group {
+            flex-grow: 1;
+            flex-shrink: 1;
+            margin: 0 5px 0 0;
+
+            textarea {
+                height: 30px;
+                min-height: 30px;
+                max-height: 80px;
+
+                resize: vertical;
+                overflow-y: auto;
+            }
+        }
+
+        button {
+            padding-top: 1px;
+            padding-bottom: 1px;
+        }
+    }
 }

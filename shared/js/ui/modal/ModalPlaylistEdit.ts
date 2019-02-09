@@ -83,7 +83,6 @@ namespace Modals {
             header: tr("Edit playlist"),
             body: () => {
                 let template = $("#tmpl_playlist_edit").renderTag().tabify();
-                template = $.spawn("div").append(template);
 
                 callback_permission_update = apply_permissions(template, client, playlist, (key, value) => {
                     console.log("Change permission %o => %o", key, value);
@@ -299,8 +298,8 @@ namespace Modals {
         const owns_playlist = playlist.playlist_owner_dbid == client.getClient().properties.client_database_id;
 
         client.serverConnection.helper.request_playlist_info(playlist.playlist_id).then(info => {
-            tag.find(".property-owner .value")
-                .text(info.playlist_owner_name + " (" + info.playlist_owner_dbid + ")");
+            tag.find(".property-owner input")
+                .val(info.playlist_owner_name + " (" + info.playlist_owner_dbid + ")");
 
             tag.find(".property-title input")
                 .val(info.playlist_title)
@@ -337,8 +336,8 @@ namespace Modals {
                     change_property("playlist_flag_delete_played", (<HTMLInputElement>event.target).checked ? "1" : "0");
                 });
 
-            tag.find(".property-current-song .value")
-                .text(info.playlist_current_song_id);
+            tag.find(".property-current-song input")
+                .val(info.playlist_current_song_id);
             callback_current_song(info.playlist_current_song_id);
 
             tag.find(".property-flag-finished input")

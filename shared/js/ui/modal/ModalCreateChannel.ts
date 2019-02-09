@@ -10,7 +10,6 @@ namespace Modals {
                     channel_flag_maxfamilyclients_unlimited: true,
                     channel_flag_maxclients_unlimited: true
                 } as ChannelProperties);
-                template = $.spawn("div").append(template);
                 return template.tabify();
             },
             footer: () => {
@@ -36,7 +35,7 @@ namespace Modals {
         applyGeneralListener(properties, modal.htmlTag.find(".general_properties"), modal.htmlTag.find(".button_ok"), !channel);
         applyStandardListener(properties, modal.htmlTag.find(".settings_standard"), modal.htmlTag.find(".button_ok"), parent, !channel);
         applyPermissionListener(properties, modal.htmlTag.find(".settings_permissions"), modal.htmlTag.find(".button_ok"), permissions, channel);
-        applyAudioListener(properties, modal.htmlTag.find(".settings_audio"), modal.htmlTag.find(".button_ok"), channel);
+        applyAudioListener(properties, modal.htmlTag.find(".container-channel-settings-audio"), modal.htmlTag.find(".button_ok"), channel);
         applyAdvancedListener(properties, modal.htmlTag.find(".settings_advanced"), modal.htmlTag.find(".button_ok"), channel);
 
         let updated: PermissionValue[] = [];
@@ -144,11 +143,11 @@ namespace Modals {
             properties.channel_flag_default = this.checked;
 
             let elements = tag.find("input[name=\"channel_type\"]");
+            elements.prop("disabled", this.checked);
             if(this.checked) {
-                elements.prop("enabled", false);
                 elements.prop("checked", false);
                 tag.find("input[name=\"channel_type\"][value=\"perm\"]").prop("checked", true).trigger("change");
-            } else elements.removeProp("enabled");
+            }
         }).prop("disabled",
             !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1) ||
             !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_DEFAULT : PermissionType.B_CHANNEL_MODIFY_MAKE_DEFAULT).granted(1));
@@ -158,7 +157,7 @@ namespace Modals {
         }).prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_NEEDED_TALK_POWER : PermissionType.B_CHANNEL_MODIFY_NEEDED_TALK_POWER).granted(1));
 
         let orderTag = tag.find(".order_id");
-        for(let channel of (parent ? parent.siblings() : globalClient.channelTree.rootChannel()))
+        for(let channel of (parent ? parent.children() : globalClient.channelTree.rootChannel()))
             $.spawn("option").attr("channelId", channel.channelId.toString()).text(channel.channelName()).appendTo(orderTag);
 
         orderTag.change(function (this: HTMLSelectElement) {
@@ -176,7 +175,7 @@ namespace Modals {
             for(let cperm of channel_permissions)
                 if(cperm.type.name == PermissionType.I_CHANNEL_NEEDED_MODIFY_POWER) {
                     required_power = cperm.value;
-                    return;
+                    break;
                 }
 
             tag.find("input[permission]").each((index, _element) => {
@@ -203,14 +202,14 @@ namespace Modals {
             });
 
             if(!permissions.neededPermission(PermissionType.I_CHANNEL_MODIFY_POWER).granted(required_power, false)) {
-                tag.find("input[permission]").prop("enabled", false); //No permissions
+                tag.find("input[permission]").prop("disabled", false); //No permissions
             }
         };
 
         if(channel) {
             permissions.requestChannelPermissions(channel.getChannelId()).then(apply_permissions).catch((error) => {
-                tag.find("input[permission]").prop("enabled", false);
-                console.log(error);
+                tag.find("input[permission]").prop("disabled", true);
+                console.log("Failed to receive channel permissions (%o)", error);
             });
         } else apply_permissions([]);
     }

@@ -1,7 +1,7 @@
 .context-menu {
 	overflow: visible;
 	display: none;
-	z-index: 1000;
+	z-index: 2000;
 	position: absolute;
 	border: 1px solid #CCC;
 	white-space: nowrap;
@@ -16,6 +16,11 @@
 		white-space: pre;
 		line-height: 1;
 		vertical-align: middle;
+	}
+
+	hr {
+		margin-top: 8px;
+		margin-bottom: 8px;
 	}
 
 	.entry {

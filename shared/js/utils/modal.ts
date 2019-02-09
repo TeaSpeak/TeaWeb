@@ -1,8 +1,8 @@
-$(document).on("mousedown",function (e) {
-    if($(e.target).parents("#contextMenu").length == 0 && $(e.target).parents(".modal").length == 0){
-        $(".modal:visible").last().find(".close").trigger("click");
-    }
-});
+enum ElementType {
+    HEADER,
+    BODY,
+    FOOTER
+}
 
 type BodyCreator = (() => JQuery | JQuery[] | string) | string | JQuery | JQuery[];
 const ModalFunctions = {
@@ -11,20 +11,22 @@ const ModalFunctions = {
         return val;
     },
 
-    jqueriefy: function(val: BodyCreator) : JQuery {
+    jqueriefy: function(val: BodyCreator, type?: ElementType) : JQuery {
         if($.isFunction(val)) val = val();
         if($.isArray(val)) {
             let result = $.spawn("div");
             for(let element of val)
-                this.jqueriefy(element).appendTo(result);
+                this.jqueriefy(element, type).appendTo(result);
             return result;
         }
         switch (typeof val){
-            case "string": return $("<div>" + val + "</div>");
+            case "string":
+                if(type == ElementType.HEADER)
+                    return $.spawn("h5").addClass("modal-title").text(val);
+                return $("<div>" + val + "</div>");
             case "object": return val as JQuery;
             case "undefined":
-                console.warn(tr("Got undefined type!"));
-                return $.spawn("div");
+                return undefined;
             default:
                 console.error(("Invalid type %o"), typeof val);
                 return $();
@@ -34,8 +36,8 @@ const ModalFunctions = {
     warpProperties(data: ModalProperties | any) : ModalProperties {
         if(data instanceof ModalProperties) return data;
         else {
-            let props = new ModalProperties();
-            for(let key in data)
+            const props = new ModalProperties();
+            for(const key of Object.keys(data))
                 props[key] = data[key];
             return props;
         }
@@ -43,6 +45,7 @@ const ModalFunctions = {
 };
 
 class ModalProperties {
+    template?: string;
     header: BodyCreator = () => "HEADER";
     body: BodyCreator = ()    => "BODY";
     footer: BodyCreator = ()  => "FOOTER";
@@ -69,9 +72,14 @@ class ModalProperties {
         else
             this.closeListener();
     }
+
+    template_properties?: any = {};
+    trigger_tab: boolean = true;
+    full_size?: boolean = false;
 }
 
 class Modal {
+
     private _htmlTag: JQuery;
     properties: ModalProperties;
     shown: boolean;
@@ -89,50 +97,51 @@ class Modal {
     }
 
     private _create() {
-        let modal = $.spawn("div");
-        modal.addClass("modal");
+        const header = ModalFunctions.jqueriefy(this.properties.header, ElementType.HEADER);
+        const body = ModalFunctions.jqueriefy(this.properties.body, ElementType.BODY);
+        const footer = ModalFunctions.jqueriefy(this.properties.footer, ElementType.FOOTER);
 
-        let content = $.spawn("div");
-        content.addClass("modal-content");
-        if(this.properties.width)
-            content.css("width", this.properties.width);
-        if(this.properties.height)
-            content.css("height", this.properties.height);
+        //FIXME: cache template
+        const template = $(this.properties.template || "#tmpl_modal");
 
-        let header = ModalFunctions.divify(ModalFunctions.jqueriefy(this.properties.header)).addClass("modal-header");
-        if(this.properties.closeable) header.append("<span class=\"close\">&times;</span>");
+        const properties = {
+            modal_header: header,
+            modal_body: body,
+            modal_footer: footer,
 
-        let body = ModalFunctions.divify(ModalFunctions.jqueriefy(this.properties.body)).addClass("modal-body");
-        let footer = ModalFunctions.divify(ModalFunctions.jqueriefy(this.properties.footer)).addClass("modal-footer");
+            closeable: this.properties.closeable,
+            full_size: this.properties.full_size
+        };
 
-        content.append(header);
-        content.append(body);
-        content.append(footer);
+        if(this.properties.template_properties)
+            Object.assign(properties, this.properties.template_properties);
 
-        modal.append(content);
+        const tag = template.renderTag(properties);
 
-        modal.find(".close").click(function () {
-            if(this.properties.closeable)
-                this.close();
-        }.bind(this));
-
-        this._htmlTag = modal;
+        this._htmlTag = tag;
+        this._htmlTag.on('hide.bs.modal', event => !this.properties.closeable || this.close());
+        this._htmlTag.on('hidden.bs.modal', event => this._htmlTag.detach());
     }
 
     open() {
         this.shown = true;
         this.htmlTag.appendTo($("body"));
-        this.htmlTag.show();
+
+        console.log(this.properties.closeable);
+        this.htmlTag.bootstrapMaterialDesign().modal(this.properties.closeable ? 'show' : {
+            backdrop: 'static',
+            keyboard: false,
+        });
+
+        if(this.properties.trigger_tab)
+            this.htmlTag.one('shown.bs.modal', () => this.htmlTag.find(".tab").trigger('tab.resize'));
     }
 
     close() {
         if(!this.shown) return;
 
         this.shown = false;
-        const _this = this;
-        this.htmlTag.animate({opacity: 0}, () => {
-            _this.htmlTag.detach();
-        });
+        this.htmlTag.modal('hide');
         this.properties.triggerClose();
         for(const listener of this.close_listener)
             listener();
@@ -144,107 +153,152 @@ function createModal(data: ModalProperties | any) : Modal {
 }
 
 class InputModalProperties extends ModalProperties {
-    maxLength: number;
+    maxLength?: number;
+
+    field_title?: string;
+    field_label?: string;
+    field_placeholder?: string;
+
+    error_message?: string;
 }
 
 function createInputModal(headMessage: BodyCreator, question: BodyCreator, validator: (input: string) => boolean, callback: (flag: boolean | string) => void, props: InputModalProperties | any = {}) : Modal {
     props = ModalFunctions.warpProperties(props);
+    props.template_properties || (props.template_properties = {});
+    props.template_properties.field_title = props.field_title;
+    props.template_properties.field_label = props.field_label;
+    props.template_properties.field_placeholder = props.field_placeholder;
+    props.template_properties.error_message = props.error_message;
 
-    let head = $.spawn("div");
-    head.css("border-bottom", "grey solid");
-    head.css("border-width", "1px");
-    ModalFunctions.jqueriefy(headMessage).appendTo(head);
+    props.template = "#tmpl_modal_input";
 
+    props.header = headMessage;
+    props.template_properties.question = ModalFunctions.jqueriefy(question);
 
-    let body = $.spawn("div");
-    ModalFunctions.divify(ModalFunctions.jqueriefy(question)).appendTo(body);
-    let input = $.spawn("input");
-    input.css("width", "100%");
-    input.appendTo(body);
-    console.log(input);
+    const modal = createModal(props);
 
-    let footer = $.spawn("div");
-    footer.addClass("modal-button-group");
-    footer.css("margin-top", "5px");
+    const input = modal.htmlTag.find(".container-value input");
+    const button_cancel = modal.htmlTag.find(".button-cancel");
+    const button_submit = modal.htmlTag.find(".button-submit");
 
-    let buttonCancel = $.spawn("button");
-    buttonCancel.text("Cancel");
+    let submited = false;
+    input.on('keyup change', event => {
+        const str = input.val() as string;
+        const valid = str !== undefined && validator(str);
 
-    let buttonOk = $.spawn("button");
-    buttonOk.text("Ok");
-
-    footer.append(buttonCancel);
-    footer.append(buttonOk);
-
-    input.on("keydown", function (event) {
-        if(event.keyCode == JQuery.Key.Enter) {
-            buttonOk.trigger("click");
-        }
+        input.attr("pattern", valid ? null : "^[a]{1000}$").toggleClass("is-invalid", !valid);
+        button_submit.prop("disabled", !valid);
     });
 
-    let updateValidation = function () {
-        let text = input.val().toString();
-        let flag = (!props.maxLength || text.length <= props.maxLength) && validator(text);
-        if(flag) {
-            input.removeClass("invalid_input");
-            buttonOk.removeAttr("disabled");
-        } else {
-            if(!input.hasClass("invalid_input"))
-                input.addClass("invalid_input");
-            buttonOk.attr("disabled", "true");
+    button_submit.on('click', event => {
+        if(!submited) {
+            submited = true;
+            const str = input.val() as string;
+            if(str !== undefined && validator(str))
+                callback(str);
+            else
+                callback(false);
         }
-    };
-    input.on("keyup", updateValidation);
-
-    let callbackCalled = false;
-    let wrappedCallback = function (flag: boolean | string) {
-        if(callbackCalled) return;
-        callbackCalled = true;
-        callback(flag);
-    };
-
-    let modal;
-    buttonOk.on("click", () => {
-        wrappedCallback(input.val().toString());
         modal.close();
-    });
-    buttonCancel.on("click", () => {
-        wrappedCallback(false);
+    }).prop("disabled", !validator("")); /* disabled if empty input isn't allowed */
+
+    button_cancel.on('click', event => {
+        if(!submited) {
+            submited = true;
+            callback(false);
+        }
         modal.close();
     });
 
-    props.header = head;
-    props.body = body;
-    props.footer = footer;
-    props.closeListener = () => wrappedCallback(false);
-    modal = createModal(props);
+    modal.close_listener.push(() => button_cancel.trigger('click'));
     return modal;
 }
 
-function createErrorModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: "" }) {
+function createErrorModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: undefined }) {
     props = ModalFunctions.warpProperties(props);
+    (props.template_properties || (props.template_properties = {})).header_class = "modal-header-error";
 
-    let head = $.spawn("div");
-    head.addClass("modal-head-error");
-    ModalFunctions.divify(ModalFunctions.jqueriefy(header)).appendTo(head);
-    props.header = head;
+    props.header = header;
+    props.body = message;
+    return createModal(props);
+}
 
-    props.body = $.spawn("div").append(ModalFunctions.divify(ModalFunctions.jqueriefy(message)));
-    props.footer = ModalFunctions.divify(ModalFunctions.jqueriefy(""));
+function createInfoModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: undefined }) {
+    props = ModalFunctions.warpProperties(props);
+    (props.template_properties || (props.template_properties = {})).header_class = "modal-header-info";
+
+    props.header = header;
+    props.body = message;
 
     return createModal(props);
 }
 
-function createInfoModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: "" }) {
-    props = ModalFunctions.warpProperties(props);
+/* extend jquery */
 
-    let head = $.spawn("div");
-    head.addClass("modal-head-info");
-    ModalFunctions.divify(ModalFunctions.jqueriefy(header)).appendTo(head);
-    props.header = head;
-
-    props.body = ModalFunctions.divify(ModalFunctions.jqueriefy(message));
-    props.footer = ModalFunctions.divify(ModalFunctions.jqueriefy(""));
-
-    return createModal(props);
+interface ModalElements {
+    header?: BodyCreator;
+    body?: BodyCreator;
+    footer?: BodyCreator;
 }
+
+interface JQuery<TElement = HTMLElement> {
+    modalize(entry_callback?: (header: JQuery, body: JQuery, footer: JQuery) => ModalElements | void, properties?: ModalProperties | any) : Modal;
+}
+
+$.fn.modalize = function (this: JQuery, entry_callback?: (header: JQuery, body: JQuery, footer: JQuery) => ModalElements | void, properties?: ModalProperties | any) : Modal {
+    properties = properties || {} as ModalProperties;
+    entry_callback = entry_callback || ((a,b,c) => undefined);
+
+    let tag_modal = this[0].tagName.toLowerCase() == "modal" ? this : undefined; /* TODO may throw exception? */
+
+    let tag_head = tag_modal ? tag_modal.find("modal-header") : ModalFunctions.jqueriefy(properties.header);
+    let tag_body = tag_modal ? tag_modal.find("modal-body") : this;
+    let tag_footer = tag_modal ? tag_modal.find("modal-footer") : ModalFunctions.jqueriefy(properties.footer);
+
+    const result = entry_callback(tag_head, tag_body, tag_footer) || {};
+    properties.header = result.header || tag_head;
+    properties.body = result.body || tag_body;
+    properties.footer = result.footer || tag_footer;
+    return createModal(properties);
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

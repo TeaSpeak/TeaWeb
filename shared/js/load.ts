@@ -261,7 +261,7 @@ const loader_javascript = {
     */
 
         if(!window.require) {
-            await loader.load_script(["vendor/jquery/jquery.min.js"]);
+            //await loader.load_script(["vendor/jquery/jquery.min.js"]);
         }
         await loader.load_script("vendor/jsrender/jsrender.min.js");
         await loader.load_scripts([

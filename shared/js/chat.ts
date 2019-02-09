@@ -323,11 +323,17 @@ class ChatBox {
     chats: ChatEntry[];
     private _activeChat: ChatEntry;
 
+    private _button_send: JQuery;
+    private _input_message: JQuery;
+
     constructor(htmlTag: JQuery) {
         this.htmlTag = htmlTag;
 
-        this.htmlTag.find(".input button").click(this.onSend.bind(this));
-        this.htmlTag.find(".input_box").keypress(event => {
+        this._button_send = this.htmlTag.find(".button-send");
+        this._input_message = this.htmlTag.find(".input-message");
+
+        this._button_send.click(this.onSend.bind(this));
+        this._input_message.keypress(event => {
             if(event.keyCode == JQuery.Key.Enter && !event.shiftKey) {
                 this.onSend();
                 return false;
@@ -335,9 +341,9 @@ class ChatBox {
         }).on('input', (event) => {
             let text = $(event.target).val().toString();
             if(this.testMessage(text))
-                this.htmlTag.find(".input button").removeAttr("disabled");
+                this._button_send.removeAttr("disabled");
             else
-                this.htmlTag.find(".input button").attr("disabled", "true");
+                this._button_send.attr("disabled", "true");
         }).trigger("input");
 
         this.chats = [];
@@ -394,11 +400,10 @@ class ChatBox {
 
 
     onSend() {
-        let textBox = $(this.htmlTag).find(".input_box");
-        let text = textBox.val().toString();
+        let text = this._input_message.val().toString();
         if(!this.testMessage(text)) return;
-        textBox.val("");
-        $(this.htmlTag).find(".input_box").trigger("input");
+        this._input_message.val("");
+        this._input_message.trigger("input");
 
         if(this._activeChat && $.isFunction(this._activeChat.onMessageSend))
             this._activeChat.onMessageSend(text);
@@ -433,7 +438,7 @@ class ChatBox {
                         break;
                 }
         }
-        this.htmlTag.find(".input_box").prop("disabled", !flagAllowSend);
+        this._input_message.prop("disabled", !flagAllowSend);
     }
 
     get activeChat(){ return this._activeChat; }
@@ -447,7 +452,7 @@ class ChatBox {
     }
 
     focus(){
-        $(this.htmlTag).find(".input_box").focus();
+        this._input_message.focus();
     }
 
     private testMessage(message: string) : boolean {

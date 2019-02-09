@@ -346,6 +346,11 @@ class PermissionInfo {
     name: string;
     id: number;
     description: string;
+
+    is_boolean() { return this.name.startsWith("b_"); }
+    id_grant() : number {
+        return this.id | (1 << 15);
+    }
 }
 
 class PermissionGroup {
@@ -369,7 +374,7 @@ class PermissionValue {
     flag_negate: boolean;
     granted_value: number;
 
-    constructor(type, value) {
+    constructor(type, value?) {
         this.type = type;
         this.value = value;
     }
@@ -382,7 +387,10 @@ class PermissionValue {
     }
 
     hasValue() : boolean {
-        return this.value != -2;
+        return typeof(this.value) !== "undefined" && this.value != -2;
+    }
+    hasGrant() : boolean {
+        return typeof(this.granted_value) !== "undefined" && this.granted_value != -2;
     }
 }
 
@@ -459,6 +467,8 @@ class PermissionManager {
     public static parse_permission_bulk(json: any[], manager: PermissionManager) : PermissionValue[] {
         let permissions: PermissionValue[] = [];
         for(let perm of json) {
+            if(perm["permid"] === undefined) continue;
+
             let perm_id = parseInt(perm["permid"]);
             let perm_grant = (perm_id & (1 << 15)) > 0;
             if(perm_grant)

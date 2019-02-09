@@ -105,6 +105,17 @@
 				flex-shrink: 0;
 			}
 		}
+
+		.container-default-channel-select {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.container-default-channel {
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+		}
 	}
 }
 

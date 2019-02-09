@@ -580,7 +580,7 @@ namespace profiles.identities {
             return await this.improve_level(-1, threads, () => active);
         }
 
-        async improve_level(target: number, threads: number, active_callback: () => boolean, callback_level?: (current: number) => any) : Promise<Boolean> {
+        async improve_level(target: number, threads: number, active_callback: () => boolean, callback_level?: (current: number) => any, callback_status?: (hash_rate: number) => any) : Promise<Boolean> {
             if(!this._initialized || !this.public_key)
                 throw "not initialized";
             if(target == -1) /* get the highest level possible */
@@ -625,6 +625,24 @@ namespace profiles.identities {
             let target_level = target > 0 ? target : await this.level() + 1;
 
             const worker_promise: Promise<void>[] = [];
+
+            const hash_timestamps: number[] = [];
+            let last_hashrate_update: number = 0;
+
+            const update_hashrate = () => {
+                if(!callback_status) return;
+                const now = Date.now();
+                hash_timestamps.push(now);
+
+                if(last_hashrate_update + 1000 < now) {
+                    last_hashrate_update = now;
+
+                    const timeout = now - 10 * 1000; /* 10s */
+                    const rounds = hash_timestamps.filter(e => e > timeout);
+                    callback_status(Math.ceil((rounds.length * iterations) / Math.ceil((now - rounds[0]) / 1000)))
+                }
+            };
+
             try {
                 result = await new Promise<boolean>((resolve, reject) => {
                     let active = true;
@@ -644,6 +662,8 @@ namespace profiles.identities {
 
                             const promise = worker.mine(next_hash(), iterations, target_level);
                             const p = promise.then(result => {
+                                update_hashrate();
+
                                 worker_promise.remove(p);
 
                                 if(result.valueOf()) {
