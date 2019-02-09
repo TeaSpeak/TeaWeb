@@ -1,5 +1,5 @@
 # Changelog:
-* **XX.XX.19**
+* **09.02.19**
     - Improved UI now using the material design framework based on bootstrap
     - Fixed several UI overflow or small screen issues
     - Improved permission editor performance
