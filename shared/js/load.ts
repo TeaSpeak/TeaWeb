@@ -77,7 +77,12 @@ namespace loader {
     }
 
     export async function execute() {
+        const load_begin = Date.now();
+
+        let begin: number = Date.now();
+        let end: number;
         while(current_stage <= Stage.LOADED) {
+
             let current_tasks: Task[] = [];
             while((tasks[current_stage] || []).length > 0) {
                 if(current_tasks.length == 0 || current_tasks[0].priority == tasks[current_stage][0].priority) {
@@ -121,11 +126,14 @@ namespace loader {
 
             if(current_tasks.length == 0) {
                 if(current_stage < Stage.LOADED)
-                    console.debug("[loader] entering next state (%s)", Stage[current_stage + 1]);
+                    console.debug("[loader] entering next state (%s). Last state took %dms", Stage[current_stage + 1], (end = Date.now()) - begin);
+                else
+                    console.debug("[loader] Finish invoke took %dms", (end = Date.now()) - begin);
+                begin = end;
                 current_stage += 1;
             }
         }
-        console.debug("[loader] finished loader.");
+        console.debug("[loader] finished loader. (Total time: %dms)", Date.now() - load_begin);
     }
 
     type SourcePath = string | string[];
@@ -458,8 +466,6 @@ const loader_javascript = {
 
         /* load the main app */
         await loader.load_scripts([
-            ["wasm/TeaWeb-Identity.js"],
-
             //Load general API's
             "js/proto.js",
             "js/i18n/localize.js",
@@ -556,7 +562,6 @@ const loader_javascript = {
 
         await loader.load_scripts([
             //Load general API's
-            ["wasm/TeaWeb-Identity.js"],
             ["js/client.min.js", "js/client.js"]
         ]);
     }
@@ -578,35 +583,7 @@ const loader_webassembly = {
             displayCriticalError("You require WebAssembly for TeaSpeak-Web!");
             throw "Missing web assembly";
         }
-    },
-    setup_awaiter: async () => {
-        Module['_initialized'] = false;
-        Module['_initialized_callback'] = undefined;
-
-        Module['onRuntimeInitialized'] = () => {
-            Module['_initialized'] = true;
-            if(Module['_initialized_callback'])
-                Module['_initialized_callback']();
-        };
-
-        Module['onAbort'] = message => {
-            if(!loader.finished()) {
-                Module['onAbort'] = undefined;
-                Module['_initialized'] = false;
-                displayCriticalError("Could not load webassembly files!<br>Message: <code>" + message + "</code>");
-            }
-        };
-
-        Module['locateFile'] = file => "wasm/" + file;
-    },
-    awaiter: () => new Promise<void>((resolve, reject) => {
-        if(!Module['onAbort']) /* an error has been already encountered */
-            reject();
-        else if(!Module['_initialized'])
-            Module['_initialized_callback'] = resolve;
-        else
-            resolve();
-    })
+    }
 };
 
 const loader_style = {
@@ -665,9 +642,7 @@ const loader_style = {
 
 async function load_templates() {
     try {
-        const response = await $.ajax("templates.html", {
-            cache: false, //Change this when in release mode
-        });
+        const response = await $.ajax("templates.html");
 
         let node = document.createElement("html");
         node.innerHTML = response;
@@ -799,23 +774,11 @@ loader.register_task(loader.Stage.INITIALIZING, {
     priority: 20
 });
 
-loader.register_task(loader.Stage.INITIALIZING, {
-    name: "webassembly setup",
-    function: loader_webassembly.setup_awaiter,
-    priority: 10
-});
-
 
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "app type test",
     function: loader_javascript.detect_type,
     priority: 20
-});
-
-loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-    name: "javascript webassembly",
-    function: loader_webassembly.awaiter,
-    priority: 10
 });
 
 
