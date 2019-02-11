@@ -13,11 +13,11 @@ function execute_npm_command() {
     command_variable="command_$command_name"
     #echo "Variable names $command_variable"
 
-    if [ "${!command_variable}" == "" ]; then
+    if [[ "${!command_variable}" == "" ]]; then
         node_bin=$(npm bin)
         #echo "Node root ${node_bin}"
 
-        if [ ! -e "${node_bin}/${command_name}" ]; then
+        if [[ ! -e "${node_bin}/${command_name}" ]]; then
             echo "Could not find \"$command_name\" command"
             echo "May type npm install"
             exit 1

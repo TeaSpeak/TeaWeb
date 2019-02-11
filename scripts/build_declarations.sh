@@ -5,8 +5,8 @@ source "${BASEDIR}/resolve_commands.sh"
 cd "$BASEDIR/../"
 
 function generate_link() {
-    if [ ! -L $2 ] || [ "${BASH_ARGV[0]}" == "force" ]; then
-        if [ -e $2 ] || [ -L $2 ]; then
+    if [[ ! -L $2 ]] || [[ "${BASH_ARGV[0]}" == "force" ]]; then
+        if [[ -e $2 ]] || [[ -L $2 ]]; then
             rm $2
         fi
         ln -rs $1 $2
@@ -42,9 +42,9 @@ echo "Generated shared declarations"
 
 #Now build the merged declaration for the shared project
 #Link the declaration files (All interface declarations should be equal!)
-if [ ! -d shared/declarations ]; then
+if [[ ! -d shared/declarations ]]; then
     mkdir shared/declarations
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo "Failed to create directory shared/declarations"
         exit 1
     fi

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
+source `dirname $0`/resolve_commands.sh
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
-source ./scripts/resolve_commands.sh
 
 if [[ "$1" == "development" ]] || [[ "$1" == "dev" ]]; then
     source_path="web/environment/development"
