@@ -1,10 +1,14 @@
 # Changelog:
+* **11.02.19**
+    - Added a detection to the loader to avoid cached files on updates
+    
 * **09.02.19**
     - Improved UI now using the material design framework based on bootstrap
     - Fixed several UI overflow or small screen issues
     - Improved permission editor performance
     - Added hash rate to identity improve
     - Merged CSS files in release mode
+    - Fixed overlapping avatars
     
 * **04.02.19**
     - Fixed channel permissions

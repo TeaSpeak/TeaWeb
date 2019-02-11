@@ -46,10 +46,10 @@
         <!-- PHP generated properties -->
         <x-properties id="properties">
 			<?php
-				function spawn_property($name, $value)
+				function spawn_property($name, $value, $element_id = null)
 				{
 				    if(isset($value))
-					    echo "\t\t\t<x-property key=\"" . $name . "\" value=\"" . urlencode($value) . "\"></x-property>\r\n";
+					    echo "\t\t\t<x-property key=\"" . $name . "\" " . (isset($element_id) ? "id=\"" . $element_id . "\" " : "") . "value=\"" . urlencode($value) . "\"></x-property>\r\n";
 				}
 
 				spawn_property('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
@@ -61,7 +61,7 @@
 				$version = file_get_contents("./version");
 				if ($version === false)
 				    $version = "unknown";
-				spawn_property("version", $version);
+				spawn_property("version", $version, "app_version");
 			?>
         </x-properties>
 

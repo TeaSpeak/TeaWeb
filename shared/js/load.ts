@@ -53,6 +53,7 @@ namespace loader {
         DONE
     }
 
+    export let allow_cached_files: boolean = false;
     let current_stage: Stage = Stage.INITIALIZING;
     const tasks: {[key:number]:Task[]} = {};
 
@@ -204,7 +205,8 @@ namespace loader {
                 };
 
                 document.getElementById("scripts").appendChild(tag);
-                tag.src = path;
+
+                tag.src = path + (allow_cached_files ? "" : "?_ts=" + Date.now());
             });
         }
     }
@@ -309,7 +311,7 @@ namespace loader {
                 };
 
                 document.getElementById("style").appendChild(tag);
-                tag.href = path;
+                tag.href = path + (allow_cached_files ? "" : "?_ts=" + Date.now());
             });
         }
     }
@@ -642,7 +644,7 @@ const loader_style = {
 
 async function load_templates() {
     try {
-        const response = await $.ajax("templates.html");
+        const response = await $.ajax("templates.html" + (loader.allow_cached_files ? "" : "?_ts" + Date.now()));
 
         let node = document.createElement("html");
         node.innerHTML = response;
@@ -666,6 +668,37 @@ async function load_templates() {
         displayCriticalError("Failed to find template tag!");
         throw "template error";
     }
+}
+
+/* test if all files shall be load from cache or fetch again */
+async function check_updates() {
+    const app_version = (() => {
+        const version_node = document.getElementById("app_version");
+        if(!version_node) return undefined;
+
+        const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
+        if(!version) return undefined;
+
+        if(version == "unknown" || version.replace("0", "").length == 0)
+            return undefined;
+
+        return version;
+    })();
+
+    if(!app_version) {
+        /* TODO add warning */
+        loader.allow_cached_files = false;
+        return;
+    }
+    const cached_version = localStorage.getItem("cached_version");
+    if(!cached_version || cached_version != app_version) {
+        loader.allow_cached_files = false;
+        /* loading screen */
+        return;
+    }
+
+    loader.allow_cached_files = true;
+    console.error(app_version);
 }
 
 interface Window {
@@ -780,6 +813,11 @@ loader.register_task(loader.Stage.INITIALIZING, {
     priority: 20
 });
 
+loader.register_task(loader.Stage.INITIALIZING, {
+    name: "update tester",
+    priority: 60,
+    function: check_updates
+});
 
 loader.register_task(loader.Stage.JAVASCRIPT, {
     name: "javascript",
