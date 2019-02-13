@@ -175,7 +175,7 @@ namespace loader {
                 let error = false;
                 const error_handler = (event: ErrorEvent) => {
                     if(event.filename == tag.src && event.message.indexOf("Illegal constructor") == -1) { //Our tag throw an uncaught error
-                        //console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
+                        console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
                         window.removeEventListener('error', error_handler as any);
 
                         reject(new SyntaxError(event.error));
@@ -298,10 +298,14 @@ namespace loader {
                             }
                         }
 
-                        for(const index of rules_remove.sort((a, b) => b > a ? 1 : 0))
-                            css.deleteRule(index);
+                        for(const index of rules_remove.sort((a, b) => b > a ? 1 : 0)) {
+                            if(css.removeRule)
+                                css.removeRule(index);
+                            else
+                                css.deleteRule(index);
+                        }
                         for(const rule of rules_add)
-                            css.insertRule(rule);
+                            css.insertRule(rule, rules_remove[0]);
                     }
 
                     clearTimeout(timeout_handle);

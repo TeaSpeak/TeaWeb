@@ -105,7 +105,7 @@ class ChannelEntry {
         });
     }
 
-    parent_channel?() { return this.parent; }
+    parent_channel() { return this.parent; }
     hasParent(){ return this.parent != null; }
     getChannelId(){ return this.channelId; }
     channelClass() { return "channel_full"; }
