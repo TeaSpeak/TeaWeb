@@ -6,6 +6,10 @@ $background:lightgray;
 	display: flex;
 	flex-direction: row;
 
+	/* tmp fix for ultra small devices */
+	overflow-x: auto;
+	overflow-y: hidden;
+
 	.divider {
 		border-left:2px solid gray;
 		height: auto;
