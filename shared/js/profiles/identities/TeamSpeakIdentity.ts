@@ -396,7 +396,13 @@ namespace profiles.identities {
 
     export class TeaSpeakIdentity implements Identity {
         static async generate_new() : Promise<TeaSpeakIdentity> {
-            const key = await crypto.subtle.generateKey({name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
+            let key: CryptoKeyPair;
+            try {
+                key = await crypto.subtle.generateKey({name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
+            } catch(e) {
+                console.error(tr("Could not generate a new key: %o"), e);
+                throw "Failed to generate keypair";
+            }
             const private_key = await CryptoHelper.export_ecc_key(key.privateKey, false);
 
             const identity = new TeaSpeakIdentity(private_key, "0", undefined, false);
