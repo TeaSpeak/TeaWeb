@@ -924,6 +924,7 @@ namespace Modals {
                             teamspeak_tag.trigger('show');
                             createInfoModal(tr("Identity generate"), tr("A new identity had been successfully generated")).open();
                         }).catch(error => {
+                            console.error(tr("Failed to generate a new identity. Error object: %o"), error);
                             createErrorModal(tr("Failed to generate identity"), tr("Failed to generate a new identity.<br>Error:") + error).open();
                         });
                     };
