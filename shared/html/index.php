@@ -20,6 +20,10 @@
 		    return false;
         }
 	}
+
+	if(function_exists("setup_forum_auth"))
+		setup_forum_auth();
+
 	$localhost |= gethostname() == "WolverinDEV";
 	if(!$localhost || $testXF) {
 		//redirectOnInvalidSession();
@@ -27,7 +31,6 @@
 
 	$WEB_CLIENT = http_response_code() !== false;
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
     <head>
