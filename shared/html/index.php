@@ -57,8 +57,12 @@
 
 				spawn_property('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
 				spawn_property('localhost_debug', $localhost ? "true" : "false");
-				spawn_property('forum_user_data', isset($GLOBALS["COOKIE_NAME_USER_DATA"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]] : null);
-				spawn_property('forum_user_sign', isset($GLOBALS["COOKIE_NAME_USER_SIGN"]) ? $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]] : null);
+				if(isset($_COOKIE)) {
+				    if(array_key_exists("COOKIE_NAME_USER_DATA", $GLOBALS) && array_key_exists($GLOBALS["COOKIE_NAME_USER_DATA"], $_COOKIE))
+						spawn_property('forum_user_data', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]]);
+					if(array_key_exists("COOKIE_NAME_USER_SIGN", $GLOBALS) && array_key_exists($GLOBALS["COOKIE_NAME_USER_SIGN"], $_COOKIE))
+					    spawn_property('forum_user_sign', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]]);
+				}
 				spawn_property('forum_path', authPath());
 
 				$version = file_get_contents("./version");
