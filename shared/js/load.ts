@@ -575,6 +575,7 @@ const loader_javascript = {
 
 const loader_webassembly = {
     test_webassembly: async () => {
+        /* We dont required WebAssembly anymore for fundamental functions, only for auto decoding
         if(typeof (WebAssembly) === "undefined" || typeof (WebAssembly.compile) === "undefined") {
             console.log(navigator.browserSpecs);
             if (navigator.browserSpecs.name == 'Safari') {
@@ -589,6 +590,7 @@ const loader_webassembly = {
             displayCriticalError("You require WebAssembly for TeaSpeak-Web!");
             throw "Missing web assembly";
         }
+        */
     }
 };
 

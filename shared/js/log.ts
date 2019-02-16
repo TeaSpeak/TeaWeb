@@ -29,6 +29,32 @@ namespace log {
         [LogCategory.I18N,          "I18N       "]
     ]);
 
+    let enabled_mapping = new Map<number, boolean>([
+        [LogCategory.CHANNEL,       true],
+        [LogCategory.CLIENT,        true],
+        [LogCategory.SERVER,        true],
+        [LogCategory.PERMISSIONS,   true],
+        [LogCategory.GENERAL,       true],
+        [LogCategory.NETWORKING,    true],
+        [LogCategory.VOICE,         true],
+        [LogCategory.I18N,          true]
+    ]);
+
+    loader.register_task(loader.Stage.LOADED, {
+        name: "log enabled initialisation",
+        function: async () => initialize(),
+        priority: 10
+    });
+
+    //Example: <url>?log.i18n.enabled=0
+    export function initialize() {
+        for(const category of Object.keys(LogCategory).map(e => parseInt(e))) {
+            if(isNaN(category)) continue;
+            const category_name = LogCategory[category];
+            enabled_mapping[category] = settings.static_global("log." + category_name.toLowerCase() + ".enabled", true);
+        }
+    }
+
     function logDirect(type: LogType, message: string, ...optionalParams: any[]) {
         switch (type) {
             case LogType.TRACE:
@@ -49,6 +75,8 @@ namespace log {
     }
 
     export function log(type: LogType, category: LogCategory, message: string, ...optionalParams: any[]) {
+        if(!enabled_mapping[category]) return;
+
         optionalParams.unshift(category_mapping.get(category));
         message = "[%s] " + message;
         logDirect(type, message, ...optionalParams);
