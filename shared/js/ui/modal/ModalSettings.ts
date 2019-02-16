@@ -5,10 +5,6 @@
 /// <reference path="../../profiles/Identity.ts" />
 
 namespace Modals {
-    import TranslationRepository = i18n.TranslationRepository;
-    import ConnectionProfile = profiles.ConnectionProfile;
-    import IdentitifyType = profiles.identities.IdentitifyType;
-
     function spawnTeamSpeakIdentityImprove(identity: profiles.identities.TeaSpeakIdentity) : Modal {
         let modal: Modal;
         let elapsed_timer: NodeJS.Timer;
@@ -619,7 +615,7 @@ namespace Modals {
            }
 
            {
-                const display_repository_info = (repository: TranslationRepository) => {
+                const display_repository_info = (repository: i18n.TranslationRepository) => {
                     const info_modal = createModal({
                         header: tr("Repository info"),
                         body: () => {
@@ -762,11 +758,11 @@ namespace Modals {
 
     function initialise_profiles(modal: Modal, tag: JQuery) {
         const settings_tag = tag.find(".profile-settings");
-        let selected_profile: ConnectionProfile;
+        let selected_profile: profiles.ConnectionProfile;
         let nickname_listener: () => any;
         let status_listener: () => any;
 
-        const display_settings = (profile: ConnectionProfile) => {
+        const display_settings = (profile: profiles.ConnectionProfile) => {
             selected_profile = profile;
 
             settings_tag.find(".setting-name").val(profile.profile_name);
@@ -790,7 +786,7 @@ namespace Modals {
                     profiles.mark_need_save();
 
                     let tag: JQuery;
-                    if(selected_type == IdentitifyType.TEAFORO) {
+                    if(selected_type == profiles.identities.IdentitifyType.TEAFORO) {
                         const forum_tag = tag = settings_tag.find(".identity-settings-teaforo");
 
                         forum_tag.find(".connected, .disconnected").hide();
@@ -799,13 +795,13 @@ namespace Modals {
                         } else {
                             forum_tag.find(".disconnected").show();
                         }
-                    } else if(selected_type == IdentitifyType.TEAMSPEAK) {
+                    } else if(selected_type == profiles.identities.IdentitifyType.TEAMSPEAK) {
                         console.log("Set: " + identity);
                         const teamspeak_tag = tag = settings_tag.find(".identity-settings-teamspeak");
                         teamspeak_tag.find(".identity_string").val("");
                         if(identity)
                             (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
-                    } else if(selected_type == IdentitifyType.NICKNAME) {
+                    } else if(selected_type == profiles.identities.IdentitifyType.NICKNAME) {
                         const name_tag = tag = settings_tag.find(".identity-settings-nickname");
                         if(identity)
                             name_tag.find("input").val(identity.name());
@@ -877,10 +873,10 @@ namespace Modals {
                 const button_improve = teamspeak_tag.find(".button-improve");
 
                 button_import.on('click', event => {
-                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
 
                     const set_identity = (identity: profiles.identities.TeaSpeakIdentity) => {
-                        selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity);
+                        selected_profile.set_identity(profiles.identities.IdentitifyType.TEAMSPEAK, identity);
                         teamspeak_tag.trigger('show');
                         createInfoModal(tr("Identity imported"), tr("Your identity has been successfully imported!")).open();
                     };
@@ -894,7 +890,7 @@ namespace Modals {
                         spawnTeamSpeakIdentityImport(set_identity);
                 });
                 button_export.on('click', event => {
-                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
                     if(!profile) return;
 
                     createInputModal(tr("File name"), tr("Please enter the file name"), text => !!text, name => {
@@ -917,10 +913,10 @@ namespace Modals {
                 });
 
                 button_generate.on('click', event => {
-                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
                     const generate_identity = () => {
                         profiles.identities.TeaSpeakIdentity.generate_new().then(identity => {
-                            selected_profile.set_identity(IdentitifyType.TEAMSPEAK, identity);
+                            selected_profile.set_identity(profiles.identities.IdentitifyType.TEAMSPEAK, identity);
                             teamspeak_tag.trigger('show');
                             createInfoModal(tr("Identity generate"), tr("A new identity had been successfully generated")).open();
                         }).catch(error => {
@@ -939,7 +935,7 @@ namespace Modals {
                 });
 
                 button_improve.on('click', event => {
-                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
                     if(!profile) return;
 
                     spawnTeamSpeakIdentityImprove(profile).close_listener.push(() => teamspeak_tag.trigger('show'));
@@ -947,7 +943,7 @@ namespace Modals {
 
                 /* updates the data */
                 teamspeak_tag.on('show', event => {
-                    const profile = selected_profile.selected_identity(IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                    const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
 
                     if(!profile || !profile.valid()) {
                         identity_info_tag.hide();
@@ -993,7 +989,7 @@ namespace Modals {
                 const name_tag = settings_tag.find(".identity-settings-nickname");
                 name_tag.find(".setting-name").on('change keyup', event => {
                     const name = name_tag.find(".setting-name").val() as string;
-                    selected_profile.set_identity(IdentitifyType.NICKNAME, new profiles.identities.NameIdentity(name));
+                    selected_profile.set_identity(profiles.identities.IdentitifyType.NICKNAME, new profiles.identities.NameIdentity(name));
                     profiles.mark_need_save();
 
                     if(name.length < 3) {
@@ -1004,7 +1000,7 @@ namespace Modals {
                 });
 
                 name_tag.on('show', event => {
-                    const profile = selected_profile.selected_identity(IdentitifyType.NICKNAME);
+                    const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.NICKNAME);
                     if(!profile)
                         display_error("invalid profile");
                     else if(!profile.valid())
