@@ -21,19 +21,23 @@ class CodecPool {
     private _supported: boolean = true;
 
     initialize(cached: number) {
-        for(let i = 0; i < cached; i++)
-            this.ownCodec(i + 1).then(codec => {
-                console.log(tr("Release again! (%o)"), codec);
-                this.releaseCodec(i + 1);
-            }).catch(error => {
+        /* test if we're able to use this codec */
+        const dummy_client_id = 0xFFEF;
+
+        this.ownCodec(dummy_client_id).then(codec => {
+            console.log(tr("Release again! (%o)"), codec);
+            this.releaseCodec(dummy_client_id);
+        }).catch(error => {
+            if(this._supported) {
                 console.warn(tr("Disabling codec support for "), this.name);
-                if(this._supported) {
-                    createErrorModal(tr("Could not load codec driver"), tr("Could not load or initialize codec ") + this.name + "<br>" +
-                        "Error: <code>" + JSON.stringify(error) + "</code>").open();
-                }
-                this._supported = false;
-                console.error(error);
-            });
+                createErrorModal(tr("Could not load codec driver"), tr("Could not load or initialize codec ") + this.name + "<br>" +
+                    "Error: <code>" + JSON.stringify(error) + "</code>").open();
+                console.error(tr("Failed to initialize the opus codec. Error: %o"), error);
+            } else {
+                console.debug(tr("Failed to initialize already disabled codec. Error: %o"), error);
+            }
+            this._supported = false;
+        });
     }
 
     supported() { return this._supported; }
@@ -56,7 +60,7 @@ class CodecPool {
                             this.ownCodec(clientId, false).then(resolve).catch(reject);
                         }).catch(error => {
                             console.error(tr("Could not initialize codec!\nError: %o"), error);
-                            reject(tr("Could not initialize codec!"));
+                            reject(typeof(error) === 'string' ? error : tr("Could not initialize codec!"));
                         });
                     }
                     return;

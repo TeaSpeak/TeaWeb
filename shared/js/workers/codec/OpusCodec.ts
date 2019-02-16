@@ -1,6 +1,11 @@
 /// <reference path="CodecWorker.ts" />
 
-this["Module"] = typeof this["Module"] !== "undefined" ?  this["Module"] : {};
+const WASM_ERROR_MESSAGES = [
+    'no native wasm support detected'
+];
+
+this["Module"] = this["Module"] || {};
+
 let initialized = false;
 Module['onRuntimeInitialized'] = function() {
     initialized = true;
@@ -12,11 +17,43 @@ Module['onRuntimeInitialized'] = function() {
         success: true
     })
 };
-Module['onAbort'] = message => {
+
+let abort_message: string = undefined;
+let last_error_message: string;
+
+Module['print'] = function() {
+    if(arguments.length == 1 && arguments[0] == abort_message)
+        return; /* we don't need to reprint the abort message! */
+    console.log(...arguments);
+};
+
+Module['printErr'] = function() {
+    if(arguments.length == 1 && arguments[0] == abort_message)
+        return; /* we don't need to reprint the abort message! */
+
+    last_error_message = arguments[0];
+    for(const suppress of WASM_ERROR_MESSAGES)
+        if((arguments[0] as string).indexOf(suppress) != -1)
+            return;
+
+    console.error(...arguments);
+};
+
+Module['onAbort'] = (message: string | DOMException) => {
+    /* no native wasm support detected */
     Module['onAbort'] = undefined;
 
     if(message instanceof DOMException)
         message = "DOMException (" + message.name + "): " + message.code + " => " + message.message;
+    else {
+        abort_message = message;
+        if(message.indexOf("no binaryen method succeeded") != -1)
+            for(const error of WASM_ERROR_MESSAGES)
+                if(last_error_message.indexOf(error) != -1) {
+                    message = "no native wasm support detected, but its required";
+                    break;
+                }
+    }
 
     sendMessage({
         token: workerCallbackToken,
@@ -31,10 +68,11 @@ try {
     Module['locateFile'] = file => "../../wasm/" + file;
     importScripts("../../wasm/TeaWeb-Worker-Codec-Opus.js");
 } catch (e) {
-    console.log(e);
-    Module['onAbort']("Cloud not load native script!");
+    if(typeof(Module['onAbort']) === "function") {
+        console.log(e);
+        Module['onAbort']("Failed to load native scripts");
+    } /* else the error had been already handled because its a WASM error */
 }
-//let Module = typeof Module !== 'undefined' ? Module : {};
 
 enum OpusType {
     VOIP = 2048,
