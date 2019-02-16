@@ -127,7 +127,6 @@ class Modal {
         this.shown = true;
         this.htmlTag.appendTo($("body"));
 
-        console.log(this.properties.closeable);
         this.htmlTag.bootstrapMaterialDesign().modal(this.properties.closeable ? 'show' : {
             backdrop: 'static',
             keyboard: false,
