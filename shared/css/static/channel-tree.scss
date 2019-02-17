@@ -98,6 +98,9 @@
 
                     justify-content: left;
 
+					max-width: 100%; /* important for the repetitive channel name! */
+					overflow: hidden;
+
                     &.align-right {
                         justify-content: right;
                     }

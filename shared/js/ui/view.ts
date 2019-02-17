@@ -75,6 +75,8 @@ class ChannelTree {
     show_channel_tree() {
         this._tree_detached = false;
         this.htmlTree.appendTo(this.htmlTree_parent);
+
+        this.channels.forEach(e => e.recalculate_repetitive_name());
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {

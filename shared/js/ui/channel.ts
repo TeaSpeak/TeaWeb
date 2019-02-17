@@ -562,24 +562,36 @@ class ChannelEntry {
         if(this._channel_name_formatted !== undefined) {
             tag_container_name.addClass(this._channel_name_alignment);
 
-            if(this._channel_name_alignment == "*") {
-                let lastSuccess = "";
-                let index = 6;
+            if(this._channel_name_alignment == "align-repetitive") {
+                if(tag_name.parent().width() != 0) {
+                    let lastSuccess = "";
+                    let index = 6;
 
-                let name = this.formattedChannelName();
-                while(index-- > 0)
-                    name = name + name;
-                tag_name.text(name);
-                do {
-                    tag_name.text(name = name + name);
-                } while (tag_name.parent().width() >= tag_name.width() && ++index < 64);
-                if(index == 64) console.warn(LogCategory.CHANNEL, tr("Repeating spacer took too much repeats!"));
-                if(lastSuccess.length > 0) {
-                    tag_name.text(lastSuccess);
+                    let name = this._channel_name_formatted;
+                    if(name.length < 1) throw "invalid name!";
+
+                    while(index-- > 0)
+                        name = name + name;
+                    tag_name.text(name);
+                    do {
+                        tag_name.text(name = name + name);
+                        if(name.length > 1024 * 8)
+                            index = 63;
+                    } while (tag_name.parent().width() >= tag_name.width() && ++index < 64);
+                    if(index == 64)
+                        console.warn(LogCategory.CHANNEL, tr("Repeating spacer took too much repeats!"));
+                    if(lastSuccess.length > 0) {
+                        tag_name.text(lastSuccess);
+                    }
                 }
             }
         }
         console.log(tr("Align: %s"), this._channel_name_alignment);
+    }
+
+    recalculate_repetitive_name() {
+        if(this._channel_name_alignment == "align-repetitive")
+            this.__updateChannelName();
     }
 
     updateVariables(...variables: {key: string, value: string}[]) {
