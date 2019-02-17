@@ -1,4 +1,35 @@
 # Changelog:
+* **17.02.19**
+    - Removed WebAssembly as dependency (Now working with MS Edge as well (but without audio))
+    - Improved channel tree performance
+    - Improved touch channel tree hierarchy (not selects the channel which had been actually touched)
+    - Added the possibility to scroll on the control bar (required for super small devices)
+    - Improved error handling within the codecs
+    - Fixed the vertical sliders for touch devices
+    - Added an effect on slider select/move
+    - Fixed query visibility setting
+    - Removed useless client infos for query clients
+    - Added an auto reconnect system
+    - Reworked the channel tree selected lines
+    
+* **15.02.19**
+    - Fixed MS Edge loading/document issues
+    - Fixed invalid pattern in the yes/no modal
+    
+* **11.02.19**
+    - Added a detection to the loader to avoid cached files on updates
+    
+* **09.02.19**
+    - Improved UI now using the material design framework based on bootstrap
+    - Fixed several UI overflow or small screen issues
+    - Improved permission editor performance
+    - Added hash rate to identity improve
+    - Merged CSS files in release mode
+    - Fixed overlapping avatars
+    
+* **04.02.19**
+    - Fixed channel permissions
+    
 * **27.01.19**
     - Made sounds configurable
     - Added option to mute sounds when output is muted

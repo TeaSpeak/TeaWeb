@@ -3,102 +3,123 @@
 namespace Modals {
     export function spawnConnectModal(defaultHost: { url: string, enforce: boolean} = { url: "ts.TeaSpeak.de", enforce: false}, connect_profile?: { profile: profiles.ConnectionProfile, enforce: boolean}) {
         let selected_profile: profiles.ConnectionProfile;
-        const connectModal = createModal({
-            header: function() {
-                let header = $.spawn("div");
-                header.text(tr("Create a new connection"));
-                return header;
-            },
-            body: function () {
-                let tag = $("#tmpl_connect").renderTag({
-                    client: native_client,
-                    forum_path: settings.static("forum_path")
+
+        const random_id = (() => {
+            const array = new Uint32Array(10);
+            window.crypto.getRandomValues(array);
+            return array.join("");
+        })();
+
+        const connect_modal = $("#tmpl_connect").renderTag({
+            client: native_client,
+            forum_path: settings.static("forum_path"),
+            password_id: random_id
+        }).modalize((header, body, footer) => {
+            const button_connect = footer.find(".button-connect");
+            const button_manage = body.find(".button-manage-profiles");
+
+            const input_profile = body.find(".container-select-profile select");
+            const input_address = body.find(".container-address input");
+            const input_nickname = body.find(".container-nickname input");
+            const input_password = body.find(".container-password input");
+
+            let updateFields = function () {
+                console.log("Updating");
+                if(selected_profile)
+                    input_nickname.attr("placeholder", selected_profile.default_username);
+                else
+                    input_nickname.attr("placeholder", "");
+
+                let address = input_address.val().toString();
+                settings.changeGlobal("connect_address", address);
+                let flag_address = !!address.match(Regex.IP_V4) || !!address.match(Regex.DOMAIN);
+
+                let nickname = input_nickname.val().toString();
+                settings.changeGlobal("connect_name", nickname);
+                let flag_nickname = (nickname.length == 0 && selected_profile && selected_profile.default_username.length > 0) || nickname.length >= 3 && nickname.length <= 32;
+
+                input_address.attr('pattern', flag_address ? null : '^[a]{1000}$').toggleClass('is-invalid', !flag_address);
+                input_nickname.attr('pattern', flag_nickname ? null : '^[a]{1000}$').toggleClass('is-invalid', !flag_nickname);
+
+                if(!flag_nickname || !flag_address || !selected_profile || !selected_profile.valid()) {
+                    button_connect.prop("disabled", true);
+                } else {
+                    button_connect.prop("disabled", false);
+                }
+            };
+
+            input_nickname.val(settings.static_global("connect_name", undefined));
+            input_address.val(defaultHost.enforce ? defaultHost.url : settings.static_global("connect_address", defaultHost.url));
+            input_address
+                .on("keyup", () => updateFields())
+                .on('keydown', event => {
+                    if(event.keyCode == JQuery.Key.Enter && !event.shiftKey)
+                        button_connect.trigger('click');
                 });
 
-                let updateFields = function () {
-                    if(selected_profile) tag.find(".connect_nickname").attr("placeholder", selected_profile.default_username);
-                    else
-                    tag.find(".connect_nickname").attr("");
-
-                    let button = tag.parents(".modal-content").find(".connect_connect_button");
-
-                    let field_address = tag.find(".connect_address");
-                    let address = field_address.val().toString();
-                    settings.changeGlobal("connect_address", address);
-                    let flag_address = !!address.match(Regex.IP_V4) || !!address.match(Regex.DOMAIN);
-
-                    let field_nickname = tag.find(".connect_nickname");
-                    let nickname = field_nickname.val().toString();
-                    settings.changeGlobal("connect_name", nickname);
-                    let flag_nickname = (nickname.length == 0 && selected_profile && selected_profile.default_username.length > 0) || nickname.length >= 3 && nickname.length <= 32;
-
-                    if(flag_address) {
-                        if(field_address.hasClass("invalid_input"))
-                            field_address.removeClass("invalid_input");
-                    } else {
-                        if(!field_address.hasClass("invalid_input"))
-                            field_address.addClass("invalid_input");
-                    }
-
-                    if(flag_nickname) {
-                        if(field_nickname.hasClass("invalid_input"))
-                            field_nickname.removeClass("invalid_input");
-                    } else {
-                        if(!field_nickname.hasClass("invalid_input"))
-                            field_nickname.addClass("invalid_input");
-                    }
-
-                    if(!flag_nickname || !flag_address || !selected_profile || !selected_profile.valid()) {
-                        button.prop("disabled", true);
-                    } else {
-                        button.prop("disabled", false);
-                    }
-                };
-
-                tag.find(".connect_nickname").val(settings.static_global("connect_name", undefined));
-                tag.find(".connect_address").val(defaultHost.enforce ? defaultHost.url : settings.static_global("connect_address", defaultHost.url));
-                tag.find(".connect_address")
-                    .on("keyup", () => updateFields())
-                    .on('keydown', event => {
-                        if(event.keyCode == JQuery.Key.Enter && !event.shiftKey)
-                            tag.parents(".modal-content").find(".connect_connect_button").trigger('click');
-                    });
-
-                tag.find(".button-manage-profiles").on('click', event => {
-                    const modal = Modals.spawnSettingsModal();
-                    setTimeout(() => {
-                        modal.htmlTag.find(".tab-profiles").parent(".entry").trigger('click');
-                    }, 100);
-                    modal.close_listener.push(() => {
-                        tag.find(".profile-select-container select").trigger('change');
-                    });
-                    return true;
+            button_manage.on('click', event => {
+                const modal = Modals.spawnSettingsModal();
+                setTimeout(() => {
+                    modal.htmlTag.find(".tab-profiles").parent(".entry").trigger('click');
+                }, 100);
+                modal.close_listener.push(() => {
+                    input_profile.trigger('change');
                 });
+                return true;
+            });
 
-                {
-                    const select_tag = tag.find(".profile-select-container select");
-                    const select_invalid_tag = tag.find(".profile-invalid");
-
-                    for(const profile of profiles.profiles()) {
-                        select_tag.append(
-                            $.spawn("option").text(profile.profile_name).val(profile.id)
-                        );
-                    }
-
-                    select_tag.on('change', event => {
-                        selected_profile = profiles.find_profile(select_tag.val() as string);
-                        if(!selected_profile || !selected_profile.valid())
-                            select_invalid_tag.show();
-                        else
-                            select_invalid_tag.hide();
-                        updateFields();
-                    });
-                    select_tag.val(connect_profile && connect_profile.enforce ? connect_profile.profile.id : connect_profile && connect_profile.profile ? connect_profile.profile.id : 'default').trigger('change');
+            {
+                for(const profile of profiles.profiles()) {
+                    input_profile.append(
+                        $.spawn("option").text(profile.profile_name).val(profile.id)
+                    );
                 }
 
-                tag.find(".connect_nickname").on("keyup", () => updateFields());
+                input_profile.on('change', event => {
+                    selected_profile = profiles.find_profile(input_profile.val() as string);
+                    input_profile.toggleClass("is-invalid", !selected_profile || !selected_profile.valid());
+                    updateFields();
+                });
+                input_profile.val(connect_profile && connect_profile.enforce ? connect_profile.profile.id : connect_profile && connect_profile.profile ? connect_profile.profile.id : 'default').trigger('change');
+            }
 
-                setTimeout(() => updateFields(), 100);
+            input_nickname.on("keyup", () => updateFields());
+            setTimeout(() => updateFields(), 100);
+
+            button_connect.on('click', event => {
+                connect_modal.close();
+
+                globalClient.startConnection(
+                    input_address.val().toString(),
+                    selected_profile,
+                    input_nickname.val().toString() || selected_profile.default_username,
+                    {password: input_password.val().toString(), hashed: false}
+                );
+            });
+        }, {
+            width: '70%'
+        });
+
+        connect_modal.open();
+        return;
+
+
+        const connectModal = createModal({
+            header: (tr("Create a new connection")),
+            body: function () {
+                const random_id = (() => {
+                    const array = new Uint32Array(10);
+                    window.crypto.getRandomValues(array);
+                    return array.join("");
+                })();
+
+                let tag = $("#tmpl_connect").renderTag({
+                    client: native_client,
+                    forum_path: settings.static("forum_path"),
+                    password_id: random_id
+                });
+
+
                 //connect_address
                 return tag;
             },

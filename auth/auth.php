@@ -242,6 +242,10 @@
 		}
 	}
 
+	function setup_forum_auth() {
+		getXF(); /* Initialize XF */
+	}
+
 	if(!$_INCLIDE_ONLY) {
 		$app = getXF();
 		if(!$app) return;

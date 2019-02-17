@@ -10,6 +10,7 @@
 class ChannelTree {
     client: TSClient;
     htmlTree: JQuery;
+    htmlTree_parent: JQuery;
     server: ServerEntry;
     channels: ChannelEntry[];
     clients: ClientEntry[];
@@ -18,6 +19,7 @@ class ChannelTree {
     currently_selected_context_callback: (event) => any = undefined;
     readonly client_mover: ClientMover;
 
+    private _tree_detached: boolean = false;
     private _show_queries: boolean;
     private channel_last?: ChannelEntry;
     private channel_first?: ChannelEntry;
@@ -29,6 +31,8 @@ class ChannelTree {
 
         this.client = client;
         this.htmlTree = htmlTree;
+        this.htmlTree_parent = this.htmlTree.parent();
+
         this.client_mover = new ClientMover(this);
         this.reset();
 
@@ -63,6 +67,18 @@ class ChannelTree {
         }});
     }
 
+    hide_channel_tree() {
+        this.htmlTree.detach();
+        this._tree_detached = true;
+    }
+
+    show_channel_tree() {
+        this._tree_detached = false;
+        this.htmlTree.appendTo(this.htmlTree_parent);
+
+        this.channels.forEach(e => e.recalculate_repetitive_name());
+    }
+
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
         let channelCreate =
             this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_TEMPORARY).granted(1) ||
@@ -91,12 +107,6 @@ class ChannelTree {
         let tag = element instanceof ChannelEntry ? element.rootTag() : element.tag;
         this.htmlTree.find(tag).fadeOut("slow", () => {
             tag.remove();
-            if(element instanceof ChannelEntry) {
-                if(element.parent_channel())
-                    element.parent_channel().adjustSize(true);
-            } else if(element instanceof ClientEntry) {
-                element.currentChannel().adjustSize(true);
-            }
         });
     }
 
@@ -147,7 +157,7 @@ class ChannelTree {
         let previous_channel = null;
         if(channel.hasParent()) {
             let parent = channel.parent_channel();
-            let siblings = parent.siblings();
+            let siblings = parent.children();
             if(siblings.length == 0) {
                 elm = parent.rootTag();
                 previous_channel = null;
@@ -177,10 +187,11 @@ class ChannelTree {
                 channel.channel_next.channel_previous = channel;
         }
 
-        let entry = channel.rootTag().css({display: "none"}).fadeIn("slow");
+        let entry = channel.rootTag();
+        if(!this._tree_detached)
+            entry.css({display: "none"}).fadeIn("slow");
         entry.appendTo(tag);
 
-        channel.originalHeight = entry.outerHeight(false);
         if(elm != undefined)
             elm.after(entry);
 
@@ -189,8 +200,8 @@ class ChannelTree {
         if(channel.channel_next == channel) /* shall never happen */
             channel.channel_next = undefined;
 
-        channel.adjustSize(true);
         channel.initializeListener();
+        channel.update_family_index();
     }
 
     findChannel(channelId: number) : ChannelEntry | undefined {
@@ -206,9 +217,9 @@ class ChannelTree {
         return undefined;
     }
 
-    moveChannel(channel: ChannelEntry, channel_previus: ChannelEntry, parent: ChannelEntry) {
-        if(channel_previus != null && channel_previus.parent != parent) {
-            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channel_previus.parent, parent);
+    moveChannel(channel: ChannelEntry, channel_previous: ChannelEntry, parent: ChannelEntry) {
+        if(channel_previous != null && channel_previous.parent != parent) {
+            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channel_previous.parent, parent);
             return;
         }
 
@@ -225,36 +236,34 @@ class ChannelTree {
             this.channel_first = channel.channel_next;
 
 
-        let oldParent = channel.parent_channel();
         channel.channel_next = undefined;
-        channel.channel_previous = channel_previus;
+        channel.channel_previous = channel_previous;
         channel.parent = parent;
 
-        if(channel_previus) {
-            if(channel_previus == this.channel_last)
+        if(channel_previous) {
+            if(channel_previous == this.channel_last)
                 this.channel_last = channel;
 
-            channel.channel_next = channel_previus.channel_next;
-            channel_previus.channel_next = channel;
-            channel_previus.rootTag().after(channel.rootTag());
+            channel.channel_next = channel_previous.channel_next;
+            channel_previous.channel_next = channel;
+            channel_previous.rootTag().after(channel.rootTag());
 
             if(channel.channel_next)
                 channel.channel_next.channel_previous = channel;
         } else {
             if(parent) {
-                let siblings = parent.siblings();
-                if(siblings.length <= 1) { //Self should be already in there
+                let children = parent.children();
+                if(children.length <= 1) { //Self should be already in there
                     let left = channel.rootTag();
                     left.appendTo(parent.siblingTag());
 
                     channel.channel_next = undefined;
                 } else {
-                    channel.channel_previous = siblings[siblings.length - 2];
-                    channel.channel_previous.rootTag().after(channel.rootTag());
+                    channel.channel_previous = undefined;
+                    channel.rootTag().prependTo(parent.siblingTag());
 
-                    channel.channel_next = channel.channel_previous.channel_next;
+                    channel.channel_next = children[1]; /* children 0 shall be the channel itself */
                     channel.channel_next.channel_previous = channel;
-                    channel.channel_previous.channel_next = channel;
                 }
             } else {
                 this.htmlTree.find(".server").after(channel.rootTag());
@@ -267,16 +276,17 @@ class ChannelTree {
             }
         }
 
-        if(channel.channel_previous == channel) /* shall never happen */
-            channel.channel_previous = undefined;
-        if(channel.channel_next == channel) /* shall never happen */
-            channel.channel_next = undefined;
+        channel.update_family_index();
+        channel.children(true).forEach(e => e.update_family_index());
+        channel.clients(true).forEach(e => e.update_family_index());
 
-        if(oldParent) {
-            oldParent.adjustSize();
+        if(channel.channel_previous == channel) {  /* shall never happen */
+            channel.channel_previous = undefined;
+            debugger;
         }
-        if(channel) {
-            channel.adjustSize();
+        if(channel.channel_next == channel) {  /* shall never happen */
+            channel.channel_next = undefined;
+            debugger;
         }
     }
 
@@ -292,29 +302,28 @@ class ChannelTree {
         else
             this.clients.push(client);
 
-        if(!this._show_queries && client.properties.client_type == ClientType.CLIENT_QUERY)
-            client.tag.hide();
-
         client.channelTree = this;
         client["_channel"] = channel;
 
-        let tag = client.tag.css({display: "none"}).fadeIn("slow");
+        let tag = client.tag;
+
+
+        if(!this._show_queries && client.properties.client_type == ClientType.CLIENT_QUERY)
+            client.tag.hide();
+        else if(!this._tree_detached)
+            tag.css("display", "none").fadeIn("slow");
+
         tag.appendTo(channel.clientTag());
-        channel.adjustSize(true);
         client.currentChannel().reorderClients();
 
         channel.updateChannelTypeIcon();
+        client.update_family_index();
         return client;
     }
 
     registerClient(client: ClientEntry) {
         this.clients.push(client);
         client.channelTree = this;
-    }
-
-    reorderAllClients() {
-        for(let channel of this.channels)
-            channel.reorderClients();
     }
 
     moveClient(client: ClientEntry, channel: ChannelEntry) {
@@ -325,15 +334,14 @@ class ChannelTree {
         tag.detach();
         tag.appendTo(client.currentChannel().clientTag());
         if(oldChannel) {
-            oldChannel.adjustSize();
             oldChannel.updateChannelTypeIcon();
         }
         if(client.currentChannel()) {
-            client.currentChannel().adjustSize();
             client.currentChannel().reorderClients();
             client.currentChannel().updateChannelTypeIcon();
         }
         client.updateClientStatusIcons();
+        client.update_family_index();
     }
 
     findClient?(clientId: number) : ClientEntry {
@@ -397,7 +405,7 @@ class ChannelTree {
                 if(e == entry) {
                     this.currently_selected.remove(e);
                     if(entry instanceof ChannelEntry)
-                        (entry as ChannelEntry).rootTag().find("> .channelLine").removeClass("selected");
+                        (entry as ChannelEntry).channelTag().removeClass("selected");
                     else if(entry instanceof ClientEntry)
                         (entry as ClientEntry).tag.removeClass("selected");
                     else if(entry instanceof ServerEntry)
@@ -413,7 +421,7 @@ class ChannelTree {
         }
 
         if(entry instanceof ChannelEntry)
-            (entry as ChannelEntry).rootTag().find("> .channelLine").addClass("selected");
+            (entry as ChannelEntry).channelTag().addClass("selected");
         else if(entry instanceof ClientEntry)
             (entry as ClientEntry).tag.addClass("selected");
         else if(entry instanceof ServerEntry)
@@ -630,7 +638,7 @@ class ChannelTree {
             }
         }
 
-        const children = channel.siblings();
+        const children = channel.children();
         if(children.length > 0) {
             this.onSelect(children[0], true);
             return;
@@ -664,7 +672,7 @@ class ChannelTree {
 
                 if(previous) {
                     while(true) {
-                        const siblings = previous.siblings();
+                        const siblings = previous.children();
                         if(siblings.length == 0) break;
                         previous = siblings.last();
                     }
@@ -728,7 +736,6 @@ class ChannelTree {
         if(this._show_queries == flag) return;
         this._show_queries = flag;
 
-        //FIXME resize channels
         const channels: ChannelEntry[] = []
         for(const client of this.clients)
             if(client.properties.client_type == ClientType.CLIENT_QUERY) {
@@ -739,7 +746,9 @@ class ChannelTree {
                 if(channels.indexOf(client.currentChannel()) == -1)
                     channels.push(client.currentChannel());
             }
-        for(const channel of channels)
-            channel.adjustSize();
+    }
+
+    get_first_channel?() : ChannelEntry {
+        return this.channel_first;
     }
 }

@@ -1,0 +1,171 @@
+.container-channel-settings-standard {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: row;
+	justify-content: stretch;
+
+	.container-divider {
+		border-left:1px solid #000;
+		height: auto;
+
+		flex-grow: 0;
+		flex-shrink: 0;
+	}
+
+	.container-left, .container-right {
+		display: flex;
+		justify-content: space-around;
+		align-self: center;
+
+		flex-grow: 1;
+		flex-shrink: 1;
+
+		width: 50%;
+	}
+
+	.container-right {
+		flex-direction: column;
+		align-content: stretch;
+		vertical-align: center;
+
+		margin: 20px 50px 20px 50px;
+	}
+
+	.container-channel-type {
+		padding: 5px;
+
+		border: lightgrey 2px solid;
+		border-radius: 2px;
+		text-align: left;
+	}
+}
+
+.container-channel-settings-audio {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: row;
+	justify-content: stretch;
+
+	.container-divider {
+		border-left:1px solid #000;
+		height: auto;
+
+		flex-grow: 0;
+		flex-shrink: 0;
+	}
+
+	.container-presets, .container-custom {
+		display: flex;
+		justify-content: space-around;
+		text-align: left;
+		align-self: center;
+
+		flex-grow: 1;
+		flex-shrink: 1;
+
+		width: 50%;
+	}
+
+	.container-custom {
+		margin: 20px 50px 20px 50px;
+		justify-content: stretch;
+
+		> .group_box {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+	}
+}
+
+.container-channel-settings-permission {
+	flex-grow: 1;
+
+	display: flex;
+	justify-content: space-evenly;
+
+	align-items: center;
+
+
+	.container-left, .container-right {
+		margin-top: 20px;
+		margin-bottom: 20px;
+
+		display: flex;
+		justify-content: space-around;
+		align-self: center;
+
+		flex-grow: 1;
+		flex-shrink: 1;
+
+		width: 50%;
+
+		> .group_box {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		.form-placeholder {
+			display: block;
+			visibility: hidden;
+		}
+	}
+
+	.container-left {
+		margin-left: 10%;
+		margin-right: 10px;
+	}
+
+	.container-right {
+		margin-right: 10%;
+		margin-left: 10px;
+	}
+}
+
+.container-channel-settings-advanced {
+	flex-grow: 1;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	.container-max-users, .container-other {
+		width: 100%;
+	}
+
+	.container-max-users {
+		margin-top: 20px;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.group_box:not(:first-of-type) {
+			margin-left: 40px;
+		}
+
+		> .group_box {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		fieldset {
+			padding-top: 1rem;
+		}
+
+		.form-row {
+			margin-left: 20px;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.bmd-form-group {
+				padding-top: 0;
+			}
+
+			label {
+				width: 100px;
+			}
+		}
+	}
+}

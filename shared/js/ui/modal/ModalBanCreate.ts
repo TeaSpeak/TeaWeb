@@ -8,7 +8,6 @@ namespace Modals {
             header: base && base.banid > 0 ? tr("Edit ban") : tr("Add ban"),
             body: () => {
                 let template = $("#tmpl_ban_create").renderTag();
-                template = $.spawn("div").append(template);
 
                 const input_name = template.find(".input-name");
                 const input_name_type = template.find(".input-name-type");

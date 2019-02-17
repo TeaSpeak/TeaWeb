@@ -368,9 +368,9 @@ class IconManager {
     //$("<img width=\"16\" height=\"16\" alt=\"tick\" src=\"data:image/png;base64," + value.base64 + "\">")
     generateTag(id: number) : JQuery<HTMLDivElement> {
         if(id == 0)
-            return $("<div class='icon_empty'></div>");
+            return $.spawn("div").addClass("icon_empty");
         else if(id < 1000)
-            return $("<div class='icon client-group_" + id + "'></div>");
+            return $.spawn("div").addClass("icon client-group_" + id);
 
         let tag = $.spawn("div");
         tag.addClass("icon_empty");
@@ -384,7 +384,7 @@ class IconManager {
             const media = media_image_type(type);
             console.debug(tr("Icon has an image type of %o (media: %o)"), type, media);
             img.attr("src", "data:image/" + media + ";base64," + icon.base64);
-            tag.append(img);
+            tag.append(img).removeClass("icon_empty");
         } else {
             img.attr("src", "file://null");
 
@@ -400,7 +400,7 @@ class IconManager {
                 console.debug(tr("Icon %o loaded :)"), id);
 
                 img.css("opacity", 0);
-                tag.append(img);
+                tag.append(img).removeClass("icon_empty");
                 loader.animate({opacity: 0}, 50, function () {
                     $(this).detach();
                     img.animate({opacity: 1}, 150);

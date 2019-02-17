@@ -94,17 +94,23 @@ class ServerEntry {
     get htmlTag() {
         if(this._htmlTag) return this._htmlTag;
 
-        let tag = $.spawn("div");
+        let tag = $.spawn("div").addClass("tree-entry server");
 
-        tag.attr("id", "server");
-        tag.addClass("server");
-        tag.append($.spawn("div").addClass("server_type icon client-server_green"));
-        tag.append($.spawn("a").addClass("name").text(this.properties.virtualserver_name));
+        tag.append(
+            $.spawn("div")
+            .addClass("server_type icon client-server_green")
+        );
 
-        const serverIcon = $("<span/>");
-        //we cant spawn an icon on creation :)
-        serverIcon.append($.spawn("div").addClass("icon_property icon_empty"));
-        tag.append(serverIcon);
+        tag.append(
+            $.spawn("div")
+            .addClass("name")
+            .text(this.properties.virtualserver_name)
+        );
+
+        tag.append(
+            $.spawn("div")
+            .addClass("icon_property icon_empty")
+        );
 
         return this._htmlTag = tag;
     }

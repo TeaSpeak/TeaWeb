@@ -43,6 +43,28 @@ var TabFunctions = {
         let silentContent = $.spawn("div");
         silentContent.addClass("tab-content-invisible");
 
+        /* add some kind of min height */
+        const update_height = () => {
+            const entries: JQuery = tag.find("> .tab-content-invisible x-content, > .tab-content x-content");
+            console.error(entries);
+            let max_height = 0;
+
+            entries.each((_, _e) => {
+                const entry = $(_e);
+                const height = entry.visible_height();
+                if(height > max_height)
+                    max_height = height;
+            });
+
+            console.error("HIGHT: " + max_height);
+            entries.each((_, _e) => {
+                const entry = $(_e);
+                entry.animate({
+                    'min-height': max_height + "px"
+                }, 250);
+            })
+        };
+
         template.find("x-entry").each( (_, _entry) => {
             const entry = $(_entry);
 
@@ -74,6 +96,7 @@ var TabFunctions = {
                 };
                 show_next(0);
 
+                tag_content.trigger('show');
                 tag_content.show();
             });
 
@@ -81,11 +104,13 @@ var TabFunctions = {
             header.append(tag_header);
         });
 
-        header.find(".entry").first().trigger("click");
+        setTimeout(() => header.find(".entry").first().trigger("click"), 0);
 
         tag.append(header);
         tag.append(content);
         tag.append(silentContent);
+
+        tag.on('tab.resize', update_height);
         return tag;
     }
 }
@@ -101,14 +126,12 @@ if(!$.fn.asTabWidget) {
 }
 
 if(!$.fn.tabify) {
-    $.fn.tabify = function (copy?: boolean) {
-        try {
-            let self = this.asTabWidget(copy);
-            this.replaceWith(self);
-        } catch(object) {}
-        this.find("x-tab").each(function () {
-            $(this).replaceWith($(this).asTabWidget(copy));
+    $.fn.tabify = function (this: JQuery, copy?: boolean) {
+        const wrapped_tag = $.spawn("div").append(this);
+        wrapped_tag.find("x-tab").each((_, _element) => {
+            const element = $(_element);
+            element.replaceWith(element.asTabWidget(copy));
         });
-        return this;
+        return wrapped_tag.children();
     }
 }

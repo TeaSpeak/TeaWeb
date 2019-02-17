@@ -1,0 +1,180 @@
+.banlist {
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
+	flex-grow: 1;
+
+	height: 100%;
+	width: 100%;
+
+	.frame-container {
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+		flex-grow: 1;
+
+		.top-menu {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+			flex-grow: 0;
+			flex-shrink: 0;
+			margin-bottom: 5px;
+
+			.manage-buttons {
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				margin-right: 5px;
+			}
+
+			.search {
+				flex-grow: 1;
+
+				input {
+					width: 100%;
+				}
+			}
+		}
+
+		.entry-container {
+			flex-grow: 1;
+			flex-shrink: 1;
+
+			display: flex;
+			flex-direction: column;
+
+			margin-bottom: 5px;
+			position: relative;
+
+			width: 100%;
+			height: 100%;
+
+			.entries {
+				width: 100%;
+				min-height: 300px;
+
+				overflow-y: scroll;
+				overflow-x: hidden;
+
+				display: flex;
+				flex-direction: column;
+			}
+
+			.ban-entry {
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+
+				&.header {
+					.column {
+						font-weight: bold;
+
+						&.column-time {
+							margin-right: 0!important;
+						}
+					}
+				}
+
+				&:not(.header) {
+					cursor: pointer;
+
+					&:hover {
+						background-color: #00000011;
+					}
+
+					&.selected {
+						background: blue;
+
+						&:hover {
+							background-color: #0000FFAA;
+						}
+					}
+				}
+
+				.column {
+					flex-grow: 1;
+
+					&.column-keys {
+						width: 25%;
+
+						display: flex;
+						flex-direction: column;
+					}
+
+					&.column-reason {
+
+						width: 25%;
+					}
+
+					&.column-creator {
+
+						width: 25%;
+					}
+
+					&.column-time {
+						width: 25%;
+						min-width: 230px;
+						max-width: 300px;
+
+						display: flex;
+						flex-direction: column;
+
+						margin-right: -15px; /* because of the scroll bar */
+
+						> div {
+							display: flex;
+							flex-direction: row;
+						}
+
+						a {
+							display: inline;
+							width: 100px;
+						}
+					}
+				}
+
+				&.ban-entry-global {
+					color: red;
+				}
+
+				&.ban-entry-own-bold {
+					font-weight: bold;
+				}
+			}
+		}
+
+		.bottom-menu {
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+			flex-grow: 0;
+			flex-shrink: 0;
+			margin-bottom: 5px;
+
+			.left {
+				display: flex;
+				flex-direction: row;
+
+				div {
+					margin-left: 2px;
+					margin-right: 2px;
+				}
+			}
+
+			input {
+				vertical-align: bottom;
+			}
+
+			.bmd-form-group {
+				padding-top: 0;
+				align-self: center;
+
+				margin-left: 20px;
+			}
+		}
+	}
+}

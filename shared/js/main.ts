@@ -138,6 +138,8 @@ async function initialize() {
         displayCriticalError(tr("Failed to initialize ppt!"));
         return;
     }
+
+    setup_close();
 }
 
 function ab2str(buf) {
@@ -236,26 +238,17 @@ function main() {
     chat = new ChatBox($("#chat"));
     globalClient.setup();
 
-
-    if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false) && !native_client) {
-
-    }
-    //Modals.spawnConnectModal();
-    //Modals.spawnSettingsModal();
-    //Modals.createChannelModal(undefined);
-
     if(settings.static("connect_default", false) && settings.static("connect_address", "")) {
         const profile_uuid = settings.static("connect_profile") as string;
         console.log("UUID: %s", profile_uuid);
         const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
-        console.log("UUID: %s", profile.id);
         const address = settings.static("connect_address", "");
         const username = settings.static("connect_username", "Another TeaSpeak user");
 
         const password = settings.static("connect_password", "");
         const password_hashed = settings.static("connect_password_hashed", false);
 
-        if(profile.valid()) {
+        if(profile && profile.valid()) {
             globalClient.startConnection(address, profile, username, password.length > 0 ? {
                 password: password,
                 hashed: password_hashed
@@ -270,23 +263,6 @@ function main() {
             });
         }
     }
-    /*
-    let tag = $("#tmpl_music_frame").renderTag({
-        //thumbnail: "img/loading_image.svg"
-    });
-
-
-
-    $("#music-test").replaceWith(tag);
-
-    Modals.spawnSettingsModal();
-    /*
-    Modals.spawnYesNo("Are your sure?", "Do you really want to exit?", flag => {
-        console.log("Response: " + flag);
-    })
-    */
-
-    setup_close();
 
     let _resize_timeout: NodeJS.Timer;
     $(window).on('resize', () => {

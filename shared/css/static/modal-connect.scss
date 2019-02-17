@@ -1,0 +1,73 @@
+.modal .modal-connect {
+
+	/*
+	margin-top: 5px;
+
+	> div:not(:first-of-type) {
+		margin-top: 5px;
+	}
+
+	.profile-select-container {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+
+		select {
+			width: 150px;
+		}
+	}
+
+	.profile-invalid {
+		display: flex;
+		flex-direction: column;
+		justify-content: start;
+
+		> div {
+			display: inline-flex;
+			flex-direction: row;
+		}
+
+		color: red;
+	}
+	*/
+
+	.container-address-password {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.container-address {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		.container-password {
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			margin-left: 15px;
+		}
+	}
+
+	.container-profile-manage {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.container-select-profile {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		.container-manage {
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			margin-left: 15px;
+		}
+	}
+
+	.invalid-feedback {
+		position: absolute;
+	}
+}

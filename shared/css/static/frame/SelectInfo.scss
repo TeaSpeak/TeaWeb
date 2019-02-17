@@ -1,0 +1,108 @@
+.select_info_table { }
+.select_info_table tr { }
+.select_info_table tr td { }
+
+.select_info_table tr td:nth-child(1) {
+    font-weight: bold;
+    padding-right: 5px;
+    min-width: 20%;
+}
+
+.select_server {
+	height: 100%;
+	display: inline-flex;
+	flex-direction: column;
+	justify-content: space-between;
+	flex-grow: 1;
+
+	.button-update {
+		width: 100%;
+		height: 23px;
+
+		&:disabled {
+			color: red;
+			pointer-events: none;
+		}
+		&:not(:disabled) {
+			color: green;
+		}
+	}
+
+	.container {
+		max-height: 100%;
+		display: flex;
+		flex-direction: column;
+
+		.hostbanner {
+			overflow: hidden;
+		}
+	}
+}
+
+/*
+  <div id="select_info" class="select_info" style="width: 100%; max-width: 100%">
+                                <div class="container-banner"></div>
+                                <div class="container-info"></div>
+                            </div>
+ */
+.select_info {
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
+	width: 100%;
+
+	> div {
+		width: 100%;
+	}
+
+	.container-banner {
+		flex-grow: 1;
+		flex-shrink: 2;
+		max-height: 25%;
+		display: flex;
+		justify-content: stretch;
+
+		overflow: hidden;
+
+
+		&.disabled {
+			display: none;
+			margin-bottom: 5px;
+		}
+
+		.hostbanner {
+			position: relative;
+			flex-grow: 1;
+
+			img {
+				position: absolute;
+			}
+		}
+	}
+
+	.container-select-info {
+		padding: 2px;
+		flex-grow: 1;
+		flex-shrink: 1;
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.select_server {
+			> div {
+				flex-grow: 1;
+			}
+		}
+	}
+
+	.client-avatar {
+		> div {
+			flex-grow: 1;
+			flex-shrink: 1;
+			> img {
+				max-width: 100%;
+				max-height: 100%;
+			}
+		}
+	}
+}

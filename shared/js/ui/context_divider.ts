@@ -21,12 +21,13 @@ if(!$.fn.dividerfy) {
                 next_element.css(property, "calc(" +next + "% - " + (vertical ? element.width() : element.height()) + "px)");
             };
 
-            const listener_move = (event: MouseEvent) => {
-
+            const listener_move = (event: MouseEvent | TouchEvent) => {
                 const parent_offset = parent_element.offset();
                 const min = vertical ? parent_offset.left : parent_offset.top;
                 const max = vertical ? parent_offset.left + parent_element.width() : parent_offset.top + parent_element.height();
-                const current = vertical ? event.pageX : event.pageY;
+                const current = event instanceof MouseEvent ?
+                    (vertical ? event.pageX : event.pageY) :
+                    (vertical ? event.touches[event.touches.length - 1].clientX : event.touches[event.touches.length - 1].clientY);
 
                 /*
                 const previous_offset = previous_element.offset();
@@ -70,14 +71,30 @@ if(!$.fn.dividerfy) {
 
             const listener_up = (event: MouseEvent) => {
                 document.removeEventListener('mousemove', listener_move);
+                document.removeEventListener('touchmove', listener_move);
+
                 document.removeEventListener('mouseup', listener_up);
+                document.removeEventListener('touchend', listener_up);
+                document.removeEventListener('touchcancel', listener_up);
                 $(document.documentElement).css("user-select", "");
+
+                element.removeClass("seperator-selected");
             };
 
             element.on('mousedown', () => {
                 document.addEventListener('mousemove', listener_move);
+                document.addEventListener('touchmove', listener_move);
+
                 document.addEventListener('mouseup', listener_up);
+                document.addEventListener('touchend', listener_up);
+                document.addEventListener('touchcancel', listener_up);
                 $(document.documentElement).css("user-select", "none");
+
+                element.addClass("seperator-selected");
+            });
+
+            element.on('touchstart', () => {
+                element.trigger('mousedown');
             });
 
 

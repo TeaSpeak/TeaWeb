@@ -3,14 +3,14 @@
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
 
-if [ "$1" == "development" ] || [ "$1" == "dev" ]; then
+if [[ "$1" == "development" ]] || [[ "$1" == "dev" ]]; then
     source_path="web/environment/development"
     type="development"
-elif [ "$1" == "release" ] || [ "$1" == "rel" ]; then
+elif [[ "$1" == "release" ]] || [[ "$1" == "rel" ]]; then
     source_path="web/environment/release"
     type="release"
 else
-    if [ $# -lt 1 ]; then
+    if [[ $# -lt 1 ]]; then
         echo "Invalid argument count!"
     else
         echo "Invalid option $1"
@@ -19,14 +19,14 @@ else
     exit 1
 fi
 
-if [ ! -d "$source_path" ]; then
+if [[ ! -d "$source_path" ]]; then
     echo "Could not find environment! ($source_path)"
     echo "Please generate it first!"
     exit 1
 fi
 
 response=$(git diff-index HEAD -- . ':!asm/libraries/' ':!package-lock.json' ':!vendor/')
-if [ "$response" != "" ]; then
+if [[ "$response" != "" ]]; then
     echo "You're using a private modified build!"
     echo "Cant assign git hash!"
     NAME="TeaWeb.zip"
@@ -34,7 +34,7 @@ else
     NAME="TeaWeb-$(git rev-parse --short HEAD).zip"
 fi
 
-if [ -e ${NAME} ]; then
+if [[ -e ${NAME} ]]; then
     echo "Found old file. Deleting it."
     rm -r ${NAME}
 fi
@@ -43,7 +43,7 @@ current_path=$(pwd)
 cd "$source_path"
 zip -9 -r ${NAME} *
 
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
     echo "Failed to package environment!"
     exit 1
 fi

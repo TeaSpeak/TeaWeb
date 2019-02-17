@@ -8,26 +8,26 @@ TMP_DIR_NAME="tmp"
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
 
-if [ "$#" -ne 3 ]; then
+if [[ "$#" -ne 3 ]]; then
     echo "Illegal number of parameters (url | channel | required version)"
     exit 1
 fi
 
-if [ ! -d client-api/environment/ui-files/ ]; then
+if [[ ! -d client&&pi/environment/ui-files/ ]]; then
     echo "Missing UI Files"
     exit 1
 fi
 
-if [ "${teaclient_deploy_secret}" == "" ]; then
+if [[ "${teaclient_deploy_secret}" == "" ]]; then
     echo "Missing deploy secret!"
     exit 1
 fi
 
-if [ -e "${TMP_FILE_NAME}" ]; then
+if [[ -e "${TMP_FILE_NAME}" ]]; then
     echo "Temp file already exists!"
     echo "Deleting it!"
     rm ${TMP_FILE_NAME}
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo "Failed to delete file"
         exit 1
     fi
@@ -39,9 +39,9 @@ echo "Git hash ${GIT_HASH} on version ${APPLICATION_VERSION} on channel $2"
 
 #Packaging the app
 cd client-api/environment/ui-files/
-if [ -e ${TMP_DIR_NAME} ]; then
+if [[ -e ${TMP_DIR_NAME} ]]; then
     rm -r ${TMP_DIR_NAME}
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         echo "Failed to remove temporary directory!"
         exit 1
     fi
@@ -52,7 +52,7 @@ for file in $(find ${TMP_DIR_NAME} -name '*.php'); do
     echo "Evaluating php file $file"
     RESULT=$(php "${file}" 2> /dev/null)
     CODE=$?
-    if [ ${CODE} -ne 0 ]; then
+    if [[ ${CODE} -ne 0 ]]; then
         echo "Failed to evaluate php file $file!"
         echo "Return code $CODE"
         exit 1
@@ -63,7 +63,7 @@ done
 
 cd ${TMP_DIR_NAME}
 tar chvzf ${TMP_FILE_NAME} *
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
     echo "Failed to pack file"
     exit 1
 fi
@@ -87,9 +87,9 @@ RESP=$(curl \
 echo "$RESP"
 SUCCESS=$(echo ${RESP} | python -c "import sys, json; print(json.load(sys.stdin)['success'])")
 
-if [ ! "${SUCCESS}" == "True" ]; then
+if [[ ! "${SUCCESS}" == "True" ]]; then
     ERROR=$(echo ${RESP} | python -c "import sys, json; print(json.load(sys.stdin)['error'])" 2>/dev/null)
-    if [ $? -ne 0 ]; then
+    if [[ $? -ne 0 ]]; then
         ERROR=$(echo ${RESP} | python -c "import sys, json; print(json.load(sys.stdin)['msg'])" 2>/dev/null)
     fi
     echo "Failed to deploy build!"

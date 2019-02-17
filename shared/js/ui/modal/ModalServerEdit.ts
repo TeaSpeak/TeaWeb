@@ -3,35 +3,17 @@
 namespace Modals {
     export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => any) {
         let properties: ServerProperties = {} as ServerProperties; //The changes properties
-        const modal = createModal({
-            header: tr("Manager the  Virtual Server"),
-            body: () => {
-                let template = $("#tmpl_server_edit").renderTag(server.properties);
-                template = $.spawn("div").append(template);
-                return template.tabify();
-            },
-            footer: () => {
-                let footer = $.spawn("div");
-                footer.addClass("modal-button-group");
-                footer.css("margin", "5px");
 
-                let buttonCancel = $.spawn("button");
-                buttonCancel.text(tr("Cancel")).addClass("button_cancel");
-
-                let buttonOk = $.spawn("button");
-                buttonOk.text(tr("Ok")).addClass("button_ok");
-
-                footer.append(buttonCancel);
-                footer.append(buttonOk);
-
-                return footer;
-            },
-            width: 750
+        const modal_template = $("#tmpl_server_edit").renderTag(server.properties);
+        const modal = modal_template.modalize((header, body, footer) => {
+            return {
+                body: body.tabify()
+            }
         });
 
         server_applyGeneralListener(properties, modal.htmlTag.find(".properties_general"), modal.htmlTag.find(".button_ok"));
-        server_applyTransferListener(properties, server, modal.htmlTag.find('.container-file-transfer'));
-        server_applyHostListener(properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
+        server_applyTransferListener(properties, server, modal.htmlTag.find('.properties_transfer'));
+        server_applyHostListener(server, properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
         server_applyMessages(properties, server, modal.htmlTag.find(".properties_messages"));
         server_applyFlood(properties, server, modal.htmlTag.find(".properties_flood"));
         server_applySecurity(properties, server, modal.htmlTag.find(".properties_security"));
@@ -102,7 +84,7 @@ namespace Modals {
     }
 
 
-    function server_applyHostListener(properties: ServerProperties, original_properties: ServerProperties, tag: JQuery, button: JQuery) {
+    function server_applyHostListener(server: ServerEntry, properties: ServerProperties, original_properties: ServerProperties, tag: JQuery, button: JQuery) {
         tag.find(".virtualserver_host").change(function (this: HTMLInputElement) {
             properties.virtualserver_host = this.value;
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOST).granted(1));
@@ -152,6 +134,10 @@ namespace Modals {
             properties.virtualserver_hostbutton_gfx_url = this.value;
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
 
+        server.updateProperties().then(() => {
+            tag.find(".virtualserver_host").val(server.properties.virtualserver_host);
+            tag.find(".virtualserver_port").val(server.properties.virtualserver_port);
+        });
     }
 
     function server_applyMessages(properties: ServerProperties, server: ServerEntry, tag: JQuery) {

@@ -88,7 +88,7 @@ class ClientMover {
 
         const elements = document.elementsFromPoint(event.pageX, event.pageY);
         while(elements.length > 0) {
-            if(elements[0].classList.contains("channelLine")) break;
+            if(elements[0].classList.contains("container-channel")) break;
             elements.pop_front();
         }
 

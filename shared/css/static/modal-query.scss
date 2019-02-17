@@ -1,0 +1,159 @@
+.query-create {
+	display: flex;
+	flex-direction: column;
+
+	.row-name {
+		width: 100%;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		input {
+			flex-grow: 1;
+			flex-shrink: 1;
+			margin-left: 5px;
+		}
+	}
+
+	.buttons {
+		margin-top: 5px;
+		text-align: right;
+	}
+}
+
+.query-created {
+	display: flex;
+	flex-direction: column;
+
+	.buttons {
+		text-align: right;
+	}
+
+	.form-row {
+		margin-right: 0!important;
+		margin-left: 0!important;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.icon_x32 {
+			align-self: center;
+			margin-right: 5px;
+
+			cursor: pointer;
+		}
+
+		.form-group {
+			flex-grow: 1;
+		}
+	}
+}
+
+.query-management {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+
+	.header, .footer {
+		flex-grow: 0;
+		flex-shrink: 0;
+	}
+
+	.header {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.buttons {
+			flex-grow: 0;
+		}
+
+		.search {
+			margin-left: 5px;
+			flex-grow: 1;
+
+			input {
+				width: 100%;
+			}
+		}
+	}
+
+	.query-list {
+		margin-top: 5px;
+
+		display: flex;
+		flex-grow: 1;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.column {
+			&.column-username {
+				width: calc(50% - 75px)
+			}
+
+			&.column-unique-id {
+				width: calc(50% - 75px)
+			}
+
+			&.column-bound-server {
+				width: 150px;
+				flex-grow: 0;
+			}
+		}
+
+		.query-list-header {
+			flex-grow: 0;
+			flex-shrink: 0;
+			display: flex;
+			flex-direction: row;
+
+			.column {
+				border: 1px solid lightgray;
+				text-align: center;
+			}
+		}
+
+		.query-list-entries-container {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: start;
+			overflow-y: auto;
+			min-height: 250px;
+
+			.entry {
+				display: flex;
+				flex-direction: row;
+
+				.column {
+					margin-left: 2px;
+				}
+
+				cursor: pointer;
+
+				&.selected {
+					background-color: blue;
+				}
+			}
+
+			&.scrollbar {
+				.column-username {
+					width: calc(50% - 75px + 30px)
+				}
+
+				.column-unique-id {
+					width: calc(50% - 75px + 30px)
+				}
+			}
+		}
+	}
+
+	.footer {
+		margin-top: 5px;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+}

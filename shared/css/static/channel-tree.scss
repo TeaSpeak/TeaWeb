@@ -1,0 +1,239 @@
+/* the channel tree */
+.channel-tree {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    width: 100%;
+
+    display: -ms-flex;
+    display: flex;
+
+    flex-direction: column;
+
+    * {
+        font-family: sans-serif;
+        font-size: 12px;
+        white-space: pre;
+        line-height: 1;
+    }
+
+    .tree-entry {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        /* margin-left: 16px; */
+        min-height: 16px;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        &.server {
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            margin-left: 0;
+
+            .server_type {
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                margin-right: 2px;
+            }
+
+            .name {
+                flex-grow: 1;
+                flex-shrink: 1;
+
+                align-self: center;
+            }
+
+            .icon_property {
+                flex-grow: 0;
+                flex-shrink: 0;
+            }
+
+            &.selected {
+                background-color: blue;
+            }
+        }
+
+        &.channel {
+            display: flex;
+            flex-direction: column;
+
+            .container-channel {
+                display: flex;
+                flex-direction: row;
+                justify-content: stretch;
+
+                width: 100%;
+                min-height: 16px;
+
+                align-items: center;
+                cursor: pointer;
+
+                &.selected {
+                    background-color: blue;
+                }
+
+                .channel-type {
+                    flex-grow: 0;
+                    flex-shrink: 0;
+
+                    margin-right: 2px;
+                }
+
+                .container-channel-name {
+                    display: flex;
+                    flex-direction: row;
+
+                    flex-grow: 1;
+                    flex-shrink: 1;
+
+                    justify-content: left;
+
+					max-width: 100%; /* important for the repetitive channel name! */
+                    overflow-x: hidden;
+                    height: 16px;
+
+                    &.align-right {
+                        justify-content: right;
+                    }
+
+                    &.align-center, &.align-repetitive {
+                        justify-content: center;
+                    }
+
+                    .channel-name {
+                        align-self: center;
+                    }
+                }
+
+                .icons {
+                    display: flex;
+                    flex-direction: row;
+
+                    flex-grow: 0;
+                    flex-shrink: 0;
+                }
+
+                &.move-selected {
+                    border-bottom: 1px solid black;
+                }
+
+                .show-channel-normal-only {
+                    display: none;
+
+                    &.channel-normal {
+                        display: block;
+                    }
+                }
+            }
+
+            .container-clients {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        &.client {
+            cursor: pointer;
+
+            position: relative;
+
+            display: flex;
+            flex-direction: row;
+
+            align-items: center;
+
+            > div {
+                margin-right: 2px;
+            }
+
+            .client-name {
+                &.client-name-own {
+                    font-weight: bold;
+                }
+            }
+
+            .container-icons {
+                margin-right: 0; /* override from previous thing */
+
+                position: absolute;
+                right: 0;
+
+                display: flex;
+                flex-direction: row;
+
+                align-items: center;
+
+                .container-icons-group {
+                    display: flex;
+                    flex-direction: row;
+
+                    .container-group-icon {
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: center;
+                    }
+                }
+            }
+
+            &.selected {
+                background-color: blue;
+            }
+        }
+    }
+}
+
+/* all icons related to basic_icons */
+.clicon {width:16px;height:16px;background:url('../../img/ts/basic_icons.png') no-repeat;background-size: 16px 608px;}
+
+.host {background-position: 0 -448px}
+
+.server_open {background-position: 0 -352px}
+.server_full {background-position: 0 -128px}
+.server_pass {background-position: 0 -432px}
+
+/* Server group icon */
+.group_0 {background-position: 0 -464px}
+.group_100 {background-position: 0 -16px}
+.group_200 {background-position: 0 -304px}
+.group_300 {background-position: 0 -80px}
+.group_400 {background-position: 0 -528px}
+.group_500 {background-position: 0 -416px}
+.group_600 {background-position: 0 -272px}
+
+.group_server{background-position: 0 -496px}
+.group_channel {background-position: 0 -400px}
+
+/* Channel icons */
+.channel_open {background-position: 0 -64px}
+.channel_pass {background-position: 0 -112px}
+.channel_full {background-position: 0 -256px}
+.channel_flag_music {background-position: 0 -32px}
+.channel_flag_default {background-position: 0 -48px}
+.channel_flag_moderated {background-position: 0 -192px}
+.channel_flag_password {background-position: 0 -480px}
+
+/* Client icons */
+.client_mic_muted {background-position: 0 -96px}
+.client_talker {background-position: 0 -144px}
+.client_idle {background-position: 0 -160px}
+.client_talk {background-position: 0 -208px}
+.client_snd_muted {background-position: 0 -176px}
+.client_query {background-position: 0 -224px}
+.client_talker_request {background-position: 0 -240px}
+.client_snd_disabled {background-position: 0 -320px}
+.client_priority {background-position: 0 -336px}
+.client_away {background-position: 0 -368px}
+.client_cc {background-position: 0 -384px}
+.client_cc_talk {background-position: 0 -544px}
+.client_cc_idle {background-position: 0 -288px}
+.client_mic_disabled {background-position: 0 -512px}
