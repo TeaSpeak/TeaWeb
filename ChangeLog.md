@@ -1,4 +1,17 @@
 # Changelog:
+* **17.02.19**
+    - Removed WebAssembly as dependency (Now working with MS Edge as well (but without audio))
+    - Improved channel tree performance
+    - Improved touch channel tree hierarchy (not selects the channel which had been actually touched)
+    - Added the possibility to scroll on the control bar (required for super small devices)
+    - Improved error handling within the codecs
+    - Fixed the vertical sliders for touch devices
+    - Added an effect on slider select/move
+    
+* **15.02.19**
+    - Fixed MS Edge loading/document issues
+    - Fixed invalid pattern in the yes/no modal
+    
 * **11.02.19**
     - Added a detection to the loader to avoid cached files on updates
     
