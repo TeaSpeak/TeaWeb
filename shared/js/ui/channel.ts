@@ -202,7 +202,7 @@ class ChannelEntry {
 
             container_entry.attr("channel-id", this.channelId);
             container_entry.addClass(this._channel_name_alignment);
-            container_entry.css('z-index', this.calculate_family_index()); //TODO Calculate!
+            container_entry.css('z-index', this.calculate_family_index());
 
             /* channel icon (type) */
             {
