@@ -6,7 +6,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "") #Override some config values from the parent proje
 set(CMAKE_CXX_COMPILER "emcc")
 set(CMAKE_C_COMPILER "emcc")
 set(CMAKE_C_LINK_EXECUTABLE "emcc")
-set(CMAKE_CXX_FLAGS "-O3 --llvm-lto 1 --memory-init-file 0 -s WASM=1 -s ASSERTIONS=2") # -s ALLOW_MEMORY_GROWTH=1 -O3
+set(CMAKE_CXX_FLAGS "-O3 --llvm-lto 1 --memory-init-file 0 -s WASM=1 -s ASSERTIONS=1") # -s ALLOW_MEMORY_GROWTH=1 -O3
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_EXE_LINKER_FLAGS "-s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\", \"Pointer_stringify\"]'") #
 #add_definitions(-D_GLIBCXX_USE_CXX11_ABI=0)
