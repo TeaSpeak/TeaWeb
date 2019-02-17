@@ -2065,18 +2065,22 @@
                     <td>{{>property_client_description}}</td>
                 </tr>
                 {{/if}}
+                {{if !client_is_query}}
                  <tr>
                     <td>{{tr "Version:"/}}</td>
                     <td><a title="{{>property_client_version}}">{{*: data.property_client_version.split(" ")[0]; }}</a> on {{>property_client_platform}}</td>
                 </tr>
+                {{/if}}
                 <tr>
                     <td>{{tr "Online since:"/}}</td>
                     <td class="update_onlinetime">{{:client_onlinetime}}</td>
                 </tr>
+                {{if !client_is_query}}
                 <tr>
                     <td>{{tr "Volume:"/}}</td>
                     <td>{{:sound_volume}}%</td>
                 </tr>
+                {{/if}}
 
                 {{if client_teaforum_id > 0}}
                 <tr>

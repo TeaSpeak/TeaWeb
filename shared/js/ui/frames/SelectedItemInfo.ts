@@ -216,6 +216,7 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
         properties["client_name"] = client.createChatTag()[0];
         properties["client_onlinetime"] = formatDate(client.calculateOnlineTime());
         properties["sound_volume"] = client.audioController.volume * 100;
+        properties["client_is_query"] = client.properties.client_type == ClientType.CLIENT_QUERY;
 
         properties["group_server"] = [];
         for(let groupId of client.assignedServerGroupIds()) {
