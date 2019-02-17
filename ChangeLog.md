@@ -8,6 +8,8 @@
     - Fixed the vertical sliders for touch devices
     - Added an effect on slider select/move
     - Fixed query visibility setting
+    - Removed useless client infos for query clients
+    - Added an auto reconnect system
     
 * **15.02.19**
     - Fixed MS Edge loading/document issues

@@ -59,6 +59,8 @@ class TSClient {
 
     private _clientId: number = 0;
     private _ownEntry: LocalClientEntry;
+    private _reconnect_timer: NodeJS.Timer;
+    private _reconnect_attempt: boolean = false;
 
     constructor() {
         this.selectInfo = new InfoBar(this, $("#select_info"));
@@ -78,6 +80,7 @@ class TSClient {
     }
 
     startConnection(addr: string, profile: profiles.ConnectionProfile, name?: string, password?: {password: string, hashed: boolean}) {
+        this._reconnect_attempt = false;
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
 
@@ -166,10 +169,16 @@ class TSClient {
     }
 
     handleDisconnect(type: DisconnectReason, data: any = {}) {
+        let auto_reconnect = false;
         switch (type) {
             case DisconnectReason.REQUESTED:
                 break;
             case DisconnectReason.CONNECT_FAILURE:
+                if(this._reconnect_attempt) {
+                    auto_reconnect = true;
+                    chat.serverChat().appendError(tr("Connect failed"));
+                    break;
+                }
                 console.error(tr("Could not connect to remote host! Exception: %o"), data);
 
                 if(native_client) {
@@ -203,6 +212,8 @@ class TSClient {
                     tr("The connection was closed by remote host")
                 ).open();
                 sound.play(Sound.CONNECTION_DISCONNECTED);
+
+                auto_reconnect = true;
                 break;
             case DisconnectReason.CONNECTION_PING_TIMEOUT:
                 console.error(tr("Connection ping timeout"));
@@ -211,6 +222,7 @@ class TSClient {
                     tr("Connection lost"),
                     tr("Lost connection to remote host (Ping timeout)<br>Even possible?")
                 ).open();
+
                 break;
             case DisconnectReason.SERVER_CLOSED:
                 chat.serverChat().appendError(tr("Server closed ({0})"), data.reasonmsg);
@@ -220,6 +232,8 @@ class TSClient {
                             "Reason: " + data.reasonmsg
                 ).open();
                 sound.play(Sound.CONNECTION_DISCONNECTED);
+
+                auto_reconnect = true;
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
                 chat.serverChat().appendError(tr("Server requires password"));
@@ -236,6 +250,7 @@ class TSClient {
                     ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
                     data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
                 sound.play(Sound.SERVER_KICKED);
+                auto_reconnect = true;
                 break;
             case DisconnectReason.CLIENT_BANNED:
                 chat.serverChat().appendError(tr("You got banned from the server by {0}{1}"),
@@ -256,5 +271,34 @@ class TSClient {
         this.controlBar.update_connection_state();
         this.selectInfo.setCurrentSelected(null);
         this.selectInfo.update_banner();
+
+        if(auto_reconnect) {
+            if(!this.serverConnection) {
+                console.log(tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
+                return;
+            }
+            chat.serverChat().appendMessage(tr("Reconnecting in 2.5 seconds"));
+
+            console.log(tr("Allowed to auto reconnect. Reconnecting in 2500ms"));
+            const server_address = this.serverConnection._remote_address;
+            const profile = this.serverConnection._handshakeHandler.profile;
+            const name = this.serverConnection._handshakeHandler.name;
+            const password = this.serverConnection._handshakeHandler.server_password;
+
+            this._reconnect_timer = setTimeout(() => {
+                this._reconnect_timer = undefined;
+                chat.serverChat().appendMessage(tr("Reconnecting..."));
+                console.log(tr("Reconnecting..."));
+                this.startConnection(server_address.host + ":" + server_address.port, profile, name, password ? { password: password, hashed: true} : undefined);
+                this._reconnect_attempt = true;
+            }, 2500);
+        }
+    }
+
+    cancel_reconnect() {
+        if(this._reconnect_timer) {
+            clearTimeout(this._reconnect_timer);
+            this._reconnect_timer = undefined;
+        }
     }
 }

@@ -243,6 +243,7 @@ class ControlBar {
     }
 
     private onConnect() {
+        this.handle.cancel_reconnect();
         Modals.spawnConnectModal({
             url: "ts.TeaSpeak.de",
             enforce: false
@@ -264,6 +265,7 @@ class ControlBar {
     }
 
     private onDisconnect() {
+        this.handle.cancel_reconnect();
         this.handle.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
         this.update_connection_state();
         sound.play(Sound.CONNECTION_DISCONNECTED);
