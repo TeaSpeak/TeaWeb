@@ -690,6 +690,7 @@ async function check_updates() {
 
         return version;
     })();
+    console.log("Found current app version: %o", app_version);
 
     if(!app_version) {
         /* TODO add warning */
@@ -699,12 +700,18 @@ async function check_updates() {
     const cached_version = localStorage.getItem("cached_version");
     if(!cached_version || cached_version != app_version) {
         loader.allow_cached_files = false;
+        loader.register_task(loader.Stage.LOADED, {
+            priority: 0,
+            name: "cached version updater",
+            function: async () => {
+                localStorage.setItem("cached_version", app_version);
+            }
+        });
         /* loading screen */
         return;
     }
 
     loader.allow_cached_files = true;
-    console.error(app_version);
 }
 
 interface Window {
