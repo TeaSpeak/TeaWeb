@@ -26,7 +26,7 @@
         flex-direction: row;
         justify-content: stretch;
 
-        margin-left: 16px;
+        /* margin-left: 16px; */
         min-height: 16px;
 
         flex-grow: 0;
@@ -99,7 +99,8 @@
                     justify-content: left;
 
 					max-width: 100%; /* important for the repetitive channel name! */
-					overflow: hidden;
+                    overflow-x: hidden;
+                    height: 16px;
 
                     &.align-right {
                         justify-content: right;
