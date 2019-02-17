@@ -295,15 +295,17 @@ class ChannelTree {
         else
             this.clients.push(client);
 
-        if(!this._show_queries && client.properties.client_type == ClientType.CLIENT_QUERY)
-            client.tag.hide();
-
         client.channelTree = this;
         client["_channel"] = channel;
 
         let tag = client.tag;
-        if(!this._tree_detached)
-            tag.css({display: "none"}).fadeIn("slow");
+
+
+        if(!this._show_queries && client.properties.client_type == ClientType.CLIENT_QUERY)
+            client.tag.hide();
+        else if(!this._tree_detached)
+            tag.css("display", "none").fadeIn("slow");
+
         tag.appendTo(channel.clientTag());
         client.currentChannel().reorderClients();
 
@@ -730,7 +732,6 @@ class ChannelTree {
         if(this._show_queries == flag) return;
         this._show_queries = flag;
 
-        //FIXME resize channels
         const channels: ChannelEntry[] = []
         for(const client of this.clients)
             if(client.properties.client_type == ClientType.CLIENT_QUERY) {

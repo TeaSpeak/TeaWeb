@@ -96,9 +96,9 @@ class ControlBar {
         }
 
         //Need an initialise
-        this.muteInput = settings.global("mute_input") == "1";
-        this.muteOutput = settings.global("mute_output") == "1";
-        this.query_visibility = settings.global("show_server_queries") == "1";
+        this.muteInput = settings.static_global("mute_input", false);
+        this.muteOutput = settings.static_global("mute_output", false);
+        this.query_visible = settings.static_global("show_server_queries", false);
     }
 
 
@@ -412,21 +412,22 @@ class ControlBar {
         Modals.spawnBookmarkModal();
     }
 
-    get query_visibility() {
+    get query_visible() {
         return this._query_visible;
     }
 
-    set query_visibility(flag: boolean) {
+    set query_visible(flag: boolean) {
+        console.error(flag);
         if(this._query_visible == flag) return;
 
         this._query_visible = flag;
-        settings.global("show_server_queries", flag);
+        settings.changeGlobal("show_server_queries", flag);
         this.update_query_visibility_button();
         this.handle.channelTree.toggle_server_queries(flag);
     }
 
     private on_query_visibility_toggle() {
-        this.query_visibility = !this._query_visible;
+        this.query_visible = !this._query_visible;
         this.update_query_visibility_button();
     }
 
