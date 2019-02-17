@@ -2,12 +2,6 @@
 	path = asm/libraries/opus
 	url = https://github.com/xiph/opus.git
 	branch = 1.1.2
-[submodule "asm/libraries/tomcrypt"]
-	path = asm/libraries/tomcrypt
-	url = http://git.mcgalaxy.de:8090/WolverinDEV/tomcrypt.git
-[submodule "asm/libraries/tommath"]
-	path = asm/libraries/tommath
-	url = http://git.mcgalaxy.de:8090/WolverinDEV/tommath.git
 [submodule "vendor/bbcode"]
 	path = vendor/bbcode
 	url = https://github.com/WolverinDEV/Extendible-BBCode-Parser.git
