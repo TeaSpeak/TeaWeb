@@ -19,6 +19,7 @@ class ChannelTree {
     currently_selected_context_callback: (event) => any = undefined;
     readonly client_mover: ClientMover;
 
+    private _tree_detached: boolean = false;
     private _show_queries: boolean;
     private channel_last?: ChannelEntry;
     private channel_first?: ChannelEntry;
@@ -68,18 +69,12 @@ class ChannelTree {
 
     hide_channel_tree() {
         this.htmlTree.detach();
+        this._tree_detached = true;
     }
 
     show_channel_tree() {
+        this._tree_detached = false;
         this.htmlTree.appendTo(this.htmlTree_parent);
-
-        /* TODO fixup the children (in general the order method) */
-        const channel_resize: ChannelEntry[] = [];
-        const enqueue_resize = (entry: ChannelEntry) => {
-            channel_resize.push(entry);
-            entry.children().forEach(e => enqueue_resize(e));
-        };
-        this.rootChannel().forEach(e => enqueue_resize(e));
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
@@ -190,7 +185,9 @@ class ChannelTree {
                 channel.channel_next.channel_previous = channel;
         }
 
-        let entry = channel.rootTag().css({display: "none"}).fadeIn("slow");
+        let entry = channel.rootTag();
+        if(!this._tree_detached)
+            entry.css({display: "none"}).fadeIn("slow");
         entry.appendTo(tag);
 
         if(elm != undefined)
@@ -304,7 +301,9 @@ class ChannelTree {
         client.channelTree = this;
         client["_channel"] = channel;
 
-        let tag = client.tag.css({display: "none"}).fadeIn("slow");
+        let tag = client.tag;
+        if(!this._tree_detached)
+            tag.css({display: "none"}).fadeIn("slow");
         tag.appendTo(channel.clientTag());
         client.currentChannel().reorderClients();
 
