@@ -80,6 +80,7 @@ class TSClient {
     }
 
     startConnection(addr: string, profile: profiles.ConnectionProfile, name?: string, password?: {password: string, hashed: boolean}) {
+        this.cancel_reconnect();
         this._reconnect_attempt = false;
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
@@ -277,9 +278,9 @@ class TSClient {
                 console.log(tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
             }
-            chat.serverChat().appendMessage(tr("Reconnecting in 2.5 seconds"));
+            chat.serverChat().appendMessage(tr("Reconnecting in 5 seconds"));
 
-            console.log(tr("Allowed to auto reconnect. Reconnecting in 2500ms"));
+            console.log(tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection._remote_address;
             const profile = this.serverConnection._handshakeHandler.profile;
             const name = this.serverConnection._handshakeHandler.name;
@@ -291,12 +292,13 @@ class TSClient {
                 console.log(tr("Reconnecting..."));
                 this.startConnection(server_address.host + ":" + server_address.port, profile, name, password ? { password: password, hashed: true} : undefined);
                 this._reconnect_attempt = true;
-            }, 2500);
+            }, 5000);
         }
     }
 
     cancel_reconnect() {
         if(this._reconnect_timer) {
+            chat.serverChat().appendMessage(tr("Reconnect canceled"));
             clearTimeout(this._reconnect_timer);
             this._reconnect_timer = undefined;
         }
