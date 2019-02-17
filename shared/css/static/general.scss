@@ -327,6 +327,16 @@ $separator_thickness: 4px;
 	}
 }
 
+.icon-container {
+	display: inline-block;
+	height: 16px;
+	width: 16px;
+
+	> img {
+		position: absolute;
+	}
+}
+
 #mouse-move {
 	display: none;
 	position: absolute;
