@@ -139,7 +139,7 @@ class ChannelEntry {
             let current = entry.currentChannel();
             if(deep) {
                 while(current) {
-                    if(current.parent_channel() == self) {
+                    if(current == self) {
                         result.push(entry);
                         break;
                     }
@@ -171,15 +171,16 @@ class ChannelEntry {
         return clients;
     }
 
-    update_family_index() {
+    update_family_index(enforce?: boolean) {
         const current_index = this._family_index;
         const new_index = this.calculate_family_index(true);
-        if(current_index == new_index) return;
+        if(current_index == new_index && !enforce) return;
 
         this._tag_channel.css("z-index", this._family_index);
+        this._tag_channel.css("padding-left", (this._family_index + 1) * 16 + "px");
     }
 
-    private calculate_family_index(enforce_recalculate: boolean = false) : number {
+    calculate_family_index(enforce_recalculate: boolean = false) : number {
         if(this._family_index !== undefined && !enforce_recalculate)
             return this._family_index;
 
@@ -202,7 +203,6 @@ class ChannelEntry {
 
             container_entry.attr("channel-id", this.channelId);
             container_entry.addClass(this._channel_name_alignment);
-            container_entry.css('z-index', this.calculate_family_index());
 
             /* channel icon (type) */
             {
@@ -290,6 +290,7 @@ class ChannelEntry {
             }
 
             tag_channel.append(this._tag_channel = container_entry);
+            this.update_family_index(true);
         }
         {
             const container_client = $.spawn("div").addClass("container-clients");

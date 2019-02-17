@@ -762,6 +762,13 @@ class ClientEntry {
             return undefined;
         }
     }
+
+    update_family_index() {
+        if(!this._channel) return;
+        const index = this._channel.calculate_family_index();
+
+        this.tag.css('padding-left', (index + 2) * 16 + "px");
+    }
 }
 
 class LocalClientEntry extends ClientEntry {

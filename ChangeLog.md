@@ -10,6 +10,7 @@
     - Fixed query visibility setting
     - Removed useless client infos for query clients
     - Added an auto reconnect system
+    - Reworked the channel tree selected lines
     
 * **15.02.19**
     - Fixed MS Edge loading/document issues

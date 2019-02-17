@@ -17,6 +17,7 @@ interface JQuery<TElement = HTMLElement> {
 
 
     visible_height() : number;
+    visible_width() : number;
 
     /* bootstrap */
     alert() : JQuery<TElement>;
@@ -151,7 +152,19 @@ if(typeof ($) !== "undefined") {
             });
 
             const result = this.height();
-            console.log(original_style);
+            this.attr("style", original_style || "");
+            return result;
+        }
+    if(!$.fn.visible_width)
+        $.fn.visible_width = function (this: JQuery<HTMLElement>) {
+            const original_style = this.attr("style");
+            this.css({
+                position:   'absolute!important',
+                visibility: 'hidden!important',
+                display:    'block!important'
+            });
+
+            const result = this.width();
             this.attr("style", original_style || "");
             return result;
         }

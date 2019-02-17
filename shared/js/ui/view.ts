@@ -236,7 +236,6 @@ class ChannelTree {
             this.channel_first = channel.channel_next;
 
 
-        let oldParent = channel.parent_channel();
         channel.channel_next = undefined;
         channel.channel_previous = channel_previous;
         channel.parent = parent;
@@ -253,19 +252,18 @@ class ChannelTree {
                 channel.channel_next.channel_previous = channel;
         } else {
             if(parent) {
-                let siblings = parent.children();
-                if(siblings.length <= 1) { //Self should be already in there
+                let children = parent.children();
+                if(children.length <= 1) { //Self should be already in there
                     let left = channel.rootTag();
                     left.appendTo(parent.siblingTag());
 
                     channel.channel_next = undefined;
                 } else {
-                    channel.channel_previous = siblings[siblings.length - 2];
-                    channel.channel_previous.rootTag().after(channel.rootTag());
+                    channel.channel_previous = undefined;
+                    channel.rootTag().prependTo(parent.siblingTag());
 
-                    channel.channel_next = channel.channel_previous.channel_next;
+                    channel.channel_next = children[1]; /* children 0 shall be the channel itself */
                     channel.channel_next.channel_previous = channel;
-                    channel.channel_previous.channel_next = channel;
                 }
             } else {
                 this.htmlTree.find(".server").after(channel.rootTag());
@@ -279,10 +277,17 @@ class ChannelTree {
         }
 
         channel.update_family_index();
-        if(channel.channel_previous == channel) /* shall never happen */
+        channel.children(true).forEach(e => e.update_family_index());
+        channel.clients(true).forEach(e => e.update_family_index());
+
+        if(channel.channel_previous == channel) {  /* shall never happen */
             channel.channel_previous = undefined;
-        if(channel.channel_next == channel) /* shall never happen */
+            debugger;
+        }
+        if(channel.channel_next == channel) {  /* shall never happen */
             channel.channel_next = undefined;
+            debugger;
+        }
     }
 
     deleteClient(client: ClientEntry) {
@@ -312,17 +317,13 @@ class ChannelTree {
         client.currentChannel().reorderClients();
 
         channel.updateChannelTypeIcon();
+        client.update_family_index();
         return client;
     }
 
     registerClient(client: ClientEntry) {
         this.clients.push(client);
         client.channelTree = this;
-    }
-
-    reorderAllClients() {
-        for(let channel of this.channels)
-            channel.reorderClients();
     }
 
     moveClient(client: ClientEntry, channel: ChannelEntry) {
@@ -340,6 +341,7 @@ class ChannelTree {
             client.currentChannel().updateChannelTypeIcon();
         }
         client.updateClientStatusIcons();
+        client.update_family_index();
     }
 
     findClient?(clientId: number) : ClientEntry {
