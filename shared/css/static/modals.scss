@@ -258,6 +258,7 @@ modal-body {
 		position: relative;
 		width: 175px;
 		flex-grow: 0;
+		min-width: 125px;
 
 		.entries {
 			display: table;
