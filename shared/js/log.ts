@@ -1,5 +1,6 @@
 enum LogCategory {
     CHANNEL,
+    CHANNEL_PROPERTIES, /* separating channel and channel properties because on channel init logging is a big bottleneck */
     CLIENT,
     SERVER,
     PERMISSIONS,
@@ -19,25 +20,27 @@ namespace log {
     }
 
     let category_mapping = new Map<number, string>([
-        [LogCategory.CHANNEL,       "Channel    "],
-        [LogCategory.CLIENT,        "Client     "],
-        [LogCategory.SERVER,        "Server     "],
-        [LogCategory.PERMISSIONS,   "Permission "],
-        [LogCategory.GENERAL,       "General    "],
-        [LogCategory.NETWORKING,    "Network    "],
-        [LogCategory.VOICE,         "Voice      "],
-        [LogCategory.I18N,          "I18N       "]
+        [LogCategory.CHANNEL,                   "Channel    "],
+        [LogCategory.CLIENT,                    "Channel    "],
+        [LogCategory.CHANNEL_PROPERTIES,        "Client     "],
+        [LogCategory.SERVER,                    "Server     "],
+        [LogCategory.PERMISSIONS,               "Permission "],
+        [LogCategory.GENERAL,                   "General    "],
+        [LogCategory.NETWORKING,                "Network    "],
+        [LogCategory.VOICE,                     "Voice      "],
+        [LogCategory.I18N,                      "I18N       "]
     ]);
 
-    let enabled_mapping = new Map<number, boolean>([
-        [LogCategory.CHANNEL,       true],
-        [LogCategory.CLIENT,        true],
-        [LogCategory.SERVER,        true],
-        [LogCategory.PERMISSIONS,   true],
-        [LogCategory.GENERAL,       true],
-        [LogCategory.NETWORKING,    true],
-        [LogCategory.VOICE,         true],
-        [LogCategory.I18N,          true]
+    export let enabled_mapping = new Map<number, boolean>([
+        [LogCategory.CHANNEL,               true],
+        [LogCategory.CHANNEL_PROPERTIES,    false],
+        [LogCategory.CLIENT,                true],
+        [LogCategory.SERVER,                true],
+        [LogCategory.PERMISSIONS,           true],
+        [LogCategory.GENERAL,               true],
+        [LogCategory.NETWORKING,            true],
+        [LogCategory.VOICE,                 true],
+        [LogCategory.I18N,                  true]
     ]);
 
     loader.register_task(loader.Stage.LOADED, {
@@ -51,7 +54,7 @@ namespace log {
         for(const category of Object.keys(LogCategory).map(e => parseInt(e))) {
             if(isNaN(category)) continue;
             const category_name = LogCategory[category];
-            enabled_mapping[category] = settings.static_global("log." + category_name.toLowerCase() + ".enabled", true);
+            enabled_mapping[category] = settings.static_global<boolean>("log." + category_name.toLowerCase() + ".enabled", enabled_mapping.get(category));
         }
     }
 
@@ -112,6 +115,8 @@ namespace log {
     export class Group {
         readonly level: LogType;
         readonly category: LogCategory;
+        readonly enabled: boolean;
+
         owner: Group = undefined;
 
         private readonly name: string;
@@ -124,6 +129,7 @@ namespace log {
             this.category = category;
             this.name = name;
             this.optionalParams = optionalParams;
+            this.enabled = enabled_mapping[category];
         }
 
         group(level: LogType, name: string, ...optionalParams: any[]) : Group {
@@ -136,6 +142,9 @@ namespace log {
         }
 
         log(message: string, ...optionalParams: any[]) : this {
+            if(!this.enabled)
+                return this;
+
             if(!this.initialized) {
                 if(this._collapsed && console.groupCollapsed)
                     console.groupCollapsed(this.name, ...this.optionalParams);

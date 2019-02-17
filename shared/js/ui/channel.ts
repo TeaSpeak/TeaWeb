@@ -51,20 +51,19 @@ class ChannelEntry {
     channelId: number;
     parent?: ChannelEntry;
     properties: ChannelProperties = new ChannelProperties();
-    originalHeight: number;
 
     channel_previous?: ChannelEntry;
     channel_next?: ChannelEntry;
 
-    private _channelAlign: string;
-    private _formatedChannelName: string;
+    private _channel_name_alignment: string = undefined;
+    private _channel_name_formatted: string = undefined;
     private _family_index: number = 0;
 
     //HTML DOM elements
-    private _tag_root:              JQuery<HTMLElement>;
-    private _tag_siblings:          JQuery<HTMLElement>;
-    private _tag_clients:           JQuery<HTMLElement>;
-    private _tag_channel:           JQuery<HTMLElement>;
+    private _tag_root:              JQuery<HTMLElement>; /* container for the channel, client and children tag */
+    private _tag_siblings:          JQuery<HTMLElement>; /* container for all sub channels */
+    private _tag_clients:           JQuery<HTMLElement>; /* container for all clients */
+    private _tag_channel:           JQuery<HTMLElement>; /* container for the channel info itself */
 
     private _cachedPassword: string;
     private _cached_channel_description: string = undefined;
@@ -75,7 +74,7 @@ class ChannelEntry {
     constructor(channelId, channelName, parent = null) {
         this.properties = new ChannelProperties();
         this.channelId = channelId;
-        this._formatedChannelName = channelName;
+        this.properties.channel_name = channelName;
         this.parent = parent;
         this.channelTree = null;
 
@@ -87,8 +86,8 @@ class ChannelEntry {
         return this.properties.channel_name;
     }
 
-    formatedChannelName() {
-        return this._formatedChannelName !== undefined ? this._formatedChannelName : this.properties.channel_name;
+    formattedChannelName() {
+        return this._channel_name_formatted || this.properties.channel_name;
     }
 
     getChannelDescription() : Promise<string> {
@@ -108,7 +107,6 @@ class ChannelEntry {
     parent_channel() { return this.parent; }
     hasParent(){ return this.parent != null; }
     getChannelId(){ return this.channelId; }
-    channelClass() { return "channel_full"; }
 
     children(deep = false) : ChannelEntry[] {
         const result: ChannelEntry[] = [];
@@ -173,54 +171,139 @@ class ChannelEntry {
         return clients;
     }
 
+    update_family_index() {
+        const current_index = this._family_index;
+        const new_index = this.calculate_family_index(true);
+        if(current_index == new_index) return;
+
+        this._tag_channel.css("z-index", this._family_index);
+    }
+
+    private calculate_family_index(enforce_recalculate: boolean = false) : number {
+        if(this._family_index !== undefined && !enforce_recalculate)
+            return this._family_index;
+
+        this._family_index = 0;
+
+        let channel = this.parent_channel();
+        while(channel) {
+            this._family_index++;
+            channel = channel.parent_channel();
+        }
+
+        return this._family_index;
+    }
+
     private initializeTag() {
-        let rootTag = $.spawn("div");
+        const tag_channel = $.spawn("div").addClass("tree-entry channel");
 
-        rootTag.attr("id", "channel_" + this.getChannelId());
-        rootTag.addClass("channel");
-        //rootTag.append($.spawn("div").addClass("icon_empty"));
+        {
+            const container_entry = $.spawn("div").addClass("container-channel");
 
-        //Tag channel
-        this._tag_channel = $.spawn("div");
-        this._tag_channel.attr('channel-id', this.channelId);
-        this._tag_channel.addClass("channelLine");
-        this._tag_channel.addClass(this._channelAlign); //For left
-        this._tag_channel.css('z-index', this._family_index);
+            container_entry.attr("channel-id", this.channelId);
+            container_entry.addClass(this._channel_name_alignment);
+            container_entry.css('z-index', this.calculate_family_index()); //TODO Calculate!
 
-        let channelType = $.spawn("div");
-        channelType.addClass("channel_only_normal channel_type icon client-channel_green_subscribed");
-        this._tag_channel.append(channelType);
+            /* channel icon (type) */
+            {
+                container_entry.append(
+                    $.spawn("div")
+                    .addClass("show-channel-normal-only channel-type icon client-channel_green_subscribed")
+                );
+            }
 
-        this._tag_channel.append($.spawn("div").addClass("channel_name_container").append($.spawn("a").addClass("channel_name").text(this.channelName())));
+            /* channel name */
+            {
+                container_entry.append(
+                    $.spawn("div")
+                    .addClass("container-channel-name")
+                    .append(
+                        $.spawn("a")
+                        .addClass("channel-name")
+                        .text(this.channelName())
+                    )
+                )
+            }
 
-        //Icons
-        let iconTag = $.spawn("span").addClass("icons");
-        iconTag.appendTo(this._tag_channel);
+            /* all icons (last element) */
+            {
+                //Icons
+                let container_icons = $.spawn("span").addClass("icons");
 
-        //Default icon (5)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_default icon client-channel_default").attr("title", "Default channel")));
-        //Password icon (4)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_password icon client-register").attr("title", "The channel is password protected")));
-        //Music icon (3)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_music icon client-music").attr("title", "Music quality")));
-        //Channel moderated (2)
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry icon_moderated icon client-moderated").attr("title", "Channel is moderated")));
-        //Channel Icon (1)
-        //iconTag.append($.spawn("div").addClass("channel_only_normal").addClass("icon_entry channel_icon").attr("title", "Channel icon"));
-        iconTag.append($.spawn("div").addClass("channel_only_normal").append($.spawn("div").addClass("icon_entry channel_icon").attr("title", "Channel icon")));
-        //Default no sound (0)
-        let container = $.spawn("div");
-        let noSound = $.spawn("div").addClass("icon_entry icon_no_sound icon client-conflict-icon").attr("title", "You don't support the channel codec");
-        let bg = $.spawn("div")
-            .width(10)
-            .height(14)
-            .css("background", "red")
-            .css("position", "absolute")
-            .css("top", "1px")
-            .css("left", "3px");
-        bg.appendTo(container);
-        noSound.appendTo(container);
-        iconTag.append(container);
+                //Default icon (5)
+                container_icons.append(
+                    $.spawn("div")
+                    .addClass("show-channel-normal-only icon_entry icon_default icon client-channel_default")
+                    .attr("title", tr("Default channel"))
+                );
+
+                //Password icon (4)
+                container_icons.append(
+                    $.spawn("div")
+                    .addClass("show-channel-normal-only icon_entry icon_password icon client-register")
+                    .attr("title", tr("The channel is password protected"))
+                );
+
+                //Music icon (3)
+                container_icons.append(
+                    $.spawn("div")
+                    .addClass("show-channel-normal-only icon_entry icon_music icon client-music")
+                    .attr("title", tr("Music quality"))
+                );
+
+                //Channel moderated (2)
+                container_icons.append(
+                    $.spawn("div")
+                    .addClass("show-channel-normal-only icon_entry icon_moderated icon client-moderated")
+                    .attr("title", tr("Channel is moderated"))
+                );
+
+                //Channel Icon (1)
+                container_icons.append(
+                    $.spawn("div")
+                    .addClass("show-channel-normal-only icon_entry channel_icon")
+                    .attr("title", tr("Channel icon"))
+                );
+
+                //Default no sound (0)
+                let container = $.spawn("div")
+                    .css("position", "relative")
+                    .addClass("icon_no_sound");
+
+                let noSound = $.spawn("div")
+                    .addClass("icon_entry icon client-conflict-icon")
+                    .attr("title", "You don't support the channel codec");
+
+                let bg = $.spawn("div")
+                    .width(10)
+                    .height(14)
+                    .css("background", "red")
+                    .css("position", "absolute")
+                    .css("top", "1px")
+                    .css("left", "3px")
+                    .css("z-index", "-1");
+                bg.appendTo(container);
+                noSound.appendTo(container);
+                container_icons.append(container);
+
+                container_icons.appendTo(container_entry);
+            }
+
+            tag_channel.append(this._tag_channel = container_entry);
+        }
+        {
+            const container_client = $.spawn("div").addClass("container-clients");
+
+
+            tag_channel.append(this._tag_clients = container_client);
+        }
+        {
+            const container_children = $.spawn("div").addClass("container-children");
+
+
+            tag_channel.append(this._tag_siblings = container_children);
+        }
+
         /*
         setInterval(() => {
             let color = (Math.random() * 10000000).toString(16).substr(0, 6);
@@ -228,20 +311,7 @@ class ChannelEntry {
         }, 150);
         */
 
-        //Build siblings
-        this._tag_siblings = $.spawn("div").addClass("siblings");
-        let tag_siblings_box = $.spawn("div").css("position", "absolute").css("width", "calc(100% - 16px)").css("margin", "0px");
-        this._tag_siblings.appendTo(tag_siblings_box);
-
-        //Build clients
-        this._tag_clients = $.spawn("div").addClass("clients");
-        let tag_clients_box = $.spawn("div").css("position", "absolute").css("width", "calc(100% - 16px)").css("margin", "0px");
-        this._tag_clients.appendTo(tag_clients_box);
-
-        this._tag_root = rootTag;
-        tag_clients_box.appendTo(this._tag_root);
-        tag_siblings_box.appendTo(this._tag_root);
-        this._tag_channel.appendTo(this._tag_root);
+        this._tag_root = tag_channel;
     }
 
     rootTag() : JQuery<HTMLElement> {
@@ -285,29 +355,6 @@ class ChannelEntry {
                 console.log("- %i %s", client.properties.client_talk_power, client.properties.client_nickname);
             }
         }
-    }
-
-    adjustSize(parent = true) {
-        const size = this.originalHeight;
-        let subSize = 0;
-        let clientSize = 0;
-
-        const sub = this.children(false);
-        sub.forEach(function (e) {
-            if(e.rootTag().is(":visible"))
-                subSize += e.rootTag().outerHeight(true);
-        });
-
-        const clients = this.clients(false);
-        clients.forEach(function (e) {
-            if(e.tag.is(":visible"))
-                clientSize += e.tag.outerHeight(true);
-        });
-
-        this._tag_root.css({height: size + subSize + clientSize});
-        this._tag_siblings.css("margin-top", (clientSize + 16) + "px");
-        this._tag_clients.css({height: clientSize});
-        if(parent && this.parent_channel()) this.parent_channel().adjustSize(parent);
     }
 
     initializeListener() {
@@ -465,8 +512,10 @@ class ChannelEntry {
         this.__updateChannelName();
     }
 
+    private static NAME_ALIGNMENTS: string[] = ["align-left", "align-center", "align-right", "align-repetitive"];
     private __updateChannelName() {
-        this._formatedChannelName = undefined;
+        this._channel_name_formatted = undefined;
+
         parseType:
         if(this.parent_channel() == null && this.properties.channel_name.charAt(0) == '[') {
             let end = this.properties.channel_name.indexOf(']');
@@ -477,49 +526,64 @@ class ChannelEntry {
             options = options.substr(0, options.indexOf("spacer"));
 
             console.log(tr("Channel options: '%o'"), options);
-            if(options.length == 0) options = "l";
+            if(options.length == 0) options = "align-left";
             else if(options.length > 1) options = options[0];
 
-            if(options == "r" || options == "l" || options == "c" || options == "*")
-                this._channelAlign = options;
-            else break parseType;
+            switch (options) {
+                case "r":
+                    this._channel_name_alignment = "align-right";
+                    break;
+                case "l":
+                    this._channel_name_alignment = "align-left";
+                    break;
+                case "c":
+                    this._channel_name_alignment = "align-center";
+                    break;
+                case "*":
+                    this._channel_name_alignment = "align-repetitive";
+                    break;
+                default:
+                    this._channel_name_alignment = undefined;
+                    break parseType;
+            }
 
-            this._formatedChannelName = this.properties.channel_name.substr(end + 1);
-            console.log(tr("Got channel name: %o"), this._formatedChannelName);
+            this._channel_name_formatted = this.properties.channel_name.substr(end + 1);
+            console.log(tr("Got formated channel name: %o"), this._channel_name_formatted);
         }
 
-        let self = this.channelTag();
-        let channelName = self.find(".channel_name");
-        channelName.text(this.formatedChannelName());
-        channelName.parent().removeClass("l r c *"); //Alignments
-        (this._formatedChannelName !== undefined ? $.fn.hide : $.fn.show).apply(self.find(".channel_only_normal"));
+        this._tag_channel.find(".show-channel-normal-only").toggleClass("channel-normal", this._channel_name_formatted === undefined);
 
-        if(this._formatedChannelName !== undefined) {
-            channelName.parent().addClass(this._channelAlign);
+        const tag_container_name = this._tag_channel.find(".container-channel-name");
+        tag_container_name.removeClass(ChannelEntry.NAME_ALIGNMENTS.join(" "));
 
-            if(this._channelAlign == "*") {
+        const tag_name = tag_container_name.find(".channel-name");
+        tag_name.text(this._channel_name_formatted || this.properties.channel_name);
+
+        if(this._channel_name_formatted !== undefined) {
+            tag_container_name.addClass(this._channel_name_alignment);
+
+            if(this._channel_name_alignment == "*") {
                 let lastSuccess = "";
                 let index = 6;
 
-                let name = this.formatedChannelName();
+                let name = this.formattedChannelName();
                 while(index-- > 0)
                     name = name + name;
-                channelName.text(name);
+                tag_name.text(name);
                 do {
-                    channelName.text(name = name + name);
-                } while (channelName.parent().width() >= channelName.width() && ++index < 64);
+                    tag_name.text(name = name + name);
+                } while (tag_name.parent().width() >= tag_name.width() && ++index < 64);
                 if(index == 64) console.warn(LogCategory.CHANNEL, tr("Repeating spacer took too much repeats!"));
                 if(lastSuccess.length > 0) {
-                    channelName.text(lastSuccess);
-                    self.addClass("c");
+                    tag_name.text(lastSuccess);
                 }
             }
         }
-        console.log(tr("Align: %s"), this._channelAlign);
+        console.log(tr("Align: %s"), this._channel_name_alignment);
     }
 
     updateVariables(...variables: {key: string, value: string}[]) {
-        let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
+        let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL_PROPERTIES, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
 
         for(let variable of variables) {
             let key = variable.key;
@@ -564,9 +628,11 @@ class ChannelEntry {
     }
 
     updateChannelTypeIcon() {
-        let tag = this.channelTag().find(".channel_type");
+        let tag = this.channelTag().find(".channel-type");
         tag.removeAttr('class');
-        tag.addClass("channel_only_normal channel_type icon");
+        tag.addClass("show-channel-normal-only channel-type icon");
+        if(this._channel_name_formatted === undefined)
+            tag.addClass("channel-normal");
 
         let type;
         if(this.properties.channel_flag_password == true && !this._cachedPassword)
@@ -583,7 +649,7 @@ class ChannelEntry {
     }
 
     generate_bbcode() {
-        return "[url=channel://" + this.channelId + "/" + encodeURIComponent(this.properties.channel_name) + "]" + this.formatedChannelName() + "[/url]";
+        return "[url=channel://" + this.channelId + "/" + encodeURIComponent(this.properties.channel_name) + "]" + this.formattedChannelName() + "[/url]";
     }
 
     generate_tag(braces: boolean = false) : JQuery {

@@ -416,26 +416,58 @@ class ClientEntry {
     get tag() : JQuery<HTMLElement> {
         if(this._tag) return this._tag;
 
-        let tag = $.spawn("div");
+        let container_client = $.spawn("div")
+            .addClass("tree-entry client")
+            .attr("client-id", this.clientId());
 
-        tag.attr("id", "client_" + this.clientId());
-        tag.addClass("client");
-        tag.append($.spawn("div").addClass("icon_empty"));
 
-        tag.append($.spawn("div").addClass("icon_client_state").attr("title", "Client state"));
+        container_client.append(
+            $.spawn("div")
+            .addClass("icon_client_state")
+            .attr("title", "Client state")
+        );
 
-        tag.append($.spawn("div").addClass("group_prefix").attr("title", "Server groups prefixes").hide());
-        tag.append($.spawn("div").addClass("name").text(this.clientNickName()));
-        tag.append($.spawn("div").addClass("group_suffix").attr("title", "Server groups suffix").hide());
-        tag.append($.spawn("div").addClass("away").text(this.clientNickName()));
+        container_client.append(
+            $.spawn("div")
+            .addClass("group-prefix")
+            .attr("title", "Server groups prefixes")
+            .hide()
+        );
+        container_client.append(
+            $.spawn("div")
+            .addClass("client-name")
+            .text(this.clientNickName())
+        );
+        container_client.append(
+            $.spawn("div")
+            .addClass("group-suffix")
+            .attr("title", "Server groups suffix")
+            .hide()
+        );
+        container_client.append(
+            $.spawn("div")
+            .addClass("client-away-message")
+            .text(this.clientNickName())
+        );
 
-        let clientIcons = $.spawn("span");
-        clientIcons.append($.spawn("div").addClass("icon icon_talk_power client-input_muted").hide());
-        clientIcons.append($.spawn("span").addClass("group_icons"));
-        clientIcons.append($.spawn("span").addClass("client_icon"));
-        tag.append(clientIcons);
+        let container_icons = $.spawn("div").addClass("container-icons");
 
-        this._tag = tag;
+        container_icons.append(
+            $.spawn("div")
+                .addClass("icon icon_talk_power client-input_muted")
+                .hide()
+        );
+        container_icons.append(
+            $.spawn("div")
+            .addClass("container-icons-group")
+        );
+        container_icons.append(
+            $.spawn("div")
+            .addClass("container-icon-client")
+        );
+        container_client.append(container_icons);
+
+        this._tag = container_client;
         this.initializeListener();
         return this._tag;
     }
@@ -470,9 +502,9 @@ class ClientEntry {
     updateClientStatusIcons() {
         let talk_power = this.properties.client_talk_power >= this._channel.properties.channel_needed_talk_power;
         if(talk_power)
-            this.tag.find("span").find(".icon_talk_power").hide();
+            this.tag.find(".icon_talk_power").hide();
         else
-            this.tag.find("span").find(".icon_talk_power").show();
+            this.tag.find(".icon_talk_power").show();
     }
 
     updateClientSpeakIcon() {
@@ -519,7 +551,7 @@ class ClientEntry {
     }
 
     updateAwayMessage() {
-        let tag = this.tag.find(".away");
+        let tag = this.tag.find(".client-away-message");
         if(this.properties.client_away == true && this.properties.client_away_message){
             tag.text("[" + this.properties.client_away_message + "]");
             tag.show();
@@ -542,7 +574,7 @@ class ClientEntry {
             //TODO tr
             group.log("Updating client " + this.clientId() + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "client_nickname") {
-                this.tag.find(".name").text(variable.value);
+                this.tag.find(".client-name").text(variable.value);
                 let chat = this.chat(false);
                 if(chat) chat.name = variable.value;
 
@@ -584,7 +616,7 @@ class ClientEntry {
     }
 
     update_displayed_client_groups() {
-        this.tag.find("span .group_icons").children().detach();
+        this.tag.find(".container-icons-group").children().detach();
 
         for(let id of this.assignedServerGroupIds())
             this.updateGroupIcon(this.channelTree.client.groups.serverGroup(id));
@@ -603,8 +635,8 @@ class ClientEntry {
                 suffix_groups.push(group.name);
         }
 
-        const tag_group_prefix = this.tag.find(".group_prefix");
-        const tag_group_suffix = this.tag.find(".group_suffix");
+        const tag_group_prefix = this.tag.find(".group-prefix");
+        const tag_group_suffix = this.tag.find(".group-suffix");
         if(prefix_groups.length > 0) {
             tag_group_prefix.text("[" + prefix_groups.join("][") + "]").show();
         } else {
@@ -648,21 +680,23 @@ class ClientEntry {
     }
 
     updateClientIcon() {
-        this.tag.find("span .client_icon").children().detach();
+        this.tag.find(".container-icon-client").children().detach();
         if(this.properties.client_icon_id > 0) {
             this.channelTree.client.fileManager.icons.generateTag(this.properties.client_icon_id).attr("title", "Client icon")
-                .appendTo(this.tag.find("span .client_icon"));
+                .appendTo(this.tag.find(".container-icon-client"));
         }
     }
 
     updateGroupIcon(group: Group) {
         if(!group) return;
         //TODO group icon order
-        this.tag.find(".group_icons .icon_group_" + group.id).detach();
+        this.tag.find(".container-icons-group .icon_group_" + group.id).detach();
 
         if (group.properties.iconid > 0) {
-            this.tag.find("span .group_icons").append(
-                $.spawn("div").addClass("icon_group_" + group.id).append(this.channelTree.client.fileManager.icons.generateTag(group.properties.iconid)).attr("title", group.name)
+            this.tag.find(".container-icons-group").append(
+                $.spawn("div")
+                    .addClass("container-group-icon icon_group_" + group.id)
+                    .append(this.channelTree.client.fileManager.icons.generateTag(group.properties.iconid)).attr("title", group.name)
             );
         }
     }
@@ -774,7 +808,7 @@ class LocalClientEntry extends ClientEntry {
 
     initializeListener(): void {
         super.initializeListener();
-        this.tag.find(".name").addClass("own_name");
+        this.tag.find(".client-name").addClass("client-name-own");
 
         this.tag.dblclick(() => {
             if($.isArray(this.channelTree.currently_selected)) { //Multiselect
@@ -787,9 +821,9 @@ class LocalClientEntry extends ClientEntry {
     openRename() : void {
         const _self = this;
 
-        const elm = this.tag.find(".name");
+        const elm = this.tag.find(".client-name");
         elm.attr("contenteditable", "true");
-        elm.removeClass("own_name");
+        elm.removeClass("client-name-own");
         elm.css("background-color", "white");
         elm.focus();
         _self.renaming = true;
@@ -807,7 +841,7 @@ class LocalClientEntry extends ClientEntry {
 
             elm.css("background-color", "");
             elm.removeAttr("contenteditable");
-            elm.addClass("own_name");
+            elm.addClass("client-name-own");
             let text = elm.text().toString();
             if(_self.clientNickName() == text) return;
 

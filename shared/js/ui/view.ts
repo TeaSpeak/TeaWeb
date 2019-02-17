@@ -10,6 +10,7 @@
 class ChannelTree {
     client: TSClient;
     htmlTree: JQuery;
+    htmlTree_parent: JQuery;
     server: ServerEntry;
     channels: ChannelEntry[];
     clients: ClientEntry[];
@@ -29,6 +30,8 @@ class ChannelTree {
 
         this.client = client;
         this.htmlTree = htmlTree;
+        this.htmlTree_parent = this.htmlTree.parent();
+
         this.client_mover = new ClientMover(this);
         this.reset();
 
@@ -63,6 +66,22 @@ class ChannelTree {
         }});
     }
 
+    hide_channel_tree() {
+        this.htmlTree.detach();
+    }
+
+    show_channel_tree() {
+        this.htmlTree.appendTo(this.htmlTree_parent);
+
+        /* TODO fixup the children (in general the order method) */
+        const channel_resize: ChannelEntry[] = [];
+        const enqueue_resize = (entry: ChannelEntry) => {
+            channel_resize.push(entry);
+            entry.children().forEach(e => enqueue_resize(e));
+        };
+        this.rootChannel().forEach(e => enqueue_resize(e));
+    }
+
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
         let channelCreate =
             this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_TEMPORARY).granted(1) ||
@@ -91,12 +110,6 @@ class ChannelTree {
         let tag = element instanceof ChannelEntry ? element.rootTag() : element.tag;
         this.htmlTree.find(tag).fadeOut("slow", () => {
             tag.remove();
-            if(element instanceof ChannelEntry) {
-                if(element.parent_channel())
-                    element.parent_channel().adjustSize(true);
-            } else if(element instanceof ClientEntry) {
-                element.currentChannel().adjustSize(true);
-            }
         });
     }
 
@@ -180,7 +193,6 @@ class ChannelTree {
         let entry = channel.rootTag().css({display: "none"}).fadeIn("slow");
         entry.appendTo(tag);
 
-        channel.originalHeight = entry.outerHeight(false);
         if(elm != undefined)
             elm.after(entry);
 
@@ -189,8 +201,8 @@ class ChannelTree {
         if(channel.channel_next == channel) /* shall never happen */
             channel.channel_next = undefined;
 
-        channel.adjustSize(true);
         channel.initializeListener();
+        channel.update_family_index();
     }
 
     findChannel(channelId: number) : ChannelEntry | undefined {
@@ -206,9 +218,9 @@ class ChannelTree {
         return undefined;
     }
 
-    moveChannel(channel: ChannelEntry, channel_previus: ChannelEntry, parent: ChannelEntry) {
-        if(channel_previus != null && channel_previus.parent != parent) {
-            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channel_previus.parent, parent);
+    moveChannel(channel: ChannelEntry, channel_previous: ChannelEntry, parent: ChannelEntry) {
+        if(channel_previous != null && channel_previous.parent != parent) {
+            console.error(tr("Invalid channel move (different parents! (%o|%o)"), channel_previous.parent, parent);
             return;
         }
 
@@ -227,16 +239,16 @@ class ChannelTree {
 
         let oldParent = channel.parent_channel();
         channel.channel_next = undefined;
-        channel.channel_previous = channel_previus;
+        channel.channel_previous = channel_previous;
         channel.parent = parent;
 
-        if(channel_previus) {
-            if(channel_previus == this.channel_last)
+        if(channel_previous) {
+            if(channel_previous == this.channel_last)
                 this.channel_last = channel;
 
-            channel.channel_next = channel_previus.channel_next;
-            channel_previus.channel_next = channel;
-            channel_previus.rootTag().after(channel.rootTag());
+            channel.channel_next = channel_previous.channel_next;
+            channel_previous.channel_next = channel;
+            channel_previous.rootTag().after(channel.rootTag());
 
             if(channel.channel_next)
                 channel.channel_next.channel_previous = channel;
@@ -267,17 +279,11 @@ class ChannelTree {
             }
         }
 
+        channel.update_family_index();
         if(channel.channel_previous == channel) /* shall never happen */
             channel.channel_previous = undefined;
         if(channel.channel_next == channel) /* shall never happen */
             channel.channel_next = undefined;
-
-        if(oldParent) {
-            oldParent.adjustSize();
-        }
-        if(channel) {
-            channel.adjustSize();
-        }
     }
 
     deleteClient(client: ClientEntry) {
@@ -300,7 +306,6 @@ class ChannelTree {
 
         let tag = client.tag.css({display: "none"}).fadeIn("slow");
         tag.appendTo(channel.clientTag());
-        channel.adjustSize(true);
         client.currentChannel().reorderClients();
 
         channel.updateChannelTypeIcon();
@@ -325,11 +330,9 @@ class ChannelTree {
         tag.detach();
         tag.appendTo(client.currentChannel().clientTag());
         if(oldChannel) {
-            oldChannel.adjustSize();
             oldChannel.updateChannelTypeIcon();
         }
         if(client.currentChannel()) {
-            client.currentChannel().adjustSize();
             client.currentChannel().reorderClients();
             client.currentChannel().updateChannelTypeIcon();
         }
@@ -397,7 +400,7 @@ class ChannelTree {
                 if(e == entry) {
                     this.currently_selected.remove(e);
                     if(entry instanceof ChannelEntry)
-                        (entry as ChannelEntry).rootTag().find("> .channelLine").removeClass("selected");
+                        (entry as ChannelEntry).channelTag().removeClass("selected");
                     else if(entry instanceof ClientEntry)
                         (entry as ClientEntry).tag.removeClass("selected");
                     else if(entry instanceof ServerEntry)
@@ -413,7 +416,7 @@ class ChannelTree {
         }
 
         if(entry instanceof ChannelEntry)
-            (entry as ChannelEntry).rootTag().find("> .channelLine").addClass("selected");
+            (entry as ChannelEntry).channelTag().addClass("selected");
         else if(entry instanceof ClientEntry)
             (entry as ClientEntry).tag.addClass("selected");
         else if(entry instanceof ServerEntry)
@@ -739,8 +742,6 @@ class ChannelTree {
                 if(channels.indexOf(client.currentChannel()) == -1)
                     channels.push(client.currentChannel());
             }
-        for(const channel of channels)
-            channel.adjustSize();
     }
 
     get_first_channel?() : ChannelEntry {

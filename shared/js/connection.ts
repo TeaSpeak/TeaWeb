@@ -710,6 +710,7 @@ class ConnectionCommandHandler {
         this.connection = connection;
         this["error"] = this.handleCommandResult;
         this["channellist"] = this.handleCommandChannelList;
+        this["channellistfinished"] = this.handleCommandChannelListFinished;
         this["notifychannelcreated"] = this.handleCommandChannelCreate;
         this["notifychanneldeleted"] = this.handleCommandChannelDelete;
         this["notifychannelhide"] = this.handleCommandChannelHide;
@@ -843,9 +844,15 @@ class ConnectionCommandHandler {
     }
 
     handleCommandChannelList(json) {
+        this.connection._client.channelTree.hide_channel_tree(); /* dont perform channel inserts on the dom to prevent style recalculations */
         console.log(tr("Got %d new channels"), json.length);
         for(let index = 0; index < json.length; index++)
             this.createChannelFromJson(json[index], true);
+    }
+
+
+    handleCommandChannelListFinished(json) {
+        this.connection._client.channelTree.show_channel_tree();
     }
 
     handleCommandChannelCreate(json) {
