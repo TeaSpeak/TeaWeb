@@ -373,7 +373,7 @@ class IconManager {
             return $.spawn("div").addClass("icon client-group_" + id);
 
         let tag = $.spawn("div");
-        tag.addClass("icon_empty");
+        tag.addClass("icon-container icon_empty");
 
         let img = $.spawn("img");
         img.attr("width", 16).attr("height", 16).attr("alt", "");
