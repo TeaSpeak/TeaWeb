@@ -29,9 +29,9 @@ response=$(git diff-index HEAD -- . ':!asm/libraries/' ':!package-lock.json' ':!
 if [[ "$response" != "" ]]; then
     echo "You're using a private modified build!"
     echo "Cant assign git hash!"
-    NAME="TeaWeb.zip"
+    NAME="TeaWeb-${type}.zip"
 else
-    NAME="TeaWeb-$(git rev-parse --short HEAD).zip"
+    NAME="TeaWeb-${type}-$(git rev-parse --short HEAD).zip"
 fi
 
 if [[ -e ${NAME} ]]; then
