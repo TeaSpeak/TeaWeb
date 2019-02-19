@@ -15,15 +15,12 @@ jobs:
     - stage: "build"
       name: TeaWeb build master branch
       script:
-        - "pwd"
-        - "echo $SHIPPABLE_BUILD_DIR"
-        - "echo $SHIPPABLE_BUILD_DIR"
-        - "exit 1"
-        - "mkdir build"
-        - "docker run --rm -v `pwd`/build/logs/:/build/logs/ -v `pwd`/build/packages/:/build/packages/ $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
-        - "ls -lah build/"
-        - "ls -lah build/logs/"
-        - "ls -lah build/packages/"
+        - "echo \"$SHIPPABLE_BUILD_DIR\""
+        - "echo \"$SHIPPABLE_DATA_DIR\""
+        - "docker run --rm -v $SHIPPABLE_DATA_DIR/build/logs/:/build/logs/ -v $SHIPPABLE_DATA_DIR/build/packages/:/build/packages/ -v $SHIPPABLE_BUILD_DIR:/build/TeaWeb $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
+        - "ls -lah $SHIPPABLE_DATA_DIR/build/"
+        - "ls -lah $SHIPPABLE_DATA_DIR/build/logs/"
+        - "ls -lah $SHIPPABLE_DATA_DIR/build/packages/"
       #TODO: Upload!
     - stage: "deploy"
       name: Deploy the builded files as official release
