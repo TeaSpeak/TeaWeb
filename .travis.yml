@@ -20,9 +20,6 @@ jobs:
         - "ls -lah /tmp/build/"
         - "ls -lah /tmp/build/logs/"
         - "ls -lah /tmp/build/packages/"
-    - stage: "deploy"
-      name: Deploy the builded files as official release
-      script:
         - "wget https://github.com/buildkite/github-release/releases/download/v1.0/github-release-linux-amd64 -O /tmp/git-release; chmod +x /tmp/git-release;"
         - "echo \"Release commit: $COMMIT\"; export GITHUB_RELEASE_COMMIT=\"$COMMIT\""
         - "export GITHUB_RELEASE_TAG=\"This is a auto build release from travis\""
