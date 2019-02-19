@@ -15,7 +15,7 @@ jobs:
     - stage: TeaWeb build master branch
       script:
         - "mkdir build"
-        - "docker run --rm -v build/logs/:/build/logs/ -v build/packages/:/build/packages/ $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
+        - "docker run --rm -v `pwd`/build/logs/:/build/logs/ -v `pwd`/build/packages/:/build/packages/ $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
         - "ls -lah build/"
         - "ls -lah build/logs/"
         - "ls -lah build/packages/"
