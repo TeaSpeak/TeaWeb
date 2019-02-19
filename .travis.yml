@@ -1,17 +1,27 @@
 sudo: true
 dist: trusty
 
+services:
+  - docker
+
+before_install:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker images
+  - docker pull $DOCKER_USERNAME/teaweb:build
+  - docker images
+
 jobs:
   include:
-    - stage: build teaweb
+    - stage: TeaWeb build master branch
       script:
-      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker images
-      - docker pull $DOCKER_USERNAME/teaweb:build
-      - docker images
-      - "docker run --rm $DOCKER_USERNAME/teaweb:build /bin/bash -c \"export GIT_AUTHTOKEN=\"$GIT_AUTHTOKEN\"; /root/build_teaweb.sh travis\""
+        - "mkdir build"
+        - "docker run --rm -v build/logs/:/build/logs/ -v build/packages/:/build/packages/ $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
+        - "ls -lah build/"
+        - "ls -lah build/logs/"
+        - "ls -lah build/packages/"
+      #TODO: Upload!
       if: branch = master
-    - stage: test teaweb build
+    - stage: TeaWeb verify source
       script:
       - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
       - docker images
