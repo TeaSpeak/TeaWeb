@@ -12,20 +12,21 @@ before_install:
 
 jobs:
   include:
-    - stage: TeaWeb build master branch
+    - stage: "build"
+      name: TeaWeb build master branch
       script:
+        - "pwd"
+        - "echo $SHIPPABLE_BUILD_DIR"
+        - "echo $SHIPPABLE_BUILD_DIR"
+        - "exit 1"
         - "mkdir build"
         - "docker run --rm -v `pwd`/build/logs/:/build/logs/ -v `pwd`/build/packages/:/build/packages/ $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
         - "ls -lah build/"
         - "ls -lah build/logs/"
         - "ls -lah build/packages/"
       #TODO: Upload!
-      if: branch = master
-    - stage: TeaWeb verify source
+    - stage: "deploy"
+      name: Deploy the builded files as official release
       script:
-      - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-      - docker images
-      - docker pull $DOCKER_USERNAME/teaweb:build
-      - docker images
-      - docker run --rm $DOCKER_USERNAME/teaweb:build /bin/bash -c /root/build_teaweb.sh
-      if: branch != master
+        - echo "Implement me!"
+      if: branch = master
