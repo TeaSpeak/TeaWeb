@@ -258,9 +258,97 @@
 		],
 	];
 
-	function list_dir($base_dir, $match = null, $depth = -1, &$results = array(), $dir = "") {
+	function systemify_path($path) {
+        return str_replace("/", DIRECTORY_SEPARATOR, $path);
+    }
+
+    function join_path(...$paths) {
+        $result_path = "";
+        foreach ($paths as $path) {
+            if(strlen($result_path) > 0)
+                $result_path .= DIRECTORY_SEPARATOR . $path;
+            else
+                $result_path = $path;
+        }
+
+        return $result_path;
+    }
+
+    function create_directories(&$error, $path, $dry_run = false) {
+        if(strpos(PHP_OS, "Linux") !== false) {
+            $command = "mkdir -p " . $path;
+        } else if(strpos(PHP_OS, "WINNT") !== false) {
+            $command = "mkdir " . $path; /* default path tree */
+        } else {
+            $error = "unsupported system";
+            return false;
+        }
+
+        echo $command . PHP_EOL;
+        if(!$dry_run) {
+            exec($command, $error, $state);
+            if($state) {
+                $error = "Command execution results in " . $state . ": " . implode(' ', $error);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function delete_directories(&$error, $path, $dry_run = false) {
+        if(strpos(PHP_OS, "Linux") !== false) {
+            $command = "rm -r " . $path;
+        } else if(strpos(PHP_OS, "WINNT") !== false) {
+            $command = "rm -r " . $path;
+        } else {
+            $error = "unsupported system";
+            return false;
+        }
+
+        echo $command . PHP_EOL;
+        if(!$dry_run) {
+            $state = 0;
+            exec($command, $output, $state);
+
+            if($state !== 0) {
+                $error = "Command execution results in " . $state . ": " . implode(' ', $output);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function create_link(&$error, $source, $target, $dry_run = false) {
+        if(strpos(PHP_OS, "Linux") !== false) {
+            $command = "ln -s " . $source . " " . $target;
+        } else if(strpos(PHP_OS, "WINNT") !== false) {
+            $command = "mklink " . (is_dir($target) ? "/D " : "") . " " . $target . " " . $source;
+        } else {
+            $error = "unsupported system";
+            return false;
+        }
+
+        echo $command . PHP_EOL;
+        if(!$dry_run) {
+            $state = 0;
+            exec($command, $output, $state);
+
+            if($state !== 0) {
+                $error = "Command execution results in " . $state . ": " . implode(' ', $output);
+                return false;
+            }
+        }
+        return true;
+    }
+
+
+    function list_dir($base_dir, $match = null, $depth = -1, &$results = array(), $dir = "") {
 		if($depth == 0) return $results;
 
+		if(!is_dir($base_dir . $dir)) {
+		    echo "Skipping directory " . $base_dir . $dir . PHP_EOL;
+		    return $results;
+        }
 		$files = scandir($base_dir . $dir);
 
 		foreach($files as $key => $value){
@@ -279,12 +367,14 @@
 	class AppFile {
 		public $type;
 		public $name;
-		public $path;
-		public $local_path;
+
+		public $target_path; /* relative path to the target file viewed from the file root */
+		public $local_path; /* absolute path to local file */
+
 		public $hash;
 	}
 
-	function find_files($flag = 0b11, $local_path_prefix = "./", $type = "dev", $args = []) { //TODO Use cache here!
+	function find_files($flag = 0b11, $local_path_prefix = "." . DIRECTORY_SEPARATOR, $type = "dev", $args = []) { //TODO Use cache here!
 		global $APP_FILE_LIST;
 		$result = [];
 
@@ -303,23 +393,22 @@
 				if(!$valid)
 					continue;
 			}
-			$entries = list_dir($local_path_prefix . $entry["local-path"], $entry["search-pattern"], isset($entry["search-depth"]) ? $entry["search-depth"] : -1);
+			$entries = list_dir(
+                systemify_path($local_path_prefix . $entry["local-path"]),
+                $entry["search-pattern"],
+                isset($entry["search-depth"]) ? $entry["search-depth"] : -1
+            );
 			foreach ($entries as $f_entry) {
 				if(isset($entry["search-exclude"]) && preg_match($entry["search-exclude"], $f_entry)) continue;
 				$file = new AppFile;
 
-				$idx_sep = strrpos($f_entry, DIRECTORY_SEPARATOR);
-				$file->path = "./" . $entry["path"] . "/";
-				if($idx_sep > 0) {
-					$file->name = substr($f_entry, strrpos($f_entry, DIRECTORY_SEPARATOR) + 1);
-					$file->path = $file->path . substr($f_entry, 0, strrpos($f_entry, DIRECTORY_SEPARATOR));
-				} else {
-					$file->name = $f_entry;
-				}
+				$f_info = pathinfo($f_entry);
+				$file->target_path = systemify_path($entry["path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR;
+				$file->local_path = getcwd() . DIRECTORY_SEPARATOR . systemify_path($entry["local-path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR;
 
-				$file->local_path = $local_path_prefix . $entry["local-path"] . DIRECTORY_SEPARATOR . $f_entry;
+                $file->name = $f_info["basename"];
 				$file->type = $entry["type"];
-				$file->hash = sha1_file($file->local_path);
+				$file->hash = sha1_file($file->local_path . DIRECTORY_SEPARATOR . $file->name);
 
 				if(strlen($file->hash) > 0) {
 					foreach ($result as $e)
@@ -334,10 +423,17 @@
 	}
 
 	if(isset($_SERVER["argv"])) { //Executed by command line
-		if(strpos(PHP_OS, "Linux") == -1) {
-			error_log("Invalid operating system! Help tool only available under linux!");
-			exit(1);
-		}
+	    $supported = false;
+		if(strpos(PHP_OS, "Linux") !== false) {
+		    $supported = true;
+		} else if(strpos(PHP_OS, "WIN") !== false) {
+            $supported = true;
+        }
+        if(!$supported) {
+            error_log("Invalid operating system (" . PHP_OS . ")! Help tool only available under linux!");
+            exit(1);
+        }
+
 		if(count($_SERVER["argv"]) < 2) {
 			error_log("Invalid parameters!");
 			goto help;
@@ -358,10 +454,10 @@
 			if($_SERVER["argv"][3] == "dev" || $_SERVER["argv"][3] == "development") {
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;
-					$environment = "web/environment/development";
+					$environment = join_path("web", "environment", "development");
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client-api/environment/ui-files/raw";
+					$environment = join_path("client-api", "environment", "ui-files", "raw");
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -370,10 +466,10 @@
 				$type = "rel";
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;
-					$environment = "web/environment/release";
+					$environment = join_path("web", "environment", "release");
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = "client-api/environment/ui-files/raw";
+					$environment = join_path("client-api", "environment", "ui-files", "raw");
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -385,37 +481,29 @@
 
 			{
 				if(!$dry_run) {
-					exec($command = "rm -r " . $environment, $output, $state);
-					exec($command = "mkdir -p " . $environment, $output, $state); if($state) goto handle_error;
+				    if(delete_directories($error, $environment) === false)
+				        goto handle_error;
+
+					if(create_directories($error, $environment) === false)
+					    goto handle_error;
 				}
 
-				$files = find_files($flagset, "./", $type, array_slice($_SERVER["argv"], 4));
+				$files = find_files($flagset, "." . DIRECTORY_SEPARATOR, $type, array_slice($_SERVER["argv"], 4));
 				$original_path = realpath(".");
 				if(!chdir($environment)) {
 					error_log("Failed to enter directory " . $environment . "!");
 					exit(1);
 				}
 
-				foreach($files as $file) {
-					if(!$dry_run && !is_dir($file->path)) {
-						exec($command = "mkdir -p " . $file->path, $output, $state);
-						if($state) goto handle_error;
+                /** @var AppFile $file */
+                foreach($files as $file) {
+					if(!$dry_run && !is_dir($file->target_path) && strlen($file->target_path) > 0) {
+                        if(create_directories($error, $file->target_path, $dry_run) === false)
+                            goto handle_error;
 					}
 
-					$parent_base = substr_count(realpath($file->path), DIRECTORY_SEPARATOR) - substr_count(realpath('.'), DIRECTORY_SEPARATOR);
-					$parent_file = substr_count(realpath("."), DIRECTORY_SEPARATOR) - substr_count($original_path, DIRECTORY_SEPARATOR); //Current to parent
-					$parent = $parent_base + $parent_file;
-
-					$path = "";
-					for($index = 0; $index < $parent; $index++)
-						$path = $path  . "../";
-
-					$command = "ln -s " . $path . $file->local_path . " " . $file->path;
-					if(!$dry_run) {
-						exec($command, $output, $state);
-						if($state) goto handle_error;
-					}
-					echo $command . PHP_EOL;
+                    if(create_link($output, $file->local_path . $file->name, $file->target_path . $file->name, $dry_run) === false)
+                        goto handle_error;
 				}
 				if(!chdir($original_path)) {
 					error_log("Failed to reset directory!");
@@ -425,18 +513,20 @@
 			}
 
 			if(!$dry_run) {
-				exec("./scripts/git_index.sh sort-tag", $output, $state);
+				exec("." . DIRECTORY_SEPARATOR . "scripts" . DIRECTORY_SEPARATOR . "git_index.sh sort-tag", $output, $state);
 				file_put_contents($environment . DIRECTORY_SEPARATOR . "version", $output);
 
 				if ($_SERVER["argv"][2] == "client") {
-					if(!chdir("client-api/environment")) {
+					if(!chdir("client-api" . DIRECTORY_SEPARATOR . "environment")) {
 						error_log("Failed to enter directory client-api/environment!");
 						exit(1);
 					}
-					if(!is_dir("versions/beta"))
-						exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
-					if(!is_dir("versions/stable"))
-						exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
+					if(!is_dir("versions" . DIRECTORY_SEPARATOR . "beta")) {
+                        exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
+                    }
+					if(!is_dir("versions/stable")) {
+                        exec($command = "mkdir -p versions/beta", $output, $state); if($state) goto handle_error;
+					}
 
 					exec($command = "ln -s ../api.php ./", $output, $state); $state = 0; //Dont handle an error here!
 					if($state) goto handle_error;
@@ -445,10 +535,8 @@
 
 			exit(0);
 			handle_error:
-			error_log("Failed to execute command '" . $command . "'!");
-			error_log("Command returned code " . $state . ". Output: " . PHP_EOL);
-			foreach ($output as $line)
-				error_log($line);
+			error_log("Command execution failed!");
+			error_log("Error message: " . $error);
 			exit(1);
 		}
 	}
