@@ -548,7 +548,7 @@ class ChannelEntry {
                     break parseType;
             }
 
-            this._channel_name_formatted = this.properties.channel_name.substr(end + 1);
+            this._channel_name_formatted = this.properties.channel_name.substr(end + 1) || "";
             console.log(tr("Got formated channel name: %o"), this._channel_name_formatted);
         }
 
@@ -558,7 +558,7 @@ class ChannelEntry {
         tag_container_name.removeClass(ChannelEntry.NAME_ALIGNMENTS.join(" "));
 
         const tag_name = tag_container_name.find(".channel-name");
-        tag_name.text(this._channel_name_formatted || this.properties.channel_name);
+        tag_name.text(this._channel_name_formatted === undefined ? this.properties.channel_name : this._channel_name_formatted);
 
         if(this._channel_name_formatted !== undefined) {
             tag_container_name.addClass(this._channel_name_alignment);
