@@ -2,8 +2,8 @@
 declarations/*.d.ts
 
 #Ignore the generated mapped files
-css/**/*.css
-css/**/*.css.map
+css/theme/**/*.css
+css/theme/**/*.css.map
 
 js/**/*.js
 js/**/*.js.map
