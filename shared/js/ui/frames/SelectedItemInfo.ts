@@ -168,7 +168,8 @@ class Hostbanner {
                     properties["cache_tag"] = "?_ts=" + update_timestamp;
                 else
                     properties["cache_tag"] = "&_ts=" + update_timestamp;
-            } finally {
+            } catch(error) {
+                console.warn(tr("Failed to parse banner URL: %o"), error);
                 properties["cache_tag"] = "&_ts=" + update_timestamp;
             }
 
