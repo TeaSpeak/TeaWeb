@@ -12,8 +12,6 @@
         client_away Value: '0'
         client_away_message Value: ''
  */
-import openBanList = Modals.openBanList;
-import spawnConnectModal = Modals.spawnConnectModal;
 
 class ControlBar {
     private _muteInput: boolean;
@@ -303,7 +301,7 @@ class ControlBar {
         if(!this.handle.serverConnection) return;
 
         if(this.handle.permissions.neededPermission(PermissionType.B_CLIENT_BAN_LIST).granted(1)) {
-            openBanList(this.handle);
+            Modals.openBanList(this.handle);
         } else {
             createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to view the ban list")).open();
             sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);

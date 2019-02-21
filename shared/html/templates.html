@@ -2246,16 +2246,7 @@
 
                     <div style="
                         background:center no-repeat url(
-                                    {{:property_virtualserver_hostbanner_gfx_url}}
-                                    {{if property_virtualserver_hostbanner_gfx_interval > 0}}
-                                        {{*
-                                            date = Math.floor(Date.now() / 1000);
-                                            if (data.property_virtualserver_hostbanner_gfx_interval <= 60)
-                                                data.property_virtualserver_hostbanner_gfx_interval = 60;
-                                            date = Math.floor(date / data.property_virtualserver_hostbanner_gfx_interval) * data.property_virtualserver_hostbanner_gfx_interval;
-                                        }}
-                                        ?ts={{*:date}}
-                                    {{/if}}
+                                    {{:property_virtualserver_hostbanner_gfx_url}}{{:cache_tag}}
                         );
 
                         background-position: center;
