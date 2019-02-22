@@ -22,9 +22,10 @@ jobs:
         - "ls -lah /tmp/build/packages/"
         - "wget https://github.com/buildkite/github-release/releases/download/v1.0/github-release-linux-amd64 -O /tmp/git-release -q; chmod +x /tmp/git-release;"
         - >
+          export GIT_TAG_SHORT=$(git rev-parse --short HEAD)
           export GITHUB_RELEASE_TAG="This is a auto build release from travis";
           export GITHUB_RELEASE_REPOSITORY="$TRAVIS_REPO_SLUG";
           export GITHUB_RELEASE_ACCESS_TOKEN="$GIT_AUTHTOKEN";
-          echo "Release commit: $TRAVIS_TAG"; export GITHUB_RELEASE_COMMIT="$TRAVIS_TAG";
-          /tmp/git-release "Travis autobuild $TRAVIS_TAG" /tmp/build/packages/* /tmp/build/logs/*;
+          echo "Release commit: $GIT_TAG_SHORT"; export GITHUB_RELEASE_COMMIT="$GIT_TAG_SHORT";
+          /tmp/git-release "Travis autobuild $GIT_TAG_SHORT" /tmp/build/packages/* /tmp/build/logs/*;
       if: branch = master
