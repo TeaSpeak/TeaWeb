@@ -5,6 +5,7 @@ services:
   - docker
 
 before_install:
+  - "printenv; exit 1;"
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker images
   - docker pull $DOCKER_USERNAME/teaweb:build_new
