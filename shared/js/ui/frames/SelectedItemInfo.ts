@@ -159,12 +159,28 @@ class Hostbanner {
         for(let key in server.properties)
             properties["property_" + key] = server.properties[key];
 
+        if(server.properties.virtualserver_hostbanner_gfx_interval > 0) {
+            const update_interval = Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60);
+            const update_timestamp = (Math.floor((Date.now() / 1000) / update_interval) * update_interval).toString();
+            try {
+                const url = new URL(server.properties.virtualserver_hostbanner_gfx_url);
+                if(url.search.length == 0)
+                    properties["cache_tag"] = "?_ts=" + update_timestamp;
+                else
+                    properties["cache_tag"] = "&_ts=" + update_timestamp;
+            } catch(error) {
+                console.warn(tr("Failed to parse banner URL: %o"), error);
+                properties["cache_tag"] = "&_ts=" + update_timestamp;
+            }
+
+            this.updater = setTimeout(() => this.update(), update_interval * 1000);
+        } else {
+            properties["cache_tag"] = "";
+        }
+
+
         const rendered = $("#tmpl_selected_hostbanner").renderTag(properties);
-
         console.debug(tr("Hostbanner has been loaded"));
-        if(server.properties.virtualserver_hostbanner_gfx_interval > 0)
-            this.updater = setTimeout(() => this.update(), Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60) * 1000);
-
         return Promise.resolve(rendered);
         /*
         const image = rendered.find("img");
