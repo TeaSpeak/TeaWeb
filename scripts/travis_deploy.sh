@@ -56,6 +56,7 @@ ${GIT_RELEASE_EXECUTABLE} release \
 echo "Uploading release files"
 folders=("/tmp/build/logs/" "/tmp/build/packages/")
 uploaded_files=()
+failed_files=()
 
 for folder in "${folders[@]}"; do
     echo "Scanning folder $folder"
@@ -78,13 +79,15 @@ for folder in "${folders[@]}"; do
             --file "$file" \
             --name "`basename $file`"
 
-        [[ $? -eq 0 ]] || {
+        [[ $? -eq 0 ]] && {
+            echo "    Uploaded.";
+            uploaded_files+="$file"
+        } || {
             echo "Failed to generate git release"
-            exit 1
+            failed_files+="$file"
         }
-
-        uploaded_files+="$file"
     done
 done
 
-echo "Successfully uploaded ${#uploaded_files[@]} files."
+echo "Successfully uploaded ${#uploaded_files[@]} files. ${#failed_files[@]} uploads failed."
+exit 0
