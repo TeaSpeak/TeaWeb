@@ -25,6 +25,7 @@ namespace Modals {
     export interface BanListManager {
         addbans : (ban: BanEntry[]) => void;
         clear : (ban?: any) => void;
+        modal: Modal;
     }
 
     export function openBanList(client: TSClient) {
@@ -84,8 +85,10 @@ namespace Modals {
             });
         });
 
-        update = () => {
-            client.serverConnection.commandHandler["notifybanlist"] = json => {
+        const single_handler: connection.SingleCommandHandler = {
+            command: "notifybanlist",
+            function: command => {
+                const json = command.arguments;
                 console.log(tr("Got banlist: %o"), json);
 
                 let bans: BanEntry[] = [];
@@ -136,7 +139,15 @@ namespace Modals {
                 }
 
                 modal.addbans(bans);
-            };
+                return false;
+            }
+        };
+        client.serverConnection.command_handler_boss().register_single_handler(single_handler);
+        modal.modal.close_listener.push(() => {
+            client.serverConnection.command_handler_boss().remove_single_handler(single_handler);
+        });
+
+        update = () => {
 
             //TODO test permission
             modal.clear();
@@ -208,6 +219,7 @@ namespace Modals {
             modal.htmlTag.find(".entry-container .entries").children().detach();
             update_function();
         };
+        result.modal = modal;
 
         return result;
     }

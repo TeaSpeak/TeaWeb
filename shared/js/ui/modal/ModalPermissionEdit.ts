@@ -745,7 +745,7 @@ namespace Modals {
 
             const resolve_client = () => {
                 let client_uid = tag_select_uid.val() as string;
-                globalClient.serverConnection.helper.info_from_uid(client_uid).then(result => {
+                globalClient.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                     if(!result || result.length == 0) return Promise.reject("invalid data");
                     tag_select_uid.attr('pattern', null).removeClass('is-invalid');
 
@@ -888,7 +888,7 @@ namespace Modals {
 
         const resolve_client = () => {
             let client_uid = tag_select_uid.val() as string;
-            globalClient.serverConnection.helper.info_from_uid(client_uid).then(result => {
+            globalClient.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                 if(!result || result.length == 0) return Promise.reject("invalid data");
                 tag_select_uid.attr('pattern', null).removeClass('is-invalid');
 

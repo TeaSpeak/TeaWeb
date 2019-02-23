@@ -176,7 +176,7 @@ namespace Modals {
 
         const update_songs = () => {
             set_song_info(tr("loading song list"));
-            client.serverConnection.helper.request_playlist_songs(playlist.playlist_id).then(result => {
+            client.serverConnection.command_helper.request_playlist_songs(playlist.playlist_id).then(result => {
                 const entries_tag = song_tag.find(".song-list-entries");
                 const entry_template = $("#tmpl_playlist_edit-song_entry");
                 entries_tag.empty();
@@ -297,7 +297,7 @@ namespace Modals {
     function apply_properties(tag: JQuery, client: TSClient, playlist: Playlist, change_property: (key: string, value: string) => any, callback_current_song: (id: number) => any) {
         const owns_playlist = playlist.playlist_owner_dbid == client.getClient().properties.client_database_id;
 
-        client.serverConnection.helper.request_playlist_info(playlist.playlist_id).then(info => {
+        client.serverConnection.command_helper.request_playlist_info(playlist.playlist_id).then(info => {
             tag.find(".property-owner input")
                 .val(info.playlist_owner_name + " (" + info.playlist_owner_dbid + ")");
 
