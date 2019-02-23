@@ -32,7 +32,9 @@ jobs:
           export GITHUB_RELEASE_REPOSITORY="TeaSpeak/TeaWeb";
           export GITHUB_RELEASE_ACCESS_TOKEN="$GIT_AUTHTOKEN";
           export GITHUB_RELEASE_COMMIT="3dbcad0";
-          /tmp/git-release "Travis autobuild $GIT_TAG_SHORT" /tmp/build/packages/* /tmp/build/logs/* \
+          /tmp/git-release "Travis autobuild $GIT_TAG_SHORT" /tmp/build/packages/xxxxx \
             --commit "3dbcad0" \
-            --tag "12312123";
+            --tag "12312123" \
+            --github-access-token "$GIT_AUTHTOKEN" \
+            --github-repository "TeaSpeak/TeaWeb";
       if: branch = master
