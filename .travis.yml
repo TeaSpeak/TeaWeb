@@ -4,24 +4,26 @@ dist: trusty
 services:
   - docker
 
-before_install:
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker images
-  - docker pull $DOCKER_USERNAME/teaweb:build_new
-  - docker images
+#before_install:
+  #- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  #- docker images
+  #- docker pull $DOCKER_USERNAME/teaweb:build_new
+  #- docker images
 
 jobs:
   include:
     - stage: "build"
       name: TeaWeb build master branch
       script:
-        - "mkdir -p /tmp/build"
-        - "docker run --rm -v /tmp/build/logs/:/build/logs/ -v /tmp/build/packages/:/build/packages/ -v `pwd`:/build/TeaWeb $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
-        - "ls -lah /tmp/build/"
-        - "ls -lah /tmp/build/logs/"
-        - "ls -lah /tmp/build/packages/"
-        - "wget https://github.com/buildkite/github-release/releases/download/v1.0/github-release-linux-amd64 -O /tmp/git-release -q; chmod +x /tmp/git-release;"
+        #- "mkdir -p /tmp/build"
+        #- "docker run --rm -v /tmp/build/logs/:/build/logs/ -v /tmp/build/packages/:/build/packages/ -v `pwd`:/build/TeaWeb $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
+        #- "ls -lah /tmp/build/"
+        #- "ls -lah /tmp/build/logs/"
+        #- "ls -lah /tmp/build/packages/"
+        #- "wget https://github.com/buildkite/github-release/releases/download/v1.0/github-release-linux-amd64 -O /tmp/git-release -q; chmod +x /tmp/git-release;"
         - >
+          mkdir -p /tmp/build/packages/;
+          echo "XXXX" > /tmp/build/packages/xxxxx;
           export GIT_TAG=$(git rev-parse HEAD)
           export GIT_TAG_SHORT=$(git rev-parse --short HEAD)
           export GITHUB_RELEASE_TAG="This is a auto build release from travis";
