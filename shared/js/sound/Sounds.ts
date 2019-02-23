@@ -240,6 +240,10 @@ namespace sound {
 
         const path = "audio/" + file.filename;
         const context = audio.player.context();
+        if(!context) {
+            console.warn(tr("Tried to replay a sound without an audio context (Sound: %o). Dropping playback"), sound);
+            return;
+        }
         const volume = get_sound_volume(sound, options.default_volume);
 
         console.log(tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), sound, volume, master_volume);
