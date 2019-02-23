@@ -277,6 +277,11 @@ class VoiceConnection {
 
 
     createSession() {
+        if(!audio.player.initialized()) {
+            console.log(tr("Audio player isn't initialized yet. Waiting for gesture."));
+            audio.player.on_ready(() => this.createSession());
+            return;
+        }
         if(!this.current_encoding_supported()) return false;
 
         if(this.rtcPeerConnection) {
