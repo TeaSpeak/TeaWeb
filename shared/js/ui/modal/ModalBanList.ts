@@ -34,7 +34,7 @@ namespace Modals {
                 if(result.server_id < 0) result.server_id = undefined;
                 console.log(tr("Adding ban %o"), result);
 
-                client.serverConnection.sendCommand("banadd", {
+                client.serverConnection.send_command("banadd", {
                     ip: result.ip,
                     name: result.name,
                     uid: result.unique_id,
@@ -55,7 +55,7 @@ namespace Modals {
                 console.log(tr("Apply edit changes %o"), result);
                 if(result.server_id < 0) result.server_id = undefined;
 
-                client.serverConnection.sendCommand("banedit", {
+                client.serverConnection.send_command("banedit", {
                     banid: result.banid,
                     ip: result.ip,
                     name: result.name,
@@ -73,7 +73,7 @@ namespace Modals {
             });
         }, ban => {
             console.log(tr("Deleting ban %o"), ban);
-            client.serverConnection.sendCommand("bandel", {
+            client.serverConnection.send_command("bandel", {
                 banid: ban.banid,
                 sid: ban.server_id
             }).then(() => {
@@ -140,8 +140,8 @@ namespace Modals {
 
             //TODO test permission
             modal.clear();
-            client.serverConnection.sendCommand("banlist", { sid: 0 }); //Global ban list
-            client.serverConnection.sendCommand("banlist").catch(error => {
+            client.serverConnection.send_command("banlist", { sid: 0 }); //Global ban list
+            client.serverConnection.send_command("banlist").catch(error => {
                 if(error instanceof CommandResult) {
                 } else {
                     console.error(error);

@@ -15,7 +15,7 @@ namespace profiles.identities {
         encode?() : string;
         decode(data: string) : Promise<void>;
 
-        spawn_identity_handshake_handler(connection: ServerConnection) : HandshakeIdentityHandler;
+        spawn_identity_handshake_handler(connection: connection.AbstractServerConnection) : connection.HandshakeIdentityHandler;
     }
 
     export async function decode_identity(type: IdentitifyType, data: string) : Promise<Identity> {
@@ -61,12 +61,33 @@ namespace profiles.identities {
         return identity;
     }
 
-    export abstract class AbstractHandshakeIdentityHandler implements HandshakeIdentityHandler {
-        connection: ServerConnection;
+    export class HandshakeCommandHandler<T extends AbstractHandshakeIdentityHandler> extends connection.AbstractCommandHandler {
+        readonly handle: T;
+
+        constructor(connection: connection.AbstractServerConnection, handle: T) {
+            super(connection);
+            this.handle = handle;
+        }
+
+
+        handle_command(command: connection.ServerCommand): boolean {
+            if($.isFunction(this[command.command]))
+                this[command.command](command.arguments);
+            else if(command.command == "error") {
+                return false;
+            } else {
+                console.warn(tr("Received unknown command while handshaking (%o)"), command);
+            }
+            return true;
+        }
+    }
+
+    export abstract class AbstractHandshakeIdentityHandler implements connection.HandshakeIdentityHandler {
+        connection: connection.AbstractServerConnection;
 
         protected callbacks: ((success: boolean, message?: string) => any)[] = [];
 
-        protected constructor(connection: ServerConnection) {
+        protected constructor(connection: connection.AbstractServerConnection) {
             this.connection = connection;
         }
 

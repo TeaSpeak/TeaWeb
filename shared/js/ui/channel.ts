@@ -94,7 +94,7 @@ class ChannelEntry {
         if(this._cached_channel_description) return new Promise<string>(resolve => resolve(this._cached_channel_description));
         if(this._cached_channel_description_promise) return this._cached_channel_description_promise;
 
-        this.channelTree.client.serverConnection.sendCommand("channelgetdescription", {cid: this.channelId}).catch(error => {
+        this.channelTree.client.serverConnection.send_command("channelgetdescription", {cid: this.channelId}).catch(error => {
             this._cached_channel_description_promise_reject(error);
         });
 
@@ -440,7 +440,7 @@ class ChannelEntry {
                     Modals.createChannelModal(this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
                         if(changes) {
                             changes["cid"] = this.channelId;
-                            this.channelTree.client.serverConnection.sendCommand("channeledit", changes);
+                            this.channelTree.client.serverConnection.send_command("channeledit", changes);
                             log.info(LogCategory.CHANNEL, tr("Changed channel properties of channel %s: %o"), this.channelName(), changes);
                         }
 
@@ -456,7 +456,9 @@ class ChannelEntry {
                             }
 
                             perms[0]["cid"] = this.channelId;
-                            this.channelTree.client.serverConnection.sendCommand("channeladdperm", perms, ["continueonerror"]).then(() => {
+                            this.channelTree.client.serverConnection.send_command("channeladdperm", perms, {
+                                flagset: ["continueonerror"]
+                            }).then(() => {
                                 sound.play(Sound.CHANNEL_EDITED_SELF);
                             });
                         }
@@ -469,7 +471,7 @@ class ChannelEntry {
                 name: tr("Delete channel"),
                 invalidPermission: !flagDelete,
                 callback: () => {
-                    this.channelTree.client.serverConnection.sendCommand("channeldelete", {cid: this.channelId}).then(() => {
+                    this.channelTree.client.serverConnection.send_command("channeldelete", {cid: this.channelId}).then(() => {
                         sound.play(Sound.CHANNEL_DELETED);
                     })
                 }
@@ -480,7 +482,7 @@ class ChannelEntry {
                 icon: "client-addon-collection",
                 name: tr("Create music bot"),
                 callback: () => {
-                    this.channelTree.client.serverConnection.sendCommand("musicbotcreate", {cid: this.channelId}).then(() => {
+                    this.channelTree.client.serverConnection.send_command("musicbotcreate", {cid: this.channelId}).then(() => {
                         createInfoModal(tr("Bot successfully created"), tr("Bot has been successfully created.")).open();
                     }).catch(error => {
                         if(error instanceof CommandResult) {
@@ -692,7 +694,7 @@ class ChannelEntry {
                 });
             }).open();
         } else if(this.channelTree.client.getClient().currentChannel() != this)
-            this.channelTree.client.getServerConnection().joinChannel(this, this._cachedPassword).then(() => {
+            this.channelTree.client.getServerConnection().command_helper.joinChannel(this, this._cachedPassword).then(() => {
                 sound.play(Sound.CHANNEL_JOINED);
             }).catch(error => {
                 if(error instanceof CommandResult) {

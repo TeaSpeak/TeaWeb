@@ -412,7 +412,7 @@ enum MusicPlayerState {
 }
 
 class MusicInfoManager extends ClientInfoManager {
-    notify_status: (json) => any;
+    single_handler: connection.SingleCommandHandler;
 
     createFrame<_>(handle: InfoBar<_>, channel: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
         super.createFrame(handle, channel, html_tag);
@@ -420,9 +420,9 @@ class MusicInfoManager extends ClientInfoManager {
     }
 
     updateFrame(bot: MusicClientEntry, html_tag: JQuery<HTMLElement>) {
-        if(this.notify_status) {
-            this.handle.handle.serverConnection.commandHandler.unset_handler("notifymusicstatusupdate", this.notify_status);
-            this.notify_status = undefined;
+        if(this.single_handler) {
+            this.handle.handle.serverConnection.command_handler_boss().remove_single_handler(this.single_handler);
+            this.single_handler = undefined;
         }
 
         this.resetIntervals();
@@ -459,7 +459,7 @@ class MusicInfoManager extends ClientInfoManager {
                         let button_stop = frame.find('.button_stop');
                         button_play.click(handler => {
                             if(!button_play.hasClass("active")) {
-                                this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                this.handle.handle.serverConnection.send_command("musicbotplayeraction", {
                                     bot_id: bot.properties.client_database_id,
                                     action: 1
                                 }).then(updated => this.triggerUpdate()).catch(error => {
@@ -472,7 +472,7 @@ class MusicInfoManager extends ClientInfoManager {
                         });
                         button_pause.click(handler => {
                             if(!button_pause.hasClass("active")) {
-                                this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                this.handle.handle.serverConnection.send_command("musicbotplayeraction", {
                                     bot_id: bot.properties.client_database_id,
                                     action: 2
                                 }).then(updated => this.triggerUpdate()).catch(error => {
@@ -484,7 +484,7 @@ class MusicInfoManager extends ClientInfoManager {
                             button_pause.hide();
                         });
                         button_stop.click(handler => {
-                            this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                            this.handle.handle.serverConnection.send_command("musicbotplayeraction", {
                                 bot_id: bot.properties.client_database_id,
                                 action: 0
                             }).then(updated => this.triggerUpdate()).catch(error => {
@@ -507,7 +507,7 @@ class MusicInfoManager extends ClientInfoManager {
 
                     { /* Button functions */
                         _frame.find(".btn-forward").click(() => {
-                            this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                            this.handle.handle.serverConnection.send_command("musicbotplayeraction", {
                                 bot_id: bot.properties.client_database_id,
                                 action: 3
                             }).then(updated => this.triggerUpdate()).catch(error => {
@@ -516,7 +516,7 @@ class MusicInfoManager extends ClientInfoManager {
                             });
                         });
                         _frame.find(".btn-rewind").click(() => {
-                            this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                            this.handle.handle.serverConnection.send_command("musicbotplayeraction", {
                                 bot_id: bot.properties.client_database_id,
                                 action: 4
                             }).then(updated => this.triggerUpdate()).catch(error => {
@@ -525,7 +525,7 @@ class MusicInfoManager extends ClientInfoManager {
                             });
                         });
                         _frame.find(".btn-settings").click(() => {
-                            this.handle.handle.serverConnection.helper.request_playlist_list().then(lists => {
+                            this.handle.handle.serverConnection.command_helper.request_playlist_list().then(lists => {
                                 for(const entry of lists) {
                                     if(entry.playlist_id == bot.properties.client_playlist_id) {
                                         Modals.spawnPlaylistEdit(bot.channelTree.client, entry);
@@ -581,7 +581,7 @@ class MusicInfoManager extends ClientInfoManager {
                                 slider.prop("edited", true);
 
                                 let current_timestamp = info.player_replay_index + Date.now() - timestamp;
-                                this.handle.handle.serverConnection.sendCommand("musicbotplayeraction", {
+                                this.handle.handle.serverConnection.send_command("musicbotplayeraction", {
                                     bot_id: bot.properties.client_database_id,
                                     action: current_timestamp > target_timestamp ? 6 : 5,
                                     units: current_timestamp < target_timestamp ? target_timestamp - current_timestamp : current_timestamp - target_timestamp
@@ -627,17 +627,23 @@ class MusicInfoManager extends ClientInfoManager {
                         update_handler();
 
                         /* register subscription */
-                        this.handle.handle.serverConnection.sendCommand("musicbotsetsubscription", {bot_id: bot.properties.client_database_id}).catch(error => {
+                        this.handle.handle.serverConnection.send_command("musicbotsetsubscription", {bot_id: bot.properties.client_database_id}).catch(error => {
                             console.error("Failed to subscribe to displayed music bot! Using pseudo timeline");
                         }).then(() => {
                             clearInterval(interval);
                         });
 
-                        this.notify_status = json => {
-                            json = json[0];
-                            update_handler(parseInt(json["player_replay_index"]), parseInt(json["player_buffered_index"]));
+                        this.single_handler = {
+                            command: "notifymusicstatusupdate",
+                            function: command => {
+                                const json = command.arguments[0];
+                                update_handler(parseInt(json["player_replay_index"]), parseInt(json["player_buffered_index"]));
+
+                                return false; /* do not unregister me! */
+                            }
                         };
-                        this.handle.handle.serverConnection.commandHandler.set_handler("notifymusicstatusupdate", this.notify_status);
+
+                        this.handle.handle.serverConnection.command_handler_boss().register_single_handler(this.single_handler);
                     }
                 });
             }
@@ -718,9 +724,9 @@ class MusicInfoManager extends ClientInfoManager {
     }
 
     finalizeFrame(object: ClientEntry, frame: JQuery<HTMLElement>) {
-        if(this.notify_status) {
-            this.handle.handle.serverConnection.commandHandler.unset_handler("notifymusicstatusupdate", this.notify_status);
-            this.notify_status = undefined;
+        if(this.single_handler) {
+            this.handle.handle.serverConnection.command_handler_boss().remove_single_handler(this.single_handler);
+            this.single_handler = undefined;
         }
 
         super.finalizeFrame(object, frame);

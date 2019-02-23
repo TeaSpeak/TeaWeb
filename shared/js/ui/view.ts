@@ -450,7 +450,7 @@ class ChannelTree {
                     createInputModal(tr("Poke clients"), tr("Poke message:<br>"), text => true, result => {
                         if (typeof(result) === "string") {
                             for (const client of this.currently_selected as ClientEntry[])
-                                this.client.serverConnection.sendCommand("clientpoke", {
+                                this.client.serverConnection.send_command("clientpoke", {
                                     clid: client.clientId(),
                                     msg: result
                                 });
@@ -467,7 +467,7 @@ class ChannelTree {
             callback: () => {
                 const target = this.client.getClient().currentChannel().getChannelId();
                 for(const client of clients)
-                    this.client.serverConnection.sendCommand("clientmove", {
+                    this.client.serverConnection.send_command("clientmove", {
                         clid: client.clientId(),
                         cid: target
                     });
@@ -483,7 +483,7 @@ class ChannelTree {
                     createInputModal(tr("Kick clients from channel"), tr("Kick reason:<br>"), text => true, result => {
                         if (result) {
                             for (const client of clients)
-                                this.client.serverConnection.sendCommand("clientkick", {
+                                this.client.serverConnection.send_command("clientkick", {
                                     clid: client.clientId(),
                                     reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
                                     reasonmsg: result
@@ -503,7 +503,7 @@ class ChannelTree {
                         createInputModal(tr("Kick clients from server"), tr("Kick reason:<br>"), text => true, result => {
                             if (result) {
                                 for (const client of clients)
-                                    this.client.serverConnection.sendCommand("clientkick", {
+                                    this.client.serverConnection.send_command("clientkick", {
                                         clid: client.clientId(),
                                         reasonid: ViewReasonId.VREASON_SERVER_KICK,
                                         reasonmsg: result
@@ -520,11 +520,13 @@ class ChannelTree {
                     callback: () => {
                         Modals.spawnBanClient((clients).map(entry => entry.clientNickName()), (data) => {
                             for (const client of clients)
-                                this.client.serverConnection.sendCommand("banclient", {
+                                this.client.serverConnection.send_command("banclient", {
                                     uid: client.properties.client_unique_identifier,
                                     banreason: data.reason,
                                     time: data.length
-                                }, [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]).then(() => {
+                                }, {
+                                    flagset: [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]
+                                }).then(() => {
                                     sound.play(Sound.USER_BANNED);
                                 });
                         });
@@ -545,7 +547,7 @@ class ChannelTree {
                         Modals.spawnYesNo(tr("Are you sure?"), tag_container, result => {
                             if(result) {
                                 for(const client of clients)
-                                    this.client.serverConnection.sendCommand("musicbotdelete", {
+                                    this.client.serverConnection.send_command("musicbotdelete", {
                                         botid: client.properties.client_database_id
                                     });
                             }
@@ -595,7 +597,7 @@ class ChannelTree {
             if(!properties) return;
             properties["cpid"] = parent ? parent.channelId : 0;
             log.debug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
-            this.client.serverConnection.sendCommand("channelcreate", properties).then(() => {
+            this.client.serverConnection.send_command("channelcreate", properties).then(() => {
                 let channel = this.find_channel_by_name(properties.channel_name, parent, true);
                 if(!channel) {
                     log.error(LogCategory.CHANNEL, tr("Failed to resolve channel after creation. Could not apply permissions!"));
@@ -613,7 +615,9 @@ class ChannelTree {
                     }
 
                     perms[0]["cid"] = channel.channelId;
-                    return this.client.serverConnection.sendCommand("channeladdperm", perms, ["continueonerror"]).then(() => new Promise<ChannelEntry>(resolve => { resolve(channel); }));
+                    return this.client.serverConnection.send_command("channeladdperm", perms, {
+                        flagset: ["continueonerror"]
+                    }).then(() => new Promise<ChannelEntry>(resolve => { resolve(channel); }));
                 }
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })

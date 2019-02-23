@@ -2,7 +2,6 @@
 /// <reference path="voice/AudioController.ts" />
 /// <reference path="proto.ts" />
 /// <reference path="ui/view.ts" />
-/// <reference path="connection.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="ui/frames/SelectedItemInfo.ts" />
 /// <reference path="FileManager.ts" />
@@ -49,7 +48,7 @@ enum ViewReasonId {
 
 class TSClient {
     channelTree: ChannelTree;
-    serverConnection: ServerConnection;
+    serverConnection: connection.ServerConnection;
     voiceConnection: VoiceConnection;
     fileManager: FileManager;
     selectInfo: InfoBar;
@@ -65,7 +64,7 @@ class TSClient {
     constructor() {
         this.selectInfo = new InfoBar(this, $("#select_info"));
         this.channelTree = new ChannelTree(this, $("#channelTree"));
-        this.serverConnection = new ServerConnection(this);
+        this.serverConnection = new connection.ServerConnection(this);
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
         this.groups = new GroupManager(this);
@@ -101,12 +100,15 @@ class TSClient {
 
         if(password && !password.hashed) {
             helpers.hashPassword(password.password).then(password => {
-                this.serverConnection.startConnection({host, port}, new HandshakeHandler(profile, name, password));
+                /* errors will be already handled via the handle disconnect thing */
+                this.serverConnection.connect({host, port}, new connection.HandshakeHandler(profile, name, password));
             }).catch(error => {
                 createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
             })
-        } else
-            this.serverConnection.startConnection({host, port}, new HandshakeHandler(profile, name, password ? password.password : undefined));
+        } else {
+            /* errors will be already handled via the handle disconnect thing */
+            this.serverConnection.connect({host, port}, new connection.HandshakeHandler(profile, name, password ? password.password : undefined));
+        }
     }
 
 
@@ -122,7 +124,7 @@ class TSClient {
         return this._clientId;
     }
 
-    getServerConnection() : ServerConnection { return this.serverConnection; }
+    getServerConnection() : connection.ServerConnection { return this.serverConnection; }
 
 
     /**
@@ -133,7 +135,7 @@ class TSClient {
         this.channelTree.registerClient(this._ownEntry);
         settings.setServer(this.channelTree.server);
         this.permissions.requestPermissionList();
-        this.serverConnection.sendCommand("channelsubscribeall");
+        this.serverConnection.send_command("channelsubscribeall");
         if(this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
         this.controlBar.updateProperties();
@@ -142,7 +144,7 @@ class TSClient {
     }
 
     get connected() : boolean {
-        return !!this.serverConnection && this.serverConnection.connected;
+        return this.serverConnection && this.serverConnection.connected();
     }
 
     private certAcceptUrl() {

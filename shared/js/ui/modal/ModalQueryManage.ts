@@ -19,8 +19,8 @@ namespace Modals {
         const update_list = () => {
             const info_tag = modal.htmlTag.find(".footer .info a");
             info_tag.text("loading...");
-            client.serverConnection.helper.current_virtual_server_id().then(server_id => {
-                client.serverConnection.helper.request_query_list(server_id).then(result => {
+            client.serverConnection.command_helper.current_virtual_server_id().then(server_id => {
+                client.serverConnection.command_helper.request_query_list(server_id).then(result => {
                     selected_query = undefined;
 
                     const entries_tag = modal.htmlTag.find(".query-list-entries");
@@ -73,7 +73,7 @@ namespace Modals {
 
                     createInputModal(tr("Change account name"), tr("Enter the new name for the login:<br>"), text => text.length >= 3, result => {
                         if(result) {
-                            client.serverConnection.sendCommand("queryrename", {
+                            client.serverConnection.send_command("queryrename", {
                                 client_login_name: selected_query.username,
                                 client_new_login_name: result
                             }).catch(error => {
@@ -92,23 +92,28 @@ namespace Modals {
 
                     createInputModal(tr("Change account's password"), tr("Enter a new password (leave blank for auto generation):<br>"), text => true, result => {
                         if(result !== false) {
-                            client.serverConnection.sendCommand("querychangepassword", {
+                            const single_handler: connection.SingleCommandHandler = {
+                                command: "notifyquerypasswordchanges",
+                                function: command => {
+                                    Modals.spawnQueryCreated({
+                                        username: command.arguments[0]["client_login_name"],
+                                        password: command.arguments[0]["client_login_password"]
+                                    }, false);
+
+                                    return true;
+                                }
+                            };
+                            client.serverConnection.command_handler_boss().register_single_handler(single_handler);
+
+                            client.serverConnection.send_command("querychangepassword", {
                                 client_login_name: selected_query.username,
                                 client_login_password: result
                             }).catch(error => {
+                                client.serverConnection.command_handler_boss().remove_single_handler(single_handler);
                                 if(error instanceof CommandResult)
                                     error = error.extra_message || error.message;
                                 createErrorModal(tr("Unable to change password"), tr("Failed to change password<br>Message: ") + error).open();
                             });
-
-                            client.serverConnection.commandHandler["notifyquerypasswordchanges"] = json => {
-                                Modals.spawnQueryCreated({
-                                    username: json[0]["client_login_name"],
-                                    password: json[0]["client_login_password"]
-                                }, false);
-
-                                client.serverConnection.commandHandler["notifyquerypasswordchanges"] = undefined;
-                            };
                         }
                     }).open();
                 });
@@ -117,7 +122,7 @@ namespace Modals {
 
                     Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this account?"), result => {
                         if(result) {
-                            client.serverConnection.sendCommand("querydelete", {
+                            client.serverConnection.send_command("querydelete", {
                                 client_login_name: selected_query.username
                             }).catch(error => {
                                 if(error instanceof CommandResult)

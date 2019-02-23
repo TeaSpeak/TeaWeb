@@ -470,6 +470,11 @@ const loader_javascript = {
             })
         }
 
+        /* load some extends classes */
+        await loader.load_scripts([
+            ["js/connection/ConnectionBase.js"]
+        ]);
+
         /* load the main app */
         await loader.load_scripts([
             //Load general API's
@@ -539,10 +544,15 @@ const loader_javascript = {
             "js/settings.js",
             "js/bookmarks.js",
             "js/contextMenu.js",
-            "js/connection.js",
             "js/FileManager.js",
             "js/client.js",
             "js/chat.js",
+
+            //Connection
+            "js/connection/CommandHandler.js",
+            "js/connection/CommandHelper.js",
+            "js/connection/HandshakeHandler.js",
+            "js/connection/ServerConnection.js",
 
             "js/PPTListener.js",
 

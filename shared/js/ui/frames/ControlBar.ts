@@ -137,7 +137,7 @@ class ControlBar {
 
 
         if(this.handle.serverConnection.connected)
-            this.handle.serverConnection.sendCommand("clientupdate", {
+            this.handle.serverConnection.send_command("clientupdate", {
                 client_input_muted: this._muteInput
             });
         settings.changeGlobal("mute_input", this._muteInput);
@@ -162,7 +162,7 @@ class ControlBar {
         }
 
         if(this.handle.serverConnection.connected)
-            this.handle.serverConnection.sendCommand("clientupdate", {
+            this.handle.serverConnection.send_command("clientupdate", {
                 client_output_muted: this._muteOutput
             });
         settings.changeGlobal("mute_output", this._muteOutput);
@@ -187,7 +187,7 @@ class ControlBar {
         }
 
         if(this.handle.serverConnection.connected)
-            this.handle.serverConnection.sendCommand("clientupdate", {
+            this.handle.serverConnection.send_command("clientupdate", {
                 client_away: this._away,
                 client_away_message: this._awayMessage
             });
@@ -201,7 +201,7 @@ class ControlBar {
 
     updateProperties() {
         if(this.handle.serverConnection.connected)
-            this.handle.serverConnection.sendCommand("clientupdate", {
+            this.handle.serverConnection.send_command("clientupdate", {
                 client_input_muted: this._muteInput,
                 client_output_muted: this._muteOutput,
                 client_away: this._away,
@@ -221,7 +221,7 @@ class ControlBar {
 
         this.htmlTag.find(".btn_mute_input").prop("disabled", !this.codec_supported|| !this.support_playback || !this.support_record);
         this.htmlTag.find(".btn_mute_output").prop("disabled", !this.codec_supported || !this.support_playback);
-        this.handle.serverConnection.sendCommand("clientupdate", {
+        this.handle.serverConnection.send_command("clientupdate", {
             client_input_hardware: this.codec_supported && this.support_record,
             client_output_hardware: this.codec_supported && this.support_playback
         });
@@ -273,7 +273,7 @@ class ControlBar {
         createInputModal(tr("Use token"), tr("Please enter your token/priviledge key"), message => message.length > 0, result => {
             if(!result) return;
             if(this.handle.serverConnection.connected)
-                this.handle.serverConnection.sendCommand("tokenuse", {
+                this.handle.serverConnection.send_command("tokenuse", {
                     token: result
                 }).then(() => {
                     createInfoModal(tr("Use token"), tr("Toke successfully used!")).open();

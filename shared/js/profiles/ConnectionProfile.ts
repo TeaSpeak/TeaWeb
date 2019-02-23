@@ -38,7 +38,7 @@ namespace profiles {
             this.identities[identities.IdentitifyType[type].toLowerCase()] = identity;
         }
 
-        spawn_identity_handshake_handler?(connection: ServerConnection) : HandshakeIdentityHandler {
+        spawn_identity_handshake_handler?(connection: connection.AbstractServerConnection) : connection.HandshakeIdentityHandler {
             const identity = this.selected_identity();
             if(!identity)
                 return undefined;

@@ -354,7 +354,13 @@ class ChatBox {
                 chat.serverChat().appendError(tr("Could not send chant message (Not connected)"));
                 return;
             }
-            globalClient.serverConnection.sendMessage(text, ChatType.SERVER);
+            globalClient.serverConnection.command_helper.sendMessage(text, ChatType.SERVER).catch(error => {
+                if(error instanceof CommandResult)
+                    return;
+
+                chat.serverChat().appendMessage(tr("Failed to send text message."));
+                console.error(tr("Failed to send server text message: %o"), error);
+            });
         };
         this.serverChat().name = tr("Server chat");
 
@@ -364,7 +370,10 @@ class ChatBox {
                 return;
             }
 
-            globalClient.serverConnection.sendMessage(text, ChatType.CHANNEL, globalClient.getClient().currentChannel());
+            globalClient.serverConnection.command_helper.sendMessage(text, ChatType.CHANNEL, globalClient.getClient().currentChannel()).catch(error => {
+                chat.channelChat().appendMessage(tr("Failed to send text message."));
+                console.error(tr("Failed to send channel text message: %o"), error);
+            });
         };
         this.channelChat().name = tr("Channel chat");
 

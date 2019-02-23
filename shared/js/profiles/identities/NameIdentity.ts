@@ -3,16 +3,19 @@
 namespace profiles.identities {
     class NameHandshakeHandler extends AbstractHandshakeIdentityHandler {
         readonly identity: NameIdentity;
+        handler: HandshakeCommandHandler<NameHandshakeHandler>;
 
-        constructor(connection: ServerConnection, identity: profiles.identities.NameIdentity) {
+        constructor(connection: connection.AbstractServerConnection, identity: profiles.identities.NameIdentity) {
             super(connection);
             this.identity = identity;
+
+            this.handler = new HandshakeCommandHandler(connection, this);
+            this.handler["handshakeidentityproof"] = () => this.trigger_fail("server requested unexpected proof");
         }
 
         start_handshake() {
-            this.connection.commandHandler["handshakeidentityproof"] = () => this.trigger_fail("server requested unexpected proof");
-
-            this.connection.sendCommand("handshakebegin", {
+            this.connection.command_handler_boss().register_handler(this.handler);
+            this.connection.send_command("handshakebegin", {
                 intention: 0,
                 authentication_method: this.identity.type(),
                 client_nickname: this.identity.name()
@@ -23,6 +26,16 @@ namespace profiles.identities {
                     error = error.extra_message || error.message;
                 this.trigger_fail("failed to execute begin (" + error + ")");
             }).then(() => this.trigger_success());
+        }
+
+        protected trigger_fail(message: string) {
+            this.connection.command_handler_boss().unregister_handler(this.handler);
+            super.trigger_fail(message);
+        }
+
+        protected trigger_success() {
+            this.connection.command_handler_boss().unregister_handler(this.handler);
+            super.trigger_success();
         }
     }
 
@@ -67,7 +80,7 @@ namespace profiles.identities {
             });
         }
 
-        spawn_identity_handshake_handler(connection: ServerConnection) : HandshakeIdentityHandler {
+        spawn_identity_handshake_handler(connection: connection.AbstractServerConnection) : connection.HandshakeIdentityHandler {
             return new NameHandshakeHandler(connection, this);
         }
     }

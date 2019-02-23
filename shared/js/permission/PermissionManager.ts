@@ -416,7 +416,7 @@ class TeaPermissionRequest {
     promise: LaterPromise<PermissionValue[]>;
 }
 
-class PermissionManager {
+class PermissionManager extends connection.AbstractCommandHandler {
     readonly handle: TSClient;
 
     permissionList: PermissionInfo[] = [];
@@ -505,14 +505,34 @@ class PermissionManager {
     }
 
     constructor(client: TSClient) {
+        super(client.serverConnection);
+
+        //FIXME? Dont register the handler like this?
+        this.volatile_handler_boss = true;
+        client.serverConnection.command_handler_boss().register_handler(this);
+
         this.handle = client;
+    }
 
-        this.handle.serverConnection.commandHandler["notifyclientneededpermissions"] = this.onNeededPermissions.bind(this);
-        this.handle.serverConnection.commandHandler["notifypermissionlist"] = this.onPermissionList.bind(this);
-
-        this.handle.serverConnection.commandHandler["notifychannelpermlist"] = this.onChannelPermList.bind(this);
-        this.handle.serverConnection.commandHandler["notifyclientpermlist"] = this.onClientPermList.bind(this);
-        this.handle.serverConnection.commandHandler["notifyplaylistpermlist"] = this.onPlaylistPermList.bind(this);
+    handle_command(command: connection.ServerCommand): boolean {
+        switch (command.command) {
+            case "notifyclientneededpermissions":
+                this.onNeededPermissions(command.arguments);
+                return true;
+            case "notifypermissionlist":
+                this.onPermissionList(command.arguments);
+                return true;
+            case "notifychannelpermlist":
+                this.onChannelPermList(command.arguments);
+                return true;
+            case "notifyclientpermlist":
+                this.onClientPermList(command.arguments);
+                return true;
+            case "notifyplaylistpermlist":
+                this.onPlaylistPermList(command.arguments);
+                return true;
+        }
+        return false;
     }
 
     initialized() : boolean {
@@ -520,7 +540,7 @@ class PermissionManager {
     }
 
     public requestPermissionList() {
-        this.handle.serverConnection.sendCommand("permissionlist");
+        this.handle.serverConnection.send_command("permissionlist");
     }
 
     private onPermissionList(json) {
@@ -648,7 +668,7 @@ class PermissionManager {
                  request = new ChannelPermissionRequest();
                  request.requested = Date.now();
                  request.channel_id = channelId;
-                 this.handle.serverConnection.sendCommand("channelpermlist", {"cid": channelId});
+                 this.handle.serverConnection.send_command("channelpermlist", {"cid": channelId});
                  this.requests_channel_permissions.push(request);
              }
              request.callback_error.push(reject);
@@ -676,7 +696,7 @@ class PermissionManager {
         request.client_id = client_id;
         request.promise = new LaterPromise<PermissionValue[]>();
 
-        this.handle.serverConnection.sendCommand("clientpermlist", {cldbid: client_id}).catch(error => {
+        this.handle.serverConnection.send_command("clientpermlist", {cldbid: client_id}).catch(error => {
             if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
                 request.promise.resolved([]);
             else
@@ -697,7 +717,7 @@ class PermissionManager {
         request.channel_id = channel_id;
         request.promise = new LaterPromise<PermissionValue[]>();
 
-        this.handle.serverConnection.sendCommand("channelclientpermlist", {cldbid: client_id, cid: channel_id}).catch(error => {
+        this.handle.serverConnection.send_command("channelclientpermlist", {cldbid: client_id, cid: channel_id}).catch(error => {
             if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
                 request.promise.resolved([]);
             else
@@ -730,7 +750,7 @@ class PermissionManager {
         request.playlist_id = playlist_id;
         request.promise = new LaterPromise<PermissionValue[]>();
 
-        this.handle.serverConnection.sendCommand("playlistpermlist", {playlist_id: playlist_id}).catch(error => {
+        this.handle.serverConnection.send_command("playlistpermlist", {playlist_id: playlist_id}).catch(error => {
             if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
                 request.promise.resolved([]);
             else

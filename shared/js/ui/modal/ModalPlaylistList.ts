@@ -108,7 +108,7 @@ namespace Modals {
                         });
                     };
                     client.serverConnection.commandHandler.set_handler("notifyplaylistcreated", notify_handler);
-                    client.serverConnection.sendCommand("playlistcreate").catch(error => {
+                    client.serverConnection.send_command("playlistcreate").catch(error => {
                         client.serverConnection.commandHandler.unset_handler("notifyplaylistcreated", notify_handler);
                         if(error instanceof CommandResult)
                             error = error.extra_message || error.message;
@@ -126,7 +126,7 @@ namespace Modals {
 
                     Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this playlist?"), result => {
                         if(result) {
-                            client.serverConnection.sendCommand("playlistdelete", {playlist_id: selected_playlist.playlist_id}).then(() => {
+                            client.serverConnection.send_command("playlistdelete", {playlist_id: selected_playlist.playlist_id}).then(() => {
                                 createInfoModal(tr("Playlist deleted successful"), tr("This playlist has been deleted successfully.")).open();
                                 update_list();
                             }).catch(error => {

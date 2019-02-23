@@ -20,8 +20,5 @@ jobs:
         - "ls -lah /tmp/build/"
         - "ls -lah /tmp/build/logs/"
         - "ls -lah /tmp/build/packages/"
-        - >
-          mkdir -p /tmp/build/packages/;
-          echo "XXXX" > /tmp/build/packages/xxxxx;
-          ./scripts/travis_deploy.sh
+        - "./scripts/travis_deploy.sh"
       if: branch = master
