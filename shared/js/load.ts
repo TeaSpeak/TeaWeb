@@ -695,7 +695,7 @@ async function check_updates() {
         const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
         if(!version) return undefined;
 
-        if(version == "unknown" || version.replace("0", "").length == 0)
+        if(version == "unknown" || version.replace(/0+/, "").length == 0)
             return undefined;
 
         return version;

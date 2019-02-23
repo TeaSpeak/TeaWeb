@@ -513,7 +513,6 @@ class ClientEntry {
         let icon: string = "";
         let clicon: string = "";
 
-        console.error(this.properties.client_nickname + " - " + this.properties.client_type_exact + " - " + this.properties.client_type);
         if(this.properties.client_type_exact == ClientType.CLIENT_QUERY) {
             icon = "client-server_query";
             console.log("Server query!");
