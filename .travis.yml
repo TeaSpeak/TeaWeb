@@ -29,10 +29,10 @@ jobs:
           echo "Release commit: $GIT_TAG ($GIT_TAG_SHORT)";
 
           export GITHUB_RELEASE_TAG="This is a auto build release from travis";
-          export GITHUB_RELEASE_REPOSITORY="$TRAVIS_REPO_SLUG";
+          export GITHUB_RELEASE_REPOSITORY="TeaSpeak/TeaWeb";
           export GITHUB_RELEASE_ACCESS_TOKEN="$GIT_AUTHTOKEN";
-          export GITHUB_RELEASE_COMMIT="$GIT_TAG";
+          export GITHUB_RELEASE_COMMIT="3dbcad0";
           /tmp/git-release "Travis autobuild $GIT_TAG_SHORT" /tmp/build/packages/* /tmp/build/logs/* \
-            --commit "$GIT_TAG" \
-            --tag "Hello World";
+            --commit "3dbcad0" \
+            --tag "12312123";
       if: branch = master
