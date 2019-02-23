@@ -9,30 +9,39 @@ GIT_COMMIT_SHORT=$(git rev-parse --short HEAD)
 GIT_COMMIT_LONG=$(git rev-parse HEAD)
 echo "Deploying $GIT_COMMIT_SHORT ($GIT_COMMIT_LONG) to github."
 
-cd /tmp/
-if [[ ! -x git-release ]]; then
-    echo "Downloading github-release-linux (1.2.4)"
-    wget https://github.com/tfausak/github-release/releases/download/1.2.4/github-release-linux.gz -O git-release.gz -q;
-    [[ $? -eq 0 ]] || {
-        echo "Failed to download github-release-linux"
-        exit 1
-    }
+GIT_RELEASE_EXECUTABLE="/tmp/git-release"
+if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
+    if [[ ! -f ${GIT_RELEASE_EXECUTABLE} ]]; then
+        echo "Downloading github-release-linux (1.2.4)"
 
-    gunzip git-release.gz && chmod +x git-release;
-    [[ $? -eq 0 ]] || {
-        echo "Failed to unzip github-release-linux"
-        exit 1
-    }
+        if [[ -f /tmp/git-release.gz ]]; then
+            rm /tmp/git-release.gz
+        fi
+        wget https://github.com/tfausak/github-release/releases/download/1.2.4/github-release-linux.gz -O /tmp/git-release.gz -q;
+        [[ $? -eq 0 ]] || {
+            echo "Failed to download github-release-linux"
+            exit 1
+        }
 
-    if [[ ! -x git-release ]]; then
+        gunzip /tmp/git-release.gz && chmod +x /tmp/git-release;
+        [[ $? -eq 0 ]] || {
+            echo "Failed to unzip github-release-linux"
+            exit 1
+        }
+
+        echo "Download of github-release-linux (1.2.4) finished"
+    else
+        chmod +x ${GIT_RELEASE_EXECUTABLE}
+    fi
+
+    if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
         echo "git-release isn't executable"
         exit 1
     fi
-    echo "Download of github-release-linux (1.2.4) finished"
 fi
 
 echo "Generating release"
-./github-release release \
+${GIT_RELEASE_EXECUTABLE} release \
 	--repo "TeaWeb" \
 	--owner "TeaSpeak" \
 	--token "${GIT_AUTHTOKEN}" \
@@ -46,15 +55,22 @@ echo "Generating release"
 
 echo "Uploading release files"
 folders=("/tmp/build/logs/" "/tmp/build/packages/")
+uploaded_files=()
+
 for folder in "${folders[@]}"; do
     echo "Scanning folder $folder"
+    if [[ ! -d ${folder} ]]; then
+        continue;
+    fi
+
     for file in ${folder}*; do
         if [[ -d ${file} ]]; then
             echo "  Skipping directory `basename $file` ($file)"
             continue
         fi
-        echo "  Found entry $file. Uploading file.";
-        ./github-release upload \
+        echo "  Found entry `basename $file` ($file). Uploading file.";
+
+        ${GIT_RELEASE_EXECUTABLE} upload \
             --repo "TeaWeb" \
             --owner "TeaSpeak" \
             --token "${GIT_AUTHTOKEN}" \
@@ -66,5 +82,9 @@ for folder in "${folders[@]}"; do
             echo "Failed to generate git release"
             exit 1
         }
+
+        uploaded_files+="$file"
     done
 done
+
+echo "Successfully uploaded ${#uploaded_files[@]} files."

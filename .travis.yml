@@ -20,21 +20,8 @@ jobs:
         #- "ls -lah /tmp/build/"
         #- "ls -lah /tmp/build/logs/"
         #- "ls -lah /tmp/build/packages/"
-        - "wget https://github.com/tfausak/github-release/releases/download/1.2.4/github-release-linux.gz -O git-release.gz -q && gunzip git-release.gz && chmod +x git-release;"
         - >
           mkdir -p /tmp/build/packages/;
           echo "XXXX" > /tmp/build/packages/xxxxx;
-          export GIT_TAG=$(git rev-parse HEAD);
-          export GIT_TAG_SHORT=$(git rev-parse --short HEAD);
-          echo "Release commit: $GIT_TAG ($GIT_TAG_SHORT)";
-
-          export GITHUB_RELEASE_TAG="This is a auto build release from travis";
-          export GITHUB_RELEASE_REPOSITORY="TeaSpeak/TeaWeb";
-          export GITHUB_RELEASE_ACCESS_TOKEN="$GIT_AUTHTOKEN";
-          export GITHUB_RELEASE_COMMIT="3dbcad0";
-          /tmp/git-release "Travis autobuild $GIT_TAG_SHORT" /tmp/build/packages/xxxxx \
-            --commit "3dbcad0" \
-            --tag "12312123" \
-            --github-access-token "$GIT_AUTHTOKEN" \
-            --github-repository "TeaSpeak/TeaWeb";
+          ./scripts/travis_deploy.sh
       if: branch = master
