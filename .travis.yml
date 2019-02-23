@@ -24,11 +24,13 @@ jobs:
         - >
           mkdir -p /tmp/build/packages/;
           echo "XXXX" > /tmp/build/packages/xxxxx;
-          export GIT_TAG=$(git rev-parse HEAD)
-          export GIT_TAG_SHORT=$(git rev-parse --short HEAD)
+          export GIT_TAG=$(git rev-parse HEAD);
+          export GIT_TAG_SHORT=$(git rev-parse --short HEAD);
+          echo "Release commit: $GIT_TAG ($GIT_TAG_SHORT)";
+
           export GITHUB_RELEASE_TAG="This is a auto build release from travis";
           export GITHUB_RELEASE_REPOSITORY="$TRAVIS_REPO_SLUG";
           export GITHUB_RELEASE_ACCESS_TOKEN="$GIT_AUTHTOKEN";
-          echo "Release commit: $GIT_TAG ($GIT_TAG_SHORT)"; export GITHUB_RELEASE_COMMIT="$GIT_TAG";
+          export GITHUB_RELEASE_COMMIT="$GIT_TAG";
           /tmp/git-release "Travis autobuild $GIT_TAG_SHORT" /tmp/build/packages/* /tmp/build/logs/*;
       if: branch = master
