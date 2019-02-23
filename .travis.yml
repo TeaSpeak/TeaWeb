@@ -16,9 +16,9 @@ jobs:
       name: TeaWeb build master branch
       script:
         - "mkdir -p /tmp/build"
-        - "docker run --rm -v /tmp/build/logs/:/build/logs/ -v /tmp/build/packages/:/build/packages/ -v `pwd`:/build/TeaWeb $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug"
+        - "docker run --rm -v /tmp/build/logs/:/build/logs/ -v /tmp/build/packages/:/build/packages/ -v `pwd`:/build/TeaWeb $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug || travis_terminate 1;"
         - "ls -lah /tmp/build/"
         - "ls -lah /tmp/build/logs/"
         - "ls -lah /tmp/build/packages/"
-        - "./scripts/travis_deploy.sh"
+        - "./scripts/travis_deploy.sh || travis_terminate 1;"
       if: branch = master
