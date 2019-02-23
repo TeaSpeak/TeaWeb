@@ -1,3 +1,4 @@
+/// <reference path="../connection/ConnectionBase.ts" />
 
 enum GroupType {
     QUERY,

@@ -8,6 +8,7 @@
 /// <reference path="permission/PermissionManager.ts" />
 /// <reference path="permission/GroupManager.ts" />
 /// <reference path="ui/frames/ControlBar.ts" />
+/// <reference path="connection/ConnectionBase.ts" />
 
 enum DisconnectReason {
     REQUESTED,

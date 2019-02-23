@@ -1,4 +1,5 @@
 /// <reference path="client.ts" />
+/// <reference path="connection/ConnectionBase.ts" />
 
 class FileEntry {
     name: string;

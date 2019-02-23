@@ -1,4 +1,5 @@
 /// <reference path="../client.ts" />
+/// <reference path="../connection/ConnectionBase.ts" />
 
 enum PermissionType {
     B_SERVERINSTANCE_HELP_VIEW = "b_serverinstance_help_view", /* Permission ID: 1 */
