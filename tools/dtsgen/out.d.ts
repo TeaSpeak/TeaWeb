@@ -1,13 +1,6 @@
 
-/* File: /home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/tools/dtsgen/test/test_03.ts */
-declare enum YY {
-    H,
-    B
+/* File: /home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/tools/dtsgen/test/test_04.ts */
+declare class TestClass<T> extends Promise<T> {
 }
-declare interface X {
-    type: any;
-    c: YY.B;
-}
-declare class X {
-    static x();
-}
+declare const lambda_function;
+declare const lambda_function2;
