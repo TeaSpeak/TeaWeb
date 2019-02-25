@@ -554,6 +554,8 @@ const loader_javascript = {
             "js/connection/HandshakeHandler.js",
             "js/connection/ServerConnection.js",
 
+            "js/stats.js",
+
             "js/PPTListener.js",
 
 

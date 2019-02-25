@@ -96,16 +96,14 @@ namespace stats {
 
         export function start_connection() {
             cancel_reconnect();
-
-            if(connection) {
-                const connection_copy = connection;
-                connection = undefined;
-
-                connection_copy.close(3001);
-            }
+            close_connection();
 
             connection_state = ConnectionState.CONNECTING;
-            connection = new WebSocket('wss://web-stats.teaspeak.de:1774');
+
+            connection = new WebSocket('wss://web-stats.teaspeak.de:27790');
+            if(!connection)
+                connection = new WebSocket('wss://localhost:27788');
+
             {
                 const connection_copy = connection;
                 connection.onclose = (event: CloseEvent) => {
@@ -135,7 +133,7 @@ namespace stats {
                         console.log(LOG_PREFIX + tr("Received an error. Closing connection. Object: %o"), event);
 
                     connection.close(CloseCodes.INTERNAL_ERROR);
-                    this.invoke_reconnect();
+                    invoke_reconnect();
                 };
 
                 connection.onmessage = (event: MessageEvent) => {
@@ -152,7 +150,20 @@ namespace stats {
             }
         }
 
+        export function close_connection() {
+            if(connection) {
+                const connection_copy = connection;
+                connection = undefined;
+
+                try {
+                    connection_copy.close(3001);
+                } catch(_) {}
+            }
+        }
+
         function invoke_reconnect() {
+            close_connection();
+
             if(reconnect_timer) {
                 clearTimeout(reconnect_timer);
                 reconnect_timer = undefined;

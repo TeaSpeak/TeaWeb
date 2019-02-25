@@ -272,6 +272,15 @@ function main() {
             globalClient.channelTree.handle_resized();
         }, 1000);
     });
+
+    stats.initialize({
+        verbose: true,
+        anonymize_ip_addresses: true,
+        volatile_collection_only: false
+    });
+    stats.register_user_count_listener(status => {
+        console.log("Received user count update: %o", status);
+    });
 }
 
 loader.register_task(loader.Stage.LOADED, {
