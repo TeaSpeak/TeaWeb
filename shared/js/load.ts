@@ -631,6 +631,7 @@ const loader_style = {
             "css/static/ts/tab.css",
             "css/static/ts/chat.css",
             "css/static/ts/icons.css",
+            "css/static/ts/country.css",
             "css/static/general.css",
             "css/static/modals.css",
             "css/static/modal-bookmarks.css",

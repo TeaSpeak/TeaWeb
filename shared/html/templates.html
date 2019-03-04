@@ -2057,7 +2057,10 @@
             <table class="select_info_table">
                 <tr>
                     <td>{{tr "Name:" /}}</td>
-                    <td><node key="client_name"/></td>
+                    <td style="display: flex; flex-direction: row">
+                        <div style="margin-right: 3px" class="country flag-{{*:(data.property_client_country || 'xx').toLowerCase()}}"></div>
+                        <node key="client_name"/>
+                    </td>
                 </tr>
                 {{if property_client_description.length > 0}}
                 <tr>
