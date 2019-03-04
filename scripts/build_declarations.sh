@@ -21,7 +21,7 @@ function replace_tribble() {
 
 #Building the generator
 ./tools/build_dtsgen.sh
-if [ $? -ne 0 ]; then
+if [[ $? -ne 0 ]]; then
     echo "Failed to build typescript declaration generator"
     exit 1
 fi

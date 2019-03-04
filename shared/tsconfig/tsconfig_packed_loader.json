@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true
+  },
+  "include": [
+    "../declarations/imports_*.d.ts",
+    "../declarations/exports_packed.d.ts",
+    "../js/load.ts"
+  ]
+}

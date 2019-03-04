@@ -12,10 +12,23 @@ if [[ -e ${LOADER_FILE} ]]; then
         echo "Failed to remove loader file!\nThis could be critical later!"
     fi
 fi
+
 npm run dtsgen -- --config $(pwd)/tsconfig/dtsconfig_loader.json -v
 if [[ ! -e ${LOADER_FILE} ]]; then
     echo "Failed to generate definitions"
     echo "$result"
+    exit 1
+fi
+
+npm run dtsgen -- --config $(pwd)/tsconfig/dtsconfig_packed.json -v
+if [[ $? -ne 0 ]]; then
+    echo "Failed to generate definitions for the loader"
+    exit 1
+fi
+
+execute_ttsc -p tsconfig/tsconfig_packed_loader.json
+if [[ $? -ne 0 ]]; then
+    echo "Failed to generate packed loader file!"
     exit 1
 fi
 

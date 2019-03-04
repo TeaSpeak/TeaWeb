@@ -665,7 +665,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelclientdelperm", {
+                            return globalClient.serverConnection.send_command("channelclientdelperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id,
@@ -677,7 +677,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelclientdelperm", {
+                            return globalClient.serverConnection.send_command("channelclientdelperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
@@ -694,7 +694,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelclientaddperm", {
+                            return globalClient.serverConnection.send_command("channelclientaddperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id,
@@ -709,7 +709,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelclientaddperm", {
+                            return globalClient.serverConnection.send_command("channelclientaddperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
@@ -745,7 +745,7 @@ namespace Modals {
 
             const resolve_client = () => {
                 let client_uid = tag_select_uid.val() as string;
-                globalClient.serverConnection.helper.info_from_uid(client_uid).then(result => {
+                globalClient.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                     if(!result || result.length == 0) return Promise.reject("invalid data");
                     tag_select_uid.attr('pattern', null).removeClass('is-invalid');
 
@@ -821,7 +821,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                            return globalClient.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id,
                             });
@@ -832,7 +832,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                            return globalClient.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id_grant(),
                             });
@@ -848,7 +848,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                            return globalClient.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -862,7 +862,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("clientaddperm", {
+                            return globalClient.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
@@ -888,7 +888,7 @@ namespace Modals {
 
         const resolve_client = () => {
             let client_uid = tag_select_uid.val() as string;
-            globalClient.serverConnection.helper.info_from_uid(client_uid).then(result => {
+            globalClient.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                 if(!result || result.length == 0) return Promise.reject("invalid data");
                 tag_select_uid.attr('pattern', null).removeClass('is-invalid');
 
@@ -956,7 +956,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channeldelperm", {
+                            return globalClient.serverConnection.send_command("channeldelperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id,
                             });
@@ -968,7 +968,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channeldelperm", {
+                            return globalClient.serverConnection.send_command("channeldelperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
                             });
@@ -984,7 +984,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.sendCommand("channeladdperm", {
+                            return globalClient.serverConnection.send_command("channeladdperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -999,7 +999,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channeladdperm", {
+                            return globalClient.serverConnection.send_command("channeladdperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
@@ -1058,7 +1058,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
+                            return globalClient.serverConnection.send_command("channelgroupdelperm", {
                                 cgid: current_group.id,
                                 permid: permission.id,
                             });
@@ -1069,7 +1069,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelgroupdelperm", {
+                            return globalClient.serverConnection.send_command("channelgroupdelperm", {
                                 cgid: current_group.id,
                                 permid: permission.id_grant(),
                             });
@@ -1085,7 +1085,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelgroupaddperm", {
+                            return globalClient.serverConnection.send_command("channelgroupaddperm", {
                                 cgid: current_group.id,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -1099,7 +1099,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("channelgroupaddperm", {
+                            return globalClient.serverConnection.send_command("channelgroupaddperm", {
                                 cgid: current_group.id,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
@@ -1218,7 +1218,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.sendCommand("servergroupdelperm", {
+                            return globalClient.serverConnection.send_command("servergroupdelperm", {
                                 sgid: current_group.id,
                                 permid: permission.id,
                             });
@@ -1229,7 +1229,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("servergroupdelperm", {
+                            return globalClient.serverConnection.send_command("servergroupdelperm", {
                                 sgid: current_group.id,
                                 permid: permission.id_grant(),
                             });
@@ -1245,7 +1245,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.sendCommand("servergroupaddperm", {
+                            return globalClient.serverConnection.send_command("servergroupaddperm", {
                                 sgid: current_group.id,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -1259,7 +1259,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.sendCommand("servergroupaddperm", {
+                            return globalClient.serverConnection.send_command("servergroupaddperm", {
                                 sgid: current_group.id,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,

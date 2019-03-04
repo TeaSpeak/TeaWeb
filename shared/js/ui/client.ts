@@ -146,7 +146,7 @@ class ClientEntry {
 
                     const source = client._channel;
                     const self = this.channelTree.client.getClient();
-                    this.channelTree.client.serverConnection.sendCommand("clientmove", {
+                    this.channelTree.client.serverConnection.send_command("clientmove", {
                         clid: client.clientId(),
                         cid: target.getChannelId()
                     }).then(event => {
@@ -179,7 +179,7 @@ class ClientEntry {
             entry.name = group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]";
             if(this.groupAssigned(group)) {
                 entry.callback = () => {
-                    this.channelTree.client.serverConnection.sendCommand("servergroupdelclient", {
+                    this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
                         sgid: group.id,
                         cldbid: this.properties.client_database_id
                     });
@@ -187,7 +187,7 @@ class ClientEntry {
                 entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
             } else {
                 entry.callback = () => {
-                    this.channelTree.client.serverConnection.sendCommand("servergroupaddclient", {
+                    this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
                         sgid: group.id,
                         cldbid: this.properties.client_database_id
                     });
@@ -211,7 +211,7 @@ class ClientEntry {
             }
             entry.name = group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]";
             entry.callback = () => {
-                this.channelTree.client.serverConnection.sendCommand("setclientchannelgroup", {
+                this.channelTree.client.serverConnection.send_command("setclientchannelgroup", {
                     cldbid: this.properties.client_database_id,
                     cgid: group.id,
                     cid: this.currentChannel().channelId
@@ -234,12 +234,12 @@ class ClientEntry {
                     callback: () => {
                         Modals.createServerGroupAssignmentModal(this, (group, flag) => {
                             if(flag) {
-                                return this.channelTree.client.serverConnection.sendCommand("servergroupaddclient", {
+                                return this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
                                     sgid: group.id,
                                     cldbid: this.properties.client_database_id
                                 }).then(result => true);
                             } else
-                                return this.channelTree.client.serverConnection.sendCommand("servergroupdelclient", {
+                                return this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
                                     sgid: group.id,
                                     cldbid: this.properties.client_database_id
                                 }).then(result => true);
@@ -286,7 +286,7 @@ class ClientEntry {
                         if(typeof(result) === "string") {
                             //TODO tr
                             console.log("Poking client " + _this.clientNickName() + " with message " + result);
-                            _this.channelTree.client.serverConnection.sendCommand("clientpoke", {
+                            _this.channelTree.client.serverConnection.send_command("clientpoke", {
                                 clid: _this.clientId(),
                                 msg: result
                             });
@@ -303,7 +303,7 @@ class ClientEntry {
                         if(typeof(result) === "string") {
                             //TODO tr
                             console.log("Changing " + _this.clientNickName() + "'s description to " + result);
-                            _this.channelTree.client.serverConnection.sendCommand("clientedit", {
+                            _this.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: _this.clientId(),
                                 client_description: result
                             });
@@ -319,7 +319,7 @@ class ClientEntry {
                 icon: "client-move_client_to_own_channel",
                 name: tr("Move client to your channel"),
                 callback: () => {
-                    this.channelTree.client.serverConnection.sendCommand("clientmove", {
+                    this.channelTree.client.serverConnection.send_command("clientmove", {
                         clid: this.clientId(),
                         cid: this.channelTree.client.getClient().currentChannel().getChannelId()
                     });
@@ -333,7 +333,7 @@ class ClientEntry {
                         if(result) {
                             //TODO tr
                             console.log("Kicking client " + _this.clientNickName() + " from channel with reason " + result);
-                            _this.channelTree.client.serverConnection.sendCommand("clientkick", {
+                            _this.channelTree.client.serverConnection.send_command("clientkick", {
                                 clid: _this.clientId(),
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
                                 reasonmsg: result
@@ -351,7 +351,7 @@ class ClientEntry {
                         if(result) {
                             //TODO tr
                             console.log("Kicking client " + _this.clientNickName() + " from server with reason " + result);
-                            _this.channelTree.client.serverConnection.sendCommand("clientkick", {
+                            _this.channelTree.client.serverConnection.send_command("clientkick", {
                                 clid: _this.clientId(),
                                 reasonid: ViewReasonId.VREASON_SERVER_KICK,
                                 reasonmsg: result
@@ -367,11 +367,13 @@ class ClientEntry {
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
                     Modals.spawnBanClient(this.properties.client_nickname, (data) => {
-                        this.channelTree.client.serverConnection.sendCommand("banclient", {
+                        this.channelTree.client.serverConnection.send_command("banclient", {
                             uid: this.properties.client_unique_identifier,
                             banreason: data.reason,
                             time: data.length
-                        }, [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]).then(() => {
+                        }, {
+                            flagset: [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]
+                        }).then(() => {
                             sound.play(Sound.USER_BANNED);
                         });
                     });
@@ -386,7 +388,7 @@ class ClientEntry {
                 invalidPermission: true, //!this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
                     Modals.spawnBanClient(this.properties.client_nickname, (duration, reason) => {
-                        this.channelTree.client.serverConnection.sendCommand("banclient", {
+                        this.channelTree.client.serverConnection.send_command("banclient", {
                             uid: this.properties.client_unique_identifier,
                             banreason: reason,
                             time: duration
@@ -511,7 +513,6 @@ class ClientEntry {
         let icon: string = "";
         let clicon: string = "";
 
-        console.error(this.properties.client_nickname + " - " + this.properties.client_type_exact + " - " + this.properties.client_type);
         if(this.properties.client_type_exact == ClientType.CLIENT_QUERY) {
             icon = "client-server_query";
             console.log("Server query!");
@@ -653,7 +654,7 @@ class ClientEntry {
     updateClientVariables(){
         if(this.lastVariableUpdate == 0 || new Date().getTime() - 10 * 60 * 1000 > this.lastVariableUpdate){ //Cache these only 10 min
             this.lastVariableUpdate = new Date().getTime();
-            this.channelTree.client.serverConnection.sendCommand("clientgetvariables", {clid: this.clientId()});
+            this.channelTree.client.serverConnection.send_command("clientgetvariables", {clid: this.clientId()});
         }
     }
 
@@ -667,12 +668,12 @@ class ClientEntry {
 
             const _this = this;
             c.onMessageSend = function (text: string) {
-                _this.channelTree.client.serverConnection.sendMessage(text, ChatType.CLIENT, _this);
+                _this.channelTree.client.serverConnection.command_helper.sendMessage(text, ChatType.CLIENT, _this);
             };
 
             c.onClose = function () : boolean {
                 //TODO check online?
-                _this.channelTree.client.serverConnection.sendCommand("clientchatclosed", {"clid": _this.clientId()});
+                _this.channelTree.client.serverConnection.send_command("clientchatclosed", {"clid": _this.clientId()});
                 return true;
             }
         }
@@ -797,7 +798,7 @@ class LocalClientEntry extends ClientEntry {
                     createInputModal(tr("Change own description"), tr("New description:<br>"), text => true, result => {
                         if(result) {
                             console.log(tr("Changing own description to %s"), result);
-                            _self.channelTree.client.serverConnection.sendCommand("clientedit", {
+                            _self.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: _self.clientId(),
                                 client_description: result
                             });
@@ -853,7 +854,7 @@ class LocalClientEntry extends ClientEntry {
             if(_self.clientNickName() == text) return;
 
             elm.text(_self.clientNickName());
-            _self.handle.serverConnection.updateClient("client_nickname", text).then((e) => {
+            _self.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
                 chat.serverChat().appendMessage(tr("Nickname successfully changed"));
             }).catch((e: CommandResult) => {
                 chat.serverChat().appendError(tr("Could not change nickname ({})"),  e.extra_message);
@@ -915,7 +916,7 @@ class MusicClientEntry extends ClientEntry {
                 callback: () => {
                     createInputModal(tr("Change music bots nickname"), tr("New nickname:<br>"), text => text.length >= 3 && text.length <= 31, result => {
                         if(result) {
-                            this.channelTree.client.serverConnection.sendCommand("clientedit", {
+                            this.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: this.clientId(),
                                 client_nickname: result
                             });
@@ -931,7 +932,7 @@ class MusicClientEntry extends ClientEntry {
                 callback: () => {
                     createInputModal(tr("Change music bots description"), tr("New description:<br>"), text => true, result => {
                         if(typeof(result) === 'string') {
-                            this.channelTree.client.serverConnection.sendCommand("clientedit", {
+                            this.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: this.clientId(),
                                 client_description: result
                             });
@@ -955,7 +956,7 @@ class MusicClientEntry extends ClientEntry {
                 icon: "client-edit",
                 disabled: false,
                 callback: () => {
-                    this.channelTree.client.serverConnection.helper.request_playlist_list().then(lists => {
+                    this.channelTree.client.serverConnection.command_helper.request_playlist_list().then(lists => {
                         for(const entry of lists) {
                             if(entry.playlist_id == this.properties.client_playlist_id) {
                                 Modals.spawnPlaylistEdit(this.channelTree.client, entry);
@@ -976,7 +977,7 @@ class MusicClientEntry extends ClientEntry {
                 callback: () => {
                     createInputModal(tr("Please enter the URL"), tr("URL:"), text => true, result => {
                         if(result) {
-                            this.channelTree.client.serverConnection.sendCommand("musicbotqueueadd", {
+                            this.channelTree.client.serverConnection.send_command("musicbotqueueadd", {
                                 bot_id: this.properties.client_database_id,
                                 type: "yt", //Its a hint not a force!
                                 url: result
@@ -999,7 +1000,7 @@ class MusicClientEntry extends ClientEntry {
                 icon: "client-move_client_to_own_channel",
                 name: tr("Move client to your channel"),
                 callback: () => {
-                    this.channelTree.client.serverConnection.sendCommand("clientmove", {
+                    this.channelTree.client.serverConnection.send_command("clientmove", {
                         clid: this.clientId(),
                         cid: this.channelTree.client.getClient().currentChannel().getChannelId()
                     });
@@ -1012,7 +1013,7 @@ class MusicClientEntry extends ClientEntry {
                     createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
                         if(result) {
                             console.log(tr("Kicking client %o from channel with reason %o"), this.clientNickName(), result);
-                            this.channelTree.client.serverConnection.sendCommand("clientkick", {
+                            this.channelTree.client.serverConnection.send_command("clientkick", {
                                 clid: this.clientId(),
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
                                 reasonmsg: result
@@ -1045,7 +1046,7 @@ class MusicClientEntry extends ClientEntry {
                         max_volume = 100;
 
                     Modals.spawnChangeRemoteVolume(this.properties.player_volume, max_volume / 100, value => {
-                        this.channelTree.client.serverConnection.sendCommand("clientedit", {
+                        this.channelTree.client.serverConnection.send_command("clientedit", {
                             clid: this.clientId(),
                             player_volume: value,
                         }).then(() => {
@@ -1064,7 +1065,7 @@ class MusicClientEntry extends ClientEntry {
                     const tag = $.spawn("div").append(MessageHelper.formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
                     Modals.spawnYesNo(tr("Are you sure?"), $.spawn("div").append(tag), result => {
                        if(result) {
-                           this.channelTree.client.serverConnection.sendCommand("musicbotdelete", {
+                           this.channelTree.client.serverConnection.send_command("musicbotdelete", {
                                bot_id: this.properties.client_database_id
                            });
                        }
@@ -1105,7 +1106,7 @@ class MusicClientEntry extends ClientEntry {
             this._info_promise_resolve = resolve;
         });
 
-        this.channelTree.client.serverConnection.sendCommand("musicbotplayerinfo", {bot_id: this.properties.client_database_id });
+        this.channelTree.client.serverConnection.send_command("musicbotplayerinfo", {bot_id: this.properties.client_database_id });
         return this._info_promise;
     }
 }

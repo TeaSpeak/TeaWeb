@@ -144,7 +144,7 @@ class ServerEntry {
                         log.info(LogCategory.SERVER, tr("Changing server properties %o"), properties);
                         console.log(tr("Changed properties: %o"), properties);
                         if (properties)
-                            this.channelTree.client.serverConnection.sendCommand("serveredit", properties).then(() => {
+                            this.channelTree.client.serverConnection.send_command("serveredit", properties).then(() => {
                                 sound.play(Sound.SERVER_EDITED_SELF);
                             });
                     });
@@ -200,7 +200,7 @@ class ServerEntry {
         if(this.info_request_promise && Date.now() - this.lastInfoRequest < 1000) return this.info_request_promise;
         this.lastInfoRequest = Date.now();
         this.nextInfoRequest =  this.lastInfoRequest + 10 * 1000;
-        this.channelTree.client.serverConnection.sendCommand("servergetvariables").catch(error => {
+        this.channelTree.client.serverConnection.send_command("servergetvariables").catch(error => {
             this.info_request_promise_reject(error);
             this.info_request_promise = undefined;
             this.info_request_promise_reject = undefined;

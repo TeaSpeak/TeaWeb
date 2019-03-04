@@ -25,6 +25,7 @@ namespace Modals {
     export interface BanListManager {
         addbans : (ban: BanEntry[]) => void;
         clear : (ban?: any) => void;
+        modal: Modal;
     }
 
     export function openBanList(client: TSClient) {
@@ -34,7 +35,7 @@ namespace Modals {
                 if(result.server_id < 0) result.server_id = undefined;
                 console.log(tr("Adding ban %o"), result);
 
-                client.serverConnection.sendCommand("banadd", {
+                client.serverConnection.send_command("banadd", {
                     ip: result.ip,
                     name: result.name,
                     uid: result.unique_id,
@@ -55,7 +56,7 @@ namespace Modals {
                 console.log(tr("Apply edit changes %o"), result);
                 if(result.server_id < 0) result.server_id = undefined;
 
-                client.serverConnection.sendCommand("banedit", {
+                client.serverConnection.send_command("banedit", {
                     banid: result.banid,
                     ip: result.ip,
                     name: result.name,
@@ -73,7 +74,7 @@ namespace Modals {
             });
         }, ban => {
             console.log(tr("Deleting ban %o"), ban);
-            client.serverConnection.sendCommand("bandel", {
+            client.serverConnection.send_command("bandel", {
                 banid: ban.banid,
                 sid: ban.server_id
             }).then(() => {
@@ -84,8 +85,10 @@ namespace Modals {
             });
         });
 
-        update = () => {
-            client.serverConnection.commandHandler["notifybanlist"] = json => {
+        const single_handler: connection.SingleCommandHandler = {
+            command: "notifybanlist",
+            function: command => {
+                const json = command.arguments;
                 console.log(tr("Got banlist: %o"), json);
 
                 let bans: BanEntry[] = [];
@@ -136,12 +139,20 @@ namespace Modals {
                 }
 
                 modal.addbans(bans);
-            };
+                return false;
+            }
+        };
+        client.serverConnection.command_handler_boss().register_single_handler(single_handler);
+        modal.modal.close_listener.push(() => {
+            client.serverConnection.command_handler_boss().remove_single_handler(single_handler);
+        });
+
+        update = () => {
 
             //TODO test permission
             modal.clear();
-            client.serverConnection.sendCommand("banlist", { sid: 0 }); //Global ban list
-            client.serverConnection.sendCommand("banlist").catch(error => {
+            client.serverConnection.send_command("banlist", { sid: 0 }); //Global ban list
+            client.serverConnection.send_command("banlist").catch(error => {
                 if(error instanceof CommandResult) {
                 } else {
                     console.error(error);
@@ -208,6 +219,7 @@ namespace Modals {
             modal.htmlTag.find(".entry-container .entries").children().detach();
             update_function();
         };
+        result.modal = modal;
 
         return result;
     }

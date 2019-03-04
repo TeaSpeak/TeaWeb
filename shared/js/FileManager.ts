@@ -1,4 +1,5 @@
 /// <reference path="client.ts" />
+/// <reference path="connection/ConnectionBase.ts" />
 
 class FileEntry {
     name: string;
@@ -109,7 +110,7 @@ class DownloadFileTransfer {
     }
 }
 
-class FileManager {
+class FileManager extends connection.AbstractCommandHandler {
     handle: TSClient;
     icons: IconManager;
     avatars: AvatarManager;
@@ -119,13 +120,28 @@ class FileManager {
     private downloadCounter : number = 0;
 
     constructor(client: TSClient) {
+        super(client.serverConnection);
+
         this.handle = client;
         this.icons = new IconManager(this);
         this.avatars = new AvatarManager(this);
 
-        this.handle.serverConnection.commandHandler["notifyfilelist"] = this.notifyFileList.bind(this);
-        this.handle.serverConnection.commandHandler["notifyfilelistfinished"] = this.notifyFileListFinished.bind(this);
-        this.handle.serverConnection.commandHandler["notifystartdownload"] = this.notifyStartDownload.bind(this);
+        this.connection.command_handler_boss().register_handler(this);
+    }
+
+    handle_command(command: connection.ServerCommand): boolean {
+        switch (command.command) {
+            case "notifyfilelist":
+                this.notifyFileList(command.arguments);
+                return true;
+            case "notifyfilelistfinished":
+                this.notifyFileListFinished(command.arguments);
+                return true;
+            case "notifystartdownload":
+                this.notifyStartDownload(command.arguments);
+                return true;
+        }
+        return false;
     }
 
 
@@ -140,7 +156,7 @@ class FileManager {
             req.callback = accept;
             _this.listRequests.push(req);
 
-            _this.handle.serverConnection.sendCommand("ftgetfilelist", {"path": path, "cid": (channel ? channel.channelId : "0"), "cpw": (password ? password : "")}).then(() => {}).catch(reason => {
+            _this.handle.serverConnection.send_command("ftgetfilelist", {"path": path, "cid": (channel ? channel.channelId : "0"), "cpw": (password ? password : "")}).then(() => {}).catch(reason => {
                 _this.listRequests.remove(req);
                 if(reason instanceof CommandResult) {
                     if(reason.id == 0x0501) {
@@ -197,7 +213,7 @@ class FileManager {
         this.pendingDownloadTransfers.push(transfer);
         return new Promise<DownloadFileTransfer>((resolve, reject) => {
             transfer["_promiseCallback"] = resolve;
-            _this.handle.serverConnection.sendCommand("ftinitdownload", {
+            _this.handle.serverConnection.send_command("ftinitdownload", {
                 "path": path,
                 "name": file,
                 "cid": (channel ? channel.channelId : "0"),

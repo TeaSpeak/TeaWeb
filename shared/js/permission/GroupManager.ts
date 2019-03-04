@@ -1,3 +1,4 @@
+/// <reference path="../connection/ConnectionBase.ts" />
 
 enum GroupType {
     QUERY,
@@ -58,7 +59,7 @@ class Group {
     }
 }
 
-class GroupManager {
+class GroupManager extends connection.AbstractCommandHandler {
     readonly handle: TSClient;
 
     serverGroups: Group[] = [];
@@ -66,18 +67,29 @@ class GroupManager {
 
     private requests_group_permissions: GroupPermissionRequest[] = [];
     constructor(client: TSClient) {
+        super(client.serverConnection);
+
+        client.serverConnection.command_handler_boss().register_handler(this);
         this.handle = client;
+    }
 
-        this.handle.serverConnection.commandHandler["notifyservergrouplist"] = this.onServerGroupList.bind(this);
-        this.handle.serverConnection.commandHandler["notifychannelgrouplist"] = this.onServerGroupList.bind(this);
-
-        this.handle.serverConnection.commandHandler["notifyservergrouppermlist"] = this.onPermissionList.bind(this);
-        this.handle.serverConnection.commandHandler["notifychannelgrouppermlist"] = this.onPermissionList.bind(this);
+    handle_command(command: connection.ServerCommand): boolean {
+        switch (command.command) {
+            case "notifyservergrouplist":
+            case "notifychannelgrouplist":
+                this.handle_grouplist(command.arguments);
+                return true;
+            case "notifyservergrouppermlist":
+            case "notifychannelgrouppermlist":
+                this.handle_group_permission_list(command.arguments);
+                return true;
+        }
+        return false;
     }
 
     requestGroups(){
-        this.handle.serverConnection.sendCommand("servergrouplist");
-        this.handle.serverConnection.sendCommand("channelgrouplist");
+        this.handle.serverConnection.send_command("servergrouplist");
+        this.handle.serverConnection.send_command("channelgrouplist");
     }
 
     static sorter() : (a: Group, b: Group) => number {
@@ -107,7 +119,7 @@ class GroupManager {
         return undefined;
     }
 
-    private onServerGroupList(json) {
+    private handle_grouplist(json) {
         let target : GroupTarget;
         if(json[0]["sgid"]) target = GroupTarget.SERVER;
         else if(json[0]["cgid"]) target = GroupTarget.CHANNEL;
@@ -167,7 +179,7 @@ class GroupManager {
         req.promise = new LaterPromise<PermissionValue[]>();
         this.requests_group_permissions.push(req);
 
-        this.handle.serverConnection.sendCommand(group.target == GroupTarget.SERVER ? "servergrouppermlist" : "channelgrouppermlist", {
+        this.handle.serverConnection.send_command(group.target == GroupTarget.SERVER ? "servergrouppermlist" : "channelgrouppermlist", {
             cgid: group.id,
             sgid: group.id
         }).catch(error => {
@@ -179,7 +191,7 @@ class GroupManager {
         return req.promise;
     }
 
-    private onPermissionList(json: any[]) {
+    private handle_group_permission_list(json: any[]) {
         let group = json[0]["sgid"] ? this.serverGroup(parseInt(json[0]["sgid"])) : this.channelGroup(parseInt(json[0]["cgid"]));
         if(!group) {
             log.error(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but its not a registered group!"), json[0]["sgid"], json[0]["cgid"]);

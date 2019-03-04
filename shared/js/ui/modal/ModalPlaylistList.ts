@@ -43,7 +43,7 @@ namespace Modals {
             update_selected();
 
             try {
-                available_playlists = await client.serverConnection.helper.request_playlist_list();
+                available_playlists = await client.serverConnection.command_helper.request_playlist_list();
             } catch(error) {
                 info_tag.text("failed to query playlist list.");
                 //FIXME error handling?
@@ -92,24 +92,29 @@ namespace Modals {
                 template.find(".footer .buttons .button-refresh").on('click', update_list);
 
                 template.find(".button-playlist-create").on('click', event => {
-                    const notify_handler = json => {
-                        client.serverConnection.commandHandler.unset_handler("notifyplaylistcreated", notify_handler);
-                        update_list().then(() => {
-                            spawnYesNo(tr("Playlist created successful"), tr("The playlist has been successfully created.<br>Should we open the editor?"), result => {
-                                if(result) {
-                                    for(const playlist of available_playlists) {
-                                        if(playlist.playlist_id == json[0]["playlist_id"]) {
-                                            spawnPlaylistEdit(client, playlist).close_listener.push(update_list);
-                                            return;
+                    const single_handler: connection.SingleCommandHandler = {
+                        function: command => {
+                            const json = command.arguments;
+                            update_list().then(() => {
+                                spawnYesNo(tr("Playlist created successful"), tr("The playlist has been successfully created.<br>Should we open the editor?"), result => {
+                                    if(result) {
+                                        for(const playlist of available_playlists) {
+                                            if(playlist.playlist_id == json[0]["playlist_id"]) {
+                                                spawnPlaylistEdit(client, playlist).close_listener.push(update_list);
+                                                return;
+                                            }
                                         }
                                     }
-                                }
+                                });
                             });
-                        });
+
+                            return true;
+                        },
+                        command: "notifyplaylistcreated"
                     };
-                    client.serverConnection.commandHandler.set_handler("notifyplaylistcreated", notify_handler);
-                    client.serverConnection.sendCommand("playlistcreate").catch(error => {
-                        client.serverConnection.commandHandler.unset_handler("notifyplaylistcreated", notify_handler);
+                    client.serverConnection.command_handler_boss().register_single_handler(single_handler);
+                    client.serverConnection.send_command("playlistcreate").catch(error => {
+                        client.serverConnection.command_handler_boss().remove_single_handler(single_handler);
                         if(error instanceof CommandResult)
                             error = error.extra_message || error.message;
                         createErrorModal(tr("Unable to create playlist"), tr("Failed to create playlist<br>Message: ") + error).open();
@@ -126,7 +131,7 @@ namespace Modals {
 
                     Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this playlist?"), result => {
                         if(result) {
-                            client.serverConnection.sendCommand("playlistdelete", {playlist_id: selected_playlist.playlist_id}).then(() => {
+                            client.serverConnection.send_command("playlistdelete", {playlist_id: selected_playlist.playlist_id}).then(() => {
                                 createInfoModal(tr("Playlist deleted successful"), tr("This playlist has been deleted successfully.")).open();
                                 update_list();
                             }).catch(error => {

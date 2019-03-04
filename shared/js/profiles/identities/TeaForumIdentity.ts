@@ -3,16 +3,18 @@
 namespace profiles.identities {
     class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {
         readonly identity: TeaForumIdentity;
+        handler: HandshakeCommandHandler<TeaForumHandshakeHandler>;
 
-        constructor(connection: ServerConnection, identity: profiles.identities.TeaForumIdentity) {
+        constructor(connection: connection.AbstractServerConnection, identity: profiles.identities.TeaForumIdentity) {
             super(connection);
             this.identity = identity;
+            this.handler = new HandshakeCommandHandler(connection, this);
+            this.handler["handshakeidentityproof"] = this.handle_proof.bind(this);
         }
 
         start_handshake() {
-            this.connection.commandHandler["handshakeidentityproof"] = this.handle_proof.bind(this);
-
-            this.connection.sendCommand("handshakebegin", {
+            this.connection.command_handler_boss().register_handler(this.handler);
+            this.connection.send_command("handshakebegin", {
                 intention: 0,
                 authentication_method: this.identity.type(),
                 data: this.identity.data_json()
@@ -27,7 +29,7 @@ namespace profiles.identities {
 
 
         private handle_proof(json) {
-            this.connection.sendCommand("handshakeindentityproof", {
+            this.connection.send_command("handshakeindentityproof", {
                 proof: this.identity.data_sign()
             }).catch(error => {
                 console.error(tr("Failed to proof the identity. Error: %o"), error);
@@ -36,6 +38,16 @@ namespace profiles.identities {
                     error = error.extra_message || error.message;
                 this.trigger_fail("failed to execute proof (" + error + ")");
             }).then(() => this.trigger_success());
+        }
+
+        protected trigger_fail(message: string) {
+            this.connection.command_handler_boss().unregister_handler(this.handler);
+            super.trigger_fail(message);
+        }
+
+        protected trigger_success() {
+            this.connection.command_handler_boss().unregister_handler(this.handler);
+            super.trigger_success();
         }
     }
 
@@ -104,7 +116,7 @@ namespace profiles.identities {
             });
         }
 
-        spawn_identity_handshake_handler(connection: ServerConnection) : HandshakeIdentityHandler {
+        spawn_identity_handshake_handler(connection: connection.AbstractServerConnection) : connection.HandshakeIdentityHandler {
             return new TeaForumHandshakeHandler(connection, this);
         }
     }

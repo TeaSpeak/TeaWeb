@@ -151,7 +151,7 @@ class AudioController {
 
     private playQueue() {
         let buffer: AudioBuffer;
-        while(buffer = this.audioCache.pop_front()) {
+        while((buffer = this.audioCache.pop_front())) {
             if(this.playingAudioCache.length >= this._latencyBufferLength * 1.5 + 3) {
                 console.log(tr("Dropping buffer because playing queue grows to much"));
                 continue; /* drop the data (we're behind) */

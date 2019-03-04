@@ -40,7 +40,7 @@ namespace log {
         [LogCategory.GENERAL,               true],
         [LogCategory.NETWORKING,            true],
         [LogCategory.VOICE,                 true],
-        [LogCategory.I18N,                  true]
+        [LogCategory.I18N,                  false]
     ]);
 
     loader.register_task(loader.Stage.LOADED, {

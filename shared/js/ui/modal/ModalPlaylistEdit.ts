@@ -99,7 +99,7 @@ namespace Modals {
                 template.find(".buttons .button-save").on('click', event => {
                     if(Object.keys(changed_properties).length != 0) {
                         changed_properties["playlist_id"] = playlist.playlist_id;
-                        client.serverConnection.sendCommand("playlistedit", changed_properties).then(() => {
+                        client.serverConnection.send_command("playlistedit", changed_properties).then(() => {
                             changed_properties = {};
                             update_save();
                         }).catch(error => {
@@ -121,7 +121,7 @@ namespace Modals {
                         }
 
                         array[0]["playlist_id"] = playlist.playlist_id;
-                        client.serverConnection.sendCommand("playlistaddperm", array).then(() => {
+                        client.serverConnection.send_command("playlistaddperm", array).then(() => {
                             changed_permissions = {};
                             update_save();
                         }).catch(error => {
@@ -176,7 +176,7 @@ namespace Modals {
 
         const update_songs = () => {
             set_song_info(tr("loading song list"));
-            client.serverConnection.helper.request_playlist_songs(playlist.playlist_id).then(result => {
+            client.serverConnection.command_helper.request_playlist_songs(playlist.playlist_id).then(result => {
                 const entries_tag = song_tag.find(".song-list-entries");
                 const entry_template = $("#tmpl_playlist_edit-song_entry");
                 entries_tag.empty();
@@ -193,7 +193,7 @@ namespace Modals {
                         button_delete.detach();
                     else
                         button_delete.on('click', event => {
-                            client.serverConnection.sendCommand("playlistsongremove", {
+                            client.serverConnection.send_command("playlistsongremove", {
                                 playlist_id: playlist.playlist_id,
                                 song_id: song.song_id
                             }).then(() => {
@@ -236,7 +236,7 @@ namespace Modals {
         song_tag.find(".button-song-add").on('click', event => {
             spawnSongAdd(playlist, (url, loader) => {
                 //playlist_id invoker previous url
-                client.serverConnection.sendCommand("playlistsongadd", {
+                client.serverConnection.send_command("playlistsongadd", {
                     playlist_id: playlist.playlist_id,
                     invoker: loader,
                     url: url
@@ -297,7 +297,7 @@ namespace Modals {
     function apply_properties(tag: JQuery, client: TSClient, playlist: Playlist, change_property: (key: string, value: string) => any, callback_current_song: (id: number) => any) {
         const owns_playlist = playlist.playlist_owner_dbid == client.getClient().properties.client_database_id;
 
-        client.serverConnection.helper.request_playlist_info(playlist.playlist_id).then(info => {
+        client.serverConnection.command_helper.request_playlist_info(playlist.playlist_id).then(info => {
             tag.find(".property-owner input")
                 .val(info.playlist_owner_name + " (" + info.playlist_owner_dbid + ")");
 

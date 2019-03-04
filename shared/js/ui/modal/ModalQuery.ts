@@ -20,21 +20,26 @@ namespace Modals {
                     }
 
                     //client_login_password
-                    globalClient.serverConnection.commandHandler["notifyquerycreated"] = json => {
-                        json = json[0];
+                    const single_handler: connection.SingleCommandHandler = {
+                            function: command => {
+                                const json = command.arguments[0];
 
-                        spawnQueryCreated({
-                            username: name,
-                            password: json.client_login_password
-                        }, true);
+                                spawnQueryCreated({
+                                    username: name,
+                                    password: json.client_login_password
+                                }, true);
 
-                        if(callback_created)
-                            callback_created(name, json.client_login_password);
+                                if(callback_created)
+                                    callback_created(name, json.client_login_password);
+                                return true;
+                            }
                     };
-
-                    globalClient.serverConnection.sendCommand("querycreate", {
+                    globalClient.serverConnection.command_handler_boss().register_single_handler(single_handler);
+                    globalClient.serverConnection.send_command("querycreate", {
                         client_login_name: name
                     }).catch(error => {
+                        globalClient.serverConnection.command_handler_boss().remove_single_handler(single_handler);
+
                         if(error instanceof CommandResult)
                             error = error.extra_message || error.message;
                         createErrorModal(tr("Unable to create account"), tr("Failed to create account<br>Message: ") + error).open();

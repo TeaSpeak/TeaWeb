@@ -470,6 +470,11 @@ const loader_javascript = {
             })
         }
 
+        /* load some extends classes */
+        await loader.load_scripts([
+            ["js/connection/ConnectionBase.js"]
+        ]);
+
         /* load the main app */
         await loader.load_scripts([
             //Load general API's
@@ -539,10 +544,17 @@ const loader_javascript = {
             "js/settings.js",
             "js/bookmarks.js",
             "js/contextMenu.js",
-            "js/connection.js",
             "js/FileManager.js",
             "js/client.js",
             "js/chat.js",
+
+            //Connection
+            "js/connection/CommandHandler.js",
+            "js/connection/CommandHelper.js",
+            "js/connection/HandshakeHandler.js",
+            "js/connection/ServerConnection.js",
+
+            "js/stats.js",
 
             "js/PPTListener.js",
 
@@ -685,7 +697,7 @@ async function check_updates() {
         const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
         if(!version) return undefined;
 
-        if(version == "unknown" || version.replace("0", "").length == 0)
+        if(version == "unknown" || version.replace(/0+/, "").length == 0)
             return undefined;
 
         return version;

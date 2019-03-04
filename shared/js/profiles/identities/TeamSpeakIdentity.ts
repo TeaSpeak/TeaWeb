@@ -198,16 +198,18 @@ namespace profiles.identities {
 
     class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
         identity: TeaSpeakIdentity;
+        handler: HandshakeCommandHandler<TeaSpeakHandshakeHandler>;
 
-        constructor(connection: ServerConnection, identity: TeaSpeakIdentity) {
+        constructor(connection: connection.AbstractServerConnection, identity: TeaSpeakIdentity) {
             super(connection);
             this.identity = identity;
+            this.handler = new HandshakeCommandHandler(connection, this);
+            this.handler["handshakeidentityproof"] = this.handle_proof.bind(this);
         }
 
         start_handshake() {
-            this.connection.commandHandler["handshakeidentityproof"] = this.handle_proof.bind(this);
-
-            this.connection.sendCommand("handshakebegin", {
+            this.connection.command_handler_boss().register_handler(this.handler);
+            this.connection.send_command("handshakebegin", {
                 intention: 0,
                 authentication_method: this.identity.type(),
                 publicKey: this.identity.public_key
@@ -227,7 +229,7 @@ namespace profiles.identities {
             }
 
             this.identity.sign_message(json[0]["message"], json[0]["digest"]).then(proof => {
-                this.connection.sendCommand("handshakeindentityproof", {proof: proof}).catch(error => {
+                this.connection.send_command("handshakeindentityproof", {proof: proof}).catch(error => {
                     console.error(tr("Failed to proof the identity. Error: %o"), error);
 
                     if(error instanceof CommandResult)
@@ -237,6 +239,16 @@ namespace profiles.identities {
             }).catch(error => {
                 this.trigger_fail("failed to sign message");
             });
+        }
+
+        protected trigger_fail(message: string) {
+            this.connection.command_handler_boss().unregister_handler(this.handler);
+            super.trigger_fail(message);
+        }
+
+        protected trigger_success() {
+            this.connection.command_handler_boss().unregister_handler(this.handler);
+            super.trigger_success();
         }
     }
 
@@ -831,7 +843,7 @@ namespace profiles.identities {
             return base64ArrayBuffer(buffer.subarray(0, index));
         }
 
-        spawn_identity_handshake_handler(connection: ServerConnection): HandshakeIdentityHandler {
+        spawn_identity_handshake_handler(connection: connection.AbstractServerConnection): connection.HandshakeIdentityHandler {
             return new TeaSpeakHandshakeHandler(connection, this);
         }
     }
