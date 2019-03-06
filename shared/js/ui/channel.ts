@@ -359,15 +359,33 @@ class ChannelEntry {
     }
 
     initializeListener() {
-        const _this = this;
-        this.channelTag().click(function () {
-            _this.channelTree.onSelect(_this);
-        });
-        this.channelTag().dblclick(() => {
+        const tag_channel = this.channelTag();
+        tag_channel.on('click', () => this.channelTree.onSelect(this));
+        tag_channel.on('dblclick', () => {
             if($.isArray(this.channelTree.currently_selected)) { //Multiselect
                 return;
             }
             this.joinChannel()
+        });
+
+        let last_touch: number = 0;
+        let touch_start: number = 0;
+        tag_channel.on('touchend', event => {
+            /* if over 250ms then its not a click its more a drag */
+            if(Date.now() - touch_start > 250) {
+                touch_start = 0;
+                return;
+            }
+            if(Date.now() - last_touch > 750) {
+                last_touch = Date.now();
+                return;
+            }
+            last_touch = Date.now();
+            /* double touch */
+            tag_channel.trigger('dblclick');
+        });
+        tag_channel.on('touchstart', event => {
+            touch_start = Date.now();
         });
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
@@ -378,9 +396,9 @@ class ChannelEntry {
                     return;
                 }
 
-                _this.channelTree.onSelect(_this, true);
-                _this.showContextMenu(event.pageX, event.pageY, () => {
-                    _this.channelTree.onSelect(undefined, true);
+                this.channelTree.onSelect(this, true);
+                this.showContextMenu(event.pageX, event.pageY, () => {
+                    this.channelTree.onSelect(undefined, true);
                 });
             });
         }
