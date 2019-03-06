@@ -480,6 +480,7 @@ const loader_javascript = {
             //Load general API's
             "js/proto.js",
             "js/i18n/localize.js",
+            "js/i18n/country.js",
             "js/log.js",
 
             "js/sound/Sounds.js",
