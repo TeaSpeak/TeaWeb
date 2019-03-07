@@ -53,7 +53,8 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
     readonly handle: TSClient;
 
     private current_selected?: AvailableTypes;
-    private _htmlTag: JQuery<HTMLElement>;
+    private _tag: JQuery<HTMLElement>;
+    private _tag_content: JQuery<HTMLElement>;
     private _tag_info: JQuery<HTMLElement>;
     private _tag_banner: JQuery<HTMLElement>;
 
@@ -63,9 +64,10 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     constructor(client: TSClient, htmlTag: JQuery<HTMLElement>) {
         this.handle = client;
-        this._htmlTag = htmlTag;
-        this._tag_info = htmlTag.find(".container-select-info");
-        this._tag_banner = htmlTag.find(".container-banner");
+        this._tag = htmlTag;
+        this._tag_content = htmlTag.find("> .select_info");
+        this._tag_info = this._tag_content.find(".container-select-info");
+        this._tag_banner = this._tag_content.find(".container-banner");
 
         this.managers.push(new MusicInfoManager());
         this.managers.push(new ClientInfoManager());
@@ -73,10 +75,24 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
         this.managers.push(new ServerInfoManager());
 
         this.banner_manager = new Hostbanner(client, this._tag_banner);
+
+        this._tag.find("button.close").on('click', () => {
+            this._tag.toggleClass('shown', false);
+        });
+    }
+
+    handle_resize() {
+        /* test if the popover isn't a popover anymore */
+        if(this._tag.hasClass('shown')) {
+            this._tag.removeClass('shown');
+            if(this.is_popover())
+                this._tag.addClass('shown');
+        }
     }
 
     setCurrentSelected(entry: AvailableTypes) {
         if(this.current_selected == entry) return;
+
         if(this._current_manager) {
             (this._current_manager as InfoManager<AvailableTypes>).finalizeFrame(this.current_selected, this._tag_info);
             this._current_manager = null;
@@ -112,7 +128,15 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     current_manager() { return this._current_manager; }
 
-    html_tag() { return this._htmlTag; }
+    html_tag() { return this._tag_content; }
+
+    is_popover() : boolean {
+        return !this._tag.is(':visible') || this._tag.hasClass('shown');
+    }
+
+    open_popover() {
+        this._tag.toggleClass('shown', true);
+    }
 }
 
 class Hostbanner {
@@ -299,8 +323,12 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
 
 
         {
-            let requestUpdate = rendered.find(".btn_update");
-            requestUpdate.prop("disabled", !server.shouldUpdateProperties());
+            const disabled = !server.shouldUpdateProperties();
+            let requestUpdate = rendered.find(".button-update");
+            requestUpdate
+                .prop("disabled", disabled)
+                .toggleClass('btn-success', !disabled)
+                .toggleClass('btn-danger', disabled);
 
             requestUpdate.click(() => {
                 server.updateProperties();
@@ -308,7 +336,10 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
             });
 
             this.registerTimer(setTimeout(function () {
-                requestUpdate.prop("disabled", false);
+                requestUpdate
+                    .prop("disabled", false)
+                    .toggleClass('btn-success', true)
+                    .toggleClass('btn-danger', false);
             }, server.nextInfoRequest - Date.now()));
         }
 

@@ -81,8 +81,12 @@ namespace connection {
 
         handleCommandServerInit(json){
             //We could setup the voice channel
-            console.log(tr("Setting up voice"));
-            this.connection.client.voiceConnection.createSession();
+            if( this.connection.client.voiceConnection) {
+                console.log(tr("Setting up voice"));
+                this.connection.client.voiceConnection.createSession();
+            } else {
+                console.log(tr("Skipping voice setup (No voice bridge available)"));
+            }
 
 
             json = json[0]; //Only one bulk

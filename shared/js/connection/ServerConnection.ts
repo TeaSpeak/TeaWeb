@@ -202,7 +202,12 @@ namespace connection {
                         arguments: json["data"]
                     });
                     group.end();
-                } else if(json["type"] === "WebRTC") this.client.voiceConnection.handleControlPacket(json);
+                } else if(json["type"] === "WebRTC") {
+                    if(this.client.voiceConnection)
+                        this.client.voiceConnection.handleControlPacket(json);
+                    else
+                        console.log(tr("Dropping WebRTC command packet, because we havent a bridge."))
+                }
                 else {
                     console.log(tr("Unknown command type %o"), json["type"]);
                 }
@@ -299,7 +304,7 @@ namespace connection {
             return false;
         }
 
-        voice_connection(): connection.AbstractVoiceConnection | undefined {
+        voice_connection(): connection.voice.AbstractVoiceConnection | undefined {
             return undefined;
         }
 

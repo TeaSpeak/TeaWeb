@@ -53,7 +53,7 @@ namespace loader {
         DONE
     }
 
-    export let allow_cached_files: boolean = false;
+    export let cache_tag: string | undefined;
     let current_stage: Stage = Stage.INITIALIZING;
     const tasks: {[key:number]:Task[]} = {};
 
@@ -206,7 +206,7 @@ namespace loader {
 
                 document.getElementById("scripts").appendChild(tag);
 
-                tag.src = path + (allow_cached_files ? "" : "?_ts=" + Date.now());
+                tag.src = path + (cache_tag || "");
             });
         }
     }
@@ -315,7 +315,7 @@ namespace loader {
                 };
 
                 document.getElementById("style").appendChild(tag);
-                tag.href = path + (allow_cached_files ? "" : "?_ts=" + Date.now());
+                tag.href = path + (cache_tag || "");
             });
         }
     }
@@ -708,12 +708,11 @@ async function check_updates() {
 
     if(!app_version) {
         /* TODO add warning */
-        loader.allow_cached_files = false;
+        loader.cache_tag = "?_ts=" + Date.now();
         return;
     }
     const cached_version = localStorage.getItem("cached_version");
     if(!cached_version || cached_version != app_version) {
-        loader.allow_cached_files = false;
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
             name: "cached version updater",
@@ -721,11 +720,8 @@ async function check_updates() {
                 localStorage.setItem("cached_version", app_version);
             }
         });
-        /* loading screen */
-        return;
     }
-
-    loader.allow_cached_files = true;
+    loader.cache_tag = "?_version=" + app_version;
 }
 
 interface Window {

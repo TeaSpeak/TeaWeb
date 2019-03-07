@@ -78,6 +78,7 @@ class StaticSettings {
 class Settings extends StaticSettings {
     static readonly KEY_DISABLE_CONTEXT_MENU = "disableContextMenu";
     static readonly KEY_DISABLE_UNLOAD_DIALOG = "disableUnloadDialog";
+    static readonly KEY_DISABLE_VOICE = "disableVoice";
 
     private static readonly UPDATE_DIRECT: boolean = true;
     private cacheGlobal = {};

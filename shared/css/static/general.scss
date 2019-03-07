@@ -228,8 +228,11 @@ footer .container {
 }
 
 $separator_thickness: 4px;
+$small_device: 500px;
+
 .app {
 	.container-app-main {
+		position: relative;
 		display: flex;
 		flex-direction: row;
 		justify-content: stretch;
@@ -303,6 +306,38 @@ $separator_thickness: 4px;
 	}
 }
 
+@media only screen and (max-width: $small_device) {
+    .container-app-main {
+        .container-info {
+            display: none;
+            position: absolute;
+
+            width: 100%!important; /* override the seperator property */
+            height: 100%;
+
+            z-index: 1000;
+
+            &.shown {
+                display: block;
+            }
+
+            .select_info {
+                > .close {
+                    display: block;
+                }
+            }
+        }
+
+        .container-channel-chat + .container-seperator {
+            display: none;
+        }
+
+        .container-channel-chat {
+            width: 100%!important; /* override the seperator property */
+        }
+    }
+}
+
 .container-seperator {
 	background: lightgray;
 	flex-grow: 0;
@@ -328,6 +363,7 @@ $separator_thickness: 4px;
 }
 
 .icon-container {
+	position: relative;
 	display: inline-block;
 	height: 16px;
 	width: 16px;
@@ -354,8 +390,6 @@ $separator_thickness: 4px;
 }
 
 html, body {
-	min-height: 500px;
-	min-width: 500px;
 	overflow: hidden;
 }
 

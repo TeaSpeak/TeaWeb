@@ -50,7 +50,7 @@ enum ViewReasonId {
 class TSClient {
     channelTree: ChannelTree;
     serverConnection: connection.ServerConnection;
-    voiceConnection: VoiceConnection;
+    voiceConnection: VoiceConnection | undefined;
     fileManager: FileManager;
     selectInfo: InfoBar;
     permissions: PermissionManager;
@@ -69,10 +69,12 @@ class TSClient {
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
         this.groups = new GroupManager(this);
-        this.voiceConnection = new VoiceConnection(this);
         this._ownEntry = new LocalClientEntry(this);
         this.controlBar = new ControlBar(this, $("#control_bar"));
         this.channelTree.registerClient(this._ownEntry);
+
+        if(!settings.static_global(Settings.KEY_DISABLE_VOICE, false))
+            this.voiceConnection = new VoiceConnection(this);
     }
 
     setup() {
@@ -140,7 +142,8 @@ class TSClient {
         if(this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
         this.controlBar.updateProperties();
-        if(!this.voiceConnection.current_encoding_supported())
+
+        if(this.voiceConnection && !this.voiceConnection.current_encoding_supported())
             createErrorModal(tr("Codec encode type not supported!"), tr("Codec encode type " + VoiceConnectionType[this.voiceConnection.type] + " not supported by this browser!<br>Choose another one!")).open(); //TODO tr
     }
 
@@ -270,7 +273,8 @@ class TSClient {
         }
 
         this.channelTree.reset();
-        this.voiceConnection.dropSession();
+        if(this.voiceConnection)
+            this.voiceConnection.dropSession();
         if(this.serverConnection) this.serverConnection.disconnect();
         this.controlBar.update_connection_state();
         this.selectInfo.setCurrentSelected(null);

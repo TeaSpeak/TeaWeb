@@ -1,1005 +1,1008 @@
 .country {
-  width: 16px;
-  height: 11px;
-  background: url('../../../img/ts/country_icons.png'), url('../../img/ts/country_icons.png') no-repeat;
+    width: 16px;
+    height: 11px;
+    background: url('../../../img/ts/country_icons.png'), url('../../img/ts/country_icons.png') no-repeat;
+
+    flex-shrink: 0;
+    flex-grow: 0;
 }
 
 .country.flag-ad {
-  background-position: 0 -11px
+    background-position: 0 -11px
 }
 
 .country.flag-ae {
-  background-position: 0 -22px
+    background-position: 0 -22px
 }
 
 .country.flag-af {
-  background-position: 0 -33px
+    background-position: 0 -33px
 }
 
 .country.flag-ag {
-  background-position: 0 -44px
+    background-position: 0 -44px
 }
 
 .country.flag-ai {
-  background-position: 0 -55px
+    background-position: 0 -55px
 }
 
 .country.flag-al {
-  background-position: 0 -66px
+    background-position: 0 -66px
 }
 
 .country.flag-am {
-  background-position: 0 -77px
+    background-position: 0 -77px
 }
 
 .country.flag-an {
-  background-position: 0 -88px
+    background-position: 0 -88px
 }
 
 .country.flag-ao {
-  background-position: 0 -99px
+    background-position: 0 -99px
 }
 
 .country.flag-ar {
-  background-position: 0 -110px
+    background-position: 0 -110px
 }
 
 .country.flag-as {
-  background-position: 0 -121px
+    background-position: 0 -121px
 }
 
 .country.flag-at {
-  background-position: 0 -132px
+    background-position: 0 -132px
 }
 
 .country.flag-au {
-  background-position: 0 -143px
+    background-position: 0 -143px
 }
 
 .country.flag-aw {
-  background-position: 0 -154px
+    background-position: 0 -154px
 }
 
 .country.flag-ax {
-  background-position: 0 -165px
+    background-position: 0 -165px
 }
 
 .country.flag-az {
-  background-position: 0 -176px
+    background-position: 0 -176px
 }
 
 .country.flag-ba {
-  background-position: 0 -187px
+    background-position: 0 -187px
 }
 
 .country.flag-bb {
-  background-position: 0 -198px
+    background-position: 0 -198px
 }
 
 .country.flag-bd {
-  background-position: 0 -209px
+    background-position: 0 -209px
 }
 
 .country.flag-be {
-  background-position: 0 -220px
+    background-position: 0 -220px
 }
 
 .country.flag-bf {
-  background-position: 0 -231px
+    background-position: 0 -231px
 }
 
 .country.flag-bg {
-  background-position: 0 -242px
+    background-position: 0 -242px
 }
 
 .country.flag-bh {
-  background-position: 0 -253px
+    background-position: 0 -253px
 }
 
 .country.flag-bi {
-  background-position: 0 -264px
+    background-position: 0 -264px
 }
 
 .country.flag-bj {
-  background-position: 0 -275px
+    background-position: 0 -275px
 }
 
 .country.flag-bl {
-  background-position: 0 -286px
+    background-position: 0 -286px
 }
 
 .country.flag-bm {
-  background-position: 0 -297px
+    background-position: 0 -297px
 }
 
 .country.flag-bn {
-  background-position: 0 -308px
+    background-position: 0 -308px
 }
 
 .country.flag-bo {
-  background-position: 0 -319px
+    background-position: 0 -319px
 }
 
 .country.flag-br {
-  background-position: 0 -330px
+    background-position: 0 -330px
 }
 
 .country.flag-bs {
-  background-position: 0 -341px
+    background-position: 0 -341px
 }
 
 .country.flag-bt {
-  background-position: 0 -352px
+    background-position: 0 -352px
 }
 
 .country.flag-bv {
-  background-position: 0 -363px
+    background-position: 0 -363px
 }
 
 .country.flag-bw {
-  background-position: 0 -374px
+    background-position: 0 -374px
 }
 
 .country.flag-by {
-  background-position: 0 -385px
+    background-position: 0 -385px
 }
 
 .country.flag-bz {
-  background-position: 0 -396px
+    background-position: 0 -396px
 }
 
 .country.flag-ca {
-  background-position: 0 -407px
+    background-position: 0 -407px
 }
 
 .country.flag-cc {
-  background-position: 0 -418px
+    background-position: 0 -418px
 }
 
 .country.flag-cd {
-  background-position: 0 -429px
+    background-position: 0 -429px
 }
 
 .country.flag-cf {
-  background-position: 0 -440px
+    background-position: 0 -440px
 }
 
 .country.flag-cg {
-  background-position: 0 -451px
+    background-position: 0 -451px
 }
 
 .country.flag-ch {
-  background-position: 0 -462px
+    background-position: 0 -462px
 }
 
 .country.flag-ci {
-  background-position: 0 -473px
+    background-position: 0 -473px
 }
 
 .country.flag-ck {
-  background-position: 0 -484px
+    background-position: 0 -484px
 }
 
 .country.flag-cl {
-  background-position: 0 -495px
+    background-position: 0 -495px
 }
 
 .country.flag-cm {
-  background-position: 0 -506px
+    background-position: 0 -506px
 }
 
 .country.flag-cn {
-  background-position: 0 -517px
+    background-position: 0 -517px
 }
 
 .country.flag-co {
-  background-position: 0 -528px
+    background-position: 0 -528px
 }
 
 .country.flag-cr {
-  background-position: 0 -539px
+    background-position: 0 -539px
 }
 
 .country.flag-cs {
-  background-position: 0 -550px
+    background-position: 0 -550px
 }
 
 .country.flag-cu {
-  background-position: 0 -561px
+    background-position: 0 -561px
 }
 
 .country.flag-cv {
-  background-position: 0 -572px
+    background-position: 0 -572px
 }
 
 .country.flag-cx {
-  background-position: 0 -583px
+    background-position: 0 -583px
 }
 
 .country.flag-cy {
-  background-position: 0 -594px
+    background-position: 0 -594px
 }
 
 .country.flag-cz {
-  background-position: 0 -605px
+    background-position: 0 -605px
 }
 
 .country.flag-de {
-  background-position: 0 -616px
+    background-position: 0 -616px
 }
 
 .country.flag-dj {
-  background-position: 0 -627px
+    background-position: 0 -627px
 }
 
 .country.flag-dk {
-  background-position: 0 -638px
+    background-position: 0 -638px
 }
 
 .country.flag-dm {
-  background-position: 0 -649px
+    background-position: 0 -649px
 }
 
 .country.flag-do {
-  background-position: 0 -660px
+    background-position: 0 -660px
 }
 
 .country.flag-dz {
-  background-position: 0 -671px
+    background-position: 0 -671px
 }
 
 .country.flag-ec {
-  background-position: 0 -682px
+    background-position: 0 -682px
 }
 
 .country.flag-ee {
-  background-position: 0 -693px
+    background-position: 0 -693px
 }
 
 .country.flag-eg {
-  background-position: 0 -704px
+    background-position: 0 -704px
 }
 
 .country.flag-eh {
-  background-position: 0 -715px
+    background-position: 0 -715px
 }
 
 .country.flag-er {
-  background-position: 0 -726px
+    background-position: 0 -726px
 }
 
 .country.flag-es {
-  background-position: 0 -737px
+    background-position: 0 -737px
 }
 
 .country.flag-et {
-  background-position: 0 -748px
+    background-position: 0 -748px
 }
 
 .country.flag-fi {
-  background-position: 0 -759px
+    background-position: 0 -759px
 }
 
 .country.flag-fj {
-  background-position: 0 -770px
+    background-position: 0 -770px
 }
 
 .country.flag-fk {
-  background-position: 0 -781px
+    background-position: 0 -781px
 }
 
 .country.flag-fm {
-  background-position: 0 -792px
+    background-position: 0 -792px
 }
 
 .country.flag-fo {
-  background-position: 0 -803px
+    background-position: 0 -803px
 }
 
 .country.flag-fr {
-  background-position: 0 -814px
+    background-position: 0 -814px
 }
 
 .country.flag-ga {
-  background-position: 0 -825px
+    background-position: 0 -825px
 }
 
 .country.flag-gb {
-  background-position: 0 -836px
+    background-position: 0 -836px
 }
 
 .country.flag-gd {
-  background-position: 0 -847px
+    background-position: 0 -847px
 }
 
 .country.flag-ge {
-  background-position: 0 -858px
+    background-position: 0 -858px
 }
 
 .country.flag-gf {
-  background-position: 0 -869px
+    background-position: 0 -869px
 }
 
 .country.flag-gg {
-  background-position: 0 -880px
+    background-position: 0 -880px
 }
 
 .country.flag-gh {
-  background-position: 0 -891px
+    background-position: 0 -891px
 }
 
 .country.flag-gi {
-  background-position: 0 -902px
+    background-position: 0 -902px
 }
 
 .country.flag-gl {
-  background-position: 0 -913px
+    background-position: 0 -913px
 }
 
 .country.flag-gm {
-  background-position: 0 -924px
+    background-position: 0 -924px
 }
 
 .country.flag-gn {
-  background-position: 0 -935px
+    background-position: 0 -935px
 }
 
 .country.flag-gp {
-  background-position: 0 -946px
+    background-position: 0 -946px
 }
 
 .country.flag-gq {
-  background-position: 0 -957px
+    background-position: 0 -957px
 }
 
 .country.flag-gr {
-  background-position: 0 -968px
+    background-position: 0 -968px
 }
 
 .country.flag-gs {
-  background-position: 0 -979px
+    background-position: 0 -979px
 }
 
 .country.flag-gt {
-  background-position: 0 -990px
+    background-position: 0 -990px
 }
 
 .country.flag-gu {
-  background-position: 0 -1001px
+    background-position: 0 -1001px
 }
 
 .country.flag-gw {
-  background-position: 0 -1012px
+    background-position: 0 -1012px
 }
 
 .country.flag-gy {
-  background-position: 0 -1023px
+    background-position: 0 -1023px
 }
 
 .country.flag-hk {
-  background-position: 0 -1034px
+    background-position: 0 -1034px
 }
 
 .country.flag-hm {
-  background-position: 0 -1045px
+    background-position: 0 -1045px
 }
 
 .country.flag-hn {
-  background-position: 0 -1056px
+    background-position: 0 -1056px
 }
 
 .country.flag-hr {
-  background-position: 0 -1067px
+    background-position: 0 -1067px
 }
 
 .country.flag-ht {
-  background-position: 0 -1078px
+    background-position: 0 -1078px
 }
 
 .country.flag-hu {
-  background-position: 0 -1089px
+    background-position: 0 -1089px
 }
 
 .country.flag-id {
-  background-position: 0 -1100px
+    background-position: 0 -1100px
 }
 
 .country.flag-ie {
-  background-position: 0 -1111px
+    background-position: 0 -1111px
 }
 
 .country.flag-il {
-  background-position: 0 -1122px
+    background-position: 0 -1122px
 }
 
 .country.flag-im {
-  background-position: 0 -1133px
+    background-position: 0 -1133px
 }
 
 .country.flag-in {
-  background-position: 0 -1144px
+    background-position: 0 -1144px
 }
 
 .country.flag-io {
-  background-position: 0 -1155px
+    background-position: 0 -1155px
 }
 
 .country.flag-iq {
-  background-position: 0 -1166px
+    background-position: 0 -1166px
 }
 
 .country.flag-ir {
-  background-position: 0 -1177px
+    background-position: 0 -1177px
 }
 
 .country.flag-is {
-  background-position: 0 -1188px
+    background-position: 0 -1188px
 }
 
 .country.flag-it {
-  background-position: 0 -1199px
+    background-position: 0 -1199px
 }
 
 .country.flag-je {
-  background-position: 0 -1210px
+    background-position: 0 -1210px
 }
 
 .country.flag-jm {
-  background-position: 0 -1221px
+    background-position: 0 -1221px
 }
 
 .country.flag-jo {
-  background-position: 0 -1232px
+    background-position: 0 -1232px
 }
 
 .country.flag-jp {
-  background-position: 0 -1243px
+    background-position: 0 -1243px
 }
 
 .country.flag-ke {
-  background-position: 0 -1254px
+    background-position: 0 -1254px
 }
 
 .country.flag-kg {
-  background-position: 0 -1265px
+    background-position: 0 -1265px
 }
 
 .country.flag-kh {
-  background-position: 0 -1276px
+    background-position: 0 -1276px
 }
 
 .country.flag-ki {
-  background-position: 0 -1287px
+    background-position: 0 -1287px
 }
 
 .country.flag-km {
-  background-position: 0 -1298px
+    background-position: 0 -1298px
 }
 
 .country.flag-kn {
-  background-position: 0 -1309px
+    background-position: 0 -1309px
 }
 
 .country.flag-kp {
-  background-position: 0 -1320px
+    background-position: 0 -1320px
 }
 
 .country.flag-kr {
-  background-position: 0 -1331px
+    background-position: 0 -1331px
 }
 
 .country.flag-kw {
-  background-position: 0 -1342px
+    background-position: 0 -1342px
 }
 
 .country.flag-ky {
-  background-position: 0 -1353px
+    background-position: 0 -1353px
 }
 
 .country.flag-kz {
-  background-position: 0 -1364px
+    background-position: 0 -1364px
 }
 
 .country.flag-la {
-  background-position: 0 -1375px
+    background-position: 0 -1375px
 }
 
 .country.flag-lb {
-  background-position: 0 -1386px
+    background-position: 0 -1386px
 }
 
 .country.flag-lc {
-  background-position: 0 -1397px
+    background-position: 0 -1397px
 }
 
 .country.flag-li {
-  background-position: 0 -1408px
+    background-position: 0 -1408px
 }
 
 .country.flag-lk {
-  background-position: 0 -1419px
+    background-position: 0 -1419px
 }
 
 .country.flag-lr {
-  background-position: 0 -1430px
+    background-position: 0 -1430px
 }
 
 .country.flag-ls {
-  background-position: 0 -1441px
+    background-position: 0 -1441px
 }
 
 .country.flag-lt {
-  background-position: 0 -1452px
+    background-position: 0 -1452px
 }
 
 .country.flag-lu {
-  background-position: 0 -1463px
+    background-position: 0 -1463px
 }
 
 .country.flag-lv {
-  background-position: 0 -1474px
+    background-position: 0 -1474px
 }
 
 .country.flag-ly {
-  background-position: 0 -1485px
+    background-position: 0 -1485px
 }
 
 .country.flag-ma {
-  background-position: 0 -1496px
+    background-position: 0 -1496px
 }
 
 .country.flag-mc {
-  background-position: 0 -1507px
+    background-position: 0 -1507px
 }
 
 .country.flag-md {
-  background-position: 0 -1518px
+    background-position: 0 -1518px
 }
 
 .country.flag-me {
-  background-position: 0 -1529px
+    background-position: 0 -1529px
 }
 
 .country.flag-mg {
-  background-position: 0 -1540px
+    background-position: 0 -1540px
 }
 
 .country.flag-mh {
-  background-position: 0 -1551px
+    background-position: 0 -1551px
 }
 
 .country.flag-mk {
-  background-position: 0 -1562px
+    background-position: 0 -1562px
 }
 
 .country.flag-ml {
-  background-position: 0 -1573px
+    background-position: 0 -1573px
 }
 
 .country.flag-mm {
-  background-position: 0 -1584px
+    background-position: 0 -1584px
 }
 
 .country.flag-mn {
-  background-position: 0 -1595px
+    background-position: 0 -1595px
 }
 
 .country.flag-mo {
-  background-position: 0 -1606px
+    background-position: 0 -1606px
 }
 
 .country.flag-mp {
-  background-position: 0 -1617px
+    background-position: 0 -1617px
 }
 
 .country.flag-mq {
-  background-position: 0 -1628px
+    background-position: 0 -1628px
 }
 
 .country.flag-mr {
-  background-position: 0 -1639px
+    background-position: 0 -1639px
 }
 
 .country.flag-ms {
-  background-position: 0 -1650px
+    background-position: 0 -1650px
 }
 
 .country.flag-mt {
-  background-position: 0 -1661px
+    background-position: 0 -1661px
 }
 
 .country.flag-mu {
-  background-position: 0 -1672px
+    background-position: 0 -1672px
 }
 
 .country.flag-mv {
-  background-position: 0 -1683px
+    background-position: 0 -1683px
 }
 
 .country.flag-mw {
-  background-position: 0 -1694px
+    background-position: 0 -1694px
 }
 
 .country.flag-mx {
-  background-position: 0 -1705px
+    background-position: 0 -1705px
 }
 
 .country.flag-my {
-  background-position: 0 -1716px
+    background-position: 0 -1716px
 }
 
 .country.flag-mz {
-  background-position: 0 -1727px
+    background-position: 0 -1727px
 }
 
 .country.flag-na {
-  background-position: 0 -1738px
+    background-position: 0 -1738px
 }
 
 .country.flag-nc {
-  background-position: 0 -1749px
+    background-position: 0 -1749px
 }
 
 .country.flag-ne {
-  background-position: 0 -1760px
+    background-position: 0 -1760px
 }
 
 .country.flag-nf {
-  background-position: 0 -1771px
+    background-position: 0 -1771px
 }
 
 .country.flag-ng {
-  background-position: 0 -1782px
+    background-position: 0 -1782px
 }
 
 .country.flag-ni {
-  background-position: 0 -1793px
+    background-position: 0 -1793px
 }
 
 .country.flag-nl {
-  background-position: 0 -1804px
+    background-position: 0 -1804px
 }
 
 .country.flag-no {
-  background-position: 0 -1815px
+    background-position: 0 -1815px
 }
 
 .country.flag-np {
-  background-position: 0 -1826px
+    background-position: 0 -1826px
 }
 
 .country.flag-nr {
-  background-position: 0 -1837px
+    background-position: 0 -1837px
 }
 
 .country.flag-nu {
-  background-position: 0 -1848px
+    background-position: 0 -1848px
 }
 
 .country.flag-nz {
-  background-position: 0 -1859px
+    background-position: 0 -1859px
 }
 
 .country.flag-om {
-  background-position: 0 -1870px
+    background-position: 0 -1870px
 }
 
 .country.flag-pa {
-  background-position: 0 -1881px
+    background-position: 0 -1881px
 }
 
 .country.flag-pe {
-  background-position: 0 -1892px
+    background-position: 0 -1892px
 }
 
 .country.flag-pf {
-  background-position: 0 -1903px
+    background-position: 0 -1903px
 }
 
 .country.flag-pg {
-  background-position: 0 -1914px
+    background-position: 0 -1914px
 }
 
 .country.flag-ph {
-  background-position: 0 -1925px
+    background-position: 0 -1925px
 }
 
 .country.flag-pk {
-  background-position: 0 -1936px
+    background-position: 0 -1936px
 }
 
 .country.flag-pl {
-  background-position: 0 -1947px
+    background-position: 0 -1947px
 }
 
 .country.flag-pm {
-  background-position: 0 -1958px
+    background-position: 0 -1958px
 }
 
 .country.flag-pn {
-  background-position: 0 -1969px
+    background-position: 0 -1969px
 }
 
 .country.flag-pr {
-  background-position: 0 -1980px
+    background-position: 0 -1980px
 }
 
 .country.flag-ps {
-  background-position: 0 -1991px
+    background-position: 0 -1991px
 }
 
 .country.flag-pt {
-  background-position: 0 -2002px
+    background-position: 0 -2002px
 }
 
 .country.flag-pw {
-  background-position: 0 -2013px
+    background-position: 0 -2013px
 }
 
 .country.flag-py {
-  background-position: 0 -2024px
+    background-position: 0 -2024px
 }
 
 .country.flag-qa {
-  background-position: 0 -2035px
+    background-position: 0 -2035px
 }
 
 .country.flag-re {
-  background-position: 0 -2046px
+    background-position: 0 -2046px
 }
 
 .country.flag-ro {
-  background-position: 0 -2057px
+    background-position: 0 -2057px
 }
 
 .country.flag-rs {
-  background-position: 0 -2068px
+    background-position: 0 -2068px
 }
 
 .country.flag-ru {
-  background-position: 0 -2079px
+    background-position: 0 -2079px
 }
 
 .country.flag-rw {
-  background-position: 0 -2090px
+    background-position: 0 -2090px
 }
 
 .country.flag-sa {
-  background-position: 0 -2101px
+    background-position: 0 -2101px
 }
 
 .country.flag-sb {
-  background-position: 0 -2112px
+    background-position: 0 -2112px
 }
 
 .country.flag-sc {
-  background-position: 0 -2123px
+    background-position: 0 -2123px
 }
 
 .country.flag-sd {
-  background-position: 0 -2134px
+    background-position: 0 -2134px
 }
 
 .country.flag-se {
-  background-position: 0 -2145px
+    background-position: 0 -2145px
 }
 
 .country.flag-sg {
-  background-position: 0 -2156px
+    background-position: 0 -2156px
 }
 
 .country.flag-sh {
-  background-position: 0 -2167px
+    background-position: 0 -2167px
 }
 
 .country.flag-si {
-  background-position: 0 -2178px
+    background-position: 0 -2178px
 }
 
 .country.flag-sj {
-  background-position: 0 -2189px
+    background-position: 0 -2189px
 }
 
 .country.flag-sk {
-  background-position: 0 -2200px
+    background-position: 0 -2200px
 }
 
 .country.flag-sl {
-  background-position: 0 -2211px
+    background-position: 0 -2211px
 }
 
 .country.flag-sm {
-  background-position: 0 -2222px
+    background-position: 0 -2222px
 }
 
 .country.flag-sn {
-  background-position: 0 -2233px
+    background-position: 0 -2233px
 }
 
 .country.flag-so {
-  background-position: 0 -2244px
+    background-position: 0 -2244px
 }
 
 .country.flag-sr {
-  background-position: 0 -2255px
+    background-position: 0 -2255px
 }
 
 .country.flag-st {
-  background-position: 0 -2266px
+    background-position: 0 -2266px
 }
 
 .country.flag-sv {
-  background-position: 0 -2277px
+    background-position: 0 -2277px
 }
 
 .country.flag-sy {
-  background-position: 0 -2288px
+    background-position: 0 -2288px
 }
 
 .country.flag-sz {
-  background-position: 0 -2299px
+    background-position: 0 -2299px
 }
 
 .country.flag-tc {
-  background-position: 0 -2310px
+    background-position: 0 -2310px
 }
 
 .country.flag-td {
-  background-position: 0 -2321px
+    background-position: 0 -2321px
 }
 
 .country.flag-tf {
-  background-position: 0 -2332px
+    background-position: 0 -2332px
 }
 
 .country.flag-tg {
-  background-position: 0 -2343px
+    background-position: 0 -2343px
 }
 
 .country.flag-th {
-  background-position: 0 -2354px
+    background-position: 0 -2354px
 }
 
 .country.flag-tj {
-  background-position: 0 -2365px
+    background-position: 0 -2365px
 }
 
 .country.flag-tk {
-  background-position: 0 -2376px
+    background-position: 0 -2376px
 }
 
 .country.flag-tl {
-  background-position: 0 -2387px
+    background-position: 0 -2387px
 }
 
 .country.flag-tm {
-  background-position: 0 -2398px
+    background-position: 0 -2398px
 }
 
 .country.flag-tn {
-  background-position: 0 -2409px
+    background-position: 0 -2409px
 }
 
 .country.flag-to {
-  background-position: 0 -2420px
+    background-position: 0 -2420px
 }
 
 .country.flag-tr {
-  background-position: 0 -2431px
+    background-position: 0 -2431px
 }
 
 .country.flag-tt {
-  background-position: 0 -2442px
+    background-position: 0 -2442px
 }
 
 .country.flag-tv {
-  background-position: 0 -2453px
+    background-position: 0 -2453px
 }
 
 .country.flag-tw {
-  background-position: 0 -2464px
+    background-position: 0 -2464px
 }
 
 .country.flag-tz {
-  background-position: 0 -2475px
+    background-position: 0 -2475px
 }
 
 .country.flag-ua {
-  background-position: 0 -2486px
+    background-position: 0 -2486px
 }
 
 .country.flag-ug {
-  background-position: 0 -2497px
+    background-position: 0 -2497px
 }
 
 .country.flag-uk {
-  background-position: 0 -2508px
+    background-position: 0 -2508px
 }
 
 .country.flag-um {
-  background-position: 0 -2519px
+    background-position: 0 -2519px
 }
 
 .country.flag-us {
-  background-position: 0 -2530px
+    background-position: 0 -2530px
 }
 
 .country.flag-uy {
-  background-position: 0 -2541px
+    background-position: 0 -2541px
 }
 
 .country.flag-uz {
-  background-position: 0 -2552px
+    background-position: 0 -2552px
 }
 
 .country.flag-va {
-  background-position: 0 -2563px
+    background-position: 0 -2563px
 }
 
 .country.flag-vc {
-  background-position: 0 -2574px
+    background-position: 0 -2574px
 }
 
 .country.flag-ve {
-  background-position: 0 -2585px
+    background-position: 0 -2585px
 }
 
 .country.flag-vg {
-  background-position: 0 -2596px
+    background-position: 0 -2596px
 }
 
 .country.flag-vi {
-  background-position: 0 -2607px
+    background-position: 0 -2607px
 }
 
 .country.flag-vn {
-  background-position: 0 -2618px
+    background-position: 0 -2618px
 }
 
 .country.flag-vu {
-  background-position: 0 -2629px
+    background-position: 0 -2629px
 }
 
 .country.flag-wf {
-  background-position: 0 -2640px
+    background-position: 0 -2640px
 }
 
 .country.flag-ws {
-  background-position: 0 -2651px
+    background-position: 0 -2651px
 }
 
 .country.flag-ye {
-  background-position: 0 -2662px
+    background-position: 0 -2662px
 }
 
 .country.flag-yt {
-  background-position: 0 -2673px
+    background-position: 0 -2673px
 }
 
 .country.flag-za {
-  background-position: 0 -2684px
+    background-position: 0 -2684px
 }
 
 .country.flag-zm {
-  background-position: 0 -2695px
+    background-position: 0 -2695px
 }
 
 .country.flag-zw {
-  background-position: 0 -2706px
+    background-position: 0 -2706px
 }
 
 .country.flag-en {
-  background-position: 0 -2717px
+    background-position: 0 -2717px
 }
 
 .country.flag-eu {
-  background-position: 0 -2728px
+    background-position: 0 -2728px
 }
 
 .country.flag-uk {
-  background-position: 0 -2739px
+    background-position: 0 -2739px
 }
 
 .country.flag-unknown {
-  background-position: 0 -2750px
+    background-position: 0 -2750px
 }

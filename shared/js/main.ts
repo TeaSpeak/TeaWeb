@@ -270,6 +270,7 @@ function main() {
             clearTimeout(_resize_timeout);
         _resize_timeout = setTimeout(() => {
             globalClient.channelTree.handle_resized();
+            globalClient.selectInfo.handle_resize();
         }, 1000);
     });
 

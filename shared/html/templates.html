@@ -133,8 +133,11 @@
                             </div>
                         </div>
                         <div class="container-seperator vertical" seperator-id="seperator-main-info"></div>
-                        <div class="main_container container-info">
-                            <div id="select_info" class="select_info" style="width: 100%; max-width: 100%">
+                        <div id="select_info" class="main_container container-info">
+                            <div class="select_info" style="width: 100%; max-width: 100%">
+                                <button type="button" class="close" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
                                 <div class="container-banner"></div>
                                 <!-- <div class="container-seperator horizontal" seperator-id="seperator-hostbanner-info"></div> -->
                                 <div class="container-select-info"></div>
@@ -1029,7 +1032,8 @@
 
                             <div class="group_box">
                                 <div class="header">{{tr "Microphone" /}}</div>
-                                <div class="content settings-microphone">
+                                <div class="content settings-microphone {{if !voice_available}}disabled{{/if}}">
+                                    {{if voice_available}}
                                     <div class="form-row settings-device settings-device-microphone">
                                         <div class="form-group settings-device-select">
                                             <label for="select-settings-microphone-device" class="bmd-label-static">{{tr "Device:" /}}</label>
@@ -1088,6 +1092,9 @@
                                             </div>
                                         </div>
                                     </div>
+                                    {{else}}
+                                    <div>{{tr "Voice had been disabled" /}}</div>
+                                    {{/if}}
                                 </div>
                             </div>
                             <div class="group_box">
@@ -2058,7 +2065,7 @@
                 <tr>
                     <td>{{tr "Name:" /}}</td>
                     <td style="display: flex; flex-direction: row">
-                        <div style="margin-right: 3px" class="country flag-{{*:(data.property_client_country || 'xx').toLowerCase()}}"></div>
+                        <div style="margin-right: 3px" class="country flag-{{*:(data.property_client_country || 'xx').toLowerCase()}}" title="{{*:i18n.country_name(data.property_client_country || 'XX')}}"></div>
                         <node key="client_name"/>
                     </td>
                 </tr>
@@ -2315,7 +2322,7 @@
                     </table>
                 </div>
 
-                <button class="button-update btn_update">{{tr "Update info"/}}</button>
+                <button class="button-update btn btn-success">{{tr "Update info"/}}</button>
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_selected_channel" type="text/html">

@@ -442,7 +442,21 @@ class ChannelEntry {
                 flagDelete = this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_DELETE_TEMPORARY).granted(1);
         }
 
+        let trigger_close = true;
         spawn_context_menu(x, y, {
+                type: MenuEntryType.ENTRY,
+                name: tr("Show channel info"),
+                callback: () => {
+                    trigger_close = false;
+                    this.channelTree.client.selectInfo.open_popover()
+                },
+                icon: "client-about",
+                visible: this.channelTree.client.selectInfo.is_popover()
+            }, {
+                type: MenuEntryType.HR,
+                visible: this.channelTree.client.selectInfo.is_popover(),
+                name: ''
+            }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-channel_switch",
                 name: tr("<b>Switch to channel</b>"),
@@ -525,7 +539,7 @@ class ChannelEntry {
                 invalidPermission: !channelCreate,
                 callback: () => this.channelTree.spawnCreateChannel()
             },
-            MenuEntry.CLOSE(on_close)
+            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 
@@ -639,7 +653,10 @@ class ChannelEntry {
                 }
             } else if(key == "channel_codec") {
                 (this.properties.channel_codec == 5 || this.properties.channel_codec == 3 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_music"));
-                (this.channelTree.client.voiceConnection.codecSupported(this.properties.channel_codec) ? $.fn.hide : $.fn.show).apply(this.channelTag().find(".icons .icon_no_sound"));
+                this.channelTag().find(".icons .icon_no_sound").toggle(!(
+                    this.channelTree.client.voiceConnection &&
+                    this.channelTree.client.voiceConnection.codecSupported(this.properties.channel_codec)
+                ));
             } else if(key == "channel_flag_default") {
                 (this.properties.channel_flag_default ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_default"));
             } else if(key == "channel_flag_password")

@@ -196,7 +196,8 @@ class ControlBar {
 
     private updateMicrophoneRecordState() {
         let enabled = !this._muteInput && !this._muteOutput && !this._away;
-        this.handle.voiceConnection.voiceRecorder.update(enabled);
+        if(this.handle.voiceConnection)
+            this.handle.voiceConnection.voiceRecorder.update(enabled);
     }
 
     updateProperties() {
@@ -212,12 +213,13 @@ class ControlBar {
     }
 
     updateVoice(targetChannel?: ChannelEntry) {
-        if(!targetChannel) targetChannel = this.handle.getClient().currentChannel();
+        if(!targetChannel)
+            targetChannel = this.handle.getClient().currentChannel();
         let client = this.handle.getClient();
 
-        this.codec_supported = targetChannel ? this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec) : true;
-        this.support_record = this.handle.voiceConnection.voice_send_support();
-        this.support_playback = this.handle.voiceConnection.voice_playback_support();
+        this.codec_supported = targetChannel ? this.handle.voiceConnection && this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec) : true;
+        this.support_record = this.handle.voiceConnection && this.handle.voiceConnection.voice_send_support();
+        this.support_playback = this.handle.voiceConnection && this.handle.voiceConnection.voice_playback_support();
 
         this.htmlTag.find(".btn_mute_input").prop("disabled", !this.codec_supported|| !this.support_playback || !this.support_record);
         this.htmlTag.find(".btn_mute_output").prop("disabled", !this.codec_supported || !this.support_playback);

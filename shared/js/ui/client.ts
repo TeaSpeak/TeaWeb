@@ -266,28 +266,40 @@ class ClientEntry {
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
-        const _this = this;
-
+        let trigger_close = true;
         spawn_context_menu(x, y,
             {
                 type: MenuEntryType.ENTRY,
+                name: tr("Show client info"),
+                callback: () => {
+                    trigger_close = false;
+                    this.channelTree.client.selectInfo.open_popover()
+                },
+                icon: "client-about",
+                visible: this.channelTree.client.selectInfo.is_popover()
+            }, {
+                type: MenuEntryType.HR,
+                visible: this.channelTree.client.selectInfo.is_popover(),
+                name: ''
+            }, {
+                type: MenuEntryType.ENTRY,
                 icon: "client-change_nickname",
                 name: tr("<b>Open text chat</b>"),
-                callback: function () {
-                    chat.activeChat = _this.chat(true);
+                callback: () => {
+                    chat.activeChat = this.chat(true);
                     chat.focus();
                 }
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-poke",
                 name: tr("Poke client"),
-                callback: function () {
+                callback: () => {
                     createInputModal(tr("Poke client"), tr("Poke message:<br>"), text => true, result => {
                         if(typeof(result) === "string") {
                             //TODO tr
-                            console.log("Poking client " + _this.clientNickName() + " with message " + result);
-                            _this.channelTree.client.serverConnection.send_command("clientpoke", {
-                                clid: _this.clientId(),
+                            console.log("Poking client " + this.clientNickName() + " with message " + result);
+                            this.channelTree.client.serverConnection.send_command("clientpoke", {
+                                clid: this.clientId(),
                                 msg: result
                             });
 
@@ -298,13 +310,13 @@ class ClientEntry {
                 type: MenuEntryType.ENTRY,
                 icon: "client-edit",
                 name: tr("Change description"),
-                callback: function () {
+                callback: () => {
                     createInputModal(tr("Change client description"), tr("New description:<br>"), text => true, result => {
                         if(typeof(result) === "string") {
                             //TODO tr
-                            console.log("Changing " + _this.clientNickName() + "'s description to " + result);
-                            _this.channelTree.client.serverConnection.send_command("clientedit", {
-                                clid: _this.clientId(),
+                            console.log("Changing " + this.clientNickName() + "'s description to " + result);
+                            this.channelTree.client.serverConnection.send_command("clientedit", {
+                                clid: this.clientId(),
                                 client_description: result
                             });
 
@@ -332,9 +344,9 @@ class ClientEntry {
                     createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
                         if(result) {
                             //TODO tr
-                            console.log("Kicking client " + _this.clientNickName() + " from channel with reason " + result);
-                            _this.channelTree.client.serverConnection.send_command("clientkick", {
-                                clid: _this.clientId(),
+                            console.log("Kicking client " + this.clientNickName() + " from channel with reason " + result);
+                            this.channelTree.client.serverConnection.send_command("clientkick", {
+                                clid: this.clientId(),
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
                                 reasonmsg: result
                             });
@@ -350,9 +362,9 @@ class ClientEntry {
                     createInputModal(tr("Kick client from server"), tr("Kick reason:<br>"), text => true, result => {
                         if(result) {
                             //TODO tr
-                            console.log("Kicking client " + _this.clientNickName() + " from server with reason " + result);
-                            _this.channelTree.client.serverConnection.send_command("clientkick", {
-                                clid: _this.clientId(),
+                            console.log("Kicking client " + this.clientNickName() + " from server with reason " + result);
+                            this.channelTree.client.serverConnection.send_command("clientkick", {
+                                clid: this.clientId(),
                                 reasonid: ViewReasonId.VREASON_SERVER_KICK,
                                 reasonmsg: result
                             });
@@ -411,7 +423,7 @@ class ClientEntry {
                     });
                 }
             },
-            MenuEntry.CLOSE(on_close)
+            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 
@@ -908,8 +920,22 @@ class MusicClientEntry extends ClientEntry {
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
+        let trigger_close = true;
         spawn_context_menu(x, y,
             {
+                type: MenuEntryType.ENTRY,
+                name: tr("Show bot info"),
+                callback: () => {
+                    trigger_close = false;
+                    this.channelTree.client.selectInfo.open_popover()
+                },
+                icon: "client-about",
+                visible: this.channelTree.client.selectInfo.is_popover()
+            }, {
+                type: MenuEntryType.HR,
+                visible: this.channelTree.client.selectInfo.is_popover(),
+                name: ''
+            }, {
                 name: tr("<b>Change bot name</b>"),
                 icon: "client-change_nickname",
                 disabled: false,
@@ -1073,7 +1099,7 @@ class MusicClientEntry extends ClientEntry {
                 },
                 type: MenuEntryType.ENTRY
             },
-            MenuEntry.CLOSE(on_close)
+            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 
