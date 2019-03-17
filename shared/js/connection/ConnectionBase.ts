@@ -28,20 +28,37 @@ namespace connection {
         abstract disconnect(reason?: string) : Promise<void>;
 
         abstract support_voice() : boolean;
-        abstract voice_connection() : AbstractVoiceConnection | undefined;
+        abstract voice_connection() : voice.AbstractVoiceConnection | undefined;
 
         abstract command_handler_boss() : AbstractCommandHandlerBoss;
         abstract send_command(command: string, data?: any | any[], options?: CommandOptions) : Promise<CommandResult>;
     }
 
-    export abstract class AbstractVoiceConnection {
-        readonly connection: AbstractServerConnection;
+    export namespace voice {
+        export interface VoiceClient {
+            client_id: number;
 
-        protected constructor(connection: AbstractServerConnection) {
-            this.connection = connection;
+            callback_playback: () => any;
+            callback_timeout: () => any;
+            callback_stopped: () => any;
+
+            get_volume() : number;
+            set_volume(volume: number) : Promise<void>;
         }
 
-        abstract connected() : boolean;
+        export abstract class AbstractVoiceConnection {
+            readonly connection: AbstractServerConnection;
+
+            protected constructor(connection: AbstractServerConnection) {
+                this.connection = connection;
+            }
+
+            abstract connected() : boolean;
+
+            abstract register_client(client_id: number) : VoiceClient;
+            abstract availible_clients() : VoiceClient[];
+            abstract unregister_client(client: VoiceClient) : Promise<void>;
+        }
     }
 
     export class ServerCommand {

@@ -1,4 +1,25 @@
 # Changelog:
+* **17.03.19**
+    - Using VAD by default instead of PPT
+    - Improved mobile experience:
+        - Double touch join channel
+        - Removed the info bar for devices smaller than 500px
+    - Added country flags and names
+    - Added favicon, which change when you're recording
+    - Fixed double cache loading
+    - Fixed modal sizing scroll bug
+    - Added a channel subscribe all button
+    - Added individual channel subscribe settings
+    - Improved chat switch performance
+    - Added a chat message URL finder
+        - Escape URL detection with `!<url>`
+    - Improved chat experience
+        - Displaying offline chats as offline
+        - Notify when user closes the chat
+        - Notify when user disconnect/reconnects
+    - Preloading hostbanners to prevent flickering
+    - Fixed empty channel and server kick messages
+    
 * **17.02.19**
     - Removed WebAssembly as dependency (Now working with MS Edge as well (but without audio))
     - Improved channel tree performance

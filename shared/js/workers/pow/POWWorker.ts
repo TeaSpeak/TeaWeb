@@ -1,6 +1,7 @@
 declare namespace WebAssembly {
     export function instantiateStreaming(stream: Promise<Response>, imports?: any) : Promise<ResultObject>;
 }
+declare function postMessage(message: any): void;
 
 const prefix = "[POWWorker] ";
 
