@@ -509,6 +509,7 @@ const loader_javascript = {
             "js/ui/modal/ModalServerEdit.js",
             "js/ui/modal/ModalChangeVolume.js",
             "js/ui/modal/ModalBanClient.js",
+
             "js/ui/modal/ModalBanCreate.js",
             "js/ui/modal/ModalBanList.js",
             "js/ui/modal/ModalYesNo.js",
