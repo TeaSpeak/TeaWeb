@@ -20,8 +20,7 @@ namespace profiles.identities {
                 authentication_method: this.identity.type(),
                 client_nickname: this.identity.name()
             }).catch(error => {
-                console.error(tr("Failed to initialize name based handshake. Error: %o"), error);
-
+                log.error(LogCategory.IDENTITIES, tr("Failed to initialize name based handshake. Error: %o"), error);
                 if(error instanceof CommandResult)
                     error = error.extra_message || error.message;
                 this.trigger_fail("failed to execute begin (" + error + ")");

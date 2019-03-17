@@ -228,9 +228,12 @@ footer .container {
 }
 
 $separator_thickness: 4px;
-$small_device: 500px;
+$small_device: 650px;
+$animation_length: .5s;
 
 .app {
+    min-width: 350px;
+
 	.container-app-main {
 		position: relative;
 		display: flex;
@@ -304,40 +307,78 @@ $small_device: 500px;
 		flex-direction: row;
 		justify-content: stretch;
 	}
-}
 
-@media only screen and (max-width: $small_device) {
-    .container-app-main {
-        .container-info {
-            display: none;
-            position: absolute;
 
-            width: 100%!important; /* override the seperator property */
-            height: 100%;
+    .hide-small {
+        opacity: 1;
+        transition: opacity $animation_length linear;
+    }
 
-            z-index: 1000;
+    .show-small {
+        display: none;
 
-            &.shown {
-                display: block;
-            }
-
-            .select_info {
-                > .close {
-                    display: block;
-                }
-            }
-        }
-
-        .container-channel-chat + .container-seperator {
-            display: none;
-        }
-
-        .container-channel-chat {
-            width: 100%!important; /* override the seperator property */
-        }
+        opacity: 0;
+        transition: opacity $animation_length linear;
     }
 }
 
+@media only screen and (max-width: $small_device) {
+    .app-container {
+        right: 0;
+        left: 0;
+        bottom: 25px;
+        top: 0;
+
+        transition: all $animation_length linear;
+        overflow: auto;
+    }
+
+    .app {
+        .container-app-main {
+            .container-info {
+                display: none;
+                position: absolute;
+
+                width: 100%!important; /* override the seperator property */
+                height: 100%;
+
+                z-index: 1000;
+
+                &.shown {
+                    display: block;
+                }
+
+                .select_info {
+                    > .close {
+                        display: block;
+                    }
+                }
+            }
+
+            .container-channel-chat + .container-seperator {
+                display: none;
+                animation: fadeout $animation_length linear;
+            }
+
+            .container-channel-chat {
+                width: 100%!important; /* override the seperator property */
+            }
+        }
+    }
+
+    .hide-small {
+        display: none;
+        opacity: 0;
+        transition: opacity $animation_length linear;
+    }
+
+    .show-small {
+        display: block!important;
+
+        opacity: 1!important;
+        transition: opacity $animation_length linear;
+    }
+}
 .container-seperator {
 	background: lightgray;
 	flex-grow: 0;
@@ -399,13 +440,24 @@ body {
 }
 
 .icon-playlist-manage {
-	display: inline-block;
-	width: 32px;
-	height: 32px;
+    &.icon {
+        width: 16px;
+        height: 16px;
 
+        background-position: -5px -5px;
+        background-size: 25px;
+    }
+
+    &.icon_x32 {
+        width: 32px;
+        height: 32px;
+
+        background-position: -11px -9px;
+        background-size: 50px;
+    }
+
+	display: inline-block;
 	background: url('../../img/music/playlist.svg') no-repeat;
-	background-position: -11px -9px;
-	background-size: 50px;
 }
 
 x-content {

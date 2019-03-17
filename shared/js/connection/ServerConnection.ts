@@ -238,7 +238,7 @@ namespace connection {
         send_command(command: string, data?: any | any[], _options?: CommandOptions) : Promise<CommandResult> {
             if(!this._socket || !this.connected()) {
                 console.warn(tr("Tried to send a command without a valid connection."));
-                return;
+                return Promise.reject(tr("not connected"));
             }
 
             const options: CommandOptions = {};
@@ -246,6 +246,8 @@ namespace connection {
             Object.assign(options, _options);
 
             data = $.isArray(data) ? data : [data || {}];
+            if(data.length == 0) /* we require min one arg to append return_code */
+                data.push({});
 
             const _this = this;
             let result = new Promise<CommandResult>((resolve, failed) => {

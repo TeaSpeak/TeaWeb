@@ -613,6 +613,9 @@ class ClientEntry {
                 this.updateClientIcon();
             if(variable.key =="client_channel_group_id" || variable.key == "client_servergroups")
                 this.update_displayed_client_groups();
+            if(variable.key == "client_version") {
+                console.log(UAParser(variable.value));
+            }
         }
 
         /* process updates after variables have been set */
@@ -673,19 +676,21 @@ class ClientEntry {
     chat(create: boolean = false) : ChatEntry {
         let chatName = "client_" + this.clientUid() + ":" + this.clientId();
         let c = chat.findChat(chatName);
-        if((!c) && create) {
+        if(!c && create) {
             c = chat.createChat(chatName);
-            c.closeable = true;
+            c.flag_closeable = true;
             c.name = this.clientNickName();
+            c.owner_unique_id = this.properties.client_unique_identifier;
 
-            const _this = this;
-            c.onMessageSend = function (text: string) {
-                _this.channelTree.client.serverConnection.command_helper.sendMessage(text, ChatType.CLIENT, _this);
+            c.onMessageSend = text => {
+                this.channelTree.client.serverConnection.command_helper.sendMessage(text, ChatType.CLIENT, this);
             };
 
-            c.onClose = function () : boolean {
-                //TODO check online?
-                _this.channelTree.client.serverConnection.send_command("clientchatclosed", {"clid": _this.clientId()});
+            c.onClose = () => {
+                if(!c.flag_offline)
+                    this.channelTree.client.serverConnection.send_command("clientchatclosed", {"clid": this.clientId()}, {process_result: false}).catch(error => {
+                        log.warn(LogCategory.GENERAL, tr("Failed to notify chat participant (%o) that the chat has been closed. Error: %o"), this, error);
+                    });
                 return true;
             }
         }

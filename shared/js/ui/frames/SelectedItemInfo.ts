@@ -1,5 +1,6 @@
 /// <reference path="../../client.ts" />
 /// <reference path="../../../../vendor/bbcode/xbbcode.ts" />
+/// <reference path="../../../../vendor/ua-parser-js/src/ua-parser.d.ts" />
 
 abstract class InfoManagerBase {
     private timers: NodeJS.Timer[] = [];
@@ -139,6 +140,11 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
     }
 }
 
+interface Window {
+    Image: typeof HTMLImageElement;
+    HTMLImageElement: typeof HTMLImageElement;
+}
+
 class Hostbanner {
     readonly html_tag: JQuery<HTMLElement>;
     readonly client: TSClient;
@@ -160,9 +166,20 @@ class Hostbanner {
 
         if(tag) {
             tag.then(element => {
-                this.html_tag.empty();
+                const children = this.html_tag.children();
                 this.html_tag.append(element).removeClass("disabled");
 
+                /* allow the new image be loaded from cache URL */
+                {
+                    children
+                        .css('z-index', '2')
+                        .css('position', 'absolute')
+                        .css('height', '100%')
+                        .css('width', '100%');
+                    setTimeout(() => {
+                        children.detach();
+                    }, 250);
+                }
             }).catch(error => {
                 console.warn(tr("Failed to load hostbanner: %o"), error);
                 this.html_tag.empty().addClass("disabled");
@@ -183,44 +200,63 @@ class Hostbanner {
         for(let key in server.properties)
             properties["property_" + key] = server.properties[key];
 
+        properties["hostbanner_gfx_url"] = server.properties.virtualserver_hostbanner_gfx_url;
         if(server.properties.virtualserver_hostbanner_gfx_interval > 0) {
-            const update_interval = Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60);
+            const update_interval = Math.max(server.properties.virtualserver_hostbanner_gfx_interval, 60);
             const update_timestamp = (Math.floor((Date.now() / 1000) / update_interval) * update_interval).toString();
             try {
                 const url = new URL(server.properties.virtualserver_hostbanner_gfx_url);
                 if(url.search.length == 0)
-                    properties["cache_tag"] = "?_ts=" + update_timestamp;
+                    properties["hostbanner_gfx_url"] += "?_ts=" + update_timestamp;
                 else
-                    properties["cache_tag"] = "&_ts=" + update_timestamp;
+                    properties["hostbanner_gfx_url"] += "&_ts=" + update_timestamp;
             } catch(error) {
                 console.warn(tr("Failed to parse banner URL: %o"), error);
-                properties["cache_tag"] = "&_ts=" + update_timestamp;
+                properties["hostbanner_gfx_url"] += "&_ts=" + update_timestamp;
             }
 
             this.updater = setTimeout(() => this.update(), update_interval * 1000);
-        } else {
-            properties["cache_tag"] = "";
         }
 
-
         const rendered = $("#tmpl_selected_hostbanner").renderTag(properties);
-        console.debug(tr("Hostbanner has been loaded"));
-        return Promise.resolve(rendered);
-        /*
-        const image = rendered.find("img");
-        return new Promise<JQuery<HTMLElement>>((resolve, reject) => {
-            const node_image = image[0] as HTMLImageElement;
-            node_image.onload = () => {
-                console.debug(tr("Hostbanner has been loaded"));
-                if(server.properties.virtualserver_hostbanner_gfx_interval > 0)
-                    this.updater = setTimeout(() => this.update(), Math.min(server.properties.virtualserver_hostbanner_gfx_interval, 60) * 1000);
-                resolve(rendered);
-            };
-            node_image.onerror = event => {
-                reject(event);
-            }
-        });
-        */
+
+
+        if(window.fetch) {
+            return (async () => {
+                const start = Date.now();
+
+                const tag_image = rendered.find(".hostbanner-image");
+
+                _fetch:
+                try {
+                    const result = await fetch(properties["hostbanner_gfx_url"]);
+
+                    if(!result.ok) {
+                        if(result.type === 'opaque' || result.type === 'opaqueredirect') {
+                            log.warn(LogCategory.SERVER, tr("Could not load hostbanner because 'Access-Control-Allow-Origin' isnt valid!"));
+                            break _fetch;
+                        }
+                    }
+
+                    const url = URL.createObjectURL(await result.blob());
+                    tag_image.css('background-image', 'url(' + url + ')');
+                    log.debug(LogCategory.SERVER, tr("Fetsched hostbanner successfully (%o, type: %o, url: %o)"), Date.now() - start, result.type, url);
+
+                    if(URL.revokeObjectURL) {
+                        setTimeout(() => {
+                            log.debug(LogCategory.SERVER, tr("Revoked hostbanner url %s"), url);
+                            URL.revokeObjectURL(url);
+                        }, 10000);
+                    }
+                } catch(error) {
+                    log.warn(LogCategory.SERVER, tr("Failed to fetch hostbanner image: %o"), error);
+                }
+                return rendered;
+            })();
+        } else {
+            console.debug(tr("Hostbanner has been loaded"));
+            return Promise.resolve(rendered);
+        }
     }
 }
 
@@ -257,6 +293,7 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
         properties["client_onlinetime"] = formatDate(client.calculateOnlineTime());
         properties["sound_volume"] = client.audioController.volume * 100;
         properties["client_is_query"] = client.properties.client_type == ClientType.CLIENT_QUERY;
+        properties["client_is_web"] = client.properties.client_type_exact == ClientType.CLIENT_WEB;
 
         properties["group_server"] = [];
         for(let groupId of client.assignedServerGroupIds()) {

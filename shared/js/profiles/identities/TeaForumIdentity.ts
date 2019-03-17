@@ -19,7 +19,7 @@ namespace profiles.identities {
                 authentication_method: this.identity.type(),
                 data: this.identity.data_json()
             }).catch(error => {
-                console.error(tr("Failed to initialize TeaForum based handshake. Error: %o"), error);
+                log.error(LogCategory.IDENTITIES, tr("Failed to initialize TeaForum based handshake. Error: %o"), error);
 
                 if(error instanceof CommandResult)
                     error = error.extra_message || error.message;
@@ -32,7 +32,7 @@ namespace profiles.identities {
             this.connection.send_command("handshakeindentityproof", {
                 proof: this.identity.data_sign()
             }).catch(error => {
-                console.error(tr("Failed to proof the identity. Error: %o"), error);
+                log.error(LogCategory.IDENTITIES, tr("Failed to proof the identity. Error: %o"), error);
 
                 if(error instanceof CommandResult)
                     error = error.extra_message || error.message;

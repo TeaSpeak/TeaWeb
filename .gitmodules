@@ -5,3 +5,6 @@
 [submodule "vendor/bbcode"]
 	path = vendor/bbcode
 	url = https://github.com/WolverinDEV/Extendible-BBCode-Parser.git
+[submodule "vendor\\ua-parser-js"]
+	path = vendor\\ua-parser-js
+	url = https://github.com/WolverinDEV/ua-parser-js

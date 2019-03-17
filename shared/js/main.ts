@@ -238,15 +238,15 @@ function main() {
     chat = new ChatBox($("#chat"));
     globalClient.setup();
 
-    if(settings.static("connect_default", false) && settings.static("connect_address", "")) {
-        const profile_uuid = settings.static("connect_profile") as string;
+    if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
+        const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
         console.log("UUID: %s", profile_uuid);
         const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
-        const address = settings.static("connect_address", "");
-        const username = settings.static("connect_username", "Another TeaSpeak user");
+        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
+        const username = settings.static(Settings.KEY_CONNECT_USERNAME, "Another TeaSpeak user");
 
-        const password = settings.static("connect_password", "");
-        const password_hashed = settings.static("connect_password_hashed", false);
+        const password = settings.static(Settings.KEY_CONNECT_PASSWORD, "");
+        const password_hashed = settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false);
 
         if(profile && profile.valid()) {
             globalClient.startConnection(address, profile, username, password.length > 0 ? {

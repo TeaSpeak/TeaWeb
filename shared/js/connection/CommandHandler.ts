@@ -1,3 +1,4 @@
+
 namespace connection {
     export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
         constructor(connection: AbstractServerConnection) {
@@ -26,6 +27,7 @@ namespace connection {
             this["notifychannelmoved"] = this.handleNotifyChannelMoved;
             this["notifychanneledited"] = this.handleNotifyChannelEdited;
             this["notifytextmessage"] = this.handleNotifyTextMessage;
+            this["notifyclientchatclosed"] = this.handleNotifyClientChatClosed;
             this["notifyclientupdated"] = this.handleNotifyClientUpdated;
             this["notifyserveredited"] = this.handleNotifyServerEdited;
             this["notifyserverupdated"] = this.handleNotifyServerUpdated;
@@ -37,6 +39,9 @@ namespace connection {
             this["notifyservergroupclientadded"] = this.handleNotifyServerGroupClientAdd;
             this["notifyservergroupclientdeleted"] = this.handleNotifyServerGroupClientRemove;
             this["notifyclientchannelgroupchanged"] = this.handleNotifyClientChannelGroupChanged;
+
+            this["notifychannelsubscribed"] = this.handleNotifyChannelSubscribed;
+            this["notifychannelunsubscribed"] = this.handleNotifyChannelUnsubscribed;
         }
 
         handle_command(command: ServerCommand) : boolean {
@@ -289,6 +294,26 @@ namespace connection {
 
             client.updateVariables(...updates);
 
+            {
+                let client_chat = client.chat(false);
+                if(!client_chat) {
+                    for(const c of chat.open_chats()) {
+                        if(c.owner_unique_id == client.properties.client_unique_identifier && c.flag_offline) {
+                            client_chat = c;
+                            break;
+                        }
+                    }
+                }
+                if(client_chat) {
+                    client_chat.appendMessage(
+                        "{0}", true,
+                            $.spawn("div")
+                                .addClass("event-message event-partner-connect")
+                                .text(tr("Your chat partner has reconnected"))
+                    );
+                    client_chat.flag_offline = false;
+                }
+            }
             if(client instanceof LocalClientEntry)
                 this.connection.client.controlBar.updateVoice();
         }
@@ -367,6 +392,19 @@ namespace connection {
                         sound.play(Sound.USER_LEFT_BANNED);
                 } else {
                     console.error(tr("Unknown client left reason!"));
+                }
+
+                {
+                    const chat = client.chat(false);
+                    if(chat) {
+                        chat.flag_offline = true;
+                        chat.appendMessage(
+                            "{0}", true,
+                            $.spawn("div")
+                                .addClass("event-message event-partner-disconnect")
+                                .text(tr("Your chat partner has disconnected"))
+                        );
+                    }
                 }
             }
 
@@ -503,7 +541,6 @@ namespace connection {
         handleNotifyTextMessage(json) {
             json = json[0]; //Only one bulk
 
-            //TODO chat format?
             let mode = json["targetmode"];
             if(mode == 1){
                 let invoker = this.connection.client.channelTree.findClient(json["invokerid"]);
@@ -532,6 +569,38 @@ namespace connection {
             } else if(mode == 3) {
                 chat.serverChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
             }
+        }
+
+        handleNotifyClientChatClosed(json) {
+            json = json[0]; //Only one bulk
+
+            //Chat partner has closed the conversation
+
+            //clid: "6"
+            //cluid: "YoWmG+dRGKD+Rxb7SPLAM5+B9tY="
+
+            const client = this.connection.client.channelTree.findClient(json["clid"]);
+            if(!client) {
+                log.warn(LogCategory.GENERAL, tr("Received chat close for unknown client"));
+                return;
+            }
+            if(client.properties.client_unique_identifier !== json["cluid"]) {
+                log.warn(LogCategory.GENERAL, tr("Received chat close for client, but unique ids dosn't match. (expected %o, received %o)"), client.properties.client_unique_identifier, json["cluid"]);
+                return;
+            }
+
+            const chat = client.chat(false);
+            if(!chat) {
+                log.warn(LogCategory.GENERAL, tr("Received chat close for client, but we haven't a chat open."));
+                return;
+            }
+            chat.flag_offline = true;
+            chat.appendMessage(
+                "{0}", true,
+                $.spawn("div")
+                    .addClass("event-message event-partner-closed")
+                    .text(tr("Your chat partner has close the conversation"))
+            );
         }
 
         handleNotifyClientUpdated(json) {
@@ -647,6 +716,32 @@ namespace connection {
             const self = this.connection.client.getClient();
             if(json["clid"] == self.clientId()) {
                 sound.play(Sound.GROUP_CHANNEL_CHANGED_SELF);
+            }
+        }
+
+        handleNotifyChannelSubscribed(json) {
+            for(const entry of json) {
+                const channel = this.connection.client.channelTree.findChannel(entry["cid"]);
+                if(!channel) {
+                    console.warn(tr("Received channel subscribed for not visible channel (cid: %d)"), entry['cid']);
+                    continue;
+                }
+
+                channel.flag_subscribed = true;
+            }
+        }
+
+        handleNotifyChannelUnsubscribed(json) {
+            for(const entry of json) {
+                const channel = this.connection.client.channelTree.findChannel(entry["cid"]);
+                if(!channel) {
+                    console.warn(tr("Received channel unsubscribed for not visible channel (cid: %d)"), entry['cid']);
+                    continue;
+                }
+
+                channel.flag_subscribed = false;
+                for(const client of channel.clients(false))
+                    this.connection.client.channelTree.deleteClient(client);
             }
         }
     }

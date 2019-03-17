@@ -7,7 +7,8 @@ enum LogCategory {
     GENERAL,
     NETWORKING,
     VOICE,
-    I18N
+    I18N,
+    IDENTITIES
 }
 
 namespace log {
@@ -21,14 +22,15 @@ namespace log {
 
     let category_mapping = new Map<number, string>([
         [LogCategory.CHANNEL,                   "Channel    "],
-        [LogCategory.CLIENT,                    "Channel    "],
-        [LogCategory.CHANNEL_PROPERTIES,        "Client     "],
+        [LogCategory.CHANNEL_PROPERTIES,        "Channel    "],
+        [LogCategory.CLIENT,                    "Client     "],
         [LogCategory.SERVER,                    "Server     "],
         [LogCategory.PERMISSIONS,               "Permission "],
         [LogCategory.GENERAL,                   "General    "],
         [LogCategory.NETWORKING,                "Network    "],
         [LogCategory.VOICE,                     "Voice      "],
-        [LogCategory.I18N,                      "I18N       "]
+        [LogCategory.I18N,                      "I18N       "],
+        [LogCategory.IDENTITIES,                "IDENTITIES "]
     ]);
 
     export let enabled_mapping = new Map<number, boolean>([
@@ -40,7 +42,8 @@ namespace log {
         [LogCategory.GENERAL,               true],
         [LogCategory.NETWORKING,            true],
         [LogCategory.VOICE,                 true],
-        [LogCategory.I18N,                  false]
+        [LogCategory.I18N,                  false],
+        [LogCategory.IDENTITIES,            true]
     ]);
 
     loader.register_task(loader.Stage.LOADED, {
@@ -109,10 +112,16 @@ namespace log {
         name = "[%s] " + name;
         optionalParams.unshift(category_mapping.get(category));
 
-        return new Group(level, category, name, optionalParams);
+        return new Group(GroupMode.PREFIX, level, category, name, optionalParams);
+    }
+
+    enum GroupMode {
+        NATIVE,
+        PREFIX
     }
 
     export class Group {
+        readonly mode: GroupMode;
         readonly level: LogType;
         readonly category: LogCategory;
         readonly enabled: boolean;
@@ -123,9 +132,11 @@ namespace log {
         private readonly optionalParams: any[][];
         private _collapsed: boolean = true;
         private initialized = false;
+        private _log_prefix: string;
 
-        constructor(level: LogType, category: LogCategory, name: string, optionalParams: any[][], owner: Group = undefined) {
+        constructor(mode: GroupMode, level: LogType, category: LogCategory, name: string, optionalParams: any[][], owner: Group = undefined) {
             this.level = level;
+            this.mode = mode;
             this.category = category;
             this.name = name;
             this.optionalParams = optionalParams;
@@ -133,7 +144,7 @@ namespace log {
         }
 
         group(level: LogType, name: string, ...optionalParams: any[]) : Group {
-            return new Group(level, this.category, name, optionalParams, this);
+            return new Group(this.mode, level, this.category, name, optionalParams, this);
         }
 
         collapsed(flag: boolean = true) : this {
@@ -146,19 +157,43 @@ namespace log {
                 return this;
 
             if(!this.initialized) {
-                if(this._collapsed && console.groupCollapsed)
-                    console.groupCollapsed(this.name, ...this.optionalParams);
-                else
-                    console.group(this.name, ...this.optionalParams);
+                if(this.mode == GroupMode.NATIVE) {
+                    if(this._collapsed && console.groupCollapsed)
+                        console.groupCollapsed(this.name, ...this.optionalParams);
+                    else
+                        console.group(this.name, ...this.optionalParams);
+                } else {
+                    this._log_prefix = "  ";
+                    let parent = this.owner;
+                    while(parent) {
+                        if(parent.mode == GroupMode.PREFIX)
+                            this._log_prefix = this._log_prefix + parent._log_prefix;
+                        else
+                            break;
+                    }
+                }
                 this.initialized = true;
             }
-            logDirect(this.level, message, ...optionalParams);
+            if(this.mode == GroupMode.NATIVE)
+                logDirect(this.level, message, ...optionalParams);
+            else
+                logDirect(this.level, this._log_prefix + message, ...optionalParams);
             return this;
         }
 
         end() {
-            if(this.initialized)
-                console.groupEnd();
+            if(this.initialized) {
+                if(this.mode == GroupMode.NATIVE)
+                    console.groupEnd();
+            }
+        }
+
+        get prefix() : string {
+            return this._log_prefix;
+        }
+
+        set prefix(prefix: string) {
+            this._log_prefix = prefix;
         }
     }
 }

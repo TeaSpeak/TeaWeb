@@ -14,6 +14,12 @@ namespace ChannelType {
     }
 }
 
+enum ChannelSubscribeMode {
+    SUBSCRIBED,
+    UNSUBSCRIBED,
+    INHERITED
+}
+
 class ChannelProperties {
     channel_order: number = 0;
     channel_name: string = "";
@@ -70,6 +76,9 @@ class ChannelEntry {
     private _cached_channel_description_promise: Promise<string> = undefined;
     private _cached_channel_description_promise_resolve: any = undefined;
     private _cached_channel_description_promise_reject: any = undefined;
+
+    private _flag_subscribed: boolean;
+    private _subscribe_mode: ChannelSubscribeMode;
 
     constructor(channelId, channelName, parent = null) {
         this.properties = new ChannelProperties();
@@ -465,6 +474,28 @@ class ChannelEntry {
             MenuEntry.HR(),
             {
                 type: MenuEntryType.ENTRY,
+                icon: "client-subscribe_to_channel",
+                name: tr("<b>Subscribe to channel</b>"),
+                callback: () => this.subscribe(),
+                visible: !this.flag_subscribed
+            },
+            {
+                type: MenuEntryType.ENTRY,
+                icon: "client-channel_unsubscribed",
+                name: tr("<b>Unsubscribe from channel</b>"),
+                callback: () => this.unsubscribe(),
+                visible: this.flag_subscribed
+            },
+            {
+                type: MenuEntryType.ENTRY,
+                icon: "client-subscribe_mode",
+                name: tr("<b>Use inherited subscribe mode</b>"),
+                callback: () => this.unsubscribe(true),
+                visible: this.subscribe_mode != ChannelSubscribeMode.INHERITED
+            },
+            MenuEntry.HR(),
+            {
+                type: MenuEntryType.ENTRY,
                 icon: "client-channel_edit",
                 name: tr("Edit channel"),
                 invalidPermission: !channelModify,
@@ -681,6 +712,7 @@ class ChannelEntry {
         let tag = this.channelTag().find(".channel-type");
         tag.removeAttr('class');
         tag.addClass("show-channel-normal-only channel-type icon");
+
         if(this._channel_name_formatted === undefined)
             tag.addClass("channel-normal");
 
@@ -695,7 +727,7 @@ class ChannelEntry {
         else
             type = "green";
 
-        tag.addClass("client-channel_" + type + "_subscribed");
+        tag.addClass("client-channel_" + type + (this._flag_subscribed ? "_subscribed" : ""));
     }
 
     generate_bbcode() {
@@ -739,6 +771,66 @@ class ChannelEntry {
                     }
                 }
             });
+    }
+
+    async subscribe() : Promise<void> {
+        if(this.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED)
+            return;
+
+        this.subscribe_mode = ChannelSubscribeMode.SUBSCRIBED;
+
+        const connection = this.channelTree.client.getServerConnection();
+        if(!this.flag_subscribed && connection)
+            await connection.send_command('channelsubscribe', {
+                'cid': this.getChannelId()
+            });
+        else
+            this.flag_subscribed = false;
+    }
+
+    async unsubscribe(inherited_subscription_mode?: boolean) : Promise<void> {
+        const connection = this.channelTree.client.getServerConnection();
+        let unsubscribe: boolean;
+
+        if(inherited_subscription_mode) {
+            this.subscribe_mode = ChannelSubscribeMode.INHERITED;
+            unsubscribe = this.flag_subscribed && !this.channelTree.client.controlBar.channel_subscribe_all;
+        } else {
+            this.subscribe_mode = ChannelSubscribeMode.UNSUBSCRIBED;
+            unsubscribe = this.flag_subscribed;
+        }
+
+        if(unsubscribe) {
+            if(connection)
+                await connection.send_command('channelunsubscribe', {
+                    'cid': this.getChannelId()
+                });
+            else
+                this.flag_subscribed = false;
+        }
+    }
+
+    get flag_subscribed() : boolean {
+        return this._flag_subscribed;
+    }
+    set flag_subscribed(flag: boolean) {
+        if(this._flag_subscribed == flag)
+            return;
+
+        this._flag_subscribed = flag;
+        this.updateChannelTypeIcon();
+    }
+
+    get subscribe_mode() : ChannelSubscribeMode {
+        return typeof(this._subscribe_mode) !== 'undefined' ? this._subscribe_mode : (this._subscribe_mode = settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), ChannelSubscribeMode.INHERITED));
+    }
+
+    set subscribe_mode(mode: ChannelSubscribeMode) {
+        if(this.subscribe_mode == mode)
+            return;
+
+        this._subscribe_mode = mode;
+        settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), mode);
     }
 }
 

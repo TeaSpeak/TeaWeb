@@ -214,7 +214,7 @@ namespace profiles.identities {
                 authentication_method: this.identity.type(),
                 publicKey: this.identity.public_key
             }).catch(error => {
-                console.error(tr("Failed to initialize TeamSpeak based handshake. Error: %o"), error);
+                log.error(LogCategory.IDENTITIES, tr("Failed to initialize TeamSpeak based handshake. Error: %o"), error);
 
                 if(error instanceof CommandResult)
                     error = error.extra_message || error.message;
@@ -230,7 +230,7 @@ namespace profiles.identities {
 
             this.identity.sign_message(json[0]["message"], json[0]["digest"]).then(proof => {
                 this.connection.send_command("handshakeindentityproof", {proof: proof}).catch(error => {
-                    console.error(tr("Failed to proof the identity. Error: %o"), error);
+                    log.error(LogCategory.IDENTITIES, tr("Failed to proof the identity. Error: %o"), error);
 
                     if(error instanceof CommandResult)
                         error = error.extra_message || error.message;
@@ -281,7 +281,7 @@ namespace profiles.identities {
                     resolve();
                 };
                 this._worker.onerror = event => {
-                    console.error("POW Worker error %o", event);
+                    log.error(LogCategory.IDENTITIES, tr("POW Worker error %o"), event);
                     clearTimeout(timeout_id);
                     reject("Failed to load worker (" + event.message + ")");
                 };
@@ -394,7 +394,7 @@ namespace profiles.identities {
                     };
                 });
             } catch(error) {
-                console.warn("Failed to finalize POW worker! (%o)", error);
+                log.error(LogCategory.IDENTITIES, tr("Failed to finalize POW worker! (%o)"), error);
             }
 
             this._worker.terminate();
@@ -402,7 +402,7 @@ namespace profiles.identities {
         }
 
         private handle_message(message: any) {
-            console.log("Received message: %o", message);
+            log.info(LogCategory.IDENTITIES, tr("Received message: %o"), message);
         }
     }
 
@@ -412,7 +412,7 @@ namespace profiles.identities {
             try {
                 key = await crypto.subtle.generateKey({name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
             } catch(e) {
-                console.error(tr("Could not generate a new key: %o"), e);
+                log.error(LogCategory.IDENTITIES, tr("Could not generate a new key: %o"), e);
                 throw "Failed to generate keypair";
             }
             const private_key = await CryptoHelper.export_ecc_key(key.privateKey, false);
@@ -483,7 +483,7 @@ namespace profiles.identities {
 
             if(this.private_key && (typeof(initialize) === "undefined" || initialize)) {
                 this.initialize().catch(error => {
-                    console.error("Failed to initialize TeaSpeakIdentity (%s)", error);
+                    log.error(LogCategory.IDENTITIES, "Failed to initialize TeaSpeakIdentity (%s)", error);
                     this._initialized = false;
                 });
             }
@@ -633,7 +633,7 @@ namespace profiles.identities {
                 try {
                     await Promise.all(initialize_promise);
                 } catch(error) {
-                    console.error(error);
+                    log.error(LogCategory.IDENTITIES, error);
                     throw "failed to initialize";
                 }
             }
@@ -688,7 +688,7 @@ namespace profiles.identities {
                                     if(worker.current_level() > best_level) {
                                         this.hash_number = worker.current_hash();
 
-                                        console.log("Found new best at %s (%d). Old was %d", this.hash_number, worker.current_level(), best_level);
+                                        log.info(LogCategory.IDENTITIES, "Found new best at %s (%d). Old was %d", this.hash_number, worker.current_level(), best_level);
                                         best_level = worker.current_level();
                                         if(callback_level)
                                             callback_level(best_level);
@@ -712,7 +712,7 @@ namespace profiles.identities {
                             }).catch(error => {
                                 worker_promise.remove(p);
 
-                                console.warn("POW worker error %o", error);
+                                log.warn(LogCategory.IDENTITIES, "POW worker error %o", error);
                                 reject(error);
 
                                 return Promise.resolve();
@@ -736,7 +736,7 @@ namespace profiles.identities {
                 try {
                     await Promise.all(finalize_promise);
                 } catch(error) {
-                    console.error(error);
+                    log.error(LogCategory.IDENTITIES, error);
                     throw "failed to finalize";
                 }
             }
@@ -761,14 +761,14 @@ namespace profiles.identities {
             try {
                 this._crypto_key_sign = await crypto.subtle.importKey("jwk", jwk, {name:'ECDSA', namedCurve: 'P-256'}, false, ["sign"]);
             } catch(error) {
-                console.error(error);
+                log.error(LogCategory.IDENTITIES, error);
                 throw "failed to create crypto sign key";
             }
 
             try {
                 this._crypto_key = await crypto.subtle.importKey("jwk", jwk, {name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
             } catch(error) {
-                console.error(error);
+                log.error(LogCategory.IDENTITIES, error);
                 throw "failed to create crypto key";
             }
 
@@ -776,7 +776,7 @@ namespace profiles.identities {
                 this.public_key = await CryptoHelper.export_ecc_key(this._crypto_key, true);
                 this._unique_id = base64ArrayBuffer(await sha.sha1(this.public_key));
             } catch(error) {
-                console.error(error);
+                log.error(LogCategory.IDENTITIES, error);
                 throw "failed to calculate unique id";
             }
 

@@ -6,7 +6,6 @@
         <title>TeaSpeak-Web client templates</title>
     </head>
     <body>
-        <!-- main frame TODO tr -->
         <script class="jsrender-template" id="tmpl_main" type="text/html">
             <div class="app-container">
                 <div class="app">
@@ -38,7 +37,7 @@
 
                             <div class="divider"></div>
 
-                            <div class="button-dropdown btn_away" title="{{tr 'Toggle away status' /}}">
+                            <div class="hide-small button-dropdown btn_away" title="{{tr 'Toggle away status' /}}">
                                 <div class="buttons">
                                     <div class="button icon_x32 client-away btn_away_toggle"></div>
                                     <div class="button-dropdown">
@@ -50,15 +49,36 @@
                                     <div class="btn_away_message"><div class="icon client-away"></div><a>{{tr "Set away message" /}}</a></div>
                                 </div>
                             </div>
-                            <div class="button btn_mute_input">
+                            <div class="hide-small button btn_mute_input">
                                 <div class="icon_x32 client-input_muted" title="{{tr 'Mute/unmute microphone' /}}"></div>
                             </div>
-                            <div class="button btn_mute_output">
+                            <div class="hide-small button btn_mute_output">
                                 <div class="icon_x32 client-output_muted" title="{{tr 'Mute/unmute headphones' /}}"></div>
                             </div>
-                            <div class="divider"></div>
 
-                            <div class="button-dropdown btn_token" title="{{tr 'Use token' /}}">
+                            <div class="show-small button-dropdown dropdown-audio" title="{{tr 'Audio settings' /}}">
+                                <div class="buttons">
+                                    <div class="button button-display icon_x32 client-music"></div>
+                                    <div class="button-dropdown">
+                                        <div class="arrow down"></div>
+                                    </div>
+                                </div>
+                                <div class="dropdown">
+                                    <div class="btn_mute_input" title="{{tr 'Mute/unmute microphone' /}}">
+                                        <div class="icon client-input_muted"></div>
+                                        <a>{{tr "Mute/unmute microphone" /}}</a>
+                                    </div>
+                                    <div class="btn_mute_output" title="{{tr 'Mute/unmute headphones' /}}">
+                                        <div class="icon client-output_muted"></div>
+                                        <a>{{tr "Mute/unmute headphones" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="divider"></div>
+                            <div class="button button-subscribe-mode">
+                                <div class="icon_x32" title="{{tr 'Toggle channel subscribe mode' /}}"></div>
+                            </div>
+                            <div class="hide-small button-dropdown btn_token" title="{{tr 'Use token' /}}">
                                 <div class="buttons">
                                     <div class="button icon_x32 client-token btn_token_use"></div>
                                     <div class="button-dropdown">
@@ -72,13 +92,37 @@
                             </div>
 
                             <div style="width: 100%"></div>
-                            <div class="button button-playlist-manage" title="{{tr 'Playlists' /}}">
-                                <div class="icon-playlist-manage"></div>
+
+                            <div class="show-small button-dropdown dropdown-servertools" title="{{tr 'Server tools' /}}">
+                                <div class="buttons">
+                                    <div class="button button-display icon_x32 client-virtualserver_edit"></div>
+                                    <div class="button-dropdown">
+                                        <div class="arrow down"></div>
+                                    </div>
+                                </div>
+                                <div class="dropdown right">
+                                    <div class="button-playlist-manage" title="{{tr 'Playlists' /}}">
+                                        <div class="icon icon-playlist-manage"></div>
+                                        <a>{{tr "Playlists" /}}</a>
+                                    </div>
+                                    <div class="btn_banlist" title="{{tr 'Banlist' /}}">
+                                        <div class="icon client-ban_list"></div>
+                                        <a>{{tr "Banlist" /}}</a>
+                                    </div>
+                                    <div class="btn_permissions" title="{{tr 'View/edit permissions' /}}">
+                                        <div class="icon client-permission_overview"></div>
+                                        <a>{{tr "View/edit permissions" /}}</a>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="button btn_banlist" title="{{tr 'Banlist' /}}">
+
+                            <div class="hide-small button button-playlist-manage" title="{{tr 'Playlists' /}}">
+                                <div class="icon_x32 icon-playlist-manage"></div>
+                            </div>
+                            <div class="hide-small button btn_banlist" title="{{tr 'Banlist' /}}">
                                 <div class="icon_x32 client-ban_list"></div>
                             </div>
-                            <div class="button btn_permissions" title="{{tr 'View/edit permissions' /}}">
+                            <div class="hide-small button btn_permissions" title="{{tr 'View/edit permissions' /}}">
                                 <div class="icon_x32 client-permission_overview"></div>
                             </div>
 
@@ -2078,7 +2122,14 @@
                 {{if !client_is_query}}
                  <tr>
                     <td>{{tr "Version:"/}}</td>
-                    <td><a title="{{>property_client_version}}">{{*: data.property_client_version.split(" ")[0]; }}</a> on {{>property_client_platform}}</td>
+                    <td>
+                        <a title="{{>property_client_version}}">{{*: data.property_client_version.split(" ")[0]; }}</a>
+                        {{if client_is_web && false}} <!-- we cant show any browser info because every browser claims to be any browser as well -->
+                        <div class="icon client-message_info button-browser-info" title="{{tr 'Browser info' /}}"></div>
+                        {{/if}}
+                        on
+                        <a>{{>property_client_platform}}</a>
+                    </td>
                 </tr>
                 {{/if}}
                 <tr>
@@ -2252,26 +2303,11 @@
         </script>
         <script class="jsrender-template" id="tmpl_selected_hostbanner" type="text/html">
             <div class="hostbanner">
-                <a href="{{:property_virtualserver_hostbanner_url}}" target="_blank" style="display: flex; flex-direction: row; justify-content: center; height: 100%">
-
-                    <div style="
-                        background:center no-repeat url(
-                                    {{:property_virtualserver_hostbanner_gfx_url}}{{:cache_tag}}
-                        );
-
-                        background-position: center;
-                        {{if property_virtualserver_hostbanner_mode == 0}}
-
-                        {{else property_virtualserver_hostbanner_mode == 1}}
-                            width: 100%; height: auto;
-                        {{else property_virtualserver_hostbanner_mode == 2}}
-                            background-size:contain;
-                            width:100%;
-                            height:100%
-                        {{/if}}
-                        "
-
-                         alt="{{tr "Host banner"/}}"
+                <a class="image-container" href="{{:property_virtualserver_hostbanner_url}}" target="_blank">
+                    <div
+                        style="background: center no-repeat url({{:hostbanner_gfx_url}})"
+                        alt="{{tr 'Host banner'/}}"
+                        class="hostbanner-image hostbanner-mode-{{:property_virtualserver_hostbanner_mode}}"
                     ></div>
                 </a>
             </div>
