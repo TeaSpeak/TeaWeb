@@ -52,9 +52,8 @@ interface ContextMenuEntry {
     name:       (() => string) | string;
     icon?:       (() => string) | string | JQuery;
     disabled?:  boolean;
-    visible?: boolean;
-
     invalidPermission?:  boolean;
+
     sub_menu?: ContextMenuEntry[];
 }
 
@@ -97,11 +96,8 @@ function generate_tag(entry: ContextMenuEntry) : JQuery {
         if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
         else {
             let menu = $.spawn("div").addClass("sub-menu").addClass("context-menu");
-            for(const e of entry.sub_menu) {
-                if(typeof(entry.visible) === 'boolean' && !entry.visible)
-                    continue;
+            for(let e of entry.sub_menu)
                 menu.append(generate_tag(e));
-            }
             menu.appendTo(tag);
         }
         return tag;
@@ -115,10 +111,7 @@ function spawn_context_menu(x, y, ...entries: ContextMenuEntry[]) {
 
     contextMenuCloseFn = undefined;
 
-    for(const entry of entries){
-        if(typeof(entry.visible) === 'boolean' && !entry.visible)
-            continue;
-
+    for(let entry of entries){
         if(entry.type == MenuEntryType.CLOSE) {
             contextMenuCloseFn = entry.callback;
         } else

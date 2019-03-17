@@ -755,46 +755,4 @@ class ChannelTree {
     get_first_channel?() : ChannelEntry {
         return this.channel_first;
     }
-
-    unsubscribe_all_channels(subscribe_specified?: boolean) {
-        if(!this.client.serverConnection || !this.client.serverConnection.connected())
-            return;
-
-        this.client.serverConnection.send_command('channelunsubscribeall').then(() => {
-            const channels: number[] = [];
-            for(const channel of this.channels) {
-                if(channel.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED)
-                    channels.push(channel.getChannelId());
-            }
-
-            if(channels.length > 0) {
-                this.client.serverConnection.send_command('channelsubscribe', channels.map(e => { return {cid: e}; })).catch(error => {
-                    console.warn(tr("Failed to subscribe to specific channels (%o)"), channels);
-                });
-            }
-        }).catch(error => {
-            console.warn(tr("Failed to unsubscribe to all channels! (%o)"), error);
-        });
-    }
-
-    subscribe_all_channels() {
-        if(!this.client.serverConnection || !this.client.serverConnection.connected())
-            return;
-
-        this.client.serverConnection.send_command('channelsubscribeall').then(() => {
-            const channels: number[] = [];
-            for(const channel of this.channels) {
-                if(channel.subscribe_mode == ChannelSubscribeMode.UNSUBSCRIBED)
-                    channels.push(channel.getChannelId());
-            }
-
-            if(channels.length > 0) {
-                this.client.serverConnection.send_command('channelunsubscribe', channels.map(e => { return {cid: e}; })).catch(error => {
-                    console.warn(tr("Failed to unsubscribe to specific channels (%o)"), channels);
-                });
-            }
-        }).catch(error => {
-            console.warn(tr("Failed to subscribe to all channels! (%o)"), error);
-        });
-    }
 }

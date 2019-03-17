@@ -50,7 +50,7 @@ enum ViewReasonId {
 class TSClient {
     channelTree: ChannelTree;
     serverConnection: connection.ServerConnection;
-    voiceConnection: VoiceConnection | undefined;
+    voiceConnection: VoiceConnection;
     fileManager: FileManager;
     selectInfo: InfoBar;
     permissions: PermissionManager;
@@ -69,12 +69,10 @@ class TSClient {
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
         this.groups = new GroupManager(this);
+        this.voiceConnection = new VoiceConnection(this);
         this._ownEntry = new LocalClientEntry(this);
         this.controlBar = new ControlBar(this, $("#control_bar"));
         this.channelTree.registerClient(this._ownEntry);
-
-        if(!settings.static_global(Settings.KEY_DISABLE_VOICE, false))
-            this.voiceConnection = new VoiceConnection(this);
     }
 
     setup() {
@@ -116,7 +114,7 @@ class TSClient {
 
 
     getClient() : LocalClientEntry { return this._ownEntry; }
-    getClientId() { return this._clientId; }
+    getClientId() { return this._clientId; } //TODO here
 
     set clientId(id: number) {
         this._clientId = id;
@@ -138,14 +136,11 @@ class TSClient {
         this.channelTree.registerClient(this._ownEntry);
         settings.setServer(this.channelTree.server);
         this.permissions.requestPermissionList();
+        this.serverConnection.send_command("channelsubscribeall");
         if(this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
         this.controlBar.updateProperties();
-        if(this.controlBar.channel_subscribe_all)
-            this.channelTree.subscribe_all_channels();
-        else
-            this.channelTree.unsubscribe_all_channels();
-        if(this.voiceConnection && !this.voiceConnection.current_encoding_supported())
+        if(!this.voiceConnection.current_encoding_supported())
             createErrorModal(tr("Codec encode type not supported!"), tr("Codec encode type " + VoiceConnectionType[this.voiceConnection.type] + " not supported by this browser!<br>Choose another one!")).open(); //TODO tr
     }
 
@@ -275,8 +270,7 @@ class TSClient {
         }
 
         this.channelTree.reset();
-        if(this.voiceConnection)
-            this.voiceConnection.dropSession();
+        this.voiceConnection.dropSession();
         if(this.serverConnection) this.serverConnection.disconnect();
         this.controlBar.update_connection_state();
         this.selectInfo.setCurrentSelected(null);
@@ -298,7 +292,7 @@ class TSClient {
             this._reconnect_timer = setTimeout(() => {
                 this._reconnect_timer = undefined;
                 chat.serverChat().appendMessage(tr("Reconnecting..."));
-                log.info(LogCategory.NETWORKING, tr("Reconnecting..."))
+                console.log(tr("Reconnecting..."));
                 this.startConnection(server_address.host + ":" + server_address.port, profile, name, password ? { password: password, hashed: true} : undefined);
                 this._reconnect_attempt = true;
             }, 5000);

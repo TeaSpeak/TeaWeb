@@ -28,14 +28,9 @@ if [[ $? -ne 0 ]]; then
 fi
 
 echo "Generating web workers"
-npm run build-worker-codec
+npm run build-worker
 if [[ $? -ne 0 ]]; then
-    echo "Failed to build web worker codec"
-    exit 1
-fi
-npm run build-worker-pow
-if [[ $? -ne 0 ]]; then
-    echo "Failed to build web worker pow"
+    echo "Failed to build web workers"
     exit 1
 fi
 

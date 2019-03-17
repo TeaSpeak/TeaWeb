@@ -144,7 +144,6 @@ class VoiceConnection {
     private vpacketId: number = 0;
     private chunkVPacketId: number = 0;
     private send_task: NodeJS.Timer;
-    private _tag_favicon: JQuery;
 
     constructor(client) {
         this.client = client;
@@ -172,7 +171,6 @@ class VoiceConnection {
         });
 
         this.send_task = setInterval(this.sendNextVoicePacket.bind(this), 20);
-        this._tag_favicon = $("head link[rel='icon']");
     }
 
     native_encoding_supported() : boolean {
@@ -465,8 +463,6 @@ class VoiceConnection {
 
         if(this.dataChannel)
             this.sendVoicePacket(new Uint8Array(0), this.current_channel_codec()); //TODO Use channel codec!
-
-        this._tag_favicon.attr('href', "img/favicon/teacup.png");
     }
 
     private handleVoiceStarted() {
@@ -474,6 +470,5 @@ class VoiceConnection {
 
         if(this.client && this.client.getClient())
             this.client.getClient().speaking = true;
-        this._tag_favicon.attr('href', "img/favicon/speaking.png");
     }
 }

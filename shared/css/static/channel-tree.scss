@@ -37,7 +37,6 @@
             flex-direction: row;
             justify-content: stretch;
 
-            cursor: pointer;
             margin-left: 0;
 
             .server_type {
@@ -135,10 +134,6 @@
                         display: block;
                     }
                 }
-
-                .icon_no_sound {
-                    display: flex;
-                }
             }
 
             .container-clients {
@@ -198,15 +193,7 @@
 }
 
 /* all icons related to basic_icons */
-.clicon {
-    width:16px;
-    height:16px;
-    background:url('../../img/ts/basic_icons.png') no-repeat;
-    background-size: 16px 608px;
-
-    flex-grow: 0;
-    flex-shrink: 0;
-}
+.clicon {width:16px;height:16px;background:url('../../img/ts/basic_icons.png') no-repeat;background-size: 16px 608px;}
 
 .host {background-position: 0 -448px}
 

@@ -47,11 +47,13 @@ $background:lightgray;
 
 	.button-dropdown {
 		.buttons {
-            display: flex;
-            flex-direction: row;
+			display: grid;
+			grid-template-columns: auto auto;
+			grid-template-rows: 100%;
+			grid-gap: 2px;
 
 			.button {
-				margin-right: 0;
+				margin-right: 0px;
 			}
 
 			.button-dropdown {
@@ -81,7 +83,6 @@ $background:lightgray;
 					background-color: rgba(0,0,0,0.4);
 					border-color: rgba(255, 255, 255, .75);
 					/*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
-                    border-left: 2px solid rgba(255, 255, 255, .75);
 				}
 			}
 		}
@@ -102,11 +103,6 @@ $background:lightgray;
 
 			z-index: 1000;
 			/*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
-
-			&.right {
-
-			}
-
 			.icon {
 				vertical-align: middle;
 				margin-right: 5px;
@@ -135,8 +131,8 @@ $background:lightgray;
 			}
 		}
 
-		&:hover.displayed {
-			.dropdown {
+		&:hover {
+			.dropdown.displayed {
 				display: block;
 			}
 		}

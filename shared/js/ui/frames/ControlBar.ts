@@ -19,7 +19,6 @@ class ControlBar {
     private _away: boolean;
     private _query_visible: boolean;
     private _awayMessage: string;
-    private _channel_subscribe_all: boolean;
 
     private codec_supported: boolean = false;
     private support_playback: boolean = false;
@@ -41,43 +40,39 @@ class ControlBar {
         this.htmlTag.find(".btn_open_settings").on('click', this.onOpenSettings.bind(this));
         this.htmlTag.find(".btn_permissions").on('click', this.onPermission.bind(this));
         this.htmlTag.find(".btn_banlist").on('click', this.onBanlist.bind(this));
-        this.htmlTag.find(".button-subscribe-mode").on('click', this.on_toggle_channel_subscribe_all.bind(this));
         this.htmlTag.find(".button-playlist-manage").on('click', this.on_playlist_manage.bind(this));
-
-        let dropdownify = (tag: JQuery) => {
-            tag.find(".button-dropdown").on('click', () => {
-                tag.addClass("displayed");
-            }).hover(() => {
-                console.log("Add");
-                tag.addClass("displayed");
-            }, () => {
-                if(tag.find(".dropdown:hover").length > 0)
-                    return;
-                console.log("Removed");
-                tag.removeClass("displayed");
-            });
-            tag.on('mouseleave', () => {
-                tag.removeClass("displayed");
-            });
-        };
         {
             let tokens = this.htmlTag.find(".btn_token");
-            dropdownify(tokens);
+            tokens.find(".button-dropdown").on('click', () => {
+                tokens.find(".dropdown").addClass("displayed");
+            });
+            tokens.on('mouseleave', () => {
+                tokens.find(".dropdown").removeClass("displayed");
+            });
 
             tokens.find(".btn_token_use").on('click', this.on_token_use.bind(this));
             tokens.find(".btn_token_list").on('click', this.on_token_list.bind(this));
         }
         {
             let away = this.htmlTag.find(".btn_away");
-            dropdownify(away);
+            away.find(".button-dropdown").on('click', () => {
+                away.find(".dropdown").addClass("displayed");
+            });
+            away.on('mouseleave', () => {
+                away.find(".dropdown").removeClass("displayed");
+            });
 
             away.find(".btn_away_toggle").on('click', this.on_away_toggle.bind(this));
             away.find(".btn_away_message").on('click', this.on_away_set_message.bind(this));
         }
         {
             let bookmark = this.htmlTag.find(".btn_bookmark");
-            dropdownify(bookmark);
-
+            bookmark.find(".button-dropdown").on('click', () => {
+                bookmark.find("> .dropdown").addClass("displayed");
+            });
+            bookmark.on('mouseleave', () => {
+                bookmark.find("> .dropdown").removeClass("displayed");
+            });
             bookmark.find(".btn_bookmark_list").on('click', this.on_bookmark_manage.bind(this));
             bookmark.find(".btn_bookmark_add").on('click', this.on_bookmark_server_add.bind(this));
 
@@ -86,30 +81,22 @@ class ControlBar {
         }
         {
             let query = this.htmlTag.find(".btn_query");
-            dropdownify(query);
+            query.find(".button-dropdown").on('click', () => {
+                query.find(".dropdown").addClass("displayed");
+            });
+            query.on('mouseleave', () => {
+                query.find(".dropdown").removeClass("displayed");
+            });
 
             query.find(".btn_query_toggle").on('click', this.on_query_visibility_toggle.bind(this));
             query.find(".btn_query_create").on('click', this.on_query_create.bind(this));
             query.find(".btn_query_manage").on('click', this.on_query_manage.bind(this));
         }
 
-        /* Mobile dropdowns */
-        {
-            const dropdown = this.htmlTag.find(".dropdown-audio");
-            dropdownify(dropdown);
-            dropdown.find(".button-display").on('click', () => dropdown.addClass("displayed"));
-        }
-        {
-            const dropdown = this.htmlTag.find(".dropdown-servertools");
-            dropdownify(dropdown);
-            dropdown.find(".button-display").on('click', () => dropdown.addClass("displayed"));
-        }
-
         //Need an initialise
-        this.muteInput = settings.static_global(Settings.KEY_CONTROL_MUTE_INPUT, false);
-        this.muteOutput = settings.static_global(Settings.KEY_CONTROL_MUTE_OUTPUT, false);
-        this.query_visible = settings.static_global(Settings.KEY_CONTROL_SHOW_QUERIES, false);
-        this.channel_subscribe_all = settings.static_global(Settings.KEY_CONTROL_CHANNEL_SUBSCRIBE_ALL, true);
+        this.muteInput = settings.static_global("mute_input", false);
+        this.muteOutput = settings.static_global("mute_output", false);
+        this.query_visible = settings.static_global("show_server_queries", false);
     }
 
 
@@ -138,20 +125,22 @@ class ControlBar {
         this._muteInput = flag;
 
         let tag = this.htmlTag.find(".btn_mute_input");
-        const tag_icon = tag.find(".icon_x32, .icon");
+        if(flag) {
+            if(!tag.hasClass("activated"))
+                tag.addClass("activated");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-input_muted");
+        } else {
+            if(tag.hasClass("activated"))
+                tag.removeClass("activated");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-capture");
+        }
 
-        tag.toggleClass('activated', flag)
 
-        tag_icon
-            .toggleClass('client-input_muted', flag)
-            .toggleClass('client-capture', !flag);
-
-
-        if(this.handle.serverConnection.connected())
+        if(this.handle.serverConnection.connected)
             this.handle.serverConnection.send_command("clientupdate", {
                 client_input_muted: this._muteInput
             });
-        settings.changeGlobal(Settings.KEY_CONTROL_MUTE_INPUT, this._muteInput);
+        settings.changeGlobal("mute_input", this._muteInput);
         this.updateMicrophoneRecordState();
     }
 
@@ -161,21 +150,22 @@ class ControlBar {
         if(this._muteOutput == flag) return;
         this._muteOutput = flag;
 
-
         let tag = this.htmlTag.find(".btn_mute_output");
-        const tag_icon = tag.find(".icon_x32, .icon");
+        if(flag) {
+            if(!tag.hasClass("activated"))
+                tag.addClass("activated");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-output_muted");
+        } else {
+            if(tag.hasClass("activated"))
+                tag.removeClass("activated");
+            tag.find(".icon_x32").attr("class", "icon_x32 client-volume");
+        }
 
-        tag.toggleClass('activated', flag)
-
-        tag_icon
-            .toggleClass('client-output_muted', flag)
-            .toggleClass('client-volume', !flag);
-
-        if(this.handle.serverConnection.connected())
+        if(this.handle.serverConnection.connected)
             this.handle.serverConnection.send_command("clientupdate", {
                 client_output_muted: this._muteOutput
             });
-        settings.changeGlobal(Settings.KEY_CONTROL_MUTE_OUTPUT, this._muteOutput);
+        settings.changeGlobal("mute_output", this._muteOutput);
         this.updateMicrophoneRecordState();
     }
 
@@ -206,8 +196,7 @@ class ControlBar {
 
     private updateMicrophoneRecordState() {
         let enabled = !this._muteInput && !this._muteOutput && !this._away;
-        if(this.handle.voiceConnection)
-            this.handle.voiceConnection.voiceRecorder.update(enabled);
+        this.handle.voiceConnection.voiceRecorder.update(enabled);
     }
 
     updateProperties() {
@@ -223,13 +212,12 @@ class ControlBar {
     }
 
     updateVoice(targetChannel?: ChannelEntry) {
-        if(!targetChannel)
-            targetChannel = this.handle.getClient().currentChannel();
+        if(!targetChannel) targetChannel = this.handle.getClient().currentChannel();
         let client = this.handle.getClient();
 
-        this.codec_supported = targetChannel ? this.handle.voiceConnection && this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec) : true;
-        this.support_record = this.handle.voiceConnection && this.handle.voiceConnection.voice_send_support();
-        this.support_playback = this.handle.voiceConnection && this.handle.voiceConnection.voice_playback_support();
+        this.codec_supported = targetChannel ? this.handle.voiceConnection.codecSupported(targetChannel.properties.channel_codec) : true;
+        this.support_record = this.handle.voiceConnection.voice_send_support();
+        this.support_playback = this.handle.voiceConnection.voice_playback_support();
 
         this.htmlTag.find(".btn_mute_input").prop("disabled", !this.codec_supported|| !this.support_playback || !this.support_record);
         this.htmlTag.find(".btn_mute_output").prop("disabled", !this.codec_supported || !this.support_playback);
@@ -433,7 +421,7 @@ class ControlBar {
         if(this._query_visible == flag) return;
 
         this._query_visible = flag;
-        settings.changeGlobal(Settings.KEY_CONTROL_SHOW_QUERIES, flag);
+        settings.changeGlobal("show_server_queries", flag);
         this.update_query_visibility_button();
         this.handle.channelTree.toggle_server_queries(flag);
     }
@@ -444,7 +432,12 @@ class ControlBar {
     }
 
     private update_query_visibility_button() {
-        this.htmlTag.find(".btn_query_toggle").toggleClass('activated', this._query_visible);
+        let tag = this.htmlTag.find(".btn_query_toggle");
+        if(this._query_visible) {
+            tag.addClass("activated");
+        } else {
+            tag.removeClass("activated");
+        }
     }
 
     private on_query_create() {
@@ -470,34 +463,5 @@ class ControlBar {
         } else {
             createErrorModal(tr("You have to be connected"), tr("You have to be connected to use this function!")).open();
         }
-    }
-
-    get channel_subscribe_all() : boolean {
-        return this._channel_subscribe_all;
-    }
-
-    set channel_subscribe_all(flag: boolean) {
-        if(this._channel_subscribe_all == flag)
-            return;
-
-        this._channel_subscribe_all = flag;
-
-        this.htmlTag
-        .find(".button-subscribe-mode")
-            .toggleClass('activated', this._channel_subscribe_all)
-        .find('.icon_x32')
-            .toggleClass('client-unsubscribe_from_all_channels', !this._channel_subscribe_all)
-            .toggleClass('client-subscribe_to_all_channels', this._channel_subscribe_all);
-
-        settings.changeGlobal(Settings.KEY_CONTROL_CHANNEL_SUBSCRIBE_ALL, flag);
-
-        if(flag)
-            this.handle.channelTree.subscribe_all_channels();
-        else
-            this.handle.channelTree.unsubscribe_all_channels();
-    }
-
-    private on_toggle_channel_subscribe_all() {
-        this.channel_subscribe_all = !this.channel_subscribe_all;
     }
 }

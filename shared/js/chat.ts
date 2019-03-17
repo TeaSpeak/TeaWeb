@@ -1,5 +1,3 @@
-import LogType = log.LogType;
-
 enum ChatType {
     GENERAL,
     SERVER,
@@ -67,11 +65,12 @@ namespace MessageHelper {
             }
 
             if(objects.length < number)
-                log.warn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
+                console.warn(tr("Message to format contains invalid index (%o)"), number);
 
             result.push(...formatElement(objects[number]));
             found = found + 1 + offset;
             begin = found + 1;
+            console.log(tr("Offset: %d Number: %d"), offset, number);
         } while(found++);
 
         return result;
@@ -94,7 +93,7 @@ namespace MessageHelper {
         });
 
         if(result.error) {
-            log.error(LogCategory.GENERAL, tr("BBCode parse error: %o"), result.errorQueue);
+            console.log("BBCode parse error: %o", result.errorQueue);
             return formatElement(message);
         }
 
@@ -105,7 +104,7 @@ namespace MessageHelper {
 class ChatMessage {
     date: Date;
     message: JQuery[];
-    private _html_tag: JQuery<HTMLElement>;
+    private _htmlTag: JQuery<HTMLElement>;
 
     constructor(message: JQuery[]) {
         this.date = new Date();
@@ -118,8 +117,8 @@ class ChatMessage {
         return str;
     }
 
-    get html_tag() {
-        if(this._html_tag) return this._html_tag;
+    get htmlTag() {
+        if(this._htmlTag) return this._htmlTag;
 
         let tag = $.spawn("div");
         tag.addClass("message");
@@ -129,30 +128,26 @@ class ChatMessage {
         dateTag.css("margin-right", "4px");
         dateTag.css("color", "dodgerblue");
 
-        this._html_tag = tag;
+        this._htmlTag = tag;
         tag.append(dateTag);
         this.message.forEach(e => e.appendTo(tag));
+        tag.hide();
         return tag;
     }
 }
 
 class ChatEntry {
-    readonly handle: ChatBox;
+    handle: ChatBox;
     type: ChatType;
     key: string;
     history: ChatMessage[];
 
-    owner_unique_id?: string;
-
     private _name: string;
-    private _html_tag: any;
-
-    private _flag_closeable: boolean = true;
-    private _flag_unread : boolean = false;
-    private _flag_offline: boolean = false;
-
+    private _htmlTag: any;
+    private _closeable: boolean;
+    private _unread : boolean;
     onMessageSend: (text: string) => void;
-    onClose: () => boolean = () => true;
+    onClose: () => boolean;
 
     constructor(handle, type : ChatType, key) {
         this.handle = handle;
@@ -160,6 +155,8 @@ class ChatEntry {
         this.key = key;
         this._name = key;
         this.history = [];
+
+        this.onClose = function () { return true; }
     }
 
     appendError(message: string, ...args) {
@@ -176,7 +173,7 @@ class ChatEntry {
         this.history.push(entry);
         while(this.history.length > 100) {
             let elm = this.history.pop_front();
-            elm.html_tag.animate({opacity: 0}, 200, function () {
+            elm.htmlTag.animate({opacity: 0}, 200, function () {
                 $(this).detach();
             });
         }
@@ -184,75 +181,66 @@ class ChatEntry {
             let box = $(this.handle.htmlTag).find(".messages");
             let mbox = $(this.handle.htmlTag).find(".message_box");
             let bottom : boolean = box.scrollTop() + box.height() + 1 >= mbox.height();
-            mbox.append(entry.html_tag);
-            entry.html_tag.css("opacity", "0").animate({opacity: 1}, 100);
+            mbox.append(entry.htmlTag);
+            entry.htmlTag.show().css("opacity", "0").animate({opacity: 1}, 100);
             if(bottom) box.scrollTop(mbox.height());
         } else {
-            this.flag_unread = true;
+            this.unread = true;
         }
     }
 
     displayHistory() {
-        this.flag_unread = false;
-        let box = this.handle.htmlTag.find(".messages");
-        let mbox = box.find(".message_box").detach(); /* detach the message box to improve performance */
+        this.unread = false;
+        let box = $(this.handle.htmlTag).find(".messages");
+        let mbox = $(this.handle.htmlTag).find(".message_box");
         mbox.empty();
 
         for(let e of this.history) {
-            mbox.append(e.html_tag);
-            /* TODO Is this really totally useless?
-                    Because its at least a performance bottleneck because is(...) recalculates the page style
-                if(e.htmlTag.is(":hidden"))
-                    e.htmlTag.show();
-             */
+            mbox.append(e.htmlTag);
+            if(e.htmlTag.is(":hidden")) e.htmlTag.show();
         }
 
-        mbox.appendTo(box);
         box.scrollTop(mbox.height());
     }
 
-    get html_tag() {
-        if(this._html_tag)
-            return this._html_tag;
+    get htmlTag() {
+        if(this._htmlTag) return this._htmlTag;
 
         let tag = $.spawn("div");
         tag.addClass("chat");
-        if(this._flag_unread)
-            tag.addClass('unread');
-        if(this._flag_offline)
-            tag.addClass('offline');
-        if(this._flag_closeable)
-            tag.addClass('closeable');
 
-        tag.append($.spawn("div").addClass("chat-type icon " + this.chat_icon()));
-        tag.append($.spawn("a").addClass("name").text(this._name));
+        tag.append("<div class=\"chatIcon icon " + this.chatIcon() + "\"></div>");
+        tag.append("<a class='name'>" + this._name + "</a>");
 
-        let tag_close = $.spawn("div");
-        tag_close.addClass("btn_close icon client-tab_close_button");
-        if(!this._flag_closeable) tag_close.hide();
-        tag.append(tag_close);
+        let closeTag = $.spawn("div");
+        closeTag.addClass("btn_close icon client-tab_close_button");
+        if(!this._closeable) closeTag.hide();
+        tag.append(closeTag);
 
-        tag.click(() => { this.handle.activeChat = this; });
-        tag.on("contextmenu", (e) => {
+        const _this = this;
+        tag.click(function () {
+            _this.handle.activeChat = _this;
+        });
+        tag.on("contextmenu", function (e) {
             e.preventDefault();
 
-            let actions: ContextMenuEntry[] = [];
+            let actions = [];
             actions.push({
                 type: MenuEntryType.ENTRY,
                 icon: "",
                 name: tr("Clear"),
                 callback: () => {
-                    this.history = [];
-                    this.displayHistory();
+                    _this.history = [];
+                    _this.displayHistory();
                 }
             });
-            if(this.flag_closeable) {
+            if(_this.closeable) {
                 actions.push({
                     type: MenuEntryType.ENTRY,
                     icon: "client-tab_close_button",
                     name: tr("Close"),
                     callback: () => {
-                        chat.deleteChat(this);
+                        chat.deleteChat(_this);
                     }
                 });
             }
@@ -263,20 +251,18 @@ class ChatEntry {
                 name: tr("Close all private tabs"),
                 callback: () => {
                     //TODO Implement this?
-                },
-                visible: false
+                }
             });
             spawn_context_menu(e.pageX, e.pageY, ...actions);
         });
 
-        tag_close.click(() => {
-            if($.isFunction(this.onClose) && !this.onClose())
-                return;
-
-            this.handle.deleteChat(this);
+        closeTag.click(function () {
+            if($.isFunction(_this.onClose) && !_this.onClose()) return;
+            _this.handle.deleteChat(_this);
         });
 
-        return this._html_tag = tag;
+        this._htmlTag = tag;
+        return tag;
     }
 
     focus() {
@@ -285,37 +271,33 @@ class ChatEntry {
     }
 
     set name(newName : string) {
+        console.log(tr("Change name!"));
         this._name = newName;
-        this.html_tag.find(".name").text(this._name);
+        this.htmlTag.find(".name").text(this._name);
     }
 
-    set flag_closeable(flag : boolean) {
-        if(this._flag_closeable == flag) return;
+    set closeable(flag : boolean) {
+        if(this._closeable == flag) return;
 
-        this._flag_closeable = flag;
-
-        this.html_tag.toggleClass('closeable', flag);
+        this._closeable = flag;
+        console.log(tr("Set closeable: ") + this._closeable);
+        if(flag) this.htmlTag.find(".btn_close").show();
+        else this.htmlTag.find(".btn_close").hide();
     }
 
-    set flag_unread(flag : boolean) {
-        if(this._flag_unread == flag) return;
-        this._flag_unread = flag;
-        this.html_tag.find(".chat-type").attr("class", "chat-type icon " + this.chat_icon());
-        this.html_tag.toggleClass('unread', flag);
+    set unread(flag : boolean) {
+        if(this._unread == flag) return;
+        this._unread = flag;
+        this.htmlTag.find(".chatIcon").attr("class", "chatIcon icon " + this.chatIcon());
+        if(flag) {
+            this.htmlTag.find(".name").css("color", "blue");
+        } else {
+            this.htmlTag.find(".name").css("color", "black");
+        }
     }
 
-    get flag_offline() { return this._flag_offline; }
-
-    set flag_offline(flag: boolean) {
-        if(flag == this._flag_offline)
-            return;
-
-        this._flag_offline = flag;
-        this.html_tag.toggleClass('offline', flag);
-    }
-
-    private chat_icon() : string {
-        if(this._flag_unread) {
+    private chatIcon() : string {
+        if(this._unread) {
             switch (this.type) {
                 case ChatType.CLIENT:
                     return "client-new_chat";
@@ -337,10 +319,6 @@ class ChatEntry {
 
 
 class ChatBox {
-    //https://regex101.com/r/YQbfcX/2
-    //static readonly URL_REGEX = /^(?<hostname>([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/(?<path>(?:[^\s?]+)?)(?:\?(?<query>\S+))?)?$/gm;
-    static readonly URL_REGEX = /^(([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/((?:[^\s?]+)?)(?:\?(\S+))?)?$/gm;
-
     htmlTag: JQuery;
     chats: ChatEntry[];
     private _activeChat: ChatEntry;
@@ -381,11 +359,10 @@ class ChatBox {
                     return;
 
                 chat.serverChat().appendMessage(tr("Failed to send text message."));
-                log.error(LogCategory.GENERAL, tr("Failed to send server text message: %o"), error);
+                console.error(tr("Failed to send server text message: %o"), error);
             });
         };
         this.serverChat().name = tr("Server chat");
-        this.serverChat().flag_closeable = false;
 
         this.createChat("chat_channel", ChatType.CHANNEL).onMessageSend = (text: string) => {
             if(!globalClient.serverConnection) {
@@ -395,11 +372,10 @@ class ChatBox {
 
             globalClient.serverConnection.command_helper.sendMessage(text, ChatType.CHANNEL, globalClient.getClient().currentChannel()).catch(error => {
                 chat.channelChat().appendMessage(tr("Failed to send text message."));
-                log.error(LogCategory.GENERAL, tr("Failed to send channel text message: %o"), error);
+                console.error(tr("Failed to send channel text message: %o"), error);
             });
         };
         this.channelChat().name = tr("Channel chat");
-        this.channelChat().flag_closeable = false;
 
         globalClient.permissions.initializedListener.push(flag => {
             if(flag) this.activeChat0(this._activeChat);
@@ -409,13 +385,9 @@ class ChatBox {
     createChat(key, type : ChatType = ChatType.CLIENT) : ChatEntry {
         let chat = new ChatEntry(this, type, key);
         this.chats.push(chat);
-        this.htmlTag.find(".chats").append(chat.html_tag);
+        this.htmlTag.find(".chats").append(chat.htmlTag);
         if(!this._activeChat) this.activeChat = chat;
         return chat;
-    }
-
-    open_chats() : ChatEntry[] {
-        return this.chats;
     }
 
     findChat(key : string) : ChatEntry {
@@ -426,7 +398,7 @@ class ChatBox {
 
     deleteChat(chat : ChatEntry) {
         this.chats.remove(chat);
-        chat.html_tag.detach();
+        chat.htmlTag.detach();
         if(this._activeChat === chat) {
             if(this.chats.length > 0)
                 this.activeChat = this.chats.last();
@@ -442,38 +414,8 @@ class ChatBox {
         this._input_message.val("");
         this._input_message.trigger("input");
 
-        /* preprocessing text */
-        const words = text.split(/[ \n]/);
-        for(let index = 0; index < words.length; index++) {
-            const flag_escaped = words[index].startsWith('!');
-            const unescaped = flag_escaped ? words[index].substr(1) : words[index];
-
-            _try:
-            try {
-                const url = new URL(unescaped);
-                log.debug(LogCategory.GENERAL, tr("Chat message contains URL: %o"), url);
-                if(url.protocol !== 'http:' && url.protocol !== 'https:')
-                    break _try;
-                if(flag_escaped)
-                    words[index] = unescaped;
-                else {
-                    text = undefined;
-                    words[index] = "[url=" + url.toString() + "]" + url.toString() + "[/url]";
-                }
-            } catch(e) { /* word isn't an url */ }
-
-            if(unescaped.match(ChatBox.URL_REGEX)) {
-                if(flag_escaped)
-                    words[index] = unescaped;
-                else {
-                    text = undefined;
-                    words[index] = "[url=" + unescaped + "]" + unescaped + "[/url]";
-                }
-            }
-        }
-
         if(this._activeChat && $.isFunction(this._activeChat.onMessageSend))
-            this._activeChat.onMessageSend(text || words.join(" "));
+            this._activeChat.onMessageSend(text);
     }
 
     set activeChat(chat : ChatEntry) {
@@ -485,27 +427,27 @@ class ChatBox {
     private activeChat0(chat: ChatEntry) {
         this._activeChat = chat;
         for(let e of this.chats)
-            e.html_tag.removeClass("active");
+            e.htmlTag.removeClass("active");
 
-        let disable_input = !chat;
+        let flagAllowSend = false;
         if(this._activeChat) {
-            this._activeChat.html_tag.addClass("active");
+            this._activeChat.htmlTag.addClass("active");
             this._activeChat.displayHistory();
 
-            if(!disable_input && globalClient && globalClient.permissions && globalClient.permissions.initialized())
+            if(globalClient && globalClient.permissions && globalClient.permissions.initialized())
                 switch (this._activeChat.type) {
                     case ChatType.CLIENT:
-                        disable_input = false;
+                        flagAllowSend = true;
                         break;
                     case ChatType.SERVER:
-                        disable_input = !globalClient.permissions.neededPermission(PermissionType.B_CLIENT_SERVER_TEXTMESSAGE_SEND).granted(1);
+                        flagAllowSend = globalClient.permissions.neededPermission(PermissionType.B_CLIENT_SERVER_TEXTMESSAGE_SEND).granted(1);
                         break;
                     case ChatType.CHANNEL:
-                        disable_input = !globalClient.permissions.neededPermission(PermissionType.B_CLIENT_CHANNEL_TEXTMESSAGE_SEND).granted(1);
+                        flagAllowSend = globalClient.permissions.neededPermission(PermissionType.B_CLIENT_CHANNEL_TEXTMESSAGE_SEND).granted(1);
                         break;
                 }
         }
-        this._input_message.prop("disabled", disable_input);
+        this._input_message.prop("disabled", !flagAllowSend);
     }
 
     get activeChat(){ return this._activeChat; }

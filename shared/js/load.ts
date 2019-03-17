@@ -53,7 +53,7 @@ namespace loader {
         DONE
     }
 
-    export let cache_tag: string | undefined;
+    export let allow_cached_files: boolean = false;
     let current_stage: Stage = Stage.INITIALIZING;
     const tasks: {[key:number]:Task[]} = {};
 
@@ -206,7 +206,7 @@ namespace loader {
 
                 document.getElementById("scripts").appendChild(tag);
 
-                tag.src = path + (cache_tag || "");
+                tag.src = path + (allow_cached_files ? "" : "?_ts=" + Date.now());
             });
         }
     }
@@ -315,7 +315,7 @@ namespace loader {
                 };
 
                 document.getElementById("style").appendChild(tag);
-                tag.href = path + (cache_tag || "");
+                tag.href = path + (allow_cached_files ? "" : "?_ts=" + Date.now());
             });
         }
     }
@@ -480,7 +480,6 @@ const loader_javascript = {
             //Load general API's
             "js/proto.js",
             "js/i18n/localize.js",
-            "js/i18n/country.js",
             "js/log.js",
 
             "js/sound/Sounds.js",
@@ -632,7 +631,6 @@ const loader_style = {
             "css/static/ts/tab.css",
             "css/static/ts/chat.css",
             "css/static/ts/icons.css",
-            "css/static/ts/country.css",
             "css/static/general.css",
             "css/static/modals.css",
             "css/static/modal-bookmarks.css",
@@ -664,7 +662,7 @@ const loader_style = {
 
 async function load_templates() {
     try {
-        const response = await $.ajax("templates.html" + (loader.cache_tag || ""));
+        const response = await $.ajax("templates.html" + (loader.allow_cached_files ? "" : "?_ts" + Date.now()));
 
         let node = document.createElement("html");
         node.innerHTML = response;
@@ -708,11 +706,12 @@ async function check_updates() {
 
     if(!app_version) {
         /* TODO add warning */
-        loader.cache_tag = "?_ts=" + Date.now();
+        loader.allow_cached_files = false;
         return;
     }
     const cached_version = localStorage.getItem("cached_version");
     if(!cached_version || cached_version != app_version) {
+        loader.allow_cached_files = false;
         loader.register_task(loader.Stage.LOADED, {
             priority: 0,
             name: "cached version updater",
@@ -720,8 +719,11 @@ async function check_updates() {
                 localStorage.setItem("cached_version", app_version);
             }
         });
+        /* loading screen */
+        return;
     }
-    loader.cache_tag = "?_version=" + app_version;
+
+    loader.allow_cached_files = true;
 }
 
 interface Window {

@@ -40,14 +40,11 @@ var TabFunctions = {
         let content = $.spawn("div");
         content.addClass("tab-content");
 
-        content.append($.spawn("div").addClass("height-watcher"));
-
         let silentContent = $.spawn("div");
         silentContent.addClass("tab-content-invisible");
 
         /* add some kind of min height */
         const update_height = () => {
-            const height_watcher = tag.find("> .tab-content .height-watcher");
             const entries: JQuery = tag.find("> .tab-content-invisible x-content, > .tab-content x-content");
             console.error(entries);
             let max_height = 0;
@@ -59,7 +56,13 @@ var TabFunctions = {
                     max_height = height;
             });
 
-            height_watcher.css('min-height', max_height + "px");
+            console.error("HIGHT: " + max_height);
+            entries.each((_, _e) => {
+                const entry = $(_e);
+                entry.animate({
+                    'min-height': max_height + "px"
+                }, 250);
+            })
         };
 
         template.find("x-entry").each( (_, _entry) => {

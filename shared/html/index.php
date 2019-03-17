@@ -37,7 +37,6 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
         <meta name="description" content="TeaSpeak Web Client, connect to any TeaSpeak server without installing anything." />
-        <link rel="icon" href="img/favicon/teacup.png">
 
         <?php
             if(!$WEB_CLIENT) {
@@ -190,9 +189,9 @@
 
     <footer style="<?php echo $footer_style; ?>">
         <div class="container" style="display: flex; flex-direction: row; align-content: space-between;">
-            <div class="hide-small" style="align-self: center; position: fixed; left: 5px;">Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web" style="display: inline-block; position: relative">github.com</a></div>
-            <div style="align-self: center;">TeaSpeak Web (<?php echo $version; ?>) by WolverinDEV</div>
-            <div class="hide-small" style="align-self: center; position: fixed; right: 5px;"><?php echo $footer_forum; ?></div>
+            <div style="align-self: center; position: fixed; left: 5px;">Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web" style="display: inline-block; position: relative">github.com</a></div>
+            <div style="align-self: center;">TeaSpeak Web client (<?php echo $version; ?>) by WolverinDEV</div>
+            <div style="align-self: center; position: fixed; right: 5px;"><?php echo $footer_forum; ?></div>
         </div>
     </footer>
 </html>

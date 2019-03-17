@@ -31,11 +31,11 @@ namespace Modals {
                     input_nickname.attr("placeholder", "");
 
                 let address = input_address.val().toString();
-                settings.changeGlobal(Settings.KEY_CONNECT_ADDRESS, address);
+                settings.changeGlobal("connect_address", address);
                 let flag_address = !!address.match(Regex.IP_V4) || !!address.match(Regex.DOMAIN);
 
                 let nickname = input_nickname.val().toString();
-                settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, nickname);
+                settings.changeGlobal("connect_name", nickname);
                 let flag_nickname = (nickname.length == 0 && selected_profile && selected_profile.default_username.length > 0) || nickname.length >= 3 && nickname.length <= 32;
 
                 input_address.attr('pattern', flag_address ? null : '^[a]{1000}$').toggleClass('is-invalid', !flag_address);
@@ -48,8 +48,8 @@ namespace Modals {
                 }
             };
 
-            input_nickname.val(settings.static_global(Settings.KEY_CONNECT_USERNAME, undefined));
-            input_address.val(defaultHost.enforce ? defaultHost.url : settings.static_global(Settings.KEY_CONNECT_ADDRESS, defaultHost.url));
+            input_nickname.val(settings.static_global("connect_name", undefined));
+            input_address.val(defaultHost.enforce ? defaultHost.url : settings.static_global("connect_address", defaultHost.url));
             input_address
                 .on("keyup", () => updateFields())
                 .on('keydown', event => {
@@ -150,7 +150,7 @@ namespace Modals {
             },
 
             width: '70%',
-            //flag_closeable: false
+            //closeable: false
         });
         connectModal.open();
     }

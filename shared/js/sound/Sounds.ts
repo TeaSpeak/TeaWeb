@@ -286,7 +286,7 @@ namespace sound {
                     try {
                         console.log(tr("Decoding data"));
                         context.decodeAudioData(buffer, result => {
-                            log.info(LogCategory.VOICE, tr("Got decoded data"));
+                            console.log(tr("Got decoded data"));
                             file.cached = result;
                             play(sound, options);
                         }, error => {

@@ -5,7 +5,7 @@
 /// <reference path="../../profiles/Identity.ts" />
 
 namespace Modals {
-    function spawnTeamSpeakIdentityImprove(identity: profiles.identities.TeaSpeakIdentity): Modal {
+    function spawnTeamSpeakIdentityImprove(identity: profiles.identities.TeaSpeakIdentity) : Modal {
         let modal: Modal;
         let elapsed_timer: NodeJS.Timer;
 
@@ -25,10 +25,10 @@ namespace Modals {
                 const input_elapsed = template.find(".time-elapsed input");
 
                 button_close.on('click', event => {
-                    if (active)
+                    if(active)
                         button_start_stop.trigger('click');
 
-                    if (modal.shown)
+                    if(modal.shown)
                         modal.close();
                 });
 
@@ -40,7 +40,7 @@ namespace Modals {
 
                     input_threads.prop("disabled", !active);
                     input_target_level.prop("disabled", !active);
-                    if (active) {
+                    if(active) {
                         input_hash_rate.val(0);
                         clearInterval(elapsed_timer);
                         active = false;
@@ -51,7 +51,7 @@ namespace Modals {
 
                     const threads = parseInt(input_threads.val() as string);
                     const target_level = parseInt(input_target_level.val() as string);
-                    if (target_level == 0) {
+                    if(target_level == 0) {
                         identity.improve_level(-1, threads, () => active, current_level => {
                             input_current_level.val(current_level);
                         }, hash_rate => {
@@ -59,7 +59,7 @@ namespace Modals {
                         }).catch(error => {
                             console.error(error);
                             createErrorModal(tr("Failed to improve identity"), tr("Failed to improve identity.<br>Error:") + error).open();
-                            if (active)
+                            if(active)
                                 button_start_stop.trigger('click');
                         });
                     } else {
@@ -68,7 +68,7 @@ namespace Modals {
                         }, hash_rate => {
                             input_hash_rate.val(hash_rate);
                         }).then(success => {
-                            if (success) {
+                            if(success) {
                                 identity.level().then(level => {
                                     input_current_level.val(level);
                                     createInfoModal(tr("Identity successfully improved"), MessageHelper.formatMessage(tr("Identity successfully improved to level {}"), level)).open();
@@ -76,12 +76,12 @@ namespace Modals {
                                     input_current_level.val("error: " + error);
                                 });
                             }
-                            if (active)
+                            if(active)
                                 button_start_stop.trigger('click');
                         }).catch(error => {
                             console.error(error);
                             createErrorModal(tr("Failed to improve identity"), tr("Failed to improve identity.<br>Error:") + error).open();
-                            if (active)
+                            if(active)
                                 button_start_stop.trigger('click');
                         });
                     }
@@ -92,10 +92,10 @@ namespace Modals {
                         let seconds = Math.floor(time % 60).toString();
                         let minutes = Math.floor(time / 60).toString();
 
-                        if (seconds.length < 2)
+                        if(seconds.length < 2)
                             seconds = "0" + seconds;
 
-                        if (minutes.length < 2)
+                        if(minutes.length < 2)
                             minutes = "0" + minutes;
 
                         input_elapsed.val(minutes + ":" + seconds);
@@ -119,7 +119,7 @@ namespace Modals {
         return modal;
     }
 
-    function spawnTeamSpeakIdentityImport(callback: (identity: profiles.identities.TeaSpeakIdentity) => any): Modal {
+    function spawnTeamSpeakIdentityImport(callback: (identity: profiles.identities.TeaSpeakIdentity) => any) : Modal {
         let modal: Modal;
         let loaded_identity: profiles.identities.TeaSpeakIdentity;
 
@@ -134,7 +134,7 @@ namespace Modals {
                 const button_import = template.find(".button-import");
                 const set_error = message => {
                     template.find(".success").hide();
-                    if (message) {
+                    if(message) {
                         template.find(".error").text(message).show();
                         button_import.prop("disabled", true);
                     } else
@@ -157,7 +157,7 @@ namespace Modals {
                         const element = event.target as HTMLInputElement;
                         const file_reader = new FileReader();
 
-                        file_reader.onload = function () {
+                        file_reader.onload = function() {
                             import_identity(file_reader.result as string, true);
                         };
 
@@ -167,7 +167,7 @@ namespace Modals {
                             return;
                         };
 
-                        if (element.files && element.files.length > 0)
+                        if(element.files && element.files.length > 0)
                             file_reader.readAsText(element.files[0]);
                     });
                 }
@@ -175,7 +175,7 @@ namespace Modals {
                 { /* text input */
                     template.find(".button-load-text").on('click', event => {
                         createInputModal("Import identity from text", "Please paste your idenity bellow<br>", text => text.length > 0 && text.indexOf('V') != -1, result => {
-                            if (result)
+                            if(result)
                                 import_identity(result as string, false);
                         }).open();
                     });
@@ -197,7 +197,7 @@ namespace Modals {
         return modal;
     }
 
-    export function spawnSettingsModal(): Modal {
+    export function spawnSettingsModal() : Modal {
         let modal: Modal;
         modal = createModal({
             header: tr("Settings"),
@@ -206,7 +206,6 @@ namespace Modals {
                     client: native_client,
                     valid_forum_identity: profiles.identities.valid_static_forum_identity(),
                     forum_path: settings.static("forum_path"),
-                    voice_available: !!globalClient.voiceConnection
                 });
 
                 initialiseVoiceListeners(modal, (template = template.tabify()).find(".settings_audio"));
@@ -227,12 +226,12 @@ namespace Modals {
         console.log(tag);
         {/* setup the forum */
             const identity = profiles.identities.static_forum_identity();
-            if (identity && identity.valid()) {
+            if(identity && identity.valid()) {
                 tag.find(".not-connected").hide();
 
                 tag.find(".property.username .value").text(identity.name());
                 const premium_tag = tag.find(".property.premium .value").text("");
-                if (identity.is_stuff() || identity.is_premium())
+                if(identity.is_stuff() || identity.is_premium())
                     premium_tag.append($.spawn("div").addClass("premium").text(tr("yes")));
                 else
                     premium_tag.append($.spawn("div").addClass("non-premium").text(tr("no")));
@@ -251,6 +250,114 @@ namespace Modals {
     function initialiseVoiceListeners(modal: Modal, tag: JQuery) {
         let currentVAD = settings.global("vad_type", "vad");
 
+        { //Initialized voice activation detection
+            const vad_tag = tag.find(".settings-vad-container");
+
+            vad_tag.find('input[type=radio]').on('change', event => {
+                const select = event.currentTarget as HTMLSelectElement;
+                {
+                    vad_tag.find(".settings-vad-impl-entry").hide();
+                    vad_tag.find(".setting-vad-" + select.value).show();
+                }
+                {
+                    settings.changeGlobal("vad_type", select.value);
+                    globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
+                }
+
+                switch (select.value) {
+                    case "ppt":
+                        let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
+                        ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+
+                        vad_tag.find(".vat_ppt_key").text(ppt.key_description(ppt_settings));
+                        vad_tag.find(".ppt-delay input").val(ppt_settings.delay === undefined ? 300 : ppt_settings.delay);
+
+                        break;
+                    case "vad":
+                        let slider = vad_tag.find(".vad_vad_slider");
+                        let vad: VoiceActivityDetectorVAD = globalClient.voiceConnection.voiceRecorder.getVADHandler() as VoiceActivityDetectorVAD;
+                        slider.val(vad.percentageThreshold);
+                        slider.trigger("change");
+                        globalClient.voiceConnection.voiceRecorder.update(true);
+                        vad.percentage_listener = per => {
+                            vad_tag.find(".vad_vad_bar_filler")
+                                .css("width", (100 - per) + "%");
+                        };
+                        break;
+                }
+            });
+
+            { //Initialized push to talk
+                vad_tag.find(".vat_ppt_key").click(function () {
+                    let modal = createModal({
+                        body: "",
+                        header: () => {
+                            let head = $.spawn("div");
+                            head.text(tr("Type the key you wish"));
+                            head.css("background-color", "blue");
+                            return head;
+                        },
+                        footer: ""
+                    });
+
+                    let listener = (event: ppt.KeyEvent) => {
+                        if(event.type == ppt.EventType.KEY_TYPED) {
+                            settings.changeGlobal('vad_ppt_key', undefined); //TODO remove that because its legacy shit
+                            console.log(tr("Got key %o"), event);
+
+                            let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
+                            ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+                            Object.assign(ppt_settings, event);
+                            settings.changeGlobal('vad_ppt_settings', ppt_settings);
+
+                            globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
+
+                            ppt.unregister_key_listener(listener);
+                            modal.close();
+                            vad_tag.find(".vat_ppt_key").text(ppt.key_description(event));
+                        }
+                    };
+                    ppt.register_key_listener(listener);
+                    modal.open();
+                });
+
+                vad_tag.find(".ppt-delay input").on('change', event => {
+                    let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
+                    ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+                    ppt_settings.delay = (<HTMLInputElement>event.target).valueAsNumber;
+                    settings.changeGlobal('vad_ppt_settings', ppt_settings);
+
+                    globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
+                });
+            }
+
+            { //Initialized voice activation detection
+                let slider = vad_tag.find(".vad_vad_slider");
+                slider.on("input change", () => {
+                    settings.changeGlobal("vad_threshold", slider.val().toString());
+                    let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
+                    if(vad instanceof  VoiceActivityDetectorVAD)
+                        vad.percentageThreshold = slider.val() as number;
+                    vad_tag.find(".vad_vad_slider_value").text(slider.val().toString());
+                });
+                modal.properties.registerCloseListener(() => {
+                    let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
+                    if(vad instanceof  VoiceActivityDetectorVAD)
+                        vad.percentage_listener = undefined;
+
+                });
+            }
+
+            let target_tag = vad_tag.find('input[type=radio][name="vad_type"][value="' + currentVAD + '"]');
+            if(target_tag.length == 0) {
+                //TODO tr
+                console.warn("Failed to find tag for " + currentVAD + ". Using latest tag!");
+                target_tag = vad_tag.find('input[type=radio][name="vad_type"]').last();
+            }
+            target_tag.prop("checked", true);
+            setTimeout(() => target_tag.trigger('change'), 0);
+        }
+
         const display_error = (message: string) => {
             const alert = tag.find(".settings-device-error").first();
             alert.clone()
@@ -261,167 +368,57 @@ namespace Modals {
                 .text(message);
         };
 
-        if (globalClient.voiceConnection) {
-            { //Initialized voice activation detection
-                const vad_tag = tag.find(".settings-vad-container");
+        { //Initialize microphone
 
-                vad_tag.find('input[type=radio]').on('change', event => {
-                    const select = event.currentTarget as HTMLSelectElement;
-                    {
-                        vad_tag.find(".settings-vad-impl-entry").hide();
-                        vad_tag.find(".setting-vad-" + select.value).show();
+            const setting_tag = tag.find(".settings-microphone");
+            const tag_select = setting_tag.find(".audio-select-microphone");
+
+            const update_devices = () => { //List devices
+                tag_select.empty();
+
+                $.spawn("option")
+                    .attr("device-id", "")
+                    .attr("device-group", "")
+                    .text(tr("No device"))
+                    .appendTo(tag_select);
+
+                navigator.mediaDevices.enumerateDevices().then(devices => {
+                    const active_device = globalClient.voiceConnection.voiceRecorder.device_id();
+
+                    for(const device of devices) {
+                        console.debug(tr("Got device %s (%s): %s (%o)"), device.deviceId, device.kind, device.label);
+                        if(device.kind !== 'audioinput') continue;
+
+                        $.spawn("option")
+                            .attr("device-id", device.deviceId)
+                            .attr("device-group", device.groupId)
+                            .text(device.label)
+                            .prop("selected", device.deviceId == active_device)
+                            .appendTo(tag_select);
                     }
-                    {
-                        settings.changeGlobal("vad_type", select.value);
-                        globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
-                    }
-
-                    switch (select.value) {
-                        case "ppt":
-                            let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
-                            ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
-
-                            vad_tag.find(".vat_ppt_key").text(ppt.key_description(ppt_settings));
-                            vad_tag.find(".ppt-delay input").val(ppt_settings.delay === undefined ? 300 : ppt_settings.delay);
-
-                            break;
-                        case "vad":
-                            let slider = vad_tag.find(".vad_vad_slider");
-                            let vad: VoiceActivityDetectorVAD = globalClient.voiceConnection.voiceRecorder.getVADHandler() as VoiceActivityDetectorVAD;
-                            slider.val(vad.percentageThreshold);
-                            slider.trigger("change");
-                            globalClient.voiceConnection.voiceRecorder.update(true);
-                            vad.percentage_listener = per => {
-                                vad_tag.find(".vad_vad_bar_filler")
-                                    .css("width", (100 - per) + "%");
-                            };
-                            break;
-                    }
+                }).catch(error => {
+                    console.error(tr("Could not enumerate over devices!"));
+                    console.error(error);
+                    display_error(tr("Could not get microphone device list!"));
                 });
 
-                { //Initialized push to talk
-                    vad_tag.find(".vat_ppt_key").click(function () {
-                        let modal = createModal({
-                            body: "",
-                            header: () => {
-                                let head = $.spawn("div");
-                                head.text(tr("Type the key you wish"));
-                                head.css("background-color", "blue");
-                                return head;
-                            },
-                            footer: ""
-                        });
+                if(tag_select.find("option:selected").length == 0)
+                    tag_select.find("option").prop("selected", true);
 
-                        let listener = (event: ppt.KeyEvent) => {
-                            if (event.type == ppt.EventType.KEY_TYPED) {
-                                settings.changeGlobal('vad_ppt_key', undefined); //TODO remove that because its legacy shit
-                                console.log(tr("Got key %o"), event);
+            };
 
-                                let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
-                                ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
-                                Object.assign(ppt_settings, event);
-                                settings.changeGlobal('vad_ppt_settings', ppt_settings);
-
-                                globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
-
-                                ppt.unregister_key_listener(listener);
-                                modal.close();
-                                vad_tag.find(".vat_ppt_key").text(ppt.key_description(event));
-                            }
-                        };
-                        ppt.register_key_listener(listener);
-                        modal.open();
-                    });
-
-                    vad_tag.find(".ppt-delay input").on('change', event => {
-                        let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
-                        ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
-                        ppt_settings.delay = (<HTMLInputElement>event.target).valueAsNumber;
-                        settings.changeGlobal('vad_ppt_settings', ppt_settings);
-
-                        globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
-                    });
-                }
-
-                { //Initialized voice activation detection
-                    let slider = vad_tag.find(".vad_vad_slider");
-                    slider.on("input change", () => {
-                        settings.changeGlobal("vad_threshold", slider.val().toString());
-                        let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
-                        if (vad instanceof VoiceActivityDetectorVAD)
-                            vad.percentageThreshold = slider.val() as number;
-                        vad_tag.find(".vad_vad_slider_value").text(slider.val().toString());
-                    });
-                    modal.properties.registerCloseListener(() => {
-                        let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
-                        if (vad instanceof VoiceActivityDetectorVAD)
-                            vad.percentage_listener = undefined;
-
-                    });
-                }
-
-                let target_tag = vad_tag.find('input[type=radio][name="vad_type"][value="' + currentVAD + '"]');
-                if (target_tag.length == 0) {
-                    //TODO tr
-                    console.warn("Failed to find tag for " + currentVAD + ". Using latest tag!");
-                    target_tag = vad_tag.find('input[type=radio][name="vad_type"]').last();
-                }
-                target_tag.prop("checked", true);
-                setTimeout(() => target_tag.trigger('change'), 0);
+            {
+                tag_select.on('change', event => {
+                    let selected_tag = tag_select.find("option:selected");
+                    let deviceId = selected_tag.attr("device-id");
+                    let groupId = selected_tag.attr("device-group");
+                    console.log(tr("Selected microphone device: id: %o group: %o"), deviceId, groupId);
+                    globalClient.voiceConnection.voiceRecorder.change_device(deviceId, groupId);
+                });
             }
 
-            { //Initialize microphone
-
-                const setting_tag = tag.find(".settings-microphone");
-                const tag_select = setting_tag.find(".audio-select-microphone");
-
-                const update_devices = () => { //List devices
-                    tag_select.empty();
-
-                    $.spawn("option")
-                        .attr("device-id", "")
-                        .attr("device-group", "")
-                        .text(tr("No device"))
-                        .appendTo(tag_select);
-
-                    navigator.mediaDevices.enumerateDevices().then(devices => {
-                        const active_device = globalClient.voiceConnection.voiceRecorder.device_id();
-
-                        for (const device of devices) {
-                            console.debug(tr("Got device %s (%s): %s (%o)"), device.deviceId, device.kind, device.label);
-                            if (device.kind !== 'audioinput') continue;
-
-                            $.spawn("option")
-                                .attr("device-id", device.deviceId)
-                                .attr("device-group", device.groupId)
-                                .text(device.label)
-                                .prop("selected", device.deviceId == active_device)
-                                .appendTo(tag_select);
-                        }
-                    }).catch(error => {
-                        console.error(tr("Could not enumerate over devices!"));
-                        console.error(error);
-                        display_error(tr("Could not get microphone device list!"));
-                    });
-
-                    if (tag_select.find("option:selected").length == 0)
-                        tag_select.find("option").prop("selected", true);
-
-                };
-
-                {
-                    tag_select.on('change', event => {
-                        let selected_tag = tag_select.find("option:selected");
-                        let deviceId = selected_tag.attr("device-id");
-                        let groupId = selected_tag.attr("device-group");
-                        console.log(tr("Selected microphone device: id: %o group: %o"), deviceId, groupId);
-                        globalClient.voiceConnection.voiceRecorder.change_device(deviceId, groupId);
-                    });
-                }
-
-                update_devices();
-                setting_tag.find(".button-device-update").on('click', event => update_devices());
-            }
+            update_devices();
+            setting_tag.find(".button-device-update").on('click', event => update_devices());
         }
 
         { //Initialize speaker
@@ -434,7 +431,7 @@ namespace Modals {
 
                 const active_device = audio.player.current_device();
                 audio.player.available_devices().then(devices => {
-                    for (const device of devices) {
+                    for(const device of devices) {
                         $.spawn("option")
                             .attr("device-id", device.device_id)
                             .text(device.name)
@@ -448,7 +445,7 @@ namespace Modals {
                 });
 
 
-                if (tag_select.find("option:selected").length == 0)
+                if(tag_select.find("option:selected").length == 0)
                     tag_select.find("option").prop("selected", true);
             }
 
@@ -501,7 +498,7 @@ namespace Modals {
                 const template_tag = $("#tmpl_settings-sound_entry");
                 const entry_tag = sound_tag.find(".sound-list-entries");
 
-                for (const _sound in Sound) {
+                for(const _sound in Sound) {
                     const sound_name = Sound[_sound];
 
                     console.log(sound.get_sound_volume(sound_name as Sound));
@@ -526,7 +523,7 @@ namespace Modals {
 
                 setTimeout(() => {
                     const entry_container = sound_tag.find(".sound-list-entries-container");
-                    if (entry_container.hasScrollBar())
+                    if(entry_container.hasScrollBar())
                         entry_container.addClass("scrollbar");
                 }, 100);
 
@@ -534,12 +531,12 @@ namespace Modals {
                 const filter_tag = sound_tag.find(".sound-list-filter input");
                 filter_tag.on('change keyup', event => {
                     const filter = ((<HTMLInputElement>event.target).value || "").toLowerCase();
-                    if (!filter)
+                    if(!filter)
                         entry_tag.find(".entry").show();
                     else {
                         entry_tag.find(".entry").each((_, _entry) => {
                             const entry = $(_entry);
-                            if (entry.text().toLowerCase().indexOf(filter) == -1)
+                            if(entry.text().toLowerCase().indexOf(filter) == -1)
                                 entry.hide();
                             else
                                 entry.show();
@@ -550,175 +547,213 @@ namespace Modals {
 
             modal.close_listener.push(sound.save);
         }
-    }
+
+        //Initialise microphones
+        /*
+        let select_microphone = tag.find(".voice_microphone_select");
+        let select_error = tag.find(".voice_microphone_select_error");
+
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+            let recoder = globalClient.voiceConnection.voiceRecorder;
+
+            console.log("Got " + devices.length + " devices:");
+            for(let device of devices) {
+                console.log(" - Type: %s Name %s ID: %s Group: %s", device.kind, device.label, device.deviceId, device.groupId);
+                if(device.kind == "audioinput") {
+                    let dtag = $.spawn("option");
+                    dtag.attr("device-id", device.deviceId);
+                    dtag.attr("device-group", device.groupId);
+                    dtag.text(device.label);
+                    select_microphone.append(dtag);
+
+                    if(recoder) dtag.prop("selected", device.deviceId == recoder.device_id());
+                }
+            }
+        }).catch(error => {
+            console.error("Could not enumerate over devices!");
+            console.error(error);
+            select_error.text("Could not get device list!").show();
+        });
+
+        select_microphone.change(event => {
+            let deviceSelected = select_microphone.find("option:selected");
+            let deviceId = deviceSelected.attr("device-id");
+            let groupId = deviceSelected.attr("device-group");
+            console.log("Selected microphone device: id: %o group: %o", deviceId, groupId);
+            globalClient.voiceConnection.voiceRecorder.change_device(deviceId, groupId);
+        });
+        */
+        //Initialise speakers
+
+   }
 
     function initialise_translations(tag: JQuery) {
-        { //Initialize the list
-            const tag_list = tag.find(".setting-list .list");
-            const tag_loading = tag.find(".setting-list .loading");
-            const template = $("#settings-translations-list-entry");
-            const restart_hint = tag.find(".setting-list .restart-note");
-            restart_hint.hide();
+    { //Initialize the list
+       const tag_list = tag.find(".setting-list .list");
+       const tag_loading = tag.find(".setting-list .loading");
+       const template = $("#settings-translations-list-entry");
+       const restart_hint = tag.find(".setting-list .restart-note");
+       restart_hint.hide();
 
-            const update_list = () => {
-                tag_list.empty();
+       const update_list = () => {
+           tag_list.empty();
 
-                const currently_selected = i18n.config.translation_config().current_translation_url;
-                { //Default translation
-                    const tag = template.renderTag({
-                        type: "default",
-                        selected: !currently_selected || currently_selected == "default"
+           const currently_selected = i18n.config.translation_config().current_translation_url;
+           { //Default translation
+               const tag = template.renderTag({
+                   type: "default",
+                   selected: !currently_selected || currently_selected == "default"
+               });
+               tag.on('click', () => {
+                   i18n.select_translation(undefined, undefined);
+                   tag_list.find(".selected").removeClass("selected");
+                   tag.addClass("selected");
+
+                   restart_hint.show();
+               });
+               tag.appendTo(tag_list);
+           }
+
+           {
+                const display_repository_info = (repository: i18n.TranslationRepository) => {
+                    const info_modal = createModal({
+                        header: tr("Repository info"),
+                        body: () => {
+                            return $("#settings-translations-list-entry-info").renderTag({
+                                type: "repository",
+                                name: repository.name,
+                                url: repository.url,
+                                contact: repository.contact,
+                                translations: repository.translations || []
+                            });
+                        },
+                        footer: () => {
+                            let footer = $.spawn("div");
+                            footer.addClass("modal-button-group");
+                            footer.css("margin-top", "5px");
+                            footer.css("margin-bottom", "5px");
+                            footer.css("text-align", "right");
+
+                            let buttonOk = $.spawn("button");
+                            buttonOk.text(tr("Close"));
+                            buttonOk.click(() => info_modal.close());
+                            footer.append(buttonOk);
+
+                            return footer;
+                        }
                     });
-                    tag.on('click', () => {
-                        i18n.select_translation(undefined, undefined);
+                    info_modal.open()
+                };
+
+               tag_loading.show();
+               i18n.iterate_translations((repo, entry) => {
+                   let repo_tag = tag_list.find("[repository=\"" + repo.unique_id + "\"]");
+                   if(repo_tag.length == 0) {
+                       repo_tag = template.renderTag({
+                           type: "repository",
+                           name: repo.name || repo.url,
+                           id: repo.unique_id
+                       });
+
+                       repo_tag.find(".button-delete").on('click', e => {
+                           e.preventDefault();
+
+                           Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this repository?"), answer => {
+                                if(answer) {
+                                    i18n.delete_repository(repo);
+                                    update_list();
+                                }
+                           });
+                       });
+                       repo_tag.find(".button-info").on('click', e => {
+                           e.preventDefault();
+
+                           display_repository_info(repo);
+                       });
+
+                       tag_list.append(repo_tag);
+                   }
+
+                   const tag = template.renderTag({
+                       type: "translation",
+                       name: entry.info.name || entry.url,
+                       id: repo.unique_id,
+                       selected: i18n.config.translation_config().current_translation_url == entry.url
+                   });
+                   tag.find(".button-info").on('click', e => {
+                       e.preventDefault();
+
+                       const info_modal = createModal({
+                           header: tr("Translation info"),
+                           body: () => {
+                               const tag = $("#settings-translations-list-entry-info").renderTag({
+                                   type: "translation",
+                                   name: entry.info.name,
+                                   url: entry.url,
+                                   repository_name: repo.name,
+                                   contributors: entry.info.contributors || []
+                               });
+
+                               tag.find(".button-info").on('click', () => display_repository_info(repo));
+
+                               return tag;
+                           },
+                           footer: () => {
+                               let footer = $.spawn("div");
+                               footer.addClass("modal-button-group");
+                               footer.css("margin-top", "5px");
+                               footer.css("margin-bottom", "5px");
+                               footer.css("text-align", "right");
+
+                               let buttonOk = $.spawn("button");
+                               buttonOk.text(tr("Close"));
+                               buttonOk.click(() => info_modal.close());
+                               footer.append(buttonOk);
+
+                               return footer;
+                           }
+                       });
+                       info_modal.open()
+                   });
+                   tag.on('click', e => {
+                        if(e.isDefaultPrevented()) return;
+                        i18n.select_translation(repo, entry);
                         tag_list.find(".selected").removeClass("selected");
                         tag.addClass("selected");
 
-                        restart_hint.show();
-                    });
-                    tag.appendTo(tag_list);
-                }
+                       restart_hint.show();
+                   });
+                   tag.insertAfter(repo_tag)
+               }, () => {
+                   tag_loading.hide();
+               });
+           }
 
-                {
-                    const display_repository_info = (repository: i18n.TranslationRepository) => {
-                        const info_modal = createModal({
-                            header: tr("Repository info"),
-                            body: () => {
-                                return $("#settings-translations-list-entry-info").renderTag({
-                                    type: "repository",
-                                    name: repository.name,
-                                    url: repository.url,
-                                    contact: repository.contact,
-                                    translations: repository.translations || []
-                                });
-                            },
-                            footer: () => {
-                                let footer = $.spawn("div");
-                                footer.addClass("modal-button-group");
-                                footer.css("margin-top", "5px");
-                                footer.css("margin-bottom", "5px");
-                                footer.css("text-align", "right");
+       };
 
-                                let buttonOk = $.spawn("button");
-                                buttonOk.text(tr("Close"));
-                                buttonOk.click(() => info_modal.close());
-                                footer.append(buttonOk);
+       {
+           tag.find(".button-add-repository").on('click', () => {
+               createInputModal("Enter URL", tr("Enter repository URL:<br>"), text => true, url => { //FIXME test valid url
+                   if(!url) return;
 
-                                return footer;
-                            }
-                        });
-                        info_modal.open()
-                    };
+                   tag_loading.show();
+                   i18n.load_repository(url as string).then(repository => {
+                       i18n.register_repository(repository);
+                       update_list();
+                   }).catch(error => {
+                       tag_loading.hide();
+                       createErrorModal("Failed to load repository", tr("Failed to query repository.<br>Ensure that this repository is valid and reachable.<br>Error: ") + error).open();
+                   })
+               }).open();
+           });
+       }
 
-                    tag_loading.show();
-                    i18n.iterate_translations((repo, entry) => {
-                        let repo_tag = tag_list.find("[repository=\"" + repo.unique_id + "\"]");
-                        if (repo_tag.length == 0) {
-                            repo_tag = template.renderTag({
-                                type: "repository",
-                                name: repo.name || repo.url,
-                                id: repo.unique_id
-                            });
+       restart_hint.find(".button-reload").on('click', () => {
+           location.reload();
+       });
 
-                            repo_tag.find(".button-delete").on('click', e => {
-                                e.preventDefault();
-
-                                Modals.spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this repository?"), answer => {
-                                    if (answer) {
-                                        i18n.delete_repository(repo);
-                                        update_list();
-                                    }
-                                });
-                            });
-                            repo_tag.find(".button-info").on('click', e => {
-                                e.preventDefault();
-
-                                display_repository_info(repo);
-                            });
-
-                            tag_list.append(repo_tag);
-                        }
-
-                        const tag = template.renderTag({
-                            type: "translation",
-                            name: entry.info.name || entry.url,
-                            id: repo.unique_id,
-                            selected: i18n.config.translation_config().current_translation_url == entry.url
-                        });
-                        tag.find(".button-info").on('click', e => {
-                            e.preventDefault();
-
-                            const info_modal = createModal({
-                                header: tr("Translation info"),
-                                body: () => {
-                                    const tag = $("#settings-translations-list-entry-info").renderTag({
-                                        type: "translation",
-                                        name: entry.info.name,
-                                        url: entry.url,
-                                        repository_name: repo.name,
-                                        contributors: entry.info.contributors || []
-                                    });
-
-                                    tag.find(".button-info").on('click', () => display_repository_info(repo));
-
-                                    return tag;
-                                },
-                                footer: () => {
-                                    let footer = $.spawn("div");
-                                    footer.addClass("modal-button-group");
-                                    footer.css("margin-top", "5px");
-                                    footer.css("margin-bottom", "5px");
-                                    footer.css("text-align", "right");
-
-                                    let buttonOk = $.spawn("button");
-                                    buttonOk.text(tr("Close"));
-                                    buttonOk.click(() => info_modal.close());
-                                    footer.append(buttonOk);
-
-                                    return footer;
-                                }
-                            });
-                            info_modal.open()
-                        });
-                        tag.on('click', e => {
-                            if (e.isDefaultPrevented()) return;
-                            i18n.select_translation(repo, entry);
-                            tag_list.find(".selected").removeClass("selected");
-                            tag.addClass("selected");
-
-                            restart_hint.show();
-                        });
-                        tag.insertAfter(repo_tag)
-                    }, () => {
-                        tag_loading.hide();
-                    });
-                }
-
-            };
-
-            {
-                tag.find(".button-add-repository").on('click', () => {
-                    createInputModal("Enter URL", tr("Enter repository URL:<br>"), text => true, url => { //FIXME test valid url
-                        if (!url) return;
-
-                        tag_loading.show();
-                        i18n.load_repository(url as string).then(repository => {
-                            i18n.register_repository(repository);
-                            update_list();
-                        }).catch(error => {
-                            tag_loading.hide();
-                            createErrorModal("Failed to load repository", tr("Failed to query repository.<br>Ensure that this repository is valid and reachable.<br>Error: ") + error).open();
-                        })
-                    }).open();
-                });
-            }
-
-            restart_hint.find(".button-reload").on('click', () => {
-                location.reload();
-            });
-
-            update_list();
-        }
+       update_list();
+    }
     }
 
     function initialise_profiles(modal: Modal, tag: JQuery) {
@@ -751,30 +786,30 @@ namespace Modals {
                     profiles.mark_need_save();
 
                     let tag: JQuery;
-                    if (selected_type == profiles.identities.IdentitifyType.TEAFORO) {
+                    if(selected_type == profiles.identities.IdentitifyType.TEAFORO) {
                         const forum_tag = tag = settings_tag.find(".identity-settings-teaforo");
 
                         forum_tag.find(".connected, .disconnected").hide();
-                        if (identity && identity.valid()) {
+                        if(identity && identity.valid()) {
                             forum_tag.find(".connected").show();
                         } else {
                             forum_tag.find(".disconnected").show();
                         }
-                    } else if (selected_type == profiles.identities.IdentitifyType.TEAMSPEAK) {
+                    } else if(selected_type == profiles.identities.IdentitifyType.TEAMSPEAK) {
                         console.log("Set: " + identity);
                         const teamspeak_tag = tag = settings_tag.find(".identity-settings-teamspeak");
                         teamspeak_tag.find(".identity_string").val("");
-                        if (identity)
+                        if(identity)
                             (identity as profiles.identities.TeaSpeakIdentity).export_ts().then(e => teamspeak_tag.find(".identity_string").val(e));
-                    } else if (selected_type == profiles.identities.IdentitifyType.NICKNAME) {
+                    } else if(selected_type == profiles.identities.IdentitifyType.NICKNAME) {
                         const name_tag = tag = settings_tag.find(".identity-settings-nickname");
-                        if (identity)
+                        if(identity)
                             name_tag.find("input").val(identity.name());
                         else
                             name_tag.find("input").val("");
                     }
 
-                    if (tag)
+                    if(tag)
                         tag.trigger('show');
                 };
 
@@ -786,7 +821,7 @@ namespace Modals {
         const update_profile_list = () => {
             const profile_list = tag.find(".profile-list .list").empty();
             const profile_template = $("#settings-profile-list-entry");
-            for (const profile of profiles.profiles()) {
+            for(const profile of profiles.profiles()) {
                 const list_tag = profile_template.renderTag({
                     profile_name: profile.profile_name,
                     id: profile.id
@@ -794,7 +829,7 @@ namespace Modals {
 
                 const profile_status_update = () => {
                     list_tag.find(".status").hide();
-                    if (profile.valid())
+                    if(profile.valid())
                         list_tag.find(".status-valid").show();
                     else
                         list_tag.find(".status-invalid").show();
@@ -804,7 +839,7 @@ namespace Modals {
                     profile_list.find(".selected").removeClass("selected");
                     list_tag.addClass("selected");
 
-                    if (profile == selected_profile) return;
+                    if(profile == selected_profile) return;
                     nickname_listener = () => list_tag.find(".name").text(profile.profile_name);
                     status_listener = profile_status_update;
 
@@ -813,14 +848,14 @@ namespace Modals {
 
 
                 profile_list.append(list_tag);
-                if ((!selected_profile && profile.id == "default") || selected_profile == profile)
+                if((!selected_profile && profile.id == "default") || selected_profile == profile)
                     setTimeout(() => list_tag.trigger('click'), 1);
                 profile_status_update();
             }
         };
 
         const display_error = (error?: string) => {
-            if (error) {
+            if(error){
                 settings_tag.find(".settings-profile-error").show().find(".message").html(error);
             } else
                 settings_tag.find(".settings-profile-error").hide();
@@ -846,9 +881,9 @@ namespace Modals {
                         createInfoModal(tr("Identity imported"), tr("Your identity has been successfully imported!")).open();
                     };
 
-                    if (profile && profile.valid()) {
+                    if(profile && profile.valid()) {
                         spawnYesNo(tr("Are you sure"), tr("Do you really want to import a new identity and override the old identity?"), result => {
-                            if (result)
+                            if(result)
                                 spawnTeamSpeakIdentityImport(set_identity);
                         });
                     } else
@@ -856,10 +891,10 @@ namespace Modals {
                 });
                 button_export.on('click', event => {
                     const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
-                    if (!profile) return;
+                    if(!profile) return;
 
                     createInputModal(tr("File name"), tr("Please enter the file name"), text => !!text, name => {
-                        if (name) {
+                        if(name) {
                             profile.export_ts(true).then(data => {
                                 const element = $.spawn("a")
                                     .text("donwload")
@@ -890,9 +925,9 @@ namespace Modals {
                         });
                     };
 
-                    if (profile && profile.valid()) {
+                    if(profile && profile.valid()) {
                         spawnYesNo(tr("Are you sure"), tr("Do you really want to generate a new identity and override the old identity?"), result => {
-                            if (result)
+                            if(result)
                                 generate_identity();
                         });
                     } else
@@ -901,7 +936,7 @@ namespace Modals {
 
                 button_improve.on('click', event => {
                     const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
-                    if (!profile) return;
+                    if(!profile) return;
 
                     spawnTeamSpeakIdentityImprove(profile).close_listener.push(() => teamspeak_tag.trigger('show'));
                 });
@@ -910,7 +945,7 @@ namespace Modals {
                 teamspeak_tag.on('show', event => {
                     const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
 
-                    if (!profile || !profile.valid()) {
+                    if(!profile || !profile.valid()) {
                         identity_info_tag.hide();
                         teamspeak_tag.find(".identity-undefined").show();
                         button_export.prop("disabled", true);
@@ -929,12 +964,12 @@ namespace Modals {
 
             { //The forum
                 const teaforo_tag = settings_tag.find(".identity-settings-teaforo");
-                if (native_client) {
+                if(native_client) {
                     teaforo_tag.find(".native-teaforo-login").on('click', event => {
                         setTimeout(() => {
                             const forum = require("teaforo.js");
                             const call = () => {
-                                if (modal.shown) {
+                                if(modal.shown) {
                                     display_settings(selected_profile);
                                     status_listener();
                                 }
@@ -946,8 +981,7 @@ namespace Modals {
                 }
 
                 teaforo_tag.on('show', event => {
-                    display_error();
-                    /* clear error */
+                    display_error(); /* clear error */
                 });
             }
 
@@ -958,7 +992,7 @@ namespace Modals {
                     selected_profile.set_identity(profiles.identities.IdentitifyType.NICKNAME, new profiles.identities.NameIdentity(name));
                     profiles.mark_need_save();
 
-                    if (name.length < 3) {
+                    if(name.length < 3) {
                         display_error("Name must be at least 3 characters long!");
                         return;
                     }
@@ -967,9 +1001,9 @@ namespace Modals {
 
                 name_tag.on('show', event => {
                     const profile = selected_profile.selected_identity(profiles.identities.IdentitifyType.NICKNAME);
-                    if (!profile)
+                    if(!profile)
                         display_error("invalid profile");
-                    else if (!profile.valid())
+                    else if(!profile.valid())
                         display_error("Name must be at least 3 characters long!");
                     else
                         display_error();
@@ -981,9 +1015,9 @@ namespace Modals {
         {
             settings_tag.find(".setting-name").on('change', event => {
                 const value = settings_tag.find(".setting-name").val() as string;
-                if (value && selected_profile) {
+                if(value && selected_profile) {
                     selected_profile.profile_name = value;
-                    if (nickname_listener)
+                    if(nickname_listener)
                         nickname_listener();
                     profiles.mark_need_save();
                     status_listener();
@@ -991,7 +1025,7 @@ namespace Modals {
             });
             settings_tag.find(".setting-default-nickname").on('change', event => {
                 const value = settings_tag.find(".setting-default-nickname").val() as string;
-                if (value && selected_profile) {
+                if(value && selected_profile) {
                     selected_profile.default_username = value;
                     profiles.mark_need_save();
                     status_listener();
@@ -999,7 +1033,7 @@ namespace Modals {
             });
             settings_tag.find(".setting-default-password").on('change', event => {
                 const value = settings_tag.find(".setting-default-password").val() as string;
-                if (value && selected_profile) {
+                if(value && selected_profile) {
                     selected_profile.default_username = value;
                     profiles.mark_need_save();
                     status_listener();
@@ -1011,7 +1045,7 @@ namespace Modals {
         {
             tag.find(".button-add-profile").on('click', event => {
                 createInputModal(tr("Please enter a name"), tr("Please enter a name for the new profile:<br>"), text => text.length > 0 && !profiles.find_profile_by_name(text), value => {
-                    if (value) {
+                    if(value) {
                         display_settings(profiles.create_new_profile(value as string));
                         update_profile_list();
                         profiles.mark_need_save();
@@ -1020,7 +1054,7 @@ namespace Modals {
             });
 
             tag.find(".button-set-default").on('click', event => {
-                if (selected_profile && selected_profile.id != 'default') {
+                if(selected_profile && selected_profile.id != 'default') {
                     profiles.set_default_profile(selected_profile);
                     update_profile_list();
                     profiles.mark_need_save();
@@ -1028,10 +1062,10 @@ namespace Modals {
             });
 
             tag.find(".button-delete").on('click', event => {
-                if (selected_profile && selected_profile.id != 'default') {
+                if(selected_profile && selected_profile.id != 'default') {
                     event.preventDefault();
-                    spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this profile?"), result => {
-                        if (result) {
+                    spawnYesNo(tr("Are you sure?"), tr ("Do you really want to delete this profile?"), result => {
+                        if(result) {
                             profiles.delete_profile(selected_profile);
                             update_profile_list();
                         }
@@ -1041,7 +1075,7 @@ namespace Modals {
         }
 
         modal.close_listener.push(() => {
-            if (profiles.requires_save())
+            if(profiles.requires_save())
                 profiles.save();
         });
         update_profile_list();
