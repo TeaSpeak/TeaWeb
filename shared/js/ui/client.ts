@@ -342,7 +342,7 @@ class ClientEntry {
                 name: tr("Kick client from channel"),
                 callback: () => {
                     createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
-                        if(result) {
+                        if(typeof(result) !== 'boolean' || result) {
                             //TODO tr
                             console.log("Kicking client " + this.clientNickName() + " from channel with reason " + result);
                             this.channelTree.client.serverConnection.send_command("clientkick", {
@@ -360,7 +360,7 @@ class ClientEntry {
                 name: tr("Kick client fom server"),
                 callback: () => {
                     createInputModal(tr("Kick client from server"), tr("Kick reason:<br>"), text => true, result => {
-                        if(result) {
+                        if(typeof(result) !== 'boolean' || result) {
                             //TODO tr
                             console.log("Kicking client " + this.clientNickName() + " from server with reason " + result);
                             this.channelTree.client.serverConnection.send_command("clientkick", {
@@ -613,9 +613,6 @@ class ClientEntry {
                 this.updateClientIcon();
             if(variable.key =="client_channel_group_id" || variable.key == "client_servergroups")
                 this.update_displayed_client_groups();
-            if(variable.key == "client_version") {
-                console.log(UAParser(variable.value));
-            }
         }
 
         /* process updates after variables have been set */
@@ -1042,7 +1039,7 @@ class MusicClientEntry extends ClientEntry {
                 name: tr("Kick client from channel"),
                 callback: () => {
                     createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
-                        if(result) {
+                        if(typeof(result) !== 'boolean' || result) {
                             console.log(tr("Kicking client %o from channel with reason %o"), this.clientNickName(), result);
                             this.channelTree.client.serverConnection.send_command("clientkick", {
                                 clid: this.clientId(),

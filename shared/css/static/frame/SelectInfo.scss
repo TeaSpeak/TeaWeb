@@ -1,15 +1,17 @@
-.select_info_table { }
-.select_info_table tr { }
-.select_info_table tr td {
-	&:nth-child(1) {
-		font-weight: bold;
-		padding-right: 5px;
-		min-width: max(35%, 20px);
-	}
+.select_info_table {
+	tr {
+		td {
+			&:nth-child(1) {
+				font-weight: bold;
+				padding-right: 5px;
+				//min-width: max(35%, 20px);
+			}
 
-	&:nth-child(2) {
-        min-width: max(75%, 40px);
-        word-break: break-word;
+			&:nth-child(2) {
+				//min-width: max(75%, 40px);
+				word-break: break-word;
+			}
+		}
 	}
 }
 

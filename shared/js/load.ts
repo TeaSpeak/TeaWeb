@@ -443,7 +443,6 @@ const loader_javascript = {
         await loader.load_scripts([
             ["vendor/bbcode/xbbcode.js"],
             ["vendor/moment/moment.js"],
-            ["vendor/ua-parser-js/dist/ua-parser.min.js"],
             ["https://webrtc.github.io/adapter/adapter-latest.js"]
         ]);
 
@@ -665,7 +664,7 @@ const loader_style = {
 
 async function load_templates() {
     try {
-        const response = await $.ajax("templates.html" + (loader.cache_tag || "");
+        const response = await $.ajax("templates.html" + (loader.cache_tag || ""));
 
         let node = document.createElement("html");
         node.innerHTML = response;
