@@ -3,7 +3,7 @@
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR/../"
 
-if [[ "$1" == "development" ]] || [[ "$1" == "dev" ]]; then
+if [[ "$1" == "development" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "dev" ]]; then
     source_path="web/environment/development"
     type="development"
 elif [[ "$1" == "release" ]] || [[ "$1" == "rel" ]]; then
