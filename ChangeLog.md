@@ -1,5 +1,5 @@
 # Changelog:
-* **XXX**
+* **17.03.19**
     - Using VAD by default instead of PPT
     - Improved mobile experience:
         - Double touch join channel
@@ -18,6 +18,7 @@
         - Notify when user closes the chat
         - Notify when user disconnect/reconnects
     - Preloading hostbanners to prevent flickering
+    - Fixed empty channel and server kick messages
     
 * **17.02.19**
     - Removed WebAssembly as dependency (Now working with MS Edge as well (but without audio))
