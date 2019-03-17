@@ -135,7 +135,21 @@ class ServerEntry {
     }
 
     spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
+        let trigger_close = true;
         spawn_context_menu(x, y, {
+                type: MenuEntryType.ENTRY,
+                name: tr("Show server info"),
+                callback: () => {
+                    trigger_close = false;
+                    this.channelTree.client.selectInfo.open_popover()
+                },
+                icon: "client-about",
+                visible: this.channelTree.client.selectInfo.is_popover()
+            }, {
+                type: MenuEntryType.HR,
+                visible: this.channelTree.client.selectInfo.is_popover(),
+                name: ''
+            }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-virtualserver_edit",
                 name: tr("Edit"),
@@ -162,7 +176,7 @@ class ServerEntry {
                     createInfoModal(tr("Buddy invite URL"), tr("Your buddy invite URL:<br>") + url + tr("<bt>This has been copied to your clipboard.")).open();
                 }
             },
-            MenuEntry.CLOSE(on_close)
+            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 

@@ -202,7 +202,12 @@ namespace connection {
                         arguments: json["data"]
                     });
                     group.end();
-                } else if(json["type"] === "WebRTC") this.client.voiceConnection.handleControlPacket(json);
+                } else if(json["type"] === "WebRTC") {
+                    if(this.client.voiceConnection)
+                        this.client.voiceConnection.handleControlPacket(json);
+                    else
+                        console.log(tr("Dropping WebRTC command packet, because we havent a bridge."))
+                }
                 else {
                     console.log(tr("Unknown command type %o"), json["type"]);
                 }
@@ -233,7 +238,7 @@ namespace connection {
         send_command(command: string, data?: any | any[], _options?: CommandOptions) : Promise<CommandResult> {
             if(!this._socket || !this.connected()) {
                 console.warn(tr("Tried to send a command without a valid connection."));
-                return;
+                return Promise.reject(tr("not connected"));
             }
 
             const options: CommandOptions = {};
@@ -241,6 +246,8 @@ namespace connection {
             Object.assign(options, _options);
 
             data = $.isArray(data) ? data : [data || {}];
+            if(data.length == 0) /* we require min one arg to append return_code */
+                data.push({});
 
             const _this = this;
             let result = new Promise<CommandResult>((resolve, failed) => {
@@ -299,7 +306,7 @@ namespace connection {
             return false;
         }
 
-        voice_connection(): connection.AbstractVoiceConnection | undefined {
+        voice_connection(): connection.voice.AbstractVoiceConnection | undefined {
             return undefined;
         }
 

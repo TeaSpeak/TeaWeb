@@ -35,6 +35,20 @@
                     display: inline-block;
                     vertical-align: top;
                 }
+
+                .event-message { /* special formated messages */
+                    &.event-partner-disconnect {
+                        color: red;
+                    }
+
+                    &.event-partner-connect {
+                        color: green;
+                    }
+
+                    &.event-partner-closed {
+                        color: orange;
+                    }
+                }
             }
         }
     }
@@ -62,11 +76,9 @@
             cursor: pointer;
             height: 18px;
 
-            &.active {
-                background: #11111111;
-            }
-
             .btn_close {
+                display: none;
+
                 float: none;
                 margin-right: -5px;
                 margin-left: 8px;
@@ -78,8 +90,33 @@
                 }
             }
 
-            .name, .chatIcon {
+            .name, .chat-type {
                 display: inline-block;
+            }
+
+            .name {
+                color: black;
+            }
+
+            &.closeable {
+                .btn_close {
+                    display: inline-block;
+                }
+            }
+
+            &.active {
+                background: #11111111;
+            }
+
+            &.offline {
+                .name {
+                    color: gray;
+                }
+            }
+            &.unread {
+                .name {
+                    color: blue;
+                }
             }
         }
     }

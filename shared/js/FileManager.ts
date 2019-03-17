@@ -1,6 +1,10 @@
 /// <reference path="client.ts" />
 /// <reference path="connection/ConnectionBase.ts" />
 
+/*
+FIXME:  Dont use item storage with base64! Use the larger cache API and drop IE support!
+        https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage#Browser_compatibility
+*/
 class FileEntry {
     name: string;
     datetime: number;
