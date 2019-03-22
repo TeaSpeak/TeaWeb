@@ -5,6 +5,7 @@
 FIXME:  Dont use item storage with base64! Use the larger cache API and drop IE support!
         https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage#Browser_compatibility
 */
+
 class FileEntry {
     name: string;
     datetime: number;
@@ -19,16 +20,27 @@ class FileListRequest {
     callback: (entries: FileEntry[]) => void;
 }
 
-class DownloadFileTransfer {
-    transferId: number;
-    serverTransferId: number;
-    transferKey: string;
+namespace transfer {
+    export interface DownloadKey {
+        client_transfer_id: number;
+        server_transfer_id: number;
 
-    totalSize: number;
+        key: string;
+        total_size: number;
+
+        file_path: string;
+        file_name: string;
+
+        peer: {
+            hosts: string[],
+            port: number;
+        };
+    }
+}
+
+class StreamedFileDownload {
+    readonly transfer_key: transfer.DownloadKey;
     currentSize: number = 0;
-
-    remotePort: number;
-    remoteHost: string;
 
     on_start: () => void = () => {};
     on_complete: () => void = () => {};
@@ -36,26 +48,25 @@ class DownloadFileTransfer {
     on_data: (data: Uint8Array) => void = (_) => {};
 
     private _handle: FileManager;
-    private _promiseCallback: (value: DownloadFileTransfer) => void;
+    private _promiseCallback: (value: StreamedFileDownload) => void;
     private _socket: WebSocket;
     private _active: boolean;
     private _succeed: boolean;
     private _parseActive: boolean;
 
-    constructor(handle: FileManager, id: number) {
-        this.transferId = id;
-        this._handle = handle;
+    constructor(key: transfer.DownloadKey) {
+        this.transfer_key = key;
     }
 
-    startTransfer() {
-        if(!this.remoteHost || !this.remotePort || !this.transferKey || !this.totalSize) {
+    start() {
+        if(!this.transfer_key) {
             this.on_fail("Missing data!");
             return;
         }
 
-        console.debug(tr("Create new file download to %s:%s (Key: %s, Expect %d bytes)"), this.remoteHost, this.remotePort, this.transferId, this.totalSize);
+        console.debug(tr("Create new file download to %s:%s (Key: %s, Expect %d bytes)"), this.transfer_key.peer.hosts[0], this.transfer_key.peer.port, this.transfer_key.key, this.transfer_key.total_size);
         this._active = true;
-        this._socket = new WebSocket("wss://" + this.remoteHost + ":" + this.remotePort);
+        this._socket = new WebSocket("wss://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
         this._socket.onopen = this.onOpen.bind(this);
         this._socket.onclose = this.onClose.bind(this);
         this._socket.onmessage = this.onMessage.bind(this);
@@ -65,7 +76,7 @@ class DownloadFileTransfer {
     private onOpen() {
         if(!this._active) return;
 
-        this._socket.send(this.transferKey);
+        this._socket.send(this.transfer_key.key);
         this.on_start();
     }
 
@@ -88,7 +99,7 @@ class DownloadFileTransfer {
     private onBinaryData(data: Uint8Array) {
         this.currentSize += data.length;
         this.on_data(data);
-        if(this.currentSize == this.totalSize) {
+        if(this.currentSize == this.transfer_key.total_size) {
             this._succeed = true;
             this.on_complete();
             this.disconnect();
@@ -113,6 +124,41 @@ class DownloadFileTransfer {
         //this._socket.close();
     }
 }
+class RequestFileDownload {
+    readonly transfer_key: transfer.DownloadKey;
+
+    constructor(key: transfer.DownloadKey) {
+        this.transfer_key = key;
+    }
+
+    async request_file() : Promise<Response> {
+        return await this.try_fetch("https://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
+    }
+
+    /*
+			response.setHeader("Access-Control-Allow-Methods", {"GET, POST"});
+			response.setHeader("Access-Control-Allow-Origin", {"*"});
+			response.setHeader("Access-Control-Allow-Headers", {"*"});
+			response.setHeader("Access-Control-Max-Age", {"86400"});
+			response.setHeader("Access-Control-Expose-Headers", {"X-media-bytes"});
+     */
+    private async try_fetch(url: string) : Promise<Response> {
+        const response = await fetch(url, {
+            method: 'GET',
+            cache: "no-cache",
+            mode: 'cors',
+            headers: {
+                'transfer-key': this.transfer_key.key,
+                'download-name': this.transfer_key.file_name,
+                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Expose-Headers': '*'
+            }
+        });
+        if(!response.ok)
+            throw (response.type == 'opaque' || response.type == 'opaqueredirect' ? "invalid cross origin flag! May target isn't a TeaSpeak server?" : response.statusText || "response is not ok");
+        return response;
+    }
+}
 
 class FileManager extends connection.AbstractCommandHandler {
     handle: TSClient;
@@ -120,7 +166,7 @@ class FileManager extends connection.AbstractCommandHandler {
     avatars: AvatarManager;
 
     private listRequests: FileListRequest[] = [];
-    private pendingDownloadTransfers: DownloadFileTransfer[] = [];
+    private pendingDownloadTransfers: transfer.DownloadKey[] = [];
     private downloadCounter : number = 0;
 
     constructor(client: TSClient) {
@@ -211,20 +257,26 @@ class FileManager extends connection.AbstractCommandHandler {
 
 
     /******************************** File download ********************************/
-    requestFileDownload(path: string, file: string, channel?: ChannelEntry, password?: string) : Promise<DownloadFileTransfer> {
+    download_file(path: string, file: string, channel?: ChannelEntry, password?: string) : Promise<transfer.DownloadKey> {
         const _this = this;
-        let transfer = new DownloadFileTransfer(this, this.downloadCounter++);
-        this.pendingDownloadTransfers.push(transfer);
-        return new Promise<DownloadFileTransfer>((resolve, reject) => {
-            transfer["_promiseCallback"] = resolve;
+
+        const transfer_data: transfer.DownloadKey = {
+            file_name: file,
+            file_path: file,
+            client_transfer_id: this.downloadCounter++
+        } as any;
+
+        this.pendingDownloadTransfers.push(transfer_data);
+        return new Promise<transfer.DownloadKey>((resolve, reject) => {
+            transfer_data["_promiseCallback"] = resolve;
             _this.handle.serverConnection.send_command("ftinitdownload", {
                 "path": path,
                 "name": file,
                 "cid": (channel ? channel.channelId : "0"),
                 "cpw": (password ? password : ""),
-                "clientftfid": transfer.transferId
+                "clientftfid": transfer_data.client_transfer_id
             }).catch(reason => {
-                _this.pendingDownloadTransfers.remove(transfer);
+                _this.pendingDownloadTransfers.remove(transfer_data);
                 reject(reason);
             })
         });
@@ -233,31 +285,36 @@ class FileManager extends connection.AbstractCommandHandler {
     private notifyStartDownload(json) {
         json = json[0];
 
-        let transfer: DownloadFileTransfer;
+        let transfer: transfer.DownloadKey;
         for(let e of this.pendingDownloadTransfers)
-            if(e.transferId == json["clientftfid"]) {
+            if(e.client_transfer_id == json["clientftfid"]) {
                 transfer = e;
                 break;
             }
 
-        transfer.serverTransferId = json["serverftfid"];
-        transfer.transferKey = json["ftkey"];
-        transfer.totalSize = json["size"];
+        transfer.server_transfer_id = json["serverftfid"];
+        transfer.key = json["ftkey"];
+        transfer.total_size = json["size"];
 
-        transfer.remotePort = json["port"];
-        transfer.remoteHost = (json["ip"] ? json["ip"] : "").replace(/,/g, "");
-        if(!transfer.remoteHost || transfer.remoteHost == '0.0.0.0' || transfer.remoteHost == '127.168.0.0')
-            transfer.remoteHost = this.handle.serverConnection._remote_address.host;
+        transfer.peer = {
+            hosts: (json["ip"] || "").split(","),
+            port: json["port"]
+        };
 
-        (transfer["_promiseCallback"] as (val: DownloadFileTransfer) => void)(transfer);
+        if(transfer.peer.hosts.length == 0)
+            transfer.peer.hosts.push("0.0.0.0");
+
+        if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
+            transfer.peer.hosts[0] = this.handle.serverConnection._remote_address.host;
+
+        (transfer["_promiseCallback"] as (val: transfer.DownloadKey) => void)(transfer);
         this.pendingDownloadTransfers.remove(transfer);
     }
 }
 
 class Icon {
     id: number;
-    name: string;
-    base64: string;
+    url: string;
 }
 
 enum ImageType {
@@ -305,286 +362,330 @@ function image_type(base64: string) {
     return ImageType.UNKNOWN;
 }
 
+class CacheManager {
+    readonly cache_name: string;
+
+    private _cache_category: Cache;
+
+    constructor(name: string) {
+        this.cache_name = name;
+    }
+
+    setupped() : boolean { return !!this._cache_category; }
+
+    async setup() {
+        if(!window.caches)
+            throw "Missing caches!";
+
+        this._cache_category = await caches.open(this.cache_name);
+    }
+
+    async cleanup(max_age: number) {
+        /* FIXME: TODO */
+    }
+
+    async resolve_cached(key: string, max_age?: number) : Promise<Response | undefined> {
+        max_age = typeof(max_age) === "number" ? max_age : -1;
+
+        const request = new Request("cache_request_" + key);
+        const cached_response = await this._cache_category.match(request);
+        if(!cached_response)
+            return undefined;
+
+        /* FIXME: Max age */
+        return cached_response;
+    }
+
+    async put_cache(key: string, value: Response, type?: string, headers?: {[key: string]:string}) {
+        const request = new Request("cache_request_" + key);
+
+        const new_headers = new Headers();
+        for(const key of value.headers.keys())
+            new_headers.set(key, value.headers.get(key));
+        if(type)
+            new_headers.set("Content-type", type);
+        for(const key of Object.keys(headers || {}))
+            new_headers.set(key, headers[key]);
+
+        await this._cache_category.put(request, new Response(value.body, {
+            headers: new_headers
+        }));
+    }
+}
+
 class IconManager {
     handle: FileManager;
-    private loading_icons: {promise: Promise<Icon>, id: number}[] = [];
+    private cache: CacheManager;
+    private _id_urls: {[id:number]:string} = {};
+    private _loading_promises: {[id:number]:Promise<Icon>} = {};
 
     constructor(handle: FileManager) {
         this.handle = handle;
+        this.cache = new CacheManager("icons");
     }
 
     iconList() : Promise<FileEntry[]> {
         return this.handle.requestFileList("/icons");
     }
 
-    downloadIcon(id: number) : Promise<DownloadFileTransfer> {
-        return this.handle.requestFileDownload("", "/icon_" + id);
+    create_icon_download(id: number) : Promise<transfer.DownloadKey> {
+        return this.handle.download_file("", "/icon_" + id);
     }
 
-    resolveCached?(id: number) : Icon {
-        let icon = localStorage.getItem("icon_" + id);
-        if(icon) {
-            let i = JSON.parse(icon) as Icon;
-            if(i.base64.length > 0) { //TODO timestamp?
-                return i;
-            }
-        }
+    private async _response_url(response: Response) {
+        if(!response.headers.has('X-media-bytes'))
+            throw "missing media bytes";
+
+        const type = image_type(response.headers.get('X-media-bytes'));
+        const media = media_image_type(type);
+
+        const blob = await response.blob();
+        return URL.createObjectURL(blob.slice(0, blob.size, "image/" + media));
+    }
+
+    async resolved_cached?(id: number) : Promise<Icon> {
+        if(this._id_urls[id])
+            return {
+                id: id,
+                url: this._id_urls[id]
+            };
+
+        if(!this.cache.setupped())
+            await this.cache.setup();
+
+        const response = await this.cache.resolve_cached('icon_' + id); //TODO age!
+        if(response)
+            return {
+                id: id,
+                url: (this._id_urls[id] = await this._response_url(response))
+            };
         return undefined;
     }
 
-    private load_finished(id: number) {
-        for(let entry of this.loading_icons)
-            if(entry.id == id)
-                this.loading_icons.remove(entry);
+    private async _load_icon(id: number) : Promise<Icon> {
+        let download_key: transfer.DownloadKey;
+        try {
+            download_key = await this.create_icon_download(id);
+        } catch(error) {
+            console.error(tr("Could not request download for icon %d: %o"), id, error);
+            throw "Failed to request icon";
+        }
+
+        const downloader = new RequestFileDownload(download_key);
+        let response: Response;
+        try {
+            response = await downloader.request_file();
+        } catch(error) {
+            console.error(tr("Could not download icon %d: %o"), id, error);
+            throw "failed to download icon";
+        }
+
+        const type = image_type(response.headers.get('X-media-bytes'));
+        const media = media_image_type(type);
+
+        await this.cache.put_cache('icon_' + id, response.clone(), "image/" + media);
+        const url = (this._id_urls[id] = await this._response_url(response.clone()));
+
+        this._loading_promises[id] = undefined;
+        return {
+            id: id,
+            url: url
+        };
     }
+
     loadIcon(id: number) : Promise<Icon> {
-        for(let entry of this.loading_icons)
-            if(entry.id == id) return entry.promise;
-
-        let promise = new Promise<Icon>((resolve, reject) => {
-            let icon = this.resolveCached(id);
-            if(icon){
-                this.load_finished(id);
-                resolve(icon);
-                return;
-            }
-
-            this.downloadIcon(id).then(ft => {
-                let array = new Uint8Array(0);
-                ft.on_fail = reason => {
-                    this.load_finished(id);
-                    console.error(tr("Could not download icon %s -> %s"), id, tr(reason));
-                    chat.serverChat().appendError(tr("Fail to download icon {0}. ({1})"), id, JSON.stringify(reason));
-                    reject(reason);
-                };
-                ft.on_start = () => {};
-                ft.on_data = (data: Uint8Array) => {
-                    array = concatenate(Uint8Array, array, data);
-                };
-                ft.on_complete = () => {
-                    let base64 = btoa(String.fromCharCode.apply(null, array));
-                    let icon = new Icon();
-                    icon.base64 = base64;
-                    icon.id = id;
-                    icon.name = "icon_" + id;
-
-                    localStorage.setItem("icon_" + id, JSON.stringify(icon));
-                    this.load_finished(id);
-                    resolve(icon);
-                };
-
-                ft.startTransfer();
-            }).catch(reason => {
-                console.error(tr("Error while downloading icon! (%s)"), tr(JSON.stringify(reason)));
-                chat.serverChat().appendError(tr("Failed to request download for icon {0}. ({1})"), id, tr(JSON.stringify(reason)));
-                reject(reason);
-            });
-        });
-
-        this.loading_icons.push({promise: promise, id: id});
-        return promise;
+        return this._loading_promises[id] || (this._loading_promises[id] = this._load_icon(id));
     }
 
-    //$("<img width=\"16\" height=\"16\" alt=\"tick\" src=\"data:image/png;base64," + value.base64 + "\">")
     generateTag(id: number) : JQuery<HTMLDivElement> {
         if(id == 0)
             return $.spawn("div").addClass("icon_empty");
         else if(id < 1000)
             return $.spawn("div").addClass("icon client-group_" + id);
 
-        let tag = $.spawn("div");
-        tag.addClass("icon-container icon_empty");
 
-        let img = $.spawn("img");
-        img.attr("width", 16).attr("height", 16).attr("alt", "");
+        const icon_container = $.spawn("div").addClass("icon-container icon_empty");
+        const icon_image = $.spawn("img").attr("width", 16).attr("height", 16).attr("alt", "");
 
-        let icon = this.resolveCached(id);
-        if(icon) {
-            const type = image_type(icon.base64);
-            const media = media_image_type(type);
-            console.debug(tr("Icon has an image type of %o (media: %o)"), type, media);
-            img.attr("src", "data:image/" + media + ";base64," + icon.base64);
-            tag.append(img).removeClass("icon_empty");
+        if(this._id_urls[id]) {
+            icon_image.attr("src", this._id_urls[id]).appendTo(icon_container);
+            icon_container.removeClass("icon_empty");
         } else {
-            img.attr("src", "file://null");
+            const icon_load_image = $.spawn("div").addClass("icon_loading");
+            icon_load_image.appendTo(icon_container);
 
-            let loader = $.spawn("div");
-            loader.addClass("icon_loading");
-            tag.append(loader);
+            (async () => {
+                let icon: Icon;
+                try {
+                    icon = await this.resolved_cached(id);
+                } catch(error) {
+                    console.error(error);
+                }
 
-            this.loadIcon(id).then(icon => {
-                const type = image_type(icon.base64);
-                const media = media_image_type(type);
-                console.debug(tr("Icon has an image type of %o (media: %o)"), type, media);
-                img.attr("src", "data:image/" + media + ";base64," + icon.base64);
-                console.debug(tr("Icon %o loaded :)"), id);
+                if(!icon)
+                    icon = await this.loadIcon(id);
 
-                img.css("opacity", 0);
-                tag.append(img).removeClass("icon_empty");
-                loader.animate({opacity: 0}, 50, function () {
-                    $(this).detach();
-                    img.animate({opacity: 1}, 150);
+                if(!icon)
+                    throw "failed to download icon";
+
+                icon_image.attr("src", icon.url);
+                icon_image.css("opacity", 0);
+                icon_container.append(icon_image).removeClass("icon_empty");
+
+                icon_load_image.animate({opacity: 0}, 50, function () {
+                    icon_load_image.detach();
+                    icon_image.animate({opacity: 1}, 150);
                 });
-            }).catch(reason => {
-                console.error(tr("Could not load icon %o. Reason: %p"), id, reason);
-                loader.removeClass("icon_loading").addClass("icon client-warning").attr("tag", "Could not load icon " + id);
+            })().catch(reason => {
+                console.error(tr("Could not load icon %o. Reason: %s"), id, reason);
+                icon_load_image.removeClass("icon_loading").addClass("icon client-warning").attr("tag", "Could not load icon " + id);
             });
         }
 
-        return tag;
+        return icon_container;
     }
 }
 
 class Avatar {
-    clientUid: string;
-    avatarId: string;
-    base64?: string;
-    url?: string;
-    blob?: Blob;
+    client_avatar_id: string; /* the base64 uid thing from a-m */
+    avatar_id: string; /* client_flag_avatar */
+    url: string;
 }
 
 class AvatarManager {
     handle: FileManager;
-    private loading_avatars: {promise: Promise<Avatar>, name: string}[] = [];
-    private loaded_urls: string[] = [];
+
+    private cache: CacheManager;
+    private _cached_avatars: {[response_avatar_id:number]:Avatar} = {};
+    private _loading_promises: {[response_avatar_id:number]:Promise<Icon>} = {};
 
     constructor(handle: FileManager) {
         this.handle = handle;
+
+        this.cache = new CacheManager("avatars");
     }
 
-    downloadAvatar(client: ClientEntry) : Promise<DownloadFileTransfer> {
-        console.log(tr("Downloading avatar %s"), client.avatarId());
-        return this.handle.requestFileDownload("", "/avatar_" + client.avatarId());
+    private async _response_url(response: Response) : Promise<string> {
+        if(!response.headers.has('X-media-bytes'))
+            throw "missing media bytes";
+
+        const type = image_type(response.headers.get('X-media-bytes'));
+        const media = media_image_type(type);
+
+        const blob = await response.blob();
+        return URL.createObjectURL(blob.slice(0, blob.size, "image/" + media));
     }
 
-    resolveCached?(client: ClientEntry) : Avatar {
-        let avatar = localStorage.getItem("avatar_" + client.properties.client_unique_identifier);
+    async resolved_cached?(client_avatar_id: string, avatar_id?: string) : Promise<Avatar> {
+        let avatar: Avatar = this._cached_avatars[avatar_id];
         if(avatar) {
-            let i = JSON.parse(avatar) as Avatar;
-            //TODO timestamp?
-
-            if(i.avatarId != client.properties.client_flag_avatar) return undefined;
-
-            if(i.base64) {
-                if(i.base64.length > 0)
-                    return i;
-                else i.base64 = undefined;
-            }
-            if(i.url) {
-                for(let url of this.loaded_urls)
-                    if(url == i.url) return i;
-            }
+            if(typeof(avatar_id) !== "string" || avatar.avatar_id == avatar_id)
+                return avatar;
+            this._cached_avatars[avatar_id] = (avatar = undefined);
         }
-        return undefined;
+
+        if(!this.cache.setupped())
+            await this.cache.setup();
+
+        const response = await this.cache.resolve_cached('avatar_' + client_avatar_id); //TODO age!
+        if(!response)
+            return undefined;
+
+        let response_avatar_id = response.headers.has("X-avatar-id") ? response.headers.get("X-avatar-id") : undefined;
+        if(typeof(avatar_id) === "string" && response_avatar_id != avatar_id)
+            return undefined;
+
+        return this._cached_avatars[client_avatar_id] = {
+            client_avatar_id: client_avatar_id,
+            avatar_id: avatar_id || response_avatar_id,
+            url: await this._response_url(response)
+        };
     }
 
-    private load_finished(name: string) {
-        for(let entry of this.loading_avatars)
-            if(entry.name == name)
-                this.loading_avatars.remove(entry);
+    create_avatar_download(client_avatar_id: string) : Promise<transfer.DownloadKey> {
+        console.log(tr("Downloading avatar %s"), client_avatar_id);
+        return this.handle.download_file("", "/avatar_" + client_avatar_id);
     }
-    loadAvatar(client: ClientEntry) : Promise<Avatar> {
-        let name = client.avatarId();
-        for(let promise of this.loading_avatars)
-            if(promise.name == name) return promise.promise;
 
-        let promise = new Promise<Avatar>((resolve, reject) => {
-            let avatar = this.resolveCached(client);
-            if(avatar){
-                this.load_finished(name);
-                resolve(avatar);
-                return;
-            }
+    private async _load_avatar(client_avatar_id: string, avatar_id: string) {
+        let download_key: transfer.DownloadKey;
+        try {
+            download_key = await this.create_avatar_download(client_avatar_id);
+        } catch(error) {
+            console.error(tr("Could not request download for avatar %s: %o"), client_avatar_id, error);
+            throw "Failed to request icon";
+        }
 
-            this.downloadAvatar(client).then(ft => {
-                let array = new Uint8Array(0);
-                ft.on_fail = reason => {
-                    this.load_finished(name);
-                    console.error(tr("Could not download avatar %o -> %s"), client.properties.client_flag_avatar, reason);
-                    chat.serverChat().appendError(tr("Fail to download avatar for {0}. ({1})"), client.clientNickName(), JSON.stringify(reason));
-                    reject(reason);
-                };
-                ft.on_start = () => {};
-                ft.on_data = (data: Uint8Array) => {
-                    array = concatenate(Uint8Array, array, data);
-                };
-                ft.on_complete = () => {
-                    let avatar = new Avatar();
-                    if(array.length >= 1024 * 1024) {
-                        let blob_image = new Blob([array]);
-                        avatar.url = URL.createObjectURL(blob_image);
-                        avatar.blob = blob_image;
-                        this.loaded_urls.push(avatar.url);
-                    } else {
-                        avatar.base64 = btoa(String.fromCharCode.apply(null, array));
-                    }
-                    avatar.clientUid = client.clientUid();
-                    avatar.avatarId = client.properties.client_flag_avatar;
+        const downloader = new RequestFileDownload(download_key);
+        let response: Response;
+        try {
+            response = await downloader.request_file();
+        } catch(error) {
+            console.error(tr("Could not download avatar %s: %o"), client_avatar_id, error);
+            throw "failed to download avatar";
+        }
 
-                    localStorage.setItem("avatar_" + client.properties.client_unique_identifier, JSON.stringify(avatar));
-                    this.load_finished(name);
-                    resolve(avatar);
-                };
+        const type = image_type(response.headers.get('X-media-bytes'));
+        const media = media_image_type(type);
 
-                ft.startTransfer();
-            }).catch(reason => {
-                this.load_finished(name);
-                console.error(tr("Error while downloading avatar! (%s)"), JSON.stringify(reason));
-                chat.serverChat().appendError(tr("Failed to request avatar download for {0}. ({1})"), client.clientNickName(), JSON.stringify(reason));
-                reject(reason);
-            });
+        await this.cache.put_cache('avatar_' + client_avatar_id, response.clone(), "image/" + media, {
+            "X-avatar-id": avatar_id
         });
+        const url = await this._response_url(response.clone());
 
-        this.loading_avatars.push({promise: promise, name: name});
-        return promise;
+        this._loading_promises[client_avatar_id] = undefined;
+        return this._cached_avatars[client_avatar_id] = {
+            client_avatar_id: client_avatar_id,
+            avatar_id: avatar_id,
+            url: url
+        };
     }
 
-    generateTag(client: ClientEntry) {
-        let tag = $.spawn("div");
+    loadAvatar(client_avatar_id: string, avatar_id: string) : Promise<Avatar> {
+        return this._loading_promises[client_avatar_id] || (this._loading_promises[client_avatar_id] = this._load_avatar(client_avatar_id, avatar_id));
+    }
 
-        let img = $.spawn("img");
-        img.attr("alt", "");
+    generateTag(client: ClientEntry) : JQuery {
+        const client_avatar_id = client.avatarId();
+        const avatar_id = client.properties.client_flag_avatar;
 
-        let avatar = this.resolveCached(client);
-        if(avatar) {
-            if(avatar.url)
-                img.attr("src", avatar.url);
-            else {
-                const type = image_type(avatar.base64);
-                const media = media_image_type(type);
-                console.debug(tr("avatar has an image type of %o (media: %o)"), type, media);
-                img.attr("src", "data:image/" + media + ";base64," + avatar.base64);
-            }
-            tag.append(img);
+        let avatar_container = $.spawn("div");
+        let avatar_image = $.spawn("img").attr("alt", tr("Client avatar"));
+
+        let cached_avatar: Avatar = this._cached_avatars[client_avatar_id];
+        if(cached_avatar && cached_avatar.avatar_id == avatar_id) {
+            avatar_image.attr("src", cached_avatar.url);
+            avatar_container.append(avatar_image);
         } else {
-            let loader = $.spawn("img");
-            loader.attr("src", "img/loading_image.svg").css("width", "75%");
-            tag.append(loader);
+            let loader_image = $.spawn("img");
+            loader_image.attr("src", "img/loading_image.svg").css("width", "75%");
+            avatar_container.append(loader_image);
 
-            this.loadAvatar(client).then(avatar => {
-                if(avatar.url)
-                    img.attr("src", avatar.url);
-                else {
-                    const type = image_type(avatar.base64);
-                    const media = media_image_type(type);
-                    console.debug(tr("Avatar has an image type of %o (media: %o)"), type, media);
-                    img.attr("src", "data:image/" + media + ";base64," + avatar.base64);
+            (async () => {
+                let avatar: Avatar;
+                try {
+                    avatar = await this.resolved_cached(client_avatar_id, avatar_id);
+                } catch(error) {
+                    console.error(error);
                 }
-                console.debug("Avatar " + client.clientNickName() + " loaded :)");
 
-                img.css("opacity", 0);
-                tag.append(img);
-                loader.animate({opacity: 0}, 50, function () {
+                if(!avatar)
+                    avatar = await this.loadAvatar(client_avatar_id, avatar_id)
+
+                avatar_image.attr("src", avatar.url);
+                avatar_image.css("opacity", 0);
+                avatar_container.append(avatar_image);
+                loader_image.animate({opacity: 0}, 50, function () {
                     $(this).detach();
-                    img.animate({opacity: 1}, 150);
+                    avatar_image.animate({opacity: 1}, 150);
                 });
-            }).catch(reason => {
+            })().catch(reason => {
                 console.error(tr("Could not load avatar for %s. Reason: %s"), client.clientNickName(), reason);
                 //TODO Broken image
-                loader.addClass("icon client-warning").attr("tag", tr("Could not load avatar ") + client.clientNickName());
-            });
+                loader_image.addClass("icon client-warning").attr("tag", tr("Could not load avatar ") + client.clientNickName());
+            })
         }
 
-        return tag;
+        return avatar_container;
     }
 }

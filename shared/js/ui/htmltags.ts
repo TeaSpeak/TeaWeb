@@ -30,8 +30,8 @@ namespace htmltags {
         /* build the opening tag: <div ...> */
         result = result + "<div class='htmltag-client' ";
 
-        if(properties.client_id)
-            result = result + "client-id='" + properties.client_id + "' ";
+        if(properties.client_avatar_id)
+            result = result + "client-id='" + properties.client_avatar_id + "' ";
 
         if(properties.client_unique_id && properties.client_unique_id != "unknown")
             result = result + "client-unique-id='" + encodeURIComponent(properties.client_unique_id) + "' ";
@@ -177,7 +177,7 @@ namespace htmltags {
 
                                 return generate_client_open({
                                     add_braces: false,
-                                    client_id: parseInt(groups[1]),
+                                    client_avatar_id: parseInt(groups[1]),
                                     client_unique_id: groups[2],
                                     client_name: decodeURIComponent(groups[3])
                                 });

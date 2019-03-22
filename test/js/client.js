@@ -3819,7 +3819,7 @@ class ClientEntry {
     static chatTag(id, name, uid, braces = false) {
         return $(htmltags.generate_client({
             client_name: name,
-            client_id: id,
+            client_avatar_id: id,
             client_unique_id: uid,
             add_braces: braces
         }));
@@ -7668,7 +7668,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
         let client = parseInt(json[0]["cldbid"]);
         let permissions = PermissionManager.parse_permission_bulk(json, this);
         for (let req of this.requests_client_permissions.slice(0)) {
-            if (req.client_id == client) {
+            if (req.client_avatar_id == client) {
                 this.requests_client_permissions.remove(req);
                 req.promise.resolved(permissions);
             }
@@ -7676,7 +7676,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
     }
     requestClientPermissions(client_id) {
         for (let request of this.requests_client_permissions)
-            if (request.client_id == client_id && request.promise.time() + 1000 > Date.now())
+            if (request.client_avatar_id == client_id && request.promise.time() + 1000 > Date.now())
                 return request.promise;
         let request = {};
         request.client_id = client_id;
@@ -7692,7 +7692,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
     }
     requestClientChannelPermissions(client_id, channel_id) {
         for (let request of this.requests_client_channel_permissions)
-            if (request.client_id == client_id && request.channel_id == channel_id && request.promise.time() + 1000 > Date.now())
+            if (request.client_avatar_id == client_id && request.channel_id == channel_id && request.promise.time() + 1000 > Date.now())
                 return request.promise;
         let request = {};
         request.client_id = client_id;
@@ -10761,7 +10761,7 @@ class IconManager {
         return this.handle.requestFileList("/icons");
     }
     downloadIcon(id) {
-        return this.handle.requestFileDownload("", "/icon_" + id);
+        return this.handle.download_file("", "/icon_" + id);
     }
     resolveCached(id) {
         let icon = localStorage.getItem("icon_" + id);
@@ -10811,7 +10811,7 @@ class IconManager {
                     this.load_finished(id);
                     resolve(icon);
                 };
-                ft.startTransfer();
+                ft.start();
             }).catch(reason => {
                 console.error(_translations.DtVBEPYe || (_translations.DtVBEPYe = tr("Error while downloading icon! (%s)")), tr(JSON.stringify(reason)));
                 chat.serverChat().appendError(_translations.z_jAHQFu || (_translations.z_jAHQFu = tr("Failed to request download for icon {0}. ({1})")), id, tr(JSON.stringify(reason)));
@@ -10874,7 +10874,7 @@ class AvatarManager {
     }
     downloadAvatar(client) {
         console.log(_translations.FXXPuv5A || (_translations.FXXPuv5A = tr("Downloading avatar %s")), client.avatarId());
-        return this.handle.requestFileDownload("", "/avatar_" + client.avatarId());
+        return this.handle.download_file("", "/avatar_" + client.avatarId());
     }
     resolveCached(client) {
         let avatar = localStorage.getItem("avatar_" + client.properties.client_unique_identifier);
@@ -10943,7 +10943,7 @@ class AvatarManager {
                     this.load_finished(name);
                     resolve(avatar);
                 };
-                ft.startTransfer();
+                ft.start();
             }).catch(reason => {
                 this.load_finished(name);
                 console.error(_translations.ynLLTaB0 || (_translations.ynLLTaB0 = tr("Error while downloading avatar! (%s)")), JSON.stringify(reason));
@@ -16401,8 +16401,8 @@ var htmltags;
         let result = "";
         /* build the opening tag: <div ...> */
         result = result + "<div class='htmltag-client' ";
-        if (properties.client_id)
-            result = result + "client-id='" + properties.client_id + "' ";
+        if (properties.client_avatar_id)
+            result = result + "client-id='" + properties.client_avatar_id + "' ";
         if (properties.client_unique_id && properties.client_unique_id != "unknown")
             result = result + "client-unique-id='" + encodeURIComponent(properties.client_unique_id) + "' ";
         if (properties.client_name)
@@ -16523,7 +16523,7 @@ var htmltags;
                                 const groups = url_client_regex.exec(params);
                                 return generate_client_open({
                                     add_braces: false,
-                                    client_id: parseInt(groups[1]),
+                                    client_avatar_id: parseInt(groups[1]),
                                     client_unique_id: groups[2],
                                     client_name: decodeURIComponent(groups[3])
                                 });
