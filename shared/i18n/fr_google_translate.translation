@@ -5723,6 +5723,3516 @@
       "key": {
         "message": "You have been poked by"
       }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;initialisation du codec opus. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize the opus codec. Error: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;initialisation du codec d\u00e9j\u00e0 d\u00e9sactiv\u00e9. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize already disabled codec. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Le lecteur audio n&#39;est pas encore initialis\u00e9. En attente de geste.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Audio player isn't initialized yet. Waiting for gesture."
+      }
+    }, 
+    {
+      "translated": "Cha\u00eene par d\u00e9faut", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default channel"
+      }
+    }, 
+    {
+      "translated": "Le canal est prot\u00e9g\u00e9 par mot de passe", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The channel is password protected"
+      }
+    }, 
+    {
+      "translated": "Qualit\u00e9 de la musique", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Music quality"
+      }
+    }, 
+    {
+      "translated": "La cha\u00eene est mod\u00e9r\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Channel is moderated"
+      }
+    }, 
+    {
+      "translated": "Ic\u00f4ne de la cha\u00eene", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Channel icon"
+      }
+    }, 
+    {
+      "translated": "Afficher les informations sur la cha\u00eene", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show channel info"
+      }
+    }, 
+    {
+      "translated": "<b>S&#39;abonner \u00e0 la cha\u00eene</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Subscribe to channel</b>"
+      }
+    }, 
+    {
+      "translated": "<b>Se d\u00e9sabonner du canal</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Unsubscribe from channel</b>"
+      }
+    }, 
+    {
+      "translated": "<b>Utiliser le mode d&#39;abonnement h\u00e9rit\u00e9</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Use inherited subscribe mode</b>"
+      }
+    }, 
+    {
+      "translated": "Bot a \u00e9t\u00e9 cr\u00e9\u00e9 avec succ\u00e8s.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bot has been successfully created."
+      }
+    }, 
+    {
+      "translated": "Impossible de cr\u00e9er le bot de musique: <br> {0}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create the music bot:<br>{0}"
+      }
+    }, 
+    {
+      "translated": "Nom de la cha\u00eene format\u00e9e:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got formated channel name: %o"
+      }
+    }, 
+    {
+      "translated": "Appliquer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Apply"
+      }
+    }, 
+    {
+      "translated": "Afficher les informations du client", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show client info"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de notification au participant \u00e0 la discussion (% o) que la discussion a \u00e9t\u00e9 ferm\u00e9e. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to notify chat participant (%o) that the chat has been closed. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Afficher les infos du bot", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show bot info"
+      }
+    }, 
+    {
+      "translated": "Ouvrir la playlist de bot", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Open bot's playlist"
+      }
+    }, 
+    {
+      "translated": "Autorisations non valides", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid permissions"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;avez pas \u00e0 voir la liste de lecture de bots.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have to see the bots playlist."
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;interrogation de la liste de lecture.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist."
+      }
+    }, 
+    {
+      "translated": "Impossible d\u2019interroger les informations de la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info."
+      }
+    }, 
+    {
+      "translated": "Changer le volume local", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change local volume"
+      }
+    }, 
+    {
+      "translated": "Changer le volume \u00e0 distance", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change remote volume"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;abonnement \u00e0 des canaux sp\u00e9cifiques (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to subscribe to specific channels (%o)"
+      }
+    }, 
+    {
+      "translated": "Impossible de se d\u00e9sabonner de tous les canaux! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unsubscribe to all channels! (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la d\u00e9sabonnement \u00e0 des canaux sp\u00e9cifiques (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unsubscribe to specific channels (%o)"
+      }
+    }, 
+    {
+      "translated": "Impossible de s&#39;abonner \u00e0 tous les canaux! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to subscribe to all channels! (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;analyse de l&#39;URL de la banni\u00e8re:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse banner URL: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de charger hostbanner car &#39;Access-Control-Allow-Origin&#39; n&#39;est pas valide!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not load hostbanner because 'Access-Control-Allow-Origin' isnt valid!"
+      }
+    }, 
+    {
+      "translated": "R\u00e9cup\u00e9ration de hostbanner avec succ\u00e8s (% o, type:% o, url:% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Fetsched hostbanner successfully (%o, type: %o, url: %o)"
+      }
+    }, 
+    {
+      "translated": "URL de banni\u00e8re hostale r\u00e9voqu\u00e9e% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Revoked hostbanner url %s"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;extraction de l&#39;image de la banni\u00e8re h\u00f4te:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch hostbanner image: %o"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;avez pas \u00e0 voir la liste de lecture de bots.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You don't have to see the bots playlist."
+      }
+    }, 
+    {
+      "translated": "J&#39;ai essay\u00e9 de d\u00e9senregistrer le gestionnaire de commandes qui n&#39;appartient pas au responsable du gestionnaire", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to unregister command handler which does not belong to the handler boss"
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;appeler le gestionnaire de commandes. L&#39;invocation entra\u00eene une exception:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to invoke command handler. Invocation results in an exception: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;invoquer le gestionnaire de commande unique. L&#39;invocation entra\u00eene une exception:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to invoke single command handler. Invocation results in an exception: %o"
+      }
+    }, 
+    {
+      "translated": "Re\u00e7u une commande inconnue lors de la prise de contact (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received unknown command while handshaking (%o)"
+      }
+    }, 
+    {
+      "translated": "Am\u00e9liorer l&#39;identit\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Improve identity"
+      }
+    }, 
+    {
+      "translated": "D\u00e9but", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Start"
+      }
+    }, 
+    {
+      "translated": "Arr\u00eatez", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Stop"
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;am\u00e9liorer l&#39;identit\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to improve identity"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;am\u00e9lioration de l&#39;identit\u00e9. <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to improve identity.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9 am\u00e9lior\u00e9e avec succ\u00e8s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully improved"
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9 am\u00e9lior\u00e9e avec succ\u00e8s au niveau {}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully improved to level {}"
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9 d&#39;importation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import identity"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de lecture du fichier d\u2019identit\u00e9 donn\u00e9:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to read give identity file: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de lire le fichier!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to read file!"
+      }
+    }, 
+    {
+      "translated": "Oui", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "yes"
+      }
+    }, 
+    {
+      "translated": "non", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "no"
+      }
+    }, 
+    {
+      "translated": "P\u00e9riph\u00e9rique obtenu% s (% s):% s (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got device %s (%s): %s (%o)"
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;obtenir la liste des p\u00e9riph\u00e9riques de microphone!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not get microphone device list!"
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;obtenir la liste des p\u00e9riph\u00e9riques de haut-parleur!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not get speaker device list!"
+      }
+    }, 
+    {
+      "translated": "Le son% s \u00e9tait devenu% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Sound %s had changed to %o"
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9 import\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity imported"
+      }
+    }, 
+    {
+      "translated": "Votre identit\u00e9 a \u00e9t\u00e9 import\u00e9e avec succ\u00e8s!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your identity has been successfully imported!"
+      }
+    }, 
+    {
+      "translated": "\u00cates-vous s\u00fbr", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Are you sure"
+      }
+    }, 
+    {
+      "translated": "Voulez-vous vraiment importer une nouvelle identit\u00e9 et remplacer l&#39;ancienne identit\u00e9?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to import a new identity and override the old identity?"
+      }
+    }, 
+    {
+      "translated": "Nom de fichier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "File name"
+      }
+    }, 
+    {
+      "translated": "S&#39;il vous pla\u00eet entrer le nom du fichier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter the file name"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;exportation de l&#39;identit\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to export identity"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;exportation et de la sauvegarde de l&#39;identit\u00e9. <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to export and save identity.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9 g\u00e9n\u00e9rer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity generate"
+      }
+    }, 
+    {
+      "translated": "Une nouvelle identit\u00e9 a \u00e9t\u00e9 g\u00e9n\u00e9r\u00e9e avec succ\u00e8s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "A new identity had been successfully generated"
+      }
+    }, 
+    {
+      "translated": "Impossible de g\u00e9n\u00e9rer une nouvelle identit\u00e9. Objet d&#39;erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate a new identity. Error object: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de g\u00e9n\u00e9rer l&#39;identit\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate identity"
+      }
+    }, 
+    {
+      "translated": "Impossible de g\u00e9n\u00e9rer une nouvelle identit\u00e9. <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate a new identity.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "Voulez-vous vraiment g\u00e9n\u00e9rer une nouvelle identit\u00e9 et remplacer l&#39;ancienne identit\u00e9?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to generate a new identity and override the old identity?"
+      }
+    }, 
+    {
+      "translated": "S&#39;il vous pla\u00eet entrer un nom", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a name"
+      }
+    }, 
+    {
+      "translated": "Veuillez entrer un nom pour le nouveau profil: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a name for the new profile:<br>"
+      }
+    }, 
+    {
+      "translated": "Voulez-vous vraiment supprimer ce profil?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this profile?"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;avez pas la permission", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;avez pas la permission de voir la liste des interdictions", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to view the ban list"
+      }
+    }, 
+    {
+      "translated": "Entrez le nom des signets", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter bookmarks name"
+      }
+    }, 
+    {
+      "translated": "S&#39;il vous pla\u00eet entrer le nom des signets: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter the bookmarks name:<br>"
+      }
+    }, 
+    {
+      "translated": "Vous devez \u00eatre connect\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected"
+      }
+    }, 
+    {
+      "translated": "Vous devez \u00eatre connect\u00e9!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected!"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;avez pas la permission de cr\u00e9er un login de requ\u00eate serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to create a server query login"
+      }
+    }, 
+    {
+      "translated": "Vous devez \u00eatre connect\u00e9 pour utiliser cette fonction!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected to use this function!"
+      }
+    }, 
+    {
+      "translated": "Echec de connexion", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect failed"
+      }
+    }, 
+    {
+      "translated": "Impossible de se connecter \u00e0 l&#39;h\u00f4te distant! Exception:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not connect to remote host! Exception: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du traitement de la poign\u00e9e de main:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to process handshake: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du traitement de la n\u00e9gociation:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to process handshake: "
+      }
+    }, 
+    {
+      "translated": "Autoris\u00e9 \u00e0 se reconnecter automatiquement mais ne peut pas se reconnecter car il ne nous reste aucune information ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Allowed to auto reconnect but cant reconnect because we dont have any information left..."
+      }
+    }, 
+    {
+      "translated": "Reconnexion en 5 secondes", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting in 5 seconds"
+      }
+    }, 
+    {
+      "translated": "Autoris\u00e9 \u00e0 se reconnecter automatiquement. Reconnexion en 5000ms", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Allowed to auto reconnect. Reconnecting in 5000ms"
+      }
+    }, 
+    {
+      "translated": "Reconnexion ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting..."
+      }
+    }, 
+    {
+      "translated": "Reconnexion annul\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnect canceled"
+      }
+    }, 
+    {
+      "translated": "Erreur d&#39;analyse du BBCode:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "BBCode parse error: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;envoi du message texte.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send text message."
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;envoi du message texte du serveur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send server text message: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;envoi du message texte sur la cha\u00eene:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send channel text message: %o"
+      }
+    }, 
+    {
+      "translated": "Le message de chat contient l&#39;URL:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Chat message contains URL: %o"
+      }
+    }, 
+    {
+      "translated": "Initialisation des statistiques avec cette configuration:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing statistics with this config: %o"
+      }
+    }, 
+    {
+      "translated": "Connexion perdue au serveur de statistiques (connexion ferm\u00e9e). Raison:% o. Objet d&#39;\u00e9v\u00e9nement:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Lost connection to statistics server (Connection closed). Reason: %o. Event object: %o"
+      }
+    }, 
+    {
+      "translated": "Connect\u00e9 avec succ\u00e8s au serveur. Session d&#39;initialisation.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Successfully connected to server. Initializing session."
+      }
+    }, 
+    {
+      "translated": "A re\u00e7u une erreur. Fermeture de la connexion Objet:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an error. Closing connection. Object: %o"
+      }
+    }, 
+    {
+      "translated": "Re\u00e7u un message qui n&#39;est pas une cha\u00eene. Objet d&#39;\u00e9v\u00e9nement:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an message which isn't a string. Event object: %o"
+      }
+    }, 
+    {
+      "translated": "Reconnexion programm\u00e9e dans% dms", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Scheduled reconnect in %dms"
+      }
+    }, 
+    {
+      "translated": "Reconnexion", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting"
+      }
+    }, 
+    {
+      "translated": "Traitement du message de type% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Handling message of type %s"
+      }
+    }, 
+    {
+      "translated": "Message re\u00e7u avec un type inconnu (% s). D\u00e9poser un message. Message complet:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message with an unknown type (%s). Dropping message. Full message: %o"
+      }
+    }, 
+    {
+      "translated": "La session a \u00e9t\u00e9 initialis\u00e9e avec succ\u00e8s.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Session successfully initialized."
+      }
+    }, 
+    {
+      "translated": "Ignorer la configuration vocale (pas de pont vocal disponible)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Skipping voice setup (No voice bridge available)"
+      }
+    }, 
+    {
+      "translated": "Votre interlocuteur s&#39;est reconnect\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has reconnected"
+      }
+    }, 
+    {
+      "translated": "Votre interlocuteur s&#39;est d\u00e9connect\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has disconnected"
+      }
+    }, 
+    {
+      "translated": "Chat re\u00e7u re\u00e7u pour un client inconnu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for unknown client"
+      }
+    }, 
+    {
+      "translated": "Le chat re\u00e7u est ferm\u00e9 pour le client, mais les identifiants uniques ne correspondent pas. (% attendu, re\u00e7u% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for client, but unique ids dosn't match. (expected %o, received %o)"
+      }
+    }, 
+    {
+      "translated": "Chat re\u00e7u re\u00e7u pour le client, mais le chat n&#39;est pas ouvert.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for client, but we haven't a chat open."
+      }
+    }, 
+    {
+      "translated": "Votre interlocuteur est proche de la conversation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has close the conversation"
+      }
+    }, 
+    {
+      "translated": "Canal re\u00e7u abonn\u00e9 pour canal non visible (cid:% d)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel subscribed for not visible channel (cid: %d)"
+      }
+    }, 
+    {
+      "translated": "Canal re\u00e7u non souscrit pour canal non visible (cid:% d)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel unsubscribed for not visible channel (cid: %d)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;analyse de l&#39;entr\u00e9e de la liste de lecture:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist entry: %o"
+      }
+    }, 
+    {
+      "translated": "Notification invalide re\u00e7ue pour les chansons de la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for playlist songs"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;analyse de l&#39;entr\u00e9e de la chanson de la liste de lecture:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist song entry: %o"
+      }
+    }, 
+    {
+      "translated": "Notification invalide re\u00e7ue pour les informations de la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for playlist info"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;analyse des informations sur la liste de lecture:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist info: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de fermer l&#39;ancienne connexion correctement. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close old connection properly. Error: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la fermeture de la connexion apr\u00e8s le d\u00e9clenchement du d\u00e9lai d&#39;attente! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close connection after timeout had been triggered! (%o)"
+      }
+    }, 
+    {
+      "translated": "Erreur de socket Web re\u00e7ue: (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received web socket error: (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la fermeture de la connexion apr\u00e8s l&#39;\u00e9chec de la tentative de connexion (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close connection after connect attempt failed (%o)"
+      }
+    }, 
+    {
+      "translated": "Suppression du paquet de commande WebRTC, car nous n\u2019avons pas de pont.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping WebRTC command packet, because we havent a bridge."
+      }
+    }, 
+    {
+      "translated": "R\u00e9ception d&#39;un message inconnu de type% s. D\u00e9poser un message", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received unknown message of type %s. Dropping message"
+      }
+    }, 
+    {
+      "translated": "J&#39;ai essay\u00e9 d&#39;envoyer sur un socket non valide (% s)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send on a invalid socket (%s)"
+      }
+    }, 
+    {
+      "translated": "J&#39;ai essay\u00e9 d&#39;envoyer une commande sans connexion valide.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send a command without a valid connection."
+      }
+    }, 
+    {
+      "translated": "pas connect\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "not connected"
+      }
+    }, 
+    {
+      "translated": "pays inconnu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "unknown country"
+      }
+    }, 
+    {
+      "translated": "Impossible de charger le profil. Raison:% s, donn\u00e9es de profil:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load profile. Reason: %s, Profile data: %s"
+      }
+    }, 
+    {
+      "translated": "Impossible de g\u00e9n\u00e9rer l&#39;identit\u00e9 par d\u00e9faut", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate default identity"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la g\u00e9n\u00e9ration de l&#39;identit\u00e9 par d\u00e9faut! <br> S&#39;il vous pla\u00eet g\u00e9n\u00e9rer manuellement l&#39;identit\u00e9 dans vos param\u00e8tres =&gt; profils", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate default identity!<br>Please manually generate the identity within your settings => profiles"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;initialisation de la n\u00e9gociation bas\u00e9e sur le nom. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize name based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;initialisation de la n\u00e9gociation bas\u00e9e sur TeaForum. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize TeaForum based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de prouver l&#39;identit\u00e9. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to proof the identity. Error: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;initialisation de la prise de contact bas\u00e9e sur TeamSpeak. Erreur:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize TeamSpeak based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "POW Worker error% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "POW Worker error %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la finalisation du travailleur POW! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to finalize POW worker! (%o)"
+      }
+    }, 
+    {
+      "translated": "Message re\u00e7u:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de g\u00e9n\u00e9rer une nouvelle cl\u00e9:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not generate a new key: %o"
+      }
+    }, 
+    {
+      "translated": "J&#39;ai essay\u00e9 de rejouer un son sans contexte audio (Son:% o). Abandonner la lecture", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to replay a sound without an audio context (Sound: %o). Dropping playback"
+      }
+    }, 
+    {
+      "translated": "Lecture du son% s (volume du son:% o | volume principal% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Replaying sound %s (Sound volume: %o | Master volume %o)"
+      }
+    }, 
+    {
+      "translated": "Suppression de la lecture demand\u00e9e pour le son% s car il se chevaucherait.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping requested playback for sound %s because it would overlap."
+      }
+    }, 
+    {
+      "translated": "Afficher les informations du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show server info"
+      }
+    }, 
+    {
+      "translated": "Inviter un copain", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invite buddy"
+      }
+    }, 
+    {
+      "translated": "URL d&#39;invitation d&#39;amis", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Buddy invite URL"
+      }
+    }, 
+    {
+      "translated": "L&#39;URL d&#39;invitation de votre copain: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your buddy invite URL:<br>"
+      }
+    }, 
+    {
+      "translated": "<bt> Cela a \u00e9t\u00e9 copi\u00e9 dans votre presse-papiers.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<bt>This has been copied to your clipboard."
+      }
+    }, 
+    {
+      "translated": "G\u00e9rer les favoris", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage bookmarks"
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er une nouvelle entr\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create a new entry"
+      }
+    }, 
+    {
+      "translated": "Voulez-vous vraiment supprimer cette entr\u00e9e?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this entry?"
+      }
+    }, 
+    {
+      "translated": "Supprimer l&#39;autorisation d&#39;accorder", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove grant permission"
+      }
+    }, 
+    {
+      "translated": "Description de l&#39;autorisation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission description"
+      }
+    }, 
+    {
+      "translated": "Description de l&#39;autorisation pour l&#39;autorisation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission description for permission "
+      }
+    }, 
+    {
+      "translated": "Suppression de l\u2019autorisation du canal client% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client channel permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Suppression de l&#39;autorisation d&#39;accorder un canal client% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client channel grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation du canal client% s. permission. {id:% o, valeur:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation d&#39;accorder un canal client% s. permission. {id:% o, valeur:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client channel grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Suppression de l&#39;autorisation du client% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Supprimer l&#39;autorisation d&#39;accorder le client% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de la permission du client% s. permission. {id:% o, valeur:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation d&#39;accorder un client% s. permission. {id:% o, valeur:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Suppression de la permission de canal% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Suppression de l&#39;autorisation d&#39;accorder le canal% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation de canal% s. permission. {id:% o, valeur:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation d&#39;accorder le canal% s. permission. {id:% o, valeur:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Suppression de l&#39;autorisation du groupe de canaux% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel group permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Suppression de l&#39;autorisation d&#39;accorder un groupe de canaux% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel group grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation du groupe de canaux% s. permission. {id:% o, valeur:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation d&#39;accorder un groupe de canaux% s. permission. {id:% o, valeur:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel group grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Suppression de l&#39;autorisation du groupe de serveurs% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing server group permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Suppression de l&#39;autorisation d&#39;accorder le groupe de serveurs% s. permission.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing server group grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation du groupe de serveurs% s. permission. {id:% o, valeur:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating server group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Ajout ou mise \u00e0 jour de l&#39;autorisation d&#39;accorder un groupe de serveurs% s. permission. {id:% o, valeur:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating server group grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Informations sur la chanson", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song info"
+      }
+    }, 
+    {
+      "translated": "Ajouter une chanson", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add a song"
+      }
+    }, 
+    {
+      "translated": "Editer la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Edit playlist"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la modification des propri\u00e9t\u00e9s.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change properties."
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la modification des propri\u00e9t\u00e9s de la liste de lecture. <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change playlist properties.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la modification de l&#39;autorisation.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change permission."
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la modification des autorisations de la playlist. <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change playlist permissions.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Voulez-vous vraiment supprimer toutes vos modifications?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to discard all your changes?"
+      }
+    }, 
+    {
+      "translated": "Chargement de la liste de chansons", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "loading song list"
+      }
+    }, 
+    {
+      "translated": "Impossible de supprimer la chanson.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to remove song."
+      }
+    }, 
+    {
+      "translated": "Impossible de supprimer la chanson / l&#39;URL de la liste de lecture. <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to remove song/url from the playlist.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "n&#39;a pas r\u00e9ussi \u00e0 charger la liste de chansons", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "failed to load song list"
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;ajouter la chanson.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to add song."
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;ajouter la chanson / l&#39;URL \u00e0 la playlist. <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to add song/url to the playlist.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;interroger les informations de la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info"
+      }
+    }, 
+    {
+      "translated": "Impossible d\u2019interroger les informations de la playlist <br> Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "G\u00e9rer les playlists", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage playlists"
+      }
+    }, 
+    {
+      "translated": "Playlist cr\u00e9\u00e9e avec succ\u00e8s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist created successful"
+      }
+    }, 
+    {
+      "translated": "La playlist a \u00e9t\u00e9 cr\u00e9\u00e9e avec succ\u00e8s. <br> Faut-il ouvrir l&#39;\u00e9diteur?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The playlist has been successfully created.<br>Should we open the editor?"
+      }
+    }, 
+    {
+      "translated": "Impossible de cr\u00e9er une playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to create playlist"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la cr\u00e9ation d&#39;une liste de lecture <br> Message:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create playlist<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Voulez-vous vraiment supprimer cette playlist?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this playlist?"
+      }
+    }, 
+    {
+      "translated": "Playlist supprim\u00e9e avec succ\u00e8s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist deleted successful"
+      }
+    }, 
+    {
+      "translated": "Cette playlist a \u00e9t\u00e9 supprim\u00e9e avec succ\u00e8s.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "This playlist has been deleted successfully."
+      }
+    }, 
+    {
+      "translated": "Impossible de supprimer la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to delete playlist"
+      }
+    }, 
+    {
+      "translated": "Impossible de supprimer la playlist <br> Message:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete playlist<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er un login de requ\u00eate serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create a server query login"
+      }
+    }, 
+    {
+      "translated": "Nom d&#39;utilisateur invalide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid username"
+      }
+    }, 
+    {
+      "translated": "Merci d&#39;entrer un nom valide!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid name!"
+      }
+    }, 
+    {
+      "translated": "Impossible de cr\u00e9er un compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to create account"
+      }
+    }, 
+    {
+      "translated": "Impossible de cr\u00e9er un compte <br> Message:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Informations d&#39;identification de la requ\u00eate du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server query credentials"
+      }
+    }, 
+    {
+      "translated": "Nouvelles informations d&#39;identification de la requ\u00eate du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "New server query credentials"
+      }
+    }, 
+    {
+      "translated": "G\u00e9rer les comptes de requ\u00eate", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage query accounts"
+      }
+    }, 
+    {
+      "translated": "Changer le nom du compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change account name"
+      }
+    }, 
+    {
+      "translated": "Entrez le nouveau nom pour le login: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter the new name for the login:<br>"
+      }
+    }, 
+    {
+      "translated": "Impossible de renommer le compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to rename account"
+      }
+    }, 
+    {
+      "translated": "Impossible de renommer le compte <br> Message:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to rename account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Compte renomm\u00e9 avec succ\u00e8s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Account successfully renamed"
+      }
+    }, 
+    {
+      "translated": "Le compte de requ\u00eate a \u00e9t\u00e9 renomm\u00e9!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The query account has been renamed!"
+      }
+    }, 
+    {
+      "translated": "Changer le mot de passe du compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change account's password"
+      }
+    }, 
+    {
+      "translated": "Entrez un nouveau mot de passe (laissez le champ vide pour la g\u00e9n\u00e9ration automatique): <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter a new password (leave blank for auto generation):<br>"
+      }
+    }, 
+    {
+      "translated": "Impossible de changer le mot de passe", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to change password"
+      }
+    }, 
+    {
+      "translated": "Impossible de changer le mot de passe <br> Message:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change password<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Voulez-vous vraiment supprimer ce compte?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this account?"
+      }
+    }, 
+    {
+      "translated": "Impossible de supprimer le compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to delete account"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la suppression du compte <br> Message:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Compte supprim\u00e9 avec succ\u00e8s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Account successfully deleted"
+      }
+    }, 
+    {
+      "translated": "Le compte de requ\u00eate a bien \u00e9t\u00e9 supprim\u00e9!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The query account has been successfully deleted!"
+      }
+    }, 
+    {
+      "translated": "Signets", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmarks"
+      }
+    }, 
+    {
+      "translated": "Ajouter le serveur actuel aux favoris", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add current server to bookmarks"
+      }
+    }, 
+    {
+      "translated": "Supprimer le serveur actuel des signets", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove current server to bookmarks"
+      }
+    }, 
+    {
+      "translated": "Les param\u00e8tres audio", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Audio settings"
+      }
+    }, 
+    {
+      "translated": "Basculer le mode d&#39;abonnement au canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Toggle channel subscribe mode"
+      }
+    }, 
+    {
+      "translated": "Outils serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server tools"
+      }
+    }, 
+    {
+      "translated": "Playlists", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlists"
+      }
+    }, 
+    {
+      "translated": "Afficher / masquer les requ\u00eates du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show/hide server queries"
+      }
+    }, 
+    {
+      "translated": "G\u00e9rer les requ\u00eates du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage server queries"
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er une connexion de requ\u00eate serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create server query login"
+      }
+    }, 
+    {
+      "translated": "entrez un message de discussion ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "enter a chat message..."
+      }
+    }, 
+    {
+      "translated": "Envoyer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Send"
+      }
+    }, 
+    {
+      "translated": "Adresse du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server Address"
+      }
+    }, 
+    {
+      "translated": "S&#39;il vous pla\u00eet entrer une adresse de serveur valide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid server address"
+      }
+    }, 
+    {
+      "translated": "Veuillez entrer un pseudo de serveur valide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid server nickname"
+      }
+    }, 
+    {
+      "translated": "Connecter le profil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect Profile"
+      }
+    }, 
+    {
+      "translated": "Le profil s\u00e9lectionn\u00e9 est invalide. S\u00e9lectionnez-en un autre ou corrigez le profil.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Selected profile is invalid. Select another one or fix the profile."
+      }
+    }, 
+    {
+      "translated": "G\u00e9rer les profils", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage profiles"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour rejoindre ce canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to join this channel"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour voir ce canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to see this channel"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour s&#39;abonner \u00e0 ce canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to subscribe to this channel"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour modifier les autorisations de ce canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to modify this channel permissions"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour supprimer ce canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to delete this channel"
+      }
+    }, 
+    {
+      "translated": "Feuilleter:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Browse:"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour parcourir tous les fichiers et r\u00e9pertoires", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to browse all files and directories"
+      }
+    }, 
+    {
+      "translated": "T\u00e9l\u00e9charger:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload:"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour t\u00e9l\u00e9charger des fichiers", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to upload files"
+      }
+    }, 
+    {
+      "translated": "T\u00e9l\u00e9charger:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Download:"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour t\u00e9l\u00e9charger des fichiers", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to download files"
+      }
+    }, 
+    {
+      "translated": "Renommer:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Rename:"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour renommer les fichiers de ce canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to rename files within this channel"
+      }
+    }, 
+    {
+      "translated": "Annuaire cr\u00e9er:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Directory create:"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour cr\u00e9er un r\u00e9pertoire", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to create a directory"
+      }
+    }, 
+    {
+      "translated": "Puissance requise pour supprimer un r\u00e9pertoire ou un fichier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to delete a directory or file"
+      }
+    }, 
+    {
+      "translated": "Crypter les donn\u00e9es vocales", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Encrypt voice data"
+      }
+    }, 
+    {
+      "translated": "Intervalle Gfx", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Gfx Interval"
+      }
+    }, 
+    {
+      "translated": "Redimensionner", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Resize"
+      }
+    }, 
+    {
+      "translated": "Limite de bande passante (octets / s):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bandwidth Limit (Bytes/s):"
+      }
+    }, 
+    {
+      "translated": "Upload Quota (MiB):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload Quota (MiB):"
+      }
+    }, 
+    {
+      "translated": "sauvegarder", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Save"
+      }
+    }, 
+    {
+      "translated": "Connexion Forum TeaSpeak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaSpeak Forum Connection"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;\u00eates actuellement pas connect\u00e9 \u00e0 votre compte TeaSpeak Forum", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You're currently not connected with your TeaSpeak Forum account"
+      }
+    }, 
+    {
+      "translated": "s&#39;identifier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "login"
+      }
+    }, 
+    {
+      "translated": "Vous \u00eates connect\u00e9 via le forum TeaSpeak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You're connected via TeaSpeak forum"
+      }
+    }, 
+    {
+      "translated": "Nom d&#39;utilisateur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Username:"
+      }
+    }, 
+    {
+      "translated": "Prime:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Premium:"
+      }
+    }, 
+    {
+      "translated": "Synchronis\u00e9:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Synchronized:"
+      }
+    }, 
+    {
+      "translated": "activer la synchronisation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "enable synchronization"
+      }
+    }, 
+    {
+      "translated": "D\u00e9lai de lib\u00e9ration de la cl\u00e9:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Key release delay:"
+      }
+    }, 
+    {
+      "translated": "La voix avait \u00e9t\u00e9 d\u00e9sactiv\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Voice had been disabled"
+      }
+    }, 
+    {
+      "translated": "Param\u00e8tres sonores", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Sound Settings"
+      }
+    }, 
+    {
+      "translated": "Superposez les m\u00eames sons:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Overlap same sounds:"
+      }
+    }, 
+    {
+      "translated": "D\u00e9sactivez tous les sons du syst\u00e8me lorsque vous avez d\u00e9sactiv\u00e9 votre sortie. <br> Si cette option n&#39;est pas d\u00e9sactiv\u00e9e, vous continuerez \u00e0 recevoir les sons du syst\u00e8me tels que &quot;l&#39;utilisateur a rejoint votre cha\u00eene&quot;", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Mute all system sounds, when you've muted your output.<br>If this option isn't disabled you'll still receive system sounds like 'user joined your channel'."
+      }
+    }, 
+    {
+      "translated": "pr\u00e9nom", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Name"
+      }
+    }, 
+    {
+      "translated": "Activ\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Activated"
+      }
+    }, 
+    {
+      "translated": "Filtre", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Filter"
+      }
+    }, 
+    {
+      "translated": "Profils", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profiles"
+      }
+    }, 
+    {
+      "translated": "Profils disponibles", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Available profiles"
+      }
+    }, 
+    {
+      "translated": "D\u00e9finir s\u00e9lectionn\u00e9 par d\u00e9faut", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set selected as default"
+      }
+    }, 
+    {
+      "translated": "Supprimer s\u00e9lectionn\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete selected"
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er un profil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create profile"
+      }
+    }, 
+    {
+      "translated": "Param\u00e8tres de profil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile settings"
+      }
+    }, 
+    {
+      "translated": "Nom de profil:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile name:"
+      }
+    }, 
+    {
+      "translated": "Surnom par d\u00e9faut:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default nickname:"
+      }
+    }, 
+    {
+      "translated": "Mot de passe du serveur par d\u00e9faut", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default server password"
+      }
+    }, 
+    {
+      "translated": "Identifier le type:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identify Type:"
+      }
+    }, 
+    {
+      "translated": "Identifiant unique:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "UniqueID:"
+      }
+    }, 
+    {
+      "translated": "Niveau:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Level:"
+      }
+    }, 
+    {
+      "translated": "Am\u00e9liorer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Improve"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;avez pas g\u00e9n\u00e9r\u00e9 / import\u00e9 une identit\u00e9. <br> G\u00e9n\u00e9rez-en un nouveau ou importez-en un.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have'nt generated/imported an identity.<br>Generate a new one or import one."
+      }
+    }, 
+    {
+      "translated": "G\u00e9n\u00e9rer de nouveaux", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Generate new"
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9 d&#39;exportation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Export identity"
+      }
+    }, 
+    {
+      "translated": "Nom d&#39;utilisateur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Username"
+      }
+    }, 
+    {
+      "translated": "Impossible d&#39;importer l&#39;identit\u00e9 (ma petite erreur)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to import identity (my little error)"
+      }
+    }, 
+    {
+      "translated": "Importer une identit\u00e9 \u00e0 partir de TeamSpeak ou une identit\u00e9 export\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import an identity from TeamSpeak or an exported identity"
+      }
+    }, 
+    {
+      "translated": "Charger du texte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Load from text"
+      }
+    }, 
+    {
+      "translated": "Charger depuis un fichier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Load from file"
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9 charg\u00e9e avec succ\u00e8s. Pr\u00eat \u00e0 importer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully loaded. Ready to import"
+      }
+    }, 
+    {
+      "translated": "Importation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import"
+      }
+    }, 
+    {
+      "translated": "Identit\u00e9:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity:"
+      }
+    }, 
+    {
+      "translated": "Niveau actuel:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current level: "
+      }
+    }, 
+    {
+      "translated": "Niveau vis\u00e9:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Target level: "
+      }
+    }, 
+    {
+      "translated": "Une valeur de z\u00e9ro signifie illimit\u00e9. Am\u00e9liorer jusqu&#39;\u00e0 ce que vous avortiez", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "A value of zero means unlimited. Improve until you abort"
+      }
+    }, 
+    {
+      "translated": "Fils:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Threads: "
+      }
+    }, 
+    {
+      "translated": "Le nombre de threads utilis\u00e9s pour am\u00e9liorer votre identit\u00e9 <br> La valeur optimale est \u00e9gale \u00e0 la quantit\u00e9 de threads kernal.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The number of threads used to improve your identity<br>The optimal value is equal to the amount of kernal threads."
+      }
+    }, 
+    {
+      "translated": "Hashs / seconde:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hashes/second:"
+      }
+    }, 
+    {
+      "translated": "Temps \u00e9coul\u00e9:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Elapsed time:"
+      }
+    }, 
+    {
+      "translated": "Le profil est valide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile is valid"
+      }
+    }, 
+    {
+      "translated": "Le profil est invalide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile is invalid"
+      }
+    }, 
+    {
+      "translated": "ID unique du client", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Client unique ID"
+      }
+    }, 
+    {
+      "translated": "Identifiant unique invalide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid unique id"
+      }
+    }, 
+    {
+      "translated": "filtrer les autorisations", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "filter permissions"
+      }
+    }, 
+    {
+      "translated": "Filtrer les autorisations par nom d&#39;autorisation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Filter permissions by permission name"
+      }
+    }, 
+    {
+      "translated": "Vous n&#39;avez pas la permission de voir cette permission", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to view this permissions"
+      }
+    }, 
+    {
+      "translated": "filtre", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "filter"
+      }
+    }, 
+    {
+      "translated": "Informations sur le navigateur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Browser info"
+      }
+    }, 
+    {
+      "translated": "En ligne depuis", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Online since"
+      }
+    }, 
+    {
+      "translated": "D\u00e9marrage du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server start"
+      }
+    }, 
+    {
+      "translated": "D\u00e9finissez le nom de connexion de votre compte Server Query.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set the login name for your Server Query account."
+      }
+    }, 
+    {
+      "translated": "Vous recevrez votre mot de passe \u00e0 l&#39;\u00e9tape suivante.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You'll receive your password within the next step."
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create"
+      }
+    }, 
+    {
+      "translated": "Les informations d&#39;identification de votre requ\u00eate de serveur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your server query credentials:"
+      }
+    }, 
+    {
+      "translated": "Copier le nom d&#39;utilisateur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy username"
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er un compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create account"
+      }
+    }, 
+    {
+      "translated": "Supprimer le compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete account"
+      }
+    }, 
+    {
+      "translated": "Renommer le compte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Rename account"
+      }
+    }, 
+    {
+      "translated": "Changer le mot de passe", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change password"
+      }
+    }, 
+    {
+      "translated": "chercher", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "search"
+      }
+    }, 
+    {
+      "translated": "Identifiant unique", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unique ID"
+      }
+    }, 
+    {
+      "translated": "Serveur born\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bounded Server"
+      }
+    }, 
+    {
+      "translated": "Rafra\u00eechir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Refresh"
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er une playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create playlist"
+      }
+    }, 
+    {
+      "translated": "Supprimer la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete playlist"
+      }
+    }, 
+    {
+      "translated": "ID", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "ID"
+      }
+    }, 
+    {
+      "translated": "Titre", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Title"
+      }
+    }, 
+    {
+      "translated": "Type", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Type"
+      }
+    }, 
+    {
+      "translated": "Utilis\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Used"
+      }
+    }, 
+    {
+      "translated": "Mettez en surbrillance vos propres listes de lecture", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Highlight own playlists"
+      }
+    }, 
+    {
+      "translated": "La liste de lecture est utilis\u00e9e par le bot", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist is in use by bot "
+      }
+    }, 
+    {
+      "translated": "La playlist n&#39;est pas utilis\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist isnt use"
+      }
+    }, 
+    {
+      "translated": "Propri\u00e9taire de la playlist:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist owner:"
+      }
+    }, 
+    {
+      "translated": "Titre:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Title:"
+      }
+    }, 
+    {
+      "translated": "Bot li\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bot bound"
+      }
+    }, 
+    {
+      "translated": "Global", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Global"
+      }
+    }, 
+    {
+      "translated": "Chansons", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Songs"
+      }
+    }, 
+    {
+      "translated": "URL", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Url"
+      }
+    }, 
+    {
+      "translated": "charg\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "loaded"
+      }
+    }, 
+    {
+      "translated": "Ajouter une chanson", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add song"
+      }
+    }, 
+    {
+      "translated": "Param\u00e8tres de lecture", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playback settings"
+      }
+    }, 
+    {
+      "translated": "Mode de relecture", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Replay mode"
+      }
+    }, 
+    {
+      "translated": "Ordinaire", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Normal"
+      }
+    }, 
+    {
+      "translated": "Liste de boucle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loop list"
+      }
+    }, 
+    {
+      "translated": "Boucle unique entr\u00e9e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loop single entry"
+      }
+    }, 
+    {
+      "translated": "M\u00e9langer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Shuffle"
+      }
+    }, 
+    {
+      "translated": "Supprimer la chanson jou\u00e9e:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete played song:"
+      }
+    }, 
+    {
+      "translated": "Chanson en cours de replay:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current replaying song:"
+      }
+    }, 
+    {
+      "translated": "Statut termin\u00e9 de la playlist", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist finished status"
+      }
+    }, 
+    {
+      "translated": "Acc\u00e9der / modifier les pouvoirs", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Access/modify powers"
+      }
+    }, 
+    {
+      "translated": "Voir le pouvoir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "View power"
+      }
+    }, 
+    {
+      "translated": "Modifier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Modify"
+      }
+    }, 
+    {
+      "translated": "Permission modifier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission modify"
+      }
+    }, 
+    {
+      "translated": "Effacer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete"
+      }
+    }, 
+    {
+      "translated": "Pouvoirs de gestion de la chanson", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song management powers"
+      }
+    }, 
+    {
+      "translated": "Chanson ajouter", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song add"
+      }
+    }, 
+    {
+      "translated": "R\u00e9organisation de la chanson", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song reorder"
+      }
+    }, 
+    {
+      "translated": "Chanson supprimer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song delete"
+      }
+    }, 
+    {
+      "translated": "Identifiant de la chanson:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song ID:"
+      }
+    }, 
+    {
+      "translated": "Ordre de la chanson:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song order:"
+      }
+    }, 
+    {
+      "translated": "R\u00e9solveur d&#39;URL:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "URL resolver:"
+      }
+    }, 
+    {
+      "translated": "Chant charg\u00e9:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song loaded:"
+      }
+    }, 
+    {
+      "translated": "Afficher les m\u00e9tadonn\u00e9es ici!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Display metdata here!"
+      }
+    }, 
+    {
+      "translated": "M\u00e9tadonn\u00e9es:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Metadata:"
+      }
+    }, 
+    {
+      "translated": "Chargeur d&#39;URL:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "URL loader:"
+      }
+    }, 
+    {
+      "translated": "Ajouter l&#39;URL", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add URL"
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9er un nouveau signet / r\u00e9pertoire", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create new bookmark/directory"
+      }
+    }, 
+    {
+      "translated": "Supprimer le favori / r\u00e9pertoire s\u00e9lectionn\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete selected bookmark/directory"
+      }
+    }, 
+    {
+      "translated": "Param\u00e8tres du signet", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark settings"
+      }
+    }, 
+    {
+      "translated": "Nom du signet:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark name:"
+      }
+    }, 
+    {
+      "translated": "Connecter le profil:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect profile:"
+      }
+    }, 
+    {
+      "translated": "Propri\u00e9t\u00e9s du serveur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server Properties"
+      }
+    }, 
+    {
+      "translated": "Adresse du serveur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server address:"
+      }
+    }, 
+    {
+      "translated": "Port de serveur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server port:"
+      }
+    }, 
+    {
+      "translated": "Propri\u00e9t\u00e9s de connexion (pas encore pris en charge)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect Properties (Not yet supported)"
+      }
+    }, 
+    {
+      "translated": "Nom d&#39;utilisateur par d\u00e9faut", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default Username"
+      }
+    }, 
+    {
+      "translated": "Cha\u00eene Actuelle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current Channel"
+      }
+    }, 
+    {
+      "translated": "Mot de passe de canal par d\u00e9faut", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default channel password"
+      }
+    }, 
+    {
+      "translated": "Nom du r\u00e9pertoire:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Directory name:"
+      }
     }
   ]
 }
