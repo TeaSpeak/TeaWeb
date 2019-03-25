@@ -15,6 +15,10 @@
     {
       "key": "fr_gt",
       "path": "fr_google_translate.translation"
+    },
+    {
+      "key": "ru",
+      "path": "ru_translate_vafin.translation"
     }
   ],
   "name": "Default TeaSpeak repository",

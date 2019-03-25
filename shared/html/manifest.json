@@ -1,0 +1,16 @@
+{
+  "short_name": "TeaWeb",
+  "name": "TeaSpeak Web",
+  "icons": [
+    {
+      "src": "img/favicon/teacup.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    }
+  ],
+  "start_url": "?",
+  "background_color": "#18BC9C",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#18BC9C"
+}
