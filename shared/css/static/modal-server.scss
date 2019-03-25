@@ -19,6 +19,53 @@
 			flex-shrink: 70;
 		}
 	}
+
+	.container-name-icon {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.container-name {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		.container-icon {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+	}
+
+	.container-icon {
+		width: 30px;
+
+		margin-left: 10px;
+
+		.button-select-icon {
+			left: 0;
+			right: 0;
+			top: 0;
+			bottom: 0;
+
+			position: absolute;
+
+			.icon-node {
+				cursor: pointer;
+
+				height: 100%;
+				width: 100%;
+
+				&:hover {
+					background-color: #00000011;
+				}
+
+				> div {
+					vertical-align: middle;
+					text-align: center;
+				}
+			}
+		}
+	}
 }
 .container-server-settings-host {
 	padding: 5px;

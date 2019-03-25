@@ -1,7 +1,7 @@
 namespace connection {
     export class CommandHelper extends AbstractCommandHandler {
-        private _callbacks_namefromuid: ClientNameFromUid[] = [];
         private _who_am_i: any;
+        private _awaiters_unique_ids: {[unique_id: string]:((resolved: ClientNameInfo) => any)[]} = {};
 
         constructor(connection) {
             super(connection);
@@ -46,24 +46,50 @@ namespace connection {
             return this.connection.send_command("clientupdate", data);
         }
 
-        info_from_uid(...uid: string[]) : Promise<ClientNameInfo[]> {
-            let uids = [...uid];
-            for(let p of this._callbacks_namefromuid)
-                if(p.keys == uids) return p.promise;
+        async info_from_uid(..._unique_ids: string[]) : Promise<ClientNameInfo[]> {
+            const response: ClientNameInfo[] = [];
+            const request = [];
+            const unique_ids = new Set(_unique_ids);
+            const unique_id_resolvers: {[unique_id: string]: (resolved: ClientNameInfo) => any} = {};
 
-            let req: ClientNameFromUid = {} as any;
-            req.keys = uids;
-            req.response = new Array(uids.length);
-            req.promise = new LaterPromise<ClientNameInfo[]>();
 
-            for(let uid of uids) {
-                this.connection.send_command("clientgetnamefromuid", {
-                    cluid: uid
-                }).catch(req.promise.function_rejected());
+            for(const unique_id of unique_ids) {
+                request.push({'cluid': unique_id});
+                (this._awaiters_unique_ids[unique_id] || (this._awaiters_unique_ids[unique_id] = []))
+                    .push(unique_id_resolvers[unique_id] = info => response.push(info));
             }
 
-            this._callbacks_namefromuid.push(req);
-            return req.promise;
+            try {
+                await this.connection.send_command("clientgetnamefromuid", request);
+            } catch(error) {
+                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                    /* nothing */
+                } else {
+                    throw error;
+                }
+            } finally {
+                /* cleanup */
+                for(const unique_id of Object.keys(unique_id_resolvers))
+                    (this._awaiters_unique_ids[unique_id] || []).remove(unique_id_resolvers[unique_id]);
+            }
+
+            return response;
+        }
+
+        private handle_notifyclientnamefromuid(json: any[]) {
+            for(const entry of json) {
+                const info: ClientNameInfo = {
+                    client_unique_id: entry["cluid"],
+                    client_nickname: entry["clname"],
+                    client_database_id: parseInt(entry["cldbid"])
+                };
+
+                const functions = this._awaiters_unique_ids[entry["cluid"]] || [];
+                delete this._awaiters_unique_ids[entry["cluid"]];
+
+                for(const fn of functions)
+                    fn(info);
+            }
         }
 
         request_query_list(server_id: number = undefined) : Promise<QueryList> {
@@ -283,29 +309,6 @@ namespace connection {
                     reject(error);
                 });
             });
-        }
-
-        private handle_notifyclientnamefromuid(json: any[]) {
-            for(let entry of json) {
-                let info: ClientNameInfo = {} as any;
-                info.client_unique_id = entry["cluid"];
-                info.client_nickname = entry["clname"];
-                info.client_database_id = parseInt(entry["cldbid"]);
-
-                for(let elm of this._callbacks_namefromuid.slice(0)) {
-                    let unset = 0;
-                    for(let index = 0; index < elm.keys.length; index++) {
-                        if(elm.keys[index] == info.client_unique_id) {
-                            elm.response[index] = info;
-                        }
-                        if(elm.response[index] == undefined) unset++;
-                    }
-                    if(unset == 0) {
-                        this._callbacks_namefromuid.remove(elm);
-                        elm.promise.resolved(elm.response);
-                    }
-                }
-            }
         }
     }
 }

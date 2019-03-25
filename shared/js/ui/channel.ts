@@ -663,12 +663,21 @@ class ChannelEntry {
     updateVariables(...variables: {key: string, value: string}[]) {
         let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL_PROPERTIES, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
 
+        {
+            const entries = [];
+            for(const variable of variables)
+                entries.push({
+                    key: variable.key,
+                    value: variable.value,
+                    type: typeof (this.properties[variable.key])
+                });
+            log.table("Clannel update properties", entries);
+        }
+
         for(let variable of variables) {
             let key = variable.key;
             let value = variable.value;
             JSON.map_field_to(this.properties, value, variable.key);
-
-            group.log(tr("Updating property %s = '%s' -> %o"), key, value, this.properties[key]);
 
             if(key == "channel_name") {
                 this.__updateChannelName();

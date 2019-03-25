@@ -282,6 +282,12 @@ function main() {
     stats.register_user_count_listener(status => {
         console.log("Received user count update: %o", status);
     });
+
+    /*
+    setTimeout(() => {
+        Modals.spawnAvatarList(globalClient);
+    }, 1000);
+    */
 }
 
 loader.register_task(loader.Stage.LOADED, {

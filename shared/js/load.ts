@@ -351,16 +351,23 @@ namespace loader {
 
 /* define that here */
 let _critical_triggered = false;
-const display_critical_load = message => {
+const display_critical_load = (message: string, error?: string) => {
     if(_critical_triggered) return; /* only show the first error */
     _critical_triggered = true;
 
     let tag = document.getElementById("critical-load");
+
     let detail = tag.getElementsByClassName("detail")[0];
     detail.innerHTML = message;
 
+    if(error) {
+        const error_tags = tag.getElementsByClassName("error");
+        error_tags[0].innerHTML = error;
+    }
+
+    //error-message
     tag.style.display = "block";
-    fadeoutLoader();
+    _fadeout_warned = true; /* we know that JQuery hasn't been loaded, else this function would be replaced by something else */
 };
 
 const loader_impl_display_critical_error = message => {
@@ -498,6 +505,7 @@ const loader_javascript = {
             "js/profiles/Identity.js",
 
             //Load UI
+            "js/ui/modal/ModalAvatarList.js",
             "js/ui/modal/ModalQuery.js",
             "js/ui/modal/ModalQueryManage.js",
             "js/ui/modal/ModalPlaylistList.js",
@@ -509,7 +517,7 @@ const loader_javascript = {
             "js/ui/modal/ModalServerEdit.js",
             "js/ui/modal/ModalChangeVolume.js",
             "js/ui/modal/ModalBanClient.js",
-
+            "js/ui/modal/ModalIconSelect.js",
             "js/ui/modal/ModalBanCreate.js",
             "js/ui/modal/ModalBanList.js",
             "js/ui/modal/ModalYesNo.js",
@@ -636,6 +644,8 @@ const loader_style = {
             "css/static/ts/country.css",
             "css/static/general.css",
             "css/static/modals.css",
+            "css/static/modal-avatar.css",
+            "css/static/modal-icons.css",
             "css/static/modal-bookmarks.css",
             "css/static/modal-connect.css",
             "css/static/modal-channel.css",
@@ -770,26 +780,6 @@ function fadeoutLoader(duration = undefined, minAge = undefined, ignoreAge = und
     });
 }
 
-
-window["Module"] = window["Module"] || {};
-navigator.browserSpecs = (function(){
-    let ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
-    if(/trident/i.test(M[1])){
-        tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
-        return {name:'IE',version:(tem[1] || '')};
-    }
-    if(M[1]=== 'Chrome'){
-        tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
-        if(tem != null) return {name:tem[1].replace('OPR', 'Opera'),version:tem[2]};
-    }
-    M = M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
-    if((tem = ua.match(/version\/(\d+)/i))!= null)
-        M.splice(1, 1, tem[1]);
-    return {name:M[0], version:M[1]};
-})();
-
-console.log(navigator.browserSpecs); //Object { name: "Firefox", version: "42" }
-
 /* register tasks */
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "safari fix",
@@ -808,6 +798,7 @@ loader.register_task(loader.Stage.INITIALIZING, {
     priority: 50
 });
 
+window["Module"] = window["Module"] || {};
 /* TeaClient */
 if(window.require) {
     const path = require("path");
@@ -824,6 +815,42 @@ if(window.require) {
         priority: 40
     });
 }
+
+loader.register_task(loader.Stage.INITIALIZING, {
+    name: "Browser detection",
+    function: async () => {
+        navigator.browserSpecs = (function(){
+            let ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if(/trident/i.test(M[1])){
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return {name:'IE',version:(tem[1] || '')};
+            }
+            if(M[1]=== 'Chrome'){
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if(tem != null) return {name:tem[1].replace('OPR', 'Opera'),version:tem[2]};
+            }
+            M = M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+            if((tem = ua.match(/version\/(\d+)/i))!= null)
+                M.splice(1, 1, tem[1]);
+            return {name:M[0], version:M[1]};
+        })();
+
+        console.log("Resolved browser specs: %o", navigator.browserSpecs); //Object { name: "Firefox", version: "42" }
+    },
+    priority: 30
+});
+
+loader.register_task(loader.Stage.INITIALIZING, {
+    name: "secure tester",
+    function: async () => {
+        /* we need https or localhost to use some things like the storage API */
+        if(location.protocol !== 'https:' && location.hostname !== 'localhost') {
+            display_critical_load("TeaWeb cant run on unsecured sides.", "App requires to be loaded via HTTPS!");
+            throw "App requires to be loaded via HTTPS!"
+        }
+    },
+    priority: 20
+});
 
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "webassembly tester",
@@ -872,17 +899,92 @@ loader.register_task(loader.Stage.LOADED, {
 loader.register_task(loader.Stage.LOADED, {
     name: "error task",
     function: async () => {
-        if(Settings.instance.static("dummy_load_error", false)) {
-            displayCriticalError("The tea is cold!");
+        if(Settings.instance.static(Settings.KEY_LOAD_DUMMY_ERROR, false)) {
+            display_critical_load("The tea is cold!", "Argh, this is evil! Cold tea dosn't taste good.");
             throw "The tea is cold!";
         }
     },
     priority: 20
 });
 
+const hello_world = () => {
+    const print_security = () => {
+        {
+            const css = [
+                "display: block",
+                "text-align: center",
+                "font-size: 42px",
+                "font-weight: bold",
+                "-webkit-text-stroke: 2px black",
+                "color: red"
+            ].join(";");
+            console.log("%c ", "font-size: 100px;");
+            console.log("%cSecurity warning:", css);
+        }
+        {
+            const css = [
+                "display: block",
+                "text-align: center",
+                "font-size: 18px",
+                "font-weight: bold"
+            ].join(";");
+
+            console.log("%cPasting anything in here could give attackers access to your data.", css);
+            console.log("%cUnless you understand exactly what you are doing, close this window and stay safe.", css);
+            console.log("%c ", "font-size: 100px;");
+        }
+    };
+
+    /* print the hello world */
+    {
+        const css = [
+            "display: block",
+            "text-align: center",
+            "font-size: 72px",
+            "font-weight: bold",
+            "-webkit-text-stroke: 2px black",
+            "color: #18BC9C"
+        ].join(";");
+        console.log("%cHey, hold on!", css);
+    }
+    {
+        const css = [
+            "display: block",
+            "text-align: center",
+            "font-size: 26px",
+            "font-weight: bold"
+        ].join(";");
+
+        const css_2 = [
+            "display: block",
+            "text-align: center",
+            "font-size: 26px",
+            "font-weight: bold",
+            "color: blue"
+        ].join(";");
+
+        const display_detect = /./;
+        display_detect.toString = function() { print_security(); return ""; }
+
+        console.log("%cLovely to see you using and debugging the TeaSpeak Web client.", css);
+        console.log("%cIf you have some good ideas or already done some incredible changes,", css);
+        console.log("%cyou'll be may interested to share them here: %chttps://github.com/TeaSpeak/TeaWeb", css, css_2);
+        console.log("%c ", display_detect);
+    }
+};
+
+try { /* lets try to print it as VM code :)*/
+    let hello_world_code = hello_world.toString();
+    hello_world_code = hello_world_code.substr(hello_world_code.indexOf('() => {') + 8);
+    hello_world_code = hello_world_code.substring(0, hello_world_code.lastIndexOf("}"));
+    eval(hello_world_code);
+} catch(e) {
+    hello_world();
+}
+
 loader.execute().then(() => {
     console.log("app successfully loaded!");
 }).catch(error => {
     displayCriticalError("failed to load app!<br>Please lookup the browser console for more details");
-    console.error("Failed to load app!\nError: %o", error);
+    /* console.error("Failed to load app!\nError: %o", error); */ //Error should be already printed by the loader
 });

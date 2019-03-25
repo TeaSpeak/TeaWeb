@@ -581,11 +581,20 @@ class ClientEntry {
         let update_away = false;
         let reorder_channel = false;
 
+        {
+            const entries = [];
+            for(const variable of variables)
+                entries.push({
+                    key: variable.key,
+                    value: variable.value,
+                    type: typeof (this.properties[variable.key])
+                });
+            log.table("Client update properties", entries);
+        }
+
         for(let variable of variables) {
             JSON.map_field_to(this._properties, variable.value, variable.key);
 
-            //TODO tr
-            group.log("Updating client " + this.clientId() + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "client_nickname") {
                 this.tag.find(".client-name").text(variable.value);
                 let chat = this.chat(false);

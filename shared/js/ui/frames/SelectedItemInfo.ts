@@ -149,6 +149,7 @@ class Hostbanner {
     readonly client: TSClient;
 
     private updater: NodeJS.Timer;
+    private _hostbanner_url: string;
 
     constructor(client: TSClient, htmlTag: JQuery<HTMLElement>) {
         this.client = client;
@@ -237,16 +238,13 @@ class Hostbanner {
                         }
                     }
 
-                    const url = URL.createObjectURL(await result.blob());
+                    if(this._hostbanner_url) {
+                        log.debug(LogCategory.SERVER, tr("Revoked old hostbanner url %s"), this._hostbanner_url);
+                        URL.revokeObjectURL(this._hostbanner_url);
+                    }
+                    const url = (this._hostbanner_url = URL.createObjectURL(await result.blob()));
                     tag_image.css('background-image', 'url(' + url + ')');
                     log.debug(LogCategory.SERVER, tr("Fetsched hostbanner successfully (%o, type: %o, url: %o)"), Date.now() - start, result.type, url);
-
-                    if(URL.revokeObjectURL) {
-                        setTimeout(() => {
-                            log.debug(LogCategory.SERVER, tr("Revoked hostbanner url %s"), url);
-                            URL.revokeObjectURL(url);
-                        }, 10000);
-                    }
                 } catch(error) {
                     log.warn(LogCategory.SERVER, tr("Failed to fetch hostbanner image: %o"), error);
                 }
@@ -325,7 +323,7 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
         }
 
         if(client.properties.client_flag_avatar && client.properties.client_flag_avatar.length > 0) {
-            properties["client_avatar"] = client.channelTree.client.fileManager.avatars.generateTag(client);
+            properties["client_avatar"] = client.channelTree.client.fileManager.avatars.generate_client_tag(client);
         }
         return properties;
     }

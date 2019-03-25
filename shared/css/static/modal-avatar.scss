@@ -1,0 +1,175 @@
+.modal-avatar-list {
+	display: flex;
+	flex-direction: row;
+
+	.container-list {
+		width: 50%;
+
+		margin-top: 5px;
+
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.column {
+			&.column-username {
+				width: calc(50% - 100px);
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			&.column-unique-id {
+				width: calc(50% - 100px);
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			&.column-size {
+				width: 75px;
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				text-align: center;
+			}
+
+			&.column-timestamp {
+				width: 150px;
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				text-align: center;
+			}
+		}
+
+		.list-header {
+			flex-grow: 0;
+			flex-shrink: 0;
+			display: flex;
+			flex-direction: row;
+
+			.column {
+				border: 1px solid lightgray;
+				text-align: center;
+			}
+		}
+
+		.list-entries-container {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			justify-content: start;
+			overflow-y: auto;
+			min-height: 250px;
+
+			.entry {
+				display: flex;
+				flex-direction: row;
+
+				.column {
+					margin-left: 2px;
+				}
+
+				cursor: pointer;
+
+				&.selected {
+					background-color: lightblue;
+				}
+			}
+
+			&.scrollbar {
+				.column-username {
+					width: calc(50% - 100px + 30px)
+				}
+
+				.column-unique-id {
+					width: calc(50% - 100px + 30px)
+				}
+			}
+		}
+	}
+
+	.container-info {
+		margin-left: 10px;
+
+		position: relative;
+		width: 50%;
+
+		.container-data {
+			width: 100%;
+		}
+
+		.container-preview {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.container-image {
+				flex-shrink: 0;
+				flex-grow: 0;
+
+				width: 302px;
+				height: 302px;
+
+				background-color: whitesmoke;
+				border: 1px solid black;
+				border-radius: 2px;
+
+				position: relative;
+				overflow: hidden;
+
+				> div {
+					top: 0;
+					bottom: 0;
+					left: 0;
+					right: 0;
+
+					position: absolute;
+				}
+			}
+
+			.container-image-data {
+				margin-left: 10px;
+
+				flex-shrink: 1;
+				flex-grow: 1;
+
+				a {
+					text-align: center;
+				}
+
+				.form-group {
+					width: 100%;
+					margin-bottom: 0px;
+				}
+			}
+		}
+
+		.container-buttons {
+			width: 100%;
+			margin-top: 20px;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+		}
+
+		.disabled-overlay {
+			position: absolute;
+
+			top: 0;
+			bottom: 0;
+			left: 0;
+			right: 0;
+
+			background-color: gray;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: space-around;
+			
+			a {
+				text-align: center;
+			}
+		}
+	}
+}

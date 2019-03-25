@@ -35,11 +35,12 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+        <!-- App min width: 450px -->
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">
         <meta name="description" content="TeaSpeak Web Client, connect to any TeaSpeak server without installing anything." />
         <link rel="icon" href="img/favicon/teacup.png">
         <!-- TODO Needs some fix -->
-        <!-- <link rel="manifest" href="manifest.json"> -->
+        <link rel="manifest" href="manifest.json">
 
         <?php
             if(!$WEB_CLIENT) {
@@ -161,7 +162,7 @@
         <div class="fulloverlay" id="critical-load">
             <div class="container">
                 <img src="img/loading_error_right.svg" height="192px">
-                <h1 style="color: red">Ooops, we encountered some trouble while loading important files!</h1>
+                <h1 class="error" style="color: red">Ooops, we encountered some trouble while loading important files!</h1>
                 <h3 class="detail"></h3>
             </div>
         </div>

@@ -1,0 +1,150 @@
+.modal-icon-select {
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
+
+	.container-icons {
+		flex-grow: 1;
+		flex-shrink: 1;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		> div {
+			width: 50%;
+
+			&:not(:first-of-type) {
+				margin-left: 10px;
+			}
+		}
+
+		.content, .container-icons-list {
+			flex-grow: 1;
+			flex-shrink: 1;
+
+			display: flex;
+			flex-direction: column;
+		}
+
+		.container-icons-list {
+			position: relative;
+
+			> div {
+				border-radius: 3px;
+			}
+
+			.container-icons-remote, .container-icons-local {
+				width: 100%;
+				min-height: 300px;
+
+				overflow-x: hidden;
+				overflow-y: auto;
+
+				background-color: whitesmoke;
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+
+				.icon-container, .icon {
+					margin-left: 1px;
+					margin-right: 1px;
+				}
+
+				&.icon-select {
+					.icon-container, .icon {
+						cursor: pointer;
+
+						&:hover {
+							background-color: #00000011;
+							border: 1px solid black;
+						}
+
+						&.selected {
+							background-color: #00330011;
+							border: 1px solid red;
+						}
+
+						&:hover, &.selected {
+							width: 18px;
+							height: 18px;
+
+							margin: -1px 0px;
+						}
+					}
+				}
+			}
+
+			.container-loading, .container-no-permissions, .container-error {
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+
+				position: absolute;
+				background-color: grey;
+
+				cursor: not-allowed;
+
+				text-align: center;
+				display: flex;
+				flex-direction: column;
+				justify-content: space-around;
+
+				> a {
+					padding-bottom: 30px;
+				}
+			}
+
+			.container-loading {
+				z-index: 40;
+			}
+
+			.container-error {
+				z-index: 30;
+			}
+			.container-no-permissions {
+				z-index: 20;
+			}
+		}
+	}
+
+	.container-buttons {
+		margin-top: 20px;
+
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.spacer {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		.btn {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+		.button-select {
+			margin-left: 10px;
+
+			display: flex;
+			align-items: center;
+			flex-direction: row;
+
+			.selected-item-container {
+				height: 16px;
+				vertical-align: sub;
+			}
+		}
+
+		.button-select-no-icon {
+			margin-left: 10px;
+		}
+	}
+}

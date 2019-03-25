@@ -165,6 +165,16 @@ class ServerEntry {
                 }
             }, {
                 type: MenuEntryType.ENTRY,
+                icon: "client-iconviewer",
+                name: tr("View icons"),
+                callback: () => Modals.spawnIconSelect(this.channelTree.client)
+            }, {
+                type: MenuEntryType.ENTRY,
+                icon: 'client-iconsview',
+                name: tr("View avatars"),
+                callback: () => Modals.spawnAvatarList(this.channelTree.client)
+            }, {
+                type: MenuEntryType.ENTRY,
                 icon: "client-invite_buddy",
                 name: tr("Invite buddy"),
                 callback: () => {
@@ -183,12 +193,21 @@ class ServerEntry {
     updateVariables(is_self_notify: boolean, ...variables: {key: string, value: string}[]) {
         let group = log.group(log.LogType.DEBUG, LogCategory.SERVER, tr("Update properties (%i)"), variables.length);
 
+        {
+            const entries = [];
+            for(const variable of variables)
+                entries.push({
+                    key: variable.key,
+                    value: variable.value,
+                    type: typeof (this.properties[variable.key])
+                });
+            log.table("Server update properties", entries);
+        }
+
         let update_bannner = false;
         for(let variable of variables) {
             JSON.map_field_to(this.properties, variable.value, variable.key);
 
-            //TODO tr
-            group.log("Updating server " + this.properties.virtualserver_name + ". Key " + variable.key + " Value: '" + variable.value + "' (" + typeof (this.properties[variable.key]) + ")");
             if(variable.key == "virtualserver_name") {
                 this.htmlTag.find(".name").text(variable.value);
             } else if(variable.key == "virtualserver_icon_id") {

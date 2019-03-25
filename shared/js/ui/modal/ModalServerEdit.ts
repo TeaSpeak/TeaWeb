@@ -4,14 +4,18 @@ namespace Modals {
     export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => any) {
         let properties: ServerProperties = {} as ServerProperties; //The changes properties
 
-        const modal_template = $("#tmpl_server_edit").renderTag(server.properties);
+        const render_properties = {};
+        Object.assign(render_properties, properties);
+        render_properties["virtualserver_icon"] = server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id);
+
+        const modal_template = $("#tmpl_server_edit").renderTag(render_properties);
         const modal = modal_template.modalize((header, body, footer) => {
             return {
                 body: body.tabify()
             }
         });
 
-        server_applyGeneralListener(properties, modal.htmlTag.find(".properties_general"), modal.htmlTag.find(".button_ok"));
+        server_applyGeneralListener(properties, server, modal.htmlTag.find(".container-server-settings-general"), modal.htmlTag.find(".button_ok"));
         server_applyTransferListener(properties, server, modal.htmlTag.find('.properties_transfer'));
         server_applyHostListener(server, properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
         server_applyMessages(properties, server, modal.htmlTag.find(".properties_messages"));
@@ -32,7 +36,7 @@ namespace Modals {
         modal.open();
     }
 
-    function server_applyGeneralListener(properties: ServerProperties, tag: JQuery, button: JQuery) {
+    function server_applyGeneralListener(properties: ServerProperties, server: ServerEntry, tag: JQuery, button: JQuery) {
         let updateButton = () => {
             if(tag.find(".input_error").length == 0)
                 button.removeAttr("disabled");
@@ -81,6 +85,17 @@ namespace Modals {
         tag.find(".virtualserver_welcomemessage").change(function (this: HTMLInputElement) {
             properties.virtualserver_welcomemessage = this.value;
         }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_WELCOMEMESSAGE).granted(1));
+
+        tag.find(".button-select-icon").on('click', event => {
+            Modals.spawnIconSelect(globalClient, id => {
+                const icon_node = tag.find(".button-select-icon").find(".icon-node");
+                icon_node.empty();
+                icon_node.append(globalClient.fileManager.icons.generateTag(id));
+
+                console.log("Selected icon ID: %d", id);
+                properties.virtualserver_icon_id = id;
+            }, server.properties.virtualserver_icon_id);
+        })
     }
 
 

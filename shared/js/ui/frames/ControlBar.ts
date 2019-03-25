@@ -48,12 +48,10 @@ class ControlBar {
             tag.find(".button-dropdown").on('click', () => {
                 tag.addClass("displayed");
             }).hover(() => {
-                console.log("Add");
                 tag.addClass("displayed");
             }, () => {
                 if(tag.find(".dropdown:hover").length > 0)
                     return;
-                console.log("Removed");
                 tag.removeClass("displayed");
             });
             tag.on('mouseleave', () => {
@@ -88,9 +86,10 @@ class ControlBar {
             let query = this.htmlTag.find(".btn_query");
             dropdownify(query);
 
-            query.find(".btn_query_toggle").on('click', this.on_query_visibility_toggle.bind(this));
-            query.find(".btn_query_create").on('click', this.on_query_create.bind(this));
-            query.find(".btn_query_manage").on('click', this.on_query_manage.bind(this));
+            /* search for query buttons not only on the large device button */
+            this.htmlTag.find(".btn_query_toggle").on('click', this.on_query_visibility_toggle.bind(this));
+            this.htmlTag.find(".btn_query_create").on('click', this.on_query_create.bind(this));
+            this.htmlTag.find(".btn_query_manage").on('click', this.on_query_manage.bind(this));
         }
 
         /* Mobile dropdowns */
@@ -429,7 +428,6 @@ class ControlBar {
     }
 
     set query_visible(flag: boolean) {
-        console.error(flag);
         if(this._query_visible == flag) return;
 
         this._query_visible = flag;
@@ -444,7 +442,12 @@ class ControlBar {
     }
 
     private update_query_visibility_button() {
-        this.htmlTag.find(".btn_query_toggle").toggleClass('activated', this._query_visible);
+        const button = this.htmlTag.find(".btn_query_toggle");
+        button.toggleClass('activated', this._query_visible);
+        if(this._query_visible)
+            button.find(".query-text").text(tr("Hide server queries"));
+        else
+            button.find(".query-text").text(tr("Show server queries"));
     }
 
     private on_query_create() {
