@@ -1,8 +1,6 @@
 import * as ts from "typescript";
 import {SyntaxKind} from "typescript";
 
-type TSExpression = ts.Type | ts.Node;
-
 interface Array<T> {
     last?(): T;
 }
@@ -102,9 +100,9 @@ class StackParameters implements StackParameter {
 }
 
 
-const generators: {[key: number]:((settings: _Settings, stack: StackParameters, node: ts.Node | ts.Type) => ts.Node | ts.Type | undefined) | undefined} = {};
+const generators: {[key: number]:((settings: _Settings, stack: StackParameters, node: ts.Node) => ts.Node | undefined) | undefined} = {};
 
-function _generate(settings: _Settings, stack: StackParameters, layer: TSExpression[], node: ts.Node) {
+function _generate(settings: _Settings, stack: StackParameters, layer: ts.Node[], node: ts.Node) {
     //console.log(SyntaxKind[node.kind]);
     if(generators[node.kind]) {
         const result = generators[node.kind](settings, stack, node);
@@ -324,6 +322,7 @@ generators[SyntaxKind.ClassDeclaration] = (settings, stack, node: ts.ClassDeclar
 };
 
 generators[SyntaxKind.PropertySignature] = (settings, stack, node: ts.PropertySignature) => {
+    console.log(SyntaxKind[node.type.kind]);
     let type: ts.TypeNode = node.type;
     switch (node.type.kind) {
         case SyntaxKind.LiteralType:
@@ -385,10 +384,3 @@ generators[SyntaxKind.EnumDeclaration] = (settings, stack, node: ts.EnumDeclarat
         members.push(generators[SyntaxKind.EnumMember](settings, stack, member));
     return ts.createEnumDeclaration(undefined, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, members);
 };
-
-
-generators[SyntaxKind.TypeParameter] = (settings, stack, node: ts.TypeParameter) => undefined;
-generators[SyntaxKind.HeritageClause] = (settings, stack, node: ts.HeritageClause) => undefined;
-generators[SyntaxKind.IfStatement] = (settings, stack, node: ts.IfStatement) => undefined;
-generators[SyntaxKind.ExpressionStatement] = (settings, stack, node: ts.ExpressionStatement) => undefined;
-generators[SyntaxKind.SemicolonClassElement] = (settings, stack, node: ts.ExpressionStatement) => undefined;

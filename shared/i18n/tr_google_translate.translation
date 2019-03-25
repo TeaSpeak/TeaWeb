@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "Turkey translation, based on Google Translate",
+    "name": "Turkey translation, based on Google Translate", 
     "contributors": [
       {
         "name": "Google Translate, via script by Markus Hadenfeldt", 
@@ -5722,6 +5722,3516 @@
       ], 
       "key": {
         "message": "You have been poked by"
+      }
+    }, 
+    {
+      "translated": "Opus codec&#39;i ba\u015flat\u0131lamad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize the opus codec. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Devre d\u0131\u015f\u0131 b\u0131rak\u0131lm\u0131\u015f codec bile\u015feni ba\u015flat\u0131lamad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize already disabled codec. Error: %o"
+      }
+    }, 
+    {
+      "translated": "M\u00fczik \u00e7alar hen\u00fcz ba\u015flat\u0131lmad\u0131. Jest bekliyorum.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Audio player isn't initialized yet. Waiting for gesture."
+      }
+    }, 
+    {
+      "translated": "Varsay\u0131lan kanal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default channel"
+      }
+    }, 
+    {
+      "translated": "Kanal \u015fifre korumal\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The channel is password protected"
+      }
+    }, 
+    {
+      "translated": "M\u00fczik kalitesi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Music quality"
+      }
+    }, 
+    {
+      "translated": "Kanal y\u00f6netiliyor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Channel is moderated"
+      }
+    }, 
+    {
+      "translated": "Kanal simgesi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Channel icon"
+      }
+    }, 
+    {
+      "translated": "Kanal bilgisini g\u00f6ster", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show channel info"
+      }
+    }, 
+    {
+      "translated": "<b>Kanala abone olun</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Subscribe to channel</b>"
+      }
+    }, 
+    {
+      "translated": "<b>Kanal aboneli\u011finden \u00e7\u0131k</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Unsubscribe from channel</b>"
+      }
+    }, 
+    {
+      "translated": "<b>Miras al\u0131nan abone modunu kullan</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Use inherited subscribe mode</b>"
+      }
+    }, 
+    {
+      "translated": "Bot ba\u015far\u0131yla olu\u015fturuldu.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bot has been successfully created."
+      }
+    }, 
+    {
+      "translated": "M\u00fczik botu olu\u015fturulamad\u0131: <br> {0}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create the music bot:<br>{0}"
+      }
+    }, 
+    {
+      "translated": "Kanal ad\u0131 olu\u015fturuldu:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got formated channel name: %o"
+      }
+    }, 
+    {
+      "translated": "Uygulamak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Apply"
+      }
+    }, 
+    {
+      "translated": "M\u00fc\u015fteri bilgilerini g\u00f6ster", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show client info"
+      }
+    }, 
+    {
+      "translated": "Sohbet kat\u0131l\u0131mc\u0131s\u0131na (% o) sohbetin kapat\u0131ld\u0131\u011f\u0131n\u0131 bildiremedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to notify chat participant (%o) that the chat has been closed. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Bot bilgilerini g\u00f6ster", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show bot info"
+      }
+    }, 
+    {
+      "translated": "Bot \u00e7alma listesini a\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Open bot's playlist"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz izinler", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid permissions"
+      }
+    }, 
+    {
+      "translated": "Botlar \u00e7alma listesini g\u00f6rmek zorunda de\u011filsiniz.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have to see the bots playlist."
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi sorgulanamad\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist."
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi bilgisi sorgulanamad\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info."
+      }
+    }, 
+    {
+      "translated": "Yerel sesi de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change local volume"
+      }
+    }, 
+    {
+      "translated": "Uzak ses seviyesini de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change remote volume"
+      }
+    }, 
+    {
+      "translated": "Belirli kanallara abone olunamad\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to subscribe to specific channels (%o)"
+      }
+    }, 
+    {
+      "translated": "T\u00fcm kanallar\u0131n aboneli\u011fi iptal edilemedi! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unsubscribe to all channels! (%o)"
+      }
+    }, 
+    {
+      "translated": "Belirli kanallar\u0131n aboneli\u011fi iptal edilemedi (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unsubscribe to specific channels (%o)"
+      }
+    }, 
+    {
+      "translated": "T\u00fcm kanallara abone olunamad\u0131! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to subscribe to all channels! (%o)"
+      }
+    }, 
+    {
+      "translated": "Banner URL\u2019si ayr\u0131\u015ft\u0131r\u0131lamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse banner URL: %o"
+      }
+    }, 
+    {
+      "translated": "Hostbanner y\u00fcklenemedi \u00e7\u00fcnk\u00fc &#39;Eri\u015fim Kontrol\u00fc-\u0130zin Verme-Kayna\u011f\u0131&#39; ge\u00e7erli de\u011fil!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not load hostbanner because 'Access-Control-Allow-Origin' isnt valid!"
+      }
+    }, 
+    {
+      "translated": "Hostbanner ba\u015far\u0131yla al\u0131nd\u0131 (% o, \u015funu yaz\u0131n:% o, url:% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Fetsched hostbanner successfully (%o, type: %o, url: %o)"
+      }
+    }, 
+    {
+      "translated": "\u0130ptal edilen hostbanner url% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Revoked hostbanner url %s"
+      }
+    }, 
+    {
+      "translated": "Hostbanner g\u00f6r\u00fcnt\u00fcs\u00fc al\u0131namad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch hostbanner image: %o"
+      }
+    }, 
+    {
+      "translated": "Botlar\u0131n \u00e7alma listesini g\u00f6rmek zorunda de\u011filsin.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You don't have to see the bots playlist."
+      }
+    }, 
+    {
+      "translated": "\u0130\u015fleyici patronuna ait olmayan komut i\u015fleyicisinin kayd\u0131n\u0131 kald\u0131rmaya \u00e7al\u0131\u015ft\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to unregister command handler which does not belong to the handler boss"
+      }
+    }, 
+    {
+      "translated": "Komut i\u015fleyicisi \u00e7a\u011fr\u0131lamad\u0131. \u0130stisnaya g\u00f6re istisna sonu\u00e7lar\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to invoke command handler. Invocation results in an exception: %o"
+      }
+    }, 
+    {
+      "translated": "Tek komut i\u015fleyici \u00e7a\u011fr\u0131lamad\u0131. \u0130stisnaya g\u00f6re istisna sonu\u00e7lar\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to invoke single command handler. Invocation results in an exception: %o"
+      }
+    }, 
+    {
+      "translated": "El s\u0131k\u0131\u015f\u0131rken bilinmeyen komut al\u0131nd\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received unknown command while handshaking (%o)"
+      }
+    }, 
+    {
+      "translated": "Kimli\u011fi geli\u015ftirmek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Improve identity"
+      }
+    }, 
+    {
+      "translated": "ba\u015fla", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Start"
+      }
+    }, 
+    {
+      "translated": "durdurmak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Stop"
+      }
+    }, 
+    {
+      "translated": "Kimlik geli\u015ftirilemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to improve identity"
+      }
+    }, 
+    {
+      "translated": "Kimlik geli\u015ftirilemedi. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to improve identity.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "Kimlik ba\u015far\u0131yla geli\u015ftirildi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully improved"
+      }
+    }, 
+    {
+      "translated": "Kimlik {} seviyesine ba\u015far\u0131yla iyile\u015ftirildi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully improved to level {}"
+      }
+    }, 
+    {
+      "translated": "Kimlik al", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import identity"
+      }
+    }, 
+    {
+      "translated": "Kimlik dosyas\u0131 okunamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to read give identity file: %o"
+      }
+    }, 
+    {
+      "translated": "Dosya okunamad\u0131!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to read file!"
+      }
+    }, 
+    {
+      "translated": "Evet", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "yes"
+      }
+    }, 
+    {
+      "translated": "yok hay\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "no"
+      }
+    }, 
+    {
+      "translated": "% S cihaz\u0131n\u0131 ald\u0131m (% s):% s (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got device %s (%s): %s (%o)"
+      }
+    }, 
+    {
+      "translated": "Mikrofon cihaz\u0131 listesi al\u0131namad\u0131!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not get microphone device list!"
+      }
+    }, 
+    {
+      "translated": "Hoparl\u00f6r cihaz listesi al\u0131namad\u0131!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not get speaker device list!"
+      }
+    }, 
+    {
+      "translated": "% S sesi% o olarak de\u011fi\u015fmi\u015fti", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Sound %s had changed to %o"
+      }
+    }, 
+    {
+      "translated": "Al\u0131nan kimlik", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity imported"
+      }
+    }, 
+    {
+      "translated": "Kimli\u011finiz ba\u015far\u0131yla al\u0131nd\u0131!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your identity has been successfully imported!"
+      }
+    }, 
+    {
+      "translated": "Emin misiniz", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Are you sure"
+      }
+    }, 
+    {
+      "translated": "Ger\u00e7ekten yeni bir kimlik almak ve eski kimli\u011fi ge\u00e7ersiz k\u0131lmak istiyor musunuz?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to import a new identity and override the old identity?"
+      }
+    }, 
+    {
+      "translated": "Dosya ad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "File name"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen dosya ad\u0131n\u0131 giriniz", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter the file name"
+      }
+    }, 
+    {
+      "translated": "Kimlik d\u0131\u015fa aktar\u0131lamad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to export identity"
+      }
+    }, 
+    {
+      "translated": "Kimlik verilemedi ve kaydedilemedi. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to export and save identity.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Kimlik olu\u015fturma", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity generate"
+      }
+    }, 
+    {
+      "translated": "Yeni bir kimlik ba\u015far\u0131yla olu\u015fturuldu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "A new identity had been successfully generated"
+      }
+    }, 
+    {
+      "translated": "Yeni bir kimlik olu\u015fturulamad\u0131. Hata nesnesi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate a new identity. Error object: %o"
+      }
+    }, 
+    {
+      "translated": "Kimlik olu\u015fturulamad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate identity"
+      }
+    }, 
+    {
+      "translated": "Yeni bir kimlik olu\u015fturulamad\u0131. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate a new identity.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "Ger\u00e7ekten yeni bir kimlik olu\u015fturmak ve eski kimli\u011fi ge\u00e7ersiz k\u0131lmak istiyor musunuz?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to generate a new identity and override the old identity?"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen bir isim giriniz", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a name"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen yeni profil i\u00e7in bir ad girin: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a name for the new profile:<br>"
+      }
+    }, 
+    {
+      "translated": "Bu profili ger\u00e7ekten silmek istiyor musun?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this profile?"
+      }
+    }, 
+    {
+      "translated": "\u0130znin yok", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission"
+      }
+    }, 
+    {
+      "translated": "Yasak listesini g\u00f6r\u00fcnt\u00fcleme izniniz yok", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to view the ban list"
+      }
+    }, 
+    {
+      "translated": "Yer imleri ad\u0131n\u0131 girin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter bookmarks name"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen yer imlerinin ad\u0131n\u0131 girin: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter the bookmarks name:<br>"
+      }
+    }, 
+    {
+      "translated": "Ba\u011fl\u0131 olmal\u0131s\u0131n", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected"
+      }
+    }, 
+    {
+      "translated": "Ba\u011flanmak zorundas\u0131n!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected!"
+      }
+    }, 
+    {
+      "translated": "Bir sunucu sorgusu giri\u015fi olu\u015fturma izniniz yok", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to create a server query login"
+      }
+    }, 
+    {
+      "translated": "Bu i\u015flevi kullanmak i\u00e7in ba\u011fl\u0131 olmal\u0131s\u0131n\u0131z!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected to use this function!"
+      }
+    }, 
+    {
+      "translated": "Ba\u011flant\u0131 sa\u011flanamad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect failed"
+      }
+    }, 
+    {
+      "translated": "Uzak ana bilgisayara ba\u011flanamad\u0131! \u0130stisna:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not connect to remote host! Exception: %o"
+      }
+    }, 
+    {
+      "translated": "El s\u0131k\u0131\u015fma i\u015flemi ba\u015far\u0131s\u0131z oldu:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to process handshake: %o"
+      }
+    }, 
+    {
+      "translated": "El s\u0131k\u0131\u015fma i\u015flemi ba\u015far\u0131s\u0131z oldu:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to process handshake: "
+      }
+    }, 
+    {
+      "translated": "Otomatik olarak yeniden ba\u011flanma izni var, ancak yeniden ba\u011flanam\u0131yorum, \u00e7\u00fcnk\u00fc hi\u00e7bir bilgimiz kalmad\u0131 ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Allowed to auto reconnect but cant reconnect because we dont have any information left..."
+      }
+    }, 
+    {
+      "translated": "5 saniye i\u00e7inde yeniden ba\u011flan\u0131l\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting in 5 seconds"
+      }
+    }, 
+    {
+      "translated": "Otomatik yeniden ba\u011flanmaya izin verildi. 5000ms&#39;de yeniden ba\u011flanma", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Allowed to auto reconnect. Reconnecting in 5000ms"
+      }
+    }, 
+    {
+      "translated": "Yeniden ba\u011flan\u0131yor ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting..."
+      }
+    }, 
+    {
+      "translated": "Yeniden ba\u011flanma iptal edildi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnect canceled"
+      }
+    }, 
+    {
+      "translated": "BBCode ayr\u0131\u015ft\u0131rma hatas\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "BBCode parse error: %o"
+      }
+    }, 
+    {
+      "translated": "K\u0131sa mesaj g\u00f6nderilemedi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send text message."
+      }
+    }, 
+    {
+      "translated": "Sunucu k\u0131sa mesaj g\u00f6nderilemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send server text message: %o"
+      }
+    }, 
+    {
+      "translated": "Kanal k\u0131sa mesaj\u0131 g\u00f6nderilemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send channel text message: %o"
+      }
+    }, 
+    {
+      "translated": "Sohbet mesaj\u0131 URL i\u00e7eriyor:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Chat message contains URL: %o"
+      }
+    }, 
+    {
+      "translated": "Bu yap\u0131land\u0131rma ile istatistiklerin ba\u015flat\u0131lmas\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing statistics with this config: %o"
+      }
+    }, 
+    {
+      "translated": "\u0130statistik sunucusuyla ba\u011flant\u0131 kesildi (Ba\u011flant\u0131 kapal\u0131). Sebep:% o. Olay nesnesi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Lost connection to statistics server (Connection closed). Reason: %o. Event object: %o"
+      }
+    }, 
+    {
+      "translated": "Sunucuya ba\u015far\u0131yla ba\u011fland\u0131. Oturum ba\u015flat\u0131l\u0131yor.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Successfully connected to server. Initializing session."
+      }
+    }, 
+    {
+      "translated": "Bir hata ald\u0131. Ba\u011flant\u0131 kapat\u0131l\u0131yor. Nesne:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an error. Closing connection. Object: %o"
+      }
+    }, 
+    {
+      "translated": "Dize olmayan bir mesaj al\u0131nd\u0131. Olay nesnesi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an message which isn't a string. Event object: %o"
+      }
+    }, 
+    {
+      "translated": "% Dms i\u00e7inde zamanlanm\u0131\u015f yeniden ba\u011flanma", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Scheduled reconnect in %dms"
+      }
+    }, 
+    {
+      "translated": "Yeniden ba\u011flan\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting"
+      }
+    }, 
+    {
+      "translated": "% S t\u00fcr\u00fcndeki iletiyi i\u015fleme", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Handling message of type %s"
+      }
+    }, 
+    {
+      "translated": "Bilinmeyen tipte bir mesaj al\u0131nd\u0131 (% s). Mesaj b\u0131rak\u0131l\u0131yor. Tam mesaj:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message with an unknown type (%s). Dropping message. Full message: %o"
+      }
+    }, 
+    {
+      "translated": "Oturum ba\u015far\u0131yla ba\u015flat\u0131ld\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Session successfully initialized."
+      }
+    }, 
+    {
+      "translated": "Ses kurulumunu atlama (Ses k\u00f6pr\u00fcs\u00fc yok)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Skipping voice setup (No voice bridge available)"
+      }
+    }, 
+    {
+      "translated": "Sohbet orta\u011f\u0131n\u0131z yeniden ba\u011fland\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has reconnected"
+      }
+    }, 
+    {
+      "translated": "Sohbet orta\u011f\u0131n\u0131z ba\u011flant\u0131n\u0131z kesildi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has disconnected"
+      }
+    }, 
+    {
+      "translated": "Bilinmeyen m\u00fc\u015fteri i\u00e7in yak\u0131n sohbet al\u0131nd\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for unknown client"
+      }
+    }, 
+    {
+      "translated": "\u0130stemci i\u00e7in yak\u0131n sohbet al\u0131nd\u0131, ancak benzersiz kimlikler e\u015fle\u015fmiyor. (% o bekleniyor,% o ald\u0131)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for client, but unique ids dosn't match. (expected %o, received %o)"
+      }
+    }, 
+    {
+      "translated": "\u0130stemci i\u00e7in yak\u0131n sohbet al\u0131nd\u0131, ancak a\u00e7\u0131k bir sohbetimiz yok.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for client, but we haven't a chat open."
+      }
+    }, 
+    {
+      "translated": "Sohbet orta\u011f\u0131n\u0131z sohbeti kapatt\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has close the conversation"
+      }
+    }, 
+    {
+      "translated": "G\u00f6r\u00fcnmeyen kanal i\u00e7in abone olunan kanal (cid:% d)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel subscribed for not visible channel (cid: %d)"
+      }
+    }, 
+    {
+      "translated": "G\u00f6r\u00fcnmeyen kanal\u0131n aboneli\u011finden \u00e7\u0131kar\u0131lan al\u0131nan kanal (cid:% d)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel unsubscribed for not visible channel (cid: %d)"
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi giri\u015fi ayr\u0131\u015ft\u0131r\u0131lamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist entry: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi \u015fark\u0131lar\u0131 i\u00e7in ge\u00e7ersiz bildirim al\u0131nd\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for playlist songs"
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi \u015fark\u0131 giri\u015fi ayr\u0131\u015ft\u0131r\u0131lamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist song entry: %o"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi bilgisi i\u00e7in ge\u00e7ersiz bildirim al\u0131nd\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for playlist info"
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi bilgisi ayr\u0131\u015ft\u0131r\u0131lamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist info: %o"
+      }
+    }, 
+    {
+      "translated": "Eski ba\u011flant\u0131 d\u00fczg\u00fcn \u015fekilde kapat\u0131lamad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close old connection properly. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Zaman a\u015f\u0131m\u0131 tetiklendikten sonra ba\u011flant\u0131 kapat\u0131lamad\u0131! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close connection after timeout had been triggered! (%o)"
+      }
+    }, 
+    {
+      "translated": "Al\u0131nan web soketi hatas\u0131: (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received web socket error: (%o)"
+      }
+    }, 
+    {
+      "translated": "Ba\u011flant\u0131 denemesi ba\u015far\u0131s\u0131z olduktan sonra ba\u011flant\u0131 kapat\u0131lamad\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close connection after connect attempt failed (%o)"
+      }
+    }, 
+    {
+      "translated": "WebRTC komut paketini atmak, \u00e7\u00fcnk\u00fc bir k\u00f6pr\u00fcye sahip de\u011filiz.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping WebRTC command packet, because we havent a bridge."
+      }
+    }, 
+    {
+      "translated": "% S tipinde bilinmeyen bir mesaj al\u0131nd\u0131. B\u0131rakarak mesaj", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received unknown message of type %s. Dropping message"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz bir sokete g\u00f6nderilmeye \u00e7al\u0131\u015f\u0131ld\u0131 (% s)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send on a invalid socket (%s)"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7erli bir ba\u011flant\u0131 olmadan bir komut g\u00f6ndermeye \u00e7al\u0131\u015ft\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send a command without a valid connection."
+      }
+    }, 
+    {
+      "translated": "ba\u011fl\u0131 de\u011fil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "not connected"
+      }
+    }, 
+    {
+      "translated": "bilinmeyen \u00fclke", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "unknown country"
+      }
+    }, 
+    {
+      "translated": "Profil y\u00fcklenemedi. Sebep:% s, Profil verileri:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load profile. Reason: %s, Profile data: %s"
+      }
+    }, 
+    {
+      "translated": "Varsay\u0131lan kimlik olu\u015fturulamad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate default identity"
+      }
+    }, 
+    {
+      "translated": "Varsay\u0131lan kimlik olu\u015fturulamad\u0131! <br> L\u00fctfen ayarlar\u0131n\u0131zda kimli\u011fi elle olu\u015fturun =&gt; profiller", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate default identity!<br>Please manually generate the identity within your settings => profiles"
+      }
+    }, 
+    {
+      "translated": "\u0130sme dayal\u0131 el s\u0131k\u0131\u015fma ba\u015flat\u0131lamad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize name based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "TeaForum tabanl\u0131 el s\u0131k\u0131\u015fmas\u0131 ba\u015flat\u0131lamad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize TeaForum based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Kimlik kan\u0131tlanamad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to proof the identity. Error: %o"
+      }
+    }, 
+    {
+      "translated": "TeamSpeak tabanl\u0131 el s\u0131k\u0131\u015fma ba\u015flat\u0131lamad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize TeamSpeak based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "POW \u0130\u015f\u00e7i hatas\u0131% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "POW Worker error %o"
+      }
+    }, 
+    {
+      "translated": "POW i\u015f\u00e7isini bitiremedi! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to finalize POW worker! (%o)"
+      }
+    }, 
+    {
+      "translated": "Al\u0131nan mesaj:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message: %o"
+      }
+    }, 
+    {
+      "translated": "Yeni bir anahtar olu\u015fturulamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not generate a new key: %o"
+      }
+    }, 
+    {
+      "translated": "Ses ba\u011flam\u0131 olmadan bir sesi \u00e7almaya \u00e7al\u0131\u015ft\u0131 (Ses:% o). B\u0131rakma oynatma", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to replay a sound without an audio context (Sound: %o). Dropping playback"
+      }
+    }, 
+    {
+      "translated": "% S sesini \u00e7alma (Ses seviyesi:% o | Ana ses seviyesi% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Replaying sound %s (Sound volume: %o | Master volume %o)"
+      }
+    }, 
+    {
+      "translated": "B\u0131rakma,% s sesi i\u00e7in istenen \u00e7almay\u0131 istedi, \u00e7\u00fcnk\u00fc \u00fcst \u00fcste gelecek.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping requested playback for sound %s because it would overlap."
+      }
+    }, 
+    {
+      "translated": "Sunucu bilgisini g\u00f6ster", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show server info"
+      }
+    }, 
+    {
+      "translated": "Arkada\u015f\u0131n\u0131 davet et", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invite buddy"
+      }
+    }, 
+    {
+      "translated": "Buddy URL\u2019yi davet et", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Buddy invite URL"
+      }
+    }, 
+    {
+      "translated": "Arkada\u015f\u0131n\u0131z URL\u2019yi davet ediyor: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your buddy invite URL:<br>"
+      }
+    }, 
+    {
+      "translated": "<bt> Bu, panonuza kopyaland\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<bt>This has been copied to your clipboard."
+      }
+    }, 
+    {
+      "translated": "Yer i\u015faretlerini y\u00f6net", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage bookmarks"
+      }
+    }, 
+    {
+      "translated": "Yeni giri\u015f olu\u015ftur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create a new entry"
+      }
+    }, 
+    {
+      "translated": "Bu giri\u015fi ger\u00e7ekten silmek istiyor musunuz?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this entry?"
+      }
+    }, 
+    {
+      "translated": "Hibe iznini kald\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove grant permission"
+      }
+    }, 
+    {
+      "translated": "\u0130zin a\u00e7\u0131klamas\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission description"
+      }
+    }, 
+    {
+      "translated": "\u0130zin i\u00e7in izin a\u00e7\u0131klamas\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission description for permission "
+      }
+    }, 
+    {
+      "translated": "% S istemci kanal\u0131n\u0131n iznini kald\u0131rma. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client channel permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "% S istemci kanal\u0131 hibe izni kald\u0131r\u0131l\u0131yor. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client channel grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "\u0130stemci kanal\u0131 izni ekleme veya g\u00fcncelleme% s. izin. {id:% o, de\u011fer:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "\u0130stemci kanal\u0131 ekleme veya g\u00fcncelleme izni% s izni verdi. izin. {id:% o, de\u011fer:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client channel grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "% S m\u00fc\u015fteri izninin kald\u0131r\u0131lmas\u0131. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "% S m\u00fc\u015fteri izni izninin kald\u0131r\u0131lmas\u0131. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "\u0130stemci izni ekleme veya g\u00fcncelleme% s. izin. {id:% o, de\u011fer:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "M\u00fc\u015fteri hibe izni ekleme veya g\u00fcncelleme% s. izin. {id:% o, de\u011fer:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "% S kanal iznini kald\u0131r. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "% S kanal izni izni kald\u0131r\u0131l\u0131yor. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Kanal izni ekleme veya g\u00fcncelleme% s. izin. {id:% o, de\u011fer:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Kanal ekleme izni veya g\u00fcncelleme izni% s. izin. {id:% o, de\u011fer:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "% S kanal grubu izninin kald\u0131r\u0131lmas\u0131. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel group permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "% S kanal grubunun kald\u0131r\u0131lmas\u0131 izni verildi. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel group grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Kanal grubu izni ekleme veya g\u00fcncelleme% s. izin. {id:% o, de\u011fer:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Kanal grubu ekleme veya g\u00fcncelleme izni% s veriyor. izin. {id:% o, de\u011fer:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel group grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Sunucu grubu izninin kald\u0131r\u0131lmas\u0131% s. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing server group permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Sunucu grubunun kald\u0131r\u0131lmas\u0131 izin izni% s. allow.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing server group grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Sunucu grubu ekleme veya g\u00fcncelleme izni% s. izin. {id:% o, de\u011fer:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating server group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Sunucu grubu ekleme veya g\u00fcncelleme izni% s izni verdi. izin. {id:% o, de\u011fer:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating server group grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 bilgisi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song info"
+      }
+    }, 
+    {
+      "translated": "Bir \u015fark\u0131 ekle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add a song"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesini d\u00fczenle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Edit playlist"
+      }
+    }, 
+    {
+      "translated": "\u00d6zellikler de\u011fi\u015ftirilemedi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change properties."
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi \u00f6zellikleri de\u011fi\u015ftirilemedi. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change playlist properties.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "\u0130zin de\u011fi\u015ftirilemedi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change permission."
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi izinleri de\u011fi\u015ftirilemedi. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change playlist permissions.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "T\u00fcm de\u011fi\u015fikliklerinizi ger\u00e7ekten silmek istiyor musunuz?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to discard all your changes?"
+      }
+    }, 
+    {
+      "translated": "\u015fark\u0131 listesi y\u00fckleniyor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "loading song list"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 kald\u0131r\u0131lamad\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to remove song."
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 / url \u00e7alma listesinden kald\u0131r\u0131lamad\u0131. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to remove song/url from the playlist.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "\u015fark\u0131 listesi y\u00fcklenemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "failed to load song list"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 eklenemedi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to add song."
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesine \u015fark\u0131 / url eklenemedi. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to add song/url to the playlist.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi bilgisi sorgulanamad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info"
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi bilgisi sorgulanamad\u0131. <br> Hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "Oynatma listelerini y\u00f6net", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage playlists"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi ba\u015far\u0131yla olu\u015fturuldu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist created successful"
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listesi ba\u015far\u0131yla olu\u015fturuldu. <br> Edit\u00f6r\u00fc a\u00e7mal\u0131 m\u0131y\u0131z?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The playlist has been successfully created.<br>Should we open the editor?"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi olu\u015fturulam\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to create playlist"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi olu\u015fturulamad\u0131 <br> Mesaj:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create playlist<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Bu oynatma listesini ger\u00e7ekten silmek istiyor musunuz?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this playlist?"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi ba\u015far\u0131yla silindi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist deleted successful"
+      }
+    }, 
+    {
+      "translated": "Bu oynatma listesi ba\u015far\u0131yla silindi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "This playlist has been deleted successfully."
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi silinemiyor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to delete playlist"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi silinemedi <br> Mesaj:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete playlist<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Bir sunucu sorgusu giri\u015fi olu\u015fturun", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create a server query login"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz kullan\u0131c\u0131 ad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid username"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen ge\u00e7erli bir isim girin!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid name!"
+      }
+    }, 
+    {
+      "translated": "Hesap olu\u015fturulam\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to create account"
+      }
+    }, 
+    {
+      "translated": "Hesap olu\u015fturulamad\u0131 <br> Mesaj:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Sunucu sorgusu kimlik bilgileri", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server query credentials"
+      }
+    }, 
+    {
+      "translated": "Yeni sunucu sorgusu kimlik bilgileri", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "New server query credentials"
+      }
+    }, 
+    {
+      "translated": "Sorgu hesaplar\u0131n\u0131 y\u00f6net", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage query accounts"
+      }
+    }, 
+    {
+      "translated": "Hesap ad\u0131n\u0131 de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change account name"
+      }
+    }, 
+    {
+      "translated": "Giri\u015f i\u00e7in yeni ad\u0131 girin: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter the new name for the login:<br>"
+      }
+    }, 
+    {
+      "translated": "Hesap yeniden adland\u0131r\u0131lam\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to rename account"
+      }
+    }, 
+    {
+      "translated": "Hesap yeniden adland\u0131r\u0131lamad\u0131 <br> Mesaj:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to rename account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Hesap ba\u015far\u0131yla yeniden adland\u0131r\u0131ld\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Account successfully renamed"
+      }
+    }, 
+    {
+      "translated": "Sorgu hesab\u0131 yeniden adland\u0131r\u0131ld\u0131!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The query account has been renamed!"
+      }
+    }, 
+    {
+      "translated": "Hesab\u0131n \u015fifresini de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change account's password"
+      }
+    }, 
+    {
+      "translated": "Yeni bir \u015fifre girin (otomatik olu\u015fturma i\u00e7in bo\u015f b\u0131rak\u0131n): <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter a new password (leave blank for auto generation):<br>"
+      }
+    }, 
+    {
+      "translated": "\u015eifre de\u011fi\u015ftirilemiyor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to change password"
+      }
+    }, 
+    {
+      "translated": "\u015eifre de\u011fi\u015ftirilemedi <br> Mesaj:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change password<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Bu hesab\u0131 ger\u00e7ekten silmek istiyor musunuz?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this account?"
+      }
+    }, 
+    {
+      "translated": "Hesap silinemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to delete account"
+      }
+    }, 
+    {
+      "translated": "Hesap silinemedi <br> Mesaj:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Hesap ba\u015far\u0131yla silindi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Account successfully deleted"
+      }
+    }, 
+    {
+      "translated": "Sorgu hesab\u0131 ba\u015far\u0131yla silindi!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The query account has been successfully deleted!"
+      }
+    }, 
+    {
+      "translated": "Yer imleri", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmarks"
+      }
+    }, 
+    {
+      "translated": "Yer i\u015faretlerine ge\u00e7erli sunucu ekle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add current server to bookmarks"
+      }
+    }, 
+    {
+      "translated": "Mevcut sunucuyu yer imlerine kald\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove current server to bookmarks"
+      }
+    }, 
+    {
+      "translated": "Ses ayarlar\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Audio settings"
+      }
+    }, 
+    {
+      "translated": "Kanal abone modunu de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Toggle channel subscribe mode"
+      }
+    }, 
+    {
+      "translated": "Sunucu ara\u00e7lar\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server tools"
+      }
+    }, 
+    {
+      "translated": "\u00c7alma listeleri", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlists"
+      }
+    }, 
+    {
+      "translated": "Sunucu sorgular\u0131n\u0131 g\u00f6ster / gizle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show/hide server queries"
+      }
+    }, 
+    {
+      "translated": "Sunucu sorgular\u0131n\u0131 y\u00f6net", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage server queries"
+      }
+    }, 
+    {
+      "translated": "Sunucu sorgusu giri\u015fi yap", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create server query login"
+      }
+    }, 
+    {
+      "translated": "bir sohbet mesaj\u0131 girin ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "enter a chat message..."
+      }
+    }, 
+    {
+      "translated": "g\u00f6ndermek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Send"
+      }
+    }, 
+    {
+      "translated": "Sunucu adresi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server Address"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen ge\u00e7erli bir sunucu adresi girin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid server address"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen ge\u00e7erli bir sunucu takma ad\u0131 girin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid server nickname"
+      }
+    }, 
+    {
+      "translated": "Profili Ba\u011fla", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect Profile"
+      }
+    }, 
+    {
+      "translated": "Se\u00e7ilen profil ge\u00e7ersiz. Ba\u015fka bir tane se\u00e7in veya profili d\u00fczeltin.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Selected profile is invalid. Select another one or fix the profile."
+      }
+    }, 
+    {
+      "translated": "Profilleri y\u00f6net", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage profiles"
+      }
+    }, 
+    {
+      "translated": "Bu kanala kat\u0131lmak i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to join this channel"
+      }
+    }, 
+    {
+      "translated": "Bu kanal\u0131 g\u00f6rmek i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to see this channel"
+      }
+    }, 
+    {
+      "translated": "Bu kanala abone olmak i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to subscribe to this channel"
+      }
+    }, 
+    {
+      "translated": "Bu kanal izinlerini de\u011fi\u015ftirmek i\u00e7in gerekli g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to modify this channel permissions"
+      }
+    }, 
+    {
+      "translated": "Bu kanal\u0131 silmek i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to delete this channel"
+      }
+    }, 
+    {
+      "translated": "Ara\u015ft\u0131r:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Browse:"
+      }
+    }, 
+    {
+      "translated": "T\u00fcm dosyalara ve dizinlere g\u00f6z atmak i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to browse all files and directories"
+      }
+    }, 
+    {
+      "translated": "Y\u00fckle:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload:"
+      }
+    }, 
+    {
+      "translated": "Dosya y\u00fcklemek i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to upload files"
+      }
+    }, 
+    {
+      "translated": "\u0130ndir:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Download:"
+      }
+    }, 
+    {
+      "translated": "Dosyalar\u0131 indirmek i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to download files"
+      }
+    }, 
+    {
+      "translated": "Ad\u0131n\u0131 de\u011fi\u015ftirmek:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Rename:"
+      }
+    }, 
+    {
+      "translated": "Bu kanaldaki dosyalar\u0131 yeniden adland\u0131rmak i\u00e7in gerekli g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to rename files within this channel"
+      }
+    }, 
+    {
+      "translated": "Dizin olu\u015ftur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Directory create:"
+      }
+    }, 
+    {
+      "translated": "Bir dizin olu\u015fturmak i\u00e7in gerekli g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to create a directory"
+      }
+    }, 
+    {
+      "translated": "Bir dizini veya dosyay\u0131 silmek i\u00e7in gereken g\u00fc\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to delete a directory or file"
+      }
+    }, 
+    {
+      "translated": "Ses verilerini \u015fifrele", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Encrypt voice data"
+      }
+    }, 
+    {
+      "translated": "Gfx Aral\u0131\u011f\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Gfx Interval"
+      }
+    }, 
+    {
+      "translated": "yeniden boyutland\u0131rma", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Resize"
+      }
+    }, 
+    {
+      "translated": "Bant Geni\u015fli\u011fi S\u0131n\u0131r\u0131 (Bayt / sn):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bandwidth Limit (Bytes/s):"
+      }
+    }, 
+    {
+      "translated": "Kota Y\u00fckle (MiB):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload Quota (MiB):"
+      }
+    }, 
+    {
+      "translated": "Kay\u0131t etmek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Save"
+      }
+    }, 
+    {
+      "translated": "TeaSpeak Forum Ba\u011flant\u0131s\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaSpeak Forum Connection"
+      }
+    }, 
+    {
+      "translated": "\u015eu anda TeaSpeak Forum hesab\u0131n\u0131zla ba\u011flant\u0131n\u0131z yok.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You're currently not connected with your TeaSpeak Forum account"
+      }
+    }, 
+    {
+      "translated": "oturum a\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "login"
+      }
+    }, 
+    {
+      "translated": "TeaSpeak forum arac\u0131l\u0131\u011f\u0131yla ba\u011fland\u0131n\u0131z", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You're connected via TeaSpeak forum"
+      }
+    }, 
+    {
+      "translated": "Kullan\u0131c\u0131 ad\u0131:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Username:"
+      }
+    }, 
+    {
+      "translated": "\u00d6d\u00fcl:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Premium:"
+      }
+    }, 
+    {
+      "translated": "Senkronize:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Synchronized:"
+      }
+    }, 
+    {
+      "translated": "senkronizasyonu etkinle\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "enable synchronization"
+      }
+    }, 
+    {
+      "translated": "Anahtar b\u0131rakma gecikmesi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Key release delay:"
+      }
+    }, 
+    {
+      "translated": "Ses devre d\u0131\u015f\u0131 b\u0131rak\u0131ld\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Voice had been disabled"
+      }
+    }, 
+    {
+      "translated": "Ses ayarlar\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Sound Settings"
+      }
+    }, 
+    {
+      "translated": "Ayn\u0131 sesleri \u00fcst \u00fcste getir:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Overlap same sounds:"
+      }
+    }, 
+    {
+      "translated": "\u00c7\u0131kt\u0131n\u0131z\u0131 sessize ald\u0131\u011f\u0131n\u0131zda t\u00fcm sistem seslerini kapat\u0131n. <br> Bu se\u00e7enek devre d\u0131\u015f\u0131 de\u011filse, &#39;kullan\u0131c\u0131 kanal\u0131n\u0131za kat\u0131ld\u0131&#39; gibi sistem sesleri almaya devam edersiniz.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Mute all system sounds, when you've muted your output.<br>If this option isn't disabled you'll still receive system sounds like 'user joined your channel'."
+      }
+    }, 
+    {
+      "translated": "isim", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Name"
+      }
+    }, 
+    {
+      "translated": "Aktive", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Activated"
+      }
+    }, 
+    {
+      "translated": "filtre", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Filter"
+      }
+    }, 
+    {
+      "translated": "Profiller", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profiles"
+      }
+    }, 
+    {
+      "translated": "Mevcut profiller", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Available profiles"
+      }
+    }, 
+    {
+      "translated": "Se\u00e7ilenleri varsay\u0131lan olarak ayarla", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set selected as default"
+      }
+    }, 
+    {
+      "translated": "Silme se\u00e7ildi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete selected"
+      }
+    }, 
+    {
+      "translated": "Profil olu\u015ftur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create profile"
+      }
+    }, 
+    {
+      "translated": "Profil ayarlar\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile settings"
+      }
+    }, 
+    {
+      "translated": "Profil ismi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile name:"
+      }
+    }, 
+    {
+      "translated": "Varsay\u0131lan takma ad:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default nickname:"
+      }
+    }, 
+    {
+      "translated": "Varsay\u0131lan sunucu \u015fifresi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default server password"
+      }
+    }, 
+    {
+      "translated": "T\u00fcr\u00fc tan\u0131mla:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identify Type:"
+      }
+    }, 
+    {
+      "translated": "Unique\u0131d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "UniqueID:"
+      }
+    }, 
+    {
+      "translated": "Seviye:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Level:"
+      }
+    }, 
+    {
+      "translated": "iyile\u015ftirmek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Improve"
+      }
+    }, 
+    {
+      "translated": "Bir kimlik olu\u015fturmad\u0131n\u0131z / i\u00e7e aktarmad\u0131n\u0131z. <br> Yeni bir tane olu\u015fturun veya bir tane al\u0131n.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have'nt generated/imported an identity.<br>Generate a new one or import one."
+      }
+    }, 
+    {
+      "translated": "Yeni olu\u015ftur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Generate new"
+      }
+    }, 
+    {
+      "translated": "\u0130hracat kimli\u011fi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Export identity"
+      }
+    }, 
+    {
+      "translated": "Kullan\u0131c\u0131 ad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Username"
+      }
+    }, 
+    {
+      "translated": "Kimlik i\u00e7e aktar\u0131lamad\u0131 (k\u00fc\u00e7\u00fck hatam)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to import identity (my little error)"
+      }
+    }, 
+    {
+      "translated": "TeamSpeak&#39;ten bir kimlik veya d\u0131\u015fa aktar\u0131lan bir kimlik alma", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import an identity from TeamSpeak or an exported identity"
+      }
+    }, 
+    {
+      "translated": "Metinden y\u00fckle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Load from text"
+      }
+    }, 
+    {
+      "translated": "Dosyadan y\u00fckle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Load from file"
+      }
+    }, 
+    {
+      "translated": "Kimlik ba\u015far\u0131yla y\u00fcklendi. \u0130thal etmeye haz\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully loaded. Ready to import"
+      }
+    }, 
+    {
+      "translated": "\u0130thalat", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import"
+      }
+    }, 
+    {
+      "translated": "Kimlik:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity:"
+      }
+    }, 
+    {
+      "translated": "Mevcut seviye:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current level: "
+      }
+    }, 
+    {
+      "translated": "Hedef seviye:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Target level: "
+      }
+    }, 
+    {
+      "translated": "S\u0131f\u0131r de\u011feri s\u0131n\u0131rs\u0131z demektir. Siz iptal edene kadar geli\u015ftirin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "A value of zero means unlimited. Improve until you abort"
+      }
+    }, 
+    {
+      "translated": "\u0130\u015f Par\u00e7ac\u0131\u011f\u0131:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Threads: "
+      }
+    }, 
+    {
+      "translated": "Kimli\u011finizi geli\u015ftirmek i\u00e7in kullan\u0131lan i\u015f par\u00e7ac\u0131klar\u0131n\u0131n say\u0131s\u0131 <br> En uygun de\u011fer, \u00e7ekirdek di\u015flerinin miktar\u0131na e\u015fittir.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The number of threads used to improve your identity<br>The optimal value is equal to the amount of kernal threads."
+      }
+    }, 
+    {
+      "translated": "Karma / saniye:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hashes/second:"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7en zaman:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Elapsed time:"
+      }
+    }, 
+    {
+      "translated": "Profil ge\u00e7erli", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile is valid"
+      }
+    }, 
+    {
+      "translated": "Profil ge\u00e7ersiz", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile is invalid"
+      }
+    }, 
+    {
+      "translated": "M\u00fc\u015fteri benzersiz kimli\u011fi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Client unique ID"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz benzersiz kimlik", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid unique id"
+      }
+    }, 
+    {
+      "translated": "filtre izinleri", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "filter permissions"
+      }
+    }, 
+    {
+      "translated": "\u0130zinleri izin ad\u0131na g\u00f6re filtrele", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Filter permissions by permission name"
+      }
+    }, 
+    {
+      "translated": "Bu izinleri g\u00f6rme izniniz yok", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to view this permissions"
+      }
+    }, 
+    {
+      "translated": "filtre", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "filter"
+      }
+    }, 
+    {
+      "translated": "Taray\u0131c\u0131 bilgisi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Browser info"
+      }
+    }, 
+    {
+      "translated": "Beri \u00e7evrimi\u00e7i", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Online since"
+      }
+    }, 
+    {
+      "translated": "Sunucu ba\u015flang\u0131c\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server start"
+      }
+    }, 
+    {
+      "translated": "Sunucu Sorgu hesab\u0131n\u0131z\u0131n giri\u015f ad\u0131n\u0131 ayarlay\u0131n.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set the login name for your Server Query account."
+      }
+    }, 
+    {
+      "translated": "\u015eifrenizi bir sonraki ad\u0131mda alacaks\u0131n\u0131z.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You'll receive your password within the next step."
+      }
+    }, 
+    {
+      "translated": "yaratmak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create"
+      }
+    }, 
+    {
+      "translated": "Sunucu sorgu kimlik bilgileriniz:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your server query credentials:"
+      }
+    }, 
+    {
+      "translated": "Kullan\u0131c\u0131 ad\u0131n\u0131 kopyala", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy username"
+      }
+    }, 
+    {
+      "translated": "Hesap a\u00e7mak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create account"
+      }
+    }, 
+    {
+      "translated": "Hesab\u0131 sil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete account"
+      }
+    }, 
+    {
+      "translated": "Hesab\u0131 yeniden adland\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Rename account"
+      }
+    }, 
+    {
+      "translated": "\u015eifre de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change password"
+      }
+    }, 
+    {
+      "translated": "arama", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "search"
+      }
+    }, 
+    {
+      "translated": "Benzersiz kimlik", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unique ID"
+      }
+    }, 
+    {
+      "translated": "S\u0131n\u0131rl\u0131 Sunucu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bounded Server"
+      }
+    }, 
+    {
+      "translated": "Yenile", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Refresh"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi yarat", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create playlist"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesini sil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete playlist"
+      }
+    }, 
+    {
+      "translated": "\u0130D", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "ID"
+      }
+    }, 
+    {
+      "translated": "Ba\u015fl\u0131k", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Title"
+      }
+    }, 
+    {
+      "translated": "tip", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Type"
+      }
+    }, 
+    {
+      "translated": "Kullan\u0131lm\u0131\u015f", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Used"
+      }
+    }, 
+    {
+      "translated": "Kendi \u00e7alma listelerini vurgula", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Highlight own playlists"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi bot taraf\u0131ndan kullan\u0131l\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist is in use by bot "
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi kullan\u0131mda de\u011fil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist isnt use"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi sahibi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist owner:"
+      }
+    }, 
+    {
+      "translated": "Ba\u015fl\u0131k:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Title:"
+      }
+    }, 
+    {
+      "translated": "Bot ba\u011fl\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bot bound"
+      }
+    }, 
+    {
+      "translated": "global", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Global"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131lar", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Songs"
+      }
+    }, 
+    {
+      "translated": "URL", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Url"
+      }
+    }, 
+    {
+      "translated": "y\u00fckl\u00fc", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "loaded"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 ekle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add song"
+      }
+    }, 
+    {
+      "translated": "Oynatma ayarlar\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playback settings"
+      }
+    }, 
+    {
+      "translated": "Tekrar modu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Replay mode"
+      }
+    }, 
+    {
+      "translated": "Normal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Normal"
+      }
+    }, 
+    {
+      "translated": "D\u00f6ng\u00fc listesi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loop list"
+      }
+    }, 
+    {
+      "translated": "D\u00f6ng\u00fc tek giri\u015fi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loop single entry"
+      }
+    }, 
+    {
+      "translated": "Kar\u0131\u015ft\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Shuffle"
+      }
+    }, 
+    {
+      "translated": "\u00c7al\u0131nan \u015fark\u0131y\u0131 sil:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete played song:"
+      }
+    }, 
+    {
+      "translated": "G\u00fcncel tekrarlanan \u015fark\u0131:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current replaying song:"
+      }
+    }, 
+    {
+      "translated": "Oynatma listesi bitmi\u015f durumu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist finished status"
+      }
+    }, 
+    {
+      "translated": "Yetkilere eri\u015fim / de\u011fi\u015fiklik", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Access/modify powers"
+      }
+    }, 
+    {
+      "translated": "G\u00fcc\u00fc g\u00f6rmek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "View power"
+      }
+    }, 
+    {
+      "translated": "de\u011fi\u015ftirmek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Modify"
+      }
+    }, 
+    {
+      "translated": "\u0130zin de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission modify"
+      }
+    }, 
+    {
+      "translated": "silmek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 y\u00f6netimi g\u00fc\u00e7leri", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song management powers"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 ekle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song add"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 s\u0131ralay\u0131c\u0131s\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song reorder"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 sil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song delete"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 kimli\u011fi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song ID:"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 s\u0131ras\u0131:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song order:"
+      }
+    }, 
+    {
+      "translated": "URL \u00e7\u00f6z\u00fcmleyici:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "URL resolver:"
+      }
+    }, 
+    {
+      "translated": "\u015eark\u0131 y\u00fcklendi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song loaded:"
+      }
+    }, 
+    {
+      "translated": "Meta verileri burada g\u00f6r\u00fcnt\u00fcleyin!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Display metdata here!"
+      }
+    }, 
+    {
+      "translated": "Meta veri:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Metadata:"
+      }
+    }, 
+    {
+      "translated": "URL y\u00fckleyici:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "URL loader:"
+      }
+    }, 
+    {
+      "translated": "URL ekle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add URL"
+      }
+    }, 
+    {
+      "translated": "Yeni yer imi / dizin olu\u015ftur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create new bookmark/directory"
+      }
+    }, 
+    {
+      "translated": "Se\u00e7ilen yer imini / dizini sil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete selected bookmark/directory"
+      }
+    }, 
+    {
+      "translated": "Yer imi ayarlar\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark settings"
+      }
+    }, 
+    {
+      "translated": "Yer imi ad\u0131:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark name:"
+      }
+    }, 
+    {
+      "translated": "Profili ba\u011fla:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect profile:"
+      }
+    }, 
+    {
+      "translated": "Sunucu \u00d6zellikleri", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server Properties"
+      }
+    }, 
+    {
+      "translated": "Sunucu adresi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server address:"
+      }
+    }, 
+    {
+      "translated": "Sunucu portu:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server port:"
+      }
+    }, 
+    {
+      "translated": "Ba\u011flant\u0131 \u00d6zellikleri (Hen\u00fcz desteklenmiyor)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect Properties (Not yet supported)"
+      }
+    }, 
+    {
+      "translated": "Varsay\u0131lan kullan\u0131c\u0131 ad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default Username"
+      }
+    }, 
+    {
+      "translated": "Mevcut Kanal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current Channel"
+      }
+    }, 
+    {
+      "translated": "Varsay\u0131lan kanal \u015fifresi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default channel password"
+      }
+    }, 
+    {
+      "translated": "Dizin ad\u0131:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Directory name:"
       }
     }
   ]

@@ -3,10 +3,12 @@
     "baseUrl": ".",
     "moduleResolution": "node",
     "module": "commonjs",
-    "lib": ["es6"],
+    "lib": ["es6", "dom"],
 
+    /*
     "typeRoots": [],
-    "types": []
+    "types": [],
+    */
   },
   "files": [
     "declarator.ts",

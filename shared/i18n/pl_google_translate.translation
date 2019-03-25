@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "Polish translation, based on Google Translate",
+    "name": "Polish translation, based on Google Translate", 
     "contributors": [
       {
         "name": "Google Translate, via script by Markus Hadenfeldt", 
@@ -5722,6 +5722,3516 @@
       ], 
       "key": {
         "message": "You have been poked by"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zainicjowa\u0107 kodeka opus. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize the opus codec. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zainicjowa\u0107 ju\u017c wy\u0142\u0105czonego kodeka. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize already disabled codec. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Odtwarzacz audio nie zosta\u0142 jeszcze zainicjowany. Czekam na gest.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Audio player isn't initialized yet. Waiting for gesture."
+      }
+    }, 
+    {
+      "translated": "Kana\u0142 domy\u015blny", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default channel"
+      }
+    }, 
+    {
+      "translated": "Kana\u0142 jest chroniony has\u0142em", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The channel is password protected"
+      }
+    }, 
+    {
+      "translated": "Jako\u015b\u0107 muzyki", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Music quality"
+      }
+    }, 
+    {
+      "translated": "Kana\u0142 jest moderowany", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Channel is moderated"
+      }
+    }, 
+    {
+      "translated": "Ikona kana\u0142u", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Channel icon"
+      }
+    }, 
+    {
+      "translated": "Poka\u017c informacje o kanale", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show channel info"
+      }
+    }, 
+    {
+      "translated": "<b>Subskrybuj kana\u0142</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Subscribe to channel</b>"
+      }
+    }, 
+    {
+      "translated": "<b>Anuluj subskrypcj\u0119 z kana\u0142u</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Unsubscribe from channel</b>"
+      }
+    }, 
+    {
+      "translated": "<b>U\u017cyj dziedziczonego trybu subskrypcji</b>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<b>Use inherited subscribe mode</b>"
+      }
+    }, 
+    {
+      "translated": "Bot zosta\u0142 pomy\u015blnie utworzony.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bot has been successfully created."
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 utworzy\u0107 bota muzycznego: <br> {0}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create the music bot:<br>{0}"
+      }
+    }, 
+    {
+      "translated": "Otrzyma\u0142em sformatowan\u0105 nazw\u0119 kana\u0142u:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got formated channel name: %o"
+      }
+    }, 
+    {
+      "translated": "Zastosowa\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Apply"
+      }
+    }, 
+    {
+      "translated": "Poka\u017c informacje o kliencie", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show client info"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna powiadomi\u0107 uczestnika czatu (% o), \u017ce czat zosta\u0142 zamkni\u0119ty. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to notify chat participant (%o) that the chat has been closed. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Poka\u017c informacje o bocie", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show bot info"
+      }
+    }, 
+    {
+      "translated": "Otw\u00f3rz list\u0119 odtwarzania bota", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Open bot's playlist"
+      }
+    }, 
+    {
+      "translated": "Nieprawid\u0142owe uprawnienia", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid permissions"
+      }
+    }, 
+    {
+      "translated": "Nie musisz ogl\u0105da\u0107 playlisty bot\u00f3w.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have to see the bots playlist."
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wys\u0142a\u0107 listy odtwarzania.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist."
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wys\u0142a\u0107 informacji o li\u015bcie odtwarzania.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info."
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 g\u0142o\u015bno\u015b\u0107 lokaln\u0105", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change local volume"
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 zdalny wolumin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change remote volume"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna subskrybowa\u0107 okre\u015blonych kana\u0142\u00f3w (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to subscribe to specific channels (%o)"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna anulowa\u0107 subskrypcji wszystkich kana\u0142\u00f3w! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unsubscribe to all channels! (%o)"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna anulowa\u0107 subskrypcji okre\u015blonych kana\u0142\u00f3w (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unsubscribe to specific channels (%o)"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna subskrybowa\u0107 wszystkich kana\u0142\u00f3w! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to subscribe to all channels! (%o)"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 przeanalizowa\u0107 adresu URL banera:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse banner URL: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna za\u0142adowa\u0107 hostbannera, poniewa\u017c \u201eAccess-Control-Allow-Origin\u201d nie jest wa\u017cny!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not load hostbanner because 'Access-Control-Allow-Origin' isnt valid!"
+      }
+    }, 
+    {
+      "translated": "Pomy\u015blnie pobrano hostbanner (% o, wpisz:% o, url:% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Fetsched hostbanner successfully (%o, type: %o, url: %o)"
+      }
+    }, 
+    {
+      "translated": "Odwo\u0142any hostbanner url% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Revoked hostbanner url %s"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 pobra\u0107 obrazu hostbanner:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch hostbanner image: %o"
+      }
+    }, 
+    {
+      "translated": "Nie musisz ogl\u0105da\u0107 playlisty bot\u00f3w.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You don't have to see the bots playlist."
+      }
+    }, 
+    {
+      "translated": "Pr\u00f3bowano wyrejestrowa\u0107 program obs\u0142ugi polece\u0144, kt\u00f3ry nie nale\u017cy do szefa obs\u0142ugi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to unregister command handler which does not belong to the handler boss"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wywo\u0142a\u0107 obs\u0142ugi komend. Wywo\u0142anie powoduje wyj\u0105tek:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to invoke command handler. Invocation results in an exception: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wywo\u0142a\u0107 obs\u0142ugi pojedynczego polecenia. Wywo\u0142anie powoduje wyj\u0105tek:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to invoke single command handler. Invocation results in an exception: %o"
+      }
+    }, 
+    {
+      "translated": "Otrzymane nieznane polecenie podczas uzgadniania (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received unknown command while handshaking (%o)"
+      }
+    }, 
+    {
+      "translated": "Popraw to\u017csamo\u015b\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Improve identity"
+      }
+    }, 
+    {
+      "translated": "Pocz\u0105tek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Start"
+      }
+    }, 
+    {
+      "translated": "Zatrzyma\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Stop"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 poprawi\u0107 to\u017csamo\u015bci", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to improve identity"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 poprawi\u0107 to\u017csamo\u015bci. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to improve identity.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "To\u017csamo\u015b\u0107 poprawiona", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully improved"
+      }
+    }, 
+    {
+      "translated": "To\u017csamo\u015b\u0107 poprawiona do poziomu {}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully improved to level {}"
+      }
+    }, 
+    {
+      "translated": "To\u017csamo\u015b\u0107 importu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import identity"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna odczyta\u0107 pliku to\u017csamo\u015bci:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to read give identity file: %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 odczyta\u0107 pliku!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to read file!"
+      }
+    }, 
+    {
+      "translated": "tak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "yes"
+      }
+    }, 
+    {
+      "translated": "Nie", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "no"
+      }
+    }, 
+    {
+      "translated": "Masz urz\u0105dzenie% s (% s):% s (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got device %s (%s): %s (%o)"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna uzyska\u0107 listy urz\u0105dze\u0144 mikrofonowych!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not get microphone device list!"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna pobra\u0107 listy urz\u0105dze\u0144 g\u0142o\u015bnikowych!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not get speaker device list!"
+      }
+    }, 
+    {
+      "translated": "D\u017awi\u0119k% s zmieni\u0142 si\u0119 na% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Sound %s had changed to %o"
+      }
+    }, 
+    {
+      "translated": "Importowana to\u017csamo\u015b\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity imported"
+      }
+    }, 
+    {
+      "translated": "Twoja to\u017csamo\u015b\u0107 zosta\u0142a pomy\u015blnie zaimportowana!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your identity has been successfully imported!"
+      }
+    }, 
+    {
+      "translated": "Jeste\u015b pewny", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Are you sure"
+      }
+    }, 
+    {
+      "translated": "Czy na pewno chcesz zaimportowa\u0107 now\u0105 to\u017csamo\u015b\u0107 i zast\u0105pi\u0107 star\u0105 to\u017csamo\u015b\u0107?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to import a new identity and override the old identity?"
+      }
+    }, 
+    {
+      "translated": "Nazwa pliku", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "File name"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a nazw\u0119 pliku", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter the file name"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wyeksportowa\u0107 to\u017csamo\u015bci", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to export identity"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wyeksportowa\u0107 i zapisa\u0107 to\u017csamo\u015bci. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to export and save identity.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "To\u017csamo\u015b\u0107 generuje", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity generate"
+      }
+    }, 
+    {
+      "translated": "Nowa to\u017csamo\u015b\u0107 zosta\u0142a pomy\u015blnie wygenerowana", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "A new identity had been successfully generated"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wygenerowa\u0107 nowej to\u017csamo\u015bci. Obiekt b\u0142\u0119du:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate a new identity. Error object: %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wygenerowa\u0107 to\u017csamo\u015bci", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate identity"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wygenerowa\u0107 nowej to\u017csamo\u015bci. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate a new identity.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "Czy na pewno chcesz stworzy\u0107 now\u0105 to\u017csamo\u015b\u0107 i zast\u0105pi\u0107 star\u0105 to\u017csamo\u015b\u0107?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to generate a new identity and override the old identity?"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a nazw\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a name"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a nazw\u0119 nowego profilu: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a name for the new profile:<br>"
+      }
+    }, 
+    {
+      "translated": "Czy na pewno chcesz usun\u0105\u0107 ten profil?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this profile?"
+      }
+    }, 
+    {
+      "translated": "Nie masz pozwolenia", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission"
+      }
+    }, 
+    {
+      "translated": "Nie masz uprawnie\u0144 do przegl\u0105dania listy zakaz\u00f3w", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to view the ban list"
+      }
+    }, 
+    {
+      "translated": "Wpisz nazw\u0119 zak\u0142adki", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter bookmarks name"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a nazw\u0119 zak\u0142adek: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter the bookmarks name:<br>"
+      }
+    }, 
+    {
+      "translated": "Musisz by\u0107 po\u0142\u0105czony", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected"
+      }
+    }, 
+    {
+      "translated": "Musisz by\u0107 po\u0142\u0105czony!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected!"
+      }
+    }, 
+    {
+      "translated": "Nie masz uprawnie\u0144 do utworzenia logowania do serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to create a server query login"
+      }
+    }, 
+    {
+      "translated": "Aby korzysta\u0107 z tej funkcji, musisz by\u0107 pod\u0142\u0105czony!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have to be connected to use this function!"
+      }
+    }, 
+    {
+      "translated": "Po\u0142\u0105czenie nie powiod\u0142o si\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect failed"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna po\u0142\u0105czy\u0107 si\u0119 ze zdalnym hostem! Wyj\u0105tek:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not connect to remote host! Exception: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna przetworzy\u0107 uzgadniania:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to process handshake: %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 przetworzy\u0107 uzgadniania:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to process handshake: "
+      }
+    }, 
+    {
+      "translated": "Dozwolone automatyczne ponowne po\u0142\u0105czenie, ale nie mo\u017cna ponownie nawi\u0105za\u0107 po\u0142\u0105czenia, poniewa\u017c nie mamy \u017cadnych informacji ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Allowed to auto reconnect but cant reconnect because we dont have any information left..."
+      }
+    }, 
+    {
+      "translated": "Ponowne po\u0142\u0105czenie za 5 sekund", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting in 5 seconds"
+      }
+    }, 
+    {
+      "translated": "Dozwolone automatyczne ponowne po\u0142\u0105czenie. Ponowne po\u0142\u0105czenie w 5000ms", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Allowed to auto reconnect. Reconnecting in 5000ms"
+      }
+    }, 
+    {
+      "translated": "Ponowne \u0142\u0105czenie ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting..."
+      }
+    }, 
+    {
+      "translated": "Anuluj ponowne po\u0142\u0105czenie", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnect canceled"
+      }
+    }, 
+    {
+      "translated": "B\u0142\u0105d analizy BBCode:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "BBCode parse error: %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wys\u0142a\u0107 wiadomo\u015bci tekstowej.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send text message."
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wys\u0142a\u0107 wiadomo\u015bci tekstowej serwera:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send server text message: %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wys\u0142a\u0107 wiadomo\u015bci tekstowej kana\u0142u:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send channel text message: %o"
+      }
+    }, 
+    {
+      "translated": "Wiadomo\u015b\u0107 czatu zawiera adres URL:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Chat message contains URL: %o"
+      }
+    }, 
+    {
+      "translated": "Inicjowanie statystyk za pomoc\u0105 tej konfiguracji:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing statistics with this config: %o"
+      }
+    }, 
+    {
+      "translated": "Utracono po\u0142\u0105czenie z serwerem statystyk (po\u0142\u0105czenie zamkni\u0119te). Pow\u00f3d:% o. Obiekt zdarzenia:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Lost connection to statistics server (Connection closed). Reason: %o. Event object: %o"
+      }
+    }, 
+    {
+      "translated": "Pomy\u015blnie po\u0142\u0105czono z serwerem. Sesja inicjalizacyjna.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Successfully connected to server. Initializing session."
+      }
+    }, 
+    {
+      "translated": "Otrzyma\u0142em b\u0142\u0105d. Zamkni\u0119cie po\u0142\u0105czenia. Obiekt:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an error. Closing connection. Object: %o"
+      }
+    }, 
+    {
+      "translated": "Otrzyma\u0142em wiadomo\u015b\u0107, kt\u00f3ra nie jest ci\u0105giem znak\u00f3w. Obiekt zdarzenia:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an message which isn't a string. Event object: %o"
+      }
+    }, 
+    {
+      "translated": "Zaplanowane ponowne po\u0142\u0105czenie w% dms", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Scheduled reconnect in %dms"
+      }
+    }, 
+    {
+      "translated": "Ponowne po\u0142\u0105czenie", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Reconnecting"
+      }
+    }, 
+    {
+      "translated": "Obs\u0142uga wiadomo\u015bci typu% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Handling message of type %s"
+      }
+    }, 
+    {
+      "translated": "Otrzymano wiadomo\u015b\u0107 o nieznanym typie (% s). Upuszczanie wiadomo\u015bci. Pe\u0142na wiadomo\u015b\u0107:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message with an unknown type (%s). Dropping message. Full message: %o"
+      }
+    }, 
+    {
+      "translated": "Sesja zosta\u0142a pomy\u015blnie zainicjowana.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Session successfully initialized."
+      }
+    }, 
+    {
+      "translated": "Pomijanie konfiguracji g\u0142osowej (brak mostka g\u0142osowego)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Skipping voice setup (No voice bridge available)"
+      }
+    }, 
+    {
+      "translated": "Tw\u00f3j partner czatu ponownie si\u0119 po\u0142\u0105czy\u0142", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has reconnected"
+      }
+    }, 
+    {
+      "translated": "Tw\u00f3j partner czatu zosta\u0142 roz\u0142\u0105czony", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has disconnected"
+      }
+    }, 
+    {
+      "translated": "Otrzymano czat zamkni\u0119ty dla nieznanego klienta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for unknown client"
+      }
+    }, 
+    {
+      "translated": "Odebrano czat blisko klienta, ale unikalne identyfikatory nie pasuj\u0105. (oczekiwany% o, otrzymany% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for client, but unique ids dosn't match. (expected %o, received %o)"
+      }
+    }, 
+    {
+      "translated": "Otrzyma\u0142em czat blisko klienta, ale nie mamy otwartego czatu.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received chat close for client, but we haven't a chat open."
+      }
+    }, 
+    {
+      "translated": "Tw\u00f3j rozm\u00f3wca zamkn\u0105\u0142 rozmow\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your chat partner has close the conversation"
+      }
+    }, 
+    {
+      "translated": "Odebrany kana\u0142 subskrybowany dla niewidocznego kana\u0142u (cid:% d)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel subscribed for not visible channel (cid: %d)"
+      }
+    }, 
+    {
+      "translated": "Odebrano niekodowany kana\u0142 dla niewidocznego kana\u0142u (cid:% d)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel unsubscribed for not visible channel (cid: %d)"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 przeanalizowa\u0107 wpisu listy odtwarzania:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist entry: %o"
+      }
+    }, 
+    {
+      "translated": "Otrzymano nieprawid\u0142owe powiadomienie dotycz\u0105ce utwor\u00f3w z playlisty", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for playlist songs"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 przeanalizowa\u0107 wpisu utworu na li\u015bcie odtwarzania:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist song entry: %o"
+      }
+    }, 
+    {
+      "translated": "Otrzymano nieprawid\u0142owe powiadomienie dotycz\u0105ce informacji o li\u015bcie odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for playlist info"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 przeanalizowa\u0107 informacji o li\u015bcie odtwarzania:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse playlist info: %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 poprawnie zamkn\u0105\u0107 starego po\u0142\u0105czenia. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close old connection properly. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zamkn\u0105\u0107 po\u0142\u0105czenia po przekroczeniu limitu czasu! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close connection after timeout had been triggered! (%o)"
+      }
+    }, 
+    {
+      "translated": "Otrzymany b\u0142\u0105d gniazda internetowego: (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received web socket error: (%o)"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zamkn\u0105\u0107 po\u0142\u0105czenia po nieudanej pr\u00f3bie po\u0142\u0105czenia (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to close connection after connect attempt failed (%o)"
+      }
+    }, 
+    {
+      "translated": "Upuszczanie pakietu polece\u0144 WebRTC, poniewa\u017c nie mieli\u015bmy mostu.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping WebRTC command packet, because we havent a bridge."
+      }
+    }, 
+    {
+      "translated": "Otrzymana nieznana wiadomo\u015b\u0107 typu% s. Upuszczanie wiadomo\u015bci", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received unknown message of type %s. Dropping message"
+      }
+    }, 
+    {
+      "translated": "Pr\u00f3bowano wys\u0142a\u0107 nieprawid\u0142owe gniazdo (% s)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send on a invalid socket (%s)"
+      }
+    }, 
+    {
+      "translated": "Pr\u00f3bowano wys\u0142a\u0107 polecenie bez prawid\u0142owego po\u0142\u0105czenia.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send a command without a valid connection."
+      }
+    }, 
+    {
+      "translated": "nie po\u0142\u0105czony", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "not connected"
+      }
+    }, 
+    {
+      "translated": "nieznany kraj", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "unknown country"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 za\u0142adowa\u0107 profilu. Pow\u00f3d:% s, dane profilu:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load profile. Reason: %s, Profile data: %s"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wygenerowa\u0107 domy\u015blnej to\u017csamo\u015bci", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate default identity"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 wygenerowa\u0107 domy\u015blnej to\u017csamo\u015bci! <br> R\u0119cznie wygeneruj to\u017csamo\u015b\u0107 w ustawieniach =&gt; profile", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to generate default identity!<br>Please manually generate the identity within your settings => profiles"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zainicjowa\u0107 uzgadniania opartego na nazwie. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize name based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zainicjowa\u0107 uzgadniania opartego na TeaForum. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize TeaForum based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 potwierdzi\u0107 to\u017csamo\u015bci. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to proof the identity. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zainicjowa\u0107 uzgadniania opartego na TeamSpeak. B\u0142\u0105d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize TeamSpeak based handshake. Error: %o"
+      }
+    }, 
+    {
+      "translated": "B\u0142\u0105d pracownika POW% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "POW Worker error %o"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 sfinalizowa\u0107 pracownika POW! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to finalize POW worker! (%o)"
+      }
+    }, 
+    {
+      "translated": "Otrzymana wiadomo\u015b\u0107:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message: %o"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wygenerowa\u0107 nowego klucza:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not generate a new key: %o"
+      }
+    }, 
+    {
+      "translated": "Pr\u00f3bowano odtworzy\u0107 d\u017awi\u0119k bez kontekstu audio (D\u017awi\u0119k:% o). Upuszczanie odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to replay a sound without an audio context (Sound: %o). Dropping playback"
+      }
+    }, 
+    {
+      "translated": "Odtwarzanie d\u017awi\u0119ku% s (g\u0142o\u015bno\u015b\u0107 d\u017awi\u0119ku:% o | G\u0142o\u015bno\u015b\u0107 g\u0142\u00f3wna% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Replaying sound %s (Sound volume: %o | Master volume %o)"
+      }
+    }, 
+    {
+      "translated": "Upuszczenie \u017c\u0105danego odtwarzania dla d\u017awi\u0119ku% s, poniewa\u017c b\u0119dzie si\u0119 nak\u0142ada\u0107.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping requested playback for sound %s because it would overlap."
+      }
+    }, 
+    {
+      "translated": "Poka\u017c informacje o serwerze", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show server info"
+      }
+    }, 
+    {
+      "translated": "Zapro\u015b znajomego", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invite buddy"
+      }
+    }, 
+    {
+      "translated": "Buddy zaprasza URL", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Buddy invite URL"
+      }
+    }, 
+    {
+      "translated": "Tw\u00f3j kumpel zaprasza URL: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your buddy invite URL:<br>"
+      }
+    }, 
+    {
+      "translated": "<bt> To zosta\u0142o skopiowane do twojego schowka.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "<bt>This has been copied to your clipboard."
+      }
+    }, 
+    {
+      "translated": "Zarz\u0105dzaj zak\u0142adkami", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage bookmarks"
+      }
+    }, 
+    {
+      "translated": "Utw\u00f3rz nowy wpis", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create a new entry"
+      }
+    }, 
+    {
+      "translated": "Czy na pewno chcesz usun\u0105\u0107 ten wpis?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this entry?"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 pozwolenie na dotacj\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove grant permission"
+      }
+    }, 
+    {
+      "translated": "Opis zezwolenia", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission description"
+      }
+    }, 
+    {
+      "translated": "Opis zezwolenia do pozwolenia", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission description for permission "
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 kana\u0142u klienta% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client channel permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 do przyznawania kana\u0142u klienta% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client channel grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnie\u0144 kana\u0142u klienta% s. uprawnienie. {id:% o, warto\u015b\u0107:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnie\u0144 do przyznawania kana\u0142u klienta% s. uprawnienie. {id:% o, warto\u015b\u0107:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client channel grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 klienta% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 do przyznania klienta% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing client grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnie\u0144 klienta% s. uprawnienie. {id:% o, warto\u015b\u0107:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnie\u0144 do przyznawania klienta% s. uprawnienie. {id:% o, warto\u015b\u0107:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating client grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 do kana\u0142u% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 do przyznawania kana\u0142\u00f3w% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnie\u0144 do kana\u0142u% s. uprawnienie. {id:% o, warto\u015b\u0107:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnienia do przyznawania kana\u0142u% s. uprawnienie. {id:% o, warto\u015b\u0107:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 grupy kana\u0142\u00f3w% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel group permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 do przyznawania grup kana\u0142\u00f3w% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing channel group grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizacja uprawnie\u0144 grupy kana\u0142\u00f3w% s. uprawnienie. {id:% o, warto\u015b\u0107:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnie\u0144 do przyznawania grup kana\u0142\u00f3w% s. uprawnienie. {id:% o, warto\u015b\u0107:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating channel group grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 grupy serwer\u00f3w% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing server group permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Usuwanie uprawnie\u0144 do przyznawania grup serwer\u00f3w% s. Permissions.id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Removing server group grant permission %s. permission.id: %o"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizacja uprawnie\u0144 grupy serwer\u00f3w% s. uprawnienie. {id:% o, warto\u015b\u0107:% o, flag_skip:% o, flag_negate:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating server group permission %s. permission.{id: %o, value: %o, flag_skip: %o, flag_negate: %o}"
+      }
+    }, 
+    {
+      "translated": "Dodawanie lub aktualizowanie uprawnie\u0144 do przyznawania grup serwer\u00f3w% s. uprawnienie. {id:% o, warto\u015b\u0107:% o}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Adding or updating server group grant permission %s. permission.{id: %o, value: %o}"
+      }
+    }, 
+    {
+      "translated": "Informacje o utworze", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song info"
+      }
+    }, 
+    {
+      "translated": "Dodaj piosenk\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add a song"
+      }
+    }, 
+    {
+      "translated": "Edytuj list\u0119 odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Edit playlist"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 zmieni\u0107 w\u0142a\u015bciwo\u015bci.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change properties."
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zmieni\u0107 w\u0142a\u015bciwo\u015bci listy odtwarzania. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change playlist properties.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 zmieni\u0107 pozwolenia.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change permission."
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zmieni\u0107 uprawnie\u0144 do playlisty. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change playlist permissions.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Czy na pewno chcesz odrzuci\u0107 wszystkie zmiany?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to discard all your changes?"
+      }
+    }, 
+    {
+      "translated": "\u0142adowanie listy utwor\u00f3w", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "loading song list"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 usun\u0105\u0107 utworu.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to remove song."
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna usun\u0105\u0107 utworu / adresu URL z listy odtwarzania. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to remove song/url from the playlist.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "nie uda\u0142o si\u0119 za\u0142adowa\u0107 listy utwor\u00f3w", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "failed to load song list"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 doda\u0107 utworu.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to add song."
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna doda\u0107 utworu / adresu URL do listy odtwarzania. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to add song/url to the playlist.<br>Error: "
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wys\u0142a\u0107 informacji o li\u015bcie odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna wys\u0142a\u0107 informacji o li\u015bcie odtwarzania. <br> B\u0142\u0105d:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to query playlist info.<br>Error:"
+      }
+    }, 
+    {
+      "translated": "Zarz\u0105dzaj listami odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage playlists"
+      }
+    }, 
+    {
+      "translated": "Lista odtwarzania utworzona pomy\u015blnie", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist created successful"
+      }
+    }, 
+    {
+      "translated": "Lista odtwarzania zosta\u0142a pomy\u015blnie utworzona. <br> Czy powinni\u015bmy otworzy\u0107 edytor?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The playlist has been successfully created.<br>Should we open the editor?"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna utworzy\u0107 listy odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to create playlist"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 utworzy\u0107 listy odtwarzania <br> Wiadomo\u015b\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create playlist<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Czy na pewno chcesz usun\u0105\u0107 t\u0119 list\u0119 odtwarzania?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this playlist?"
+      }
+    }, 
+    {
+      "translated": "Lista odtwarzania zosta\u0142a usuni\u0119ta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist deleted successful"
+      }
+    }, 
+    {
+      "translated": "Ta lista odtwarzania zosta\u0142a pomy\u015blnie usuni\u0119ta.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "This playlist has been deleted successfully."
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna usun\u0105\u0107 listy odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to delete playlist"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 usun\u0105\u0107 listy odtwarzania <br> Wiadomo\u015b\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete playlist<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Utw\u00f3rz login do serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create a server query login"
+      }
+    }, 
+    {
+      "translated": "Z\u0142a nazwa u\u017cytkownika", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid username"
+      }
+    }, 
+    {
+      "translated": "Prosz\u0119 wpisa\u0107 prawid\u0142owe imi\u0119!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid name!"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna utworzy\u0107 konta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to create account"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 utworzy\u0107 konta <br> Wiadomo\u015b\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to create account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Po\u015bwiadczenia kwerendy serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server query credentials"
+      }
+    }, 
+    {
+      "translated": "Nowe po\u015bwiadczenia kwerendy serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "New server query credentials"
+      }
+    }, 
+    {
+      "translated": "Zarz\u0105dzaj kontami zapyta\u0144", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage query accounts"
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 nazw\u0119 konta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change account name"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a now\u0105 nazw\u0119 logowania: <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter the new name for the login:<br>"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zmieni\u0107 nazwy konta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to rename account"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zmieni\u0107 nazwy konta <br> Wiadomo\u015b\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to rename account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Nazwa konta zosta\u0142a pomy\u015blnie zmieniona", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Account successfully renamed"
+      }
+    }, 
+    {
+      "translated": "Zmieniono nazw\u0119 konta zapytania!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The query account has been renamed!"
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 has\u0142o konta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change account's password"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a nowe has\u0142o (pozostaw puste dla automatycznego generowania): <br>", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enter a new password (leave blank for auto generation):<br>"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zmieni\u0107 has\u0142a", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to change password"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna zmieni\u0107 has\u0142a <br> Wiadomo\u015b\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to change password<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Czy na pewno chcesz usun\u0105\u0107 to konto?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this account?"
+      }
+    }, 
+    {
+      "translated": "Nie mo\u017cna usun\u0105\u0107 konta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unable to delete account"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 usun\u0105\u0107 konta <br> Wiadomo\u015b\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete account<br>Message: "
+      }
+    }, 
+    {
+      "translated": "Konto zosta\u0142o pomy\u015blnie usuni\u0119te", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Account successfully deleted"
+      }
+    }, 
+    {
+      "translated": "Konto zapytania zosta\u0142o pomy\u015blnie usuni\u0119te!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The query account has been successfully deleted!"
+      }
+    }, 
+    {
+      "translated": "Zak\u0142adki", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmarks"
+      }
+    }, 
+    {
+      "translated": "Dodaj bie\u017c\u0105cy serwer do zak\u0142adek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add current server to bookmarks"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 bie\u017c\u0105cy serwer do zak\u0142adek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove current server to bookmarks"
+      }
+    }, 
+    {
+      "translated": "Ustawienia d\u017awi\u0119ku", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Audio settings"
+      }
+    }, 
+    {
+      "translated": "Prze\u0142\u0105cz tryb subskrybowania kana\u0142u", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Toggle channel subscribe mode"
+      }
+    }, 
+    {
+      "translated": "Narz\u0119dzia serwerowe", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server tools"
+      }
+    }, 
+    {
+      "translated": "Listy odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlists"
+      }
+    }, 
+    {
+      "translated": "Poka\u017c / ukryj zapytania serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show/hide server queries"
+      }
+    }, 
+    {
+      "translated": "Zarz\u0105dzaj zapytaniami serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage server queries"
+      }
+    }, 
+    {
+      "translated": "Utw\u00f3rz login do serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create server query login"
+      }
+    }, 
+    {
+      "translated": "wprowad\u017a wiadomo\u015b\u0107 na czacie ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "enter a chat message..."
+      }
+    }, 
+    {
+      "translated": "Wys\u0142a\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Send"
+      }
+    }, 
+    {
+      "translated": "Adres serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server Address"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a prawid\u0142owy adres serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid server address"
+      }
+    }, 
+    {
+      "translated": "Wprowad\u017a prawid\u0142owy pseudonim serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter a valid server nickname"
+      }
+    }, 
+    {
+      "translated": "Po\u0142\u0105cz profil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect Profile"
+      }
+    }, 
+    {
+      "translated": "Wybrany profil jest nieprawid\u0142owy. Wybierz inny lub napraw profil.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Selected profile is invalid. Select another one or fix the profile."
+      }
+    }, 
+    {
+      "translated": "Zarz\u0105dzaj profilami", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Manage profiles"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc, aby do\u0142\u0105czy\u0107 do tego kana\u0142u", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to join this channel"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc, aby zobaczy\u0107 ten kana\u0142", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to see this channel"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do subskrypcji tego kana\u0142u", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to subscribe to this channel"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc, aby zmodyfikowa\u0107 uprawnienia tego kana\u0142u", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to modify this channel permissions"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do usuni\u0119cia tego kana\u0142u", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to delete this channel"
+      }
+    }, 
+    {
+      "translated": "Pa\u015b\u0107 si\u0119:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Browse:"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do przegl\u0105dania wszystkich plik\u00f3w i katalog\u00f3w", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to browse all files and directories"
+      }
+    }, 
+    {
+      "translated": "Przekaza\u0107 plik:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload:"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do przesy\u0142ania plik\u00f3w", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to upload files"
+      }
+    }, 
+    {
+      "translated": "\u015aci\u0105gnij:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Download:"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do pobierania plik\u00f3w", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to download files"
+      }
+    }, 
+    {
+      "translated": "Przemianowa\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Rename:"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do zmiany nazw plik\u00f3w w tym kanale", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to rename files within this channel"
+      }
+    }, 
+    {
+      "translated": "Utw\u00f3rz katalog:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Directory create:"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do utworzenia katalogu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to create a directory"
+      }
+    }, 
+    {
+      "translated": "Wymagana moc do usuni\u0119cia katalogu lub pliku", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Required power to delete a directory or file"
+      }
+    }, 
+    {
+      "translated": "Szyfruj dane g\u0142osowe", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Encrypt voice data"
+      }
+    }, 
+    {
+      "translated": "Interwa\u0142 Gfx", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Gfx Interval"
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 rozmiar", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Resize"
+      }
+    }, 
+    {
+      "translated": "Limit przepustowo\u015bci (bajty / s):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bandwidth Limit (Bytes/s):"
+      }
+    }, 
+    {
+      "translated": "Prze\u015blij przydzia\u0142 (MiB):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload Quota (MiB):"
+      }
+    }, 
+    {
+      "translated": "Zapisa\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Save"
+      }
+    }, 
+    {
+      "translated": "Po\u0142\u0105czenie z TeaSpeak Forum", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaSpeak Forum Connection"
+      }
+    }, 
+    {
+      "translated": "Obecnie nie masz po\u0142\u0105czenia z kontem TeaSpeak Forum", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You're currently not connected with your TeaSpeak Forum account"
+      }
+    }, 
+    {
+      "translated": "Zaloguj Si\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "login"
+      }
+    }, 
+    {
+      "translated": "Jeste\u015b po\u0142\u0105czony przez forum TeaSpeak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You're connected via TeaSpeak forum"
+      }
+    }, 
+    {
+      "translated": "Nazwa U\u017cytkownika:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Username:"
+      }
+    }, 
+    {
+      "translated": "Premia:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Premium:"
+      }
+    }, 
+    {
+      "translated": "Zsynchronizowane:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Synchronized:"
+      }
+    }, 
+    {
+      "translated": "w\u0142\u0105cz synchronizacj\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "enable synchronization"
+      }
+    }, 
+    {
+      "translated": "Op\u00f3\u017anienie wydania klucza:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Key release delay:"
+      }
+    }, 
+    {
+      "translated": "G\u0142os zosta\u0142 wy\u0142\u0105czony", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Voice had been disabled"
+      }
+    }, 
+    {
+      "translated": "Ustawienia d\u017awi\u0119ku", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Sound Settings"
+      }
+    }, 
+    {
+      "translated": "Pokrywaj\u0105 si\u0119 te same d\u017awi\u0119ki:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Overlap same sounds:"
+      }
+    }, 
+    {
+      "translated": "Wycisz wszystkie d\u017awi\u0119ki systemowe, gdy wyciszysz swoje wyj\u015bcie. <br> Je\u015bli ta opcja nie zostanie wy\u0142\u0105czona, nadal b\u0119dziesz otrzymywa\u0107 d\u017awi\u0119ki systemowe, takie jak \u201eu\u017cytkownik do\u0142\u0105czy\u0142 do Twojego kana\u0142u\u201d.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Mute all system sounds, when you've muted your output.<br>If this option isn't disabled you'll still receive system sounds like 'user joined your channel'."
+      }
+    }, 
+    {
+      "translated": "Imi\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Name"
+      }
+    }, 
+    {
+      "translated": "Aktywowany", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Activated"
+      }
+    }, 
+    {
+      "translated": "Filtr", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Filter"
+      }
+    }, 
+    {
+      "translated": "Profile", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profiles"
+      }
+    }, 
+    {
+      "translated": "Dost\u0119pne profile", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Available profiles"
+      }
+    }, 
+    {
+      "translated": "Ustaw jako domy\u015blny", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set selected as default"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 zaznaczone", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete selected"
+      }
+    }, 
+    {
+      "translated": "Stworzy\u0107 profil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create profile"
+      }
+    }, 
+    {
+      "translated": "Ustawienia profilu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile settings"
+      }
+    }, 
+    {
+      "translated": "Nazwa profilu:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile name:"
+      }
+    }, 
+    {
+      "translated": "Domy\u015blny pseudonim:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default nickname:"
+      }
+    }, 
+    {
+      "translated": "Domy\u015blne has\u0142o serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default server password"
+      }
+    }, 
+    {
+      "translated": "Identyfikuj typ:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identify Type:"
+      }
+    }, 
+    {
+      "translated": "Unikalny identyfikator:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "UniqueID:"
+      }
+    }, 
+    {
+      "translated": "Poziom:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Level:"
+      }
+    }, 
+    {
+      "translated": "Ulepsza\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Improve"
+      }
+    }, 
+    {
+      "translated": "Nie wygenerowa\u0142e\u015b / nie zaimportowa\u0142e\u015b to\u017csamo\u015bci. <br> Wygeneruj nowy lub zaimportuj go.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You have'nt generated/imported an identity.<br>Generate a new one or import one."
+      }
+    }, 
+    {
+      "translated": "Wygeneruj nowy", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Generate new"
+      }
+    }, 
+    {
+      "translated": "Eksportuj to\u017csamo\u015b\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Export identity"
+      }
+    }, 
+    {
+      "translated": "Nazwa U\u017cytkownika", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Username"
+      }
+    }, 
+    {
+      "translated": "Nie uda\u0142o si\u0119 zaimportowa\u0107 to\u017csamo\u015bci (m\u00f3j ma\u0142y b\u0142\u0105d)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to import identity (my little error)"
+      }
+    }, 
+    {
+      "translated": "Importuj to\u017csamo\u015b\u0107 z TeamSpeak lub wyeksportowanej to\u017csamo\u015bci", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import an identity from TeamSpeak or an exported identity"
+      }
+    }, 
+    {
+      "translated": "Wczytaj z tekstu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Load from text"
+      }
+    }, 
+    {
+      "translated": "Za\u0142aduj z pliku", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Load from file"
+      }
+    }, 
+    {
+      "translated": "To\u017csamo\u015b\u0107 zosta\u0142a pomy\u015blnie za\u0142adowana. Gotowy do importu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity successfully loaded. Ready to import"
+      }
+    }, 
+    {
+      "translated": "Import", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Import"
+      }
+    }, 
+    {
+      "translated": "To\u017csamo\u015b\u0107:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity:"
+      }
+    }, 
+    {
+      "translated": "Aktualny poziom:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current level: "
+      }
+    }, 
+    {
+      "translated": "Poziom docelowy:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Target level: "
+      }
+    }, 
+    {
+      "translated": "Warto\u015b\u0107 zero oznacza nieograniczon\u0105. Ulepsz, dop\u00f3ki nie przerwiesz", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "A value of zero means unlimited. Improve until you abort"
+      }
+    }, 
+    {
+      "translated": "W\u0105tki:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Threads: "
+      }
+    }, 
+    {
+      "translated": "Liczba w\u0105tk\u00f3w u\u017cytych do poprawy Twojej to\u017csamo\u015bci <br> Optymalna warto\u015b\u0107 jest r\u00f3wna ilo\u015bci w\u0105tk\u00f3w j\u0105dra.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The number of threads used to improve your identity<br>The optimal value is equal to the amount of kernal threads."
+      }
+    }, 
+    {
+      "translated": "Hashes / sekunda:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hashes/second:"
+      }
+    }, 
+    {
+      "translated": "Czas, kt\u00f3ry up\u0142yn\u0105\u0142:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Elapsed time:"
+      }
+    }, 
+    {
+      "translated": "Profil jest wa\u017cny", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile is valid"
+      }
+    }, 
+    {
+      "translated": "Profil jest nieprawid\u0142owy", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile is invalid"
+      }
+    }, 
+    {
+      "translated": "Unikalny identyfikator klienta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Client unique ID"
+      }
+    }, 
+    {
+      "translated": "Nieprawid\u0142owy unikalny identyfikator", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid unique id"
+      }
+    }, 
+    {
+      "translated": "uprawnienia do filtrowania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "filter permissions"
+      }
+    }, 
+    {
+      "translated": "Filtruj uprawnienia wed\u0142ug nazwy uprawnienia", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Filter permissions by permission name"
+      }
+    }, 
+    {
+      "translated": "Nie masz uprawnie\u0144 do przegl\u0105dania tych uprawnie\u0144", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have the permission to view this permissions"
+      }
+    }, 
+    {
+      "translated": "filtr", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "filter"
+      }
+    }, 
+    {
+      "translated": "Informacje o przegl\u0105darce", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Browser info"
+      }
+    }, 
+    {
+      "translated": "Online od", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Online since"
+      }
+    }, 
+    {
+      "translated": "Uruchomienie serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server start"
+      }
+    }, 
+    {
+      "translated": "Ustaw nazw\u0119 logowania dla konta kwerendy serwera.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set the login name for your Server Query account."
+      }
+    }, 
+    {
+      "translated": "Otrzymasz has\u0142o w nast\u0119pnym kroku.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You'll receive your password within the next step."
+      }
+    }, 
+    {
+      "translated": "Stw\u00f3rz", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create"
+      }
+    }, 
+    {
+      "translated": "Twoje po\u015bwiadczenia dotycz\u0105ce serwera:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Your server query credentials:"
+      }
+    }, 
+    {
+      "translated": "Skopiuj nazw\u0119 u\u017cytkownika", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy username"
+      }
+    }, 
+    {
+      "translated": "Utw\u00f3rz konto", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create account"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 konto", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete account"
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 nazw\u0119 konta", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Rename account"
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 has\u0142o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change password"
+      }
+    }, 
+    {
+      "translated": "Szukaj", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "search"
+      }
+    }, 
+    {
+      "translated": "Unikalny identyfikator", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unique ID"
+      }
+    }, 
+    {
+      "translated": "Ograniczony serwer", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bounded Server"
+      }
+    }, 
+    {
+      "translated": "Od\u015bwie\u017ca\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Refresh"
+      }
+    }, 
+    {
+      "translated": "Stw\u00f3rz playlist\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create playlist"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 list\u0119 odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete playlist"
+      }
+    }, 
+    {
+      "translated": "ID", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "ID"
+      }
+    }, 
+    {
+      "translated": "Tytu\u0142", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Title"
+      }
+    }, 
+    {
+      "translated": "Rodzaj", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Type"
+      }
+    }, 
+    {
+      "translated": "U\u017cywany", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Used"
+      }
+    }, 
+    {
+      "translated": "Zaznacz w\u0142asne listy odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Highlight own playlists"
+      }
+    }, 
+    {
+      "translated": "Lista odtwarzania jest u\u017cywana przez bota", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist is in use by bot "
+      }
+    }, 
+    {
+      "translated": "Playlist isnt use", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist isnt use"
+      }
+    }, 
+    {
+      "translated": "W\u0142a\u015bciciel playlisty:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist owner:"
+      }
+    }, 
+    {
+      "translated": "Tytu\u0142:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Title:"
+      }
+    }, 
+    {
+      "translated": "Bot zwi\u0105zany", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bot bound"
+      }
+    }, 
+    {
+      "translated": "\u015awiatowy", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Global"
+      }
+    }, 
+    {
+      "translated": "Piosenki", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Songs"
+      }
+    }, 
+    {
+      "translated": "Url", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Url"
+      }
+    }, 
+    {
+      "translated": "za\u0142adowany", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "loaded"
+      }
+    }, 
+    {
+      "translated": "Dodaj piosenk\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add song"
+      }
+    }, 
+    {
+      "translated": "Ustawienia odtwarzania", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playback settings"
+      }
+    }, 
+    {
+      "translated": "Tryb powt\u00f3rki", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Replay mode"
+      }
+    }, 
+    {
+      "translated": "Normalna", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Normal"
+      }
+    }, 
+    {
+      "translated": "Lista p\u0119tli", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loop list"
+      }
+    }, 
+    {
+      "translated": "Pojedynczy wpis w p\u0119tli", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loop single entry"
+      }
+    }, 
+    {
+      "translated": "Cz\u0142apa\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Shuffle"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 odtworzon\u0105 piosenk\u0119:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete played song:"
+      }
+    }, 
+    {
+      "translated": "Aktualna piosenka odtwarzania:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current replaying song:"
+      }
+    }, 
+    {
+      "translated": "Status listy odtwarzania zako\u0144czony", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Playlist finished status"
+      }
+    }, 
+    {
+      "translated": "Dost\u0119p / modyfikacja uprawnie\u0144", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Access/modify powers"
+      }
+    }, 
+    {
+      "translated": "Zobacz moc", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "View power"
+      }
+    }, 
+    {
+      "translated": "Modyfikowa\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Modify"
+      }
+    }, 
+    {
+      "translated": "Zmie\u0144 uprawnienia", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Permission modify"
+      }
+    }, 
+    {
+      "translated": "Kasowa\u0107", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete"
+      }
+    }, 
+    {
+      "translated": "Uprawnienia do zarz\u0105dzania piosenkami", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song management powers"
+      }
+    }, 
+    {
+      "translated": "Dodaj piosenk\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song add"
+      }
+    }, 
+    {
+      "translated": "Zmiana kolejno\u015bci utwor\u00f3w", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song reorder"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 utw\u00f3r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song delete"
+      }
+    }, 
+    {
+      "translated": "ID utworu:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song ID:"
+      }
+    }, 
+    {
+      "translated": "Kolejno\u015b\u0107 utwor\u00f3w:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song order:"
+      }
+    }, 
+    {
+      "translated": "Rozpoznawanie adres\u00f3w URL:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "URL resolver:"
+      }
+    }, 
+    {
+      "translated": "Utw\u00f3r za\u0142adowany:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Song loaded:"
+      }
+    }, 
+    {
+      "translated": "Wy\u015bwietl tutaj metdane!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Display metdata here!"
+      }
+    }, 
+    {
+      "translated": "Metadane:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Metadata:"
+      }
+    }, 
+    {
+      "translated": "\u0141adowarka URL:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "URL loader:"
+      }
+    }, 
+    {
+      "translated": "Dodaj adres url", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add URL"
+      }
+    }, 
+    {
+      "translated": "Utw\u00f3rz nowy katalog / zak\u0142adk\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Create new bookmark/directory"
+      }
+    }, 
+    {
+      "translated": "Usu\u0144 wybrany katalog / zak\u0142adk\u0119", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Delete selected bookmark/directory"
+      }
+    }, 
+    {
+      "translated": "Ustawienia zak\u0142adek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark settings"
+      }
+    }, 
+    {
+      "translated": "Nazwa zak\u0142adki:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark name:"
+      }
+    }, 
+    {
+      "translated": "Po\u0142\u0105cz profil:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect profile:"
+      }
+    }, 
+    {
+      "translated": "W\u0142a\u015bciwo\u015bci serwera", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server Properties"
+      }
+    }, 
+    {
+      "translated": "Adres serwera:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server address:"
+      }
+    }, 
+    {
+      "translated": "Port serwera:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Server port:"
+      }
+    }, 
+    {
+      "translated": "W\u0142a\u015bciwo\u015bci po\u0142\u0105czenia (jeszcze nieobs\u0142ugiwane)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect Properties (Not yet supported)"
+      }
+    }, 
+    {
+      "translated": "Domy\u015blna nazwa u\u017cytkownika", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default Username"
+      }
+    }, 
+    {
+      "translated": "Aktualny kana\u0142", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Current Channel"
+      }
+    }, 
+    {
+      "translated": "Domy\u015blne has\u0142o kana\u0142u", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Default channel password"
+      }
+    }, 
+    {
+      "translated": "Nazwa katalogu:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Directory name:"
       }
     }
   ]
