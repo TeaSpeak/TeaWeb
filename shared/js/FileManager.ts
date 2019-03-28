@@ -21,12 +21,11 @@ class FileListRequest {
 }
 
 namespace transfer {
-    export interface DownloadKey {
+    export interface TransferKey {
         client_transfer_id: number;
         server_transfer_id: number;
 
         key: string;
-        total_size: number;
 
         file_path: string;
         file_name: string;
@@ -35,7 +34,23 @@ namespace transfer {
             hosts: string[],
             port: number;
         };
+
+        total_size: number;
     }
+
+    export interface UploadOptions {
+        name: string;
+        path: string;
+
+        channel?: ChannelEntry;
+        channel_password?: string;
+
+        size: number;
+        overwrite: boolean;
+    }
+
+    export type DownloadKey = TransferKey;
+    export type UploadKey = TransferKey;
 }
 
 class StreamedFileDownload {
@@ -160,14 +175,58 @@ class RequestFileDownload {
     }
 }
 
+class RequestFileUpload {
+    readonly transfer_key: transfer.UploadKey;
+    constructor(key: transfer.DownloadKey) {
+        this.transfer_key = key;
+    }
+
+    async put_data(data: BufferSource | File) {
+        const form_data = new FormData();
+
+        if(data instanceof File) {
+            if(data.size != this.transfer_key.total_size)
+                throw "invalid size";
+
+            form_data.append("file", data);
+        } else {
+            const buffer = <BufferSource>data;
+            if(buffer.byteLength != this.transfer_key.total_size)
+                throw "invalid size";
+
+            form_data.append("file", new Blob([buffer], { type: "application/octet-stream" }));
+        }
+
+        await this.try_put(form_data, "https://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
+    }
+
+    async try_put(data: FormData, url: string) : Promise<void> {
+        const response = await fetch(url, {
+            method: 'POST',
+            cache: "no-cache",
+            mode: 'cors',
+            body: data,
+            headers: {
+                'transfer-key': this.transfer_key.key,
+                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Expose-Headers': '*'
+            }
+        });
+        if(!response.ok)
+            throw (response.type == 'opaque' || response.type == 'opaqueredirect' ? "invalid cross origin flag! May target isn't a TeaSpeak server?" : response.statusText || "response is not ok");
+    }
+}
+
 class FileManager extends connection.AbstractCommandHandler {
     handle: TSClient;
     icons: IconManager;
     avatars: AvatarManager;
 
     private listRequests: FileListRequest[] = [];
-    private pendingDownloadTransfers: transfer.DownloadKey[] = [];
-    private downloadCounter : number = 0;
+    private pending_download_requests: transfer.DownloadKey[] = [];
+    private pending_upload_requests: transfer.UploadKey[] = [];
+
+    private transfer_counter : number = 0;
 
     constructor(client: TSClient) {
         super(client.serverConnection);
@@ -189,6 +248,9 @@ class FileManager extends connection.AbstractCommandHandler {
                 return true;
             case "notifystartdownload":
                 this.notifyStartDownload(command.arguments);
+                return true;
+            case "notifystartupload":
+                this.notifyStartUpload(command.arguments);
                 return true;
         }
         return false;
@@ -260,27 +322,52 @@ class FileManager extends connection.AbstractCommandHandler {
     }
 
 
-    /******************************** File download ********************************/
+    /******************************** File download/upload ********************************/
     download_file(path: string, file: string, channel?: ChannelEntry, password?: string) : Promise<transfer.DownloadKey> {
-        const _this = this;
-
         const transfer_data: transfer.DownloadKey = {
             file_name: file,
-            file_path: file,
-            client_transfer_id: this.downloadCounter++
+            file_path: path,
+            client_transfer_id: this.transfer_counter++
         } as any;
 
-        this.pendingDownloadTransfers.push(transfer_data);
+        this.pending_download_requests.push(transfer_data);
         return new Promise<transfer.DownloadKey>((resolve, reject) => {
-            transfer_data["_promiseCallback"] = resolve;
-            _this.handle.serverConnection.send_command("ftinitdownload", {
+            transfer_data["_callback"] = resolve;
+            this.handle.serverConnection.send_command("ftinitdownload", {
                 "path": path,
                 "name": file,
                 "cid": (channel ? channel.channelId : "0"),
                 "cpw": (password ? password : ""),
                 "clientftfid": transfer_data.client_transfer_id
             }).catch(reason => {
-                _this.pendingDownloadTransfers.remove(transfer_data);
+                this.pending_download_requests.remove(transfer_data);
+                reject(reason);
+            })
+        });
+    }
+
+    upload_file(options: transfer.UploadOptions) : Promise<transfer.UploadKey> {
+        const transfer_data: transfer.UploadKey = {
+            file_path: options.path,
+            file_name: options.name,
+            client_transfer_id: this.transfer_counter++,
+            total_size: options.size
+        } as any;
+
+        this.pending_upload_requests.push(transfer_data);
+        return new Promise<transfer.UploadKey>((resolve, reject) => {
+            transfer_data["_callback"] = resolve;
+            this.handle.serverConnection.send_command("ftinitupload", {
+                "path": options.path,
+                "name": options.name,
+                "cid": (options.channel ? options.channel.channelId : "0"),
+                "cpw": options.channel_password || "",
+                "clientftfid": transfer_data.client_transfer_id,
+                "size": options.size,
+                "overwrite": options.overwrite,
+                "resume": false
+            }).catch(reason => {
+                this.pending_upload_requests.remove(transfer_data);
                 reject(reason);
             })
         });
@@ -290,7 +377,7 @@ class FileManager extends connection.AbstractCommandHandler {
         json = json[0];
 
         let transfer: transfer.DownloadKey;
-        for(let e of this.pendingDownloadTransfers)
+        for(let e of this.pending_download_requests)
             if(e.client_transfer_id == json["clientftfid"]) {
                 transfer = e;
                 break;
@@ -311,8 +398,36 @@ class FileManager extends connection.AbstractCommandHandler {
         if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
             transfer.peer.hosts[0] = this.handle.serverConnection._remote_address.host;
 
-        (transfer["_promiseCallback"] as (val: transfer.DownloadKey) => void)(transfer);
-        this.pendingDownloadTransfers.remove(transfer);
+        (transfer["_callback"] as (val: transfer.DownloadKey) => void)(transfer);
+        this.pending_download_requests.remove(transfer);
+    }
+
+    private notifyStartUpload(json) {
+        json = json[0];
+
+        let transfer: transfer.UploadKey;
+        for(let e of this.pending_upload_requests)
+            if(e.client_transfer_id == json["clientftfid"]) {
+                transfer = e;
+                break;
+            }
+
+        transfer.server_transfer_id = json["serverftfid"];
+        transfer.key = json["ftkey"];
+
+        transfer.peer = {
+            hosts: (json["ip"] || "").split(","),
+            port: json["port"]
+        };
+
+        if(transfer.peer.hosts.length == 0)
+            transfer.peer.hosts.push("0.0.0.0");
+
+        if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
+            transfer.peer.hosts[0] = this.handle.serverConnection._remote_address.host;
+
+        (transfer["_callback"] as (val: transfer.UploadKey) => void)(transfer);
+        this.pending_upload_requests.remove(transfer);
     }
 }
 
