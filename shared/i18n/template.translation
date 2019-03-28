@@ -1,4 +1,5 @@
 {
+    /* --------------- legacy! --------------- */
     "info": {
         "contributors": [
             /* add yourself if you have done anything :) */
@@ -9,6 +10,8 @@
         ],
         "name": "A template translation file" /* this field is required */
     },
+    /* --------------- legacy  --------------- */
+
     "translations": [ /* Array with all translation objects */
         { /* translation object */
             "key": { /* the key */

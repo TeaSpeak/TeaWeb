@@ -2,26 +2,88 @@
   "translations": [
     {
       "key": "de_gt",
-      "path": "de_google_translate.translation"
+      "country_code": "de",
+      "path": "de_google_translate.translation",
+
+      "name": "German translation, based on Google Translate",
+      "contributors": [
+        {
+          "name": "Google Translate, via script by Markus Hadenfeldt",
+          "email": "gtr.i18n.client@teaspeak.de"
+        },
+        {
+          "name": "Markus Hadenfeldt",
+          "email": "i18n.client@teaspeak.de"
+        }
+      ]
     },
     {
       "key": "pl_gt",
-      "path": "pl_google_translate.translation"
+      "country_code": "pl",
+      "path": "pl_google_translate.translation",
+
+      "name": "Polish translation, based on Google Translate",
+      "contributors": [
+        {
+          "name": "Google Translate, via script by Markus Hadenfeldt",
+          "email": "gtr.i18n.client@teaspeak.de"
+        }
+      ]
     },
     {
       "key": "tr_gt",
-      "path": "tr_google_translate.translation"
+      "country_code": "tr",
+      "path": "tr_google_translate.translation",
+
+      "name": "Turkey translation, based on Google Translate",
+      "contributors": [
+        {
+          "name": "Google Translate, via script by Markus Hadenfeldt",
+          "email": "gtr.i18n.client@teaspeak.de"
+        }
+      ]
     },
     {
       "key": "fr_gt",
-      "path": "fr_google_translate.translation"
+      "country_code": "fr",
+      "path": "fr_google_translate.translation",
+
+      "name": "Auto translated messages for language fr",
+      "contributors": [
+        {
+          "name": "Google Translate, via script by Markus Hadenfeldt",
+          "email": "gtr.i18n.client@teaspeak.de"
+        }
+      ]
     },
     {
       "key": "ru",
-      "path": "ru_translate_vafin.translation"
+      "country_code": "ru",
+      "path": "ru_translate_vafin.translation",
+
+      "name": "Russion translation by Vafin, baste on google translate",
+      "contributors": [
+        {
+          "name": "Google Translate, via script by Markus Hadenfeldt",
+          "email": "gtr.i18n.client@teaspeak.de"
+        },
+        {
+          "name": "Vafin",
+          "email": ""
+        }
+      ]
     }, {
       "key": "ru_gt",
-      "path": "ru_google_translate.translation"
+      "country_code": "gt",
+      "path": "ru_google_translate.translation",
+
+      "name": "Auto translated messages for language ru",
+      "contributors": [
+        {
+          "name": "Google Translate, via script by Markus Hadenfeldt",
+          "email": "gtr.i18n.client@teaspeak.de"
+        }
+      ]
     }
   ],
   "name": "Default TeaSpeak repository",
