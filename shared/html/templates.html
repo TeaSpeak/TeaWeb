@@ -1262,7 +1262,7 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>
-                        {{tr "Translations" /}}
+                        <div class="container-tabname-translations">{{tr "Translations" /}} <div class="country flag-en"></div></div>
                     </x-tag>
                     <x-content>
                         <div class="settings-translations">
@@ -1271,18 +1271,6 @@
                                 <div class="content">
                                     <div class="setting-list">
                                         <div class="list">
-                                            <!--
-                                            <div class="entry default">{{tr "English (Default / Fallback)" /}}</div>
-                                            <div class="entry repository">
-                                                <div class="name">TeaSpeak Official</div>
-                                                <div class="button button-delete"><div class="icon client-delete"></div></div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            <div class="entry translation selected">
-                                                <div class="name">German (Google Translate)</div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            -->
                                         </div>
                                         <div class="management">
                                             <div class="loading">Loading...</div>
@@ -1312,18 +1300,6 @@
                                 <div class="content">
                                     <div class="profile-list">
                                         <div class="list">
-                                            <!--
-                                            <div class="entry default">{{tr "English (Default / Fallback)" /}}</div>
-                                            <div class="entry repository">
-                                                <div class="name">TeaSpeak Official</div>
-                                                <div class="button button-delete"><div class="icon client-delete"></div></div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            <div class="entry translation selected">
-                                                <div class="name">German (Google Translate)</div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            -->
                                         </div>
                                         <div class="management">
                                             <button class="btn btn-primary button-set-default">{{tr "Set selected as default" /}}</button>
@@ -1536,9 +1512,13 @@
                     <div class="button button-info"><div class="icon client-about"></div></div>
                 </div>
             {{else type == "default" }}
-                <div class="entry default {{if selected}}selected{{/if}}">{{tr "English (Default / Fallback)" /}}</div>
+                <div class="entry default {{if selected}}selected{{/if}}">
+                    <div class="country flag-gb" title="{{*:i18n.country_name('gb')}}"></div>
+                    <div class="name">{{tr "English (Default / Fallback)" /}}</div>
+                </div>
             {{else}}
                 <div class="entry translation {{if selected}}selected{{/if}}" parent-repository="{{:id}}">
+                    <div class="country flag-{{:country_code}}" title="{{*:i18n.country_name(data.country_code || 'XX')}}"></div>
                     <div class="name">{{> name}}</div>
                     <div class="button button-info"><div class="icon client-about"></div></div>
                 </div>

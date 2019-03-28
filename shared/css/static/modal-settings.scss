@@ -412,6 +412,16 @@ $small_device: 800px; /* tested out via audio tab */
 	}
 }
 
+.modal .container-tabname-translations {
+	display: flex;
+	flex-direction: row;
+
+	.country {
+		align-self: center;
+		margin-left: 3px;
+	}
+}
+
 .modal .settings-translations {
 	margin: 5px;
 
@@ -474,6 +484,12 @@ $small_device: 800px; /* tested out via audio tab */
 					&:hover {
 						background-color: #00000010;
 					}
+				}
+
+				.country {
+					align-self: center;
+					margin-right: 5px;
+					margin-left: 5px;
 				}
 			}
 		}
