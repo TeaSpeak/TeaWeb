@@ -696,7 +696,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
         let client = parseInt(json[0]["cldbid"]);
         let permissions = PermissionManager.parse_permission_bulk(json, this);
         for(let req of this.requests_client_permissions.slice(0)) {
-            if(req.client_avatar_id == client) {
+            if(req.client_id == client) {
                 this.requests_client_permissions.remove(req);
                 req.promise.resolved(permissions);
             }
@@ -705,7 +705,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
 
     requestClientPermissions(client_id: number) : Promise<PermissionValue[]> {
         for(let request of this.requests_client_permissions)
-            if(request.client_avatar_id == client_id && request.promise.time() + 1000 > Date.now())
+            if(request.client_id == client_id && request.promise.time() + 1000 > Date.now())
                 return request.promise;
 
         let request: TeaPermissionRequest = {} as any;
@@ -725,7 +725,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
 
     requestClientChannelPermissions(client_id: number, channel_id: number) : Promise<PermissionValue[]> {
         for(let request of this.requests_client_channel_permissions)
-            if(request.client_avatar_id == client_id && request.channel_id == channel_id && request.promise.time() + 1000 > Date.now())
+            if(request.client_id == client_id && request.channel_id == channel_id && request.promise.time() + 1000 > Date.now())
                 return request.promise;
 
         let request: TeaPermissionRequest = {} as any;

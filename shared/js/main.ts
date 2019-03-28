@@ -288,7 +288,7 @@ function main() {
         Modals.spawnAvatarList(globalClient);
     }, 1000);
     */
-    window.test_upload = () => {
+    (<any>window).test_upload = () => {
         const data = "Hello World";
         globalClient.fileManager.upload_file({
             size: data.length,
