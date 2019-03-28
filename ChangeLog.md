@@ -7,6 +7,8 @@
     - Fixed context menu overflowing and going out of the side
     - Improved host banner url revoke (only revoke after a new one has been generated)
     - Added some fancy console messages
+    - Added country icons to the translation tab
+    - Decreased required bandwidth on translation loading
     
 * **17.03.19**
     - Using VAD by default instead of PPT
