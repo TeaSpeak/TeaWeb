@@ -1,5 +1,5 @@
 # Changelog:
-* **XX.XX.XX**
+* **28.03.19**
     - Improved icon and avatar cache handling
     - Added an icon manager
     - Fixed bookmark create modal style
