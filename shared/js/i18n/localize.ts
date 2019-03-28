@@ -39,21 +39,20 @@ namespace i18n {
         email: string;
     }
 
-    export interface FileInfo {
-        name: string;
-        contributors: Contributor[];
-    }
-
     export interface TranslationFile {
-        url: string;
+        path: string;
+        full_url: string;
 
-        info: FileInfo;
         translations: Translation[];
     }
 
     export interface RepositoryTranslation {
         key: string;
         path: string;
+
+        country_code: string;
+        name: string;
+        contributors: Contributor[];
     }
     
     export interface TranslationRepository {
@@ -85,7 +84,7 @@ namespace i18n {
         return translated;
     }
 
-    async function load_translation_file(url: string) : Promise<TranslationFile> {
+    async function load_translation_file(url: string, path: string) : Promise<TranslationFile> {
         return new Promise<TranslationFile>((resolve, reject) => {
             $.ajax({
                 url: url,
@@ -98,7 +97,8 @@ namespace i18n {
                             return;
                         }
 
-                        file.url = url;
+                        file.full_url = url;
+                        file.path = path;
                         //TODO validate file
                         resolve(file);
                     } catch(error) {
@@ -113,8 +113,8 @@ namespace i18n {
         });
     }
 
-    export function load_file(url: string) : Promise<void> {
-        return load_translation_file(url).then(result => {
+    export function load_file(url: string, path: string) : Promise<void> {
+        return load_translation_file(url, path).then(result => {
             log.info(LogCategory.I18N, tr("Successfully initialized up translation file from %s"), url);
             translations = result.translations;
             return Promise.resolve();
@@ -169,6 +169,7 @@ namespace i18n {
             current_language?: string;
 
             current_translation_url: string;
+            current_translation_path: string;
         }
 
         export interface RepositoryConfig {
@@ -248,65 +249,31 @@ namespace i18n {
         config.save_repository_config();
     }
 
-    export function iterate_translations(callback_entry: (repository: TranslationRepository, entry: TranslationFile) => any, callback_finish: () => any) {
-        let count = 0;
-        const update_finish = () => {
-            if(count == 0 && callback_finish)
-                callback_finish();
-        };
+    export async function iterate_repositories(callback_entry: (repository: TranslationRepository) => any) {
+        const promises = [];
 
-        for(const repo of registered_repositories()) {
-            count++;
-            load_repository0(repo, false).then(() => {
-                for(const translation of repo.translations || []) {
-                    const translation_path = repo.url + "/" + translation.path;
-                    count++;
-
-                    load_translation_file(translation_path).then(file => {
-                        if(callback_entry) {
-                            try {
-                                callback_entry(repo, file);
-                            } catch (error) {
-                                console.error(error);
-                                //TODO more error handling?
-                            }
-                        }
-
-                        count--;
-                        update_finish();
-                    }).catch(error => {
-                        log.warn(LogCategory.I18N, tr("Failed to load translation file for repository %s. Translation: %s (%s) Error: %o"), repo.name, translation.key, translation_path, error);
-
-                        count--;
-                        update_finish();
-                    });
-                }
-
-                count--;
-                update_finish();
-            }).catch(error => {
-                log.warn(LogCategory.I18N, tr("Failed to load repository while iteration: %s (%s). Error: %o"), (repo || {name: "unknown"}).name, (repo || {url: "unknown"}).url, error);
-
-                count--;
-                update_finish();
-            });
+        for(const repository of registered_repositories()) {
+            promises.push(load_repository0(repository, false).then(() => callback_entry(repository)).catch(error => {
+                log.warn(LogCategory.I18N, "Failed to fetch repository %s. error: %o", repository.url, error);
+            }));
         }
 
-
-        update_finish();
+        await Promise.all(promises);
     }
 
-    export function select_translation(repository: TranslationRepository, entry: TranslationFile) {
+    export function select_translation(repository: TranslationRepository, entry: RepositoryTranslation) {
         const cfg = config.translation_config();
 
         if(entry && repository) {
-            cfg.current_language = entry.info.name;
+            cfg.current_language = entry.name;
             cfg.current_repository_url = repository.url;
-            cfg.current_translation_url = entry.url;
+            cfg.current_translation_url = repository.url + entry.path;
+            cfg.current_translation_path = entry.path;
         } else {
             cfg.current_language = undefined;
             cfg.current_repository_url = undefined;
             cfg.current_translation_url = undefined;
+            cfg.current_translation_path = undefined;
         }
 
         config.save_translation_config();
@@ -318,7 +285,7 @@ namespace i18n {
 
         if(cfg.current_translation_url) {
             try {
-                await load_file(cfg.current_translation_url);
+                await load_file(cfg.current_translation_url, cfg.current_translation_path);
             } catch (error) {
                 createErrorModal(tr("Translation System"), tr("Failed to load current selected translation file.") + "<br>File: " + cfg.current_translation_url + "<br>Error: " + error + "<br>" + tr("Using default fallback translations.")).open();
             }
