@@ -5,7 +5,7 @@ namespace Modals {
         let properties: ServerProperties = {} as ServerProperties; //The changes properties
 
         const render_properties = {};
-        Object.assign(render_properties, properties);
+        Object.assign(render_properties, server.properties);
         render_properties["virtualserver_icon"] = server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id);
 
         const modal_template = $("#tmpl_server_edit").renderTag(render_properties);
