@@ -1,4 +1,15 @@
 # Changelog:
+* **28.03.19**
+    - Improved icon and avatar cache handling
+    - Added an icon manager
+    - Fixed bookmark create modal style
+    - Fixed control bar drop downs going over the edge
+    - Fixed context menu overflowing and going out of the side
+    - Improved host banner url revoke (only revoke after a new one has been generated)
+    - Added some fancy console messages
+    - Added country icons to the translation tab
+    - Decreased required bandwidth on translation loading
+    
 * **17.03.19**
     - Using VAD by default instead of PPT
     - Improved mobile experience:

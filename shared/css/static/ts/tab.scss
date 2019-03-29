@@ -6,6 +6,8 @@ x-tab { display:none }
     flex-direction: column;
 	display: flex;
 	flex-grow: 1;
+
+    min-height: 220px; /* min the header */
 }
 
 .tab div * {
@@ -25,8 +27,16 @@ x-tab { display:none }
 	flex-grow: 1;
 
     x-content {
+        min-height: 0;
         overflow-y: auto;
+
         width: 100%;
+    }
+
+    @-moz-document url-prefix() {
+        x-content {
+            height: 100%;
+        }
     }
 }
 

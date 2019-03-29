@@ -113,6 +113,14 @@
                                         <div class="icon client-permission_overview"></div>
                                         <a>{{tr "View/edit permissions" /}}</a>
                                     </div>
+                                    <div class="btn_query_toggle" title="{{tr 'Show/hide server queries' /}}">
+                                        <div class="icon client-toggle_server_query_clients"></div>
+                                        <a class="query-text"></a>
+                                    </div>
+                                    <div class="btn_query_manage" title="{{tr 'Manage server queries' /}}">
+                                        <div class="icon client-server_query"></div>
+                                        <a>{{tr "Manage server queries" /}}</a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -127,7 +135,7 @@
                             </div>
 
                             <!-- the query button -->
-                            <div class="button-dropdown btn_query" title="{{tr 'Show/hide server queries' /}}">
+                            <div class="hide-small button-dropdown btn_query" title="{{tr 'Show/hide server queries' /}}">
                                 <div class="buttons">
                                     <div class="button icon_x32 client-server_query btn_query_toggle"></div>
                                     <div class="button-dropdown">
@@ -135,7 +143,7 @@
                                     </div>
                                 </div>
                                 <div class="dropdown display_left">
-                                    <div class="btn_query_toggle"><div class="icon client-toggle_server_query_clients"></div><a>{{tr "Show/hide server queries" /}}</a></div>
+                                    <div class="btn_query_toggle"><div class="icon client-toggle_server_query_clients"></div><a class="query-text"></a></div>
                                     <div class="btn_query_manage"><div class="icon client-server_query"></div><a>{{tr "Manage server queries" /}}</a></div>
                                     <!-- <div class="btn_query_create"><div class="icon client-away"></div><a>{{tr "Create server query login" /}}</a></div> -->
                                 </div>
@@ -317,7 +325,7 @@
                             <div class="invalid-feedback">{{tr "Selected profile is invalid. Select another one or fix the profile." /}}</div>
                         </div>
                         <span class="form-group bmd-form-group container-manage"> <!-- needed to match padding for floating labels -->
-                            <button type="button" class="btn btn-raised button-manage-profiles">{{tr "Manage profiles" /}}</button>
+                            <button type="button" class="btn btn-raised button-manage-profiles">{{tr "Profiles" /}}</button>
                         </span>
                     </div>
                 </modal-body>
@@ -330,11 +338,23 @@
 
         <!-- Template for channel create & edit-->
         <script class="jsrender-template" id="tmpl_channel_edit" type="text/html">
-            <div class="align_column general_properties">
-                <div class="form-group">
-                    <label class="bmd-label-static">{{tr "Name:" /}}</label>
-                    <input class="form-control channel_name" value="{{>channel_name}}"/>
+            <div class="align_column general_properties container-channel-edit-general">
+                <div class="container-name-icon form-row">
+                    <div class="container-name form-group">
+                        <label>{{tr "Name:" /}}</label>
+                        <input class="form-control channel_name" value="{{>channel_name}}"/>
+                    </div>
+                    <div class="container-icon form-group">
+                        <label>{{tr "Icon:" /}}</label>
+                        <input class="form-control">
+                        <span class="bmd-form-group button-select-icon">
+                            <div class="icon-node">
+                                <node key="channel_icon"/>
+                            </div>
+                        </span>
+                    </div>
                 </div>
+
                 <div class="form-group">
                     <label class="bmd-label-floating">{{tr "Channel password" /}}</label>
 
@@ -696,9 +716,20 @@
                 </modal-header>
                 <modal-body>
                     <div class="container-server-settings-general">
-                        <div class="form-group">
-                            <label>{{tr "Name:" /}}</label>
-                            <input class="form-control virtualserver_name" value="{{>virtualserver_name}}"/>
+                        <div class="container-name-icon form-row">
+                            <div class="container-name form-group">
+                                <label>{{tr "Name:" /}}</label>
+                                <input class="form-control virtualserver_name" value="{{>virtualserver_name}}"/>
+                            </div>
+                            <div class="container-icon form-group">
+                                <label>{{tr "Icon:" /}}</label>
+                                <input class="form-control">
+                                <span class="bmd-form-group button-select-icon">
+                                    <div class="icon-node">
+                                        <node key="virtualserver_icon"/>
+                                    </div>
+                                </span>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>{{tr "Phonetic Name:" /}}</label>
@@ -1231,7 +1262,7 @@
                 </x-entry>
                 <x-entry>
                     <x-tag>
-                        {{tr "Translations" /}}
+                        <div class="container-tabname-translations">{{tr "Translations" /}} <div class="country flag-en"></div></div>
                     </x-tag>
                     <x-content>
                         <div class="settings-translations">
@@ -1240,18 +1271,6 @@
                                 <div class="content">
                                     <div class="setting-list">
                                         <div class="list">
-                                            <!--
-                                            <div class="entry default">{{tr "English (Default / Fallback)" /}}</div>
-                                            <div class="entry repository">
-                                                <div class="name">TeaSpeak Official</div>
-                                                <div class="button button-delete"><div class="icon client-delete"></div></div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            <div class="entry translation selected">
-                                                <div class="name">German (Google Translate)</div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            -->
                                         </div>
                                         <div class="management">
                                             <div class="loading">Loading...</div>
@@ -1281,18 +1300,6 @@
                                 <div class="content">
                                     <div class="profile-list">
                                         <div class="list">
-                                            <!--
-                                            <div class="entry default">{{tr "English (Default / Fallback)" /}}</div>
-                                            <div class="entry repository">
-                                                <div class="name">TeaSpeak Official</div>
-                                                <div class="button button-delete"><div class="icon client-delete"></div></div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            <div class="entry translation selected">
-                                                <div class="name">German (Google Translate)</div>
-                                                <div class="button button-info"><div class="icon client-about"></div></div>
-                                            </div>
-                                            -->
                                         </div>
                                         <div class="management">
                                             <button class="btn btn-primary button-set-default">{{tr "Set selected as default" /}}</button>
@@ -1505,9 +1512,13 @@
                     <div class="button button-info"><div class="icon client-about"></div></div>
                 </div>
             {{else type == "default" }}
-                <div class="entry default {{if selected}}selected{{/if}}">{{tr "English (Default / Fallback)" /}}</div>
+                <div class="entry default {{if selected}}selected{{/if}}">
+                    <div class="country flag-gb" title="{{*:i18n.country_name('gb')}}"></div>
+                    <div class="name">{{tr "English (Default / Fallback)" /}}</div>
+                </div>
             {{else}}
                 <div class="entry translation {{if selected}}selected{{/if}}" parent-repository="{{:id}}">
+                    <div class="country flag-{{:country_code}}" title="{{*:i18n.country_name(data.country_code || 'XX')}}"></div>
                     <div class="name">{{> name}}</div>
                     <div class="button button-info"><div class="icon client-about"></div></div>
                 </div>
@@ -1768,7 +1779,7 @@
                             <!-- <small class="form-text text-muted">{{tr "Filter permissions by permission name" /}}</small> -->
                         </div>
                         <div class="form-group bmd-form-group">
-                            <div class="checkbox">
+                            <div class="switch">
                                 <label>
                                     <input type="checkbox" value="" class="filter-granted">
                                     {{tr "Show granted permissions only" /}}
@@ -2912,28 +2923,201 @@
 
         <script class="jsrender-template" id="tmpl_manage_bookmarks-create" type="text/html">
             <div class="modal-bookmark-create">
-                <div class="property">
-                    <div class="key">Bookmark Type:</div>
-                    <select class="bookmark-type">
+                <div class="form-group">
+                    <label class="bmd-label-floating">{{tr "Bookmark type:" /}}</label>
+                    <select class="form-control bookmark-type">
                         <option value="bookmark">Bookmark</option>
                         <option value="directory">Directory</option>
                     </select>
                 </div>
-                <div class="property">
-                    <div class="key">Parent Directory:</div>
-                    <select class="bookmark-parent">
+
+                <div class="form-group">
+                    <label class="bmd-label-floating">{{tr "Parent directory:" /}}</label>
+                    <select class="form-control bookmark-parent">
                         <option bookmark-uuid=""></option>
                     </select>
                 </div>
-                <div class="property">
-                    <div class="key">Bookmark Name:</div>
-                    <input class="bookmark-name">
+
+                <div class="form-group">
+                    <label class="bmd-label-floating">{{tr "Bookmark name" /}}</label>
+                    <input class="form-control bookmark-name">
                 </div>
-                <hr>
                 <div class="buttons">
-                    <button class="button-create">Create</button>
+                    <button class="btn btn-success button-create">Create</button>
                 </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_icon_select" type="text/html">
+            <div class="modal-icon-select">
+                <div class="container-icons">
+                    <div class="group_box">
+                        <div class="header">{{tr "Remote" /}}</div>
+                        <div class="content">
+                            <div class="container-icons-list">
+                                <div class="container-icons-remote {{if enable_select}}icon-select{{/if}}"></div>
+                                <div class="container-loading">
+                                    <a>{{tr "loading..." /}}</a>
+                                </div>
+                                <div class="container-no-permissions">
+                                    <a>{{tr "You dont have permissions the view the icons" /}}</a>
+                                </div>
+                                <div class="container-error">
+                                    <a class="error-message">{{ŧr "An error occured" /}}</a>
+                                </div>
+                            </div>
+                            <!--
+                            <div class="container-buttons">
+                                <button class="btn btn-success button-upload">{{tr "Upload" /}}</button>
+                                <button class="btn btn-danger button-upload">{{tr "Delete" /}}</button>
+                            </div>
+                            -->
+                        </div>
+                    </div>
+                    <div class="group_box">
+                        <div class="header">{{tr "Local" /}}</div>
+                        <div class="content">
+                            <div class="container-icons-list">
+                                <div class="container-icons-local {{if enable_select}}icon-select{{/if}}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-buttons">
+                    <button class="btn btn-primary btn-raised button-reload">{{tr "Reload" /}}</button>
+                    <div class="spacer"></div>
+                    {{if enable_select}}
+                    <button class="btn btn-success btn-raised button-select-no-icon">{{tr "Remove icon" /}}</button>
+                    <button class="btn btn-success btn-raised button-select"><a>{{tr "Select " /}}</a><div class="selected-item-container"></div></button>
+                    {{/if}}
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_avatar_list" type="text/html">
+            <div class="modal-avatar-list">
+                <div class="container-list">
+                    <div class="list-header">
+                        <div class="column column-username">{{tr "Username" /}}</div>
+                        <div class="column column-unique-id">{{tr "Unique ID" /}}</div>
+                        <div class="column column-size">{{tr "Size" /}}</div>
+                        <div class="column column-timestamp">{{tr "Date" /}}</div>
+                    </div>
+                    <div class="list-entries-container">
+                        <div class="list-entries">
+                        </div>
+                    </div>
+                </div>
+                <div class="container-info">
+                    <div class="container-data">
+                        <div class="form-group">
+                            <label class="bmd-label-static">{{tr "Username" /}}</label>
+                            <input class="form-control property-username" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="bmd-label-static">{{tr "Unique ID" /}}</label>
+                            <input class="form-control property-unique-id" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label class="bmd-label-static">{{tr "Avatar ID" /}}</label>
+                            <input class="form-control property-avatar-id" disabled>
+                        </div>
+                    </div>
+                    <div class="container-preview">
+                        <div class="container-image"></div>
+                        <div class="container-image-data">
+                            <a>{{tr "Image info:" /}}</a>
+                            <div class="form-group">
+                                <label class="bmd-label-static">{{tr "Bytes" /}}</label>
+                                <input class="form-control property-image-size" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label class="bmd-label-static">{{tr "Width" /}}</label>
+                                <input class="form-control property-image-width" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label class="bmd-label-static">{{tr "Height" /}}</label>
+                                <input class="form-control property-image-height" disabled>
+                            </div>
+                            <div class="form-group">
+                                <label class="bmd-label-static">{{tr "Type" /}}</label>
+                                <input class="form-control property-image-type" disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-buttons">
+                        <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
+                        <button class="btn btn-success button-download">{{tr "Download" /}}</button>
+                    </div>
+                    <div class="disabled-overlay">
+                        <a>{{tr "Please select a user" /}}</a>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_avatar_list-list_entry" type="text/html">
+            <div class="entry">
+                <div class="column column-username">{{>username}}</div>
+                <div class="column column-unique-id">{{>unique_id}}</div>
+                <div class="column column-size">{{>size}}</div>
+                <div class="column column-timestamp">{{>timestamp}}</div>
             </div>
         </script>
     </body>
 </html>
+<!--
+<script class="jsrender-template" id="tmpl_query_manager-list_entry" type="text/html">
+    <div class="entry">
+        <div class="column column-username">{{>username}}</div>
+        <div class="column column-unique-id">{{>unique_id}}</div>
+        <div class="column column-bound-server">{{>bounded_server}}</div>
+    </div>
+</script>
+
+        <script class="jsrender-template" id="tmpl_playlist_list" type="text/html">
+            <div class="playlist-management">
+                <div class="header">
+                    <div class="form-group bmd-form-group buttons">
+                        <button class="btn btn-success button button-playlist-create">{{tr "Create playlist" /}}</button>
+                        <button class="btn btn-danger button button-playlist-delete">{{tr "Delete playlist" /}}</button>
+                        <button class="btn btn-primary button-playlist-edit">{{tr "Edit playlist" /}}</button>
+                    </div>
+                    <div class="form-group search">
+                        <label class="bmd-label-floating">{{tr "search" /}}</label>
+                        <input class="form-control input input-search" type="text">
+                    </div>
+                </div>
+                <div class="playlist-list">
+                    <div class="playlist-list-header">
+                        <div class="column column-id">{{tr "ID" /}}</div>
+                        <div class="column column-title">{{tr "Title" /}}</div>
+                        <div class="column column-creator">{{tr "Creator" /}}</div>
+                        <div class="column column-type">{{tr "Type" /}}</div>
+                        <div class="column column-used">{{tr "Used" /}}</div>
+                    </div>
+                    <div class="playlist-list-entries-container">
+                        <div class="playlist-list-entries">
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <div class="info">
+                        <a>{{tr "loading..." /}}</a>
+                    </div>
+                    <div class="buttons">
+                        <div class="form-group highlight-own">
+                            <div class="switch">
+                                <label>
+                                    <input type="checkbox" class="button-highlight-own">
+                                    {{tr "Highlight own playlists" /}}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group bmd-form-group">
+                            <button class="btn btn-secondary btn-raised button-refresh">{{tr "Refresh" /}}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>

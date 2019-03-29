@@ -4,7 +4,7 @@
 		/* shared part */
 		[ /* shared html and php files */
 			"type" => "html",
-			"search-pattern" => "/^([a-zA-Z]+)\.(html|php)$/",
+			"search-pattern" => "/^([a-zA-Z]+)\.(html|php|json)$/",
 			"build-target" => "dev|rel",
 
 			"path" => "./",

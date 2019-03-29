@@ -282,6 +282,35 @@ function main() {
     stats.register_user_count_listener(status => {
         console.log("Received user count update: %o", status);
     });
+
+    /*
+    setTimeout(() => {
+        Modals.spawnAvatarList(globalClient);
+    }, 1000);
+    */
+    (<any>window).test_upload = () => {
+        const data = "Hello World";
+        globalClient.fileManager.upload_file({
+            size: data.length,
+            overwrite: true,
+            channel: globalClient.getClient().currentChannel(),
+            name: '/HelloWorld.txt',
+            path: ''
+        }).then(key => {
+            console.log("Got key: %o", key);
+            const upload = new RequestFileUpload(key);
+
+            const buffer = new Uint8Array(data.length);
+            {
+                for(let index = 0; index < data.length; index++)
+                    buffer[index] = data.charCodeAt(index);
+            }
+
+            upload.put_data(buffer).catch(error => {
+                console.error(error);
+            });
+        })
+    };
 }
 
 loader.register_task(loader.Stage.LOADED, {

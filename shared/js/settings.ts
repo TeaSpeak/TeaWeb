@@ -137,6 +137,11 @@ class Settings extends StaticSettings {
         description: 'Disables the voice bridge. If disabled, the audio and codec workers aren\'t required anymore'
     };
 
+    static readonly KEY_LOAD_DUMMY_ERROR: SettingsKey<boolean> = {
+        key: 'dummy_load_error',
+        description: 'Triggers a loading error at the end of the loading process.'
+    };
+
     /* Control bar */
     static readonly KEY_CONTROL_MUTE_INPUT: SettingsKey<boolean> = {
         key: 'mute_input'

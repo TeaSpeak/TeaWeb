@@ -15,7 +15,7 @@ function despawn_context_menu() {
     let menu = context_menu || (context_menu = $(".context-menu"));
 
     if(!menu.is(":visible")) return;
-    menu.hide(100);
+    menu.animate({opacity: 0}, 100, () => menu.css("display", "none"));
     if(contextMenuCloseFn) contextMenuCloseFn();
 }
 
@@ -110,9 +110,10 @@ function generate_tag(entry: ContextMenuEntry) : JQuery {
 }
 
 function spawn_context_menu(x, y, ...entries: ContextMenuEntry[]) {
-    let menu = context_menu || (context_menu = $(".context-menu"));
-    menu.finish().empty();
+    let menu_tag = context_menu || (context_menu = $(".context-menu"));
+    menu_tag.finish().empty().css("opacity", "0");
 
+    const menu_container = $.spawn("div").addClass("context-menu-container");
     contextMenuCloseFn = undefined;
 
     for(const entry of entries){
@@ -122,12 +123,18 @@ function spawn_context_menu(x, y, ...entries: ContextMenuEntry[]) {
         if(entry.type == MenuEntryType.CLOSE) {
             contextMenuCloseFn = entry.callback;
         } else
-            menu.append(generate_tag(entry));
+            menu_container.append(generate_tag(entry));
     }
 
-    menu.show(100);
+    menu_tag.append(menu_container);
+    menu_tag.animate({opacity: 1}, 100).css("display", "block");
+
+    const width = menu_container.visible_width();
+    if(x + width + 5 > window.innerWidth)
+        menu_container.addClass("left");
+
     // In the right position (the mouse)
-    menu.css({
+    menu_tag.css({
         "top": y + "px",
         "left": x + "px"
     });

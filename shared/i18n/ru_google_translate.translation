@@ -1,13 +1,13 @@
 {
   "info": {
-    "name": "Auto translated messages for language ru", 
+    "name": "Auto translated messages for language ru",
     "contributors": [
       {
-        "name": "Google Translate, via script by Markus Hadenfeldt", 
+        "name": "Google Translate, via script by Markus Hadenfeldt",
         "email": "gtr.i18n.client@teaspeak.de"
       }
     ]
-  }, 
+  },
   "translations": [
     {
       "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0430\u0443\u0434\u0438\u043e\u043a\u043e\u043d\u0442\u0440\u043e\u043b\u043b\u0435\u0440!", 

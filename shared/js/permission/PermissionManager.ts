@@ -550,6 +550,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
         this._group_mapping = PermissionManager.group_mapping.slice();
 
         let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, tr("Permission mapping"));
+        const table_entries = [];
         for(let e of json) {
             if(e["group_id_end"]) {
                 let group = new PermissionGroup();
@@ -564,15 +565,22 @@ class PermissionManager extends connection.AbstractCommandHandler {
                     group.deep = info.deep;
                 }
                 this.permissionGroups.push(group);
+                continue;
             }
 
             let perm = new PermissionInfo();
             perm.name = e["permname"];
             perm.id = parseInt(e["permid"]);
             perm.description = e["permdesc"];
-            group.log(tr("%i <> %s -> %s"), perm.id, perm.name, perm.description);
             this.permissionList.push(perm);
+
+            table_entries.push({
+                "id": perm.id,
+                "name": perm.name,
+                "description": perm.description
+            });
         }
+        log.table("Permission list", table_entries);
         group.end();
 
         log.info(LogCategory.PERMISSIONS, tr("Got %i permissions"), this.permissionList.length);
@@ -594,6 +602,8 @@ class PermissionManager extends connection.AbstractCommandHandler {
         let addcount = 0;
 
         let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, tr("Got %d needed permissions."), json.length);
+        const table_entries = [];
+
         for(let e of json) {
             let entry: NeededPermissionValue = undefined;
             for(let p of copy) {
@@ -618,11 +628,16 @@ class PermissionManager extends connection.AbstractCommandHandler {
             if(entry.value == parseInt(e["permvalue"])) continue;
             entry.value = parseInt(e["permvalue"]);
 
-            //TODO tr
-            group.log("Update needed permission " + entry.type.name + " to " + entry.value);
             for(let listener of entry.changeListener)
                 listener(entry.value);
+
+            table_entries.push({
+                "permission": entry.type.name,
+                "value": entry.value
+            });
         }
+
+        log.table("Needed client permissions", table_entries);
         group.end();
 
         //TODO tr

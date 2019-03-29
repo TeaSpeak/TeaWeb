@@ -43,6 +43,11 @@
 	}
 }
 
+@viewport {
+	width: device-width;
+	user-zoom:fixed;
+}
+
 .select_info {
 	font-family: Arial;
 	font-size: 12px;

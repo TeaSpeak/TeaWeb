@@ -46,6 +46,12 @@ namespace log {
         [LogCategory.IDENTITIES,            true]
     ]);
 
+    enum GroupMode {
+        NATIVE,
+        PREFIX
+    }
+    const group_mode: GroupMode = GroupMode.NATIVE;
+
     loader.register_task(loader.Stage.LOADED, {
         name: "log enabled initialisation",
         function: async () => initialize(),
@@ -112,12 +118,17 @@ namespace log {
         name = "[%s] " + name;
         optionalParams.unshift(category_mapping.get(category));
 
-        return new Group(GroupMode.PREFIX, level, category, name, optionalParams);
+        return new Group(group_mode, level, category, name, optionalParams);
     }
 
-    enum GroupMode {
-        NATIVE,
-        PREFIX
+    export function table(title: string, arguments: any) {
+        if(group_mode == GroupMode.NATIVE) {
+            console.groupCollapsed(title);
+            console.table(arguments);
+            console.groupEnd();
+        } else {
+            console.log("Snipped table %s", title);
+        }
     }
 
     export class Group {
@@ -130,7 +141,7 @@ namespace log {
 
         private readonly name: string;
         private readonly optionalParams: any[][];
-        private _collapsed: boolean = true;
+        private _collapsed: boolean = false;
         private initialized = false;
         private _log_prefix: string;
 

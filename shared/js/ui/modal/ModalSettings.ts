@@ -611,7 +611,7 @@ namespace Modals {
                     };
 
                     tag_loading.show();
-                    i18n.iterate_translations((repo, entry) => {
+                    i18n.iterate_repositories(repo => {
                         let repo_tag = tag_list.find("[repository=\"" + repo.unique_id + "\"]");
                         if (repo_tag.length == 0) {
                             repo_tag = template.renderTag({
@@ -639,59 +639,63 @@ namespace Modals {
                             tag_list.append(repo_tag);
                         }
 
-                        const tag = template.renderTag({
-                            type: "translation",
-                            name: entry.info.name || entry.url,
-                            id: repo.unique_id,
-                            selected: i18n.config.translation_config().current_translation_url == entry.url
-                        });
-                        tag.find(".button-info").on('click', e => {
-                            e.preventDefault();
-
-                            const info_modal = createModal({
-                                header: tr("Translation info"),
-                                body: () => {
-                                    const tag = $("#settings-translations-list-entry-info").renderTag({
-                                        type: "translation",
-                                        name: entry.info.name,
-                                        url: entry.url,
-                                        repository_name: repo.name,
-                                        contributors: entry.info.contributors || []
-                                    });
-
-                                    tag.find(".button-info").on('click', () => display_repository_info(repo));
-
-                                    return tag;
-                                },
-                                footer: () => {
-                                    let footer = $.spawn("div");
-                                    footer.addClass("modal-button-group");
-                                    footer.css("margin-top", "5px");
-                                    footer.css("margin-bottom", "5px");
-                                    footer.css("text-align", "right");
-
-                                    let buttonOk = $.spawn("button");
-                                    buttonOk.text(tr("Close"));
-                                    buttonOk.click(() => info_modal.close());
-                                    footer.append(buttonOk);
-
-                                    return footer;
-                                }
+                        for(const translation of repo.translations) {
+                            const tag = template.renderTag({
+                                type: "translation",
+                                name: translation.name || translation.path,
+                                id: repo.unique_id,
+                                country_code: translation.country_code,
+                                selected: i18n.config.translation_config().current_translation_path == translation.path
                             });
-                            info_modal.open()
-                        });
-                        tag.on('click', e => {
-                            if (e.isDefaultPrevented()) return;
-                            i18n.select_translation(repo, entry);
-                            tag_list.find(".selected").removeClass("selected");
-                            tag.addClass("selected");
+                            tag.find(".button-info").on('click', e => {
+                                e.preventDefault();
 
-                            restart_hint.show();
-                        });
-                        tag.insertAfter(repo_tag)
-                    }, () => {
-                        tag_loading.hide();
-                    });
+                                const info_modal = createModal({
+                                    header: tr("Translation info"),
+                                    body: () => {
+                                        const tag = $("#settings-translations-list-entry-info").renderTag({
+                                            type: "translation",
+                                            name: translation.name,
+                                            url: translation.path,
+                                            repository_name: repo.name,
+                                            contributors: translation.contributors || []
+                                        });
+
+                                        tag.find(".button-info").on('click', () => display_repository_info(repo));
+
+                                        return tag;
+                                    },
+                                    footer: () => {
+                                        let footer = $.spawn("div");
+                                        footer.addClass("modal-button-group");
+                                        footer.css("margin-top", "5px");
+                                        footer.css("margin-bottom", "5px");
+                                        footer.css("text-align", "right");
+
+                                        let buttonOk = $.spawn("button");
+                                        buttonOk.text(tr("Close"));
+                                        buttonOk.click(() => info_modal.close());
+                                        footer.append(buttonOk);
+
+                                        return footer;
+                                    }
+                                });
+                                info_modal.open()
+                            });
+                            tag.on('click', e => {
+                                if (e.isDefaultPrevented()) return;
+                                i18n.select_translation(repo, translation);
+                                tag_list.find(".selected").removeClass("selected");
+                                tag.addClass("selected");
+
+                                restart_hint.show();
+                            });
+                            tag.insertAfter(repo_tag);
+                        }
+                    }).then(() => tag_loading.hide()).catch(error => {
+                        console.error(error);
+                        /* this should NEVER happen */
+                    })
                 }
 
             };

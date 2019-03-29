@@ -6,10 +6,14 @@ namespace Modals {
         const modal = createModal({
             header: channel ? tr("Edit channel") : tr("Create channel"),
             body: () => {
-                let template = $("#tmpl_channel_edit").renderTag(channel ? channel.properties : {
+                const render_properties = {};
+                Object.assign(render_properties, channel ? channel.properties : {
                     channel_flag_maxfamilyclients_unlimited: true,
-                    channel_flag_maxclients_unlimited: true
-                } as ChannelProperties);
+                    channel_flag_maxclients_unlimited: true,
+                });
+                render_properties["channel_icon"] = globalClient.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
+
+                let template = $("#tmpl_channel_edit").renderTag(render_properties);
                 return template.tabify();
             },
             footer: () => {
@@ -32,7 +36,7 @@ namespace Modals {
         });
 
 
-        applyGeneralListener(properties, modal.htmlTag.find(".general_properties"), modal.htmlTag.find(".button_ok"), !channel);
+        applyGeneralListener(properties, modal.htmlTag.find(".general_properties"), modal.htmlTag.find(".button_ok"), channel);
         applyStandardListener(properties, modal.htmlTag.find(".settings_standard"), modal.htmlTag.find(".button_ok"), parent, !channel);
         applyPermissionListener(properties, modal.htmlTag.find(".settings_permissions"), modal.htmlTag.find(".button_ok"), permissions, channel);
         applyAudioListener(properties, modal.htmlTag.find(".container-channel-settings-audio"), modal.htmlTag.find(".button_ok"), channel);
@@ -68,7 +72,7 @@ namespace Modals {
             modal.htmlTag.find(".channel_name").focus();
     }
 
-    function applyGeneralListener(properties: ChannelProperties, tag: JQuery, button: JQuery, create: boolean) {
+    function applyGeneralListener(properties: ChannelProperties, tag: JQuery, button: JQuery, channel: ChannelEntry | undefined) {
         let updateButton = () => {
             if(tag.find(".input_error").length == 0)
                 button.removeAttr("disabled");
@@ -82,7 +86,18 @@ namespace Modals {
             if(this.value.length < 1 || this.value.length > 40)
                 $(this).addClass("input_error");
             updateButton();
-        }).prop("disabled", !create && !globalClient.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NAME).granted(1));
+        }).prop("disabled", channel && !globalClient.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NAME).granted(1));
+
+        tag.find(".button-select-icon").on('click', event => {
+            Modals.spawnIconSelect(globalClient, id => {
+                const icon_node = tag.find(".button-select-icon").find(".icon-node");
+                icon_node.empty();
+                icon_node.append(globalClient.fileManager.icons.generateTag(id));
+
+                console.log("Selected icon ID: %d", id);
+                properties.channel_icon_id = id;
+            }, channel ? channel.properties.channel_icon_id : 0);
+        });
 
         tag.find(".channel_password").change(function (this: HTMLInputElement) {
             properties.channel_flag_password = this.value.length != 0;
@@ -94,17 +109,17 @@ namespace Modals {
                 if(globalClient.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_FORCE_PASSWORD).granted(1))
                     $(this).addClass("input_error");
             updateButton();
-        }).prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_PASSWORD : PermissionType.B_CHANNEL_MODIFY_PASSWORD).granted(1));
+        }).prop("disabled", !globalClient.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_PASSWORD : PermissionType.B_CHANNEL_MODIFY_PASSWORD).granted(1));
 
         tag.find(".channel_topic").change(function (this: HTMLInputElement) {
             properties.channel_topic = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_TOPIC : PermissionType.B_CHANNEL_MODIFY_TOPIC).granted(1));
+        }).prop("disabled", !globalClient.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_TOPIC : PermissionType.B_CHANNEL_MODIFY_TOPIC).granted(1));
 
         tag.find(".channel_description").change(function (this: HTMLInputElement) {
             properties.channel_description = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_DESCRIPTION : PermissionType.B_CHANNEL_MODIFY_DESCRIPTION).granted(1));
+        }).prop("disabled", !globalClient.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_DESCRIPTION : PermissionType.B_CHANNEL_MODIFY_DESCRIPTION).granted(1));
 
-        if(create) {
+        if(!channel) {
             setTimeout(() => {
                 tag.find(".channel_name").trigger("change");
                 tag.find(".channel_password").trigger('change');

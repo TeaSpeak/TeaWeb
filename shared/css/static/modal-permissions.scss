@@ -1,8 +1,11 @@
 permission-editor {
 	display: flex;
 	flex-direction: column;
+
 	flex-grow: 1;
 	flex-shrink: 1;
+
+	min-height: 0;
 }
 
 
@@ -260,6 +263,7 @@ permission-editor {
 
 		flex-grow: 1;
 		flex-shrink: 1;
+		min-height: 0;
 
 		&.container-mode-unset {
 			background-color: lightgray;
