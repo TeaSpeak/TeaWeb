@@ -54,7 +54,7 @@ namespace loader {
     }
 
     export let cache_tag: string | undefined;
-    let current_stage: Stage = Stage.INITIALIZING;
+    let current_stage: Stage = undefined;
     const tasks: {[key:number]:Task[]} = {};
 
     export function finished() {
@@ -82,7 +82,7 @@ namespace loader {
 
         let begin: number = Date.now();
         let end: number;
-        while(current_stage <= Stage.LOADED) {
+        while(current_stage <= Stage.LOADED || typeof(current_stage) === "undefined") {
 
             let current_tasks: Task[] = [];
             while((tasks[current_stage] || []).length > 0) {
@@ -98,40 +98,51 @@ namespace loader {
 
             const promises: Promise<void>[] = [];
             for(const task of current_tasks) {
-                try {
-                    console.debug("Executing loader %s (%d)", task.name, task.priority);
-                    promises.push(task.function().catch(error => {
-                        errors.push({
-                            task: task,
-                            error: error
-                        });
-                        return Promise.resolve();
-                    }));
-                } catch(error) {
-                    errors.push({
-                        task: task,
-                        error: error
-                    });
-                }
+               try {
+                   console.debug("Executing loader %s (%d)", task.name, task.priority);
+                   promises.push(task.function().catch(error => {
+                       errors.push({
+                           task: task,
+                           error: error
+                       });
+                       return Promise.resolve();
+                   }));
+               } catch(error) {
+                   errors.push({
+                       task: task,
+                       error: error
+                   });
+               }
             }
 
             await Promise.all([...promises]);
 
             if(errors.length > 0) {
-                console.error("Failed to execute loader. The following tasks failed (%d):", errors.length);
-                for(const error of errors)
-                    console.error("  - %s: %o", error.task.name, error.error);
+               console.error("Failed to execute loader. The following tasks failed (%d):", errors.length);
+               for(const error of errors)
+                   console.error("  - %s: %o", error.task.name, error.error);
 
-                throw "failed to process step " + Stage[current_stage];
+                console.groupEnd();
+               throw "failed to process step " + Stage[current_stage];
             }
 
             if(current_tasks.length == 0) {
-                if(current_stage < Stage.LOADED)
-                    console.debug("[loader] entering next state (%s). Last state took %dms", Stage[current_stage + 1], (end = Date.now()) - begin);
-                else
+                if(typeof(current_stage) === "undefined") {
+                    current_stage = -1;
+                    console.debug("[loader] Booting app");
+                } else if(current_stage < Stage.INITIALIZING) {
+                    console.groupEnd();
+                    console.debug("[loader] Entering next state (%s). Last state took %dms", Stage[current_stage + 1], (end = Date.now()) - begin);
+                } else {
+                    console.groupEnd();
                     console.debug("[loader] Finish invoke took %dms", (end = Date.now()) - begin);
+                }
+
                 begin = end;
                 current_stage += 1;
+
+                if(current_stage != Stage.DONE)
+                    console.groupCollapsed("Executing loading stage %s", Stage[current_stage]);
             }
         }
         console.debug("[loader] finished loader. (Total time: %dms)", Date.now() - load_begin);
