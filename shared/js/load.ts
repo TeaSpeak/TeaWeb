@@ -118,11 +118,11 @@ namespace loader {
             await Promise.all([...promises]);
 
             if(errors.length > 0) {
+                console.groupEnd();
                console.error("Failed to execute loader. The following tasks failed (%d):", errors.length);
                for(const error of errors)
                    console.error("  - %s: %o", error.task.name, error.error);
 
-                console.groupEnd();
                throw "failed to process step " + Stage[current_stage];
             }
 
@@ -988,6 +988,7 @@ try { /* lets try to print it as VM code :)*/
     let hello_world_code = hello_world.toString();
     hello_world_code = hello_world_code.substr(hello_world_code.indexOf('() => {') + 8);
     hello_world_code = hello_world_code.substring(0, hello_world_code.lastIndexOf("}"));
+    hello_world_code = hello_world_code.replace(/(?!"\S*) {2,}(?!\S*")/g, " ").replace(/[\n\r]/g, "");
     eval(hello_world_code);
 } catch(e) {
     hello_world();
