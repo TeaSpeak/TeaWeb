@@ -506,7 +506,7 @@ class CacheManager {
     async resolve_cached(key: string, max_age?: number) : Promise<Response | undefined> {
         max_age = typeof(max_age) === "number" ? max_age : -1;
 
-        const request = new Request("cache_request_" + key);
+        const request = new Request("https://_local_cache/cache_request_" + key);
         const cached_response = await this._cache_category.match(request);
         if(!cached_response)
             return undefined;
@@ -516,7 +516,7 @@ class CacheManager {
     }
 
     async put_cache(key: string, value: Response, type?: string, headers?: {[key: string]:string}) {
-        const request = new Request("cache_request_" + key);
+        const request = new Request("https://_local_cache/cache_request_" + key);
 
         const new_headers = new Headers();
         for(const key of value.headers.keys())
