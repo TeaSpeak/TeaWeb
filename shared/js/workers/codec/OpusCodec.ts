@@ -4,7 +4,7 @@ const WASM_ERROR_MESSAGES = [
     'no native wasm support detected'
 ];
 
-this["Module"] = this["Module"] || {};
+this["Module"] = this["Module"] || ({} as any); /* its required to cast {} to any!*/
 
 let initialized = false;
 Module['onRuntimeInitialized'] = function() {
