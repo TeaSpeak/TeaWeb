@@ -296,6 +296,9 @@
     }
 
     function delete_directories(&$error, $path, $dry_run = false) {
+		if(!file_exists($path))
+			return true;
+
         if(strpos(PHP_OS, "Linux") !== false) {
             $command = "rm -r " . $path;
         } else if(strpos(PHP_OS, "WINNT") !== false) {
