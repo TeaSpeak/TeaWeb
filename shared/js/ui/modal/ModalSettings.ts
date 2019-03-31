@@ -1,3 +1,4 @@
+/// <reference path="../../../declarations/imports_client.d.ts" />
 /// <reference path="../../utils/modal.ts" />
 /// <reference path="../../utils/tab.ts" />
 /// <reference path="../../proto.ts" />
@@ -936,7 +937,6 @@ namespace Modals {
                 if (native_client) {
                     teaforo_tag.find(".native-teaforo-login").on('click', event => {
                         setTimeout(() => {
-                            const forum = require("teaforo.js");
                             const call = () => {
                                 if (modal.shown) {
                                     display_settings(selected_profile);

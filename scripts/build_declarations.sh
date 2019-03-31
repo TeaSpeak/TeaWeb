@@ -35,6 +35,11 @@ npm run dtsgen -- --config web/tsconfig/dtsconfig.json -v
 replace_tribble web/declarations/exports.d.ts
 echo "Generated web declarations"
 
+#Client
+npm run dtsgen -- --config client/tsconfig/dtsconfig.json -v
+replace_tribble client/declarations/exports.d.ts
+echo "Generated client declarations"
+
 #Shared
 npm run dtsgen -- --config shared/tsconfig/dtsconfig.json -v
 replace_tribble shared/declarations/exports.d.ts
@@ -55,3 +60,4 @@ generate_link web/declarations/exports.d.ts shared/declarations/imports_web.d.ts
 
 #Last but not least the client imports
 generate_link shared/declarations/exports.d.ts web/declarations/imports_shared.d.ts
+generate_link shared/declarations/exports.d.ts client/declarations/imports_shared.d.ts

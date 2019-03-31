@@ -23,6 +23,11 @@ function getUserMediaFunction() {
     return (navigator as any).getUserMedia || (navigator as any).webkitGetUserMedia || (navigator as any).mozGetUserMedia;
 }
 
+interface Window {
+    open_connected_question: () => Promise<boolean>;
+}
+
+
 function setup_close() {
     window.onbeforeunload = event => {
         if(profiles.requires_save())
@@ -34,23 +39,18 @@ function setup_close() {
             if(!native_client) {
                 event.returnValue = "Are you really sure?<br>You're still connected!";
             } else {
-                event.preventDefault();
-                event.returnValue = "question";
+                if(window.open_connected_question) {
+                    event.preventDefault();
+                    event.returnValue = "question";
+                    window.open_connected_question().then(result => {
+                        if(result) {
+                            window.onbeforeunload = undefined;
 
-                const {remote} = require('electron');
-                const dialog = remote.dialog;
-
-                dialog.showMessageBox(remote.getCurrentWindow(), {
-                    type: 'question',
-                    buttons: ['Yes', 'No'],
-                    title: 'Confirm',
-                    message: 'Are you really sure?\nYou\'re still connected!'
-                }, choice => {
-                    if(choice === 0) {
-                        window.onbeforeunload = undefined;
-                        remote.getCurrentWindow().close();
-                    }
-                });
+                            const {remote} = require('electron');
+                            remote.getCurrentWindow().close();
+                        }
+                    });
+                } else { /* we're in debugging mode */ }
             }
         }
     };

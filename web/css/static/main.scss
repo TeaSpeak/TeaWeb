@@ -29,3 +29,10 @@ html, body {
 		display: flex; flex-direction: column; resize: both;
 	}
 }
+
+$small_device: 650px;
+@media only screen and (max-width: $small_device) {
+	.app-container {
+		bottom: 25px;
+	}
+}

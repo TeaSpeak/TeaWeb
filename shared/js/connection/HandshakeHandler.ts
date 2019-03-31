@@ -1,3 +1,4 @@
+declare const native: any; //FIXME: Read client declarations!
 namespace connection {
     export interface HandshakeIdentityHandler {
         connection: AbstractServerConnection;
