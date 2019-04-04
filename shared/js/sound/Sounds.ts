@@ -55,7 +55,7 @@ enum Sound {
 }
 
 namespace sound {
-    interface SpeechFile {
+    export interface SoundHandle {
         key: string;
         filename: string;
 
@@ -68,7 +68,7 @@ namespace sound {
     }
 
     let warned = false;
-    let speech_mapping: {[key: string]:SpeechFile} = {};
+    let speech_mapping: {[key: string]:SoundHandle} = {};
 
     let volume_require_save = false;
     let speech_volume: {[key: string]:number} = {};
@@ -80,7 +80,7 @@ namespace sound {
     let master_mixed: GainNode;
 
     function register_sound(key: string, file: string) {
-        speech_mapping[key] = {key: key, filename: file} as SpeechFile;
+        speech_mapping[key] = {key: key, filename: file} as SoundHandle;
     }
 
     export function get_sound_volume(sound: Sound, default_volume?: number) : number {
@@ -192,6 +192,7 @@ namespace sound {
         register_sound("message.received", "effects/message_received.wav");
         register_sound("message.send", "effects/message_send.wav");
 
+        manager = new SoundManager(undefined);
         audio.player.on_ready(reinitialisize_audio);
         return new Promise<void>(resolve => {
             $.ajax({
@@ -211,7 +212,7 @@ namespace sound {
                 async: true,
                 type: 'GET'
             });
-        })
+        });
     }
 
     export interface PlaybackOptions {
@@ -221,84 +222,44 @@ namespace sound {
         default_volume?: number;
     }
 
-    export function play(sound: Sound, options?: PlaybackOptions) {
-        if(!options) {
-            options = {};
-        }
+    export async function resolve_sound(sound: Sound) : Promise<SoundHandle> {
+        const file: SoundHandle = speech_mapping[sound];
+        if(!file)
+            throw tr("Missing sound handle");
 
-        const file: SpeechFile = speech_mapping[sound];
-        if(!file) {
-            console.warn(tr("Missing sound %o"), sound);
-            return;
-        }
+
         if(file.not_supported) {
-            if(!file.not_supported_timeout || Date.now() < file.not_supported_timeout) //Test if the not supported isn't may timeouted
-                return;
+            if(!file.not_supported_timeout || Date.now() < file.not_supported_timeout) //Test if the not supported flag has been expired
+                return file;
+
             file.not_supported = false;
             file.not_supported_timeout = undefined;
         }
 
-        const path = "audio/" + file.filename;
+
         const context = audio.player.context();
-        if(!context) {
-            console.warn(tr("Tried to replay a sound without an audio context (Sound: %o). Dropping playback"), sound);
-            return;
-        }
-        const volume = get_sound_volume(sound, options.default_volume);
+        if(!context)
+            return file;
 
-        console.log(tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), sound, volume, master_volume);
-        if(volume == 0) return;
-        if(master_volume == 0) return;
-        if(!options.ignore_muted && !ignore_muted && globalClient.controlBar.muteOutput) return;
-
+        const path = "audio/" + file.filename;
         if(context.decodeAudioData) {
-            if(file.cached) {
-                if(!options.ignore_overlap && file.replaying && !overlap_sounds) {
-                    console.log(tr("Dropping requested playback for sound %s because it would overlap."), sound);
-                    return;
-                }
-
-                console.log(tr("Using cached buffer: %o"), file.cached);
-                const player = context.createBufferSource();
-                player.buffer = file.cached;
-                player.start(0);
-
-                file.replaying = true;
-                player.onended = event => {
-                    file.replaying = false;
-                };
-
-                if(volume != 1 && context.createGain) {
-                    const gain = context.createGain();
-                    if(gain.gain.setValueAtTime)
-                        gain.gain.setValueAtTime(volume, 0);
-                    else
-                        gain.gain.value = volume;
-
-                    player.connect(gain);
-                    gain.connect(master_mixed);
-                } else {
-                    player.connect(master_mixed);
-                }
-            } else {
+            if(!file.cached) {
                 const decode_data = buffer => {
                     console.log(buffer);
                     try {
                         console.log(tr("Decoding data"));
                         context.decodeAudioData(buffer, result => {
-                            log.info(LogCategory.VOICE, tr("Got decoded data"));
                             file.cached = result;
-                            play(sound, options);
                         }, error => {
                             console.error(tr("Failed to decode audio data for %o"), sound);
                             console.error(error);
                             file.not_supported = true;
-                            file.not_supported_timeout = Date.now() + 1000 * 60 * 60; //Try in 2min again!
+                            file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
                         })
                     } catch (error) {
                         console.error(error);
                         file.not_supported = true;
-                        file.not_supported_timeout = Date.now() + 1000 * 60 * 60; //Try in 2min again!
+                        file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
                     }
                 };
 
@@ -306,31 +267,33 @@ namespace sound {
                 xhr.open('GET', path, true);
                 xhr.responseType = 'arraybuffer';
 
-                xhr.onload = function(e) {
-                    if (this.status == 200) {
-                        decode_data(this.response);
-                    } else {
-                        console.error(tr("Failed to load audio file. (Response code %o)"), this.status);
-                        file.not_supported = true;
-                        file.not_supported_timeout = Date.now() + 1000 * 60 * 60; //Try in 2min again!
+                try {
+                    const result = new Promise((resolve, reject) => {
+                        xhr.onload = resolve;
+                        xhr.onerror = reject;
+                    });
+
+                    xhr.send();
+                    await result;
+
+                    if (xhr.status != 200)
+                        throw "invalid response code (" + xhr.status + ")";
+
+                    console.log(tr("Decoding data"));
+                    try {
+                        file.cached = await context.decodeAudioData(xhr.response);
+                    } catch(error) {
+                        console.error(error);
+                        throw "failed to decode audio data";
                     }
-                };
-
-                xhr.onerror = error => {
-                    console.error(tr("Failed to load audio file "), sound);
-                    console.error(error);
+                } catch(error) {
+                    console.error(tr("Failed to load audio file %s. Error: %o"), sound, error);
                     file.not_supported = true;
-                    file.not_supported_timeout = Date.now() + 1000 * 60 * 60; //Try in 2min again!
-                };
-
-                xhr.send();
+                    file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
+                }
             }
         } else {
-            console.log(tr("Replaying %s"), path);
-            if(file.node) {
-                file.node.currentTime = 0;
-                file.node.play();
-            } else {
+            if(!file.node) {
                 if(!warned) {
                     warned = true;
                     console.warn(tr("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!"));
@@ -340,8 +303,81 @@ namespace sound {
                 node.appendTo(container);
 
                 file.node = node[0];
-                file.node.play();
             }
+        }
+
+        return file;
+    }
+
+    export let manager: SoundManager;
+
+    export class SoundManager {
+        private _handle: ConnectionHandler;
+        private _playing_sounds: {[key: string]:number} = {};
+
+        constructor(handle: ConnectionHandler) {
+            this._handle = handle;
+        }
+
+        play(_sound: Sound, options?: PlaybackOptions) {
+            options = options || {};
+
+            const volume = get_sound_volume(_sound, options.default_volume);
+            console.log(tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), _sound, volume, master_volume);
+
+            if(volume == 0 || master_volume == 0)
+                return;
+
+            if(this._handle && !options.ignore_muted && !sound.ignore_output_muted() && this._handle.client_status.output_muted)
+                return;
+
+            const context = audio.player.context();
+            if(!context) {
+                console.warn(tr("Tried to replay a sound without an audio context (Sound: %o). Dropping playback"), _sound);
+                return;
+            }
+
+            sound.resolve_sound(_sound).then(handle => {
+                if(!handle)
+                    return;
+
+                if(!options.ignore_overlap && (this._playing_sounds[_sound] > 0) && !sound.overlap_activated()) {
+                    console.log(tr("Dropping requested playback for sound %s because it would overlap."), _sound);
+                    return;
+                }
+
+                if(handle.cached) {
+                    this._playing_sounds[_sound] = Date.now();
+
+                    const player = context.createBufferSource();
+                    player.buffer = handle.cached;
+                    player.start(0);
+
+                    handle.replaying = true;
+                    player.onended = event => {
+                        delete this._playing_sounds[_sound];
+                    };
+
+                    if(volume != 1 && context.createGain) {
+                        const gain = context.createGain();
+                        if(gain.gain.setValueAtTime)
+                            gain.gain.setValueAtTime(volume, 0);
+                        else
+                            gain.gain.value = volume;
+
+                        player.connect(gain);
+                        gain.connect(master_mixed);
+                    } else {
+                        player.connect(master_mixed);
+                    }
+                } else if(handle.node) {
+                    handle.node.currentTime = 0;
+                    handle.node.play();
+                } else {
+                    console.warn(tr("Failed to replay sound because of missing handles."), sound);
+                    return;
+                }
+            });
         }
     }
 }

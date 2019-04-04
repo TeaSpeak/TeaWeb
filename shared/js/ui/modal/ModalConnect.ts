@@ -1,4 +1,4 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
 
 namespace Modals {
     export function spawnConnectModal(defaultHost: { url: string, enforce: boolean} = { url: "ts.TeaSpeak.de", enforce: false}, connect_profile?: { profile: profiles.ConnectionProfile, enforce: boolean}) {
@@ -13,9 +13,11 @@ namespace Modals {
         const connect_modal = $("#tmpl_connect").renderTag({
             client: native_client,
             forum_path: settings.static("forum_path"),
-            password_id: random_id
+            password_id: random_id,
+            multi_tab: !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION, false)
         }).modalize((header, body, footer) => {
             const button_connect = footer.find(".button-connect");
+            const button_connect_tab = footer.find(".button-connect-new-tab");
             const button_manage = body.find(".button-manage-profiles");
 
             const input_profile = body.find(".container-select-profile select");
@@ -41,11 +43,9 @@ namespace Modals {
                 input_address.attr('pattern', flag_address ? null : '^[a]{1000}$').toggleClass('is-invalid', !flag_address);
                 input_nickname.attr('pattern', flag_nickname ? null : '^[a]{1000}$').toggleClass('is-invalid', !flag_nickname);
 
-                if(!flag_nickname || !flag_address || !selected_profile || !selected_profile.valid()) {
-                    button_connect.prop("disabled", true);
-                } else {
-                    button_connect.prop("disabled", false);
-                }
+                const flag_disabled = !flag_nickname || !flag_address || !selected_profile || !selected_profile.valid();
+                button_connect.prop("disabled", flag_disabled);
+                button_connect_tab.prop("disabled", flag_disabled);
             };
 
             input_nickname.val(settings.static_global(Settings.KEY_CONNECT_USERNAME, undefined));
@@ -89,7 +89,24 @@ namespace Modals {
             button_connect.on('click', event => {
                 connect_modal.close();
 
-                globalClient.startConnection(
+                const connection = server_connections.active_connection_handler();
+                if(connection) {
+                    connection.startConnection(
+                        input_address.val().toString(),
+                        selected_profile,
+                        input_nickname.val().toString() || selected_profile.default_username,
+                        {password: input_password.val().toString(), hashed: false}
+                    );
+                } else {
+                    button_connect_tab.trigger('click');
+                }
+            });
+            button_connect_tab.on('click', event => {
+                connect_modal.close();
+
+                const connection = server_connections.spawn_server_connection_handler();
+                server_connections.set_active_connection_handler(connection);
+                connection.startConnection(
                     input_address.val().toString(),
                     selected_profile,
                     input_nickname.val().toString() || selected_profile.default_username,
@@ -102,57 +119,6 @@ namespace Modals {
 
         connect_modal.open();
         return;
-
-
-        const connectModal = createModal({
-            header: (tr("Create a new connection")),
-            body: function () {
-                const random_id = (() => {
-                    const array = new Uint32Array(10);
-                    window.crypto.getRandomValues(array);
-                    return array.join("");
-                })();
-
-                let tag = $("#tmpl_connect").renderTag({
-                    client: native_client,
-                    forum_path: settings.static("forum_path"),
-                    password_id: random_id
-                });
-
-
-                //connect_address
-                return tag;
-            },
-            footer: function () {
-                let tag = $.spawn("div");
-                tag.css("text-align", "right");
-                tag.css("margin-top", "3px");
-                tag.css("margin-bottom", "6px");
-                tag.addClass("modal-button-group");
-
-                let button = $.spawn("button");
-                button.addClass("connect_connect_button");
-                button.text(tr("Connect"));
-                button.on("click", function () {
-                    connectModal.close();
-
-                    let field_address = tag.parents(".modal-content").find(".connect_address");
-                    let address = field_address.val().toString();
-                    globalClient.startConnection(
-                        address,
-                        selected_profile,
-                        tag.parents(".modal-content").find(".connect_nickname").val().toString() || selected_profile.default_username,
-                        {password: tag.parents(".modal-content").find(".connect_password").val().toString(), hashed: false}
-                    );
-                });
-                tag.append(button);
-                return tag;
-            },
-
-            width: '70%',
-            //flag_closeable: false
-        });
-        connectModal.open();
     }
 
     let Regex = {

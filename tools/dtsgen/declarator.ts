@@ -322,6 +322,9 @@ generators[SyntaxKind.ClassDeclaration] = (settings, stack, node: ts.ClassDeclar
 };
 
 generators[SyntaxKind.PropertySignature] = (settings, stack, node: ts.PropertySignature) => {
+    if(!node.type)
+        return node;
+
     console.log(SyntaxKind[node.type.kind]);
     let type: ts.TypeNode = node.type;
     switch (node.type.kind) {
@@ -371,7 +374,24 @@ generators[SyntaxKind.VariableStatement] = (settings, stack, node: ts.VariableSt
 };
 
 generators[SyntaxKind.TypeAliasDeclaration] = (settings, stack, node: ts.TypeAliasDeclaration) => {
-    return node;
+    let type = node.type;
+    if(type.kind == SyntaxKind.UnionType) {
+        const union_members = [];
+        const union = <ts.UnionTypeNode>node.type;
+
+        for(const element of union.types as any as any[]) {
+            if(element.kind === SyntaxKind.LiteralType && element.literal && element.literal.text) {
+                union_members.push(ts.createStringLiteral(element.literal.text));
+            }
+            else
+                union_members.push(element);
+            console.log(SyntaxKind[element.kind]);
+        }
+
+        type = ts.createUnionTypeNode(union_members);
+    }
+
+    return ts.createTypeAliasDeclaration(node.decorators, node.modifiers, node.name, node.typeParameters, type);
 };
 
 generators[SyntaxKind.EnumMember] = (settings, stack, node: ts.EnumMember) => {

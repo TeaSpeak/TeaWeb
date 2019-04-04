@@ -1,9 +1,9 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../client.ts" />
 
 namespace Modals {
-    export function spawnQueryCreate(callback_created?: (user, pass) => any) {
+    export function spawnQueryCreate(connection: ConnectionHandler, callback_created?: (user, pass) => any) {
         let modal;
         modal = createModal({
             header: tr("Create a server query login"),
@@ -34,11 +34,11 @@ namespace Modals {
                                 return true;
                             }
                     };
-                    globalClient.serverConnection.command_handler_boss().register_single_handler(single_handler);
-                    globalClient.serverConnection.send_command("querycreate", {
+                    connection.serverConnection.command_handler_boss().register_single_handler(single_handler);
+                    connection.serverConnection.send_command("querycreate", {
                         client_login_name: name
                     }).catch(error => {
-                        globalClient.serverConnection.command_handler_boss().remove_single_handler(single_handler);
+                        connection.serverConnection.command_handler_boss().remove_single_handler(single_handler);
 
                         if(error instanceof CommandResult)
                             error = error.extra_message || error.message;

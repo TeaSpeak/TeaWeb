@@ -1,13 +1,5 @@
 
-/* File: /home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/tools/dtsgen/test/test_03.ts */
-declare enum YY {
-    H,
-    B
-}
-declare interface X {
-    type: any;
-    c: YY.B;
-}
-declare class X {
-    static x();
-}
+/* File: /home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/tools/dtsgen/test/test_04.ts */
+type T = "a" | "b" | "c";
+declare function _t(parm: T);
+declare function __t();

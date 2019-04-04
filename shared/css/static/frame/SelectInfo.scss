@@ -66,10 +66,12 @@
 
 		flex-grow: 1;
 		flex-shrink: 2;
+
 		max-height: 25%;
+		min-height: 0;
+
 		display: flex;
 		justify-content: stretch;
-
 		overflow: hidden;
 
 
@@ -81,6 +83,12 @@
 		.hostbanner {
 			position: relative;
 			flex-grow: 1;
+			flex-shrink: 1;
+
+			.meta-image {
+				display: none;
+			}
+
 
             .image-container {
                 display: flex;

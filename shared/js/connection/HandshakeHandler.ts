@@ -1,3 +1,4 @@
+declare const native: any; //FIXME: Read client declarations!
 namespace connection {
     export interface HandshakeIdentityHandler {
         connection: AbstractServerConnection;
@@ -70,7 +71,12 @@ namespace connection {
                 client_version: "TeaWeb " + git_version + " (" + navigator.userAgent + ")",
 
                 client_server_password: this.server_password,
-                client_browser_engine: navigator.product
+                client_browser_engine: navigator.product,
+
+                client_input_hardware: this.connection.client.client_status.input_hardware,
+                client_output_hardware: false,
+                client_input_muted: this.connection.client.client_status.input_muted,
+                client_output_muted: this.connection.client.client_status.output_muted,
             };
 
             if(version) {

@@ -10,10 +10,11 @@ interface JSON {
     map_field_to<T>(object: T, value: any, field: string) : T;
 }
 
+type JQueryScrollType = "height" | "width";
 interface JQuery<TElement = HTMLElement> {
     render(values?: any) : string;
     renderTag(values?: any) : JQuery<TElement>;
-    hasScrollBar() : boolean;
+    hasScrollBar(direction?: JQueryScrollType) : boolean;
 
 
     visible_height() : number;
@@ -137,10 +138,21 @@ if(typeof ($) !== "undefined") {
         }
     }
     if(!$.fn.hasScrollBar)
-        $.fn.hasScrollBar = function() {
-            if(this.length <= 0) return false;
-            return this.get(0).scrollHeight > this.height();
-        }
+        $.fn.hasScrollBar = function(direction?: "height" | "width") {
+            if(this.length <= 0)
+                return false;
+
+            const scroll_height = this.get(0).scrollHeight > this.height();
+            const scroll_width = this.get(0).scrollWidth > this.width();
+
+            if(typeof(direction) === "string") {
+                if(direction === "height")
+                    return scroll_height;
+                if(direction === "width")
+                    return scroll_width;
+            }
+            return scroll_width || scroll_height;
+        };
 
     if(!$.fn.visible_height)
         $.fn.visible_height = function (this: JQuery<HTMLElement>) {

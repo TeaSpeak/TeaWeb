@@ -1,4 +1,4 @@
-/// <reference path="../client.ts" />
+/// <reference path="../ConnectionHandler.ts" />
 /// <reference path="../connection/ConnectionBase.ts" />
 
 enum PermissionType {
@@ -418,7 +418,7 @@ class TeaPermissionRequest {
 }
 
 class PermissionManager extends connection.AbstractCommandHandler {
-    readonly handle: TSClient;
+    readonly handle: ConnectionHandler;
 
     permissionList: PermissionInfo[] = [];
     permissionGroups: PermissionGroup[] = [];
@@ -505,7 +505,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
         return permissions;
     }
 
-    constructor(client: TSClient) {
+    constructor(client: ConnectionHandler) {
         super(client.serverConnection);
 
         //FIXME? Dont register the handler like this?

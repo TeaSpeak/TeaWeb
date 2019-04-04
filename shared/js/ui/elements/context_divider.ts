@@ -79,6 +79,9 @@ if(!$.fn.dividerfy) {
                 $(document.documentElement).css("user-select", "");
 
                 element.removeClass("seperator-selected");
+
+                next_element.find("[x-divider-require-resize]").trigger('resize');
+                previous_element.find("[x-divider-require-resize]").trigger('resize');
             };
 
             element.on('mousedown', () => {

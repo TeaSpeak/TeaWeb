@@ -6,6 +6,11 @@ $background:lightgray;
 	display: flex;
 	flex-direction: row;
 
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
 	/* tmp fix for ultra small devices */
 	overflow-y: visible;
 
@@ -99,8 +104,6 @@ $background:lightgray;
 			border: 2px solid $border_color_activated;
 			width: 230px;
 
-			user-select: none;
-
 			z-index: 1000;
 			/*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
 
@@ -136,7 +139,7 @@ $background:lightgray;
 			}
 		}
 
-		&:hover.displayed {
+		&:hover.displayed, &.force-show {
 			.dropdown {
 				display: block;
 			}

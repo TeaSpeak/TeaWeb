@@ -1,5 +1,3 @@
-import LogType = log.LogType;
-
 enum ChatType {
     GENERAL,
     SERVER,
@@ -56,20 +54,34 @@ namespace MessageHelper {
 
             result.push(...formatElement(pattern.substr(begin, found - begin))); //Append the text
 
-            let number;
             let offset = 0;
-            while ("0123456789".includes(pattern[found + 1 + offset])) offset++;
-            number = parseInt(offset > 0 ? pattern.substr(found + 1, offset) : "0");
+            if(pattern[found + 1] == ':') {
+                offset++; /* the beginning : */
+                while (pattern[found + 1 + offset] != ':') offset++;
+                const tag = pattern.substr(found + 2, offset - 1);
 
-            if(pattern[found + offset + 1] != '}') {
-                found++;
-                continue;
+                offset++; /* the ending : */
+                if(pattern[found + offset + 1] != '}') {
+                    found++;
+                    continue;
+                }
+
+                result.push($.spawn(tag as any));
+            } else {
+                let number;
+                while ("0123456789".includes(pattern[found + 1 + offset])) offset++;
+                number = parseInt(offset > 0 ? pattern.substr(found + 1, offset) : "0");
+                if(pattern[found + offset + 1] != '}') {
+                    found++;
+                    continue;
+                }
+
+                if(objects.length < number)
+                    log.warn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
+
+                result.push(...formatElement(objects[number]));
             }
 
-            if(objects.length < number)
-                log.warn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
-
-            result.push(...formatElement(objects[number]));
             found = found + 1 + offset;
             begin = found + 1;
         } while(found++);
@@ -251,9 +263,7 @@ class ChatEntry {
                     type: MenuEntryType.ENTRY,
                     icon: "client-tab_close_button",
                     name: tr("Close"),
-                    callback: () => {
-                        chat.deleteChat(this);
-                    }
+                    callback: () => this.handle.deleteChat(this)
                 });
             }
 
@@ -341,6 +351,7 @@ class ChatBox {
     //static readonly URL_REGEX = /^(?<hostname>([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/(?<path>(?:[^\s?]+)?)(?:\?(?<query>\S+))?)?$/gm;
     static readonly URL_REGEX = /^(([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/((?:[^\s?]+)?)(?:\?(\S+))?)?$/gm;
 
+    readonly connection_handler: ConnectionHandler;
     htmlTag: JQuery;
     chats: ChatEntry[];
     private _activeChat: ChatEntry;
@@ -348,9 +359,12 @@ class ChatBox {
     private _button_send: JQuery;
     private _input_message: JQuery;
 
-    constructor(htmlTag: JQuery) {
-        this.htmlTag = htmlTag;
+    constructor(connection_handler: ConnectionHandler) {
+        this.connection_handler = connection_handler;
+    }
 
+    initialize() {
+        this.htmlTag = $("#tmpl_frame_chat").renderTag();
         this._button_send = this.htmlTag.find(".button-send");
         this._input_message = this.htmlTag.find(".input-message");
 
@@ -372,15 +386,15 @@ class ChatBox {
         this._activeChat = undefined;
 
         this.createChat("chat_server", ChatType.SERVER).onMessageSend = (text: string) => {
-            if(!globalClient.serverConnection) {
-                chat.serverChat().appendError(tr("Could not send chant message (Not connected)"));
+            if(!this.connection_handler.serverConnection) {
+                this.serverChat().appendError(tr("Could not send chant message (Not connected)"));
                 return;
             }
-            globalClient.serverConnection.command_helper.sendMessage(text, ChatType.SERVER).catch(error => {
+            this.connection_handler.serverConnection.command_helper.sendMessage(text, ChatType.SERVER).catch(error => {
                 if(error instanceof CommandResult)
                     return;
 
-                chat.serverChat().appendMessage(tr("Failed to send text message."));
+                this.serverChat().appendMessage(tr("Failed to send text message."));
                 log.error(LogCategory.GENERAL, tr("Failed to send server text message: %o"), error);
             });
         };
@@ -388,20 +402,20 @@ class ChatBox {
         this.serverChat().flag_closeable = false;
 
         this.createChat("chat_channel", ChatType.CHANNEL).onMessageSend = (text: string) => {
-            if(!globalClient.serverConnection) {
-                chat.channelChat().appendError(tr("Could not send chant message (Not connected)"));
+            if(!this.connection_handler.serverConnection) {
+                this.channelChat().appendError(tr("Could not send chant message (Not connected)"));
                 return;
             }
 
-            globalClient.serverConnection.command_helper.sendMessage(text, ChatType.CHANNEL, globalClient.getClient().currentChannel()).catch(error => {
-                chat.channelChat().appendMessage(tr("Failed to send text message."));
+            this.connection_handler.serverConnection.command_helper.sendMessage(text, ChatType.CHANNEL, this.connection_handler.getClient().currentChannel()).catch(error => {
+                this.channelChat().appendMessage(tr("Failed to send text message."));
                 log.error(LogCategory.GENERAL, tr("Failed to send channel text message: %o"), error);
             });
         };
         this.channelChat().name = tr("Channel chat");
         this.channelChat().flag_closeable = false;
 
-        globalClient.permissions.initializedListener.push(flag => {
+        this.connection_handler.permissions.initializedListener.push(flag => {
             if(flag) this.activeChat0(this._activeChat);
         });
     }
@@ -492,16 +506,16 @@ class ChatBox {
             this._activeChat.html_tag.addClass("active");
             this._activeChat.displayHistory();
 
-            if(!disable_input && globalClient && globalClient.permissions && globalClient.permissions.initialized())
+            if(!disable_input && this.connection_handler && this.connection_handler.permissions && this.connection_handler.permissions.initialized())
                 switch (this._activeChat.type) {
                     case ChatType.CLIENT:
                         disable_input = false;
                         break;
                     case ChatType.SERVER:
-                        disable_input = !globalClient.permissions.neededPermission(PermissionType.B_CLIENT_SERVER_TEXTMESSAGE_SEND).granted(1);
+                        disable_input = !this.connection_handler.permissions.neededPermission(PermissionType.B_CLIENT_SERVER_TEXTMESSAGE_SEND).granted(1);
                         break;
                     case ChatType.CHANNEL:
-                        disable_input = !globalClient.permissions.neededPermission(PermissionType.B_CLIENT_CHANNEL_TEXTMESSAGE_SEND).granted(1);
+                        disable_input = !this.connection_handler.permissions.neededPermission(PermissionType.B_CLIENT_CHANNEL_TEXTMESSAGE_SEND).granted(1);
                         break;
                 }
         }

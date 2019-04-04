@@ -238,6 +238,7 @@ $animation_length: .5s;
 
 .app {
     min-width: 350px;
+	min-height: 330px;
 
 	.container-app-main {
 		position: relative;
@@ -245,6 +246,7 @@ $animation_length: .5s;
 		flex-direction: row;
 		justify-content: stretch;
 
+		min-height: 0;
 		height: 100%;
 		width: 100%;
 
@@ -254,9 +256,11 @@ $animation_length: .5s;
 	}
 
 	.container-control-bar {
+		flex-shrink: 0;
+
 		height: 45px;
 		width: 100%;
-		border-radius: 2px 0 0 0;
+		border-radius: 2px 2px 0 0;
 		border-bottom-width: 0;
 		background-color: lightgrey;
 
@@ -327,19 +331,25 @@ $animation_length: .5s;
     }
 }
 
+@media only screen and (max-width: 400px), only screen and (max-height: 400px) {
+	.app-container {
+		overflow: auto;
+	}
+}
+
 @media only screen and (max-width: $small_device) {
     .app-container {
         right: 0;
         left: 0;
-        bottom: 25px;
         top: 0;
 
         transition: all $animation_length linear;
-        overflow: auto;
+		overflow: auto;
     }
 
     .app {
         .container-app-main {
+
             .container-info {
                 display: none;
                 position: absolute;

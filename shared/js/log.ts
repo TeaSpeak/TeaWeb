@@ -8,6 +8,7 @@ enum LogCategory {
     NETWORKING,
     VOICE,
     I18N,
+    IPC,
     IDENTITIES
 }
 
@@ -30,7 +31,8 @@ namespace log {
         [LogCategory.NETWORKING,                "Network    "],
         [LogCategory.VOICE,                     "Voice      "],
         [LogCategory.I18N,                      "I18N       "],
-        [LogCategory.IDENTITIES,                "IDENTITIES "]
+        [LogCategory.IDENTITIES,                "IDENTITIES "],
+        [LogCategory.IPC,                       "IPC        "]
     ]);
 
     export let enabled_mapping = new Map<number, boolean>([
@@ -43,7 +45,8 @@ namespace log {
         [LogCategory.NETWORKING,            true],
         [LogCategory.VOICE,                 true],
         [LogCategory.I18N,                  false],
-        [LogCategory.IDENTITIES,            true]
+        [LogCategory.IDENTITIES,            true],
+        [LogCategory.IPC,                   true]
     ]);
 
     enum GroupMode {

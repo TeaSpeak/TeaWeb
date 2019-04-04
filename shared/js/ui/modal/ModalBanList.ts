@@ -28,10 +28,10 @@ namespace Modals {
         modal: Modal;
     }
 
-    export function openBanList(client: TSClient) {
+    export function openBanList(client: ConnectionHandler) {
         let update;
         const modal = spawnBanListModal(() => update(), () => {
-            spawnBanCreate(undefined, result => {
+            spawnBanCreate(client, undefined, result => {
                 if(result.server_id < 0) result.server_id = undefined;
                 console.log(tr("Adding ban %o"), result);
 
@@ -52,7 +52,7 @@ namespace Modals {
             });
         }, ban => {
             console.log(tr("Editing ban %o"), ban);
-            spawnBanCreate(ban, result => {
+            spawnBanCreate(client, ban, result => {
                 console.log(tr("Apply edit changes %o"), result);
                 if(result.server_id < 0) result.server_id = undefined;
 

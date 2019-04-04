@@ -1,7 +1,6 @@
 <?php
 	/* this file generates the final environment. All files have to be compiled before! */
-	$APP_FILE_LIST = [
-		/* shared part */
+	$APP_FILE_LIST_SHARED_SOURCE = [
 		[ /* shared html and php files */
 			"type" => "html",
 			"search-pattern" => "/^([a-zA-Z]+)\.(html|php|json)$/",
@@ -124,9 +123,10 @@
 
 			"path" => "i18n/",
 			"local-path" => "./shared/i18n/"
-		],
+		]
+	];
 
-		/* vendors */
+	$APP_FILE_LIST_SHARED_VENDORS = [
 		[
 			"type" => "js",
 			"search-pattern" => "/.*\.js$/",
@@ -142,10 +142,11 @@
 
 			"path" => "vendor/",
 			"local-path" => "./vendor/"
-		],
+		]
+	];
 
-		/* client specific */
-		[
+	$APP_FILE_LIST_CLIENT_SOURCE = [
+		[ /* client css files */
 			"client-only" => true,
 			"type" => "css",
 			"search-pattern" => "/.*\.css$/",
@@ -154,17 +155,39 @@
 			"path" => "css/",
 			"local-path" => "./client/css/"
 		],
-		[
+		[ /* client js files */
 			"client-only" => true,
 			"type" => "js",
 			"search-pattern" => "/.*\.js/",
-			"build-target" => "dev|rel",
+			"build-target" => "dev",
 
 			"path" => "js/",
 			"local-path" => "./client/js/"
 		],
 
-		/* web specific */
+		/* release specific */
+		[ /* web merged javascript files (shared inclusive) */
+			"client-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"build-target" => "rel",
+
+			"path" => "js/",
+			"local-path" => "./client/generated/"
+		],
+		[ /* Add the shared generated files. Exclude the shared file because we're including it already */
+			"client-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"search-exclude" => "/shared\.js(.map)?$/",
+			"build-target" => "rel",
+
+			"path" => "js/",
+			"local-path" => "./shared/generated/"
+		],
+	];
+
+	$APP_FILE_LIST_WEB_SOURCE = [
 		[ /* web javascript files (development mode only) */
 			"web-only" => true,
 			"type" => "js",
@@ -210,10 +233,10 @@
 
 			"path" => "./",
 			"local-path" => "./web/html/"
-		],
+		]
+	];
 
-
-
+	$APP_FILE_LIST_WEB_TEASPEAK = [
 		/* special web.teaspeak.de only auth files */
 		[ /* login page and api */
 			"web-only" => true,
@@ -255,8 +278,16 @@
 			"path" => "certs/",
 			"local-path" => "./auth/certs/",
 			"req-parm" => ["-xf"]
-		],
+		]
 	];
+
+	$APP_FILE_LIST = array_merge(
+		$APP_FILE_LIST_SHARED_SOURCE,
+		$APP_FILE_LIST_SHARED_VENDORS,
+		$APP_FILE_LIST_CLIENT_SOURCE,
+		$APP_FILE_LIST_WEB_SOURCE,
+		$APP_FILE_LIST_WEB_TEASPEAK
+	);
 
 	function systemify_path($path) {
         return str_replace("/", DIRECTORY_SEPARATOR, $path);

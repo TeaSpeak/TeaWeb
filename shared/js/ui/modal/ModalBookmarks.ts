@@ -1,4 +1,5 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
 
 namespace Modals {
@@ -252,7 +253,7 @@ namespace Modals {
             width: 750
         });
 
-        modal.close_listener.push(() => globalClient.controlBar.update_bookmarks());
+        modal.close_listener.push(() => control_bar.update_bookmarks());
         modal.open();
     }
 }

@@ -60,13 +60,13 @@ class Group {
 }
 
 class GroupManager extends connection.AbstractCommandHandler {
-    readonly handle: TSClient;
+    readonly handle: ConnectionHandler;
 
     serverGroups: Group[] = [];
     channelGroups: Group[] = [];
 
     private requests_group_permissions: GroupPermissionRequest[] = [];
-    constructor(client: TSClient) {
+    constructor(client: ConnectionHandler) {
         super(client.serverConnection);
 
         client.serverConnection.command_handler_boss().register_handler(this);

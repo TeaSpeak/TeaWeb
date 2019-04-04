@@ -511,7 +511,7 @@ const loader_javascript = {
             ["js/WebPPTListener.js"]
         ]);
     }),
-    loadRelease: () => __awaiter(this, void 0, void 0, function* () {
+    load_release: () => __awaiter(this, void 0, void 0, function* () {
         console.log("Load for release!");
         yield loader.load_scripts([
             //Load general API's

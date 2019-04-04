@@ -54,28 +54,36 @@ class ClientEntry {
     protected _properties: ClientProperties;
     protected lastVariableUpdate: number = 0;
     protected _speaking: boolean = false;
-    private _listener_initialized: boolean;
+    protected _listener_initialized: boolean;
+    protected _audio_handle: connection.voice.VoiceClient;
 
     channelTree: ChannelTree;
-    audioController: AudioController;
 
-    constructor(clientId, clientName, properties: ClientProperties = new ClientProperties()) {
+    constructor(clientId: number, clientName, properties: ClientProperties = new ClientProperties()) {
         this._properties = properties;
         this._properties.client_nickname = clientName;
         this._clientId = clientId;
         this.channelTree = null;
         this._channel = null;
-        this.audioController = new AudioController();
+    }
 
-        const _this = this;
-        this.audioController.onSpeaking = function () {
-            _this.speaking = true;
-        };
+    set_audio_handle(handle: connection.voice.VoiceClient) {
+        if(this._audio_handle === handle)
+            return;
 
-        this.audioController.onSilence = function () {
-            _this.speaking = false;
-        };
-        this.audioController.initialize();
+        //TODO may ensure that the id is the same?
+        this._audio_handle = handle;
+        if(!handle) {
+            this.speaking = false;
+            return;
+        }
+
+        handle.callback_playback = () => this.speaking = true;
+        handle.callback_stopped = () => this.speaking = false;
+    }
+
+    get_audio_handle() : connection.voice.VoiceClient {
+        return this._audio_handle;
     }
 
     get properties() : ClientProperties {
@@ -87,10 +95,6 @@ class ClientEntry {
     clientUid(){ return this.properties.client_unique_identifier; }
     clientId(){ return this._clientId; }
 
-    getAudioController() : AudioController {
-        return this.audioController;
-    }
-
     protected initializeListener(){
         if(this._listener_initialized) return;
         this._listener_initialized = true;
@@ -100,8 +104,9 @@ class ClientEntry {
                 this.channelTree.onSelect(this);
             }
         });
-        this.tag.click(event => {
-            console.log("Clicked!");
+
+        this.tag.on('click', event => {
+            console.log("I've been clicked!");
         });
 
         if(!(this instanceof LocalClientEntry) && !(this instanceof MusicClientEntry))
@@ -126,7 +131,7 @@ class ClientEntry {
             });
         }
 
-        this.tag.mousedown(event => {
+        this.tag.on('mousedown', event => {
             if(event.which != 1) return; //Only the left button
 
             let clients = this.channelTree.currently_selected as (ClientEntry | ClientEntry[]);
@@ -151,9 +156,9 @@ class ClientEntry {
                         cid: target.getChannelId()
                     }).then(event => {
                         if(client.clientId() == this.channelTree.client.clientId)
-                            sound.play(Sound.CHANNEL_JOINED);
+                            this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
                         else if(target !== source && target != self.currentChannel())
-                            sound.play(Sound.USER_MOVED);
+                            this.channelTree.client.sound.play(Sound.USER_MOVED);
                     });
                 }
 
@@ -273,21 +278,21 @@ class ClientEntry {
                 name: tr("Show client info"),
                 callback: () => {
                     trigger_close = false;
-                    this.channelTree.client.selectInfo.open_popover()
+                    this.channelTree.client.select_info.open_popover()
                 },
                 icon: "client-about",
-                visible: this.channelTree.client.selectInfo.is_popover()
+                visible: this.channelTree.client.select_info.is_popover()
             }, {
                 type: MenuEntryType.HR,
-                visible: this.channelTree.client.selectInfo.is_popover(),
+                visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
                 type: MenuEntryType.ENTRY,
                 icon: "client-change_nickname",
                 name: tr("<b>Open text chat</b>"),
                 callback: () => {
-                    chat.activeChat = this.chat(true);
-                    chat.focus();
+                    this.channelTree.client.chat.activeChat = this.chat(true);
+                    this.channelTree.client.chat.focus();
                 }
             }, {
                 type: MenuEntryType.ENTRY,
@@ -386,7 +391,7 @@ class ClientEntry {
                         }, {
                             flagset: [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]
                         }).then(() => {
-                            sound.play(Sound.USER_BANNED);
+                            this.channelTree.client.sound.play(Sound.USER_BANNED);
                         });
                     });
                 }
@@ -415,11 +420,11 @@ class ClientEntry {
                 icon: "client-volume",
                 name: tr("Change Volume"),
                 callback: () => {
-                    Modals.spawnChangeVolume(this.audioController.volume, volume => {
-                        settings.changeServer("volume_client_" + this.clientUid(), volume);
-                        this.audioController.volume = volume;
-                        if(globalClient.selectInfo.currentSelected == this)
-                            globalClient.selectInfo.update();
+                    Modals.spawnChangeVolume(this._audio_handle.get_volume(), volume => {
+                        this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
+                        this._audio_handle.set_volume(volume);
+                        if(this.channelTree.client.select_info.currentSelected == this)
+                            this.channelTree.client.select_info.update();
                     });
                 }
             },
@@ -592,7 +597,7 @@ class ClientEntry {
             log.table("Client update properties", entries);
         }
 
-        for(let variable of variables) {
+        for(const variable of variables) {
             JSON.map_field_to(this._properties, variable.value, variable.key);
 
             if(variable.key == "client_nickname") {
@@ -602,17 +607,26 @@ class ClientEntry {
 
                 reorder_channel = true;
             }
-            if(variable.key == "client_away" || variable.key == "client_output_muted" || variable.key == "client_input_hardware" || variable.key == "client_input_muted" || variable.key == "client_is_channel_commander"){
+            if(
+                variable.key == "client_away" ||
+                variable.key == "client_input_hardware" ||
+                variable.key == "client_output_hardware" ||
+                variable.key == "client_output_muted" ||
+                variable.key == "client_input_muted" ||
+                variable.key == "client_is_channel_commander"){
                 update_icon_speech = true;
             }
             if(variable.key == "client_away_message" || variable.key == "client_away") {
                 update_away = true;
             }
             if(variable.key == "client_unique_identifier") {
-                this.audioController.volume = parseFloat(settings.server("volume_client_" + this.clientUid(), "1"));
-                //TODO tr
-                console.error("Updated volume from config " + this.audioController.volume + " - " + "volume_client_" + this.clientUid() + " - " + settings.server("volume_client_" + this.clientUid(), "1"));
-                console.log(this.avatarId());
+                if(this._audio_handle) {
+                    const volume = parseFloat(this.channelTree.client.settings.server("volume_client_" + this.clientUid(), "1"));
+                    this._audio_handle.set_volume(volume);
+                    log.debug(LogCategory.CLIENT, tr("Loaded client volume %d for client %s from config."), volume, this.clientUid());
+                } else {
+                    log.warn(LogCategory.CLIENT, tr("Visible client got unique id assigned, but hasn't yet an audio handle. Ignoring volume assignment."));
+                }
             }
             if(variable.key == "client_talk_power") {
                 reorder_channel = true;
@@ -681,26 +695,26 @@ class ClientEntry {
 
     chat(create: boolean = false) : ChatEntry {
         let chatName = "client_" + this.clientUid() + ":" + this.clientId();
-        let c = chat.findChat(chatName);
-        if(!c && create) {
-            c = chat.createChat(chatName);
-            c.flag_closeable = true;
-            c.name = this.clientNickName();
-            c.owner_unique_id = this.properties.client_unique_identifier;
+        let chat = this.channelTree.client.chat.findChat(chatName);
+        if(!chat && create) {
+            chat = this.channelTree.client.chat.createChat(chatName);
+            chat.flag_closeable = true;
+            chat.name = this.clientNickName();
+            chat.owner_unique_id = this.properties.client_unique_identifier;
 
-            c.onMessageSend = text => {
+            chat.onMessageSend = text => {
                 this.channelTree.client.serverConnection.command_helper.sendMessage(text, ChatType.CLIENT, this);
             };
 
-            c.onClose = () => {
-                if(!c.flag_offline)
+            chat.onClose = () => {
+                if(!chat.flag_offline)
                     this.channelTree.client.serverConnection.send_command("clientchatclosed", {"clid": this.clientId()}, {process_result: false}).catch(error => {
                         log.warn(LogCategory.GENERAL, tr("Failed to notify chat participant (%o) that the chat has been closed. Error: %o"), this, error);
                     });
                 return true;
             }
         }
-        return c;
+        return chat;
     }
 
     updateClientIcon() {
@@ -746,10 +760,7 @@ class ClientEntry {
         } else return group.id == this.assignedChannelGroup();
     }
 
-    onDelete() {
-        this.audioController.close();
-        this.audioController = undefined;
-    }
+    onDelete() { }
 
     calculateOnlineTime() : number {
         return Date.now() / 1000 - this.properties.client_lastconnected;
@@ -796,11 +807,11 @@ class ClientEntry {
 }
 
 class LocalClientEntry extends ClientEntry {
-    handle: TSClient;
+    handle: ConnectionHandler;
 
     private renaming: boolean;
 
-    constructor(handle: TSClient) {
+    constructor(handle: ConnectionHandler) {
         super(0, "local client");
         this.handle = handle;
     }
@@ -866,7 +877,7 @@ class LocalClientEntry extends ClientEntry {
             }
         });
 
-        elm.focusout(function (e) {
+        elm.focusout(e => {
             if(!_self.renaming) return;
             _self.renaming = false;
 
@@ -878,9 +889,9 @@ class LocalClientEntry extends ClientEntry {
 
             elm.text(_self.clientNickName());
             _self.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
-                chat.serverChat().appendMessage(tr("Nickname successfully changed"));
+                this.channelTree.client.chat.serverChat().appendMessage(tr("Nickname successfully changed"));
             }).catch((e: CommandResult) => {
-                chat.serverChat().appendError(tr("Could not change nickname ({})"),  e.extra_message);
+                this.channelTree.client.chat.serverChat().appendError(tr("Could not change nickname ({})"),  e.extra_message);
                 _self.openRename();
             });
         });
@@ -938,13 +949,13 @@ class MusicClientEntry extends ClientEntry {
                 name: tr("Show bot info"),
                 callback: () => {
                     trigger_close = false;
-                    this.channelTree.client.selectInfo.open_popover()
+                    this.channelTree.client.select_info.open_popover()
                 },
                 icon: "client-about",
-                visible: this.channelTree.client.selectInfo.is_popover()
+                visible: this.channelTree.client.select_info.is_popover()
             }, {
                 type: MenuEntryType.HR,
-                visible: this.channelTree.client.selectInfo.is_popover(),
+                visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
                 name: tr("<b>Change bot name</b>"),
@@ -1065,11 +1076,11 @@ class MusicClientEntry extends ClientEntry {
                 icon: "client-volume",
                 name: tr("Change local volume"),
                 callback: () => {
-                    Modals.spawnChangeVolume(this.audioController.volume, volume => {
-                        settings.changeServer("volume_client_" + this.clientUid(), volume);
-                        this.audioController.volume = volume;
-                        if(globalClient.selectInfo.currentSelected == this)
-                            (<MusicInfoManager>globalClient.selectInfo.current_manager()).update_local_volume(volume);
+                    Modals.spawnChangeVolume(this._audio_handle.get_volume(), volume => {
+                        this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
+                        this._audio_handle.set_volume(volume);
+                        if(this.channelTree.client.select_info.currentSelected == this)
+                            (<MusicInfoManager>this.channelTree.client.select_info.current_manager()).update_local_volume(volume);
                     });
                 }
             },
@@ -1087,8 +1098,8 @@ class MusicClientEntry extends ClientEntry {
                             clid: this.clientId(),
                             player_volume: value,
                         }).then(() => {
-                            if(globalClient.selectInfo.currentSelected == this)
-                                (<MusicInfoManager>globalClient.selectInfo.current_manager()).update_remote_volume(value);
+                            if(this.channelTree.client.select_info.currentSelected == this)
+                                (<MusicInfoManager>this.channelTree.client.select_info.current_manager()).update_remote_volume(value);
                         });
                     });
                 }

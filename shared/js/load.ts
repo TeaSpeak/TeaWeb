@@ -7,10 +7,14 @@ namespace app {
         WEB_RELEASE
     }
     export let type: Type = Type.UNKNOWN;
+
+    export function is_web() {
+        return type == Type.WEB_RELEASE || type == Type.WEB_DEBUG;
+    }
 }
 
 namespace loader {
-    type Task = {
+    export type Task = {
         name: string,
         priority: number, /* tasks with the same priority will be executed in sync */
         function: () => Promise<void>
@@ -407,26 +411,41 @@ function displayCriticalError(message: string) {
 /* all javascript loaders */
 const loader_javascript = {
     detect_type: async () => {
-        /* test if js/proto.js is available. If so we're in debug mode */
-        const request = new XMLHttpRequest();
-        request.open('GET', 'js/proto.js', true);
+        if(window.require) {
+            const request = new Request("js/proto.js");
+            let file_path = request.url;
+            if(!file_path.startsWith("file://"))
+                throw "Invalid file path (" + file_path + ")";
+            file_path = file_path.substring(7);
 
-        await new Promise((resolve, reject) => {
-            request.onreadystatechange = () => {
-                if (request.readyState === 4){
-                    if (request.status === 404) {
-                        app.type = app.Type.WEB_RELEASE;
-                    } else {
-                        app.type = app.Type.WEB_DEBUG;
+            const fs = require('fs');
+            if(fs.existsSync(file_path)) {
+                app.type = app.Type.CLIENT_DEBUG;
+            } else {
+                app.type = app.Type.CLIENT_RELEASE;
+            }
+        } else {
+            /* test if js/proto.js is available. If so we're in debug mode */
+            const request = new XMLHttpRequest();
+            request.open('GET', 'js/proto.js', true);
+
+            await new Promise((resolve, reject) => {
+                request.onreadystatechange = () => {
+                    if (request.readyState === 4){
+                        if (request.status === 404) {
+                            app.type = app.Type.WEB_RELEASE;
+                        } else {
+                            app.type = app.Type.WEB_DEBUG;
+                        }
+                        resolve();
                     }
-                    resolve();
-                }
-            };
-            request.onerror = () => {
-                reject("Failed to detect app type");
-            };
-            request.send();
-        });
+                };
+                request.onerror = () => {
+                    reject("Failed to detect app type");
+                };
+                request.send();
+            });
+        }
     },
     load_scripts: async () => {
         /*
@@ -468,7 +487,7 @@ const loader_javascript = {
             loader.register_task(loader.Stage.JAVASCRIPT, {
                 name: "scripts release",
                 priority: 20,
-                function: loader_javascript.loadRelease
+                function: loader_javascript.load_release
             });
         } else {
             loader.register_task(loader.Stage.JAVASCRIPT, {
@@ -503,8 +522,6 @@ const loader_javascript = {
 
             "js/sound/Sounds.js",
 
-            "js/utils/modal.js",
-            "js/utils/tab.js",
             "js/utils/helpers.js",
 
             "js/crypto/sha.js",
@@ -514,6 +531,12 @@ const loader_javascript = {
             //load the profiles
             "js/profiles/ConnectionProfile.js",
             "js/profiles/Identity.js",
+
+            //Basic UI elements
+            "js/ui/elements/context_divider.js",
+            "js/ui/elements/context_menu.js",
+            "js/ui/elements/modal.js",
+            "js/ui/elements/tab.js",
 
             //Load UI
             "js/ui/modal/ModalAvatarList.js",
@@ -541,11 +564,12 @@ const loader_javascript = {
             "js/ui/server.js",
             "js/ui/view.js",
             "js/ui/client_move.js",
-            "js/ui/context_divider.js",
             "js/ui/htmltags.js",
 
             "js/ui/frames/SelectedItemInfo.js",
             "js/ui/frames/ControlBar.js",
+            "js/ui/frames/chat.js",
+            "js/ui/frames/connection_handlers.js",
 
             //Load permissions
             "js/permission/PermissionManager.js",
@@ -555,7 +579,7 @@ const loader_javascript = {
             "js/voice/VoiceHandler.js",
             "js/voice/VoiceRecorder.js",
             "js/voice/AudioResampler.js",
-            "js/voice/AudioController.js",
+            "js/voice/VoiceClient.js",
 
             //Load codec
             "js/codec/Codec.js",
@@ -564,10 +588,9 @@ const loader_javascript = {
             //Load general stuff
             "js/settings.js",
             "js/bookmarks.js",
-            "js/contextMenu.js",
             "js/FileManager.js",
-            "js/client.js",
-            "js/chat.js",
+            "js/ConnectionHandler.js",
+            "js/BrowserIPC.js",
 
             //Connection
             "js/connection/CommandHandler.js",
@@ -576,7 +599,6 @@ const loader_javascript = {
             "js/connection/ServerConnection.js",
 
             "js/stats.js",
-
             "js/PPTListener.js",
 
 
@@ -596,7 +618,7 @@ const loader_javascript = {
         ]);
     },
 
-    loadRelease: async () => {
+    load_release: async () => {
         console.log("Load for release!");
 
         await loader.load_scripts([
@@ -672,6 +694,7 @@ const loader_style = {
             "css/static/frame/SelectInfo.css",
             "css/static/control_bar.css",
             "css/static/context_menu.css",
+            "css/static/connection_handlers.css",
             "css/static/htmltags.css"
         ]);
     },
@@ -809,24 +832,6 @@ loader.register_task(loader.Stage.INITIALIZING, {
     priority: 50
 });
 
-window["Module"] = window["Module"] || {};
-/* TeaClient */
-if(window.require) {
-    const path = require("path");
-    const remote = require('electron').remote;
-    module.paths.push(path.join(remote.app.getAppPath(), "/modules"));
-    module.paths.push(path.join(path.dirname(remote.getGlobal("browser-root")), "js"));
-
-    const connector = require("renderer");
-    console.log(connector);
-
-    loader.register_task(loader.Stage.INITIALIZING, {
-        name: "teaclient initialize",
-        function: connector.initialize,
-        priority: 40
-    });
-}
-
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "Browser detection",
     function: async () => {
@@ -855,9 +860,12 @@ loader.register_task(loader.Stage.INITIALIZING, {
     name: "secure tester",
     function: async () => {
         /* we need https or localhost to use some things like the storage API */
-        if(location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        if(typeof isSecureContext === "undefined")
+            (<any>window)["isSecureContext"] = location.protocol !== 'https:' && location.hostname !== 'localhost';
+
+        if(!isSecureContext) {
             display_critical_load("TeaWeb cant run on unsecured sides.", "App requires to be loaded via HTTPS!");
-            throw "App requires to be loaded via HTTPS!"
+            throw "App requires a secure context!"
         }
     },
     priority: 20
@@ -918,80 +926,99 @@ loader.register_task(loader.Stage.LOADED, {
     priority: 20
 });
 
-const hello_world = () => {
-    const print_security = () => {
+
+window["Module"] = window["Module"] || {};
+/* TeaClient */
+if(window.require) {
+    const path = require("path");
+    const remote = require('electron').remote;
+    module.paths.push(path.join(remote.app.getAppPath(), "/modules"));
+    module.paths.push(path.join(path.dirname(remote.getGlobal("browser-root")), "js"));
+
+    const connector = require("renderer");
+    console.log(connector);
+
+    loader.register_task(loader.Stage.INITIALIZING, {
+        name: "teaclient initialize",
+        function: connector.initialize,
+        priority: 40
+    });
+} else {
+    const hello_world = () => {
+        const print_security = () => {
+            {
+                const css = [
+                    "display: block",
+                    "text-align: center",
+                    "font-size: 42px",
+                    "font-weight: bold",
+                    "-webkit-text-stroke: 2px black",
+                    "color: red"
+                ].join(";");
+                console.log("%c ", "font-size: 100px;");
+                console.log("%cSecurity warning:", css);
+            }
+            {
+                const css = [
+                    "display: block",
+                    "text-align: center",
+                    "font-size: 18px",
+                    "font-weight: bold"
+                ].join(";");
+
+                console.log("%cPasting anything in here could give attackers access to your data.", css);
+                console.log("%cUnless you understand exactly what you are doing, close this window and stay safe.", css);
+                console.log("%c ", "font-size: 100px;");
+            }
+        };
+
+        /* print the hello world */
         {
             const css = [
                 "display: block",
                 "text-align: center",
-                "font-size: 42px",
+                "font-size: 72px",
                 "font-weight: bold",
                 "-webkit-text-stroke: 2px black",
-                "color: red"
+                "color: #18BC9C"
             ].join(";");
-            console.log("%c ", "font-size: 100px;");
-            console.log("%cSecurity warning:", css);
+            console.log("%cHey, hold on!", css);
         }
         {
             const css = [
                 "display: block",
                 "text-align: center",
-                "font-size: 18px",
+                "font-size: 26px",
                 "font-weight: bold"
             ].join(";");
 
-            console.log("%cPasting anything in here could give attackers access to your data.", css);
-            console.log("%cUnless you understand exactly what you are doing, close this window and stay safe.", css);
-            console.log("%c ", "font-size: 100px;");
+            const css_2 = [
+                "display: block",
+                "text-align: center",
+                "font-size: 26px",
+                "font-weight: bold",
+                "color: blue"
+            ].join(";");
+
+            const display_detect = /./;
+            display_detect.toString = function() { print_security(); return ""; }
+
+            console.log("%cLovely to see you using and debugging the TeaSpeak Web client.", css);
+            console.log("%cIf you have some good ideas or already done some incredible changes,", css);
+            console.log("%cyou'll be may interested to share them here: %chttps://github.com/TeaSpeak/TeaWeb", css, css_2);
+            console.log("%c ", display_detect);
         }
     };
 
-    /* print the hello world */
-    {
-        const css = [
-            "display: block",
-            "text-align: center",
-            "font-size: 72px",
-            "font-weight: bold",
-            "-webkit-text-stroke: 2px black",
-            "color: #18BC9C"
-        ].join(";");
-        console.log("%cHey, hold on!", css);
+    try { /* lets try to print it as VM code :)*/
+        let hello_world_code = hello_world.toString();
+        hello_world_code = hello_world_code.substr(hello_world_code.indexOf('() => {') + 8);
+        hello_world_code = hello_world_code.substring(0, hello_world_code.lastIndexOf("}"));
+        hello_world_code = hello_world_code.replace(/(?!"\S*) {2,}(?!\S*")/g, " ").replace(/[\n\r]/g, "");
+        eval(hello_world_code);
+    } catch(e) {
+        hello_world();
     }
-    {
-        const css = [
-            "display: block",
-            "text-align: center",
-            "font-size: 26px",
-            "font-weight: bold"
-        ].join(";");
-
-        const css_2 = [
-            "display: block",
-            "text-align: center",
-            "font-size: 26px",
-            "font-weight: bold",
-            "color: blue"
-        ].join(";");
-
-        const display_detect = /./;
-        display_detect.toString = function() { print_security(); return ""; }
-
-        console.log("%cLovely to see you using and debugging the TeaSpeak Web client.", css);
-        console.log("%cIf you have some good ideas or already done some incredible changes,", css);
-        console.log("%cyou'll be may interested to share them here: %chttps://github.com/TeaSpeak/TeaWeb", css, css_2);
-        console.log("%c ", display_detect);
-    }
-};
-
-try { /* lets try to print it as VM code :)*/
-    let hello_world_code = hello_world.toString();
-    hello_world_code = hello_world_code.substr(hello_world_code.indexOf('() => {') + 8);
-    hello_world_code = hello_world_code.substring(0, hello_world_code.lastIndexOf("}"));
-    hello_world_code = hello_world_code.replace(/(?!"\S*) {2,}(?!\S*")/g, " ").replace(/[\n\r]/g, "");
-    eval(hello_world_code);
-} catch(e) {
-    hello_world();
 }
 
 loader.execute().then(() => {

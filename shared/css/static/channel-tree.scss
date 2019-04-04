@@ -1,3 +1,5 @@
+@import "properties";
+
 /* the channel tree */
 .channel-tree {
     -webkit-touch-callout: none;
@@ -60,7 +62,11 @@
             }
 
             &.selected {
-                background-color: blue;
+                background-color: $channel_tree_entry_selected;
+
+                .name {
+                    color: whitesmoke;
+                }
             }
         }
 
@@ -78,10 +84,6 @@
 
                 align-items: center;
                 cursor: pointer;
-
-                &.selected {
-                    background-color: blue;
-                }
 
                 .channel-type {
                     flex-grow: 0;
@@ -126,6 +128,13 @@
 
                 &.move-selected {
                     border-bottom: 1px solid black;
+                }
+
+                &.selected {
+                    background-color: $channel_tree_entry_selected;
+                    .channel-name {
+                        color: whitesmoke;
+                    }
                 }
 
                 .show-channel-normal-only {
@@ -191,7 +200,11 @@
             }
 
             &.selected {
-                background-color: blue;
+                background-color: $channel_tree_entry_selected;
+
+                .client-name {
+                    color: whitesmoke;
+                }
             }
         }
     }

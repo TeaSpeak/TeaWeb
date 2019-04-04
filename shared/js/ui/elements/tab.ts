@@ -1,4 +1,4 @@
-/// <reference path="../i18n/localize.ts" />
+/// <reference path="../../i18n/localize.ts" />
 
 interface JQuery<TElement = HTMLElement> {
     asTabWidget(copy?: boolean) : JQuery<TElement>;
@@ -110,7 +110,7 @@ var TabFunctions = {
         tag.on('tab.resize', update_height);
         return tag;
     }
-}
+};
 
 if(!$.fn.asTabWidget) {
     $.fn.asTabWidget = function (copy?: boolean) : JQuery {

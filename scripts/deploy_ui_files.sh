@@ -13,7 +13,7 @@ if [[ "$#" -ne 3 ]]; then
     exit 1
 fi
 
-if [[ ! -d client/environment/ui-files/ ]]; then
+if [[ ! -d client-api/environment/ui-files/ ]]; then
     echo "Missing UI Files"
     exit 1
 fi

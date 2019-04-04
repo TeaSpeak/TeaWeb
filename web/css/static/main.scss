@@ -5,13 +5,13 @@ html, body {
     width: 100%;
     position: fixed;
 
-    min-height: 250px;
-    min-width: 250px;
+    //min-height: 250px;
+    //min-width: 250px;
 }
 
 .app-container {
 	display: flex;
-	justify-content: center;
+	justify-content: stretch;
 	position: absolute;
 
     right: 10px;
@@ -27,5 +27,12 @@ html, body {
 		margin: 0;
 
 		display: flex; flex-direction: column; resize: both;
+	}
+}
+
+$small_device: 650px;
+@media only screen and (max-width: $small_device) {
+	.app-container {
+		bottom: 25px;
 	}
 }

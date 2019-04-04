@@ -1,4 +1,4 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
 
 namespace Modals {
     export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_: boolean) => any, properties?: {
