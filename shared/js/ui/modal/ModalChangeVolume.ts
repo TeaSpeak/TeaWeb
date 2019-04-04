@@ -1,4 +1,5 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
 
 namespace Modals {

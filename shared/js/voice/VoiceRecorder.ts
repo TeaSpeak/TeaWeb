@@ -1,5 +1,5 @@
 /// <reference path="VoiceHandler.ts" />
-/// <reference path="../utils/modal.ts" />
+/// <reference path="../ui/elements/modal.ts" />
 
 abstract class VoiceActivityDetector {
     protected handle: VoiceRecorder;
@@ -34,17 +34,25 @@ if(!AudioBuffer.prototype.copyToChannel) { //Webkit does not implement this func
     }
 }
 
+let voice_recoder: VoiceRecorder;
 class VoiceRecorder {
     private static readonly CHANNEL = 0;
     private static readonly CHANNELS = 2;
     private static readonly BUFFER_SIZE = 1024 * 4;
 
-    handle: VoiceConnection;
+    on_support_state_change: () => any;
     on_data: (data: AudioBuffer, head: boolean) => void = undefined;
     on_end: () => any;
     on_start: () => any;
+    on_yield: () => any; /* called when owner looses ownership */
+
+    owner: connection.voice.AbstractVoiceConnection | undefined;
+
+    private on_ready_callbacks: (() => any)[] = [];
 
     private _recording: boolean = false;
+    private _recording_supported: boolean = true; /* recording is supported until anything else had been set */
+    private _tag_favicon: JQuery;
 
     private microphoneStream: MediaStreamAudioSourceNode = undefined;
     private mediaStream: MediaStream = undefined;
@@ -59,9 +67,9 @@ class VoiceRecorder {
     private _deviceId: string;
     private _deviceGroup: string;
 
-    constructor(handle: VoiceConnection) {
-        this.handle = handle;
+    private current_handler: ConnectionHandler;
 
+    constructor() {
         this._deviceId = settings.global("microphone_device_id", "default");
         this._deviceGroup = settings.global("microphone_device_group", "default");
 
@@ -72,8 +80,8 @@ class VoiceRecorder {
             const empty_buffer = this.audioContext.createBuffer(VoiceRecorder.CHANNELS, VoiceRecorder.BUFFER_SIZE, 48000);
             this.processor.addEventListener('audioprocess', ev => {
                 if(this.microphoneStream && this.vadHandler.shouldRecord(ev.inputBuffer)) {
-                    if(this._chunkCount == 0 && this.on_start)
-                        this.on_start();
+                    if(this._chunkCount == 0)
+                        this.on_voice_start();
 
                     if(this.on_data)
                         this.on_data(ev.inputBuffer, this._chunkCount == 0);
@@ -83,8 +91,8 @@ class VoiceRecorder {
                     }
                     this._chunkCount++;
                 } else {
-                    if(this._chunkCount != 0 && this.on_end)
-                        this.on_end();
+                    if(this._chunkCount != 0 )
+                        this.on_voice_end();
                     this._chunkCount = 0;
 
                     for(let channel = 0; channel < ev.inputBuffer.numberOfChannels; channel++)
@@ -96,17 +104,39 @@ class VoiceRecorder {
             if(this.vadHandler)
                 this.vadHandler.initialise();
             this.on_microphone(this.mediaStream);
+
+            for(const callback of this.on_ready_callbacks)
+                callback();
+            this.on_ready_callbacks = [];
         });
 
         this.setVADHandler(new PassThroughVAD());
+        this._tag_favicon = $("head link[rel='icon']");
     }
 
-    available() : boolean {
-        return !!getUserMediaFunction() && !!getUserMediaFunction();
+    own_recoder(connection: connection.voice.AbstractVoiceConnection | undefined) {
+        if(connection === this.owner)
+            return;
+        if(this.on_yield)
+            this.on_yield();
+
+        this.owner = connection;
+
+        this.on_end = undefined;
+        this.on_start = undefined;
+        this.on_data = undefined;
+        this.on_yield = undefined;
+        this.on_support_state_change = undefined;
+        this.on_ready_callbacks = [];
+
+        this._chunkCount = 0;
+
+        if(this.processor) /* processor stream might be null because of the late audio initialisation */
+            this.processor.connect(this.audioContext.destination);
     }
 
-    recording() : boolean {
-        return this._recording;
+    input_available() : boolean {
+        return !!getUserMediaFunction();
     }
 
     getMediaStream() : MediaStream {
@@ -182,11 +212,21 @@ class VoiceRecorder {
         return this.vadHandler;
     }
 
-    update(flag: boolean) {
-        if(this._recording == flag) return;
-        if(flag) this.start(this._deviceId, this._deviceGroup);
-        else this.stop();
+    set_recording(flag_enabled: boolean) {
+        if(this._recording == flag_enabled)
+            return;
+
+        if(flag_enabled)
+            this.start_recording(this._deviceId, this._deviceGroup);
+        else
+            this.stop_recording();
     }
+
+    clean_recording_supported() { this._recording_supported = true; }
+
+    is_recording_supported() { return this._recording_supported; }
+
+    is_recording() { return this._recording; }
 
     device_group_id() : string { return this._deviceGroup; }
     device_id() : string { return this._deviceId; }
@@ -199,12 +239,12 @@ class VoiceRecorder {
         settings.changeGlobal("microphone_device_id", device);
         settings.changeGlobal("microphone_device_group", group);
         if(this._recording) {
-            this.stop();
-            this.start(device, group);
+            this.stop_recording();
+            this.start_recording(device, group);
         }
     }
 
-    start(device: string, groupId: string){
+    start_recording(device: string, groupId: string){
         this._deviceId = device;
         this._deviceGroup = groupId;
 
@@ -220,13 +260,20 @@ class VoiceRecorder {
                 echoCancellationType: 'browser'
             }
         }, this.on_microphone.bind(this), error => {
+            this._recording = false;
+            if(this._recording_supported) {
+                this._recording_supported = false;
+                if(this.on_support_state_change)
+                    this.on_support_state_change();
+            }
+
             createErrorModal(tr("Could not resolve microphone!"), tr("Could not resolve microphone!<br>Message: ") + error).open();
             console.error(tr("Could not get microphone!"));
             console.error(error);
         });
     }
 
-    stop(stop_media_stream: boolean = true){
+    stop_recording(stop_media_stream: boolean = true){
         console.log(tr("Stop recording!"));
         this._recording = false;
 
@@ -244,13 +291,21 @@ class VoiceRecorder {
         }
     }
 
+    on_initialized(callback: () => any) {
+        if(this.processor)
+            callback();
+        else
+            this.on_ready_callbacks.push(callback);
+    }
+
     private on_microphone(stream: MediaStream) {
         const old_microphone_stream = this.microphoneStream;
         if(old_microphone_stream)
-            this.stop(this.mediaStream != stream); //Disconnect old stream
+            this.stop_recording(this.mediaStream != stream); //Disconnect old stream
 
         this.mediaStream = stream;
-        if(!this.mediaStream) return;
+        if(!this.mediaStream)
+            return;
 
         if(!this.audioContext) {
             console.log(tr("[VoiceRecorder] Got microphone stream, but havn't a audio context. Waiting until its initialized"));
@@ -261,6 +316,24 @@ class VoiceRecorder {
         this.microphoneStream.connect(this.processor);
         if(this.vadHandler)
             this.vadHandler.initialiseNewStream(old_microphone_stream, this.microphoneStream);
+
+        if(!this._recording_supported) {
+            this._recording_supported = true;
+            if(this.on_support_state_change)
+                this.on_support_state_change();
+        }
+    }
+
+    private on_voice_start() {
+        this._tag_favicon.attr('href', "img/favicon/speaking.png");
+        if(this.on_start)
+            this.on_start();
+
+    }
+    private on_voice_end() {
+        this._tag_favicon.attr('href', "img/favicon/teacup.png");
+        if(this.on_end)
+            this.on_end();
     }
 }
 class MuteVAD extends VoiceActivityDetector {

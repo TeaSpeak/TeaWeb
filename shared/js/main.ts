@@ -1,6 +1,4 @@
-/// <reference path="chat.ts" />
-/// <reference path="client.ts" />
-/// <reference path="utils/modal.ts" />
+/// <reference path="ui/frames/chat.ts" />
 /// <reference path="ui/modal/ModalConnect.ts" />
 /// <reference path="ui/modal/ModalCreateChannel.ts" />
 /// <reference path="ui/modal/ModalBanCreate.ts" />
@@ -11,8 +9,6 @@
 /// <reference path="log.ts" />
 
 let settings: Settings;
-let globalClient: TSClient;
-let chat: ChatBox;
 
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
@@ -34,7 +30,8 @@ function setup_close() {
             profiles.save();
 
         if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) {
-            if(!globalClient.serverConnection || !globalClient.serverConnection.connected) return;
+            const active_connections = server_connections.server_connection_handlers().filter(e => e.connected);
+            if(active_connections.length == 0) return;
 
             if(!native_client) {
                 event.returnValue = "Are you really sure?<br>You're still connected!";
@@ -92,13 +89,6 @@ function setup_jsrender() : boolean {
 }
 
 async function initialize() {
-    const display_load_error = message => {
-        if(typeof(display_critical_load) !== "undefined")
-            display_critical_load(message);
-        else
-            displayCriticalError(message);
-    };
-
     settings = new Settings();
 
     try {
@@ -108,6 +98,18 @@ async function initialize() {
         displayCriticalError("Failed to setup the translation system");
         return;
     }
+
+    bipc.setup();
+}
+
+
+async function initialize_app() {
+    const display_load_error = message => {
+        if(typeof(display_critical_load) !== "undefined")
+            display_critical_load(message);
+        else
+            displayCriticalError(message);
+    };
 
     try {
         if(!setup_jsrender())
@@ -128,7 +130,15 @@ async function initialize() {
         return;
     }
 
-    AudioController.initializeAudioController();
+    control_bar = new ControlBar($("#control_bar")); /* setup the control bar */
+
+    if(!audio.player.initialize())
+        console.warn(tr("Failed to initialize audio controller!"));
+
+    sound.initialize().then(() => {
+        console.log(tr("Sounds initialitzed"));
+    });
+
     await profiles.load();
 
     try {
@@ -230,47 +240,31 @@ function Base64DecodeUrl(str: string, pad?: boolean){
 
 function main() {
     //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
+    voice_recoder = new VoiceRecorder();
+    voice_recoder.reinitialiseVAD();
 
-    globalClient = new TSClient();
+    server_connections = new ServerConnectionManager($("#connection-handlers"));
+    control_bar.initialise(); /* before connection handler to allow property apply */
+
+    const initial_handler = server_connections.spawn_server_connection_handler();
+    initial_handler.acquire_recorder(voice_recoder, false);
+    control_bar.set_connection_handler(initial_handler);
     /** Setup the XF forum identity **/
     profiles.identities.setup_forum();
 
-    chat = new ChatBox($("#chat"));
-    globalClient.setup();
-
-    if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
-        const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
-        console.log("UUID: %s", profile_uuid);
-        const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
-        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
-        const username = settings.static(Settings.KEY_CONNECT_USERNAME, "Another TeaSpeak user");
-
-        const password = settings.static(Settings.KEY_CONNECT_PASSWORD, "");
-        const password_hashed = settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false);
-
-        if(profile && profile.valid()) {
-            globalClient.startConnection(address, profile, username, password.length > 0 ? {
-                password: password,
-                hashed: password_hashed
-            } : undefined);
-        } else {
-            Modals.spawnConnectModal({
-                url: address,
-                enforce: true
-            }, {
-                profile: profile,
-                enforce: true
-            });
-        }
-    }
-
     let _resize_timeout: NodeJS.Timer;
-    $(window).on('resize', () => {
+    $(window).on('resize', event => {
+        if(event.target !== window)
+            return;
+
         if(_resize_timeout)
             clearTimeout(_resize_timeout);
         _resize_timeout = setTimeout(() => {
-            globalClient.channelTree.handle_resized();
-            globalClient.selectInfo.handle_resize();
+            for(const connection of server_connections.server_connection_handlers())
+                connection.invoke_resized_on_activate = true;
+            const active_connection = server_connections.active_connection_handler();
+            if(active_connection)
+                active_connection.resize_elements();
         }, 1000);
     });
 
@@ -288,22 +282,24 @@ function main() {
         Modals.spawnAvatarList(globalClient);
     }, 1000);
     */
-    (<any>window).test_upload = () => {
-        const data = "Hello World";
-        globalClient.fileManager.upload_file({
-            size: data.length,
+    (<any>window).test_upload = (message?: string) => {
+        message = message || "Hello World";
+
+        const connection = server_connections.active_connection_handler();
+        connection.fileManager.upload_file({
+            size: message.length,
             overwrite: true,
-            channel: globalClient.getClient().currentChannel(),
+            channel: connection.getClient().currentChannel(),
             name: '/HelloWorld.txt',
             path: ''
         }).then(key => {
             console.log("Got key: %o", key);
             const upload = new RequestFileUpload(key);
 
-            const buffer = new Uint8Array(data.length);
+            const buffer = new Uint8Array(message.length);
             {
-                for(let index = 0; index < data.length; index++)
-                    buffer[index] = data.charCodeAt(index);
+                for(let index = 0; index < message.length; index++)
+                    buffer[index] = message.charCodeAt(index);
             }
 
             upload.put_data(buffer).catch(error => {
@@ -311,13 +307,42 @@ function main() {
             });
         })
     };
+
+    server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
+
+    if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
+        const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
+        console.log("UUID: %s", profile_uuid);
+        const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
+        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
+        const username = settings.static(Settings.KEY_CONNECT_USERNAME, "Another TeaSpeak user");
+
+        const password = settings.static(Settings.KEY_CONNECT_PASSWORD, "");
+        const password_hashed = settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false);
+
+        if(profile && profile.valid()) {
+            const connection = server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler();
+            connection.startConnection(address, profile, username, password.length > 0 ? {
+                password: password,
+                hashed: password_hashed
+            } : undefined);
+        } else {
+            Modals.spawnConnectModal({
+                url: address,
+                enforce: true
+            }, {
+                profile: profile,
+                enforce: true
+            });
+        }
+    }
 }
 
-loader.register_task(loader.Stage.LOADED, {
-    name: "async main invoke",
+const task_teaweb_starter: loader.Task = {
+    name: "voice app starter",
     function: async () => {
         try {
-            await initialize();
+            await initialize_app();
             main();
             if(!audio.player.initialized()) {
                 log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
@@ -331,6 +356,78 @@ loader.register_task(loader.Stage.LOADED, {
             if(ex instanceof ReferenceError || ex instanceof TypeError)
                 ex = ex.name + ": " + ex.message;
             displayCriticalError("Failed to invoke main function:<br>" + ex);
+        }
+    },
+    priority: 10
+};
+
+const task_certificate_callback: loader.Task = {
+    name: "certificate accept tester",
+    function: async () => {
+        const certificate_accept = settings.static_global(Settings.KEY_CERTIFICATE_CALLBACK, undefined);
+        if(certificate_accept) {
+            log.info(LogCategory.IPC, tr("Using this instance as certificate callback. ID: %s"), certificate_accept);
+            try {
+                try {
+                    await bipc.get_handler().post_certificate_accpected(certificate_accept);
+                } catch(e) {} //FIXME remove!
+                log.info(LogCategory.IPC, tr("Other instance has acknowledged out work. Closing this window."));
+
+                const seconds_tag = $.spawn("a");
+
+                let seconds = 5;
+                let interval_id;
+                interval_id = setInterval(() => {
+                    seconds--;
+                    seconds_tag.text(seconds.toString());
+
+                    if(seconds <= 0) {
+                        clearTimeout(interval_id);
+                        log.info(LogCategory.GENERAL, tr("Closing window"));
+                        window.close();
+                        return;
+                    }
+                }, 1000);
+
+                const message =
+                    "You've successfully accepted the certificate.{:br:}" +
+                    "This page will close in {0} seconds.";
+                createInfoModal(
+                    tr("Certificate acccepted successfully"),
+                    MessageHelper.formatMessage(tr(message), seconds_tag),
+                    {
+                        closeable: false,
+                        footer: undefined
+                    }
+                ).open();
+                return;
+            } catch(error) {
+                log.warn(LogCategory.IPC, tr("Failed to successfully post certificate accept status: %o"), error);
+            }
+        } else {
+            log.info(LogCategory.IPC, tr("We're not used to accept certificated. Booting app."));
+        }
+
+        loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
+    },
+    priority: 10
+};
+
+loader.register_task(loader.Stage.LOADED, {
+    name: "app starter",
+    function: async () => {
+        try {
+            await initialize();
+
+            if(app.is_web()) {
+                loader.register_task(loader.Stage.LOADED, task_certificate_callback);
+            } else
+                loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
+        } catch (ex) {
+            console.error(ex.stack);
+            if(ex instanceof ReferenceError || ex instanceof TypeError)
+                ex = ex.name + ": " + ex.message;
+            displayCriticalError("Failed to boot app function:<br>" + ex);
         }
     },
     priority: 10

@@ -173,7 +173,7 @@ class CodecWrapperWorker extends BasicCodec {
                 this._workerCallbackResolve = undefined;
                 return;
             } else if(message["type"] == "chatmessage_server") {
-                chat.serverChat().appendMessage(message["message"]);
+                //FIXME?
                 return;
             }
             console.log(tr("Costume callback! (%o)"), message);

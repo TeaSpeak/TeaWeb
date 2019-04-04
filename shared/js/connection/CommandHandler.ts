@@ -8,9 +8,11 @@ namespace connection {
 
     export class ConnectionCommandHandler extends AbstractCommandHandler {
         readonly connection: ServerConnection;
+        readonly connection_handler: ConnectionHandler;
 
         constructor(connection: ServerConnection) {
             super(connection);
+            this.connection_handler = connection.client;
 
             this["error"] = this.handleCommandResult;
             this["channellist"] = this.handleCommandChannelList;
@@ -86,9 +88,14 @@ namespace connection {
 
         handleCommandServerInit(json){
             //We could setup the voice channel
-            if( this.connection.client.voiceConnection) {
+            if(this.connection.support_voice()) {
                 console.log(tr("Setting up voice"));
-                this.connection.client.voiceConnection.createSession();
+
+                const connection = this.connection.voice_connection();
+                if(connection instanceof audio.js.VoiceConnection)
+                    connection.createSession();
+                else
+                    throw "unknown voice connection";
             } else {
                 console.log(tr("Skipping voice setup (No voice bridge available)"));
             }
@@ -112,10 +119,10 @@ namespace connection {
             this.connection.client.channelTree.server.updateVariables(false, ...updates);
 
 
-            chat.serverChat().name = this.connection.client.channelTree.server.properties["virtualserver_name"];
-            chat.serverChat().appendMessage(tr("Connected as {0}"), true, this.connection.client.getClient().createChatTag(true));
-            sound.play(Sound.CONNECTION_CONNECTED);
-            globalClient.onConnected();
+            this.connection_handler.chat.serverChat().name = this.connection.client.channelTree.server.properties["virtualserver_name"];
+            this.connection_handler.chat.serverChat().appendMessage(tr("Connected as {0}"), true, this.connection.client.getClient().createChatTag(true));
+            this.connection_handler.sound.play(Sound.CONNECTION_CONNECTED);
+            this.connection.client.onConnected();
         }
 
         private createChannelFromJson(json, ignoreOrder: boolean = false) {
@@ -233,28 +240,28 @@ namespace connection {
                 client = tree.insertClient(client, channel);
             } else {
                 if(client == this.connection.client.getClient())
-                    chat.channelChat().name = channel.channelName();
+                    this.connection_handler.chat.channelChat().name = channel.channelName();
                 tree.moveClient(client, channel);
             }
 
-            if(this.connection.client.controlBar.query_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
+            if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
                     if(own_channel == channel)
                         if(old_channel)
-                            sound.play(Sound.USER_ENTERED);
+                            this.connection_handler.sound.play(Sound.USER_ENTERED);
                         else
-                            sound.play(Sound.USER_ENTERED_CONNECT);
+                            this.connection_handler.sound.play(Sound.USER_ENTERED_CONNECT);
                     if(old_channel) {
-                        chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.generate_tag(true), channel.generate_tag(true));
+                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.generate_tag(true), channel.generate_tag(true));
                     } else {
-                        chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.generate_tag(true));
+                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.generate_tag(true));
                     }
                 } else if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
                     if(own_channel == channel)
-                        sound.play(Sound.USER_ENTERED_MOVED);
+                        this.connection_handler.sound.play(Sound.USER_ENTERED_MOVED);
 
-                    chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, moved by {3}"), true,
+                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, moved by {3}"), true,
                         client.createChatTag(true),
                         old_channel ? old_channel.generate_tag(true) : undefined,
                         channel.generate_tag(true),
@@ -262,9 +269,9 @@ namespace connection {
                     );
                 } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
                     if(own_channel == channel)
-                        sound.play(Sound.USER_ENTERED_KICKED);
+                        this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
 
-                    chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, kicked by {3}{4}"), true,
+                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, kicked by {3}{4}"), true,
                         client.createChatTag(true),
                         old_channel ? old_channel.generate_tag(true) : undefined,
                         channel.generate_tag(true),
@@ -297,7 +304,7 @@ namespace connection {
             {
                 let client_chat = client.chat(false);
                 if(!client_chat) {
-                    for(const c of chat.open_chats()) {
+                    for(const c of this.connection_handler.chat.open_chats()) {
                         if(c.owner_unique_id == client.properties.client_unique_identifier && c.flag_offline) {
                             client_chat = c;
                             break;
@@ -314,8 +321,10 @@ namespace connection {
                     client_chat.flag_offline = false;
                 }
             }
-            if(client instanceof LocalClientEntry)
-                this.connection.client.controlBar.updateVoice();
+
+            if(client instanceof LocalClientEntry) {
+                this.connection_handler.update_voice_status();
+            }
         }
 
         handleCommandClientLeftView(json) {
@@ -340,48 +349,49 @@ namespace connection {
                 return;
             }
 
-            if(this.connection.client.controlBar.query_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
+
+            if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 let channel_from = tree.findChannel(json["cfid"]);
                 let channel_to = tree.findChannel(json["ctid"]);
 
                 if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-                    chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.generate_tag(true), channel_to.generate_tag(true));
+                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.generate_tag(true), channel_to.generate_tag(true));
 
                     if(channel_from == own_channel)
-                        sound.play(Sound.USER_LEFT);
+                        this.connection_handler.sound.play(Sound.USER_LEFT);
                 } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_LEFT) {
-                    chat.serverChat().appendMessage(tr("{0} left the server{1}"), true,
+                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} left the server{1}"), true,
                         client.createChatTag(true),
                         json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
                     );
 
                     if(channel_from == own_channel)
-                        sound.play(Sound.USER_LEFT_DISCONNECT);
+                        this.connection_handler.sound.play(Sound.USER_LEFT_DISCONNECT);
                 } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK) {
-                    chat.serverChat().appendError(tr("{0} was kicked from the server by {1}.{2}"),
+                    this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from the server by {1}.{2}"),
                         client.createChatTag(true),
                         ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
                         json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
                     );
                     if(channel_from == own_channel)
-                        sound.play(Sound.USER_LEFT_KICKED_SERVER);
+                        this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_SERVER);
                 } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
-                    chat.serverChat().appendError(tr("{0} was kicked from your channel by {1}.{2}"),
+                    this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from your channel by {1}.{2}"),
                         client.createChatTag(true),
                         ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
                         json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
                     );
 
                     if(channel_from == own_channel)
-                        sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
+                        this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
                 } else if(json["reasonid"] == ViewReasonId.VREASON_BAN) {
                     //"Mulus" was banned for 1 second from the server by "WolverinDEV" (Sry brauchte kurz ein opfer :P <3 (Nohomo))
                     let duration = "permanently";
                     if(json["bantime"])
                         duration = "for " + formatDate(Number.parseInt(json["bantime"]));
 
-                    chat.serverChat().appendError(tr("{0} was banned {1} by {2}.{3}"),
+                    this.connection_handler.chat.serverChat().appendError(tr("{0} was banned {1} by {2}.{3}"),
                         client.createChatTag(true),
                         duration,
                         ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
@@ -389,7 +399,7 @@ namespace connection {
                     );
 
                     if(channel_from == own_channel)
-                        sound.play(Sound.USER_LEFT_BANNED);
+                        this.connection_handler.sound.play(Sound.USER_LEFT_BANNED);
                 } else {
                     console.error(tr("Unknown client left reason!"));
                 }
@@ -431,44 +441,45 @@ namespace connection {
                 console.error(tr("Unknown client move (Channel from)!"));
 
             let self = client instanceof LocalClientEntry;
-            let current_clients;
+            let current_clients: ClientEntry[];
             if(self) {
-                chat.channelChat().name = channel_to.channelName();
-                current_clients = client.channelTree.clientsByChannel(client.currentChannel())
-                this.connection.client.controlBar.updateVoice(channel_to);
+                this.connection_handler.chat.channelChat().name = channel_to.channelName();
+                current_clients = client.channelTree.clientsByChannel(client.currentChannel());
+                this.connection_handler.update_voice_status(channel_to);
             }
 
             tree.moveClient(client, channel_to);
             for(const entry of current_clients || [])
-                if(entry !== client) entry.getAudioController().stopAudio(true);
+                if(entry !== client)
+                    entry.get_audio_handle().abort_replay();
 
             const own_channel = this.connection.client.getClient().currentChannel();
             if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
-                chat.serverChat().appendMessage(self ? tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}"), true,
+                this.connection_handler.chat.serverChat().appendMessage(self ? tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}"), true,
                     client.createChatTag(true),
                     channel_from ? channel_from.generate_tag(true) : undefined,
                     channel_to.generate_tag(true),
                     ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"])
                 );
                 if(self)
-                    sound.play(Sound.USER_MOVED_SELF);
+                    this.connection_handler.sound.play(Sound.USER_MOVED_SELF);
                 else if(own_channel == channel_to)
-                    sound.play(Sound.USER_ENTERED_MOVED);
+                    this.connection_handler.sound.play(Sound.USER_ENTERED_MOVED);
                 else if(own_channel == channel_from)
-                    sound.play(Sound.USER_LEFT_MOVED);
+                    this.connection_handler.sound.play(Sound.USER_LEFT_MOVED);
             } else if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-                chat.serverChat().appendMessage(self ? tr("You switched from channel {1} to {2}") : tr("{0} switched from channel {1} to {2}"), true,
+                this.connection_handler.chat.serverChat().appendMessage(self ? tr("You switched from channel {1} to {2}") : tr("{0} switched from channel {1} to {2}"), true,
                     client.createChatTag(true),
                     channel_from ? channel_from.generate_tag(true) : undefined,
                     channel_to.generate_tag(true)
                 );
                 if(self) {} //If we do an action we wait for the error response
                 else if(own_channel == channel_to)
-                    sound.play(Sound.USER_ENTERED);
+                    this.connection_handler.sound.play(Sound.USER_ENTERED);
                 else if(own_channel == channel_from)
-                    sound.play(Sound.USER_LEFT);
+                    this.connection_handler.sound.play(Sound.USER_LEFT);
             } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
-                chat.serverChat().appendMessage(self ? tr("You got kicked out of the channel {1} to channel {2} by {3}{4}") : tr("{0} got kicked from channel {1} to {2} by {3}{4}"), true,
+                this.connection_handler.chat.serverChat().appendMessage(self ? tr("You got kicked out of the channel {1} to channel {2} by {3}{4}") : tr("{0} got kicked from channel {1} to {2} by {3}{4}"), true,
                     client.createChatTag(true),
                     channel_from ? channel_from.generate_tag(true) : undefined,
                     channel_to.generate_tag(true),
@@ -476,11 +487,11 @@ namespace connection {
                     json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
                 );
                 if(self) {
-                    sound.play(Sound.CHANNEL_KICKED);
+                    this.connection_handler.sound.play(Sound.CHANNEL_KICKED);
                 } else if(own_channel == channel_to)
-                    sound.play(Sound.USER_ENTERED_KICKED);
+                    this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
                 else if(own_channel == channel_from)
-                    sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
+                    this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
             } else {
                 console.warn(tr("Unknown reason id %o"), json["reasonid"]);
             }
@@ -554,20 +565,20 @@ namespace connection {
                     return;
                 }
                 if(invoker == this.connection.client.getClient()) {
-                    sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
+                    this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
                     target.chat(true).appendMessage("{0}: {1}", true, this.connection.client.getClient().createChatTag(true), MessageHelper.bbcode_chat(json["msg"]));
                 } else {
-                    sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
+                    this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
                     invoker.chat(true).appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
                 }
             } else if(mode == 2) {
                 if(json["invokerid"] == this.connection.client.clientId)
-                    sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
+                    this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
                 else
-                    sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
-                chat.channelChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]))
+                    this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
+                this.connection_handler.chat.channelChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]))
             } else if(mode == 3) {
-                chat.serverChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
+                this.connection_handler.chat.serverChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
             }
         }
 
@@ -621,8 +632,8 @@ namespace connection {
                 updates.push({key: key, value: json[key]});
             }
             client.updateVariables(...updates);
-            if(this.connection.client.selectInfo.currentSelected == client)
-                this.connection.client.selectInfo.update();
+            if(this.connection.client.select_info.currentSelected == client)
+                this.connection.client.select_info.update();
         }
 
         handleNotifyServerEdited(json) {
@@ -641,8 +652,8 @@ namespace connection {
                 updates.push({key: key, value: json[key]});
             }
             this.connection.client.channelTree.server.updateVariables(false, ...updates);
-            if(this.connection.client.selectInfo.currentSelected == this.connection.client.channelTree.server)
-                this.connection.client.selectInfo.update();
+            if(this.connection.client.select_info.currentSelected == this.connection.client.channelTree.server)
+                this.connection.client.select_info.update();
         }
 
         handleNotifyServerUpdated(json) {
@@ -661,7 +672,7 @@ namespace connection {
                 updates.push({key: key, value: json[key]});
             }
             this.connection.client.channelTree.server.updateVariables(true, ...updates);
-            let info = this.connection.client.selectInfo;
+            let info = this.connection.client.select_info;
             if(info.currentSelected instanceof ServerEntry)
                 info.update();
         }
@@ -686,7 +697,7 @@ namespace connection {
                 unique_id: json["invokeruid"]
             }, json["msg"]);
 
-            sound.play(Sound.USER_POKED_SELF);
+            this.connection_handler.sound.play(Sound.USER_POKED_SELF);
         }
 
         //TODO server chat message
@@ -695,7 +706,7 @@ namespace connection {
 
             const self = this.connection.client.getClient();
             if(json["clid"] == self.clientId())
-                sound.play(Sound.GROUP_SERVER_ASSIGNED_SELF);
+                this.connection_handler.sound.play(Sound.GROUP_SERVER_ASSIGNED_SELF);
         }
 
         //TODO server chat message
@@ -704,7 +715,7 @@ namespace connection {
 
             const self = this.connection.client.getClient();
             if(json["clid"] == self.clientId()) {
-                sound.play(Sound.GROUP_SERVER_REVOKED_SELF);
+                this.connection_handler.sound.play(Sound.GROUP_SERVER_REVOKED_SELF);
             } else {
             }
         }
@@ -715,7 +726,7 @@ namespace connection {
 
             const self = this.connection.client.getClient();
             if(json["clid"] == self.clientId()) {
-                sound.play(Sound.GROUP_CHANNEL_CHANGED_SELF);
+                this.connection_handler.sound.play(Sound.GROUP_CHANNEL_CHANGED_SELF);
             }
         }
 

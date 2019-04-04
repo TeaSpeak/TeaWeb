@@ -11,11 +11,12 @@ namespace connection {
         timeout: 1000
     };
 
+    export type ConnectionStateListener = (old_state: ConnectionState, new_state: ConnectionState) => any;
     export abstract class AbstractServerConnection {
-        readonly client: TSClient;
+        readonly client: ConnectionHandler;
         readonly command_helper: CommandHelper;
 
-        protected constructor(client: TSClient) {
+        protected constructor(client: ConnectionHandler) {
             this.client = client;
 
             this.command_helper = new CommandHelper(this);
@@ -32,18 +33,34 @@ namespace connection {
 
         abstract command_handler_boss() : AbstractCommandHandlerBoss;
         abstract send_command(command: string, data?: any | any[], options?: CommandOptions) : Promise<CommandResult>;
+
+        abstract get onconnectionstatechanged() : ConnectionStateListener;
+        abstract set onconnectionstatechanged(listener: ConnectionStateListener);
     }
 
     export namespace voice {
+        export enum PlayerState {
+            PREBUFFERING,
+            PLAYING,
+            BUFFERING,
+            STOPPING,
+            STOPPED
+        }
+
         export interface VoiceClient {
             client_id: number;
 
             callback_playback: () => any;
-            callback_timeout: () => any;
             callback_stopped: () => any;
 
+            callback_state_changed: (new_state: PlayerState) => any;
+
+            get_state() : PlayerState;
+
             get_volume() : number;
-            set_volume(volume: number) : Promise<void>;
+            set_volume(volume: number) : void;
+
+            abort_replay();
         }
 
         export abstract class AbstractVoiceConnection {
@@ -54,10 +71,15 @@ namespace connection {
             }
 
             abstract connected() : boolean;
+            abstract encoding_supported(codec: number) : boolean;
+            abstract decoding_supported(codec: number) : boolean;
 
             abstract register_client(client_id: number) : VoiceClient;
-            abstract availible_clients() : VoiceClient[];
+            abstract available_clients() : VoiceClient[];
             abstract unregister_client(client: VoiceClient) : Promise<void>;
+
+            abstract voice_recorder() : VoiceRecorder;
+            abstract acquire_voice_recorder(recorder: VoiceRecorder | undefined);
         }
     }
 

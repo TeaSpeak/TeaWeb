@@ -1,4 +1,4 @@
-/// <reference path="../../client.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../../../vendor/bbcode/xbbcode.ts" />
 
 abstract class InfoManagerBase {
@@ -50,24 +50,24 @@ abstract class InfoManager<T> extends InfoManagerBase {
 }
 
 class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefined> {
-    readonly handle: TSClient;
+    readonly handle: ConnectionHandler;
 
     private current_selected?: AvailableTypes;
+
     private _tag: JQuery<HTMLElement>;
-    private _tag_content: JQuery<HTMLElement>;
-    private _tag_info: JQuery<HTMLElement>;
-    private _tag_banner: JQuery<HTMLElement>;
+    private readonly _tag_info: JQuery<HTMLElement>;
+    private readonly _tag_banner: JQuery<HTMLElement>;
 
     private _current_manager: InfoManagerBase = undefined;
     private managers: InfoManagerBase[] = [];
     private banner_manager: Hostbanner;
 
-    constructor(client: TSClient, htmlTag: JQuery<HTMLElement>) {
+    constructor(client: ConnectionHandler) {
         this.handle = client;
-        this._tag = htmlTag;
-        this._tag_content = htmlTag.find("> .select_info");
-        this._tag_info = this._tag_content.find(".container-select-info");
-        this._tag_banner = this._tag_content.find(".container-banner");
+
+        this._tag = $("#tmpl_select_info").renderTag();
+        this._tag_info = this._tag.find(".container-select-info");
+        this._tag_banner = this._tag.find(".container-banner");
 
         this.managers.push(new MusicInfoManager());
         this.managers.push(new ClientInfoManager());
@@ -76,18 +76,22 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
         this.banner_manager = new Hostbanner(client, this._tag_banner);
 
-        this._tag.find("button.close").on('click', () => {
-            this._tag.toggleClass('shown', false);
-        });
+        this._tag.find("button.close").on('click', () => this.close_popover());
+    }
+
+    get_tag() : JQuery {
+        return this._tag;
     }
 
     handle_resize() {
         /* test if the popover isn't a popover anymore */
-        if(this._tag.hasClass('shown')) {
-            this._tag.removeClass('shown');
+        if(this._tag.parent().hasClass('shown')) {
+            this._tag.parent().removeClass('shown');
             if(this.is_popover())
-                this._tag.addClass('shown');
+                this._tag.parent().addClass('shown');
         }
+
+        this.banner_manager.handle_resize();
     }
 
     setCurrentSelected(entry: AvailableTypes) {
@@ -128,14 +132,21 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     current_manager() { return this._current_manager; }
 
-    html_tag() { return this._tag_content; }
-
     is_popover() : boolean {
-        return !this._tag.is(':visible') || this._tag.hasClass('shown');
+        return !this._tag.parent().is(':visible') || this._tag.parent().hasClass('shown');
     }
 
     open_popover() {
-        this._tag.toggleClass('shown', true);
+        this._tag.parent().toggleClass('shown', true);
+        this.banner_manager.handle_resize();
+    }
+
+    close_popover() {
+        this._tag.parent().toggleClass('shown', false);
+    }
+
+    rendered_tag() {
+        return this._tag_info;
     }
 }
 
@@ -146,12 +157,12 @@ interface Window {
 
 class Hostbanner {
     readonly html_tag: JQuery<HTMLElement>;
-    readonly client: TSClient;
+    readonly client: ConnectionHandler;
 
     private updater: NodeJS.Timer;
     private _hostbanner_url: string;
 
-    constructor(client: TSClient, htmlTag: JQuery<HTMLElement>) {
+    constructor(client: ConnectionHandler, htmlTag: JQuery<HTMLElement>) {
         this.client = client;
         this.html_tag = htmlTag;
     }
@@ -189,6 +200,10 @@ class Hostbanner {
         }
     }
 
+    handle_resize() {
+        this.html_tag.find("[x-divider-require-resize]").trigger('resize');
+    }
+
     private generate_tag?() : Promise<JQuery<HTMLElement>> {
         if(!this.client.connected) return undefined;
 
@@ -220,6 +235,43 @@ class Hostbanner {
 
         const rendered = $("#tmpl_selected_hostbanner").renderTag(properties);
 
+        /* ration watcher */
+        if(server.properties.virtualserver_hostbanner_mode == 2) {
+            const jimage = rendered.find(".meta-image");
+            if(jimage.length == 0) {
+                log.warn(LogCategory.SERVER, tr("Missing hostbanner meta image tag"));
+            } else {
+                const image = jimage[0];
+                image.onload = event => {
+                    const image: HTMLImageElement = jimage[0] as any;
+                    rendered.on('resize', event => {
+                        const container = rendered.parent();
+                        container.css('height', null);
+                        container.css('flex-grow', '1');
+
+                        const max_height = rendered.visible_height();
+                        const max_width = rendered.visible_width();
+                        container.css('flex-grow', '0');
+
+
+                        const original_height = image.naturalHeight;
+                        const original_width = image.naturalWidth;
+
+                        const ratio_height = max_height / original_height;
+                        const ratio_width = max_width / original_width;
+
+                        const ratio = Math.min(ratio_height, ratio_width);
+
+                        if(ratio == 0)
+                            return;
+                        const hostbanner_height = ratio * original_height;
+                        container.css('height', Math.ceil(hostbanner_height) + "px");
+                        /* the width is ignorable*/
+                    });
+                    setTimeout(() => rendered.trigger('resize'), 100);
+                };
+            }
+        }
 
         if(window.fetch) {
             return (async () => {
@@ -244,6 +296,7 @@ class Hostbanner {
                     }
                     const url = (this._hostbanner_url = URL.createObjectURL(await result.blob()));
                     tag_image.css('background-image', 'url(' + url + ')');
+                    tag_image.attr('src', url);
                     log.debug(LogCategory.SERVER, tr("Fetsched hostbanner successfully (%o, type: %o, url: %o)"), Date.now() - start, result.type, url);
                 } catch(error) {
                     log.warn(LogCategory.SERVER, tr("Failed to fetch hostbanner image: %o"), error);
@@ -288,7 +341,7 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
 
         properties["client_name"] = client.createChatTag()[0];
         properties["client_onlinetime"] = formatDate(client.calculateOnlineTime());
-        properties["sound_volume"] = client.audioController.volume * 100;
+        properties["sound_volume"] = client.get_audio_handle() ? client.get_audio_handle().get_volume() * 100 : -1;
         properties["client_is_query"] = client.properties.client_type == ClientType.CLIENT_QUERY;
         properties["client_is_web"] = client.properties.client_type_exact == ClientType.CLIENT_WEB;
 
@@ -777,11 +830,11 @@ class MusicInfoManager extends ClientInfoManager {
     }
 
     update_local_volume(volume: number) {
-        this.handle.html_tag().find(".property-volume-local").text(Math.floor(volume * 100) + "%");
+        this.handle.rendered_tag().find(".property-volume-local").text(Math.floor(volume * 100) + "%");
     }
 
     update_remote_volume(volume: number) {
-        this.handle.html_tag().find(".property-volume-remote").text(Math.floor(volume * 100) + "%")
+        this.handle.rendered_tag().find(".property-volume-remote").text(Math.floor(volume * 100) + "%")
     }
 
     available<V>(object: V): boolean {

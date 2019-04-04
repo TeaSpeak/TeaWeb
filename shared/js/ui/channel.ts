@@ -457,13 +457,13 @@ class ChannelEntry {
                 name: tr("Show channel info"),
                 callback: () => {
                     trigger_close = false;
-                    this.channelTree.client.selectInfo.open_popover()
+                    this.channelTree.client.select_info.open_popover()
                 },
                 icon: "client-about",
-                visible: this.channelTree.client.selectInfo.is_popover()
+                visible: this.channelTree.client.select_info.is_popover()
             }, {
                 type: MenuEntryType.HR,
-                visible: this.channelTree.client.selectInfo.is_popover(),
+                visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
                 type: MenuEntryType.ENTRY,
@@ -500,7 +500,7 @@ class ChannelEntry {
                 name: tr("Edit channel"),
                 invalidPermission: !channelModify,
                 callback: () => {
-                    Modals.createChannelModal(this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
+                    Modals.createChannelModal(this.channelTree.client, this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
                         if(changes) {
                             changes["cid"] = this.channelId;
                             this.channelTree.client.serverConnection.send_command("channeledit", changes);
@@ -522,7 +522,7 @@ class ChannelEntry {
                             this.channelTree.client.serverConnection.send_command("channeladdperm", perms, {
                                 flagset: ["continueonerror"]
                             }).then(() => {
-                                sound.play(Sound.CHANNEL_EDITED_SELF);
+                                this.channelTree.client.sound.play(Sound.CHANNEL_EDITED_SELF);
                             });
                         }
                     });
@@ -535,7 +535,7 @@ class ChannelEntry {
                 invalidPermission: !flagDelete,
                 callback: () => {
                     this.channelTree.client.serverConnection.send_command("channeldelete", {cid: this.channelId}).then(() => {
-                        sound.play(Sound.CHANNEL_DELETED);
+                        this.channelTree.client.sound.play(Sound.CHANNEL_DELETED);
                     })
                 }
             },
@@ -694,8 +694,8 @@ class ChannelEntry {
             } else if(key == "channel_codec") {
                 (this.properties.channel_codec == 5 || this.properties.channel_codec == 3 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_music"));
                 this.channelTag().find(".icons .icon_no_sound").toggle(!(
-                    this.channelTree.client.voiceConnection &&
-                    this.channelTree.client.voiceConnection.codecSupported(this.properties.channel_codec)
+                    this.channelTree.client.serverConnection.support_voice() &&
+                    this.channelTree.client.serverConnection.voice_connection().decoding_supported(this.properties.channel_codec)
                 ));
             } else if(key == "channel_flag_default") {
                 (this.properties.channel_flag_default ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_default"));
@@ -771,7 +771,7 @@ class ChannelEntry {
             }).open();
         } else if(this.channelTree.client.getClient().currentChannel() != this)
             this.channelTree.client.getServerConnection().command_helper.joinChannel(this, this._cachedPassword).then(() => {
-                sound.play(Sound.CHANNEL_JOINED);
+                this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
             }).catch(error => {
                 if(error instanceof CommandResult) {
                     if(error.id == 781) { //Invalid password
@@ -803,7 +803,7 @@ class ChannelEntry {
 
         if(inherited_subscription_mode) {
             this.subscribe_mode = ChannelSubscribeMode.INHERITED;
-            unsubscribe = this.flag_subscribed && !this.channelTree.client.controlBar.channel_subscribe_all;
+            unsubscribe = this.flag_subscribed && !this.channelTree.client.client_status.channel_subscribe_all;
         } else {
             this.subscribe_mode = ChannelSubscribeMode.UNSUBSCRIBED;
             unsubscribe = this.flag_subscribed;
@@ -831,7 +831,7 @@ class ChannelEntry {
     }
 
     get subscribe_mode() : ChannelSubscribeMode {
-        return typeof(this._subscribe_mode) !== 'undefined' ? this._subscribe_mode : (this._subscribe_mode = settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), ChannelSubscribeMode.INHERITED));
+        return typeof(this._subscribe_mode) !== 'undefined' ? this._subscribe_mode : (this._subscribe_mode = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), ChannelSubscribeMode.INHERITED));
     }
 
     set subscribe_mode(mode: ChannelSubscribeMode) {
@@ -839,21 +839,6 @@ class ChannelEntry {
             return;
 
         this._subscribe_mode = mode;
-        settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), mode);
+        this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), mode);
     }
-}
-
-//Global functions
-function chat_channel_contextmenu(_element: any, event: any) {
-    event.preventDefault();
-
-    let element = $(_element);
-    let chid : number = Number.parseInt(element.attr("channelId"));
-    let channel = globalClient.channelTree.findChannel(chid);
-    if(!channel) {
-        //TODO
-        return;
-    }
-
-    channel.showContextMenu(event.pageX, event.pageY);
 }

@@ -322,6 +322,9 @@ generators[SyntaxKind.ClassDeclaration] = (settings, stack, node: ts.ClassDeclar
 };
 
 generators[SyntaxKind.PropertySignature] = (settings, stack, node: ts.PropertySignature) => {
+    if(!node.type)
+        return node;
+
     console.log(SyntaxKind[node.type.kind]);
     let type: ts.TypeNode = node.type;
     switch (node.type.kind) {

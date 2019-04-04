@@ -1,5 +1,3 @@
-/// <reference path="client.ts" />
-
 if(typeof(customElements) !== "undefined") {
     try {
         class X_Properties extends HTMLElement {}
@@ -19,15 +17,11 @@ interface SettingsKey<T> {
     fallback_keys?: string | string[];
     fallback_imports?: {[key: string]:(value: string) => T};
     description?: string;
+    default_value?: T;
 }
 
-class StaticSettings {
-    private static _instance: StaticSettings;
-    static get instance() : StaticSettings {
-        if(!this._instance)
-            this._instance = new StaticSettings(true);
-        return this._instance;
-    }
+class SettingsBase {
+    protected static readonly UPDATE_DIRECT: boolean = true;
 
     protected static transformStO?<T>(input?: string, _default?: T, default_type?: string) : T {
         default_type = default_type || typeof _default;
@@ -66,7 +60,7 @@ class StaticSettings {
         if(typeof(value) !== 'string')
             return _default;
 
-        return StaticSettings.transformStO(value as string, _default, default_type);
+        return SettingsBase.transformStO(value as string, _default, default_type);
     }
 
     protected static keyify<T>(key: string | SettingsKey<T>) : SettingsKey<T> {
@@ -76,11 +70,21 @@ class StaticSettings {
             return key;
         throw "key is not a key";
     }
+}
+
+class StaticSettings extends SettingsBase {
+    private static _instance: StaticSettings;
+    static get instance() : StaticSettings {
+        if(!this._instance)
+            this._instance = new StaticSettings(true);
+        return this._instance;
+    }
 
     protected _handle: StaticSettings;
     protected _staticPropsTag: JQuery;
 
     protected constructor(_reserved = undefined) {
+        super();
         if(_reserved && !StaticSettings._instance) {
             this._staticPropsTag = $("#properties");
             this.initializeStatic();
@@ -90,7 +94,14 @@ class StaticSettings {
     }
 
     private initializeStatic() {
-        location.search.substr(1).split("&").forEach(part => {
+        let search;
+        if(window.opener && window.opener !== window) {
+            search = new URL(window.location.href).search;
+        } else {
+            search = location.search;
+        }
+
+        search.substr(1).split("&").forEach(part => {
             let item = part.split("=");
             $("<x-property></x-property>")
                 .attr("key", item[0])
@@ -136,6 +147,9 @@ class Settings extends StaticSettings {
         key: 'disableVoice',
         description: 'Disables the voice bridge. If disabled, the audio and codec workers aren\'t required anymore'
     };
+    static readonly KEY_DISABLE_MULTI_SESSION: SettingsKey<boolean> = {
+        key: 'disableMultiSession',
+    };
 
     static readonly KEY_LOAD_DUMMY_ERROR: SettingsKey<boolean> = {
         key: 'dummy_load_error',
@@ -176,6 +190,10 @@ class Settings extends StaticSettings {
         key: 'connect_password_hashed'
     };
 
+    static readonly KEY_CERTIFICATE_CALLBACK: SettingsKey<string> = {
+        key: 'certificate_callback'
+    };
+
     static readonly FN_SERVER_CHANNEL_SUBSCRIBE_MODE: (channel: ChannelEntry) => SettingsKey<ChannelSubscribeMode> = channel => {
         return {
             key: 'channel_subscribe_mode_' + channel.getChannelId()
@@ -197,10 +215,7 @@ class Settings extends StaticSettings {
         return result;
     })();
 
-    private static readonly UPDATE_DIRECT: boolean = true;
     private cacheGlobal = {};
-    private cacheServer = {};
-    private currentServer: ServerEntry;
     private saveWorker: NodeJS.Timer;
     private updated: boolean = false;
 
@@ -225,10 +240,6 @@ class Settings extends StaticSettings {
         return StaticSettings.resolveKey(Settings.keyify(key), _default, key => this.cacheGlobal[key]);
     }
 
-    server?<T>(key: string | SettingsKey<T>, _default?: T) : T {
-        return StaticSettings.resolveKey(Settings.keyify(key), _default, key => this.cacheServer[key]);
-    }
-
     changeGlobal<T>(key: string | SettingsKey<T>, value?: T){
         key = Settings.keyify(key);
 
@@ -242,12 +253,37 @@ class Settings extends StaticSettings {
             this.save();
     }
 
+    save() {
+        this.updated = false;
+        let global = JSON.stringify(this.cacheGlobal);
+        localStorage.setItem("settings.global", global);
+    }
+}
+
+class ServerSettings extends SettingsBase {
+    private cacheServer = {};
+    private currentServer: ServerEntry;
+    private _server_save_worker: NodeJS.Timer;
+    private _server_settings_updated: boolean = false;
+
+    constructor() {
+        super();
+        this._server_save_worker = setInterval(() => {
+            if(this._server_settings_updated)
+                this.save();
+        }, 5 * 1000);
+    }
+
+    server?<T>(key: string | SettingsKey<T>, _default?: T) : T {
+        return StaticSettings.resolveKey(Settings.keyify(key), _default, key => this.cacheServer[key]);
+    }
+
     changeServer<T>(key: string | SettingsKey<T>, value?: T) {
         key = Settings.keyify(key);
 
         if(this.cacheServer[key.key] == value) return;
 
-        this.updated = true;
+        this._server_settings_updated = true;
         this.cacheServer[key.key] = StaticSettings.transformOtS(value);
 
         if(Settings.UPDATE_DIRECT)
@@ -271,15 +307,12 @@ class Settings extends StaticSettings {
     }
 
     save() {
-        this.updated = false;
+        this._server_settings_updated = false;
 
         if(this.currentServer) {
             let serverId = this.currentServer.properties.virtualserver_unique_identifier;
             let server = JSON.stringify(this.cacheServer);
             localStorage.setItem("settings.server_" + serverId, server);
         }
-
-        let global = JSON.stringify(this.cacheGlobal);
-        localStorage.setItem("settings.global", global);
     }
 }

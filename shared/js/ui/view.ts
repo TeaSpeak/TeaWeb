@@ -1,6 +1,5 @@
 /// <reference path="../voice/VoiceHandler.ts" />
-/// <reference path="../client.ts" />
-/// <reference path="../contextMenu.ts" />
+/// <reference path="../ConnectionHandler.ts" />
 /// <reference path="../proto.ts" />
 /// <reference path="channel.ts" />
 /// <reference path="client.ts" />
@@ -8,16 +7,18 @@
 
 
 class ChannelTree {
-    client: TSClient;
-    htmlTree: JQuery;
-    htmlTree_parent: JQuery;
+    client: ConnectionHandler;
     server: ServerEntry;
+
     channels: ChannelEntry[];
     clients: ClientEntry[];
 
     currently_selected: ClientEntry | ServerEntry | ChannelEntry | (ClientEntry | ServerEntry)[] = undefined;
     currently_selected_context_callback: (event) => any = undefined;
     readonly client_mover: ClientMover;
+
+    private _tag_container: JQuery;
+    private _tag_entries: JQuery;
 
     private _tree_detached: boolean = false;
     private _show_queries: boolean;
@@ -26,18 +27,19 @@ class ChannelTree {
 
     private selected_event?: Event;
 
-    constructor(client, htmlTree) {
+    constructor(client) {
         document.addEventListener("touchstart", function(){}, true);
 
         this.client = client;
-        this.htmlTree = htmlTree;
-        this.htmlTree_parent = this.htmlTree.parent();
+
+        this._tag_container = $.spawn("div").addClass("channel-tree-container");
+        this._tag_entries = $.spawn("div").addClass("channel-tree");
 
         this.client_mover = new ClientMover(this);
         this.reset();
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            this.htmlTree.parent().on("contextmenu", (event) => {
+            this._tag_container.on("contextmenu", (event) => {
                 if(event.isDefaultPrevented()) return;
 
                 for(const element of document.elementsFromPoint(event.pageX, event.pageY))
@@ -54,7 +56,7 @@ class ChannelTree {
             });
         }
 
-        this.htmlTree.on('resize', this.handle_resized.bind(this));
+        this._tag_container.on('resize', this.handle_resized.bind(this));
 
         /* TODO release these events again when ChannelTree get deinitialized */
         $(document).on('click', event => {
@@ -62,19 +64,23 @@ class ChannelTree {
                 this.selected_event = undefined;
         });
         $(document).on('keydown', this.handle_key_press.bind(this));
-        this.htmlTree.on('click', event => {{
+        this._tag_container.on('click', event => {{
             this.selected_event = event.originalEvent;
         }});
     }
 
+    tag_tree() : JQuery {
+        return this._tag_container;
+    }
+
     hide_channel_tree() {
-        this.htmlTree.detach();
+        this._tag_entries.detach();
         this._tree_detached = true;
     }
 
     show_channel_tree() {
         this._tree_detached = false;
-        this.htmlTree.appendTo(this.htmlTree_parent);
+        this._tag_entries.appendTo(this._tag_container);
 
         this.channels.forEach(e => e.recalculate_repetitive_name());
     }
@@ -99,14 +105,14 @@ class ChannelTree {
 
     initialiseHead(serverName: string, address: ServerAddress) {
         this.server = new ServerEntry(this, serverName, address);
-        this.server.htmlTag.appendTo(this.htmlTree);
+        this.server.htmlTag.appendTo(this._tag_entries);
         this.server.initializeListener();
     }
 
     private __deleteAnimation(element: ChannelEntry | ClientEntry) {
         let tag = element instanceof ChannelEntry ? element.rootTag() : element.tag;
-        this.htmlTree.find(tag).fadeOut("slow", () => {
-            tag.remove();
+        tag.fadeOut("slow", () => {
+            tag.detach();
         });
     }
 
@@ -152,7 +158,7 @@ class ChannelTree {
         this.channels.push(channel);
 
         let elm = undefined;
-        let tag = this.htmlTree;
+        let tag = this._tag_entries;
 
         let previous_channel = null;
         if(channel.hasParent()) {
@@ -266,7 +272,7 @@ class ChannelTree {
                     channel.channel_next.channel_previous = channel;
                 }
             } else {
-                this.htmlTree.find(".server").after(channel.rootTag());
+                this._tag_entries.find(".server").after(channel.rootTag());
 
                 channel.channel_next = this.channel_first;
                 if(this.channel_first)
@@ -290,23 +296,44 @@ class ChannelTree {
         }
     }
 
-    deleteClient(client: ClientEntry) {
+    deleteClient(client: ClientEntry, animate_tag?: boolean) {
         this.clients.remove(client);
-        this.__deleteAnimation(client);
+        if(typeof(animate_tag) !== "boolean" || animate_tag)
+            this.__deleteAnimation(client);
+        else
+            client.tag.detach();
         client.onDelete();
+
+        const voice_connection = this.client.serverConnection.voice_connection();
+        if(client.get_audio_handle()) {
+            if(!voice_connection) {
+                log.warn(LogCategory.VOICE, tr("Deleting client with a voice handle, but we haven't a voice connection!"));
+            } else {
+                voice_connection.unregister_client(client.get_audio_handle());
+            }
+        }
+        client.set_audio_handle(undefined); /* just to be sure */
+    }
+
+    registerClient(client: ClientEntry) {
+        this.clients.push(client);
+        client.channelTree = this;
+
+        const voice_connection = this.client.serverConnection.voice_connection();
+        if(voice_connection)
+            client.set_audio_handle(voice_connection.register_client(client.clientId()));
     }
 
     insertClient(client: ClientEntry, channel: ChannelEntry) : ClientEntry {
         let newClient = this.findClient(client.clientId());
-        if(newClient) client = newClient; //Got new client :)
-        else
-            this.clients.push(client);
+        if(newClient)
+            client = newClient; //Got new client :)
+        else {
+            this.registerClient(client);
+        }
 
-        client.channelTree = this;
         client["_channel"] = channel;
-
         let tag = client.tag;
-
 
         if(!this._show_queries && client.properties.client_type == ClientType.CLIENT_QUERY)
             client.tag.hide();
@@ -319,11 +346,6 @@ class ChannelTree {
         channel.updateChannelTypeIcon();
         client.update_family_index();
         return client;
-    }
-
-    registerClient(client: ClientEntry) {
-        this.clients.push(client);
-        client.channelTree = this;
     }
 
     moveClient(client: ClientEntry, channel: ChannelEntry) {
@@ -397,7 +419,7 @@ class ChannelTree {
 
         if(!$.isArray(this.currently_selected) || enforce_single) {
             this.currently_selected = entry;
-            this.htmlTree.find(".selected").each(function (idx, e) {
+            this._tag_entries.find(".selected").each(function (idx, e) {
                 $(e).removeClass("selected");
             });
         } else {
@@ -427,7 +449,7 @@ class ChannelTree {
         else if(entry instanceof ServerEntry)
             (entry as ServerEntry).htmlTag.addClass("selected");
 
-        this.client.selectInfo.setCurrentSelected($.isArray(this.currently_selected) ? undefined : entry);
+        this.client.select_info.setCurrentSelected($.isArray(this.currently_selected) ? undefined : entry);
     }
 
     private callback_multiselect_channel(event) {
@@ -527,7 +549,7 @@ class ChannelTree {
                                 }, {
                                     flagset: [data.no_ip ? "no-ip" : "", data.no_hwid ? "no-hardware-id" : "", data.no_name ? "no-nickname" : ""]
                                 }).then(() => {
-                                    sound.play(Sound.USER_BANNED);
+                                    this.client.sound.play(Sound.USER_BANNED);
                                 });
                         });
                     }
@@ -586,14 +608,14 @@ class ChannelTree {
         this.server = null;
         this.clients = [];
         this.channels = [];
-        this.htmlTree.children().detach(); //Do not remove the listener!
+        this._tag_entries.children().detach(); //Do not remove the listener!
 
         this.channel_first = undefined;
         this.channel_last = undefined;
     }
 
     spawnCreateChannel(parent?: ChannelEntry) {
-        Modals.createChannelModal(undefined, parent, this.client.permissions, (properties?, permissions?) => {
+        Modals.createChannelModal(this.client, undefined, parent, this.client.permissions, (properties?, permissions?) => {
             if(!properties) return;
             properties["cpid"] = parent ? parent.channelId : 0;
             log.debug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
@@ -622,8 +644,8 @@ class ChannelTree {
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
             }).then(channel => {
-                chat.serverChat().appendMessage(tr("Channel {} successfully created!"), true, channel.generate_tag(true));
-                sound.play(Sound.CHANNEL_CREATED);
+                this.client.chat.serverChat().appendMessage(tr("Channel {} successfully created!"), true, channel.generate_tag(true));
+                this.client.sound.play(Sound.CHANNEL_CREATED);
             });
         });
     }

@@ -1,9 +1,9 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../client.ts" />
 
 namespace Modals {
-    export function spawnPlaylistManage(client: TSClient) {
+    export function spawnPlaylistManage(client: ConnectionHandler) {
         let modal: Modal;
         let selected_playlist: Playlist;
         let available_playlists: Playlist[];

@@ -1,10 +1,10 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../client.ts" />
 
 namespace Modals {
     //TODO Upload/delete button
-    export function spawnIconSelect(client: TSClient, callback_icon?: (id: number) => any, selected_icon?: number) {
+    export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
         callback_icon = callback_icon || (() => {});
         selected_icon = selected_icon || 0;
 

@@ -1,8 +1,6 @@
-/// <reference path="../../../declarations/imports_client.d.ts" />
-/// <reference path="../../utils/modal.ts" />
-/// <reference path="../../utils/tab.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../voice/AudioController.ts" />
+/// <reference path="../../voice/VoiceClient.ts" />
 /// <reference path="../../profiles/Identity.ts" />
 
 namespace Modals {
@@ -207,7 +205,7 @@ namespace Modals {
                     client: native_client,
                     valid_forum_identity: profiles.identities.valid_static_forum_identity(),
                     forum_path: settings.static("forum_path"),
-                    voice_available: !!globalClient.voiceConnection
+                    voice_available: !settings.static_global(Settings.KEY_DISABLE_VOICE, false)
                 });
 
                 initialiseVoiceListeners(modal, (template = template.tabify()).find(".settings_audio"));
@@ -262,7 +260,7 @@ namespace Modals {
                 .text(message);
         };
 
-        if (globalClient.voiceConnection) {
+        if (!settings.static_global(Settings.KEY_DISABLE_VOICE, false)) {
             { //Initialized voice activation detection
                 const vad_tag = tag.find(".settings-vad-container");
 
@@ -274,7 +272,7 @@ namespace Modals {
                     }
                     {
                         settings.changeGlobal("vad_type", select.value);
-                        globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
+                        voice_recoder.reinitialiseVAD();
                     }
 
                     switch (select.value) {
@@ -288,10 +286,10 @@ namespace Modals {
                             break;
                         case "vad":
                             let slider = vad_tag.find(".vad_vad_slider");
-                            let vad: VoiceActivityDetectorVAD = globalClient.voiceConnection.voiceRecorder.getVADHandler() as VoiceActivityDetectorVAD;
+                            let vad: VoiceActivityDetectorVAD = voice_recoder.getVADHandler() as VoiceActivityDetectorVAD;
                             slider.val(vad.percentageThreshold);
                             slider.trigger("change");
-                            globalClient.voiceConnection.voiceRecorder.update(true);
+                            voice_recoder.set_recording(true);
                             vad.percentage_listener = per => {
                                 vad_tag.find(".vad_vad_bar_filler")
                                     .css("width", (100 - per) + "%");
@@ -323,7 +321,7 @@ namespace Modals {
                                 Object.assign(ppt_settings, event);
                                 settings.changeGlobal('vad_ppt_settings', ppt_settings);
 
-                                globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
+                                voice_recoder.reinitialiseVAD();
 
                                 ppt.unregister_key_listener(listener);
                                 modal.close();
@@ -340,7 +338,7 @@ namespace Modals {
                         ppt_settings.delay = (<HTMLInputElement>event.target).valueAsNumber;
                         settings.changeGlobal('vad_ppt_settings', ppt_settings);
 
-                        globalClient.voiceConnection.voiceRecorder.reinitialiseVAD();
+                        voice_recoder.reinitialiseVAD();
                     });
                 }
 
@@ -348,13 +346,13 @@ namespace Modals {
                     let slider = vad_tag.find(".vad_vad_slider");
                     slider.on("input change", () => {
                         settings.changeGlobal("vad_threshold", slider.val().toString());
-                        let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
+                        let vad = voice_recoder.getVADHandler();
                         if (vad instanceof VoiceActivityDetectorVAD)
                             vad.percentageThreshold = slider.val() as number;
                         vad_tag.find(".vad_vad_slider_value").text(slider.val().toString());
                     });
                     modal.properties.registerCloseListener(() => {
-                        let vad = globalClient.voiceConnection.voiceRecorder.getVADHandler();
+                        let vad = voice_recoder.getVADHandler();
                         if (vad instanceof VoiceActivityDetectorVAD)
                             vad.percentage_listener = undefined;
 
@@ -386,7 +384,7 @@ namespace Modals {
                         .appendTo(tag_select);
 
                     navigator.mediaDevices.enumerateDevices().then(devices => {
-                        const active_device = globalClient.voiceConnection.voiceRecorder.device_id();
+                        const active_device = voice_recoder.device_id();
 
                         for (const device of devices) {
                             console.debug(tr("Got device %s (%s): %s (%o)"), device.deviceId, device.kind, device.label);
@@ -416,7 +414,7 @@ namespace Modals {
                         let deviceId = selected_tag.attr("device-id");
                         let groupId = selected_tag.attr("device-group");
                         console.log(tr("Selected microphone device: id: %o group: %o"), deviceId, groupId);
-                        globalClient.voiceConnection.voiceRecorder.change_device(deviceId, groupId);
+                        voice_recoder.change_device(deviceId, groupId);
                     });
                 }
 
@@ -519,7 +517,7 @@ namespace Modals {
                     });
 
                     entry.find(".button-playback").on('click', event => {
-                        sound.play(sound_name as Sound);
+                        sound.manager.play(sound_name as Sound);
                     });
 
                     entry_tag.append(entry);

@@ -1,6 +1,6 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../client.ts" />
 
 namespace Modals {
     const avatar_to_uid = (id: string) => {
@@ -20,7 +20,7 @@ namespace Modals {
         return (size / Math.pow(1024, exp)).toFixed(2) + 'KMGTPE'.charAt(exp - 1) + "iB";
     };
 
-    export function spawnAvatarList(client: TSClient) {
+    export function spawnAvatarList(client: ConnectionHandler) {
         const modal = createModal({
             header: tr("Avatars"),
             footer: undefined,

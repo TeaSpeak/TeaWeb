@@ -48,7 +48,10 @@ namespace connection {
         private _retCodeIdx: number;
         private _retListener: ReturnListener<CommandResult>[];
 
-        constructor(client : TSClient) {
+        private _connection_state_listener: connection.ConnectionStateListener;
+        private _voice_connection: audio.js.VoiceConnection;
+
+        constructor(client : ConnectionHandler) {
             super(client);
 
             this._socket = null;
@@ -60,11 +63,14 @@ namespace connection {
 
             this._command_boss.register_handler(this._command_handler_default);
             this.command_helper.initialize();
+
+            if(!settings.static_global(Settings.KEY_DISABLE_VOICE, false))
+                this._voice_connection = new audio.js.VoiceConnection(this);
         }
 
         on_connect: () => void = () => {
             console.log(tr("Socket connected"));
-            chat.serverChat().appendMessage(tr("Logging in..."));
+            this.client.chat.serverChat().appendMessage(tr("Logging in..."));
             this._handshakeHandler.startHandshake();
         };
 
@@ -90,12 +96,12 @@ namespace connection {
             this._handshakeHandler = handshake;
             this._handshakeHandler.setConnection(this);
             this._connected = false;
-            chat.serverChat().appendMessage(tr("Connecting to {0}:{1}"), true, address.host, address.port);
+            this.client.chat.serverChat().appendMessage(tr("Connecting to {0}:{1}"), true, address.host, address.port);
 
             const self = this;
+            let local_socket: WebSocket;
+            let local_timeout_timer: NodeJS.Timer;
             try {
-                let local_socket: WebSocket;
-                let local_timeout_timer: NodeJS.Timer;
 
                 local_timeout_timer = setTimeout(async () => {
                     console.log(tr("Connect timeout triggered!"));
@@ -144,6 +150,7 @@ namespace connection {
                 };
                 this.updateConnectionState(ConnectionState.INITIALISING);
             } catch (e) {
+                clearTimeout(local_timeout_timer);
                 try {
                     await this.disconnect();
                 } catch(error) {
@@ -154,8 +161,10 @@ namespace connection {
         }
 
         updateConnectionState(state: ConnectionState) {
+            const old_state = this._connectionState;
             this._connectionState = state;
-            this.client.controlBar.update_connection_state();
+            if(this._connection_state_listener)
+                this._connection_state_listener(old_state, state);
         }
 
         async disconnect(reason?: string) : Promise<void> {
@@ -176,6 +185,9 @@ namespace connection {
             this._retListener = [];
             this._retCodeIdx = 0;
             this._connected = false;
+
+            if(this._voice_connection)
+                this._voice_connection.dropSession();
         }
 
         private handle_socket_message(data) {
@@ -203,10 +215,10 @@ namespace connection {
                     });
                     group.end();
                 } else if(json["type"] === "WebRTC") {
-                    if(this.client.voiceConnection)
-                        this.client.voiceConnection.handleControlPacket(json);
+                    if(this._voice_connection)
+                        this._voice_connection.handleControlPacket(json);
                     else
-                        console.log(tr("Dropping WebRTC command packet, because we havent a bridge."))
+                        console.log(tr("Dropping WebRTC command packet, because we haven't a bridge."))
                 }
                 else {
                     console.log(tr("Unknown command type %o"), json["type"]);
@@ -280,14 +292,14 @@ namespace connection {
                             if(!res.success) {
                                 if(res.id == 2568) { //Permission error
                                     res.message = tr("Insufficient client permissions. Failed on permission ") + this.client.permissions.resolveInfo(res.json["failed_permid"] as number).name;
-                                    chat.serverChat().appendError(tr("Insufficient client permissions. Failed on permission {}"), this.client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
-                                    sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
+                                    this.client.chat.serverChat().appendError(tr("Insufficient client permissions. Failed on permission {}"), this.client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
+                                    this.client.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
                                 } else {
-                                    chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
+                                    this.client.chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
                                 }
                             }
                         } else if(typeof(ex) === "string") {
-                            chat.serverChat().appendError(tr("Command execution results in ") + ex);
+                            this.client.chat.serverChat().appendError(tr("Command execution results in ") + ex);
                         } else {
                             console.error(tr("Invalid promise result type: %o. Result:"), typeof (ex));
                             console.error(ex);
@@ -303,15 +315,23 @@ namespace connection {
         }
 
         support_voice(): boolean {
-            return false;
+            return this._voice_connection !== undefined;
         }
 
         voice_connection(): connection.voice.AbstractVoiceConnection | undefined {
-            return undefined;
+            return this._voice_connection;
         }
 
         command_handler_boss(): connection.AbstractCommandHandlerBoss {
             return this._command_boss;
+        }
+
+
+        get onconnectionstatechanged() : connection.ConnectionStateListener {
+            return this._connection_state_listener;
+        }
+        set onconnectionstatechanged(listener: connection.ConnectionStateListener) {
+            this._connection_state_listener = listener;
         }
     }
 }

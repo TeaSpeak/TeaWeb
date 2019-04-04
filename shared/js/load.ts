@@ -7,10 +7,14 @@ namespace app {
         WEB_RELEASE
     }
     export let type: Type = Type.UNKNOWN;
+
+    export function is_web() {
+        return type == Type.WEB_RELEASE || type == Type.WEB_DEBUG;
+    }
 }
 
 namespace loader {
-    type Task = {
+    export type Task = {
         name: string,
         priority: number, /* tasks with the same priority will be executed in sync */
         function: () => Promise<void>
@@ -518,8 +522,6 @@ const loader_javascript = {
 
             "js/sound/Sounds.js",
 
-            "js/utils/modal.js",
-            "js/utils/tab.js",
             "js/utils/helpers.js",
 
             "js/crypto/sha.js",
@@ -529,6 +531,12 @@ const loader_javascript = {
             //load the profiles
             "js/profiles/ConnectionProfile.js",
             "js/profiles/Identity.js",
+
+            //Basic UI elements
+            "js/ui/elements/context_divider.js",
+            "js/ui/elements/context_menu.js",
+            "js/ui/elements/modal.js",
+            "js/ui/elements/tab.js",
 
             //Load UI
             "js/ui/modal/ModalAvatarList.js",
@@ -556,11 +564,12 @@ const loader_javascript = {
             "js/ui/server.js",
             "js/ui/view.js",
             "js/ui/client_move.js",
-            "js/ui/context_divider.js",
             "js/ui/htmltags.js",
 
             "js/ui/frames/SelectedItemInfo.js",
             "js/ui/frames/ControlBar.js",
+            "js/ui/frames/chat.js",
+            "js/ui/frames/connection_handlers.js",
 
             //Load permissions
             "js/permission/PermissionManager.js",
@@ -570,7 +579,7 @@ const loader_javascript = {
             "js/voice/VoiceHandler.js",
             "js/voice/VoiceRecorder.js",
             "js/voice/AudioResampler.js",
-            "js/voice/AudioController.js",
+            "js/voice/VoiceClient.js",
 
             //Load codec
             "js/codec/Codec.js",
@@ -579,10 +588,9 @@ const loader_javascript = {
             //Load general stuff
             "js/settings.js",
             "js/bookmarks.js",
-            "js/contextMenu.js",
             "js/FileManager.js",
-            "js/client.js",
-            "js/chat.js",
+            "js/ConnectionHandler.js",
+            "js/BrowserIPC.js",
 
             //Connection
             "js/connection/CommandHandler.js",
@@ -591,7 +599,6 @@ const loader_javascript = {
             "js/connection/ServerConnection.js",
 
             "js/stats.js",
-
             "js/PPTListener.js",
 
 
@@ -687,6 +694,7 @@ const loader_style = {
             "css/static/frame/SelectInfo.css",
             "css/static/control_bar.css",
             "css/static/context_menu.css",
+            "css/static/connection_handlers.css",
             "css/static/htmltags.css"
         ]);
     },

@@ -141,13 +141,13 @@ class ServerEntry {
                 name: tr("Show server info"),
                 callback: () => {
                     trigger_close = false;
-                    this.channelTree.client.selectInfo.open_popover()
+                    this.channelTree.client.select_info.open_popover()
                 },
                 icon: "client-about",
-                visible: this.channelTree.client.selectInfo.is_popover()
+                visible: this.channelTree.client.select_info.is_popover()
             }, {
                 type: MenuEntryType.HR,
-                visible: this.channelTree.client.selectInfo.is_popover(),
+                visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
                 type: MenuEntryType.ENTRY,
@@ -159,7 +159,7 @@ class ServerEntry {
                         console.log(tr("Changed properties: %o"), properties);
                         if (properties)
                             this.channelTree.client.serverConnection.send_command("serveredit", properties).then(() => {
-                                sound.play(Sound.SERVER_EDITED_SELF);
+                                this.channelTree.client.sound.play(Sound.SERVER_EDITED_SELF);
                             });
                     });
                 }
@@ -210,6 +210,8 @@ class ServerEntry {
 
             if(variable.key == "virtualserver_name") {
                 this.htmlTag.find(".name").text(variable.value);
+                this.channelTree.client.tag_connection_handler.find(".server-name").text(variable.value);
+                server_connections.update_ui();
             } else if(variable.key == "virtualserver_icon_id") {
                 if(this.channelTree.client.fileManager && this.channelTree.client.fileManager.icons)
                     this.htmlTag.find(".icon_property").replaceWith(this.channelTree.client.fileManager.icons.generateTag(this.properties.virtualserver_icon_id).addClass("icon_property"));
@@ -218,7 +220,7 @@ class ServerEntry {
             }
         }
         if(update_bannner)
-            this.channelTree.client.selectInfo.update_banner();
+            this.channelTree.client.select_info.update_banner();
 
         group.end();
         if(is_self_notify && this.info_request_promise_resolve) {

@@ -295,4 +295,5 @@ namespace i18n {
     }
 }
 
+// @ts-ignore
 const tr: typeof i18n.tr = i18n.tr;

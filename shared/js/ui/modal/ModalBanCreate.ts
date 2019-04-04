@@ -1,5 +1,5 @@
 namespace Modals {
-    export function spawnBanCreate(base?: BanEntry, callback?: (entry?: BanEntry) => any) {
+    export function spawnBanCreate(connection: ConnectionHandler, base?: BanEntry, callback?: (entry?: BanEntry) => any) {
         let result: BanEntry = {} as any;
         result.banid = base ? base.banid : 0;
 
@@ -98,8 +98,8 @@ namespace Modals {
                     input_global.prop("checked", base.server_id == 0);
                 }
 
-                if(globalClient && globalClient.permissions)
-                    input_global.prop("disabled", !globalClient.permissions.neededPermission(base ? PermissionType.B_CLIENT_BAN_EDIT_GLOBAL : PermissionType.B_CLIENT_BAN_CREATE_GLOBAL));
+                if(connection && connection.permissions)
+                    input_global.prop("disabled", !connection.permissions.neededPermission(base ? PermissionType.B_CLIENT_BAN_EDIT_GLOBAL : PermissionType.B_CLIENT_BAN_CREATE_GLOBAL));
 
                 return template;
             },

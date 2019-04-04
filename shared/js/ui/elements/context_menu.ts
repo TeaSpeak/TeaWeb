@@ -1,12 +1,13 @@
 let context_menu: JQuery;
 
-$(document).bind("mousedown", function (e) {
+$(document).bind("click", function (e) {
     let menu = context_menu || (context_menu = $(".context-menu"));
 
     if(!menu.is(":visible")) return;
 
     if ($(e.target).parents(".context-menu").length == 0) {
         despawn_context_menu();
+        e.preventDefault();
     }
 });
 

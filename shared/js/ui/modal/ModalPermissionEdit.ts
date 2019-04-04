@@ -1,6 +1,6 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../client.ts" />
 
 /*
     TODO: Check needed permissions and may not even try to request, because we dont have the permission. Permissions:
@@ -542,7 +542,7 @@ namespace Modals {
         }
     }
 
-    export function spawnPermissionEdit() : Modal {
+    export function spawnPermissionEdit(connection: ConnectionHandler) : Modal {
         const connectModal = createModal({
             header: function() {
                 return tr("Server Permissions");
@@ -551,7 +551,7 @@ namespace Modals {
                 let properties: any = {};
 
                 let tag = $("#tmpl_server_permissions").renderTag(properties);
-                const pe = new PermissionEditor(globalClient.permissions.groupedPermissions());
+                const pe = new PermissionEditor(connection.permissions.groupedPermissions());
                 pe.build_tag();
                 /* initialisation */
                 {
@@ -560,11 +560,11 @@ namespace Modals {
                 }
 
 
-                apply_server_groups(pe, tag.find(".tab-group-server"));
-                apply_channel_groups(pe, tag.find(".tab-group-channel"));
-                apply_channel_permission(pe, tag.find(".tab-channel"));
-                apply_client_permission(pe, tag.find(".tab-client"));
-                apply_client_channel_permission(pe, tag.find(".tab-client-channel"));
+                apply_server_groups(connection, pe, tag.find(".tab-group-server"));
+                apply_channel_groups(connection, pe, tag.find(".tab-group-channel"));
+                apply_channel_permission(connection, pe, tag.find(".tab-channel"));
+                apply_client_permission(connection, pe, tag.find(".tab-client"));
+                apply_client_channel_permission(connection, pe, tag.find(".tab-client-channel"));
                 return tag.tabify(false);
             },
             footer: undefined,
@@ -583,16 +583,16 @@ namespace Modals {
         return connectModal;
     }
 
-    function build_channel_tree(channel_list: JQuery, select_callback: (channel: ChannelEntry) => any) {
-        const root = globalClient.channelTree.get_first_channel();
+    function build_channel_tree(connection: ConnectionHandler, channel_list: JQuery, select_callback: (channel: ChannelEntry) => any) {
+        const root = connection.channelTree.get_first_channel();
         if(!root) return;
 
         const build_channel = (channel: ChannelEntry) => {
             let tag = $.spawn("div").addClass("channel").attr("channel-id", channel.channelId);
-            globalClient.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(tag);
+            connection.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(tag);
             {
                 let name = $.spawn("a").text(channel.channelName() + " (" + channel.channelId + ")").addClass("name");
-                //if(globalClient.channelTree.server.properties. == group.id)
+                //if(connection.channelTree.server.properties. == group.id)
                 //    name.addClass("default");
                 name.appendTo(tag);
             }
@@ -619,7 +619,7 @@ namespace Modals {
         setTimeout(() => channel_list.find('.channel').first().trigger('click'), 0);
     }
 
-    function apply_client_channel_permission(editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_client_channel_permission(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
         let current_cldbid: number = 0;
         let current_channel: ChannelEntry;
 
@@ -629,7 +629,7 @@ namespace Modals {
             tab_tag.on('show', event => {
                 console.error("Channel tab show");
                 pe_client.append(editor.container);
-                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
+                if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
                     if(current_cldbid && current_channel)
                         editor.set_mode(PermissionEditorMode.VISIBLE);
                     else
@@ -643,7 +643,7 @@ namespace Modals {
                 editor.set_listener_update(() => {
                     if(!current_cldbid || !current_channel) return;
 
-                    globalClient.permissions.requestClientChannelPermissions(current_cldbid, current_channel.channelId).then(result => {
+                    connection.permissions.requestClientChannelPermissions(current_cldbid, current_channel.channelId).then(result => {
                         editor.set_permissions(result);
                         editor.set_mode(PermissionEditorMode.VISIBLE);
                     }).catch(error => {
@@ -665,7 +665,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.send_command("channelclientdelperm", {
+                            return connection.serverConnection.send_command("channelclientdelperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id,
@@ -677,7 +677,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("channelclientdelperm", {
+                            return connection.serverConnection.send_command("channelclientdelperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
@@ -694,7 +694,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.send_command("channelclientaddperm", {
+                            return connection.serverConnection.send_command("channelclientaddperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id,
@@ -709,7 +709,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("channelclientaddperm", {
+                            return connection.serverConnection.send_command("channelclientaddperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
@@ -726,7 +726,7 @@ namespace Modals {
             });
         }
 
-        build_channel_tree(tab_tag.find(".list-channel .entries"), channel => {
+        build_channel_tree(connection, tab_tag.find(".list-channel .entries"), channel => {
             if(current_channel == channel) return;
 
             current_channel = channel;
@@ -745,7 +745,7 @@ namespace Modals {
 
             const resolve_client = () => {
                 let client_uid = tag_select_uid.val() as string;
-                globalClient.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
+                connection.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                     if(!result || result.length == 0) return Promise.reject("invalid data");
                     tag_select_uid.attr('pattern', null).removeClass('is-invalid');
 
@@ -778,7 +778,7 @@ namespace Modals {
         }
     }
 
-    function apply_client_permission(editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_client_permission(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
         let current_cldbid: number = 0;
 
         /* the editor */
@@ -788,7 +788,7 @@ namespace Modals {
                 console.error("Channel tab show");
 
                 pe_client.append(editor.container);
-                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
+                if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
                     if(current_cldbid)
                         editor.set_mode(PermissionEditorMode.VISIBLE);
                     else
@@ -801,7 +801,7 @@ namespace Modals {
                 editor.set_listener_update(() => {
                     if(!current_cldbid) return;
 
-                    globalClient.permissions.requestClientPermissions(current_cldbid).then(result => {
+                    connection.permissions.requestClientPermissions(current_cldbid).then(result => {
                         editor.set_permissions(result);
                         editor.set_mode(PermissionEditorMode.VISIBLE);
                     }).catch(error => {
@@ -821,7 +821,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.send_command("clientaddperm", {
+                            return connection.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id,
                             });
@@ -832,7 +832,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("clientaddperm", {
+                            return connection.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id_grant(),
                             });
@@ -848,7 +848,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.send_command("clientaddperm", {
+                            return connection.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -862,7 +862,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("clientaddperm", {
+                            return connection.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
@@ -888,7 +888,7 @@ namespace Modals {
 
         const resolve_client = () => {
             let client_uid = tag_select_uid.val() as string;
-            globalClient.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
+            connection.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                 if(!result || result.length == 0) return Promise.reject("invalid data");
                 tag_select_uid.attr('pattern', null).removeClass('is-invalid');
 
@@ -920,7 +920,7 @@ namespace Modals {
         tab_tag.find(".client-select-uid").on('change', event => resolve_client());
     }
 
-    function apply_channel_permission(editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_channel_permission(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
         let current_channel: ChannelEntry | undefined;
 
         /* the editor */
@@ -929,7 +929,7 @@ namespace Modals {
             tab_tag.on('show', event => {
                 console.error("Channel tab show");
                 pe_channel.append(editor.container);
-                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNEL_PERMISSION_LIST).granted(1))
+                if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNEL_PERMISSION_LIST).granted(1))
                     editor.set_mode(PermissionEditorMode.VISIBLE);
                 else {
                     editor.set_mode(PermissionEditorMode.NO_PERMISSION);
@@ -939,7 +939,7 @@ namespace Modals {
                 editor.set_listener_update(() => {
                     if(!current_channel) return;
 
-                    globalClient.permissions.requestChannelPermissions(current_channel.channelId).then(result => editor.set_permissions(result)).catch(error => {
+                    connection.permissions.requestChannelPermissions(current_channel.channelId).then(result => editor.set_permissions(result)).catch(error => {
                         console.log(error); //TODO handling?
                     });
                 });
@@ -956,7 +956,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.send_command("channeldelperm", {
+                            return connection.serverConnection.send_command("channeldelperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id,
                             });
@@ -968,7 +968,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("channeldelperm", {
+                            return connection.serverConnection.send_command("channeldelperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
                             });
@@ -984,7 +984,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.send_command("channeladdperm", {
+                            return connection.serverConnection.send_command("channeladdperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -999,7 +999,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("channeladdperm", {
+                            return connection.serverConnection.send_command("channeladdperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
@@ -1016,13 +1016,13 @@ namespace Modals {
         }
 
         let channel_list = tab_tag.find(".list-channel .entries");
-        build_channel_tree(channel_list, channel => {
+        build_channel_tree(connection, channel_list, channel => {
             current_channel = channel;
             editor.trigger_update();
         });
     }
 
-    function apply_channel_groups(editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_channel_groups(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
         let current_group;
 
         /* the editor */
@@ -1031,7 +1031,7 @@ namespace Modals {
             tab_tag.on('show', event => {
                 console.error("Channel group tab show");
                 pe_server.append(editor.container);
-                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_PERMISSION_LIST).granted(1))
+                if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_PERMISSION_LIST).granted(1))
                     editor.set_mode(PermissionEditorMode.VISIBLE);
                 else {
                     editor.set_mode(PermissionEditorMode.NO_PERMISSION);
@@ -1041,7 +1041,7 @@ namespace Modals {
                 editor.set_listener_update(() => {
                     if(!current_group) return;
 
-                    globalClient.groups.request_permissions(current_group).then(result => editor.set_permissions(result)).catch(error => {
+                    connection.groups.request_permissions(current_group).then(result => editor.set_permissions(result)).catch(error => {
                         console.log(error); //TODO handling?
                     });
                 });
@@ -1058,7 +1058,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.send_command("channelgroupdelperm", {
+                            return connection.serverConnection.send_command("channelgroupdelperm", {
                                 cgid: current_group.id,
                                 permid: permission.id,
                             });
@@ -1069,7 +1069,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("channelgroupdelperm", {
+                            return connection.serverConnection.send_command("channelgroupdelperm", {
                                 cgid: current_group.id,
                                 permid: permission.id_grant(),
                             });
@@ -1085,7 +1085,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.send_command("channelgroupaddperm", {
+                            return connection.serverConnection.send_command("channelgroupaddperm", {
                                 cgid: current_group.id,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -1099,7 +1099,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("channelgroupaddperm", {
+                            return connection.serverConnection.send_command("channelgroupaddperm", {
                                 cgid: current_group.id,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
@@ -1120,14 +1120,24 @@ namespace Modals {
         {
             let group_list = tab_tag.find(".list-group-channel .entries");
 
-            for(let group of globalClient.groups.channelGroups.sort(GroupManager.sorter())) {
+            const allow_query_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1);
+            const allow_template_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1);
+            for(let group of connection.groups.channelGroups.sort(GroupManager.sorter())) {
+                if(group.type == GroupType.QUERY) {
+                    if(!allow_query_groups)
+                        continue;
+                } else if(group.type == GroupType.TEMPLATE) {
+                    if(!allow_template_groups)
+                        continue;
+                }
+
                 let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
-                globalClient.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
+                connection.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
                 {
                     let name = $.spawn("a").text(group.name + " (" + group.id + ")").addClass("name");
                     if(group.properties.savedb)
                         name.addClass("savedb");
-                    if(globalClient.channelTree.server.properties.virtualserver_default_channel_group == group.id)
+                    if(connection.channelTree.server.properties.virtualserver_default_channel_group == group.id)
                         name.addClass("default");
                     name.appendTo(tag);
                 }
@@ -1156,21 +1166,30 @@ namespace Modals {
         b_virtualserver_channelclient_permission_list
         b_virtualserver_playlist_permission_list
      */
-    function apply_server_groups(editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_server_groups(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
         let current_group;
 
         /* list all groups */
         {
             let group_list = tab_tag.find(".list-group-server .entries");
 
-            for(let group of globalClient.groups.serverGroups.sort(GroupManager.sorter())) {
+            const allow_query_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1);
+            const allow_template_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1);
+            for(const group of connection.groups.serverGroups.sort(GroupManager.sorter())) {
+                if(group.type == GroupType.QUERY) {
+                    if(!allow_query_groups)
+                        continue;
+                } else if(group.type == GroupType.TEMPLATE) {
+                    if(!allow_template_groups)
+                        continue;
+                }
                 let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
-                globalClient.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
+                connection.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
                 {
                     let name = $.spawn("a").text(group.name + " (" + group.id + ")").addClass("name");
                     if(group.properties.savedb)
                         name.addClass("savedb");
-                    if(globalClient.channelTree.server.properties.virtualserver_default_server_group == group.id)
+                    if(connection.channelTree.server.properties.virtualserver_default_server_group == group.id)
                         name.addClass("default");
                     name.appendTo(tag);
                 }
@@ -1194,14 +1213,14 @@ namespace Modals {
             tab_tag.on('show', event => {
                 console.error("Server tab show");
                 pe_server.append(editor.container);
-                if(globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_PERMISSION_LIST).granted(1))
+                if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_PERMISSION_LIST).granted(1))
                     editor.set_mode(PermissionEditorMode.VISIBLE);
                 else {
                     editor.set_mode(PermissionEditorMode.NO_PERMISSION);
                     return;
                 }
                 editor.set_listener_update(() => {
-                    globalClient.groups.request_permissions(current_group).then(result => editor.set_permissions(result)).catch(error => {
+                    connection.groups.request_permissions(current_group).then(result => editor.set_permissions(result)).catch(error => {
                         console.log(error); //TODO handling?
                     });
                 });
@@ -1218,7 +1237,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return globalClient.serverConnection.send_command("servergroupdelperm", {
+                            return connection.serverConnection.send_command("servergroupdelperm", {
                                 sgid: current_group.id,
                                 permid: permission.id,
                             });
@@ -1229,7 +1248,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("servergroupdelperm", {
+                            return connection.serverConnection.send_command("servergroupdelperm", {
                                 sgid: current_group.id,
                                 permid: permission.id_grant(),
                             });
@@ -1245,7 +1264,7 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return globalClient.serverConnection.send_command("servergroupaddperm", {
+                            return connection.serverConnection.send_command("servergroupaddperm", {
                                 sgid: current_group.id,
                                 permid: permission.id,
                                 permvalue: value.value,
@@ -1259,7 +1278,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return globalClient.serverConnection.send_command("servergroupaddperm", {
+                            return connection.serverConnection.send_command("servergroupaddperm", {
                                 sgid: current_group.id,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,

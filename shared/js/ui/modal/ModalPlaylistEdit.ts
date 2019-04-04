@@ -1,6 +1,6 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../client.ts" />
 
 namespace Modals {
     export function spawnPlaylistSongInfo(song: PlaylistSong) {
@@ -68,7 +68,7 @@ namespace Modals {
         modal.open();
     }
 
-    export function spawnPlaylistEdit(client: TSClient, playlist: Playlist) {
+    export function spawnPlaylistEdit(client: ConnectionHandler, playlist: Playlist) {
         let modal: Modal;
         let changed_properties = {};
         let changed_permissions = {};
@@ -153,7 +153,7 @@ namespace Modals {
         return modal;
     }
 
-    function apply_songs(tag: JQuery, client: TSClient, playlist: Playlist) {
+    function apply_songs(tag: JQuery, client: ConnectionHandler, playlist: Playlist) {
         const owns_playlist = playlist.playlist_owner_dbid == client.getClient().properties.client_database_id;
         const song_tag = tag.find(".container-songs");
 
@@ -254,7 +254,7 @@ namespace Modals {
         return set_current_song;
     }
 
-    function apply_permissions(tag: JQuery, client: TSClient, playlist: Playlist, change_permission: (key: string, value: number) => any) {
+    function apply_permissions(tag: JQuery, client: ConnectionHandler, playlist: Playlist, change_permission: (key: string, value: number) => any) {
         const owns_playlist = playlist.playlist_owner_dbid == client.getClient().properties.client_database_id;
         const permission_tag = tag.find(".container-permissions");
         const nopermission_tag = tag.find(".container-no-permissions");
@@ -294,7 +294,7 @@ namespace Modals {
         return update_permissions;
     }
 
-    function apply_properties(tag: JQuery, client: TSClient, playlist: Playlist, change_property: (key: string, value: string) => any, callback_current_song: (id: number) => any) {
+    function apply_properties(tag: JQuery, client: ConnectionHandler, playlist: Playlist, change_property: (key: string, value: string) => any, callback_current_song: (id: number) => any) {
         const owns_playlist = playlist.playlist_owner_dbid == client.getClient().properties.client_database_id;
 
         client.serverConnection.command_helper.request_playlist_info(playlist.playlist_id).then(info => {

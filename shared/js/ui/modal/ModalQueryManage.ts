@@ -1,9 +1,9 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../client.ts" />
 
 namespace Modals {
-    export function spawnQueryManage(client: TSClient) {
+    export function spawnQueryManage(client: ConnectionHandler) {
         let modal: Modal;
         let selected_query: QueryListEntry;
 
@@ -66,7 +66,7 @@ namespace Modals {
 
                 template.find(".footer .buttons .button-refresh").on('click', update_list);
                 template.find(".button-query-create").on('click', () => {
-                    Modals.spawnQueryCreate((user, pass) => update_list());
+                    Modals.spawnQueryCreate(client, (user, pass) => update_list());
                 });
                 template.find(".button-query-rename").on('click', () => {
                     if(!selected_query) return;

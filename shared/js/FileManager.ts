@@ -1,10 +1,5 @@
-/// <reference path="client.ts" />
+/// <reference path="connection/CommandHandler.ts" />
 /// <reference path="connection/ConnectionBase.ts" />
-
-/*
-FIXME:  Dont use item storage with base64! Use the larger cache API and drop IE support!
-        https://developer.mozilla.org/en-US/docs/Web/API/CacheStorage#Browser_compatibility
-*/
 
 class FileEntry {
     name: string;
@@ -218,7 +213,7 @@ class RequestFileUpload {
 }
 
 class FileManager extends connection.AbstractCommandHandler {
-    handle: TSClient;
+    handle: ConnectionHandler;
     icons: IconManager;
     avatars: AvatarManager;
 
@@ -228,7 +223,7 @@ class FileManager extends connection.AbstractCommandHandler {
 
     private transfer_counter : number = 0;
 
-    constructor(client: TSClient) {
+    constructor(client: ConnectionHandler) {
         super(client.serverConnection);
 
         this.handle = client;
@@ -533,14 +528,17 @@ class CacheManager {
 }
 
 class IconManager {
+    private static cache: CacheManager;
+
     handle: FileManager;
-    private cache: CacheManager;
     private _id_urls: {[id:number]:string} = {};
     private _loading_promises: {[id:number]:Promise<Icon>} = {};
 
     constructor(handle: FileManager) {
         this.handle = handle;
-        this.cache = new CacheManager("icons");
+
+        if(!IconManager.cache)
+            IconManager.cache = new CacheManager("icons");
     }
 
     iconList() : Promise<FileEntry[]> {
@@ -572,10 +570,10 @@ class IconManager {
                 url: this._id_urls[id]
             };
 
-        if(!this.cache.setupped())
-            await this.cache.setup();
+        if(!IconManager.cache.setupped())
+            await IconManager.cache.setup();
 
-        const response = await this.cache.resolve_cached('icon_' + id); //TODO age!
+        const response = await IconManager.cache.resolve_cached('icon_' + id); //TODO age!
         if(response)
             return {
                 id: id,
@@ -606,7 +604,7 @@ class IconManager {
             const type = image_type(response.headers.get('X-media-bytes'));
             const media = media_image_type(type);
 
-            await this.cache.put_cache('icon_' + id, response.clone(), "image/" + media);
+            await IconManager.cache.put_cache('icon_' + id, response.clone(), "image/" + media);
             const url = (this._id_urls[id] = await this._response_url(response.clone()));
 
             this._loading_promises[id] = undefined;
@@ -694,14 +692,15 @@ class Avatar {
 class AvatarManager {
     handle: FileManager;
 
-    private cache: CacheManager;
+    private static cache: CacheManager;
     private _cached_avatars: {[response_avatar_id:number]:Avatar} = {};
     private _loading_promises: {[response_avatar_id:number]:Promise<Icon>} = {};
 
     constructor(handle: FileManager) {
         this.handle = handle;
 
-        this.cache = new CacheManager("avatars");
+        if(!AvatarManager.cache)
+            AvatarManager.cache = new CacheManager("avatars");
     }
 
     private async _response_url(response: Response, type: ImageType) : Promise<string> {
@@ -724,10 +723,10 @@ class AvatarManager {
             this._cached_avatars[avatar_id] = (avatar = undefined);
         }
 
-        if(!this.cache.setupped())
-            await this.cache.setup();
+        if(!AvatarManager.cache.setupped())
+            await AvatarManager.cache.setup();
 
-        const response = await this.cache.resolve_cached('avatar_' + client_avatar_id); //TODO age!
+        const response = await AvatarManager.cache.resolve_cached('avatar_' + client_avatar_id); //TODO age!
         if(!response)
             return undefined;
 
@@ -770,7 +769,7 @@ class AvatarManager {
         const type = image_type(response.headers.get('X-media-bytes'));
         const media = media_image_type(type);
 
-        await this.cache.put_cache('avatar_' + client_avatar_id, response.clone(), "image/" + media, {
+        await AvatarManager.cache.put_cache('avatar_' + client_avatar_id, response.clone(), "image/" + media, {
             "X-avatar-id": avatar_id
         });
         const url = await this._response_url(response.clone(), type);

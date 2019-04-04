@@ -12,12 +12,27 @@
                     <!-- navigation bar -->
                     <div class="container-control-bar">
                         <div id="control_bar" class="control_bar">
-                            <div class="button btn_connect" title="{{tr 'Connect to a server' /}}">
+                            <div class="button btn_connect container-connect" title="{{tr 'Connect to a server' /}}">
                                 <div class="icon_x32 client-connect"></div>
                             </div>
+
+                            <div class="button-dropdown container-disconnect" title="{{tr 'Disconnect from server' /}}" style="display: none">
+                                <div class="buttons">
+                                    <div class="button icon_x32 client-disconnect btn_disconnect"></div>
+                                    <div class="button-dropdown">
+                                        <div class="arrow down"></div>
+                                    </div>
+                                </div>
+                                <div class="dropdown" style="width: 350px">
+                                    <div class="btn_disconnect"><div class="icon client-disconnect"></div><a>{{tr "Disconnect from current server" /}}</a></div>
+                                    <div class="btn_connect"><div class="icon client-connect"></div><a>{{tr "Connect to a server" /}}</a></div>
+                                </div>
+                            </div>
+                            <!--
                             <div class="button btn_disconnect" title="{{tr 'Disconnect from server' /}}" style="display: none">
                                 <div class="icon_x32 client-disconnect"></div>
                             </div>
+                            -->
 
                             <div class="button-dropdown btn_bookmark" title="{{tr 'Bookmarks' /}}">
                                 <div class="buttons">
@@ -44,9 +59,14 @@
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
-                                <div class="dropdown">
-                                    <div class="btn_away_toggle"><div class="icon client-away"></div><a>{{tr "Toggle away status" /}}</a></div>
-                                    <div class="btn_away_message"><div class="icon client-away"></div><a>{{tr "Set away message" /}}</a></div>
+                                <div class="dropdown" style="width: 350px">
+                                    <div class="btn_away_disable"><div class="icon client-present"></div><a>{{tr "Go online" /}}</a></div>
+                                    <div class="btn_away_enable"><div class="icon client-away"></div><a>{{tr "Set away on this server" /}}</a></div>
+                                    <div class="btn_away_message"><div class="icon client-away"></div><a>{{tr "Set away message on this server" /}}</a></div>
+                                    <hr class="btn_away_message_global"> <!-- applied to this HR this class because it needs to get hidden as well if we dont have global settings -->
+                                    <div class="btn_away_enable_global"><div class="icon client-away"></div><a>{{tr "Set away for all servers" /}}</a></div>
+                                    <div class="btn_away_message_global"><div class="icon client-away"></div><a>{{tr "Set away message for all servers" /}}</a></div>
+                                    <div class="btn_away_disable_global"><div class="icon client-present"></div><a>{{tr "Go online for all servers" /}}</a></div>
                                 </div>
                             </div>
                             <div class="hide-small button btn_mute_input">
@@ -154,6 +174,17 @@
                             </div>
                         </div>
                     </div>
+                    <div class="container-connection-handlers scrollbar" id="connection-handlers">
+                        <div class="connection-handlers"> </div>
+                        <div class="container-scroll">
+                            <div class="button-scroll button-scroll-left">
+                                <div class="icon client-arrow_left"></div>
+                            </div>
+                            <div class="button-scroll button-scroll-right disabled">
+                                <div class="icon client-arrow_right"></div>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="container-app-main">
                         <div class="container-channel-chat">
@@ -164,41 +195,45 @@
 
                             <div class="container-seperator horizontal" seperator-id="seperator-channel-chat"></div>
                             <!-- Chat window -->
-                            <div class="main_container container-chat">
-                                <div id="chat">
-                                    <div class="messages">
-                                        <div class="message_box"></div>
-                                    </div>
-                                    <div class="chats"></div>
-                                    <div class="input">
-                                        <!--<div contentEditable="true" class="input_box"></div>-->
-                                        <div class="form-group">
-                                            <textarea id="input-chat-input"
-                                                   type="text"
-                                                   class="form-control input-message"
-                                                   placeholder="{{tr 'enter a chat message...' /}}"
-                                                   autocomplete="off"></textarea>
-                                        </div>
-                                        <button class="btn btn-primary button-send">{{tr "Send" /}}</button>
-                                    </div>
-                                </div>
-                            </div>
+                            <div class="main_container container-chat" id="chat"> </div>
                         </div>
                         <div class="container-seperator vertical" seperator-id="seperator-main-info"></div>
-                        <div id="select_info" class="main_container container-info">
-                            <div class="select_info" style="width: 100%; max-width: 100%">
-                                <button type="button" class="close" aria-label="Close">
-                                    <span aria-hidden="true">×</span>
-                                </button>
-                                <div class="container-banner"></div>
-                                <!-- <div class="container-seperator horizontal" seperator-id="seperator-hostbanner-info"></div> -->
-                                <div class="container-select-info"></div>
-                            </div>
-                        </div> <!-- Selection info -->
+                        <div id="select_info" class="main_container container-info"> </div> <!-- Selection info -->
                     </div>
                 </div>
             </div>
             <div id="contextMenu" class="context-menu"></div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_select_info" type="text/html">
+            <div class="select_info" style="width: 100%; max-width: 100%">
+                <button type="button" class="close" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+                <div class="container-banner"></div>
+                <!-- <div class="container-seperator horizontal" seperator-id="seperator-hostbanner-info"></div> -->
+                <div class="container-select-info"></div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_frame_chat" type="text/html">
+            <div class="container-frame-chat">
+                <div class="messages">
+                    <div class="message_box"></div>
+                </div>
+                <div class="chats"></div>
+                <div class="input">
+                    <!--<div contentEditable="true" class="input_box"></div>-->
+                    <div class="form-group">
+                                            <textarea id="input-chat-input"
+                                                      type="text"
+                                                      class="form-control input-message"
+                                                      placeholder="{{tr 'enter a chat message...' /}}"
+                                                      autocomplete="off"></textarea>
+                    </div>
+                    <button class="btn btn-primary button-send">{{tr "Send" /}}</button>
+                </div>
+            </div>
         </script>
 
         <script class="jsrender-template" id="tmpl_modal" type="text/html">
@@ -330,7 +365,10 @@
                     </div>
                 </modal-body>
                 <modal-footer>
-                    <button type="button" class="btn btn-raised btn-success button-connect">Connect</button>
+                    <button type="button" class="btn btn-raised btn-success button-connect">{{tr "Connect" /}}</button>
+                    {{if multi_tab}}
+                    <button type="button" class="btn btn-raised btn-success button-connect-new-tab">{{tr "Connect in a new tab" /}}</button>
+                    {{/if}}
                 </modal-footer>
             </modal>
         </script>
@@ -2313,8 +2351,13 @@
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_selected_hostbanner" type="text/html">
-            <div class="hostbanner">
-                <a class="image-container" href="{{:property_virtualserver_hostbanner_url}}" target="_blank">
+            <div class="hostbanner" x-divider-require-resize="1">
+                <img class="meta-image hostbanner-image" src="{{:hostbanner_gfx_url}}"/>
+                <a class="image-container"
+                   {{if property_virtualserver_hostbanner_url}}
+                   href="{{:property_virtualserver_hostbanner_url}}"
+                   {{/if}}
+                   target="_blank">
                     <div
                         style="background: center no-repeat url({{:hostbanner_gfx_url}})"
                         alt="{{tr 'Host banner'/}}"

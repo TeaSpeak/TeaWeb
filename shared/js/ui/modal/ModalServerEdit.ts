@@ -1,4 +1,4 @@
-/// <reference path="../../utils/modal.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
 
 namespace Modals {
     export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => any) {
@@ -37,6 +37,8 @@ namespace Modals {
     }
 
     function server_applyGeneralListener(properties: ServerProperties, server: ServerEntry, tag: JQuery, button: JQuery) {
+        const connection_handler = server.channelTree.client;
+
         let updateButton = () => {
             if(tag.find(".input_error").length == 0)
                 button.removeAttr("disabled");
@@ -50,11 +52,11 @@ namespace Modals {
             if(this.value.length < 1 || this.value.length > 70)
                 $(this).addClass("input_error");
             updateButton();
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NAME).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NAME).granted(1));
 
         tag.find(".virtualserver_name_phonetic").change(function (this: HTMLInputElement) {
             properties.virtualserver_name_phonetic = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NAME).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NAME).granted(1));
 
         tag.find(".virtualserver_password").change(function (this: HTMLInputElement) {
             properties.virtualserver_flag_password = this.value.length != 0;
@@ -63,16 +65,16 @@ namespace Modals {
 
             $(this).removeClass("input_error");
             if(!properties.virtualserver_flag_password)
-                if(globalClient.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_FORCE_PASSWORD).granted(1))
+                if(connection_handler.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_FORCE_PASSWORD).granted(1))
                     $(this).addClass("input_error");
             updateButton();
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_PASSWORD).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_PASSWORD).granted(1));
 
 
 
         tag.find(".virtualserver_maxclients").change(function (this: HTMLInputElement) {
             properties.virtualserver_maxclients = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_MAXCLIENTS).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_MAXCLIENTS).granted(1));
 
         tag.find(".virtualserver_reserved_slots").change(function (this: HTMLInputElement) {
             properties.virtualserver_reserved_slots = this.valueAsNumber;
@@ -80,17 +82,17 @@ namespace Modals {
             if(this.valueAsNumber > properties.virtualserver_maxclients)
                 $(this).addClass("input_error");
             updateButton();
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_RESERVED_SLOTS).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_RESERVED_SLOTS).granted(1));
 
         tag.find(".virtualserver_welcomemessage").change(function (this: HTMLInputElement) {
             properties.virtualserver_welcomemessage = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_WELCOMEMESSAGE).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_WELCOMEMESSAGE).granted(1));
 
         tag.find(".button-select-icon").on('click', event => {
-            Modals.spawnIconSelect(globalClient, id => {
+            Modals.spawnIconSelect(connection_handler, id => {
                 const icon_node = tag.find(".button-select-icon").find(".icon-node");
                 icon_node.empty();
-                icon_node.append(globalClient.fileManager.icons.generateTag(id));
+                icon_node.append(connection_handler.fileManager.icons.generateTag(id));
 
                 console.log("Selected icon ID: %d", id);
                 properties.virtualserver_icon_id = id;
@@ -100,54 +102,56 @@ namespace Modals {
 
 
     function server_applyHostListener(server: ServerEntry, properties: ServerProperties, original_properties: ServerProperties, tag: JQuery, button: JQuery) {
+        const connection_handler = server.channelTree.client;
+
         tag.find(".virtualserver_host").change(function (this: HTMLInputElement) {
             properties.virtualserver_host = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOST).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOST).granted(1));
 
         tag.find(".virtualserver_port").change(function (this: HTMLInputElement) {
             properties.virtualserver_port = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_PORT).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_PORT).granted(1));
 
 
         tag.find(".virtualserver_hostmessage").change(function (this: HTMLInputElement) {
             properties.virtualserver_hostmessage = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTMESSAGE).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTMESSAGE).granted(1));
 
         tag.find(".virtualserver_hostmessage_mode").change(function (this: HTMLSelectElement) {
             properties.virtualserver_hostmessage_mode = this.selectedIndex;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTMESSAGE).granted(1))
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTMESSAGE).granted(1))
             .find("option").eq(original_properties.virtualserver_hostmessage_mode).prop('selected', true);
 
 
 
         tag.find(".virtualserver_hostbanner_url").change(function (this: HTMLInputElement) {
             properties.virtualserver_hostbanner_url = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBANNER).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBANNER).granted(1));
 
         tag.find(".virtualserver_hostbanner_gfx_url").change(function (this: HTMLInputElement) {
             properties.virtualserver_hostbanner_gfx_url = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBANNER).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBANNER).granted(1));
 
         tag.find(".virtualserver_hostbanner_gfx_interval").change(function (this: HTMLInputElement) {
             properties.virtualserver_hostbanner_gfx_interval = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBANNER).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBANNER).granted(1));
 
         tag.find(".virtualserver_hostbanner_mode").change(function (this: HTMLSelectElement) {
             properties.virtualserver_hostbanner_mode = this.selectedIndex;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTMESSAGE).granted(1))
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTMESSAGE).granted(1))
             .find("option").eq(original_properties.virtualserver_hostbanner_mode).prop('selected', true);
 
         tag.find(".virtualserver_hostbutton_tooltip").change(function (this: HTMLInputElement) {
             properties.virtualserver_hostbutton_tooltip = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
 
         tag.find(".virtualserver_hostbutton_url").change(function (this: HTMLInputElement) {
             properties.virtualserver_hostbutton_url = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
 
         tag.find(".virtualserver_hostbutton_gfx_url").change(function (this: HTMLInputElement) {
             properties.virtualserver_hostbutton_gfx_url = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_HOSTBUTTON).granted(1));
 
         server.updateProperties().then(() => {
             tag.find(".virtualserver_host").val(server.properties.virtualserver_host);
@@ -156,6 +160,8 @@ namespace Modals {
     }
 
     function server_applyMessages(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        const connection_handler = server.channelTree.client;
+
         server.updateProperties().then(() => {
             tag.find(".virtualserver_default_client_description").val(server.properties.virtualserver_default_client_description);
             tag.find(".virtualserver_default_channel_description").val(server.properties.virtualserver_default_channel_description);
@@ -164,18 +170,20 @@ namespace Modals {
 
         tag.find(".virtualserver_default_client_description").change(function (this: HTMLInputElement) {
             properties.virtualserver_default_client_description = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
 
         tag.find(".virtualserver_default_channel_description").change(function (this: HTMLInputElement) {
             properties.virtualserver_default_channel_description = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
 
         tag.find(".virtualserver_default_channel_topic").change(function (this: HTMLInputElement) {
             properties.virtualserver_default_channel_topic = this.value;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_DEFAULT_MESSAGES).granted(1));
     }
 
     function server_applyFlood(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        const connection_handler = server.channelTree.client;
+
         server.updateProperties().then(() => {
             tag.find(".virtualserver_antiflood_points_tick_reduce").val(server.properties.virtualserver_antiflood_points_tick_reduce);
             tag.find(".virtualserver_antiflood_points_needed_command_block").val(server.properties.virtualserver_antiflood_points_needed_command_block);
@@ -184,34 +192,38 @@ namespace Modals {
 
         tag.find(".virtualserver_antiflood_points_tick_reduce").change(function (this: HTMLInputElement) {
             properties.virtualserver_antiflood_points_tick_reduce = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
 
         tag.find(".virtualserver_antiflood_points_needed_command_block").change(function (this: HTMLInputElement) {
             properties.virtualserver_antiflood_points_needed_command_block = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
 
         tag.find(".virtualserver_antiflood_points_needed_ip_block").change(function (this: HTMLInputElement) {
             properties.virtualserver_antiflood_points_needed_ip_block = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
     }
 
 
     function server_applySecurity(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        const connection_handler = server.channelTree.client;
+
         server.updateProperties().then(() => {
             tag.find(".virtualserver_needed_identity_security_level").val(server.properties.virtualserver_needed_identity_security_level);
         });
 
         tag.find(".virtualserver_needed_identity_security_level").change(function (this: HTMLInputElement) {
             properties.virtualserver_needed_identity_security_level = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NEEDED_IDENTITY_SECURITY_LEVEL).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_NEEDED_IDENTITY_SECURITY_LEVEL).granted(1));
 
         tag.find(".virtualserver_codec_encryption_mode").change(function (this: HTMLSelectElement) {
             properties.virtualserver_codec_encryption_mode = this.selectedIndex;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1))
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1))
             .find("option").eq(server.properties.virtualserver_codec_encryption_mode).prop('selected', true);
     }
 
     function server_applyMisc(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        const connection_handler = server.channelTree.client;
+
         { //TODO notify on tmp channeladmin group and vice versa
             {
                 let groups_tag = tag.find(".default_server_group");
@@ -293,37 +305,38 @@ namespace Modals {
 
         tag.find(".virtualserver_antiflood_points_needed_ip_block").change(function (this: HTMLInputElement) {
             properties.virtualserver_antiflood_points_needed_ip_block = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
 
         tag.find(".virtualserver_antiflood_points_needed_command_block").change(function (this: HTMLInputElement) {
             properties.virtualserver_antiflood_points_needed_command_block = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
 
         tag.find(".virtualserver_antiflood_points_tick_reduce").change(function (this: HTMLInputElement) {
             properties.virtualserver_antiflood_points_tick_reduce = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_ANTIFLOOD).granted(1));
 
 
         tag.find(".virtualserver_complain_autoban_count").change(function (this: HTMLInputElement) {
             properties.virtualserver_complain_autoban_count = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
 
         tag.find(".virtualserver_complain_autoban_time").change(function (this: HTMLInputElement) {
             properties.virtualserver_complain_autoban_time = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
 
         tag.find(".virtualserver_complain_remove_time").change(function (this: HTMLInputElement) {
             properties.virtualserver_complain_remove_time = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_COMPLAIN).granted(1));
 
 
         tag.find(".virtualserver_weblist_enabled").change(function (this: HTMLInputElement) {
             properties.virtualserver_weblist_enabled = $(this).prop("checked");
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_WEBLIST).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_WEBLIST).granted(1));
     }
 
 
     function server_applyTransferListener(properties: ServerProperties, server: ServerEntry, tag: JQuery) {
+        const connection_handler = server.channelTree.client;
         server.updateProperties().then(() => {
             //virtualserver_max_upload_total_bandwidth
             //virtualserver_upload_quota
@@ -339,16 +352,16 @@ namespace Modals {
 
         tag.find(".virtualserver_max_upload_total_bandwidth").change(function (this: HTMLInputElement) {
             properties.virtualserver_max_upload_total_bandwidth = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_SETTINGS).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_SETTINGS).granted(1));
         tag.find(".virtualserver_max_download_total_bandwidth").change(function (this: HTMLInputElement) {
             properties.virtualserver_max_download_total_bandwidth = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_SETTINGS).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_SETTINGS).granted(1));
 
         tag.find(".virtualserver_upload_quota").change(function (this: HTMLInputElement) {
             properties.virtualserver_upload_quota = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_QUOTAS).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_QUOTAS).granted(1));
         tag.find(".virtualserver_download_quota").change(function (this: HTMLInputElement) {
             properties.virtualserver_download_quota = this.valueAsNumber;
-        }).prop("disabled", !globalClient.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_QUOTAS).granted(1));
+        }).prop("disabled", !connection_handler.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_MODIFY_FT_QUOTAS).granted(1));
     }
 }

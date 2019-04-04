@@ -1,4 +1,12 @@
 # Changelog:
+* **04.04.19**
+    - Fixed issue with client icons not updating correctly (Showing invalid microphone state)
+    - Added multi server mode
+    - Connect URL not disconnecting from all other servers
+    - Open certificate accept URL in another tab
+    - Improved the host banner experience
+    - Hiding server group types in permission editor which are not editable
+    
 * **28.03.19**
     - Improved icon and avatar cache handling
     - Added an icon manager
