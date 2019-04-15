@@ -1009,7 +1009,7 @@
       }
     },
     {
-      "translated": "Тыкать клиента",
+      "translated": "Ткнуть клиента",
       "flags": [
         "google-translate"
       ],
@@ -1018,7 +1018,7 @@
       }
     },
     {
-      "translated": "Тыкать сообщение: <br>",
+      "translated": "Ткнуть с сообщением: <br>",
       "flags": [
         "google-translate"
       ],
@@ -1441,7 +1441,7 @@
       }
     },
     {
-      "translated": "Тыкать клиентов",
+      "translated": "Ткнуть клиентов",
       "flags": [
         "google-translate"
       ],
@@ -3367,7 +3367,7 @@
       }
     },
     {
-      "translated": "соединять",
+      "translated": "Подключиться",
       "flags": [
         "google-translate"
       ],
@@ -4555,7 +4555,7 @@
       }
     },
     {
-      "translated": "редактировать",
+      "translated": "Редактировать",
       "flags": [
         "google-translate"
       ],
@@ -4582,7 +4582,7 @@
       }
     },
     {
-      "translated": "Пригласить приятеля",
+      "translated": "Пригласить друга",
       "flags": [
         "google-translate"
       ],
@@ -5185,7 +5185,7 @@
       }
     },
     {
-      "translated": "Вы ткнули!",
+      "translated": "Вас ткнули!",
       "flags": [
         "google-translate"
       ],
@@ -5581,7 +5581,7 @@
       }
     },
     {
-      "translated": "введите сообщение чата ...",
+      "translated": "Введите сообщение чата ...",
       "flags": [
         "google-translate"
       ],
@@ -7246,7 +7246,7 @@
       }
     },
     {
-      "translated": "имя пользователя",
+      "translated": "Имя пользователя",
       "flags": [
         "google-translate"
       ],
@@ -8182,7 +8182,7 @@
       }
     },
     {
-      "translated": "Ты ткнул",
+      "translated": "Вас ткнул",
       "flags": [
         "google-translate"
       ],
@@ -8446,370 +8446,605 @@
       "translated": "Загружен",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "loaded"
       }
-    }, 
+    },
     {
-      "translated": "Добавить песню", 
+      "translated": "Добавить песню",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Add song"
       }
-    }, 
+    },
     {
-      "translated": "Настройки воспроизведения", 
+      "translated": "Настройки воспроизведения",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Playback settings"
       }
-    }, 
+    },
     {
-      "translated": "Режим воспроизведения", 
+      "translated": "Режим воспроизведения",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Replay mode"
       }
-    }, 
+    },
     {
-      "translated": "Нормальный", 
+      "translated": "Нормальный",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Normal"
       }
-    }, 
+    },
     {
-      "translated": "Loop list", 
+      "translated": "Loop list",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Loop list"
       }
-    }, 
+    },
     {
-      "translated": "Петля однократная", 
+      "translated": "Петля однократная",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Loop single entry"
       }
-    }, 
+    },
     {
-      "translated": "шарканье", 
+      "translated": "шарканье",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Shuffle"
       }
-    }, 
+    },
     {
-      "translated": "Удалить проигранную песню:", 
+      "translated": "Удалить проигранную песню:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Delete played song:"
       }
-    }, 
+    },
     {
-      "translated": "Текущая воспроизводящая песня:", 
+      "translated": "Текущая воспроизводящая песня:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Current replaying song:"
       }
-    }, 
+    },
     {
-      "translated": "Плейлист завершил статус", 
+      "translated": "Плейлист завершил статус",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Playlist finished status"
       }
-    }, 
+    },
     {
-      "translated": "Доступ / изменение полномочий", 
+      "translated": "Доступ / изменение полномочий",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Access/modify powers"
       }
-    }, 
+    },
     {
-      "translated": "Посмотреть мощность", 
+      "translated": "Посмотреть мощность",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "View power"
       }
-    }, 
+    },
     {
-      "translated": "изменять", 
+      "translated": "изменять",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Modify"
       }
-    }, 
+    },
     {
-      "translated": "Разрешение изменить", 
+      "translated": "Разрешение изменить",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Permission modify"
       }
-    }, 
+    },
     {
-      "translated": "удалять", 
+      "translated": "Удалить",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Delete"
       }
-    }, 
+    },
     {
-      "translated": "Полномочия по управлению песней", 
+      "translated": "Полномочия по управлению песней",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Song management powers"
       }
-    }, 
+    },
     {
-      "translated": "Песня добавить", 
+      "translated": "Песня добавить",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Song add"
       }
-    }, 
+    },
     {
-      "translated": "Повторный заказ песни", 
+      "translated": "Повторный заказ песни",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Song reorder"
       }
-    }, 
+    },
     {
-      "translated": "Удалить песню", 
+      "translated": "Удалить песню",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Song delete"
       }
-    }, 
+    },
     {
-      "translated": "Идентификатор песни:", 
+      "translated": "Идентификатор песни:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Song ID:"
       }
-    }, 
+    },
     {
-      "translated": "Порядок песен:", 
+      "translated": "Порядок песен:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Song order:"
       }
-    }, 
+    },
     {
-      "translated": "Распознаватель URL:", 
+      "translated": "Распознаватель URL:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "URL resolver:"
       }
-    }, 
+    },
     {
-      "translated": "Песня загружена:", 
+      "translated": "Песня загружена:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Song loaded:"
       }
-    }, 
+    },
     {
-      "translated": "Показать метаданные здесь!", 
+      "translated": "Показать метаданные здесь!",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Display metdata here!"
       }
-    }, 
+    },
     {
-      "translated": "Метаданные:", 
+      "translated": "Метаданные:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Metadata:"
       }
-    }, 
+    },
     {
-      "translated": "Загрузчик URL:", 
+      "translated": "Загрузчик URL:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "URL loader:"
       }
-    }, 
+    },
     {
-      "translated": "Добавить сайт", 
+      "translated": "Добавить сайт",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Add URL"
       }
-    }, 
+    },
     {
-      "translated": "Создать новую закладку / каталог", 
+      "translated": "Создать новую закладку / каталог",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Create new bookmark/directory"
       }
-    }, 
+    },
     {
-      "translated": "Удалить выбранную закладку / каталог", 
+      "translated": "Удалить выбранную закладку / каталог",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Delete selected bookmark/directory"
       }
-    }, 
+    },
     {
-      "translated": "Настройки закладки", 
+      "translated": "Настройки закладки",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Bookmark settings"
       }
-    }, 
+    },
     {
-      "translated": "Имя закладки:", 
+      "translated": "Имя закладки:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Bookmark name:"
       }
-    }, 
+    },
     {
-      "translated": "Подключить профиль:", 
+      "translated": "Подключить профиль:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Connect profile:"
       }
-    }, 
+    },
     {
-      "translated": "Свойства сервера", 
+      "translated": "Свойства сервера",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Server Properties"
       }
-    }, 
+    },
     {
-      "translated": "Адрес сервера:", 
+      "translated": "Адрес сервера:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Server address:"
       }
-    }, 
+    },
     {
-      "translated": "Порт сервера:", 
+      "translated": "Порт сервера:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Server port:"
       }
-    }, 
+    },
     {
-      "translated": "Свойства подключения (пока не поддерживается)", 
+      "translated": "Свойства подключения (пока не поддерживается)",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Connect Properties (Not yet supported)"
       }
-    }, 
+    },
     {
-      "translated": "Имя пользователя по умолчанию", 
+      "translated": "Имя пользователя по умолчанию",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Default Username"
       }
-    }, 
+    },
     {
-      "translated": "Текущий канал", 
+      "translated": "Текущий канал",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Current Channel"
       }
-    }, 
+    },
     {
-      "translated": "Пароль канала по умолчанию", 
+      "translated": "Пароль канала по умолчанию",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Default channel password"
       }
-    }, 
+    },
     {
-      "translated": "Имя каталога:", 
+      "translated": "Имя каталога:",
       "flags": [
         "google-translate"
-      ], 
+      ],
       "key": {
         "message": "Directory name:"
       }
+	},
+    {
+      "translated": "Посмотреть иконки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "View icons"
+      }
+    },
+    {
+      "translated": "Посмотреть аватарки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "View avatars"
+      }
+    },
+    {
+      "translated": "Аватарки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Avatars"
+      }
+    },
+    {
+      "translated": "Размер",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Size"
+      }
+    },
+    {
+      "translated": "Дата",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Date"
+      }
+    },
+    {
+      "translated": "Иконки",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Icons"
+      }
+    },
+    {
+      "translated": "Иконка:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Icon:"
+      }
+    },
+    {
+      "translated": "Удаленно",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remote"
+      }
+    },
+    {
+      "translated": "Локально",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Local"
+      }
+    },
+    {
+      "translated": "Удалить иконку",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Remove icon"
+      }
+    },
+    {
+      "translated": "Выбрать",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Select"
+      }
+    },
+    {
+      "translated": "Подключиться",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connect"
+      }
+    },
+    {
+      "translated": "Обновить",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Update"
+      }
+    },
+    {
+      "translated": "Уровень звука:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Master volume:"
+      }
+    },
+    {
+      "translated": "Подключиться в новой вкладке",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connect in a new tab"
+      }
+    },
+    {
+      "translated": "Отключиться от текущего сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Disconnect from current server"
+      }
+    },
+    {
+      "translated": "Отключить микрофон",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Mute microphone"
+      }
+    },
+    {
+      "translated": "Включить микрофон",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Unmute microphone"
+      }
+    },
+    {
+      "translated": "Активировать микрофон для данного сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enable your microphone on this server"
+      }
+    },
+    {
+      "translated": "Статаус отошёл для данного сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Set away on this server"
+      }
+    },
+    {
+      "translated": "Статаус отошёл с сообщением для данного сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Set away message on this server"
+      }
+    },
+    {
+      "translated": "Статаус отошёл для всех серверов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Set away for all servers"
+      }
+    },
+    {
+      "translated": "Статаус отошёл с сообщением для всех серверов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Set away message for all servers"
+      }
+    },
+    {
+      "translated": "Статус онлайн",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Go online"
+      }
+    },
+    {
+      "translated": "Выключить звук",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Mute sound"
+      }
+    },
+    {
+      "translated": "Включить звук",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Unmute sound"
+      }
     }
+
   ]
 }
