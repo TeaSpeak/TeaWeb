@@ -44,97 +44,24 @@ namespace transfer {
         overwrite: boolean;
     }
 
+    export interface DownloadTransfer {
+        get_key() : DownloadKey;
+
+        request_file() : Promise<Response>;
+    }
+
     export type DownloadKey = TransferKey;
     export type UploadKey = TransferKey;
-}
 
-class StreamedFileDownload {
-    readonly transfer_key: transfer.DownloadKey;
-    currentSize: number = 0;
-
-    on_start: () => void = () => {};
-    on_complete: () => void = () => {};
-    on_fail: (reason: string) => void = (_) => {};
-    on_data: (data: Uint8Array) => void = (_) => {};
-
-    private _handle: FileManager;
-    private _promiseCallback: (value: StreamedFileDownload) => void;
-    private _socket: WebSocket;
-    private _active: boolean;
-    private _succeed: boolean;
-    private _parseActive: boolean;
-
-    constructor(key: transfer.DownloadKey) {
-        this.transfer_key = key;
+    export function spawn_download_transfer(key: DownloadKey) : DownloadTransfer {
+        return new RequestFileDownload(key);
     }
-
-    start() {
-        if(!this.transfer_key) {
-            this.on_fail("Missing data!");
-            return;
-        }
-
-        console.debug(tr("Create new file download to %s:%s (Key: %s, Expect %d bytes)"), this.transfer_key.peer.hosts[0], this.transfer_key.peer.port, this.transfer_key.key, this.transfer_key.total_size);
-        this._active = true;
-        this._socket = new WebSocket("wss://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
-        this._socket.onopen = this.onOpen.bind(this);
-        this._socket.onclose = this.onClose.bind(this);
-        this._socket.onmessage = this.onMessage.bind(this);
-        this._socket.onerror = this.onError.bind(this);
-    }
-
-    private onOpen() {
-        if(!this._active) return;
-
-        this._socket.send(this.transfer_key.key);
-        this.on_start();
-    }
-
-    private onMessage(data: MessageEvent) {
-        if(!this._active) {
-            console.error(tr("Got data, but socket closed?"));
-            return;
-        }
-        this._parseActive = true;
-
-        let fileReader = new FileReader();
-        fileReader.onload = (event: any) => {
-            this.onBinaryData(new Uint8Array(event.target.result));
-            //if(this._socket.readyState != WebSocket.OPEN && !this._succeed) this.on_fail("unexpected close");
-            this._parseActive = false;
-        };
-        fileReader.readAsArrayBuffer(data.data);
-    }
-
-    private onBinaryData(data: Uint8Array) {
-        this.currentSize += data.length;
-        this.on_data(data);
-        if(this.currentSize == this.transfer_key.total_size) {
-            this._succeed = true;
-            this.on_complete();
-            this.disconnect();
-        }
-    }
-
-    private onError() {
-        if(!this._active) return;
-        this.on_fail(tr("an error occurent"));
-        this.disconnect();
-    }
-
-    private onClose() {
-        if(!this._active) return;
-
-        if(!this._parseActive) this.on_fail(tr("unexpected close (remote closed)"));
-        this.disconnect();
-    }
-
-    private disconnect(){
-        this._active = false;
-        //this._socket.close();
+    export function spawn_upload_transfer(key: DownloadKey) : DownloadTransfer {
+        return new RequestFileDownload(key);
     }
 }
-class RequestFileDownload {
+
+class RequestFileDownload implements transfer.DownloadTransfer {
     readonly transfer_key: transfer.DownloadKey;
 
     constructor(key: transfer.DownloadKey) {
@@ -145,13 +72,6 @@ class RequestFileDownload {
         return await this.try_fetch("https://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
     }
 
-    /*
-			response.setHeader("Access-Control-Allow-Methods", {"GET, POST"});
-			response.setHeader("Access-Control-Allow-Origin", {"*"});
-			response.setHeader("Access-Control-Allow-Headers", {"*"});
-			response.setHeader("Access-Control-Max-Age", {"86400"});
-			response.setHeader("Access-Control-Expose-Headers", {"X-media-bytes"});
-     */
     private async try_fetch(url: string) : Promise<Response> {
         const response = await fetch(url, {
             method: 'GET',
@@ -167,6 +87,10 @@ class RequestFileDownload {
         if(!response.ok)
             throw (response.type == 'opaque' || response.type == 'opaqueredirect' ? "invalid cross origin flag! May target isn't a TeaSpeak server?" : response.statusText || "response is not ok");
         return response;
+    }
+
+    get_key(): transfer.DownloadKey {
+        return this.transfer_key;
     }
 }
 
@@ -333,7 +257,8 @@ class FileManager extends connection.AbstractCommandHandler {
                 "name": file,
                 "cid": (channel ? channel.channelId : "0"),
                 "cpw": (password ? password : ""),
-                "clientftfid": transfer_data.client_transfer_id
+                "clientftfid": transfer_data.client_transfer_id,
+                "seekpos": 0
             }).catch(reason => {
                 this.pending_download_requests.remove(transfer_data);
                 reject(reason);
@@ -371,27 +296,28 @@ class FileManager extends connection.AbstractCommandHandler {
     private notifyStartDownload(json) {
         json = json[0];
 
+        let clientftfid = parseInt(json["clientftfid"]);
         let transfer: transfer.DownloadKey;
         for(let e of this.pending_download_requests)
-            if(e.client_transfer_id == json["clientftfid"]) {
+            if(e.client_transfer_id == clientftfid) {
                 transfer = e;
                 break;
             }
 
-        transfer.server_transfer_id = json["serverftfid"];
+        transfer.server_transfer_id = parseInt(json["serverftfid"]);
         transfer.key = json["ftkey"];
         transfer.total_size = json["size"];
 
         transfer.peer = {
             hosts: (json["ip"] || "").split(","),
-            port: json["port"]
+            port: parseInt(json["port"])
         };
 
         if(transfer.peer.hosts.length == 0)
             transfer.peer.hosts.push("0.0.0.0");
 
         if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
-            transfer.peer.hosts[0] = this.handle.serverConnection._remote_address.host;
+            transfer.peer.hosts[0] = this.handle.serverConnection.remote_address().host;
 
         (transfer["_callback"] as (val: transfer.DownloadKey) => void)(transfer);
         this.pending_download_requests.remove(transfer);
@@ -401,25 +327,26 @@ class FileManager extends connection.AbstractCommandHandler {
         json = json[0];
 
         let transfer: transfer.UploadKey;
+        let clientftfid = parseInt(json["clientftfid"]);
         for(let e of this.pending_upload_requests)
-            if(e.client_transfer_id == json["clientftfid"]) {
+            if(e.client_transfer_id == clientftfid) {
                 transfer = e;
                 break;
             }
 
-        transfer.server_transfer_id = json["serverftfid"];
+        transfer.server_transfer_id = parseInt(json["serverftfid"]);
         transfer.key = json["ftkey"];
 
         transfer.peer = {
             hosts: (json["ip"] || "").split(","),
-            port: json["port"]
+            port: parseInt(json["port"])
         };
 
         if(transfer.peer.hosts.length == 0)
             transfer.peer.hosts.push("0.0.0.0");
 
         if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
-            transfer.peer.hosts[0] = this.handle.serverConnection._remote_address.host;
+            transfer.peer.hosts[0] = this.handle.serverConnection.remote_address().host;
 
         (transfer["_callback"] as (val: transfer.UploadKey) => void)(transfer);
         this.pending_upload_requests.remove(transfer);
@@ -592,7 +519,7 @@ class IconManager {
                 throw "Failed to request icon";
             }
 
-            const downloader = new RequestFileDownload(download_key);
+            const downloader = transfer.spawn_download_transfer(download_key);
             let response: Response;
             try {
                 response = await downloader.request_file();
@@ -757,7 +684,7 @@ class AvatarManager {
             throw "Failed to request icon";
         }
 
-        const downloader = new RequestFileDownload(download_key);
+        const downloader = transfer.spawn_download_transfer(download_key);
         let response: Response;
         try {
             response = await downloader.request_file();

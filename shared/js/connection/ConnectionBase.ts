@@ -36,6 +36,9 @@ namespace connection {
 
         abstract get onconnectionstatechanged() : ConnectionStateListener;
         abstract set onconnectionstatechanged(listener: ConnectionStateListener);
+
+        abstract remote_address() : ServerAddress; /* only valid when connected */
+        abstract handshake_handler() : HandshakeHandler; /* only valid when connected */
     }
 
     export namespace voice {

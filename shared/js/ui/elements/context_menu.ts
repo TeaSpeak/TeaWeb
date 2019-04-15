@@ -97,7 +97,7 @@ function generate_tag(entry: ContextMenuEntry) : JQuery {
 
         if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
         else {
-            let menu = $.spawn("div").addClass("sub-menu").addClass("context-menu");
+            let menu = $.spawn("div").addClass("sub-menu").addClass("context-menu-container");
             for(const e of entry.sub_menu) {
                 if(typeof(entry.visible) === 'boolean' && !entry.visible)
                     continue;

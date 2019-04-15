@@ -387,7 +387,15 @@ class ControlBar {
     }
 
     update_connection_state() {
-        switch (this.connection_handler.serverConnection ? this.connection_handler.serverConnection._connectionState : ConnectionState.UNCONNECTED) {
+        if(this.connection_handler.serverConnection && this.connection_handler.serverConnection.connected()) {
+            this.htmlTag.find(".container-disconnect").show();
+            this.htmlTag.find(".container-connect").hide();
+        } else {
+            this.htmlTag.find(".container-disconnect").hide();
+            this.htmlTag.find(".container-connect").show();
+        }
+        /*
+        switch (this.connection_handler.serverConnection ? this.connection_handler.serverConnection.connected() : ConnectionState.UNCONNECTED) {
             case ConnectionState.CONNECTED:
             case ConnectionState.CONNECTING:
             case ConnectionState.INITIALISING:
@@ -398,6 +406,7 @@ class ControlBar {
                 this.htmlTag.find(".container-disconnect").hide();
                 this.htmlTag.find(".container-connect").show();
         }
+        */
     }
 
     private on_execute_disconnect() {
@@ -454,8 +463,8 @@ class ControlBar {
             createInputModal(tr("Enter bookmarks name"), tr("Please enter the bookmarks name:<br>"), text => true, result => {
                 if(result) {
                     const bookmark = bookmarks.create_bookmark(result as string, bookmarks.bookmarks(), {
-                        server_port: this.connection_handler.serverConnection._remote_address.port,
-                        server_address: this.connection_handler.serverConnection._remote_address.host,
+                        server_port: this.connection_handler.serverConnection.remote_address().port,
+                        server_address: this.connection_handler.serverConnection.remote_address().host,
 
                         server_password: "",
                         server_password_hash: ""

@@ -222,6 +222,10 @@ namespace profiles.identities {
             });
         }
 
+        skip_and_initialize() {
+            this.trigger_success();
+        }
+
         private handle_proof(json) {
             if(!json[0]["digest"]) {
                 this.trigger_fail("server too old");

@@ -816,6 +816,9 @@ class ChannelEntry {
                 });
             else
                 this.flag_subscribed = false;
+
+            for(const client of this.clients(false))
+                this.channelTree.deleteClient(client, false);
         }
     }
 

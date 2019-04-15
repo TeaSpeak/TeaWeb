@@ -178,7 +178,7 @@ class ServerEntry {
                 icon: "client-invite_buddy",
                 name: tr("Invite buddy"),
                 callback: () => {
-                    const address = this.channelTree.client.serverConnection._remote_address.host + ":" + this.channelTree.client.serverConnection._remote_address.port;
+                    const address = this.channelTree.client.serverConnection.remote_address().host + ":" + this.channelTree.client.serverConnection.remote_address().port;
                     const parameter = "connect_default=1&connect_address=" + encodeURIComponent(address);
                     const url =  document.location.origin +  document.location.pathname + "?" + parameter;
 

@@ -416,7 +416,7 @@ const loader_javascript = {
             let file_path = request.url;
             if(!file_path.startsWith("file://"))
                 throw "Invalid file path (" + file_path + ")";
-            file_path = file_path.substring(7);
+            file_path = file_path.substring(process.platform === "win32" ? 8 : 7);
 
             const fs = require('fs');
             if(fs.existsSync(file_path)) {
@@ -591,6 +591,7 @@ const loader_javascript = {
             "js/FileManager.js",
             "js/ConnectionHandler.js",
             "js/BrowserIPC.js",
+            "js/dns.js",
 
             //Connection
             "js/connection/CommandHandler.js",

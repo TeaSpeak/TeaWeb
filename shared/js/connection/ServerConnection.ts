@@ -14,7 +14,7 @@ class CommandResult {
 
     constructor(json) {
         this.json = json;
-        this.id = json["id"];
+        this.id = parseInt(json["id"]);
         this.message = json["msg"];
 
         this.extra_message = "";
@@ -34,10 +34,11 @@ class ReturnListener<T> {
 
 namespace connection {
     export class ServerConnection extends AbstractServerConnection {
-        _remote_address: ServerAddress;
         _socket: WebSocket;
         _connectionState: ConnectionState = ConnectionState.UNCONNECTED;
-        _handshakeHandler: HandshakeHandler;
+
+        private _remote_address: ServerAddress;
+        private _handshakeHandler: HandshakeHandler;
 
         private _command_boss: ServerConnectionCommandBoss;
         private _command_handler_default: ConnectionCommandHandler;
@@ -71,6 +72,7 @@ namespace connection {
         on_connect: () => void = () => {
             console.log(tr("Socket connected"));
             this.client.chat.serverChat().appendMessage(tr("Logging in..."));
+            this._handshakeHandler.initialize();
             this._handshakeHandler.startHandshake();
         };
 
@@ -96,7 +98,6 @@ namespace connection {
             this._handshakeHandler = handshake;
             this._handshakeHandler.setConnection(this);
             this._connected = false;
-            this.client.chat.serverChat().appendMessage(tr("Connecting to {0}:{1}"), true, address.host, address.port);
 
             const self = this;
             let local_socket: WebSocket;
@@ -333,6 +334,18 @@ namespace connection {
         set onconnectionstatechanged(listener: connection.ConnectionStateListener) {
             this._connection_state_listener = listener;
         }
+
+        handshake_handler(): connection.HandshakeHandler {
+            return this._handshakeHandler;
+        }
+
+        remote_address(): ServerAddress {
+            return this._remote_address;
+        }
+    }
+
+    export function spawn_server_connection(handle: ConnectionHandler) : AbstractServerConnection {
+        return new ServerConnection(handle); /* will be overridden by the client */
     }
 }
 

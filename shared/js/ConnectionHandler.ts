@@ -10,9 +10,12 @@
 /// <reference path="ui/frames/ControlBar.ts" />
 /// <reference path="connection/ConnectionBase.ts" />
 
+import spawnConnectModal = Modals.spawnConnectModal;
+
 enum DisconnectReason {
     HANDLER_DESTROYED,
     REQUESTED,
+    DNS_FAILED,
     CONNECT_FAILURE,
     CONNECTION_CLOSED,
     CONNECTION_FATAL_ERROR,
@@ -22,6 +25,7 @@ enum DisconnectReason {
     HANDSHAKE_FAILED,
     SERVER_CLOSED,
     SERVER_REQUIRES_PASSWORD,
+    IDENTITY_TOO_LOW,
     UNKNOWN
 }
 
@@ -68,7 +72,7 @@ interface VoiceStatus {
 class ConnectionHandler {
     channelTree: ChannelTree;
 
-    serverConnection: connection.ServerConnection;
+    serverConnection: connection.AbstractServerConnection;
 
     fileManager: FileManager;
 
@@ -87,6 +91,7 @@ class ConnectionHandler {
     private _local_client: LocalClientEntry;
     private _reconnect_timer: NodeJS.Timer;
     private _reconnect_attempt: boolean = false;
+    private _connect_initialize_id: number = 1;
 
     client_status: VoiceStatus = {
         input_hardware: false,
@@ -112,7 +117,7 @@ class ConnectionHandler {
         this.chat = new ChatBox(this);
         this.sound = new sound.SoundManager(this);
 
-        this.serverConnection = new connection.ServerConnection(this);
+        this.serverConnection = connection.spawn_server_connection(this);
         this.serverConnection.onconnectionstatechanged = this.on_connection_state_changed.bind(this);
 
         this.fileManager = new FileManager(this);
@@ -162,16 +167,48 @@ class ConnectionHandler {
         console.log(tr("Start connection to %s:%d"), host, port);
         this.channelTree.initialiseHead(addr, {host, port});
 
-        if(password && !password.hashed) {
-            helpers.hashPassword(password.password).then(password => {
+        this.chat.serverChat().appendMessage(tr("Initializing connection to {0}:{1}"), true, host, port);
+        const do_connect = (address: string, port: number) => {
+            const remote_address = {
+                host: address,
+                port: port
+            };
+
+            this.chat.serverChat().appendMessage(tr("Connecting to {0}:{1}"), true, address, port);
+            if(password && !password.hashed) {
+                helpers.hashPassword(password.password).then(password => {
+                    /* errors will be already handled via the handle disconnect thing */
+                    this.serverConnection.connect(remote_address, new connection.HandshakeHandler(profile, name, password));
+                }).catch(error => {
+                    createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
+                })
+            } else {
                 /* errors will be already handled via the handle disconnect thing */
-                this.serverConnection.connect({host, port}, new connection.HandshakeHandler(profile, name, password));
+                this.serverConnection.connect(remote_address, new connection.HandshakeHandler(profile, name, password ? password.password : undefined));
+            }
+        };
+
+        if(dns.supported() && !host.match(Modals.Regex.IP_V4) && !host.match(Modals.Regex.IP_V6)) {
+            const id = ++this._connect_initialize_id;
+            this.chat.serverChat().appendMessage(tr("Resolving hostname..."));
+            dns.resolve_address(host, { timeout: 5000 }).then(result => {
+                if(id != this._connect_initialize_id)
+                    return; /* we're old */
+
+                const _result = result || { target_ip: undefined, target_port: undefined };
+                //if(!result)
+                //    throw "empty result";
+
+                this.chat.serverChat().appendMessage(tr("Hostname successfully resolved to {0}"), true, _result.target_ip || host);
+                do_connect(_result.target_ip || host, _result.target_port || port);
             }).catch(error => {
-                createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
-            })
+                if(id != this._connect_initialize_id)
+                    return; /* we're old */
+
+                this.handleDisconnect(DisconnectReason.DNS_FAILED, error);
+            });
         } else {
-            /* errors will be already handled via the handle disconnect thing */
-            this.serverConnection.connect({host, port}, new connection.HandshakeHandler(profile, name, password ? password.password : undefined));
+            do_connect(host, port);
         }
     }
 
@@ -188,7 +225,7 @@ class ConnectionHandler {
         return this._clientId;
     }
 
-    getServerConnection() : connection.ServerConnection { return this.serverConnection; }
+    getServerConnection() : connection.AbstractServerConnection { return this.serverConnection; }
 
 
     /**
@@ -250,8 +287,8 @@ class ConnectionHandler {
     private generate_ssl_certificate_accept() : JQuery {
         const properties = {
             connect_default: true,
-            connect_profile: this.serverConnection._handshakeHandler.profile.id,
-            connect_address: this.serverConnection._remote_address.host + (this.serverConnection._remote_address.port !== 9987 ? ":" + this.serverConnection._remote_address.port : "")
+            connect_profile: this.serverConnection.handshake_handler().profile.id,
+            connect_address: this.serverConnection.remote_address().host + (this.serverConnection.remote_address().port !== 9987 ? ":" + this.serverConnection.remote_address().port : "")
         };
 
         const build_url = props => {
@@ -265,7 +302,7 @@ class ConnectionHandler {
             else
                 callback += "&" + parameters.join("&");
 
-            return "https://" + this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port + "/?forward_url=" + encodeURIComponent(callback);
+            return "https://" + this.serverConnection.remote_address().host + ":" + this.serverConnection.remote_address().port + "/?forward_url=" + encodeURIComponent(callback);
         };
 
         /* generate the tag */
@@ -318,6 +355,8 @@ class ConnectionHandler {
 
     private _certificate_modal: Modal;
     handleDisconnect(type: DisconnectReason, data: any = {}) {
+        this._connect_initialize_id++;
+
         this.tag_connection_handler.find(".server-name").text(tr("Not connected"));
         let auto_reconnect = false;
         switch (type) {
@@ -327,13 +366,18 @@ class ConnectionHandler {
                 if(data)
                     this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 break;
+            case DisconnectReason.DNS_FAILED:
+                console.error(tr("Failed to resolve hostname: %o"), data);
+                this.chat.serverChat().appendError(tr("Failed to resolve hostname: {0}"), data);
+                this.sound.play(Sound.CONNECTION_REFUSED);
+                break;
             case DisconnectReason.CONNECT_FAILURE:
                 if(this._reconnect_attempt) {
                     auto_reconnect = true;
                     this.chat.serverChat().appendError(tr("Connect failed"));
                     break;
                 }
-                console.error(tr("Could not connect to remote host! Exception: %o"), data);
+                console.error(tr("Could not connect to remote host! Error: %o"), data);
 
                 if(native_client) {
                     createErrorModal(
@@ -362,6 +406,15 @@ class ConnectionHandler {
                     tr("Could not connect"),
                     tr("Failed to process handshake: ") + data as string
                 ).open();
+                break;
+            case DisconnectReason.IDENTITY_TOO_LOW:
+                createErrorModal(
+                    tr("Identity level is too low"),
+                    MessageHelper.formatMessage(tr("You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"), data["extra_message"])
+                ).open();
+                this.sound.play(Sound.CONNECTION_DISCONNECTED);
+
+                auto_reconnect = false;
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 console.error(tr("Lost connection to remote server!"));
@@ -397,9 +450,9 @@ class ConnectionHandler {
                 this.chat.serverChat().appendError(tr("Server requires password"));
                 createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
-                    this.startConnection(this.serverConnection._remote_address.host + ":" + this.serverConnection._remote_address.port,
-                        this.serverConnection._handshakeHandler.profile,
-                        this.serverConnection._handshakeHandler.name,
+                    this.startConnection(this.serverConnection.remote_address().host + ":" + this.serverConnection.remote_address().port,
+                        this.serverConnection.handshake_handler().profile,
+                        this.serverConnection.handshake_handler().name,
                         {password: password as string, hashed: false});
                 }).open();
                 break;
@@ -440,10 +493,10 @@ class ConnectionHandler {
             this.chat.serverChat().appendMessage(tr("Reconnecting in 5 seconds"));
 
             console.log(tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
-            const server_address = this.serverConnection._remote_address;
-            const profile = this.serverConnection._handshakeHandler.profile;
-            const name = this.serverConnection._handshakeHandler.name;
-            const password = this.serverConnection._handshakeHandler.server_password;
+            const server_address = this.serverConnection.remote_address();
+            const profile = this.serverConnection.handshake_handler().profile;
+            const name = this.serverConnection.handshake_handler().name;
+            const password = this.serverConnection.handshake_handler().server_password;
 
             this._reconnect_timer = setTimeout(() => {
                 this._reconnect_timer = undefined;
@@ -518,8 +571,8 @@ class ConnectionHandler {
 
 
         if(targetChannel && (!vconnection || vconnection.connected())) {
-            const encoding_supported = vconnection.encoding_supported(targetChannel.properties.channel_codec);
-            const decoding_supported = vconnection.decoding_supported(targetChannel.properties.channel_codec);
+            const encoding_supported = vconnection && vconnection.encoding_supported(targetChannel.properties.channel_codec);
+            const decoding_supported = vconnection && vconnection.decoding_supported(targetChannel.properties.channel_codec);
 
             if(this.client_status.channel_codec_decoding_supported !== decoding_supported || this.client_status.channel_codec_encoding_supported !== encoding_supported) {
                 this.client_status.channel_codec_decoding_supported = decoding_supported;

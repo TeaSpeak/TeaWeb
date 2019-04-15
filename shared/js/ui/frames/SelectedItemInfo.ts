@@ -398,6 +398,7 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
         properties["server_name"] = $.spawn("a").text(server.properties.virtualserver_name);
         properties["server_onlinetime"] = formatDate(server.calculateUptime());
         properties["server_address"] = server.remote_address.host + ":" + server.remote_address.port;
+        properties["hidden_clients"] = Math.max(0, server.properties.virtualserver_clientsonline - server.channelTree.clients.length);
 
         for(let key in server.properties)
             properties["property_" + key] = server.properties[key];

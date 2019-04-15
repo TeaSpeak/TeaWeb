@@ -7,10 +7,10 @@ namespace connection {
     }
 
     export class ConnectionCommandHandler extends AbstractCommandHandler {
-        readonly connection: ServerConnection;
+        readonly connection: AbstractServerConnection;
         readonly connection_handler: ConnectionHandler;
 
-        constructor(connection: ServerConnection) {
+        constructor(connection: AbstractServerConnection) {
             super(connection);
             this.connection_handler = connection.client;
 
@@ -68,7 +68,7 @@ namespace connection {
             json = json[0]; //Only one bulk
 
             let code : string = json["return_code"];
-            if(code.length == 0) {
+            if(!code || code.length == 0) {
                 console.log(tr("Invalid return code! (%o)"), json);
                 return;
             }
@@ -94,8 +94,6 @@ namespace connection {
                 const connection = this.connection.voice_connection();
                 if(connection instanceof audio.js.VoiceConnection)
                     connection.createSession();
-                else
-                    throw "unknown voice connection";
             } else {
                 console.log(tr("Skipping voice setup (No voice bridge available)"));
             }
@@ -220,205 +218,223 @@ namespace connection {
         }
 
         handleCommandClientEnterView(json) {
-            json = json[0]; //Only one bulk
             let tree = this.connection.client.channelTree;
 
             let client: ClientEntry;
-            let channel = tree.findChannel(json["ctid"]);
-            let old_channel = tree.findChannel(json["cfid"]);
+            let channel = undefined;
+            let old_channel = undefined;
+            let reason_id, reason_msg;
 
-            client = tree.findClient(json["clid"]);
+            let invokerid, invokername, invokeruid;
 
-            if(!client) {
-                if(parseInt(json["client_type_exact"]) == ClientType.CLIENT_MUSIC) {
-                    client = new MusicClientEntry(parseInt(json["clid"]), json["client_nickname"]);
-                } else {
-                    client = new ClientEntry(parseInt(json["clid"]), json["client_nickname"]);
-                }
+            for(const entry of json) {
+                /* attempt to update properties if given */
+                channel =  typeof(entry["ctid"]) !== "undefined" ? tree.findChannel(parseInt(entry["ctid"])) : channel;
+                old_channel = typeof(entry["cfid"]) !== "undefined" ? tree.findChannel(parseInt(entry["cfid"])) : old_channel;
+                reason_id = typeof(entry["reasonid"]) !== "undefined" ? entry["reasonid"] : reason_id;
+                reason_msg = typeof(entry["reason_msg"]) !== "undefined" ? entry["reason_msg"] : reason_msg;
 
-                client.properties.client_type = parseInt(json["client_type"]);
-                client = tree.insertClient(client, channel);
-            } else {
-                if(client == this.connection.client.getClient())
-                    this.connection_handler.chat.channelChat().name = channel.channelName();
-                tree.moveClient(client, channel);
-            }
+                invokerid = typeof(entry["invokerid"]) !== "undefined" ? parseInt(entry["invokerid"]) : invokerid;
+                invokername = typeof(entry["invokername"]) !== "undefined" ? entry["invokername"] : invokername;
+                invokeruid = typeof(entry["invokeruid"]) !== "undefined" ? entry["invokeruid"] : invokeruid;
 
-            if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
-                const own_channel = this.connection.client.getClient().currentChannel();
-                if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-                    if(own_channel == channel)
-                        if(old_channel)
-                            this.connection_handler.sound.play(Sound.USER_ENTERED);
-                        else
-                            this.connection_handler.sound.play(Sound.USER_ENTERED_CONNECT);
-                    if(old_channel) {
-                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.generate_tag(true), channel.generate_tag(true));
+                client = tree.findClient(parseInt(entry["clid"]));
+
+                if(!client) {
+                    if(parseInt(entry["client_type_exact"]) == ClientType.CLIENT_MUSIC) {
+                        client = new MusicClientEntry(parseInt(entry["clid"]), entry["client_nickname"]);
                     } else {
-                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.generate_tag(true));
+                        client = new ClientEntry(parseInt(entry["clid"]), entry["client_nickname"]);
                     }
-                } else if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
-                    if(own_channel == channel)
-                        this.connection_handler.sound.play(Sound.USER_ENTERED_MOVED);
 
-                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, moved by {3}"), true,
-                        client.createChatTag(true),
-                        old_channel ? old_channel.generate_tag(true) : undefined,
-                        channel.generate_tag(true),
-                        ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
-                    );
-                } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
-                    if(own_channel == channel)
-                        this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
-
-                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, kicked by {3}{4}"), true,
-                        client.createChatTag(true),
-                        old_channel ? old_channel.generate_tag(true) : undefined,
-                        channel.generate_tag(true),
-                        ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
-                        json["reasonmsg"] > 0 ? " (" + json["msg"] + ")" : ""
-                    );
+                    client.properties.client_type = parseInt(entry["client_type"]);
+                    client = tree.insertClient(client, channel);
                 } else {
-                    console.warn(tr("Unknown reasonid for %o"), json["reasonid"]);
+                    if(client == this.connection.client.getClient())
+                        this.connection_handler.chat.channelChat().name = channel.channelName();
+                    tree.moveClient(client, channel);
                 }
-            }
 
-            let updates: {
-                key: string,
-                value: string
-            }[] = [];
+                if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
+                    const own_channel = this.connection.client.getClient().currentChannel();
+                    if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
+                        if(own_channel == channel)
+                            if(old_channel)
+                                this.connection_handler.sound.play(Sound.USER_ENTERED);
+                            else
+                                this.connection_handler.sound.play(Sound.USER_ENTERED_CONNECT);
+                        if(old_channel) {
+                            this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.generate_tag(true), channel.generate_tag(true));
+                        } else {
+                            this.connection_handler.chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.generate_tag(true));
+                        }
+                    } else if(reason_id == ViewReasonId.VREASON_MOVED) {
+                        if(own_channel == channel)
+                            this.connection_handler.sound.play(Sound.USER_ENTERED_MOVED);
 
-            for(let key in json) {
-                if(key == "cfid") continue;
-                if(key == "ctid") continue;
-                if(key === "invokerid") continue;
-                if(key === "invokername") continue;
-                if(key === "invokeruid") continue;
-                if(key === "reasonid") continue;
+                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, moved by {3}"), true,
+                            client.createChatTag(true),
+                            old_channel ? old_channel.generate_tag(true) : undefined,
+                            channel.generate_tag(true),
+                            ClientEntry.chatTag(invokerid, invokername, invokeruid),
+                        );
+                    } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
+                        if(own_channel == channel)
+                            this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
 
-                updates.push({key: key, value: json[key]});
-            }
+                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, kicked by {3}{4}"), true,
+                            client.createChatTag(true),
+                            old_channel ? old_channel.generate_tag(true) : undefined,
+                            channel.generate_tag(true),
+                            ClientEntry.chatTag(invokerid, invokername, invokeruid),
+                            reason_msg.length > 0 ? " (" + entry["msg"] + ")" : ""
+                        );
+                    } else {
+                        console.warn(tr("Unknown reasonid for %o"), reason_id);
+                    }
+                }
 
-            client.updateVariables(...updates);
+                let updates: {
+                    key: string,
+                    value: string
+                }[] = [];
 
-            {
-                let client_chat = client.chat(false);
-                if(!client_chat) {
-                    for(const c of this.connection_handler.chat.open_chats()) {
-                        if(c.owner_unique_id == client.properties.client_unique_identifier && c.flag_offline) {
-                            client_chat = c;
-                            break;
+                for(let key in entry) {
+                    if(key == "cfid") continue;
+                    if(key == "ctid") continue;
+                    if(key === "invokerid") continue;
+                    if(key === "invokername") continue;
+                    if(key === "invokeruid") continue;
+                    if(key === "reasonid") continue;
+
+                    updates.push({key: key, value: entry[key]});
+                }
+
+                client.updateVariables(...updates);
+
+                {
+                    let client_chat = client.chat(false);
+                    if(!client_chat) {
+                        for(const c of this.connection_handler.chat.open_chats()) {
+                            if(c.owner_unique_id == client.properties.client_unique_identifier && c.flag_offline) {
+                                client_chat = c;
+                                break;
+                            }
                         }
                     }
-                }
-                if(client_chat) {
-                    client_chat.appendMessage(
-                        "{0}", true,
+                    if(client_chat) {
+                        client_chat.appendMessage(
+                            "{0}", true,
                             $.spawn("div")
                                 .addClass("event-message event-partner-connect")
                                 .text(tr("Your chat partner has reconnected"))
-                    );
-                    client_chat.flag_offline = false;
+                        );
+                        client_chat.flag_offline = false;
+                    }
                 }
-            }
 
-            if(client instanceof LocalClientEntry) {
-                this.connection_handler.update_voice_status();
+                if(client instanceof LocalClientEntry) {
+                    this.connection_handler.update_voice_status();
+                }
             }
         }
 
         handleCommandClientLeftView(json) {
-            json = json[0]; //Only one bulk
-            let tree = this.connection.client.channelTree;
-            let client = tree.findClient(json["clid"]);
-            if(!client) {
-                console.error(tr("Unknown client left!"));
-                return 0;
-            }
-            if(client == this.connection.client.getClient()) {
-                if(json["reasonid"] == ViewReasonId.VREASON_BAN) {
-                    this.connection.client.handleDisconnect(DisconnectReason.CLIENT_BANNED, json);
-                } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK) {
-                    this.connection.client.handleDisconnect(DisconnectReason.CLIENT_KICKED, json);
-                } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_SHUTDOWN) {
-                    this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, json);
-                } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_STOPPED) {
-                    this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, json);
-                } else
-                    this.connection.client.handleDisconnect(DisconnectReason.UNKNOWN, json);
-                return;
-            }
+            let reason_id;
 
-
-            if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
-                const own_channel = this.connection.client.getClient().currentChannel();
-                let channel_from = tree.findChannel(json["cfid"]);
-                let channel_to = tree.findChannel(json["ctid"]);
-
-                if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.generate_tag(true), channel_to.generate_tag(true));
-
-                    if(channel_from == own_channel)
-                        this.connection_handler.sound.play(Sound.USER_LEFT);
-                } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_LEFT) {
-                    this.connection_handler.chat.serverChat().appendMessage(tr("{0} left the server{1}"), true,
-                        client.createChatTag(true),
-                        json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
-                    );
-
-                    if(channel_from == own_channel)
-                        this.connection_handler.sound.play(Sound.USER_LEFT_DISCONNECT);
-                } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK) {
-                    this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from the server by {1}.{2}"),
-                        client.createChatTag(true),
-                        ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
-                        json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
-                    );
-                    if(channel_from == own_channel)
-                        this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_SERVER);
-                } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
-                    this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from your channel by {1}.{2}"),
-                        client.createChatTag(true),
-                        ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
-                        json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
-                    );
-
-                    if(channel_from == own_channel)
-                        this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
-                } else if(json["reasonid"] == ViewReasonId.VREASON_BAN) {
-                    //"Mulus" was banned for 1 second from the server by "WolverinDEV" (Sry brauchte kurz ein opfer :P <3 (Nohomo))
-                    let duration = "permanently";
-                    if(json["bantime"])
-                        duration = "for " + formatDate(Number.parseInt(json["bantime"]));
-
-                    this.connection_handler.chat.serverChat().appendError(tr("{0} was banned {1} by {2}.{3}"),
-                        client.createChatTag(true),
-                        duration,
-                        ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
-                        json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
-                    );
-
-                    if(channel_from == own_channel)
-                        this.connection_handler.sound.play(Sound.USER_LEFT_BANNED);
-                } else {
-                    console.error(tr("Unknown client left reason!"));
+            for(const entry of json) {
+                reason_id = entry["reasonid"] || reason_id;
+                let tree = this.connection.client.channelTree;
+                let client = tree.findClient(entry["clid"]);
+                if(!client) {
+                    console.error(tr("Unknown client left!"));
+                    return 0;
+                }
+                if(client == this.connection.client.getClient()) {
+                    if(reason_id == ViewReasonId.VREASON_BAN) {
+                        this.connection.client.handleDisconnect(DisconnectReason.CLIENT_BANNED, entry);
+                    } else if(reason_id == ViewReasonId.VREASON_SERVER_KICK) {
+                        this.connection.client.handleDisconnect(DisconnectReason.CLIENT_KICKED, entry);
+                    } else if(reason_id == ViewReasonId.VREASON_SERVER_SHUTDOWN) {
+                        this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, entry);
+                    } else if(reason_id == ViewReasonId.VREASON_SERVER_STOPPED) {
+                        this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, entry);
+                    } else
+                        this.connection.client.handleDisconnect(DisconnectReason.UNKNOWN, entry);
+                    return;
                 }
 
-                {
-                    const chat = client.chat(false);
-                    if(chat) {
-                        chat.flag_offline = true;
-                        chat.appendMessage(
-                            "{0}", true,
-                            $.spawn("div")
-                                .addClass("event-message event-partner-disconnect")
-                                .text(tr("Your chat partner has disconnected"))
+
+                if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
+                    const own_channel = this.connection.client.getClient().currentChannel();
+                    let channel_from = tree.findChannel(entry["cfid"]);
+                    let channel_to = tree.findChannel(entry["ctid"]);
+
+                    if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
+                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.generate_tag(true), channel_to.generate_tag(true));
+
+                        if(channel_from == own_channel)
+                            this.connection_handler.sound.play(Sound.USER_LEFT);
+                    } else if(reason_id == ViewReasonId.VREASON_SERVER_LEFT) {
+                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} left the server{1}"), true,
+                            client.createChatTag(true),
+                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
                         );
+
+                        if(channel_from == own_channel)
+                            this.connection_handler.sound.play(Sound.USER_LEFT_DISCONNECT);
+                    } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK) {
+                        this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from the server by {1}.{2}"),
+                            client.createChatTag(true),
+                            ClientEntry.chatTag(entry["invokerid"], entry["invokername"], entry["invokeruid"]),
+                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
+                        );
+                        if(channel_from == own_channel)
+                            this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_SERVER);
+                    } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
+                        this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from your channel by {1}.{2}"),
+                            client.createChatTag(true),
+                            ClientEntry.chatTag(entry["invokerid"], entry["invokername"], entry["invokeruid"]),
+                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
+                        );
+
+                        if(channel_from == own_channel)
+                            this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
+                    } else if(reason_id == ViewReasonId.VREASON_BAN) {
+                        //"Mulus" was banned for 1 second from the server by "WolverinDEV" (Sry brauchte kurz ein opfer :P <3 (Nohomo))
+                        let duration = "permanently";
+                        if(entry["bantime"])
+                            duration = "for " + formatDate(Number.parseInt(entry["bantime"]));
+
+                        this.connection_handler.chat.serverChat().appendError(tr("{0} was banned {1} by {2}.{3}"),
+                            client.createChatTag(true),
+                            duration,
+                            ClientEntry.chatTag(entry["invokerid"], entry["invokername"], entry["invokeruid"]),
+                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
+                        );
+
+                        if(channel_from == own_channel)
+                            this.connection_handler.sound.play(Sound.USER_LEFT_BANNED);
+                    } else {
+                        console.error(tr("Unknown client left reason!"));
+                    }
+
+                    {
+                        const chat = client.chat(false);
+                        if(chat) {
+                            chat.flag_offline = true;
+                            chat.appendMessage(
+                                "{0}", true,
+                                $.spawn("div")
+                                    .addClass("event-message event-partner-disconnect")
+                                    .text(tr("Your chat partner has disconnected"))
+                            );
+                        }
                     }
                 }
-            }
 
-            tree.deleteClient(client);
+                tree.deleteClient(client);
+            }
         }
 
         handleNotifyClientMoved(json) {
@@ -450,7 +466,7 @@ namespace connection {
 
             tree.moveClient(client, channel_to);
             for(const entry of current_clients || [])
-                if(entry !== client)
+                if(entry !== client && entry.get_audio_handle())
                     entry.get_audio_handle().abort_replay();
 
             const own_channel = this.connection.client.getClient().currentChannel();

@@ -551,6 +551,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
 
         let group = log.group(log.LogType.TRACE, LogCategory.PERMISSIONS, tr("Permission mapping"));
         const table_entries = [];
+        let permission_id = 0;
         for(let e of json) {
             if(e["group_id_end"]) {
                 let group = new PermissionGroup();
@@ -569,8 +570,10 @@ class PermissionManager extends connection.AbstractCommandHandler {
             }
 
             let perm = new PermissionInfo();
+            permission_id++;
+
             perm.name = e["permname"];
-            perm.id = parseInt(e["permid"]);
+            perm.id = parseInt(e["permid"]) || permission_id; /* using permission_id as fallback if we dont have permid */
             perm.description = e["permdesc"];
             this.permissionList.push(perm);
 

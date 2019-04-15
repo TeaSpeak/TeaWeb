@@ -136,6 +136,11 @@ namespace profiles {
                 /* generate default identity */
                 try {
                     const identity = await identities.TeaSpeakIdentity.generate_new();
+                    let active = true;
+                    setTimeout(() => {
+                        active = false;
+                    }, 1000);
+                    await identity.improve_level(8, 1, () => active);
                     profile.set_identity(identities.IdentitifyType.TEAMSPEAK, identity);
                     profile.selected_identity_type = identities.IdentitifyType[identities.IdentitifyType.TEAMSPEAK];
                 } catch(error) {

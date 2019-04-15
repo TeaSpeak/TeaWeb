@@ -2385,10 +2385,12 @@
                             <td>{{tr "Address:" /}}</td>
                             <td>{{>server_address}}</td>
                         </tr>
+                        <!--
                         <tr>
                             <td>{{tr "Type:"/}}</td>
                             <td>TeaSpeak</td>
                         </tr>
+                        -->
                         <tr>
                             <td>{{tr "Version:"/}}</td>
                             <td><a title="{{>property_virtualserver_version}}">{{*: data.property_virtualserver_version.split(" ")[0]; }}</a> on {{>property_virtualserver_platform}}</td>
@@ -2403,7 +2405,15 @@
                         </tr>
                         <tr>
                             <td>{{tr "Current Clients:"/}}</td>
-                            <td>{{:property_virtualserver_clientsonline}}</td>
+                            <td>
+                                {{:property_virtualserver_clientsonline}}/{{:property_virtualserver_maxclients}}
+                                {{if property_virtualserver_reserved_slots > 0}}
+                                (<div class="reserved-slots">-{{:property_virtualserver_reserved_slots}} {{tr "Slots reserved" /}}</div>)
+                                {{/if}}
+                                {{if hidden_clients > 0}}
+                                ({{:hidden_clients}} {{tr "clients hidden" /}})
+                                {{/if}}
+                            </td>
                         </tr>
                         <tr>
                             <td>{{tr "Current Queries:"/}}</td>

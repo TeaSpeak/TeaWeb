@@ -257,6 +257,8 @@ class Settings extends StaticSettings {
         this.updated = false;
         let global = JSON.stringify(this.cacheGlobal);
         localStorage.setItem("settings.global", global);
+        if(localStorage.save)
+            localStorage.save();
     }
 }
 
@@ -313,6 +315,8 @@ class ServerSettings extends SettingsBase {
             let serverId = this.currentServer.properties.virtualserver_unique_identifier;
             let server = JSON.stringify(this.cacheServer);
             localStorage.setItem("settings.server_" + serverId, server);
+            if(localStorage.save)
+                localStorage.save();
         }
     }
 }
