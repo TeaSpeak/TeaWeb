@@ -1063,7 +1063,7 @@
       }
     },
     {
-      "translated": "Кик клиент с канала",
+      "translated": "Кик клиента с канала",
       "flags": [
         "google-translate"
       ],
@@ -1081,7 +1081,7 @@
       }
     },
     {
-      "translated": "Кик клиент с сервера",
+      "translated": "Кик клиента с сервера",
       "flags": [
         "google-translate"
       ],
@@ -1090,7 +1090,7 @@
       }
     },
     {
-      "translated": "Kick клиент с сервера",
+      "translated": "Кик клиента с сервера",
       "flags": [
         "google-translate"
       ],
@@ -1099,7 +1099,7 @@
       }
     },
     {
-      "translated": "Запрет клиента",
+      "translated": "Забанить клиента",
       "flags": [
         "google-translate"
       ],
