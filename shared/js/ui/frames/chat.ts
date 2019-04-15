@@ -152,8 +152,8 @@ class ChatEntry {
     readonly handle: ChatBox;
     type: ChatType;
     key: string;
-    history: ChatMessage[];
-    send_history: string[];
+    history: ChatMessage[] = [];
+    send_history: string[] = [];
 
     owner_unique_id?: string;
 
@@ -172,7 +172,6 @@ class ChatEntry {
         this.type = type;
         this.key = key;
         this._name = key;
-        this.history = [];
     }
 
     appendError(message: string, ...args) {
@@ -356,6 +355,7 @@ class ChatBox {
     htmlTag: JQuery;
     chats: ChatEntry[];
     private _activeChat: ChatEntry;
+    private _history_index: number = 0;
 
     private _button_send: JQuery;
     private _input_message: JQuery;
@@ -370,10 +370,33 @@ class ChatBox {
         this._input_message = this.htmlTag.find(".input-message");
 
         this._button_send.click(this.onSend.bind(this));
-        this._input_message.keypress(event => {
-            if(event.keyCode == JQuery.Key.Enter && !event.shiftKey) {
-                this.onSend();
-                return false;
+        this._input_message.on('keypress',event => {
+            if(!event.shiftKey) {
+                console.log(event.keyCode);
+                if(event.keyCode == JQuery.Key.Enter) {
+                    this.onSend();
+                    return false;
+                } else if(event.keyCode == JQuery.Key.ArrowUp || event.keyCode == JQuery.Key.ArrowDown) {
+                    if(this._activeChat) {
+                        const message = (this._input_message.val() || "").toString();
+                        const history = this._activeChat.send_history;
+
+                        if(history.length == 0 || this._history_index > history.length)
+                            return;
+
+                        if(message.replace(/[ \n\r\t]/, "").length == 0 || this._history_index == 0 || (this._history_index > 0 && message == this._activeChat.send_history[this._history_index - 1])) {
+                            if(event.keyCode == JQuery.Key.ArrowUp)
+                                this._history_index = Math.min(history.length, this._history_index + 1);
+                            else
+                                this._history_index = Math.max(0, this._history_index - 1);
+
+                            if(this._history_index > 0)
+                                this._input_message.val(this._activeChat.send_history[this._history_index - 1]);
+                            else
+                                this._input_message.val("");
+                        }
+                    }
+                }
             }
         }).on('input', (event) => {
             let text = $(event.target).val().toString();
@@ -489,9 +512,11 @@ class ChatBox {
         }
 
         text = text || words.join(" ");
-        this._activeChat.send_history.unshift(text);
+        if(this._activeChat.send_history.length == 0 || this._activeChat.send_history[0] != text)
+            this._activeChat.send_history.unshift(text);
         while(this._activeChat.send_history.length > 100)
             this._activeChat.send_history.pop();
+        this._history_index = 0;
         if(this._activeChat && $.isFunction(this._activeChat.onMessageSend))
             this._activeChat.onMessageSend(text);
     }
