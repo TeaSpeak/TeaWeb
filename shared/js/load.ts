@@ -504,7 +504,13 @@ const loader_javascript = {
                 name: "javascript web",
                 priority: 10,
                 function: loader_javascript.load_scripts_debug_web
-            })
+            });
+        } else {
+            loader.register_task(loader.Stage.JAVASCRIPT, {
+                name: "javascript client",
+                priority: 10,
+                function: loader_javascript.load_scripts_debug_client
+            });
         }
 
         /* load some extends classes */
@@ -616,6 +622,11 @@ const loader_javascript = {
             ["js/audio/AudioPlayer.js"],
             ["js/audio/WebCodec.js"],
             ["js/WebPPTListener.js"]
+        ]);
+    },
+    load_scripts_debug_client: async () => {
+        await loader.load_scripts([
+            ["js/teaforo.js"]
         ]);
     },
 

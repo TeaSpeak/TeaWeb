@@ -22,4 +22,8 @@ namespace forum {
     export function open() {
         ipc.send("teaforo-login");
     }
+
+    export function logout() {
+        ipc.send("teaforo-logout");
+    }
 }

@@ -238,11 +238,23 @@ namespace Modals {
             } else {
                 tag.find(".connected").hide();
             }
+
             tag.find(".button-logout").on('click', event => {
-                window.location.href = settings.static("forum_path") + "auth.php?type=logout";
+                if(native_client) {
+                    modal.close(); /* we cant update the modal so we close it */
+                    forum.logout();
+                } else {
+                    window.location.href = settings.static("forum_path") + "auth.php?type=logout";
+                }
             });
             tag.find(".button-login").on('click', event => {
-                window.location.href = settings.static("forum_path") + "login.php";
+                if(native_client) {
+                    modal.close(); /* we cant update the modal so we close it */
+                    forum.open();
+                } else {
+                    window.location.href = settings.static("forum_path") + "login.php";
+                }
+
             });
         }
     }
@@ -761,7 +773,7 @@ namespace Modals {
                         if (identity && identity.valid()) {
                             forum_tag.find(".connected").show();
                         } else {
-                            forum_tag.find(".disconnected").show();
+                            _tag.find(".disconnected").show();
                         }
                     } else if (selected_type == profiles.identities.IdentitifyType.TEAMSPEAK) {
                         console.log("Set: " + identity);
@@ -930,7 +942,7 @@ namespace Modals {
                 });
             }
 
-            { //The forum
+            { //The
                 const teaforo_tag = settings_tag.find(".identity-settings-teaforo");
                 if (native_client) {
                     teaforo_tag.find(".native-teaforo-login").on('click', event => {

@@ -10,8 +10,6 @@
 /// <reference path="ui/frames/ControlBar.ts" />
 /// <reference path="connection/ConnectionBase.ts" />
 
-import spawnConnectModal = Modals.spawnConnectModal;
-
 enum DisconnectReason {
     HANDLER_DESTROYED,
     REQUESTED,
@@ -23,6 +21,8 @@ enum DisconnectReason {
     CLIENT_KICKED,
     CLIENT_BANNED,
     HANDSHAKE_FAILED,
+    HANDSHAKE_TEAMSPEAK_REQUIRED,
+    HANDSHAKE_BANNED,
     SERVER_CLOSED,
     SERVER_REQUIRES_PASSWORD,
     IDENTITY_TOO_LOW,
@@ -407,6 +407,14 @@ class ConnectionHandler {
                     tr("Failed to process handshake: ") + data as string
                 ).open();
                 break;
+            case DisconnectReason.HANDSHAKE_TEAMSPEAK_REQUIRED:
+                createErrorModal(
+                    tr("Target server is a TeamSpeak server"),
+                    MessageHelper.formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br}Please select another profile or change the identify type."))
+                ).open();
+                this.sound.play(Sound.CONNECTION_DISCONNECTED);
+                auto_reconnect = false;
+                break;
             case DisconnectReason.IDENTITY_TOO_LOW:
                 createErrorModal(
                     tr("Identity level is too low"),
@@ -457,11 +465,18 @@ class ConnectionHandler {
                 }).open();
                 break;
             case DisconnectReason.CLIENT_KICKED:
-                this.chat.serverChat().appendError(tr("You got kicked from the server by {0}{1}"),
+                createErrorModal(
+                    tr("You've been banned"),
+                    MessageHelper.formatMessage(tr("You've been banned from this server.{:br:}{0}"), data["extra_message"])
+                ).open();
+                this.sound.play(Sound.SERVER_KICKED);
+                auto_reconnect = false;
+                break;
+            case DisconnectReason.HANDSHAKE_BANNED:
+                this.chat.serverChat().appendError(tr("You got banned from the server by {0}{1}"),
                     ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
                     data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
-                this.sound.play(Sound.SERVER_KICKED);
-                auto_reconnect = true;
+                this.sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
                 break;
             case DisconnectReason.CLIENT_BANNED:
                 this.chat.serverChat().appendError(tr("You got banned from the server by {0}{1}"),

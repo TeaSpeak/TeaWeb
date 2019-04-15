@@ -49,6 +49,19 @@ namespace connection {
             this.handshake_handler.start_handshake();
         }
 
+        on_teamspeak() {
+            const type = this.profile.selected_type();
+            if(type == profiles.identities.IdentitifyType.TEAMSPEAK)
+                this.handshake_finished();
+            else {
+
+                if(this.failed) return;
+
+                this.failed = true;
+                this.connection.client.handleDisconnect(DisconnectReason.HANDSHAKE_TEAMSPEAK_REQUIRED);
+            }
+        }
+
         private handshake_failed(message: string) {
             if(this.failed) return;
 
@@ -71,7 +84,6 @@ namespace connection {
             const git_version = settings.static_global("version", "unknown");
             const browser_name = (navigator.browserSpecs || {})["name"] || " ";
             let data = {
-                //TODO variables!
                 client_nickname: this.name,
                 client_platform: (browser_name ? browser_name + " " : "") + navigator.platform,
                 client_version: "TeaWeb " + git_version + " (" + navigator.userAgent + ")",
@@ -119,6 +131,8 @@ namespace connection {
                     } else if(error.id == 783 || error.id == 519) {
                         error.extra_message = parseInt(error.extra_message) == NaN ? "8" : error.extra_message;
                         this.connection.client.handleDisconnect(DisconnectReason.IDENTITY_TOO_LOW, error);
+                    } else if(error.id == 3329) {
+                        this.connection.client.handleDisconnect(DisconnectReason.HANDSHAKE_BANNED, error);
                     } else {
                         this.connection.client.handleDisconnect(DisconnectReason.CLIENT_KICKED, error);
                     }
