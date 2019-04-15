@@ -773,7 +773,7 @@ namespace Modals {
                         if (identity && identity.valid()) {
                             forum_tag.find(".connected").show();
                         } else {
-                            _tag.find(".disconnected").show();
+                            forum_tag.find(".disconnected").show();
                         }
                     } else if (selected_type == profiles.identities.IdentitifyType.TEAMSPEAK) {
                         console.log("Set: " + identity);
