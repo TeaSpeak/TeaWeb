@@ -462,6 +462,14 @@ const loader_javascript = {
 
         if(!window.require) {
             await loader.load_script(["vendor/jquery/jquery.min.js"]);
+        } else {
+            loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+                name: "forum sync",
+                priority: 10,
+                function: async () => {
+                    forum.sync_main();
+                }
+            });
         }
 
         /* bootstrap material design and libs */
