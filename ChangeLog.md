@@ -1,7 +1,8 @@
 # Changelog:
-* **XX.XX.XX**
-    TODO:
-    - Save renamed name to use it the next time we try to connect to a server
+* **15.04.19**
+    - Adjusted hostbanner properties
+    - Added a chat history log
+    - Added some extra features needed for the client
     
 * **04.04.19**
     - Fixed issue with client icons not updating correctly (Showing invalid microphone state)
