@@ -43,7 +43,6 @@ namespace Modals {
             header: tr("Manage bookmarks"),
             body: () => {
                 let template = $("#tmpl_manage_bookmarks").renderTag({ });
-                template = $.spawn("div").append(template);
                 let selected_bookmark: bookmarks.Bookmark | bookmarks.DirectoryBookmark | undefined;
                 let update_name: () => any;
 

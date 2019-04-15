@@ -2880,7 +2880,7 @@
 
         <script class="jsrender-template" id="tmpl_manage_bookmarks" type="text/html">
             <div class="modal-bookmarks">
-                <div class="group_box">
+                <div class="group_box gb-list">
                     <div class="header">{{tr "Bookmarks" /}}</div>
                     <div class="content bookmark-list">
                         <div class="list">
@@ -2891,11 +2891,14 @@
                     </div>
                 </div>
                 <div class="buttons">
-                    <button class="btn btn-raised btn-secondary button-create">{{tr "Create new bookmark/directory" /}}</button>
-                    <button class="btn btn-danger button-delete">{{tr "Delete selected bookmark/directory" /}}</button>
+                    <button class="button-large btn btn-raised btn-secondary button-create">{{tr "Create new bookmark/directory" /}}</button>
+                    <button class="button-large btn btn-danger button-delete">{{tr "Delete selected bookmark/directory" /}}</button>
+
+                    <button class="button-small btn btn-raised btn-secondary button-create">{{tr "Create" /}}</button>
+                    <button class="button-small btn btn-danger button-delete">{{tr "Delete" /}}</button>
                 </div>
                 <hr>
-                <div class="group_box">
+                <div class="group_box gb-settings">
                     <div class="header">{{tr "Bookmark settings" /}}</div>
                     <div class="content">
                         <div class="bookmark-setting bookmark-setting-bookmark">
@@ -2925,6 +2928,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <!--
                             <div class="group_box">
                                 <div class="header">{{tr "Connect Properties (Not yet supported)" /}}</div>
                                 <div class="content">
@@ -2942,12 +2946,13 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <!-- TODO generated id because of password field (id="bookmark_server_password_{{rnd '0~13377331'/}}") -->
+                                        <!- TODO generated id because of password field (id="bookmark_server_password_{{rnd '0~13377331'/}}") ->
                                         <label for="input-bookmark-channel-password" class="bmd-label-floating">{{tr "Default channel password" /}}</label>
                                         <input id="input-bookmark-channel-password" class="form-control setting-channel-password" type="password" disabled>
                                     </div>
                                 </div>
                             </div>
+                            -->
                         </div>
                         <div class="bookmark-setting bookmark-setting-directory">
                             <div class="form-group">

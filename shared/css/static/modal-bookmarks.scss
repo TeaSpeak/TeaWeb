@@ -7,6 +7,7 @@
 	.bookmark-list {
 		flex-grow: 1;
 		flex-shrink: 1;
+		min-height: 75px;
 
 		display: flex;
 		flex-direction: column;
@@ -56,17 +57,55 @@
 		flex-grow: 0;
 		flex-shrink: 0;
 
+		display: flex;
+		justify-content: space-between;
+		flex-direction: row;
+
 		margin-top: 5px;
 		text-align: right;
 
 		button {
 			margin-left: 5px;
 		}
+
+
+		.button-large {
+			display: block;
+		}
+
+		.button-small {
+			display: none;
+		}
 	}
 
-	.group_box:not(:first-of-type) {
-		flex-grow: 0;
-		flex-shrink: 0;
+	@media (max-width: 1000px) {
+		.buttons {
+			.button-large {
+				display: none;
+			}
+
+			.button-small {
+				display: block;
+			}
+		}
+	}
+
+	.group_box {
+		flex-shrink: 1;
+
+		.header {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+
+		&.gb-settings {
+			overflow-y: auto;
+		}
+
+		&.gb-list {
+			min-height: 100px; /* 25px header + 75px body */
+		}
 	}
 
 	.bookmark-setting {
