@@ -153,6 +153,7 @@ class ChatEntry {
     type: ChatType;
     key: string;
     history: ChatMessage[];
+    send_history: string[];
 
     owner_unique_id?: string;
 
@@ -390,6 +391,7 @@ class ChatBox {
                 this.serverChat().appendError(tr("Could not send chant message (Not connected)"));
                 return;
             }
+
             this.connection_handler.serverConnection.command_helper.sendMessage(text, ChatType.SERVER).catch(error => {
                 if(error instanceof CommandResult)
                     return;
@@ -486,8 +488,12 @@ class ChatBox {
             }
         }
 
+        text = text || words.join(" ");
+        this._activeChat.send_history.unshift(text);
+        while(this._activeChat.send_history.length > 100)
+            this._activeChat.send_history.pop();
         if(this._activeChat && $.isFunction(this._activeChat.onMessageSend))
-            this._activeChat.onMessageSend(text || words.join(" "));
+            this._activeChat.onMessageSend(text);
     }
 
     set activeChat(chat : ChatEntry) {
@@ -522,7 +528,7 @@ class ChatBox {
         this._input_message.prop("disabled", disable_input);
     }
 
-    get activeChat(){ return this._activeChat; }
+    get activeChat() : ChatEntry { return this._activeChat; }
 
     channelChat() : ChatEntry {
         return this.findChat("chat_channel");
