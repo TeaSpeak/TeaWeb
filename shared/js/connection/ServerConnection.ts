@@ -285,30 +285,8 @@ namespace connection {
                     "flags": options.flagset.filter(entry => entry.length != 0)
                 }));
             });
-            return new Promise<CommandResult>((resolve, failed) => {
-                result.then(resolve).catch(ex => {
-                    if(options.process_result) {
-                        if(ex instanceof CommandResult) {
-                            let res = ex;
-                            if(!res.success) {
-                                if(res.id == 2568) { //Permission error
-                                    res.message = tr("Insufficient client permissions. Failed on permission ") + this.client.permissions.resolveInfo(res.json["failed_permid"] as number).name;
-                                    this.client.chat.serverChat().appendError(tr("Insufficient client permissions. Failed on permission {}"), this.client.permissions.resolveInfo(res.json["failed_permid"] as number).name);
-                                    this.client.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
-                                } else {
-                                    this.client.chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
-                                }
-                            }
-                        } else if(typeof(ex) === "string") {
-                            this.client.chat.serverChat().appendError(tr("Command execution results in ") + ex);
-                        } else {
-                            console.error(tr("Invalid promise result type: %o. Result:"), typeof (ex));
-                            console.error(ex);
-                        }
-                    }
-                    failed(ex);
-                })
-            });
+
+            return this._command_handler_default.proxy_command_promise(result, options);
         }
 
         connected() : boolean {

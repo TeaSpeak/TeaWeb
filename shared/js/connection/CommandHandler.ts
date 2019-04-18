@@ -46,6 +46,35 @@ namespace connection {
             this["notifychannelunsubscribed"] = this.handleNotifyChannelUnsubscribed;
         }
 
+        proxy_command_promise(promise: Promise<CommandResult>, options: connection.CommandOptions) {
+            if(!options.process_result)
+                return promise;
+
+            return promise.catch(ex => {
+                if(options.process_result) {
+                    if(ex instanceof CommandResult) {
+                        let res = ex;
+                        if(!res.success) {
+                            if(res.id == 2568) { //Permission error
+                                res.message = tr("Insufficient client permissions. Failed on permission ") + this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number).name;
+                                this.connection_handler.chat.serverChat().appendError(tr("Insufficient client permissions. Failed on permission {}"), this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number).name);
+                                this.connection_handler.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
+                            } else {
+                                this.connection_handler.chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
+                            }
+                        }
+                    } else if(typeof(ex) === "string") {
+                        this.connection_handler.chat.serverChat().appendError(tr("Command execution results in ") + ex);
+                    } else {
+                        console.error(tr("Invalid promise result type: %o. Result:"), typeof (ex));
+                        console.error(ex);
+                    }
+                }
+
+                return Promise.reject(ex);
+            });
+        }
+
         handle_command(command: ServerCommand) : boolean {
             if(this[command.command]) {
                 this[command.command](command.arguments);
