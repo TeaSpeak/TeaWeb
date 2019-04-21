@@ -2629,7 +2629,7 @@
       }
     },
     {
-      "translated": "Используйте токен / ключ привилегий",
+      "translated": "Использовать токен / ключ привилегий",
       "flags": [
         "google-translate"
       ],
@@ -5257,7 +5257,7 @@
       }
     },
     {
-      "translated": "Управление учетными записями запросов",
+      "translated": "Управление учетными записями ServerQuery",
       "flags": [
         "google-translate"
       ],
@@ -5554,7 +5554,25 @@
       }
     },
     {
-      "translated": "Управление запросами к серверу",
+      "translated": "Показать ServerQuery",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Show server queries"
+      }
+    },
+    {
+      "translated": "Скрыть ServerQuery",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Hide server queries"
+      }
+    },
+    {
+      "translated": "Управление ServerQuery",
       "flags": [
         "google-translate"
       ],
@@ -5563,7 +5581,7 @@
       }
     },
     {
-      "translated": "Создать запрос к серверу",
+      "translated": "Создать учётную запись ServerQuery",
       "flags": [
         "google-translate"
       ],
@@ -8191,7 +8209,7 @@
       }
     },
     {
-      "translated": "Установите имя для входа в свою учетную запись Server Query.",
+      "translated": "Введите имя пользователя для создания учетной записи Server Query.",
       "flags": [
         "google-translate"
       ],
@@ -8200,7 +8218,7 @@
       }
     },
     {
-      "translated": "Вы получите свой пароль на следующем шаге.",
+      "translated": "Вы получите свой пароль Server Query на следующем шаге.",
       "flags": [
         "google-translate"
       ],
@@ -8209,7 +8227,7 @@
       }
     },
     {
-      "translated": "Создайте",
+      "translated": "Создать",
       "flags": [
         "google-translate"
       ],
@@ -8686,7 +8704,7 @@
       }
     },
     {
-      "translated": "Добавить сайт",
+      "translated": "Добавить URL",
       "flags": [
         "google-translate"
       ],
