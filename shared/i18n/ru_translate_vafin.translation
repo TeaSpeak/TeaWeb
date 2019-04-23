@@ -9046,6 +9046,15 @@
       }
     },
     {
+      "translated": "Статус онлайн для всех серверов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Go online for all servers"
+      }
+    },    
+    {
       "translated": "Выключить звук",
       "flags": [
         "google-translate"
