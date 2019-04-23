@@ -1,17 +1,17 @@
 {
   "info": {
-    "name": "German translation, based on Google Translate",
+    "name": "German translation, based on Google Translate", 
     "contributors": [
       {
-        "name": "Google Translate, via script by Markus Hadenfeldt",
+        "name": "Google Translate, via script by Markus Hadenfeldt", 
         "email": "gtr.i18n.client@teaspeak.de"
-      },
+      }, 
       {
-        "name": "Markus Hadenfeldt",
+        "name": "Markus Hadenfeldt", 
         "email": "i18n.client@teaspeak.de"
       }
     ]
-  },
+  }, 
   "translations": [
     {
       "translated": "Fehler beim Initialisieren des Audio-Controllers!", 
@@ -10309,6 +10309,1068 @@
       ], 
       "key": {
         "message": "Directory name:"
+      }
+    }, 
+    {
+      "translated": "Eine Ger\u00e4teabfrage von% s erhalten.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received a device query from %s."
+      }
+    }, 
+    {
+      "translated": "Eine Anfrageantwort f\u00fcr eine unbekannte Anforderung erhalten.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received a query response for an unknown request."
+      }
+    }, 
+    {
+      "translated": "Empfangene Zertifikate akzeptieren R\u00fcckruf f\u00fcr eine unbekannte Anforderungs-ID.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received certificate accept callback for an unknown request ID."
+      }
+    }, 
+    {
+      "translated": "Empfangene Zertifikate akzeptieren erfolgreich, haben jedoch keinen R\u00fcckruf.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received certificate accept succeeded, but haven't a callback."
+      }
+    }, 
+    {
+      "translated": "Empfangene Nachricht mit ung\u00fcltigem Typ (% s):% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message with an invalid type (%s): %o"
+      }
+    }, 
+    {
+      "translated": "Eine ung\u00fcltige verschl\u00fcsselte Nachricht wurde empfangen:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an invalid encoded message: %o"
+      }
+    }, 
+    {
+      "translated": "Fehler empfangen:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received error: %o"
+      }
+    }, 
+    {
+      "translated": "Nativer Codec wird nicht unterst\u00fctzt!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Native codec isn't supported!"
+      }
+    }, 
+    {
+      "translated": "Sprachpaket konnte nicht gesendet werden. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send voice packet. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Eisangebot konnte nicht erstellt werden! Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not create ice offer! error: %o"
+      }
+    }, 
+    {
+      "translated": "Erhaltene Antwort auf unser Angebot. Antwort:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received answer to our offer. Answer: %o"
+      }
+    }, 
+    {
+      "translated": "Antwort erfolgreich beantragt Anwenden von ICE-Kandidaten (% d).", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Answer applied successfully. Applying ICE candidates (%d)."
+      }
+    }, 
+    {
+      "translated": "Remote-Eis hinzuf\u00fcgen! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add remote ice! (%o)"
+      }
+    }, 
+    {
+      "translated": "Cache-Eis fernhalten! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Cache remote ice! (%o)"
+      }
+    }, 
+    {
+      "translated": "Lokaler Eis-Kandidat% o gesammelt.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Gathered local ice candidate %o."
+      }
+    }, 
+    {
+      "translated": "Lokales Angebot erstellt. Lokale Beschreibung einrichten (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Local offer created. Setting up local description. (%o)"
+      }
+    }, 
+    {
+      "translated": "Das Angebot wurde erfolgreich angewendet. Angebot an Server senden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Offer applied successfully. Sending offer to server."
+      }
+    }, 
+    {
+      "translated": "Stimme von einem unbekannten Audio-Client? (ClientID:% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Having voice from unknown audio client? (ClientID: %o)"
+      }
+    }, 
+    {
+      "translated": "Versucht, Sprachdaten zu senden, der lokale Client verf\u00fcgt jedoch nicht \u00fcber einen Voice-Client", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send voice data, but local client hasn't a voice client handle"
+      }
+    }, 
+    {
+      "translated": "Geladenes Client-Volume% d f\u00fcr Client% s aus der Konfiguration.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loaded client volume %d for client %s from config."
+      }
+    }, 
+    {
+      "translated": "Sichtbarer Client wurde eine eindeutige ID zugewiesen, hat jedoch noch kein Audio-Handle. Volume-Zuordnung ignorieren", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Visible client got unique id assigned, but hasn't yet an audio handle. Ignoring volume assignment."
+      }
+    }, 
+    {
+      "translated": "L\u00f6schen eines Clients mit einem Sprachhandle, aber keine Sprachverbindung!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Deleting client with a voice handle, but we haven't a voice connection!"
+      }
+    }, 
+    {
+      "translated": "Hostbanner-Meta-Image-Tag fehlt", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Missing hostbanner meta image tag"
+      }
+    }, 
+    {
+      "translated": "Alte Hostbanner-URL% s wurde zur\u00fcckgezogen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Revoked old hostbanner url %s"
+      }
+    }, 
+    {
+      "translated": "Herunterladen des Symbols% d:% o konnte nicht angefordert werden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not request download for icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "Symbol% d:% o konnte nicht heruntergeladen werden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not download icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "Symbol% o konnte nicht geladen werden. Gr\u00fcnde daf\u00fcr", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not load icon %o. Reason: %s"
+      }
+    }, 
+    {
+      "translated": "Download f\u00fcr Avatar% s konnte nicht angefordert werden:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not request download for avatar %s: %o"
+      }
+    }, 
+    {
+      "translated": "Avatar% s konnte nicht heruntergeladen werden:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not download avatar %s: %o"
+      }
+    }, 
+    {
+      "translated": "Kundenavatar", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Client avatar"
+      }
+    }, 
+    {
+      "translated": "Avatar f\u00fcr ID% s konnte nicht geladen werden. Gr\u00fcnde daf\u00fcr", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not load avatar for id %s. Reason: %s"
+      }
+    }, 
+    {
+      "translated": "Aktivieren Sie Ihr Mikrofon auf diesem Server", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enable your microphone on this server"
+      }
+    }, 
+    {
+      "translated": "Mikrofon stummschalten", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Mute microphone"
+      }
+    }, 
+    {
+      "translated": "Mikrofon stummschalten", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unmute microphone"
+      }
+    }, 
+    {
+      "translated": "Ton stummschalten", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Mute sound"
+      }
+    }, 
+    {
+      "translated": "Ton stummschalten", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unmute sound"
+      }
+    }, 
+    {
+      "translated": "Serverabfragen ausblenden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hide server queries"
+      }
+    }, 
+    {
+      "translated": "Serverabfragen anzeigen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show server queries"
+      }
+    }, 
+    {
+      "translated": "Bitte geben Sie Ihre Abwesenheitsnachricht ein", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter your away message"
+      }
+    }, 
+    {
+      "translated": "Setzen Sie eine globale Abwesenheitsnachricht", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set global away message"
+      }
+    }, 
+    {
+      "translated": "Bitte geben Sie Ihre globale Abwesenheitsnachricht ein", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter your global away message"
+      }
+    }, 
+    {
+      "translated": "Verbinden Sie sich in einer neuen Registerkarte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect in a new tab"
+      }
+    }, 
+    {
+      "translated": "Nicht verbunden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Not connected"
+      }
+    }, 
+    {
+      "translated": "Anschlie\u00dfen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connecting"
+      }
+    }, 
+    {
+      "translated": "Verbindung zu {0} initialisieren: {1}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing connection to {0}:{1}"
+      }
+    }, 
+    {
+      "translated": "Hostname aufl\u00f6sen ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Resolving hostname..."
+      }
+    }, 
+    {
+      "translated": "Hostname erfolgreich in {0} aufgel\u00f6st", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hostname successfully resolved to {0}"
+      }
+    }, 
+    {
+      "translated": "Hier", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "here"
+      }
+    }, 
+    {
+      "translated": "Benachrichtigung erhalten, dass das Zertifikat akzeptiert wurde! Erneuter Verbindungsversuch!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received notification that the certificate has been accepted! Attempting reconnect!"
+      }
+    }, 
+    {
+      "translated": "Das Popup zum Akzeptieren des Zertifikats wurde blockiert. Eine leere Seite wird getestet und href ersetzt", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Certificate accept popup has been blocked. Trying a blank page and replacing href"
+      }
+    }, 
+    {
+      "translated": "Hostname konnte nicht aufgel\u00f6st werden:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to resolve hostname: %o"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Aufl\u00f6sen des Hostnamens: {0}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to resolve hostname: {0}"
+      }
+    }, 
+    {
+      "translated": "Verbindung zum Remote-Host konnte nicht hergestellt werden! Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not connect to remote host! Error: %o"
+      }
+    }, 
+    {
+      "translated": "Zielserver ist ein TeamSpeak-Server", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Target server is a TeamSpeak server"
+      }
+    }, 
+    {
+      "translated": "Der Zielserver ist ein TeamSpeak 3-Server! {: Br:} Nur auf TeamSpeak 3 basierende Identit\u00e4ten k\u00f6nnen eine Verbindung herstellen. {: Br} Bitte w\u00e4hlen Sie ein anderes Profil oder \u00e4ndern Sie den Identifikationstyp.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br}Please select another profile or change the identify type."
+      }
+    }, 
+    {
+      "translated": "Das Identit\u00e4tsniveau ist zu niedrig", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity level is too low"
+      }
+    }, 
+    {
+      "translated": "Sie wurden getrennt, weil Ihr Identit\u00e4tslevel zu niedrig ist. {: Br:} Sie ben\u00f6tigen mindestens ein Level von {0}.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"
+      }
+    }, 
+    {
+      "translated": "Du wurdest verboten", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You've been banned"
+      }
+    }, 
+    {
+      "translated": "Sie wurden von diesem Server gesperrt. {: Br:} {0}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You've been banned from this server.{:br:}{0}"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Aktualisieren der Eigenschaften der Client-Audiohardware. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update client audio hardware properties. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Aktualisieren der Audio-Hardwareeigenschaften.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update audio hardware properties."
+      }
+    }, 
+    {
+      "translated": "Dieser Kanal hat einen nicht unterst\u00fctzten Codec. <br> Sie k\u00f6nnen nicht innerhalb dieses Kanals sprechen!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "This channel has an unsupported codec.<br>You cant speak within this channel!"
+      }
+    }, 
+    {
+      "translated": "Dieser Kanal hat einen nicht unterst\u00fctzten Codec. <br> Sie h\u00f6ren irgendjemandem in diesem Kanal!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "This channel has an unsupported codec.<br>You listen to anybody within this channel!"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Synchronisieren des Handlerstatus mit dem Server. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to sync handler state with server. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Synchronisieren des Handlerstatus mit dem Server.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to sync handler state with server."
+      }
+    }, 
+    {
+      "translated": "Fehler beim Aktualisieren des Abwesenheitsstatus. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update away status. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Aktualisieren des Abwesenheitsstatus.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update away status."
+      }
+    }, 
+    {
+      "translated": "Verwendung dieser Instanz als Zertifikatsr\u00fcckruf. ID:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Using this instance as certificate callback. ID: %s"
+      }
+    }, 
+    {
+      "translated": "Andere Instanz hat die Arbeit best\u00e4tigt. Dieses Fenster schlie\u00dfen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Other instance has acknowledged out work. Closing this window."
+      }
+    }, 
+    {
+      "translated": "Fenster schlie\u00dfen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Closing window"
+      }
+    }, 
+    {
+      "translated": "Zertifikat erfolgreich angenommen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Certificate acccepted successfully"
+      }
+    }, 
+    {
+      "translated": "Fehler beim erfolgreichen Bereitstellen des Zertifikatstatus:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to successfully post certificate accept status: %o"
+      }
+    }, 
+    {
+      "translated": "Wir sind es nicht gewohnt, das Zertifikat zu akzeptieren. App starten", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "We're not used to accept certificated. Booting app."
+      }
+    }, 
+    {
+      "translated": "L\u00f6schen des WebRTC-Befehlspakets, da keine Bridge vorhanden ist.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping WebRTC command packet, because we haven't a bridge."
+      }
+    }, 
+    {
+      "translated": "Fehlender Tongriff", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Missing sound handle"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Laden der Audiodatei% s. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load audio file %s. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Tonwiedergabe aufgrund fehlender Ziehpunkte fehlgeschlagen.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to replay sound because of missing handles."
+      }
+    }, 
+    {
+      "translated": "Symbole anzeigen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "View icons"
+      }
+    }, 
+    {
+      "translated": "Avatare anzeigen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "View avatars"
+      }
+    }, 
+    {
+      "translated": "Avatare", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Avatars"
+      }
+    }, 
+    {
+      "translated": "M\u00f6chten Sie diesen Avatar wirklich l\u00f6schen?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this avatar?"
+      }
+    }, 
+    {
+      "translated": "Avatar delete ist noch nicht implementiert", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Avatar delete hasn't implemented yet"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Abrufen von Benutzernamen von Avatar-Namen. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch usernames from avatar names. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Benutzername konnte nicht abgerufen werden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch usernames"
+      }
+    }, 
+    {
+      "translated": "Fehler beim Abrufen von Benutzernamen, die sich auf ihre Avatarnamen beziehen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch usernames related to their avatar names"
+      }
+    }, 
+    {
+      "translated": "Avatar-Liste konnte nicht empfangen werden. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to receive avatar list. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Avatare konnten nicht aufgelistet werden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to list avatars"
+      }
+    }, 
+    {
+      "translated": "Avatar-Liste konnte nicht empfangen werden.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to receive avatar list."
+      }
+    }, 
+    {
+      "translated": "Icons", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icons"
+      }
+    }, 
+    {
+      "translated": "Ein nicht analysierbares Symbol in der Symbolliste empfangen (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an unparsable icon within icon list (%o)"
+      }
+    }, 
+    {
+      "translated": "Symbolliste konnte nicht abgerufen werden. Fehler:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch icon list. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Symbolliste konnte nicht abgerufen werden", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch icon list"
+      }
+    }, 
+    {
+      "translated": "Trennen Sie die Verbindung zum aktuellen Server", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Disconnect from current server"
+      }
+    }, 
+    {
+      "translated": "Online gehen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Go online"
+      }
+    }, 
+    {
+      "translated": "Setzen Sie sich auf diesem Server fort", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away on this server"
+      }
+    }, 
+    {
+      "translated": "Setzen Sie die Nachricht auf diesem Server ab", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away message on this server"
+      }
+    }, 
+    {
+      "translated": "Setzen Sie sich f\u00fcr alle Server frei", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away for all servers"
+      }
+    }, 
+    {
+      "translated": "Setzen Sie eine Nachricht f\u00fcr alle Server ab", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away message for all servers"
+      }
+    }, 
+    {
+      "translated": "Gehen Sie f\u00fcr alle Server online", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Go online for all servers"
+      }
+    }, 
+    {
+      "translated": "Symbol:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon:"
+      }
+    }, 
+    {
+      "translated": "Slots reserviert", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Slots reserved"
+      }
+    }, 
+    {
+      "translated": "Kunden versteckt", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "clients hidden"
+      }
+    }, 
+    {
+      "translated": "Lesezeichen-Typ:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark type:"
+      }
+    }, 
+    {
+      "translated": "\u00dcbergeordnetes Verzeichnis:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Parent directory:"
+      }
+    }, 
+    {
+      "translated": "Name des Lesezeichens", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark name"
+      }
+    }, 
+    {
+      "translated": "Remote", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remote"
+      }
+    }, 
+    {
+      "translated": "Sie haben keine Berechtigungen f\u00fcr die Ansicht der Symbole", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have permissions the view the icons"
+      }
+    }, 
+    {
+      "translated": "Lokal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Local"
+      }
+    }, 
+    {
+      "translated": "Symbol entfernen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove icon"
+      }
+    }, 
+    {
+      "translated": "W\u00e4hlen", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Select "
+      }
+    }, 
+    {
+      "translated": "Gr\u00f6\u00dfe", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Size"
+      }
+    }, 
+    {
+      "translated": "Datum", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Date"
+      }
+    }, 
+    {
+      "translated": "Avatar-ID", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Avatar ID"
+      }
+    }, 
+    {
+      "translated": "Bildinfo:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Image info:"
+      }
+    }, 
+    {
+      "translated": "Bytes", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bytes"
+      }
+    }, 
+    {
+      "translated": "Breite", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Width"
+      }
+    }, 
+    {
+      "translated": "H\u00f6he", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Height"
+      }
+    }, 
+    {
+      "translated": "Bitte w\u00e4hlen Sie einen Benutzer aus", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please select a user"
       }
     }
   ]

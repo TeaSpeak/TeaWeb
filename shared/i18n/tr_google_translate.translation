@@ -9233,6 +9233,1068 @@
       "key": {
         "message": "Directory name:"
       }
+    }, 
+    {
+      "translated": "% S kayna\u011f\u0131ndan bir cihaz sorgusu al\u0131nd\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received a device query from %s."
+      }
+    }, 
+    {
+      "translated": "Bilinmeyen bir istek i\u00e7in bir sorgu yan\u0131t\u0131 al\u0131nd\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received a query response for an unknown request."
+      }
+    }, 
+    {
+      "translated": "Al\u0131nan sertifika, bilinmeyen bir istek kimli\u011fi i\u00e7in geri aramay\u0131 kabul eder.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received certificate accept callback for an unknown request ID."
+      }
+    }, 
+    {
+      "translated": "Al\u0131nan sertifika kabul edildi, ancak geri arama yapmad\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received certificate accept succeeded, but haven't a callback."
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz tipte bir mesaj al\u0131nd\u0131 (% s):% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received message with an invalid type (%s): %o"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz bir kodlanm\u0131\u015f mesaj al\u0131nd\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an invalid encoded message: %o"
+      }
+    }, 
+    {
+      "translated": "Al\u0131nan hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received error: %o"
+      }
+    }, 
+    {
+      "translated": "Yerel kodek desteklenmiyor!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Native codec isn't supported!"
+      }
+    }, 
+    {
+      "translated": "Ses paketi g\u00f6nderilemedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to send voice packet. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Buz teklifi olu\u015fturulamad\u0131! hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not create ice offer! error: %o"
+      }
+    }, 
+    {
+      "translated": "Teklifimize cevap geldi. Cevap:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received answer to our offer. Answer: %o"
+      }
+    }, 
+    {
+      "translated": "Cevap ba\u015far\u0131yla uyguland\u0131. ICE adaylar\u0131 uygulamak (% d).", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Answer applied successfully. Applying ICE candidates (%d)."
+      }
+    }, 
+    {
+      "translated": "Uzak buz ekleyin! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add remote ice! (%o)"
+      }
+    }, 
+    {
+      "translated": "Uzaktan buz \u00f6nbelle\u011fi! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Cache remote ice! (%o)"
+      }
+    }, 
+    {
+      "translated": "Toplanan yerel buz aday\u0131% o.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Gathered local ice candidate %o."
+      }
+    }, 
+    {
+      "translated": "Yerel teklif olu\u015fturuldu. Yerel a\u00e7\u0131klama ayarlama. (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Local offer created. Setting up local description. (%o)"
+      }
+    }, 
+    {
+      "translated": "Teklif ba\u015far\u0131yla uyguland\u0131. Sunucuya teklif g\u00f6nderiliyor.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Offer applied successfully. Sending offer to server."
+      }
+    }, 
+    {
+      "translated": "Bilinmeyen ses istemcisinden ses mi geliyor? (M\u00fc\u015fteri Kimli\u011fi:% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Having voice from unknown audio client? (ClientID: %o)"
+      }
+    }, 
+    {
+      "translated": "Ses verisi g\u00f6nderilmeye \u00e7al\u0131\u015f\u0131ld\u0131, ancak yerel m\u00fc\u015fterinin ses istemcisi i\u015fleci yok", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Tried to send voice data, but local client hasn't a voice client handle"
+      }
+    }, 
+    {
+      "translated": "% D istemcisi birimi% s i\u00e7in configden y\u00fcklendi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loaded client volume %d for client %s from config."
+      }
+    }, 
+    {
+      "translated": "G\u00f6r\u00fcn\u00fcr m\u00fc\u015fteri benzersiz bir kimlik atad\u0131, ancak hen\u00fcz bir ses tan\u0131t\u0131c\u0131s\u0131 yok. Ses atamas\u0131n\u0131 yoksayma.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Visible client got unique id assigned, but hasn't yet an audio handle. Ignoring volume assignment."
+      }
+    }, 
+    {
+      "translated": "Ses kulplu istemciyi silmek, ancak ses ba\u011flant\u0131m\u0131z yok!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Deleting client with a voice handle, but we haven't a voice connection!"
+      }
+    }, 
+    {
+      "translated": "Hostbanner meta resim etiketi eksik", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Missing hostbanner meta image tag"
+      }
+    }, 
+    {
+      "translated": "\u0130ptal edilen eski hostbanner url% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Revoked old hostbanner url %s"
+      }
+    }, 
+    {
+      "translated": "% D:% o simgesi i\u00e7in indirme iste\u011fi al\u0131namad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not request download for icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "% D:% o simgesi indirilemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not download icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "% O simgesi y\u00fcklenemedi. Sebep:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not load icon %o. Reason: %s"
+      }
+    }, 
+    {
+      "translated": "% S avatar\u0131 i\u00e7in istek istenemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not request download for avatar %s: %o"
+      }
+    }, 
+    {
+      "translated": "% S avatar\u0131 indirilemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not download avatar %s: %o"
+      }
+    }, 
+    {
+      "translated": "M\u00fc\u015fteri avatar\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Client avatar"
+      }
+    }, 
+    {
+      "translated": "% S kimli\u011fi i\u00e7in avatar y\u00fcklenemedi. Sebep:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not load avatar for id %s. Reason: %s"
+      }
+    }, 
+    {
+      "translated": "Mikrofonunuzu bu sunucuda etkinle\u015ftirin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Enable your microphone on this server"
+      }
+    }, 
+    {
+      "translated": "Mikrofonu kapat", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Mute microphone"
+      }
+    }, 
+    {
+      "translated": "Mikrofonun sesini a\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unmute microphone"
+      }
+    }, 
+    {
+      "translated": "Sesi kapat", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Mute sound"
+      }
+    }, 
+    {
+      "translated": "Sesi a\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unmute sound"
+      }
+    }, 
+    {
+      "translated": "Sunucu sorgular\u0131n\u0131 gizle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hide server queries"
+      }
+    }, 
+    {
+      "translated": "Sunucu sorgular\u0131n\u0131 g\u00f6ster", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Show server queries"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen mesaj\u0131n\u0131z\u0131 girin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter your away message"
+      }
+    }, 
+    {
+      "translated": "Global away mesaj\u0131n\u0131 ayarla", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set global away message"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen global mesaj\u0131n\u0131z\u0131 girin", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please enter your global away message"
+      }
+    }, 
+    {
+      "translated": "Yeni bir sekmede ba\u011flan", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect in a new tab"
+      }
+    }, 
+    {
+      "translated": "Ba\u011fl\u0131 de\u011fil", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Not connected"
+      }
+    }, 
+    {
+      "translated": "Ba\u011flan\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connecting"
+      }
+    }, 
+    {
+      "translated": "{0} ba\u011flant\u0131s\u0131 ba\u015flat\u0131l\u0131yor: {1}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing connection to {0}:{1}"
+      }
+    }, 
+    {
+      "translated": "Ana bilgisayar ad\u0131 \u00e7\u00f6z\u00fcl\u00fcyor ...", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Resolving hostname..."
+      }
+    }, 
+    {
+      "translated": "Ana bilgisayar ad\u0131 ba\u015far\u0131yla {0} olarak \u00e7\u00f6z\u00fcld\u00fc", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hostname successfully resolved to {0}"
+      }
+    }, 
+    {
+      "translated": "\u0130\u015fte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "here"
+      }
+    }, 
+    {
+      "translated": "Sertifikan\u0131n kabul edildi\u011fine dair bildirim al\u0131nd\u0131! Yeniden ba\u011flanmaya \u00e7al\u0131\u015f\u0131l\u0131yor!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received notification that the certificate has been accepted! Attempting reconnect!"
+      }
+    }, 
+    {
+      "translated": "Sertifika kabul a\u00e7\u0131l\u0131r penceresi engellendi. Bo\u015f bir sayfa denemek ve href de\u011fi\u015ftirmek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Certificate accept popup has been blocked. Trying a blank page and replacing href"
+      }
+    }, 
+    {
+      "translated": "Ana bilgisayar ad\u0131 \u00e7\u00f6z\u00fclemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to resolve hostname: %o"
+      }
+    }, 
+    {
+      "translated": "Ana bilgisayar ad\u0131 \u00e7\u00f6z\u00fclemedi: {0}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to resolve hostname: {0}"
+      }
+    }, 
+    {
+      "translated": "Uzak ana bilgisayara ba\u011flanamad\u0131! Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Could not connect to remote host! Error: %o"
+      }
+    }, 
+    {
+      "translated": "Hedef sunucu bir TeamSpeak sunucusudur", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Target server is a TeamSpeak server"
+      }
+    }, 
+    {
+      "translated": "Hedef sunucu bir TeamSpeak 3 sunucusudur! {: Br:} Sadece TeamSpeak 3 tabanl\u0131 kimlikleri ba\u011flayabilir. {: Br} L\u00fctfen ba\u015fka bir profil se\u00e7in veya tan\u0131m tipini de\u011fi\u015ftirin.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br}Please select another profile or change the identify type."
+      }
+    }, 
+    {
+      "translated": "Kimlik seviyesi \u00e7ok d\u00fc\u015f\u00fck", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Identity level is too low"
+      }
+    }, 
+    {
+      "translated": "Ba\u011flant\u0131n\u0131z kesildi, \u00e7\u00fcnk\u00fc Kimlik seviyeniz \u00e7ok d\u00fc\u015f\u00fck. {: Br:} En az {0} seviyesine ihtiyac\u0131n\u0131z var.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"
+      }
+    }, 
+    {
+      "translated": "Yasakland\u0131n", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You've been banned"
+      }
+    }, 
+    {
+      "translated": "Bu sunucudan yasakland\u0131n\u0131z. {: Br:} {0}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You've been banned from this server.{:br:}{0}"
+      }
+    }, 
+    {
+      "translated": "\u0130stemci ses donan\u0131m\u0131 \u00f6zellikleri g\u00fcncellenemedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update client audio hardware properties. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Ses donan\u0131m\u0131 \u00f6zellikleri g\u00fcncellenemedi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update audio hardware properties."
+      }
+    }, 
+    {
+      "translated": "Bu kanalda desteklenmeyen bir kodlay\u0131c\u0131 var. <br> Bu kanalda konu\u015famazs\u0131n\u0131z!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "This channel has an unsupported codec.<br>You cant speak within this channel!"
+      }
+    }, 
+    {
+      "translated": "Bu kanalda desteklenmeyen bir kodlay\u0131c\u0131 var. <br> Bu kanaldaki herkesi dinliyorsunuz!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "This channel has an unsupported codec.<br>You listen to anybody within this channel!"
+      }
+    }, 
+    {
+      "translated": "\u0130\u015fleyici durumu sunucuyla e\u015fitlenemedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to sync handler state with server. Error: %o"
+      }
+    }, 
+    {
+      "translated": "\u0130\u015fleyici durumu sunucuyla e\u015fitlenemedi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to sync handler state with server."
+      }
+    }, 
+    {
+      "translated": "Durum g\u00fcncellenemedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update away status. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Durum g\u00fcncellenemedi.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to update away status."
+      }
+    }, 
+    {
+      "translated": "Bu \u00f6rne\u011fi sertifika geri \u00e7a\u011f\u0131rma olarak kullanma. Kimlik:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Using this instance as certificate callback. ID: %s"
+      }
+    }, 
+    {
+      "translated": "Ba\u015fka bir \u00f6rnek i\u015f kabul etti. Bu pencereyi kapat\u0131yorum.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Other instance has acknowledged out work. Closing this window."
+      }
+    }, 
+    {
+      "translated": "Kapan\u0131\u015f penceresi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Closing window"
+      }
+    }, 
+    {
+      "translated": "Sertifika ba\u015far\u0131yla kabul edildi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Certificate acccepted successfully"
+      }
+    }, 
+    {
+      "translated": "Sertifika kabul etme durumu ba\u015far\u0131yla g\u00f6nderilemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to successfully post certificate accept status: %o"
+      }
+    }, 
+    {
+      "translated": "Sertifikal\u0131 kabul etmeye al\u0131\u015fk\u0131n de\u011filiz. \u00d6ny\u00fckleme uygulamas\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "We're not used to accept certificated. Booting app."
+      }
+    }, 
+    {
+      "translated": "WebRTC komut paketini b\u0131rakmak, \u00e7\u00fcnk\u00fc bir k\u00f6pr\u00fcm\u00fcz yok.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Dropping WebRTC command packet, because we haven't a bridge."
+      }
+    }, 
+    {
+      "translated": "Eksik ses tutamac\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Missing sound handle"
+      }
+    }, 
+    {
+      "translated": "% S ses dosyas\u0131 y\u00fcklenemedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load audio file %s. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Kay\u0131p tutama\u00e7lar nedeniyle ses \u00e7al\u0131namad\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to replay sound because of missing handles."
+      }
+    }, 
+    {
+      "translated": "Simgeleri g\u00f6ster", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "View icons"
+      }
+    }, 
+    {
+      "translated": "Avatarlar\u0131 g\u00f6r\u00fcnt\u00fcle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "View avatars"
+      }
+    }, 
+    {
+      "translated": "Avatarlar", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Avatars"
+      }
+    }, 
+    {
+      "translated": "Bu avatar\u0131 ger\u00e7ekten silmek istiyor musun?", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Do you really want to delete this avatar?"
+      }
+    }, 
+    {
+      "translated": "Avatar silme hen\u00fcz uygulanmad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Avatar delete hasn't implemented yet"
+      }
+    }, 
+    {
+      "translated": "Kullan\u0131c\u0131 adlar\u0131 avatar adlar\u0131ndan getirilemedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch usernames from avatar names. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Kullan\u0131c\u0131 adlar\u0131 getirilemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch usernames"
+      }
+    }, 
+    {
+      "translated": "Avatar isimleriyle ilgili kullan\u0131c\u0131 adlar\u0131 al\u0131namad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch usernames related to their avatar names"
+      }
+    }, 
+    {
+      "translated": "Avatar listesi al\u0131namad\u0131. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to receive avatar list. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Avatarlar listelenemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to list avatars"
+      }
+    }, 
+    {
+      "translated": "Avatar listesi al\u0131namad\u0131.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to receive avatar list."
+      }
+    }, 
+    {
+      "translated": "Simgeler", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icons"
+      }
+    }, 
+    {
+      "translated": "Simge listesindeki kar\u015f\u0131la\u015ft\u0131r\u0131lamaz bir simge al\u0131nd\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received an unparsable icon within icon list (%o)"
+      }
+    }, 
+    {
+      "translated": "Simge listesi getirilemedi. Hata:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch icon list. Error: %o"
+      }
+    }, 
+    {
+      "translated": "Simge listesi getirilemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to fetch icon list"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7erli sunucudan ba\u011flant\u0131y\u0131 kes", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Disconnect from current server"
+      }
+    }, 
+    {
+      "translated": "\u00c7evrimi\u00e7i ol", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Go online"
+      }
+    }, 
+    {
+      "translated": "Bu sunucuya koy", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away on this server"
+      }
+    }, 
+    {
+      "translated": "Bu sunucuda mesaj b\u0131rak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away message on this server"
+      }
+    }, 
+    {
+      "translated": "T\u00fcm sunucular i\u00e7in yola koyul", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away for all servers"
+      }
+    }, 
+    {
+      "translated": "T\u00fcm sunucular i\u00e7in mesaj b\u0131rak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Set away message for all servers"
+      }
+    }, 
+    {
+      "translated": "T\u00fcm sunucular i\u00e7in \u00e7evrimi\u00e7i ol", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Go online for all servers"
+      }
+    }, 
+    {
+      "translated": "Simge:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon:"
+      }
+    }, 
+    {
+      "translated": "Yuvalar ayr\u0131ld\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Slots reserved"
+      }
+    }, 
+    {
+      "translated": "istemciler gizli", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "clients hidden"
+      }
+    }, 
+    {
+      "translated": "Yer imi t\u00fcr\u00fc:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark type:"
+      }
+    }, 
+    {
+      "translated": "Ana Dizin:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Parent directory:"
+      }
+    }, 
+    {
+      "translated": "Yer imi ad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bookmark name"
+      }
+    }, 
+    {
+      "translated": "uzak", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remote"
+      }
+    }, 
+    {
+      "translated": "Simgeleri g\u00f6r\u00fcnt\u00fclemek i\u00e7in izniniz yok", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "You dont have permissions the view the icons"
+      }
+    }, 
+    {
+      "translated": "Yerel", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Local"
+      }
+    }, 
+    {
+      "translated": "Kald\u0131r simgesi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove icon"
+      }
+    }, 
+    {
+      "translated": "se\u00e7mek", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Select "
+      }
+    }, 
+    {
+      "translated": "Boyut", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Size"
+      }
+    }, 
+    {
+      "translated": "tarih", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Date"
+      }
+    }, 
+    {
+      "translated": "Avatar kimli\u011fi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Avatar ID"
+      }
+    }, 
+    {
+      "translated": "Resim bilgisi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Image info:"
+      }
+    }, 
+    {
+      "translated": "Bayt", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Bytes"
+      }
+    }, 
+    {
+      "translated": "Geni\u015flik", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Width"
+      }
+    }, 
+    {
+      "translated": "Y\u00fckseklik", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Height"
+      }
+    }, 
+    {
+      "translated": "L\u00fctfen bir kullan\u0131c\u0131 se\u00e7in", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Please select a user"
+      }
     }
   ]
 }
