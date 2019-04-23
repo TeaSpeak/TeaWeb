@@ -8920,12 +8920,12 @@
       }
     },
     {
-      "translated": "Выбрать",
+      "translated": "Выбрать ",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Select"
+        "message": "Select "
       }
     },
     {
@@ -9062,7 +9062,15 @@
       "key": {
         "message": "Unmute sound"
       }
+    },
+    {
+      "translated": "Не подключен",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Not connected"
+      }
     }
-
   ]
 }
