@@ -57,11 +57,11 @@ namespace MessageHelper {
             let offset = 0;
             if(pattern[found + 1] == ':') {
                 offset++; /* the beginning : */
-                while (pattern[found + 1 + offset] != ':') offset++;
+                while (pattern[found + 1 + offset] != ':' && found + 1 + offset < pattern.length) offset++;
                 const tag = pattern.substr(found + 2, offset - 1);
 
                 offset++; /* the ending : */
-                if(pattern[found + offset + 1] != '}') {
+                if(pattern[found + offset + 1] != '}' && found + 1 + offset < pattern.length) {
                     found++;
                     continue;
                 }
