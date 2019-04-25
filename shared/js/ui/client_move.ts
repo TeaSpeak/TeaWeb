@@ -10,6 +10,8 @@ class ClientMover {
     hovered_channel: HTMLDivElement;
     callback: (channel?: ChannelEntry) => any;
 
+    enabled: boolean = true;
+
     private _bound_finish;
     private _bound_move;
     private _active: boolean = false;
@@ -43,6 +45,9 @@ class ClientMover {
     activate(client: ClientEntry | ClientEntry[], callback: (channel?: ChannelEntry) => any, event: any) {
         this.finish_listener(undefined);
 
+        if(!this.enabled)
+            return false;
+
         this.selected_client = client;
         this.callback = callback;
         console.log(tr("Starting mouse move"));
@@ -58,6 +63,9 @@ class ClientMover {
     }
 
     private move_listener(event) {
+        if(!this.enabled)
+            return;
+
         //console.log("Mouse move: " + event.pageX + " - " + event.pageY);
         if(!event.pageX || !event.pageY) return;
         if(!this.origin_point)

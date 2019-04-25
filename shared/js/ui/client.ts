@@ -869,6 +869,8 @@ class LocalClientEntry extends ClientEntry {
     openRename() : void {
         const _self = this;
 
+        this.channelTree.client_mover.enabled = false;
+
         const elm = this.tag.find(".client-name");
         elm.attr("contenteditable", "true");
         elm.removeClass("client-name-own");
@@ -884,6 +886,8 @@ class LocalClientEntry extends ClientEntry {
         });
 
         elm.focusout(e => {
+            this.channelTree.client_mover.enabled = true;
+
             if(!_self.renaming) return;
             _self.renaming = false;
 
