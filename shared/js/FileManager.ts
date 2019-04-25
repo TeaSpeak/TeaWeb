@@ -258,7 +258,8 @@ class FileManager extends connection.AbstractCommandHandler {
                 "cid": (channel ? channel.channelId : "0"),
                 "cpw": (password ? password : ""),
                 "clientftfid": transfer_data.client_transfer_id,
-                "seekpos": 0
+                "seekpos": 0,
+                "proto": 1
             }).catch(reason => {
                 this.pending_download_requests.remove(transfer_data);
                 reject(reason);
@@ -285,7 +286,8 @@ class FileManager extends connection.AbstractCommandHandler {
                 "clientftfid": transfer_data.client_transfer_id,
                 "size": options.size,
                 "overwrite": options.overwrite,
-                "resume": false
+                "resume": false,
+                "proto": 1
             }).catch(reason => {
                 this.pending_upload_requests.remove(transfer_data);
                 reject(reason);
