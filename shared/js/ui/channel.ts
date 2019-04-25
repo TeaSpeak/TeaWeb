@@ -685,6 +685,11 @@ class ChannelEntry {
                 let order = this.channelTree.findChannel(this.properties.channel_order);
                 this.channelTree.moveChannel(this, order, this.parent);
             } else if(key == "channel_icon_id") {
+                /* For more detail lookup client::updateVariables and client_icon_id!
+                 * ATTENTION: This is required!
+                 */
+                this.properties.channel_icon_id = variable.value as any >>> 0;
+
                 let tag = this.channelTag().find(".icons .channel_icon");
                 (this.properties.channel_icon_id > 0 ? $.fn.show : $.fn.hide).apply(tag);
                 if(this.properties.channel_icon_id > 0) {

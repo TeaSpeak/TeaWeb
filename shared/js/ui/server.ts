@@ -213,6 +213,11 @@ class ServerEntry {
                 this.channelTree.client.tag_connection_handler.find(".server-name").text(variable.value);
                 server_connections.update_ui();
             } else if(variable.key == "virtualserver_icon_id") {
+                /* For more detail lookup client::updateVariables and client_icon_id!
+                 * ATTENTION: This is required!
+                 */
+                this.properties.virtualserver_icon_id = variable.value as any >>> 0;
+
                 if(this.channelTree.client.fileManager && this.channelTree.client.fileManager.icons)
                     this.htmlTag.find(".icon_property").replaceWith(this.channelTree.client.fileManager.icons.generateTag(this.properties.virtualserver_icon_id).addClass("icon_property"));
             } else if(variable.key.indexOf('hostbanner') != -1) {

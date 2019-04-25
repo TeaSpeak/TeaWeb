@@ -632,8 +632,14 @@ class ClientEntry {
                 reorder_channel = true;
                 update_icon_status = true;
             }
-            if(variable.key == "client_icon_id")
+            if(variable.key == "client_icon_id") {
+                /* yeah we like javascript. Due to JS wiered integer behaviour parsing for example fails for 18446744073409829863.
+                *  parseInt("18446744073409829863") evaluates to  18446744073409829000.
+                *  In opposite "18446744073409829863" >>> 0 evaluates to 3995244544, which is the icon id :)
+                */
+                this.properties.client_icon_id = variable.value as any >>> 0;
                 this.updateClientIcon();
+            }
             if(variable.key =="client_channel_group_id" || variable.key == "client_servergroups")
                 this.update_displayed_client_groups();
         }
