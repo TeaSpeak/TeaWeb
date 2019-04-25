@@ -53,7 +53,7 @@ namespace log {
         NATIVE,
         PREFIX
     }
-    const group_mode: GroupMode = GroupMode.NATIVE;
+    const group_mode: GroupMode = GroupMode.PREFIX;
 
     loader.register_task(loader.Stage.LOADED, {
         name: "log enabled initialisation",

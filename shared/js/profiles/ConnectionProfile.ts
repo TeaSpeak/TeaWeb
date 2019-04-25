@@ -107,7 +107,16 @@ namespace profiles {
         available_profiles = [];
 
         const profiles_json = localStorage.getItem("profiles");
-        let profiles_data: ProfilesData = profiles_json ? JSON.parse(profiles_json) : {version: 0} as any;
+        let profiles_data: ProfilesData = (() => {
+            try {
+                return profiles_json ? JSON.parse(profiles_json) : {version: 0} as any;
+            } catch(error) {
+                debugger;
+                console.error(tr("Invalid profile json! Resetting profiles :( (%o)"), profiles_json);
+                createErrorModal(tr("Profile data invalid"), MessageHelper.formatMessage(tr("The profile data is invalid.{:br:}This might cause data loss."))).open();
+                return {version: 0};
+            }
+        })();
 
         if(profiles_data.version === 0) {
             profiles_data = {
@@ -153,6 +162,9 @@ namespace profiles {
                 profile.default_password = "";
                 profile.default_username = "Another TeaSpeak user";
                 profile.profile_name = "TeaSpeak Forum profile";
+
+                profile.set_identity(identities.IdentitifyType.TEAFORO, identities.static_forum_identity());
+                profile.selected_identity_type = identities.IdentitifyType[identities.IdentitifyType.TEAFORO];
             }
 
             save();

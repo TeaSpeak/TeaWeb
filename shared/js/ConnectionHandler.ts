@@ -410,7 +410,7 @@ class ConnectionHandler {
             case DisconnectReason.HANDSHAKE_TEAMSPEAK_REQUIRED:
                 createErrorModal(
                     tr("Target server is a TeamSpeak server"),
-                    MessageHelper.formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br}Please select another profile or change the identify type."))
+                    MessageHelper.formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."))
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 auto_reconnect = false;

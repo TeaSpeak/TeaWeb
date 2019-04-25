@@ -145,7 +145,7 @@ class FileManager extends connection.AbstractCommandHandler {
     private pending_download_requests: transfer.DownloadKey[] = [];
     private pending_upload_requests: transfer.UploadKey[] = [];
 
-    private transfer_counter : number = 0;
+    private transfer_counter : number = 1;
 
     constructor(client: ConnectionHandler) {
         super(client.serverConnection);

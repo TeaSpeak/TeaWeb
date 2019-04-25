@@ -118,12 +118,16 @@ if(typeof ($) !== "undefined") {
         }
     }
     if(!$.fn.renderTag) {
-        $.fn.renderTag = function (values?: any) : JQuery {
+        $.fn.renderTag = function (this: JQuery, values?: any) : JQuery {
             let result;
             if(this.render) {
                 result = $(this.render(values));
             } else {
                 const template = window.jsrender.render[this.attr("id")];
+                if(!template) {
+                    console.error("Tried to render template %o, but template is not available!", this.attr("id"));
+                    throw "missing template " + this.attr("id");
+                }
                 /*
                 result = window.jsrender.templates("tmpl_permission_entry", $("#tmpl_permission_entry").html());
                 result = window.jsrender.templates("xxx", this.html());

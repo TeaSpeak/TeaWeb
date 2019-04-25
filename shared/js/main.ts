@@ -23,7 +23,6 @@ interface Window {
     open_connected_question: () => Promise<boolean>;
 }
 
-
 function setup_close() {
     window.onbeforeunload = event => {
         if(profiles.requires_save())
@@ -110,15 +109,6 @@ async function initialize_app() {
         else
             displayCriticalError(message);
     };
-
-    try {
-        if(!setup_jsrender())
-            throw "invalid load";
-    } catch (error) {
-        display_load_error(tr("Failed to setup jsrender"));
-        console.error(tr("Failed to load jsrender! %o"), error);
-        return;
-    }
 
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag().dividerfy();
@@ -412,6 +402,21 @@ const task_certificate_callback: loader.Task = {
     },
     priority: 10
 };
+
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+    name: "jrendere initialize",
+    function: async () => {
+        try {
+            if(!setup_jsrender())
+                throw "invalid load";
+        } catch (error) {
+            displayCriticalError(tr("Failed to setup jsrender"));
+            console.error(tr("Failed to load jsrender! %o"), error);
+            return;
+        }
+    },
+    priority: 100
+})
 
 loader.register_task(loader.Stage.LOADED, {
     name: "app starter",
