@@ -8920,12 +8920,12 @@
       }
     },
     {
-      "translated": "Выбрать",
+      "translated": "Выбрать ",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Select"
+        "message": "Select "
       }
     },
     {
@@ -9046,6 +9046,15 @@
       }
     },
     {
+      "translated": "Статус онлайн для всех серверов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Go online for all servers"
+      }
+    },    
+    {
       "translated": "Выключить звук",
       "flags": [
         "google-translate"
@@ -9062,7 +9071,15 @@
       "key": {
         "message": "Unmute sound"
       }
+    },
+    {
+      "translated": "Не подключен",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Not connected"
+      }
     }
-
   ]
 }
