@@ -43,14 +43,14 @@ namespace ui {
         }
     }
 
-    enum RepaintMode {
+    export enum RepaintMode {
         NONE,
         REPAINT,
         REPAINT_OBJECT_FULL,
         REPAINT_FULL
     }
 
-    interface AxisAlignedBoundingBox {
+    export interface AxisAlignedBoundingBox {
         x: number;
         y: number;
 
@@ -58,20 +58,20 @@ namespace ui {
         height: number;
     }
 
-    enum ClickEventType {
+    export enum ClickEventType {
         SIGNLE,
         DOUBLE,
         CONTEXT_MENU
     }
 
-    interface InteractionClickEvent {
+    export interface InteractionClickEvent {
         type: ClickEventType;
         consumed: boolean;
         offset_x: number;
         offset_y: number;
     }
 
-    interface InteractionListener {
+    export interface InteractionListener {
         region: AxisAlignedBoundingBox;
         region_weight: number;
 
