@@ -1,4 +1,9 @@
 # Changelog:
+* **26.05.19**
+    - Significant permission editor performance improve
+      Using canvas now instead of a lots of HTML nodes
+    - Fixed client related query and music bot issues
+    
 * **15.04.19**
     - Adjusted hostbanner properties
     - Added a chat history log
