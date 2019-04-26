@@ -294,7 +294,7 @@ namespace connection {
             return new Promise<number>((resolve, reject) => {
                 const single_handler: SingleCommandHandler = {
                     function: command => {
-                        if(command.command != "")
+                        if(command.command != "" && command.command.indexOf("=") == -1)
                             return false;
 
                         this._who_am_i = command.arguments[0];
