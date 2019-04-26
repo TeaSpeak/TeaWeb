@@ -197,6 +197,7 @@ namespace Modals {
                             const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
                             element.granted_value = entry.granted;
                         }
+                        entry.request_full_draw();
                         this.entry_editor.request_draw(false);
                     }).catch(() => {
                         const element = this.permission_value_map[permission.id];
