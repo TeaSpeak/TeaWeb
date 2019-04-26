@@ -60,17 +60,17 @@ namespace Modals {
 
         /* references within the container tag */
         private permission_value_map: {[key:number]:PermissionValue} = {};
-        private permission_map: {[key:number]: PermissionEditor.PermissionEntry};
         private listener_change: PermissionEditor.change_listener_t = () => Promise.resolve();
         private listener_update: () => any;
 
+        private entry_editor: ui.PermissionEditor;
+
         constructor(permissions: GroupedPermissions[]) {
             this.permissions = permissions;
+            this.entry_editor = new ui.PermissionEditor(permissions);
         }
 
         build_tag() {
-            this.permission_map = {};
-
             this.container = $("#tmpl_permission_editor").renderTag();
             /* search for that as long we've not that much nodes */
             this.mode_container_permissions = this.container.find(".container-mode-permissions");
@@ -88,55 +88,19 @@ namespace Modals {
                     let filter_mask = tag_filter_input.val() as string;
                     let req_granted = tag_filter_granted.prop("checked");
 
-                    /* we've to disable this function because its sometimes laggy */
-                    const org_fn = $.fn.dropdown && $.fn.dropdown.Constructor ? $.fn.dropdown.Constructor._clearMenus : undefined;
-                    if(org_fn)
-                        $.fn.dropdown.Constructor._clearMenus = () => {};
 
-                    /* update each permission */
-                    {
-                        const start = Date.now();
+                    for(const entry of this.entry_editor.permission_entries()) {
+                        const permission = entry.permission();
 
-                        for(const permission_id of Object.keys(this.permission_map)) {
-                            const permission: PermissionEditor.PermissionEntry = this.permission_map[permission_id];
-                            let shown = filter_mask.length == 0 || permission.filter.indexOf(filter_mask) != -1;
-                            if(shown && req_granted) {
-                                const value: PermissionValue = this.permission_value_map[permission_id];
-                                shown = value && (value.hasValue() || value.hasGrant());
-                            }
-
-                            permission.tag.attr("match", shown ? 1 : 0);
-                            /* this is faster then .hide() or .show() */
-                            if(shown)
-                                permission.tag.css('display', 'flex');
-                            else
-                                permission.tag.css('display', 'none');
+                        let shown = filter_mask.length == 0 || permission.name.indexOf(filter_mask) != -1;
+                        if(shown && req_granted) {
+                            const value: PermissionValue = this.permission_value_map[permission.id];
+                            shown = value && (value.hasValue() || value.hasGrant());
                         }
 
-                        const end = Date.now();
-                        console.error("Filter update required %oms", end - start);
+                        entry.hidden = !shown;
                     }
-
-                    /* update group visibility (hide empty groups) */
-                    {
-                        const start = Date.now();
-
-                        this.container.find(".group").each((idx, _entry) => {
-                            let entry = $(_entry);
-                            let target = entry.find(".entry:not(.group)[match=\"1\"]").length > 0;
-                            /* this is faster then .hide() or .show() */
-                            if(target)
-                                entry.css('display', 'flex');
-                            else
-                                entry.css('display', 'none');
-                        });
-
-                        const end = Date.now();
-                        console.error("Group update required %oms", end - start);
-                    }
-
-                    if(org_fn)
-                        $.fn.dropdown.Constructor._clearMenus = org_fn;
+                    this.entry_editor.request_draw(true);
                 });
             }
 
@@ -155,341 +119,169 @@ namespace Modals {
                 });
             }
 
-            /* actual permissions */
             {
-                const tag_entries = this.container.find(".entries");
+                const tag_container = this.container.find(".entry-editor-container");
+                tag_container.append(this.entry_editor.canvas_container);
 
-                const template_entry = $("#tmpl_permission_entry");
-                const build_group = (group: GroupedPermissions) : JQuery => {
-                    const tag_group = template_entry.renderTag({
-                        type: "group",
-                        name: group.group.name
+                tag_container.parent().on('contextmenu', event => {
+                    if(event.isDefaultPrevented()) return;
+                    event.preventDefault();
+
+                    spawn_context_menu(event.pageX, event.pageY, {
+                        type: MenuEntryType.ENTRY,
+                        icon: "",
+                        name: tr("Expend all"),
+                        callback: () => this.entry_editor.expend_all()
+                    }, {
+                        type: MenuEntryType.ENTRY,
+                        icon: "",
+                        name: tr("Collapse all"),
+                        callback: () => this.entry_editor.collapse_all()
                     });
-                    const tag_group_entries = tag_group.find(".group-entries");
+                });
+            }
 
-                    const update_collapse_status = (status: boolean, recursive: boolean) => {
-                        const tag = recursive ? this.container.find(".entry.group") : tag_group;
+            /* setup the permissions */
+            for(const entry of this.entry_editor.permission_entries()) {
+                const permission = entry.permission();
+                entry.on_change = () => {
+                    const flag_remove = typeof(entry.value) !== "number";
+                    this.listener_change(permission, {
+                        remove: flag_remove,
+                        flag_negate: entry.flag_negate,
+                        flag_skip: entry.flag_skip,
+                        value: flag_remove ? -2 : entry.value
+                    }).then(() => {
+                        if(flag_remove) {
+                            const element = this.permission_value_map[permission.id];
+                            if(!element) return; /* This should never happen, if so how are we displaying this permission?! */
 
-                        /* this is faster then .hide() or .show() */
-                        if(status) {
-                            tag.find("> .group-entries").css('display', 'block');
+                            element.value = undefined;
+                            element.flag_negate = false;
+                            element.flag_skip = false;
                         } else {
-                            tag.find("> .group-entries").css('display', 'none');
+                            const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
+
+                            element.value = entry.value;
+                            element.flag_skip = entry.flag_skip;
+                            element.flag_negate = entry.flag_negate;
                         }
 
-                        tag.find("> .title .arrow").toggleClass("down", status).toggleClass("right", !status);
-                    };
+                        entry.request_full_draw();
+                        this.entry_editor.request_draw(false);
+                    }).catch(() => {
+                        const element = this.permission_value_map[permission.id];
 
-                    /* register collapse and context listener */
-                    {
-                        const tag_arrow = tag_group.find(".arrow");
-                        tag_arrow.on('click', event => {
-                            if(event.isDefaultPrevented()) return;
-                            event.preventDefault();
+                        entry.value = element && element.hasValue() ? element.value : undefined;
+                        entry.flag_skip = element && element.flag_skip;
+                        entry.flag_negate = element && element.flag_negate;
 
-                            update_collapse_status(tag_arrow.hasClass("right"), false);
-                        });
-
-                        const tag_title = tag_group.find(".title");
-                        tag_title.on('contextmenu', event => {
-                            if(event.isDefaultPrevented()) return;
-                            event.preventDefault();
-
-                            spawn_context_menu(event.pageX, event.pageY, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
-                                name: tr("Expend group"),
-                                callback: () => update_collapse_status(true, false)
-                            }, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
-                                name: tr("Expend all"),
-                                callback: () => update_collapse_status(true, true)
-                            }, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
-                                name: tr("Collapse group"),
-                                callback: () => update_collapse_status(false, false)
-                            }, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
-                                name: tr("Collapse all"),
-                                callback: () => update_collapse_status(false, true)
-                            });
-                        });
-                    }
-
-                    /* build the permissions */
-                    {
-                        for(const permission of group.permissions) {
-                            const tag_permission = template_entry.renderTag({
-                                type: "permission",
-                                permission_name: permission.name,
-                                permission_id: permission.id,
-                                permission_description: permission.description,
-                            });
-
-                            const tag_value = tag_permission.find(".column-value input");
-                            const tag_granted = tag_permission.find(".column-granted input");
-                            const tag_flag_skip = tag_permission.find(".column-skip input");
-                            const tag_flag_negate = tag_permission.find(".column-negate input");
-
-                            /* double click listener */
-                            {
-                                tag_permission.on('dblclick', event => {
-                                    if(event.isDefaultPrevented()) return;
-                                    event.preventDefault();
-
-                                    if(tag_permission.hasClass("value-unset")) {
-                                        tag_flag_skip.prop("checked", false);
-                                        tag_flag_negate.prop("checked", false);
-
-                                        tag_permission.removeClass("value-unset");
-                                        if(permission.name.startsWith("b_")) {
-                                            tag_permission.find(".column-value input")
-                                                .prop("checked", true)
-                                                .trigger('change');
-                                        } else {
-                                            /* TODO auto value */
-                                            tag_value.val('').focus();
-                                        }
-                                    } else if(!permission.name.startsWith("b_")) {
-                                        tag_value.focus();
-                                    }
-                                });
-
-                                tag_permission.find(".column-granted").on('dblclick', event => {
-                                    if(event.isDefaultPrevented()) return;
-                                    event.preventDefault();
-
-                                    if(tag_permission.hasClass("grant-unset")) {
-                                        tag_permission.removeClass("grant-unset");
-                                        tag_granted.focus();
-                                    }
-                                });
-                            }
-
-                            /* focus out listener */
-                            {
-                                tag_granted.on('focusout', event => {
-                                    try {
-                                        const value = tag_granted.val() as string;
-                                        if(isNaN(parseInt(value)))
-                                            throw "";
-                                    } catch(_) {
-                                        tag_granted.val("");
-                                        tag_permission.addClass("grant-unset");
-
-                                        const element = this.permission_value_map[permission.id];
-                                        if(element && element.hasGrant()) {
-                                            this.listener_change(permission, {
-                                                remove: true,
-                                                granted: -2
-                                            }).then(() => {
-                                                element.granted_value = undefined;
-                                            }).catch(() => {
-                                                tag_granted.val(element.granted_value);
-                                            });
-                                        }
-                                    }
-                                });
-
-                                tag_value.on('focusout', event => {
-                                    try {
-                                        if(isNaN(parseInt(tag_value.val() as string)))
-                                            throw "";
-                                    } catch(_) {
-                                        const element = this.permission_value_map[permission.id];
-                                        if(element && element.hasValue()) {
-                                            tag_value.val(element.value);
-                                        } else {
-                                            tag_value.val("");
-                                            tag_permission.addClass("value-unset");
-                                        }
-                                    }
-                                })
-                            }
-
-                            /* change listener */
-                            {
-                                tag_flag_negate.on('change', () => tag_value.trigger('change'));
-                                tag_flag_skip.on('change', () => tag_value.trigger('change'));
-
-                                tag_granted.on('change', event => {
-                                    const value = parseInt(tag_granted.val() as string);
-                                    if(isNaN(value)) return;
-
-                                    this.listener_change(permission, {
-                                        remove: false,
-                                        granted: value,
-                                    }).then(() => {
-                                        const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
-                                        element.granted_value = value;
-                                    }).catch(() => {
-                                        const element = this.permission_value_map[permission.id];
-                                        tag_granted.val(element && element.hasGrant() ? element.granted_value : "");
-                                        tag_permission.toggleClass("grant-unset", !element || !element.hasGrant());
-                                    });
-                                });
-
-                                tag_value.on('change', event => {
-                                    const value = permission.is_boolean() ? tag_value.prop("checked") ? 1 : 0 : parseInt(tag_value.val() as string);
-                                    if(isNaN(value)) return;
-
-                                    const flag_negate = tag_flag_negate.prop("checked");
-                                    const flag_skip = tag_flag_skip.prop("checked");
-
-                                    this.listener_change(permission, {
-                                        remove: false,
-                                        value: value,
-                                        flag_negate: flag_negate,
-                                        flag_skip: flag_skip
-                                    }).then(() => {
-                                        const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
-
-                                        element.value = value;
-                                        element.flag_skip = flag_skip;
-                                        element.flag_negate = flag_negate;
-                                    }).catch(error => {
-                                        const element = this.permission_value_map[permission.id];
-
-                                        /* reset or set the fields */
-                                        if(permission.is_boolean())
-                                            tag_value.prop('checked', element && element.hasValue() && element.value > 0);
-                                        else
-                                            tag_value.val(element && element.hasValue() ? element.value : "");
-                                        tag_flag_negate.prop("checked", element && element.flag_negate);
-                                        tag_flag_skip.prop("checked", element && element.flag_skip);
-                                        tag_permission.toggleClass("value-unset", !element || !element.hasValue());
-                                    });
-                                });
-                            }
-
-                            /* context menu */
-                            {
-                                tag_permission.on('contextmenu', event => {
-                                    if(event.isDefaultPrevented()) return;
-                                    event.preventDefault();
-
-                                    let entries: ContextMenuEntry[] = [];
-                                    if(tag_permission.hasClass("value-unset")) {
-                                        entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
-                                            name: tr("Add permission"),
-                                            callback: () => tag_permission.trigger('dblclick')
-                                        });
-                                    } else {
-                                        entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
-                                            name: tr("Remove permission"),
-                                            callback: () => {
-                                                this.listener_change(permission, {
-                                                    remove: true,
-                                                    value: -2
-                                                }).then(() => {
-                                                    const element = this.permission_value_map[permission.id];
-                                                    if(!element) return; /* This should never happen, if so how are we displaying this permission?! */
-
-                                                    element.value = undefined;
-                                                    element.flag_negate = false;
-                                                    element.flag_skip = false;
-
-                                                    tag_permission.toggleClass("value-unset", true);
-                                                }).catch(() => {
-                                                    const element = this.permission_value_map[permission.id];
-
-                                                    /* reset or set the fields */
-                                                    tag_value.val(element && element.hasValue() ? element.value : "");
-                                                    tag_flag_negate.prop("checked", element && element.flag_negate);
-                                                    tag_flag_skip.prop("checked", element && element.flag_skip);
-                                                    tag_permission.toggleClass("value-unset", !element || !element.hasValue());
-                                                });
-                                            }
-                                        });
-                                    }
-
-                                    if(tag_permission.hasClass("grant-unset")) {
-                                        entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
-                                            name: tr("Add grant permission"),
-                                            callback: () => tag_permission.find(".column-granted").trigger('dblclick')
-                                        });
-                                    } else {
-                                        entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
-                                            name: tr("Remove grant permission"),
-                                            callback: () =>
-                                                tag_granted.val('').trigger('focusout') /* empty values are handled within focus out */
-                                        });
-                                    }
-                                    entries.push(MenuEntry.HR());
-                                    entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
-                                        name: tr("Expend all"),
-                                        callback: () => update_collapse_status(true, true)
-                                    });
-                                    entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
-                                        name: tr("Collapse all"),
-                                        callback: () => update_collapse_status(false, true)
-                                    });
-                                    entries.push(MenuEntry.HR());
-                                    entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
-                                        name: tr("Show permission description"),
-                                        callback: () => {
-                                            createInfoModal(
-                                                tr("Permission description"),
-                                                tr("Permission description for permission ") + permission.name + ": <br>" + permission.description
-                                            ).open();
-                                        }
-                                    });
-                                    entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
-                                        name: tr("Copy permission name"),
-                                        callback: () => {
-                                            copy_to_clipboard(permission.name);
-                                        }
-                                    });
-
-                                    spawn_context_menu(event.pageX, event.pageY, ...entries);
-                                });
-                            }
-
-                            this.permission_map[permission.id] = {
-                                tag: tag_permission,
-                                id: permission.id,
-                                filter: permission.name,
-                                tag_flag_negate: tag_flag_negate,
-                                tag_flag_skip: tag_flag_skip,
-                                tag_grant: tag_granted,
-                                tag_value: tag_value,
-                                is_bool: permission.is_boolean()
-                            };
-
-                            tag_group_entries.append(tag_permission);
-                        }
-                    }
-
-                    /* append the subgroups */
-                    for(const child of group.children) {
-                        tag_group_entries.append(build_group(child));
-                    }
-
-                    return tag_group;
+                        entry.request_full_draw();
+                        this.entry_editor.request_draw(false);
+                    });
                 };
 
-                /* build the groups */
-                for(const group of this.permissions)
-                    tag_entries.append(build_group(group));
+                entry.on_grant_change = () => {
+                    const flag_remove = typeof(entry.granted) !== "number";
+
+                    this.listener_change(permission, {
+                        remove: flag_remove,
+                        granted: flag_remove ? -2 : entry.granted,
+                    }).then(() => {
+                        if(flag_remove) {
+                            const element = this.permission_value_map[permission.id];
+                            if (!element) return; /* This should never happen, if so how are we displaying this permission?! */
+
+                            element.granted_value = undefined;
+                        } else {
+                            const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
+                            element.granted_value = entry.granted;
+                        }
+                        this.entry_editor.request_draw(false);
+                    }).catch(() => {
+                        const element = this.permission_value_map[permission.id];
+
+                        entry.granted = element && element.hasGrant() ? element.granted_value : undefined;
+                        entry.request_full_draw();
+                        this.entry_editor.request_draw(false);
+                    });
+                };
+
+                entry.on_context_menu = (x, y) => {
+                    let entries: ContextMenuEntry[] = [];
+                    if(typeof(entry.value) === "undefined") {
+                        entries.push({
+                            type: MenuEntryType.ENTRY,
+                            icon: "",
+                            name: tr("Add permission"),
+                            callback: () => entry.trigger_value_assign()
+                        });
+                    } else {
+                        entries.push({
+                            type: MenuEntryType.ENTRY,
+                            icon: "",
+                            name: tr("Remove permission"),
+                            callback: () => {
+                                entry.value = undefined;
+                                entry.on_change();
+                            }
+                        });
+                    }
+
+                    if(typeof(entry.granted) === "undefined") {
+                        entries.push({
+                            type: MenuEntryType.ENTRY,
+                            icon: "",
+                            name: tr("Add grant permission"),
+                            callback: () => entry.trigger_grant_assign()
+                        });
+                    } else {
+                        entries.push({
+                            type: MenuEntryType.ENTRY,
+                            icon: "",
+                            name: tr("Remove grant permission"),
+                            callback: () => {
+                                entry.granted = undefined;
+                                entry.on_grant_change();
+                            }
+                        });
+                    }
+                    entries.push(MenuEntry.HR());
+                    entries.push({
+                        type: MenuEntryType.ENTRY,
+                        icon: "",
+                        name: tr("Expend all"),
+                        callback: () => this.entry_editor.expend_all()
+                    });
+                    entries.push({
+                        type: MenuEntryType.ENTRY,
+                        icon: "",
+                        name: tr("Collapse all"),
+                        callback: () => this.entry_editor.collapse_all()
+                    });
+                    entries.push(MenuEntry.HR());
+                    entries.push({
+                        type: MenuEntryType.ENTRY,
+                        icon: "",
+                        name: tr("Show permission description"),
+                        callback: () => {
+                            createInfoModal(
+                                tr("Permission description"),
+                                tr("Permission description for permission ") + permission.name + ": <br>" + permission.description
+                            ).open();
+                        }
+                    });
+                    entries.push({
+                        type: MenuEntryType.ENTRY,
+                        icon: "",
+                        name: tr("Copy permission name"),
+                        callback: () => {
+                            copy_to_clipboard(permission.name);
+                        }
+                    });
+
+                    spawn_context_menu(x, y, ...entries);
+                }
             }
         }
 
@@ -500,26 +292,27 @@ namespace Modals {
             for(const permission of permissions)
                 this.permission_value_map[permission.type.id] = permission;
 
-            for(const permission_id of Object.keys(this.permission_map)) {
-                const permission: PermissionEditor.PermissionEntry = this.permission_map[permission_id];
-                const value: PermissionValue = this.permission_value_map[permission_id];
-
-                permission.tag
-                    .toggleClass("value-unset", !value || !value.hasValue())
-                    .toggleClass("grant-unset", !value || !value.hasGrant());
+            for(const entry of this.entry_editor.permission_entries()) {
+                const permission = entry.permission();
+                const value: PermissionValue = this.permission_value_map[permission.id];
 
                 if(value && value.hasValue()) {
-                    if(value.type.is_boolean())
-                        permission.tag_value.prop("checked", value.value);
-                    else
-                        permission.tag_value.val(value.value);
-                    permission.tag_flag_skip.prop("checked", value.flag_skip);
-                    permission.tag_flag_negate.prop("checked", value.flag_negate);
+                    entry.value = value.value;
+                    entry.flag_skip = value.flag_skip;
+                    entry.flag_negate = value.flag_negate;
+                } else {
+                    entry.value = undefined;
+                    entry.flag_skip = false;
+                    entry.flag_negate = false;
                 }
+
                 if(value && value.hasGrant()) {
-                    permission.tag_grant.val(value.granted_value);
+                    entry.granted = value.granted_value;
+                } else {
+                    entry.granted = undefined;
                 }
             }
+            this.entry_editor.request_draw(true);
         }
 
         set_listener(listener?: PermissionEditor.change_listener_t) {
@@ -539,11 +332,17 @@ namespace Modals {
             this.mode_container_permissions.css('display', mode == PermissionEditorMode.VISIBLE ? 'flex' : 'none');
             this.mode_container_error_permission.css('display', mode == PermissionEditorMode.NO_PERMISSION ? 'flex' : 'none');
             this.mode_container_unset.css('display', mode == PermissionEditorMode.UNSET ? 'block' : 'none');
+            if(mode == PermissionEditorMode.VISIBLE)
+                this.entry_editor.draw(true);
+        }
+
+        update_ui() {
+            this.entry_editor.draw(true);
         }
     }
 
     export function spawnPermissionEdit(connection: ConnectionHandler) : Modal {
-        const connectModal = createModal({
+        const modal = createModal({
             header: function() {
                 return tr("Server Permissions");
             },
@@ -558,7 +357,9 @@ namespace Modals {
                     const pe_server = tag.find("permission-editor.group-server");
                     pe_server.append(pe.container); /* fuck off workaround to initialize form listener */
                 }
-
+                setTimeout(() => {
+                    pe.update_ui();
+                }, 500);
 
                 apply_server_groups(connection, pe, tag.find(".tab-group-server"));
                 apply_channel_groups(connection, pe, tag.find(".tab-group-channel"));
@@ -575,12 +376,12 @@ namespace Modals {
             full_size: true
         });
 
-        const tag = connectModal.htmlTag;
+        const tag = modal.htmlTag;
         tag.find(".btn_close").on('click', () => {
-            connectModal.close();
+            modal.close();
         });
 
-        return connectModal;
+        return modal;
     }
 
     function build_channel_tree(connection: ConnectionHandler, channel_list: JQuery, select_callback: (channel: ChannelEntry) => any) {

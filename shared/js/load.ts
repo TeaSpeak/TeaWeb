@@ -570,8 +570,9 @@ const loader_javascript = {
             "js/ui/modal/ModalBanList.js",
             "js/ui/modal/ModalYesNo.js",
             "js/ui/modal/ModalPoke.js",
-            "js/ui/modal/ModalPermissionEdit.js",
             "js/ui/modal/ModalServerGroupDialog.js",
+            "js/ui/modal/permission/ModalPermissionEdit.js",
+            "js/ui/modal/permission/PermissionEditor.js",
 
             "js/ui/channel.js",
             "js/ui/client.js",
