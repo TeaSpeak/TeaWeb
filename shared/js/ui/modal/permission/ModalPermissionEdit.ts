@@ -1,6 +1,6 @@
-/// <reference path="../../ui/elements/modal.ts" />
-/// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../../proto.ts" />
+/// <reference path="../../../ui/elements/modal.ts" />
+/// <reference path="../../../ConnectionHandler.ts" />
+/// <reference path="../../../proto.ts" />
 
 /*
     TODO: Check needed permissions and may not even try to request, because we dont have the permission. Permissions:
