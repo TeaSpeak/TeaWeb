@@ -6211,7 +6211,7 @@
       }
     },
     {
-      "translated": "хозяин",
+      "translated": "Хост",
       "flags": [
         "google-translate"
       ],
@@ -6409,7 +6409,7 @@
       }
     },
     {
-      "translated": "переводы",
+      "translated": "Передача файлов",
       "flags": [
         "google-translate"
       ],
@@ -9053,7 +9053,7 @@
       "key": {
         "message": "Go online for all servers"
       }
-    },    
+    },
     {
       "translated": "Выключить звук",
       "flags": [
