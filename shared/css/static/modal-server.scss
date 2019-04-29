@@ -1,4 +1,8 @@
-.container-server-settings-general {
+$required_notab_height: 950px;
+
+.container-server-settings-general, .tab-server-settings-general {
+	flex-direction: column;
+
 	.container-server-settings-slots {
 		display: flex;
 		flex-direction: row;
@@ -67,6 +71,27 @@
 		}
 	}
 }
+
+.tab-server-settings-general {
+	padding: 5px;
+	display: none;
+}
+
+.container-server-settings-general {
+	display: flex;
+	flex-shrink: 0;
+}
+
+@media (max-height: $required_notab_height) {
+	.tab-server-settings-general {
+		display: flex;
+	}
+
+	.container-server-settings-general {
+		display: none;
+	}
+}
+
 .container-server-settings-host {
 	padding: 5px;
 

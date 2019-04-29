@@ -753,7 +753,7 @@
                     <h5 class="modal-title">{{tr "Manager the  Virtual Server" /}}</h5>
                 </modal-header>
                 <modal-body>
-                    <div class="container-server-settings-general">
+                    <div class="container-server-settings-general properties-general">
                         <div class="container-name-icon form-row">
                             <div class="container-name form-group">
                                 <label>{{tr "Name:" /}}</label>
@@ -764,7 +764,7 @@
                                 <input class="form-control">
                                 <span class="bmd-form-group button-select-icon">
                                     <div class="icon-node">
-                                        <node key="virtualserver_icon"/>
+                                        <node key="virtualserver_icon_general"/>
                                     </div>
                                 </span>
                             </div>
@@ -793,9 +793,57 @@
                             <textarea class="form-control virtualserver_welcomemessage">{{>virtualserver_welcomemessage}}</textarea>
                         </div>
                         <hr>
+                        <div style="margin-bottom: 5px"></div>
                     </div>
-                    <div style="margin-bottom: 5px"></div>
                     <x-tab>
+                        <x-entry>
+                            <x-tag>{{tr "General" /}}</x-tag>
+                            <x-content>
+                                <div class="tab-server-settings-general properties-general">
+                                    <div class="container-name-icon form-row">
+                                        <div class="container-name form-group">
+                                            <label>{{tr "Name:" /}}</label>
+                                            <input class="form-control virtualserver_name" value="{{>virtualserver_name}}"/>
+                                        </div>
+                                        <div class="container-icon form-group">
+                                            <label>{{tr "Icon:" /}}</label>
+                                            <input class="form-control">
+                                            <span class="bmd-form-group button-select-icon">
+                                                <div class="icon-node">
+                                                    <node key="virtualserver_icon_tab"/>
+                                                </div>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{tr "Phonetic Name:" /}}</label>
+                                        <input class="form-control virtualserver_name_phonetic" value="{{>virtualserver_name_phonetic}}"/>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{tr "Password:" /}}</label>
+                                        <input class="form-control virtualserver_password" autocomplete="nope" type="password" id="field_server_password_{{rnd '0~13377331'/}}" {{if virtualserver_flag_password}} value="WolverinDEV"{{/if}}/>
+                                    </div>
+                                    <hr>
+                                    <div class="container-server-settings-slots form-row">
+                                        <div class="form-group">
+                                            <label>{{tr "Maximum Clients:" /}}</label>
+                                            <input type="number" min="0" max="1024" value="{{:virtualserver_maxclients}}" class="form-control virtualserver_maxclients">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>{{tr "Reserved slots:" /}}</label>
+                                            <input type="number" min="0" max="{{*: data.virtualserver_maxclients - 1 }}" value="{{:virtualserver_reserved_slots}}" class="form-control virtualserver_reserved_slots">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>{{tr "Welcome Message:" /}}</label>
+                                        <textarea class="form-control virtualserver_welcomemessage">{{>virtualserver_welcomemessage}}</textarea>
+                                    </div>
+                                    <hr>
+                                    <div style="margin-bottom: 5px"></div>
+                                </div>
+                            </x-content>
+                        </x-entry>
+
                         <x-entry>
                             <x-tag>{{tr "Host" /}}</x-tag>
                             <x-content>

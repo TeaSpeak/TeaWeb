@@ -486,3 +486,9 @@ x-content {
 [class*=" bmd-label"], [class^=bmd-label] {
 	color: rgba(0, 0, 0, .6) !important;
 }
+
+/* bootstrap materialize fix */
+.form-row {
+	margin-left: 0!important;
+	margin-right: 0!important;
+}

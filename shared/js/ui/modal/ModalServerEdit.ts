@@ -6,7 +6,8 @@ namespace Modals {
 
         const render_properties = {};
         Object.assign(render_properties, server.properties);
-        render_properties["virtualserver_icon"] = server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id);
+        render_properties["virtualserver_icon_tab"] = server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id);
+        render_properties["virtualserver_icon_general"] = server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id);
 
         const modal_template = $("#tmpl_server_edit").renderTag(render_properties);
         const modal = modal_template.modalize((header, body, footer) => {
@@ -15,7 +16,7 @@ namespace Modals {
             }
         });
 
-        server_applyGeneralListener(properties, server, modal.htmlTag.find(".container-server-settings-general"), modal.htmlTag.find(".button_ok"));
+        server_applyGeneralListener(properties, server, modal.htmlTag.find(".properties-general"), modal.htmlTag.find(".button_ok"));
         server_applyTransferListener(properties, server, modal.htmlTag.find('.properties_transfer'));
         server_applyHostListener(server, properties, server.properties, modal.htmlTag.find(".properties_host"), modal.htmlTag.find(".button_ok"));
         server_applyMessages(properties, server, modal.htmlTag.find(".properties_messages"));
@@ -92,7 +93,8 @@ namespace Modals {
             Modals.spawnIconSelect(connection_handler, id => {
                 const icon_node = tag.find(".button-select-icon").find(".icon-node");
                 icon_node.empty();
-                icon_node.append(connection_handler.fileManager.icons.generateTag(id));
+                icon_node.each((_, e) => { $(e).append(connection_handler.fileManager.icons.generateTag(id)); });
+                //icon_node.append(connection_handler.fileManager.icons.generateTag(id));
 
                 console.log("Selected icon ID: %d", id);
                 properties.virtualserver_icon_id = id;
