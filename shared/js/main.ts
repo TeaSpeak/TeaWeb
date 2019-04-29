@@ -124,7 +124,10 @@ async function initialize_app() {
 
     if(!audio.player.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
-    audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER, 1) / 100);
+    if(audio.player.set_master_volume)
+        audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER, 1) / 100);
+    else
+        console.warn("Client does not support audio.player.set_master_volume()... May client is too old?");
 
     sound.initialize().then(() => {
         console.log(tr("Sounds initialitzed"));
