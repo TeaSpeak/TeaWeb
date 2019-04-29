@@ -167,14 +167,14 @@ class ConnectionHandler {
         console.log(tr("Start connection to %s:%d"), host, port);
         this.channelTree.initialiseHead(addr, {host, port});
 
-        this.chat.serverChat().appendMessage(tr("Initializing connection to {0}:{1}"), true, host, port);
+        this.chat.serverChat().appendMessage(tr("Initializing connection to {0}{1}"), true, host, port == 9987 ? "" : ":" + port);
         const do_connect = (address: string, port: number) => {
             const remote_address = {
                 host: address,
                 port: port
             };
 
-            this.chat.serverChat().appendMessage(tr("Connecting to {0}:{1}"), true, address, port);
+            this.chat.serverChat().appendMessage(tr("Connecting to {0}{1}"), true, address, port == 9987 ? "" : ":" + port);
             if(password && !password.hashed) {
                 helpers.hashPassword(password.password).then(password => {
                     /* errors will be already handled via the handle disconnect thing */

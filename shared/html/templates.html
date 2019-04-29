@@ -2463,6 +2463,12 @@
                             <td>{{tr "Address:" /}}</td>
                             <td>{{>server_address}}</td>
                         </tr>
+                        {{if server_peer_address != server_address}}
+                        <tr>
+                            <td>{{tr "Peer address:" /}}</td>
+                            <td>{{>server_peer_address}}</td>
+                        </tr>
+                        {{/if}}
                         <!--
                         <tr>
                             <td>{{tr "Type:"/}}</td>

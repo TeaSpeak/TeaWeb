@@ -397,7 +397,9 @@ class ServerInfoManager extends InfoManager<ServerEntry> {
 
         properties["server_name"] = $.spawn("a").text(server.properties.virtualserver_name);
         properties["server_onlinetime"] = formatDate(server.calculateUptime());
-        properties["server_address"] = server.remote_address.host + ":" + server.remote_address.port;
+        properties["server_address"] = server.remote_address.host + (server.remote_address.port == 9987 ? "" : ":" + server.remote_address.port);
+        const peer_address = server.channelTree.client.serverConnection.remote_address();
+        properties["server_peer_address"] = peer_address.host + (peer_address.port == 9987 ? "" : ":" + server.remote_address.port);
         properties["hidden_clients"] = Math.max(0, server.properties.virtualserver_clientsonline - server.channelTree.clients.length);
 
         for(let key in server.properties)
