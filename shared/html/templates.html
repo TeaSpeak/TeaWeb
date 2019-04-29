@@ -387,7 +387,7 @@
                         <input class="form-control">
                         <span class="bmd-form-group button-select-icon">
                             <div class="icon-node">
-                                <node key="channel_icon"/>
+                                <node key="channel_icon_general"/>
                             </div>
                         </span>
                     </div>
@@ -408,25 +408,48 @@
                     <label class="bmd-label-static">{{tr "Description:" /}}</label>
                     <textarea class="form-control channel_description" style="min-height: 30px; max-height: 500px; resize: vertical;">{{>channel_description}}</textarea>
                 </div>
-                <!--
-                <div class="properties">
-                    <a class="key">{{tr "Name:"/}}</a>
-                    <input class="value channel_name" value="{{>channel_name}}"/>
-
-                    <a class="key">{{tr "Password:"/}}</a>
-
-                    <input class="value channel_password" type="password" id="field_channel_password_{{rnd '0~13377331'/}}" {{if channel_flag_password}} value="WolverinDEV"{{/if}}/>
-
-                    <a class="key">{{tr "Topic:"/}}</a>
-                    <input class="value channel_topic" value="{{>channel_topic}}"/>
-
-                    <a class="key">{{tr "Description:"/}}</a>
-                    <textarea class="value channel_description" style="height: 150px; resize: none">{{>channel_description}}</textarea>
-                </div>
-                -->
+                <div style="margin-bottom: 5px"></div>
             </div>
-            <div style="margin-bottom: 5px"></div>
             <x-tab>
+                <x-entry>
+                    <x-tag x-entry-class="tab-tag-channel-edit-general">{{tr "General" /}}</x-tag>
+                    <x-content>
+                        <div class="align_column general_properties tab-channel-edit-general">
+                            <div class="container-name-icon form-row">
+                                <div class="container-name form-group">
+                                    <label>{{tr "Name:" /}}</label>
+                                    <input class="form-control channel_name" value="{{>channel_name}}"/>
+                                </div>
+                                <div class="container-icon form-group">
+                                    <label>{{tr "Icon:" /}}</label>
+                                    <input class="form-control">
+                                    <span class="bmd-form-group button-select-icon">
+                                        <div class="icon-node">
+                                            <node key="channel_icon_tab"/>
+                                        </div>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="bmd-label-floating">{{tr "Channel password" /}}</label>
+
+                                <!-- Use a random id to trick the default browser password manager. (I think something like a default password is really useless and -->
+                                <!-- Just display a random value here-->
+                                <input class="form-control channel_password" type="password" id="field_channel_password_{{rnd '0~13377331'/}}" {{if channel_flag_password}} value="WolverinDEV"{{/if}}/>
+                            </div>
+                            <div class="form-group">
+                                <label class="bmd-label-static">{{tr "Topic:" /}}</label>
+                                <input class="form-control channel_topic" value="{{>channel_topic}}"/>
+                            </div>
+                            <div class="form-group">
+                                <label class="bmd-label-static">{{tr "Description:" /}}</label>
+                                <textarea class="form-control channel_description" style="min-height: 30px; max-height: 500px; resize: vertical;">{{>channel_description}}</textarea>
+                            </div>
+                            <div style="margin-bottom: 5px"></div>
+                        </div>
+                    </x-content>
+                </x-entry>
                 <x-entry>
                     <x-tag>{{tr "Standard" /}}</x-tag>
                     <x-content>

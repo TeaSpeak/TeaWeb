@@ -1,4 +1,6 @@
-.container-channel-edit-general {
+$required_notab_height: 800px;
+
+.container-channel-edit-general, .tab-channel-edit-general {
 	flex-shrink: 0;
 
 	.container-name-icon {
@@ -48,6 +50,35 @@
 		}
 	}
 }
+
+.tab-tag-channel-edit-general {
+	display: none!important;
+}
+
+.tab-channel-edit-general {
+	padding: 5px;
+	display: none;
+}
+
+.container-channel-edit-general {
+	display: flex;
+	flex-shrink: 0;
+}
+
+@media (max-height: $required_notab_height) {
+	.tab-tag-channel-edit-general {
+		display: inline-block!important;
+	}
+
+	.tab-channel-edit-general {
+		display: flex;
+	}
+
+	.container-channel-edit-general {
+		display: none;
+	}
+}
+
 
 .container-channel-settings-standard {
 	min-height: 300px;

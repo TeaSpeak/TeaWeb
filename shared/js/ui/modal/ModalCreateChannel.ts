@@ -11,7 +11,8 @@ namespace Modals {
                     channel_flag_maxfamilyclients_unlimited: true,
                     channel_flag_maxclients_unlimited: true,
                 });
-                render_properties["channel_icon"] = connection.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
+                render_properties["channel_icon_tab"] = connection.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
+                render_properties["channel_icon_general"] = connection.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
 
                 let template = $("#tmpl_channel_edit").renderTag(render_properties);
                 return template.tabify();
