@@ -60,18 +60,42 @@ var TabFunctions = {
             });
 
             height_watcher.css('min-height', max_height + "px");
+            tag.find(".window-resize-listener").trigger('resize');
         };
 
         template.find("x-entry").each( (_, _entry) => {
             const entry = $(_entry);
 
-            let tag_header = $.spawn("div").addClass("entry");
-            if(copy)
-                tag_header.append(entry.find("x-tag").clone(true, true));
-            else
-                tag_header.append(entry.find("x-tag"));
-
+            const tag_header = $.spawn("div").addClass("entry");
             const tag_content = copy ? entry.find("x-content").clone(true, true) : entry.find("x-content");
+
+            {
+                const header_tag = entry.find("x-tag");
+                const header_data = copy ? header_tag.contents().clone(true, true) : header_tag.contents();
+
+                if(header_tag.attr("x-entry-class"))
+                    tag_header.addClass(header_tag.attr("x-entry-class"));
+                tag_header.append(header_data);
+
+                /* listener if the tab might got removed */
+                tag_header.addClass("window-resize-listener");
+                tag_header.on('resize', event => {
+                    if(!tag_header.is(':visible') && tag_header.hasClass('selected')) {
+                        let element = tag_header.next('.entry:visible');
+                        if(element.length == 0)
+                            element = tag_header.prev('.entry:visible');
+                        if(element.length == 0) {
+                            tag_header.removeClass("selected");
+                            tag_content.hide();
+                        } else {
+                            element.first().trigger('click');
+                        }
+                        console.log("Next: %o", tag_header.next('.entry:visible'));
+                        console.log("prev: %o", tag_header.prev('.entry:visible'));
+                    }
+                });
+            }
+
             content.append(tag_content.hide());
 
             tag_header.on("click", () => {

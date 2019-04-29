@@ -257,6 +257,7 @@ function main() {
             const active_connection = server_connections.active_connection_handler();
             if(active_connection)
                 active_connection.resize_elements();
+            $(".window-resize-listener").trigger('resize');
         }, 1000);
     });
 

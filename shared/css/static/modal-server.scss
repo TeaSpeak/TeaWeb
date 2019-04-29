@@ -77,6 +77,10 @@ $required_notab_height: 950px;
 	display: none;
 }
 
+.tab-tag-server-settings-general {
+	display: none!important;
+}
+
 .container-server-settings-general {
 	display: flex;
 	flex-shrink: 0;
@@ -85,6 +89,10 @@ $required_notab_height: 950px;
 @media (max-height: $required_notab_height) {
 	.tab-server-settings-general {
 		display: flex;
+	}
+
+	.tab-tag-server-settings-general {
+		display: inline-block!important;
 	}
 
 	.container-server-settings-general {
