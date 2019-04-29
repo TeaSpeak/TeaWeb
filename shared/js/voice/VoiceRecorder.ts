@@ -59,6 +59,8 @@ class VoiceRecorder {
 
     private audioContext: AudioContext;
     private processor: ScriptProcessorNode;
+    private _mute_node: GainNode;
+
     get_output_stream() : ScriptProcessorNode { return this.processor; }
 
     private vadHandler: VoiceActivityDetector;
@@ -76,6 +78,9 @@ class VoiceRecorder {
         audio.player.on_ready(() => {
             this.audioContext = audio.player.context();
             this.processor = this.audioContext.createScriptProcessor(VoiceRecorder.BUFFER_SIZE, VoiceRecorder.CHANNELS, VoiceRecorder.CHANNELS);
+            this._mute_node = this.audioContext.createGain();
+            this._mute_node.gain.value = 0;
+            this._mute_node.connect(this.audioContext.destination);
 
             const empty_buffer = this.audioContext.createBuffer(VoiceRecorder.CHANNELS, VoiceRecorder.BUFFER_SIZE, 48000);
             this.processor.addEventListener('audioprocess', ev => {
@@ -99,7 +104,7 @@ class VoiceRecorder {
                         ev.outputBuffer.copyToChannel(empty_buffer.getChannelData(channel), channel);
                 }
             });
-            this.processor.connect(this.audioContext.destination);
+            this.processor.connect(this._mute_node);
 
             if(this.vadHandler)
                 this.vadHandler.initialise();
@@ -132,7 +137,7 @@ class VoiceRecorder {
         this._chunkCount = 0;
 
         if(this.processor) /* processor stream might be null because of the late audio initialisation */
-            this.processor.connect(this.audioContext.destination);
+            this.processor.connect(this._mute_node);
     }
 
     input_available() : boolean {
