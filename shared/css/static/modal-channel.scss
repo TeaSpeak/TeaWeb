@@ -1,4 +1,6 @@
 .container-channel-edit-general {
+	flex-shrink: 0;
+
 	.container-name-icon {
 		display: flex;
 		flex-direction: row;
@@ -48,6 +50,8 @@
 }
 
 .container-channel-settings-standard {
+	min-height: 300px;
+
 	flex-grow: 1;
 	display: flex;
 	flex-direction: row;

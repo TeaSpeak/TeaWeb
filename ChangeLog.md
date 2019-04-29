@@ -1,5 +1,9 @@
 # Changelog:
-* **26.05.19**
+* **29.04.19**
+    - Added a master volume slider and separated it from the sounds master volume
+    - Saving changed sound and master volume settings
+    
+* **26.04.19**
     - Significant permission editor performance improve
       Using canvas now instead of a lots of HTML nodes
     - Fixed client related query and music bot issues

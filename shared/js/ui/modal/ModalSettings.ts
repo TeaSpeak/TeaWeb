@@ -439,7 +439,6 @@ namespace Modals {
             const setting_tag = tag.find(".settings-speaker");
             const tag_select = setting_tag.find(".audio-select-speaker");
 
-
             const update_devices = () => {
                 tag_select.empty();
 
@@ -461,7 +460,7 @@ namespace Modals {
 
                 if (tag_select.find("option:selected").length == 0)
                     tag_select.find("option").prop("selected", true);
-            }
+            };
 
             {
                 tag_select.on('change', event => {
@@ -477,18 +476,30 @@ namespace Modals {
 
             update_devices();
             setting_tag.find(".button-device-update").on('click', event => update_devices());
+
+            { /* master sound volume */
+                const master_tag = setting_tag.find(".master-volume");
+                master_tag.find("input").on('change input', event => {
+                    const value = parseInt((<HTMLInputElement>event.target).value);
+                    master_tag.find('a').text("(" + value + "%)");
+
+                    audio.player.set_master_volume(value / 100);
+                    settings.changeGlobal(Settings.KEY_SOUND_MASTER, value);
+                }).val((audio.player.get_master_volume() * 100).toString()).trigger('change');
+            }
         }
 
         { /* initialize sounds */
             const sound_tag = tag.find(".sound-settings");
 
-            { /* master volume */
-                const master_tag = sound_tag.find(".master-volume");
+            { /* master sound volume */
+                const master_tag = sound_tag.find(".sound-master-volume");
                 master_tag.find("input").on('change input', event => {
                     const value = parseInt((<HTMLInputElement>event.target).value);
                     master_tag.find('a').text("(" + value + "%)");
 
                     sound.set_master_volume(value / 100);
+                    settings.changeGlobal(Settings.KEY_SOUND_MASTER_SOUNDS, value);
                 }).val((sound.get_master_volume() * 100).toString()).trigger('change');
             }
 

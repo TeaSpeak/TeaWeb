@@ -66,6 +66,48 @@ $small_device: 800px; /* tested out via audio tab */
 		}
 	}
 
+	.settings-speaker .container-master-volume {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.key {
+			flex-grow: 0;
+			max-width: 150px;
+			margin-right: 5px;
+		}
+
+		.value {
+			flex-grow: 1;
+			flex-shrink: 1;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			a {
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				margin-left: 5px;
+			}
+
+			/* added by materialize */
+			span {
+				min-width: 100px;
+
+				flex-grow: 1;
+				flex-shrink: 1;
+
+				padding: 0;
+			}
+
+			input {
+				width: 100%;
+			}
+		}
+	}
+
 	.settings-vad-container {
 		display: flex;
 		margin-top: 5px;

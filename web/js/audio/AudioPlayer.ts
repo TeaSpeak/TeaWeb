@@ -5,8 +5,11 @@ interface Navigator {
 
 namespace audio.player  {
     let _globalContext: AudioContext;
+    let _global_destination: GainNode;
+
     let _globalContextPromise: Promise<void>;
     let _initialized_listener: (() => any)[] = [];
+    let _master_volume: number = 1;
 
     export interface Device {
         device_id: string;
@@ -34,6 +37,12 @@ namespace audio.player  {
 
         if(!_globalContext)
             _globalContext = new (window.webkitAudioContext || window.AudioContext)();
+
+        _initialized_listener.unshift(() => {
+            _global_destination = _globalContext.createGain();
+            _global_destination.gain.value = _master_volume;
+            _global_destination.connect(_globalContext.destination);
+        });
         if(_globalContext.state == "suspended") {
             if(!_globalContextPromise) {
                 (_globalContextPromise = _globalContext.resume()).then(() => {
@@ -53,11 +62,18 @@ namespace audio.player  {
         return undefined;
     }
 
+    export function get_master_volume() : number {
+        return _master_volume;
+    }
+    export function set_master_volume(volume: number) {
+        _master_volume = volume;
+    }
+
     export function destination() : AudioNode {
         const ctx = context();
         if(!ctx) throw tr("Audio player isn't initialized yet!");
 
-        return ctx.destination;
+        return _global_destination;
     }
 
     export function on_ready(cb: () => any) {

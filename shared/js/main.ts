@@ -124,10 +124,12 @@ async function initialize_app() {
 
     if(!audio.player.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
+    audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER, 1) / 100);
 
     sound.initialize().then(() => {
         console.log(tr("Sounds initialitzed"));
     });
+    sound.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER_SOUNDS, 1) / 100);
 
     await profiles.load();
 

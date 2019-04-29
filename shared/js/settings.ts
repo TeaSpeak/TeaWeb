@@ -194,6 +194,15 @@ class Settings extends StaticSettings {
         key: 'certificate_callback'
     };
 
+    /* sounds */
+    static readonly KEY_SOUND_MASTER: SettingsKey<number> = {
+        key: 'audio_master_volume'
+    };
+
+    static readonly KEY_SOUND_MASTER_SOUNDS: SettingsKey<number> = {
+        key: 'audio_master_volume_sounds'
+    };
+
     static readonly FN_SERVER_CHANNEL_SUBSCRIBE_MODE: (channel: ChannelEntry) => SettingsKey<ChannelSubscribeMode> = channel => {
         return {
             key: 'channel_subscribe_mode_' + channel.getChannelId()
