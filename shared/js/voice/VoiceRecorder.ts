@@ -380,7 +380,8 @@ class VoiceActivityDetectorVAD extends VoiceActivityDetector {
 
     shouldRecord(buffer: AudioBuffer): boolean {
         let usage = this.calculateUsage();
-        if($.isFunction(this.percentage_listener)) this.percentage_listener(usage);
+        if($.isFunction(this.percentage_listener))
+            this.percentage_listener(usage);
         if(usage >= this.percentageThreshold) {
             this.continuesCount = 0;
         } else this.continuesCount++;

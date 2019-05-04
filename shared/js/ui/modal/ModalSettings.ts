@@ -483,9 +483,10 @@ namespace Modals {
                     const value = parseInt((<HTMLInputElement>event.target).value);
                     master_tag.find('a').text("(" + value + "%)");
 
-                    audio.player.set_master_volume(value / 100);
+                    if(audio.player.set_master_volume)
+                        audio.player.set_master_volume(value / 100);
                     settings.changeGlobal(Settings.KEY_SOUND_MASTER, value);
-                }).val((audio.player.get_master_volume() * 100).toString()).trigger('change');
+                }).val((audio.player.get_master_volume ? audio.player.get_master_volume() * 100 : 100).toString()).trigger('change');
             }
         }
 
