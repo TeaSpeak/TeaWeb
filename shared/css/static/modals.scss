@@ -357,7 +357,21 @@ modal-body {
 			height: max-content;
 		}
 
+		.icon-container {
+			align-self: center;
+			margin-right: 4px;
+			margin-left: 2px;
+			margin-top: -2px;
+		}
+
+		a {
+			align-self: center;
+		}
+
 		.checkbox {
+			align-self: center;
+			height: 8px;
+
 			margin-top: 1px;
 			margin-left: 1px;
 			display: block;
