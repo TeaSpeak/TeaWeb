@@ -38,6 +38,7 @@ namespace ppt {
         document.addEventListener('keypress', proxy_key_typed);
         document.addEventListener('keydown', proxy_key_press);
         document.addEventListener('keyup', proxy_key_release);
+        window.addEventListener('blur', listener_blur);
 
         register_key_listener(listener_hook);
         return Promise.resolve();
@@ -47,6 +48,7 @@ namespace ppt {
         document.removeEventListener("keypress", proxy_key_typed);
         document.removeEventListener("keydown", proxy_key_press);
         document.removeEventListener("keyup", proxy_key_release);
+        window.removeEventListener('blur', listener_blur);
 
         unregister_key_listener(listener_hook);
     }
@@ -73,6 +75,20 @@ namespace ppt {
     } as any;
 
     let key_hooks_active: KeyHook[] = [];
+
+    function listener_blur() {
+        current_state.special[SpecialKey.ALT] = false;
+        current_state.special[SpecialKey.CTRL] = false;
+        current_state.special[SpecialKey.SHIFT] = false;
+        current_state.special[SpecialKey.WINDOWS] = false;
+
+        current_state.code = undefined;
+        current_state.event = undefined;
+
+        for(const hook of key_hooks_active)
+            hook.callback_release();
+        key_hooks_active = [];
+    }
 
     function listener_hook(event: KeyEvent) {
         if(event.type == EventType.KEY_TYPED)
