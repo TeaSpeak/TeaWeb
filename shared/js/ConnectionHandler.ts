@@ -555,7 +555,7 @@ class ConnectionHandler {
             this.client_status.input_hardware = true; /* IDK if we have input hardware or not, but it dosn't matter at all so */
         } else {
             const audio_source = vconnection.voice_recorder();
-            const recording_supported = typeof(audio_source) !== "undefined" && audio_source.is_recording_supported() && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
+            const recording_supported = typeof(audio_source) !== "undefined" && audio_source.record_supported && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
             const playback_supported = !targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec);
 
             property_update["client_input_hardware"] = recording_supported;
@@ -609,8 +609,13 @@ class ConnectionHandler {
         this.client_status.sound_record_supported = support_record;
         this.client_status.sound_playback_supported = support_playback;
 
-        if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().is_recording_supported())
-            vconnection.voice_recorder().set_recording(!this.client_status.input_muted && !this.client_status.output_muted);
+        if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().record_supported) {
+            const active = !this.client_status.input_muted && !this.client_status.output_muted;
+            if(active)
+                vconnection.voice_recorder().input.start();
+            else
+                vconnection.voice_recorder().input.stop();
+        }
 
         if(control_bar.current_connection_handler() === this)
             control_bar.apply_server_voice_state();
@@ -653,12 +658,10 @@ class ConnectionHandler {
         this.invoke_resized_on_activate = false;
     }
 
-    acquire_recorder(voice_recoder: VoiceRecorder, update_control_bar: boolean) {
+    acquire_recorder(voice_recoder: RecorderProfile, update_control_bar: boolean) {
         const vconnection = this.serverConnection.voice_connection();
         if(vconnection)
             vconnection.acquire_voice_recorder(voice_recoder);
-        if(voice_recoder)
-            voice_recoder.clean_recording_supported();
         this.update_voice_status(undefined);
     }
 }

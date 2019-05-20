@@ -209,6 +209,12 @@ class Settings extends StaticSettings {
         }
     };
 
+    static readonly FN_PROFILE_RECORD: (name: string) => SettingsKey<any> = name => {
+        return {
+            key: 'profile_record' + name
+        }
+    };
+
     static readonly KEYS = (() => {
         const result = [];
 

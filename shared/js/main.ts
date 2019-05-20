@@ -13,7 +13,7 @@ let settings: Settings;
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
-function getUserMediaFunction() {
+function getUserMediaFunction() : (constraints: MediaStreamConstraints, success: (stream: MediaStream) => any, fail: (error: any) => any) => any {
     if((navigator as any).mediaDevices && (navigator as any).mediaDevices.getUserMedia)
         return (settings, success, fail) => { (navigator as any).mediaDevices.getUserMedia(settings).then(success).catch(fail); };
     return (navigator as any).getUserMedia || (navigator as any).webkitGetUserMedia || (navigator as any).mozGetUserMedia;
@@ -129,6 +129,10 @@ async function initialize_app() {
     else
         console.warn("Client does not support audio.player.set_master_volume()... May client is too old?");
 
+    await audio.recorder.refresh_devices();
+    default_recorder = new RecorderProfile("default");
+    await default_recorder.initialize();
+
     sound.initialize().then(() => {
         console.log(tr("Sounds initialitzed"));
     });
@@ -235,14 +239,12 @@ function Base64DecodeUrl(str: string, pad?: boolean){
 
 function main() {
     //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
-    voice_recoder = new VoiceRecorder();
-    voice_recoder.reinitialiseVAD();
 
     server_connections = new ServerConnectionManager($("#connection-handlers"));
     control_bar.initialise(); /* before connection handler to allow property apply */
 
     const initial_handler = server_connections.spawn_server_connection_handler();
-    initial_handler.acquire_recorder(voice_recoder, false);
+    initial_handler.acquire_recorder(default_recorder, false);
     control_bar.set_connection_handler(initial_handler);
     /** Setup the XF forum identity **/
     profiles.identities.setup_forum();

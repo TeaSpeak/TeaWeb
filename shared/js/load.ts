@@ -592,9 +592,12 @@ const loader_javascript = {
 
             //Load audio
             "js/voice/VoiceHandler.js",
-            "js/voice/VoiceRecorder.js",
             "js/voice/AudioResampler.js",
             "js/voice/VoiceClient.js",
+
+            "js/voice/RecorderBase.js",
+            "js/voice/JavascriptRecorder.js",
+            "js/voice/RecorderProfile.js",
 
             //Load codec
             "js/codec/Codec.js",

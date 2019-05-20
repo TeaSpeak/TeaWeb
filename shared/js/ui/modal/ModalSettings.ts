@@ -259,8 +259,15 @@ namespace Modals {
         }
     }
 
+
+    let vad_mapping = {
+        "threshold": "vad",
+        "push_to_talk": "ppt",
+        "active": "pt"
+    };
+
     function initialiseVoiceListeners(modal: Modal, tag: JQuery) {
-        let currentVAD = settings.global("vad_type", "vad");
+        let currentVAD = vad_mapping[default_recorder.get_vad_type()] || "vad";
 
         const display_error = (message: string) => {
             const alert = tag.find(".settings-device-error").first();
@@ -282,30 +289,28 @@ namespace Modals {
                         vad_tag.find(".settings-vad-impl-entry").hide();
                         vad_tag.find(".setting-vad-" + select.value).show();
                     }
-                    {
-                        settings.changeGlobal("vad_type", select.value);
-                        voice_recoder.reinitialiseVAD();
-                    }
 
                     switch (select.value) {
                         case "ppt":
-                            let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
-                            ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
+                            default_recorder.set_vad_type("push_to_talk");
 
-                            vad_tag.find(".vat_ppt_key").text(ppt.key_description(ppt_settings));
-                            vad_tag.find(".ppt-delay input").val(ppt_settings.delay === undefined ? 300 : ppt_settings.delay);
+                            vad_tag.find(".vat_ppt_key").text(ppt.key_description(default_recorder.get_vad_ppt_key()));
+                            vad_tag.find(".ppt-delay input").val(default_recorder.get_vad_ppt_delay());
 
                             break;
                         case "vad":
+                            default_recorder.set_vad_type("threshold");
+
                             let slider = vad_tag.find(".vad_vad_slider");
-                            let vad: VoiceActivityDetectorVAD = voice_recoder.getVADHandler() as VoiceActivityDetectorVAD;
-                            slider.val(vad.percentageThreshold);
+                            slider.val(default_recorder.get_vad_threshold());
                             slider.trigger("change");
-                            voice_recoder.set_recording(true);
-                            vad.percentage_listener = per => {
-                                vad_tag.find(".vad_vad_bar_filler")
-                                    .css("width", (100 - per) + "%");
-                            };
+
+                            const filter = default_recorder.input.get_filter(audio.recorder.filter.Type.THRESHOLD) as audio.recorder.filter.ThresholdFilter;
+                            filter.callback_level = level => vad_tag.find(".vad_vad_bar_filler").css("width", (100 - level) + "%");
+                            break;
+
+                        case "pt":
+                            default_recorder.set_vad_type("active");
                             break;
                     }
                 });
@@ -328,12 +333,7 @@ namespace Modals {
                                 settings.changeGlobal('vad_ppt_key', undefined); //TODO remove that because its legacy shit
                                 console.log(tr("Got key %o"), event);
 
-                                let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
-                                ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
-                                Object.assign(ppt_settings, event);
-                                settings.changeGlobal('vad_ppt_settings', ppt_settings);
-
-                                voice_recoder.reinitialiseVAD();
+                                default_recorder.set_vad_ppt_key(event);
 
                                 ppt.unregister_key_listener(listener);
                                 modal.close();
@@ -345,12 +345,7 @@ namespace Modals {
                     });
 
                     vad_tag.find(".ppt-delay input").on('change', event => {
-                        let ppt_settings: PPTKeySettings = settings.global('vad_ppt_settings', undefined);
-                        ppt_settings = ppt_settings ? JSON.parse(ppt_settings as any as string) : {};
-                        ppt_settings.delay = (<HTMLInputElement>event.target).valueAsNumber;
-                        settings.changeGlobal('vad_ppt_settings', ppt_settings);
-
-                        voice_recoder.reinitialiseVAD();
+                        default_recorder.set_vad_ppt_delay((<HTMLInputElement>event.target).valueAsNumber);
                     });
                 }
 
@@ -358,16 +353,12 @@ namespace Modals {
                     let slider = vad_tag.find(".vad_vad_slider");
                     slider.on("input change", () => {
                         settings.changeGlobal("vad_threshold", slider.val().toString());
-                        let vad = voice_recoder.getVADHandler();
-                        if (vad instanceof VoiceActivityDetectorVAD)
-                            vad.percentageThreshold = slider.val() as number;
+                        default_recorder.set_vad_threshold(slider.val() as number);
                         vad_tag.find(".vad_vad_slider_value").text(slider.val().toString());
                     });
                     modal.properties.registerCloseListener(() => {
-                        let vad = voice_recoder.getVADHandler();
-                        if (vad instanceof VoiceActivityDetectorVAD)
-                            vad.percentage_listener = undefined;
-
+                        const filter = default_recorder.input.get_filter(audio.recorder.filter.Type.THRESHOLD) as audio.recorder.filter.ThresholdFilter;
+                        filter.callback_level = undefined;
                     });
                 }
 
@@ -391,30 +382,19 @@ namespace Modals {
 
                     $.spawn("option")
                         .attr("device-id", "")
-                        .attr("device-group", "")
                         .text(tr("No device"))
                         .appendTo(tag_select);
 
-                    navigator.mediaDevices.enumerateDevices().then(devices => {
-                        const active_device = voice_recoder.device_id();
+                    const active_device = default_recorder.current_device();
+                    audio.recorder.devices().forEach(device => {
+                        console.debug(tr("Got device %o"), device);
 
-                        for (const device of devices) {
-                            console.debug(tr("Got device %s (%s): %s (%o)"), device.deviceId, device.kind, device.label);
-                            if (device.kind !== 'audioinput') continue;
-
-                            $.spawn("option")
-                                .attr("device-id", device.deviceId)
-                                .attr("device-group", device.groupId)
-                                .text(device.label)
-                                .prop("selected", device.deviceId == active_device)
-                                .appendTo(tag_select);
-                        }
-                    }).catch(error => {
-                        console.error(tr("Could not enumerate over devices!"));
-                        console.error(error);
-                        display_error(tr("Could not get microphone device list!"));
+                        $.spawn("option")
+                            .attr("device-id", device.unique_id)
+                            .text(device.name)
+                            .prop("selected", active_device && device.unique_id == active_device.unique_id)
+                            .appendTo(tag_select);
                     });
-
                     if (tag_select.find("option:selected").length == 0)
                         tag_select.find("option").prop("selected", true);
 
@@ -424,9 +404,12 @@ namespace Modals {
                     tag_select.on('change', event => {
                         let selected_tag = tag_select.find("option:selected");
                         let deviceId = selected_tag.attr("device-id");
-                        let groupId = selected_tag.attr("device-group");
-                        console.log(tr("Selected microphone device: id: %o group: %o"), deviceId, groupId);
-                        voice_recoder.change_device(deviceId, groupId);
+                        console.log(tr("Selected microphone device: id: %o"), deviceId);
+                        const device = audio.recorder.devices().find(e => e.unique_id === deviceId);
+                        if(!device)
+                            console.warn(tr("Failed to find device!"));
+
+                        default_recorder.set_device(device);
                     });
                 }
 

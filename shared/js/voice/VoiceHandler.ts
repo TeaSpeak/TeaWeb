@@ -1,6 +1,5 @@
 /// <reference path="../ConnectionHandler.ts" />
 /// <reference path="../codec/Codec.ts" />
-/// <reference path="VoiceRecorder.ts" />
 /// <reference path="VoiceClient.ts" />
 
 namespace audio {
@@ -136,7 +135,7 @@ namespace audio {
             private chunkVPacketId: number = 0;
             private send_task: NodeJS.Timer;
 
-            private _audio_source: VoiceRecorder;
+            private _audio_source: RecorderProfile;
             private _audio_clients: audio.js.VoiceClientController[] = [];
 
             constructor(connection: connection.ServerConnection) {
@@ -191,47 +190,53 @@ namespace audio {
                 if(!this.javascript_encoding_supported()) return;
             }
 
-            acquire_voice_recorder(recorder: VoiceRecorder | undefined, enforce?: boolean) {
+            acquire_voice_recorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
                 if(this._audio_source === recorder && !enforce)
                     return;
 
-                if(this._audio_source) {
-                    this._audio_source.own_recoder(undefined); /* release ownership  */
-                }
+                if(recorder)
+                    recorder.unmount(); /* FIXME: Await promise? */
+                if(this._audio_source)
+                    this._audio_source.unmount();
 
                 this.handleVoiceEnded();
                 this._audio_source = recorder;
 
                 if(recorder) {
-                    recorder.own_recoder(this);
+                    recorder.current_handler = this.connection.client;
 
-                    recorder.on_end = this.handleVoiceEnded.bind(this);
-                    recorder.on_start = this.handleVoiceStarted.bind(this);
-                    recorder.on_yield = this.on_recoder_yield.bind(this);
-                    recorder.on_support_state_change = () => {
+                    recorder.callback_unmount = this.on_recoder_yield.bind(this);
+                    recorder.callback_start = this.handleVoiceStarted.bind(this);
+                    recorder.callback_stop = this.handleVoiceEnded.bind(this);
+
+                    recorder.callback_support_change = () => {
                         this.connection.client.update_voice_status(undefined);
                     };
 
                     if(this._type == VoiceEncodeType.NATIVE_ENCODE) {
-                        recorder.on_initialized(() => {
-                            audio.player.on_ready(() => {
-                                if(this._audio_source !== recorder)
-                                    return;
+                        if(!this.local_audio_stream)
+                            this.setup_native(); /* requires initialized audio */
 
-                                if(!this.local_audio_stream)
-                                    this.setup_native(); /* requires initialized audio */
-
+                        recorder.input.set_consumer({
+                            type: audio.recorder.InputConsumerType.NODE,
+                            callback_node: node => {
                                 if(!this.local_audio_stream)
                                     return;
 
-                                /* an output stream is only available if the recorder is ready */
-                                const stream = recorder.get_output_stream();
-                                stream.disconnect();
-                                stream.connect(this.local_audio_stream);
-                            });
-                        });
+                                node.connect(this.local_audio_stream);
+                            },
+                            callback_disconnect: node => {
+                                if(!this.local_audio_stream)
+                                    return;
+
+                                node.disconnect(this.local_audio_stream);
+                            }
+                        } as audio.recorder.NodeInputConsumer);
                     } else {
-                        recorder.on_data = this.handleVoiceData.bind(this);
+                        recorder.input.set_consumer({
+                            type: audio.recorder.InputConsumerType.CALLBACK,
+                            callback_audio: buffer => this.handleVoiceData(buffer, false)
+                        } as audio.recorder.CallbackInputConsumer);
                     }
                 } else {
                     this.connection.client.update_voice_status(undefined);
@@ -531,6 +536,7 @@ namespace audio {
             }
 
             private on_recoder_yield() {
+                console.log("Lost recorder!");
                 this._audio_source = undefined;
                 this.acquire_voice_recorder(undefined, true);
             }
@@ -539,7 +545,7 @@ namespace audio {
                 return typeof(this.dataChannel) !== "undefined" && this.dataChannel.readyState === "open";
             }
 
-            voice_recorder(): VoiceRecorder {
+            voice_recorder(): RecorderProfile {
                 return this._audio_source;
             }
 

@@ -81,8 +81,8 @@ namespace connection {
             abstract available_clients() : VoiceClient[];
             abstract unregister_client(client: VoiceClient) : Promise<void>;
 
-            abstract voice_recorder() : VoiceRecorder;
-            abstract acquire_voice_recorder(recorder: VoiceRecorder | undefined);
+            abstract voice_recorder() : RecorderProfile;
+            abstract acquire_voice_recorder(recorder: RecorderProfile | undefined);
         }
     }
 

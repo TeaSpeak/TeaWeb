@@ -328,7 +328,7 @@ class ControlBar {
         if(this.connection_handler) {
             this.connection_handler.client_status.input_muted = this._button_microphone !== "enabled";
             if(!this.connection_handler.client_status.input_hardware)
-                this.connection_handler.acquire_recorder(voice_recoder, true); /* acquire_recorder already updates the voice status */
+                this.connection_handler.acquire_recorder(default_recorder, true); /* acquire_recorder already updates the voice status */
             else
                 this.connection_handler.update_voice_status(undefined);
 
