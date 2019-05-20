@@ -316,6 +316,14 @@ namespace audio {
                             }, stream => resolve(stream), error => reject(error));
                         });
                     } catch(error) {
+                        if(error instanceof DOMException) {
+                            if(error.code == 0 || error.name == "NotAllowedError") {
+                                console.warn(tr("Browser does not allow mirophone access"));
+                                this._state = InputState.PAUSED;
+                                createErrorModal(tr("Failed to create microphone"), tr("Microphone recording failed. Please allow TeaWeb access to your microphone")).open();
+                                return;
+                            }
+                        }
                         console.warn(tr("Failed to initialize recording stream (%o)"), error);
                         throw tr("record stream initialisation failed");
                     }
