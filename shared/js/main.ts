@@ -424,9 +424,9 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         }
     },
     priority: 100
-})
+});
 
-loader.register_task(loader.Stage.LOADED, {
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "app starter",
     function: async () => {
         try {
@@ -443,6 +443,6 @@ loader.register_task(loader.Stage.LOADED, {
             displayCriticalError("Failed to boot app function:<br>" + ex);
         }
     },
-    priority: 10
+    priority: 100
 });
 

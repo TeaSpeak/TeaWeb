@@ -292,13 +292,11 @@ namespace audio {
 
             async start() {
                 this._state = InputState.INITIALIZING;
-                if(!this._current_device) {
+                if(!this._current_device)
                     return;
-                }
 
-                if(!this._audio_context) {
+                if(!this._audio_context)
                     return;
-                }
 
                 try {
                     const media_function = getUserMediaFunction();
@@ -326,7 +324,6 @@ namespace audio {
                     this._initialize_filters();
                     this._state = InputState.RECORDING;
                 } catch(error) {
-                    console.warn(tr("Failed to start recorder (%o)"), error);
                     this._state = InputState.PAUSED;
                     throw error;
                 }

@@ -190,14 +190,15 @@ namespace audio {
                 if(!this.javascript_encoding_supported()) return;
             }
 
-            acquire_voice_recorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
+            async acquire_voice_recorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
                 if(this._audio_source === recorder && !enforce)
                     return;
 
                 if(recorder)
-                    recorder.unmount(); /* FIXME: Await promise? */
+                    await recorder.unmount();
+
                 if(this._audio_source)
-                    this._audio_source.unmount();
+                    await this._audio_source.unmount();
 
                 this.handleVoiceEnded();
                 this._audio_source = recorder;
@@ -217,7 +218,7 @@ namespace audio {
                         if(!this.local_audio_stream)
                             this.setup_native(); /* requires initialized audio */
 
-                        recorder.input.set_consumer({
+                        await recorder.input.set_consumer({
                             type: audio.recorder.InputConsumerType.NODE,
                             callback_node: node => {
                                 if(!this.local_audio_stream)
@@ -233,7 +234,7 @@ namespace audio {
                             }
                         } as audio.recorder.NodeInputConsumer);
                     } else {
-                        recorder.input.set_consumer({
+                        await recorder.input.set_consumer({
                             type: audio.recorder.InputConsumerType.CALLBACK,
                             callback_audio: buffer => this.handleVoiceData(buffer, false)
                         } as audio.recorder.CallbackInputConsumer);
@@ -538,7 +539,7 @@ namespace audio {
             private on_recoder_yield() {
                 console.log("Lost recorder!");
                 this._audio_source = undefined;
-                this.acquire_voice_recorder(undefined, true);
+                this.acquire_voice_recorder(undefined, true); /* we can ignore the promise because we should finish this directly */
             }
 
             connected(): boolean {

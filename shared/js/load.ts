@@ -591,12 +591,7 @@ const loader_javascript = {
             "js/permission/GroupManager.js",
 
             //Load audio
-            "js/voice/VoiceHandler.js",
-            "js/voice/AudioResampler.js",
-            "js/voice/VoiceClient.js",
-
             "js/voice/RecorderBase.js",
-            "js/voice/JavascriptRecorder.js",
             "js/voice/RecorderProfile.js",
 
             //Load codec
@@ -633,7 +628,12 @@ const loader_javascript = {
         await loader.load_scripts([
             ["js/audio/AudioPlayer.js"],
             ["js/audio/WebCodec.js"],
-            ["js/WebPPTListener.js"]
+            ["js/WebPPTListener.js"],
+
+            "js/voice/AudioResampler.js",
+            "js/voice/JavascriptRecorder.js",
+            "js/voice/VoiceHandler.js",
+            "js/voice/VoiceClient.js",
         ]);
     },
     load_scripts_debug_client: async () => {

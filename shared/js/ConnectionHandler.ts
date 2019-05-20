@@ -660,8 +660,10 @@ class ConnectionHandler {
 
     acquire_recorder(voice_recoder: RecorderProfile, update_control_bar: boolean) {
         const vconnection = this.serverConnection.voice_connection();
-        if(vconnection)
-            vconnection.acquire_voice_recorder(voice_recoder);
-        this.update_voice_status(undefined);
+        (vconnection ? vconnection.acquire_voice_recorder(voice_recoder) : Promise.resolve()).catch(error => {
+            console.error(tr("Failed to acquire recorder (%o)"), error);
+        }).then(() => {
+            this.update_voice_status(undefined);
+        });
     }
 }

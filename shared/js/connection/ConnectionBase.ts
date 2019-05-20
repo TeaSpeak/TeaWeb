@@ -82,7 +82,7 @@ namespace connection {
             abstract unregister_client(client: VoiceClient) : Promise<void>;
 
             abstract voice_recorder() : RecorderProfile;
-            abstract acquire_voice_recorder(recorder: RecorderProfile | undefined);
+            abstract acquire_voice_recorder(recorder: RecorderProfile | undefined) : Promise<void>;
         }
     }
 
