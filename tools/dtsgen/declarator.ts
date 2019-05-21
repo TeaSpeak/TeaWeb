@@ -325,7 +325,6 @@ generators[SyntaxKind.PropertySignature] = (settings, stack, node: ts.PropertySi
     if(!node.type)
         return node;
 
-    console.log(SyntaxKind[node.type.kind]);
     let type: ts.TypeNode = node.type;
     switch (node.type.kind) {
         case SyntaxKind.LiteralType:
