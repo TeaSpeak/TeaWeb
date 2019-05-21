@@ -3,7 +3,8 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
-    "sourceMap": true
+    "sourceMap": true,
+    "lib": ["es6", "dom", "dom.iterable"]
   },
   "exclude": [
     "node_modules",

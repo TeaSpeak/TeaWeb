@@ -6,7 +6,7 @@
   "directories": {},
   "scripts": {
     "compile-sass": "sass --update .:.",
-    "build-worker-codec": "tsc -p shared/js/workers/tsconfig_worker_codec.json",
+    "build-worker-codec": "tsc -p web/js/workers/tsconfig_worker_codec.json",
     "build-worker-pow": "tsc -p shared/js/workers/tsconfig_worker_pow.json",
     "build-worker": "npm run build-worker-codec; npm run build-worker-pow;",
     "dtsgen": "node tools/dtsgen/index.js",

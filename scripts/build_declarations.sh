@@ -54,8 +54,9 @@ if [[ ! -d shared/declarations ]]; then
         exit 1
     fi
 fi
-generate_link client/declarations/exports.d.ts shared/declarations/imports_client.d.ts
-generate_link web/declarations/exports.d.ts shared/declarations/imports_web.d.ts
+#The shared part has no access to the other parts, it just declares a abstract API
+#generate_link client/declarations/exports.d.ts shared/declarations/imports_client.d.ts
+#generate_link web/declarations/exports.d.ts shared/declarations/imports_web.d.ts
 
 
 #Last but not least the client imports
