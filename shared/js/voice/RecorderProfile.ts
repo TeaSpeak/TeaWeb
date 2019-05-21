@@ -76,7 +76,7 @@ class RecorderProfile {
         this.record_supported = true;
     }
 
-    async initialize() {
+    async initialize() : Promise<void> {
         await this.load();
         await this.reinitialize_filter();
         await this.input.start();
@@ -97,7 +97,12 @@ class RecorderProfile {
         };
 
         this.input.callback_state_change = () => {
-            this.record_supported = this.input.current_state() === audio.recorder.InputState.RECORDING || this.input.current_state() === audio.recorder.InputState.DRY;
+            const new_state = this.input.current_state() === audio.recorder.InputState.RECORDING || this.input.current_state() === audio.recorder.InputState.DRY;
+
+            if(new_state === this.record_supported)
+                return;
+
+            this.record_supported = new_state;
             if(this.callback_support_change)
                 this.callback_support_change();
         }
@@ -171,7 +176,7 @@ class RecorderProfile {
         } else if(this.config.vad_type === "active") {}
     }
 
-    async unmount() {
+    async unmount() : Promise<void> {
         if(this.callback_unmount)
             this.callback_unmount();
         if(this.input) {
@@ -184,6 +189,7 @@ class RecorderProfile {
 
         this.callback_start = undefined;
         this.callback_stop = undefined;
+        this.callback_unmount = undefined;
         this.current_handler = undefined;
     }
 

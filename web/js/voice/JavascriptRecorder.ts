@@ -241,7 +241,6 @@ namespace audio {
             private _filters: filter.Filter[] = [];
             private _filter_active: boolean = false;
 
-            callback_state_change: () => any = undefined;
             callback_begin: () => any = undefined;
             callback_end: () => any = undefined;
 

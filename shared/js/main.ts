@@ -9,8 +9,6 @@
 /// <reference path="log.ts" />
 /// <reference path="PPTListener.ts" />
 
-import type = app.type;
-
 let settings: Settings;
 
 const js_render = window.jsrender || $;

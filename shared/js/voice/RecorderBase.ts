@@ -75,7 +75,6 @@ namespace audio {
         }
 
         export interface AbstractInput {
-            callback_state_change: () => any;
             callback_begin: () => any;
             callback_end: () => any;
 

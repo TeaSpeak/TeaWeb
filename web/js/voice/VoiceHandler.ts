@@ -209,10 +209,6 @@ namespace audio {
                     recorder.callback_start = this.handleVoiceStarted.bind(this);
                     recorder.callback_stop = this.handleVoiceEnded.bind(this);
 
-                    recorder.callback_support_change = () => {
-                        this.connection.client.update_voice_status(undefined);
-                    };
-
                     if(this._type == VoiceEncodeType.NATIVE_ENCODE) {
                         if(!this.local_audio_stream)
                             this.setup_native(); /* requires initialized audio */
@@ -238,9 +234,8 @@ namespace audio {
                             callback_audio: buffer => this.handleVoiceData(buffer, false)
                         } as audio.recorder.CallbackInputConsumer);
                     }
-                } else {
-                    this.connection.client.update_voice_status(undefined);
                 }
+                this.connection.client.update_voice_status(undefined);
             }
 
             get_encoder_type() : VoiceEncodeType { return this._type; }
