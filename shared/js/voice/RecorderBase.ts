@@ -91,6 +91,7 @@ namespace audio {
             set_consumer(consumer: InputConsumer) : Promise<void>;
 
             get_filter(type: filter.Type) : filter.Filter | undefined;
+            supports_filter(type: audio.recorder.filter.Type) : boolean;
 
             clear_filter();
             disable_filter(type: filter.Type);

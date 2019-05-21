@@ -426,6 +426,16 @@ namespace audio {
                 return new_filter as any;
             }
 
+            supports_filter(type: audio.recorder.filter.Type) : boolean {
+                switch (type) {
+                    case audio.recorder.filter.Type.THRESHOLD:
+                    case audio.recorder.filter.Type.STATE:
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
             private find_filter(type: filter.Type) : filter.JAbstractFilter<AudioNode> | undefined {
                 for(const filter of this._filters)
                     if(filter.type == type)
