@@ -1,4 +1,3 @@
-/// <reference path="../voice/VoiceHandler.ts" />
 /// <reference path="../ConnectionHandler.ts" />
 /// <reference path="../proto.ts" />
 /// <reference path="channel.ts" />

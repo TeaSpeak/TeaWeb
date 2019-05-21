@@ -23,6 +23,7 @@
   "include": [
     "../declarations/imports_*.d.ts",
     "../declarations/exports_loader.d.ts",
-    "../js/**/*.ts"
+    "../js/**/*.ts",
+    "../backend"
   ]
 }

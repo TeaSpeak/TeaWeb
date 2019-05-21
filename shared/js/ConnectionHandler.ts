@@ -1,5 +1,4 @@
 /// <reference path="log.ts" />
-/// <reference path="voice/VoiceClient.ts" />
 /// <reference path="proto.ts" />
 /// <reference path="ui/view.ts" />
 /// <reference path="settings.ts" />

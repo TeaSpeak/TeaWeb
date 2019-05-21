@@ -13,7 +13,8 @@
     "trgen": "node tools/trgen/index.js",
     "ttsc": "ttsc",
     "csso": "csso",
-    "rebuild-structure-web-dev": "php files.php generate web dev"
+    "rebuild-structure-web-dev": "php files.php generate web dev",
+    "minify-web-rel-file": "minify web/generated/client.js --outFile web/generated/client.min.js --evaluate --removeDebugger --undefinedToVoid --mangle.keepClassName --deadcode.keepFnArgs"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
@@ -24,6 +25,7 @@
     "@types/node": "^9.4.6",
     "@types/sha256": "^0.2.0",
     "@types/websocket": "0.0.38",
+    "babel-minify": "^0.5.0",
     "csso-cli": "^2.0.2",
     "electron": "^3.0.2",
     "gulp": "^3.9.1",

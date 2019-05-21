@@ -1,3 +1,4 @@
+/// <reference path="../PPTListener.ts" />
 
 type VadType = "threshold" | "push_to_talk" | "active";
 interface RecorderProfileConfig {

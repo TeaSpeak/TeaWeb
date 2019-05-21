@@ -1,4 +1,10 @@
 # Changelog:
+* **21.05.19**
+    - Restructured project
+    - Redesigned the audio input API (required for the client)
+    - Minifying release file
+    - Fixed travis builds
+    
 * **29.04.19**
     - Added a master volume slider and separated it from the sounds master volume
     - Saving changed sound and master volume settings

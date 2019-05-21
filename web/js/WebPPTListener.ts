@@ -1,5 +1,6 @@
 /// <reference path="../declarations/imports_shared.d.ts"/>
 
+
 namespace ppt {
     interface WebKeyEvent extends KeyEvent {
         canceled: boolean;

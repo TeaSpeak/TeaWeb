@@ -1,9 +1,11 @@
+/// <reference path="../../declarations/imports_shared.d.ts"/>
+
 namespace audio {
     export namespace recorder {
         /* TODO: Recognise if we got device permission and update list */
         let _queried_devices: JavascriptInputDevice[];
 
-        interface JavascriptInputDevice extends InputDevice {
+        export interface JavascriptInputDevice extends InputDevice {
             device_id: string;
             group_id: string;
         }
@@ -54,6 +56,8 @@ namespace audio {
 
         export namespace filter {
             export abstract class JAbstractFilter<NodeType extends AudioNode> implements Filter {
+                type;
+
                 source_node: AudioNode;
                 audio_node: NodeType;
 
@@ -74,7 +78,9 @@ namespace audio {
             export class JThresholdFilter extends JAbstractFilter<GainNode> implements ThresholdFilter {
                 private static update_task_interval = 20; /* 20ms */
 
-                type: Type.THRESHOLD = Type.THRESHOLD;
+                type = Type.THRESHOLD;
+                callback_level?: (value: number) => any;
+
                 private _threshold = 50;
 
                 private _update_task: any;
@@ -180,7 +186,7 @@ namespace audio {
             }
 
             export class JStateFilter extends JAbstractFilter<GainNode> implements StateFilter {
-                type: Type.STATE = Type.STATE;
+                type = Type.STATE;
 
                 finalize() {
                     if(this.source_node) {
@@ -219,7 +225,7 @@ namespace audio {
             }
         }
 
-        class JavascriptInput extends AbstractInput {
+        class JavascriptInput implements AbstractInput {
             private _state: InputState = InputState.PAUSED;
             private _current_device: JavascriptInputDevice | undefined;
             private _current_consumer: InputConsumer;
@@ -235,9 +241,11 @@ namespace audio {
             private _filters: filter.Filter[] = [];
             private _filter_active: boolean = false;
 
-            constructor() {
-                super();
+            callback_state_change: () => any = undefined;
+            callback_begin: () => any = undefined;
+            callback_end: () => any = undefined;
 
+            constructor() {
                 player.on_ready(() => this._audio_initialized());
             }
 
@@ -318,7 +326,7 @@ namespace audio {
                     } catch(error) {
                         if(error instanceof DOMException) {
                             if(error.code == 0 || error.name == "NotAllowedError") {
-                                console.warn(tr("Browser does not allow mirophone access"));
+                                console.warn(tr("Browser does not allow microphone access"));
                                 this._state = InputState.PAUSED;
                                 createErrorModal(tr("Failed to create microphone"), tr("Microphone recording failed. Please allow TeaWeb access to your microphone")).open();
                                 return;
@@ -440,11 +448,12 @@ namespace audio {
             }
 
             clear_filter() {
-                for(const filter of this._filters) {
-                    if(!filter.is_enabled())
+                for(const _filter of this._filters) {
+                    if(!_filter.is_enabled())
                         continue;
-                    filter.finalize();
-                    filter.enabled = false;
+                    const c_filter = _filter as any as filter.JAbstractFilter<AudioNode>;
+                    c_filter.finalize();
+                    c_filter.enabled = false;
                 }
 
                 this._initialize_filters();

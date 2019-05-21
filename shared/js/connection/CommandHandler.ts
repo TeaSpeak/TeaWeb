@@ -1,3 +1,4 @@
+/// <reference path="ConnectionBase.ts" />
 
 namespace connection {
     export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
@@ -119,10 +120,6 @@ namespace connection {
             //We could setup the voice channel
             if(this.connection.support_voice()) {
                 console.log(tr("Setting up voice"));
-
-                const connection = this.connection.voice_connection();
-                if(connection instanceof audio.js.VoiceConnection)
-                    connection.createSession();
             } else {
                 console.log(tr("Skipping voice setup (No voice bridge available)"));
             }

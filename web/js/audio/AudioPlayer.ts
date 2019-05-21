@@ -3,18 +3,13 @@ interface Navigator {
     webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
 }
 
-namespace audio.player  {
+namespace audio.player {
     let _globalContext: AudioContext;
     let _global_destination: GainNode;
 
     let _globalContextPromise: Promise<void>;
     let _initialized_listener: (() => any)[] = [];
     let _master_volume: number = 1;
-
-    export interface Device {
-        device_id: string;
-        name: string;
-    }
 
     export function initialize() : boolean {
         context();

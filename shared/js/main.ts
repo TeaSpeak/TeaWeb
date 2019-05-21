@@ -7,6 +7,7 @@
 /// <reference path="ui/modal/ModalBanList.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="log.ts" />
+/// <reference path="PPTListener.ts" />
 
 let settings: Settings;
 

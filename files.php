@@ -30,7 +30,7 @@
 		],
 		[ /* shared generated worker codec */
 			"type" => "js",
-			"search-pattern" => "/(WorkerCodec.js|WorkerPOW.js)$/",
+			"search-pattern" => "/(WorkerPOW.js)$/",
 			"build-target" => "dev|rel",
 
 			"path" => "js/workers/",
@@ -188,6 +188,14 @@
 	];
 
 	$APP_FILE_LIST_WEB_SOURCE = [
+		[ /* web generated worker codec */
+			"type" => "js",
+			"search-pattern" => "/(WorkerCodec.js)$/",
+			"build-target" => "dev|rel",
+
+			"path" => "js/workers/",
+			"local-path" => "./web/js/workers/"
+		],
 		[ /* web javascript files (development mode only) */
 			"web-only" => true,
 			"type" => "js",
@@ -200,7 +208,7 @@
 		[ /* web merged javascript files (shared inclusive) */
 			"web-only" => true,
 			"type" => "js",
-			"search-pattern" => "/.*\.js$/",
+			"search-pattern" => "/client(\.min)?\.js$/",
 			"build-target" => "rel",
 
 			"path" => "js/",

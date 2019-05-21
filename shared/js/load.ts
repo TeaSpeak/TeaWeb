@@ -594,10 +594,6 @@ const loader_javascript = {
             "js/voice/RecorderBase.js",
             "js/voice/RecorderProfile.js",
 
-            //Load codec
-            "js/codec/Codec.js",
-            "js/codec/BasicCodec.js",
-
             //Load general stuff
             "js/settings.js",
             "js/bookmarks.js",
@@ -610,13 +606,11 @@ const loader_javascript = {
             "js/connection/CommandHandler.js",
             "js/connection/CommandHelper.js",
             "js/connection/HandshakeHandler.js",
-            "js/connection/ServerConnection.js",
+            "js/connection/ServerConnectionDeclaration.js",
 
             "js/stats.js",
             "js/PPTListener.js",
 
-
-            "js/codec/CodecWrapperWorker.js",
             "js/profiles/identities/NameIdentity.js", //Depends on Identity
             "js/profiles/identities/TeaForumIdentity.js", //Depends on Identity
             "js/profiles/identities/TeamSpeakIdentity.js", //Depends on Identity
@@ -634,6 +628,14 @@ const loader_javascript = {
             "js/voice/JavascriptRecorder.js",
             "js/voice/VoiceHandler.js",
             "js/voice/VoiceClient.js",
+
+            //Connection
+            "js/connection/ServerConnection.js",
+
+            //Load codec
+            "js/codec/Codec.js",
+            "js/codec/BasicCodec.js",
+            "js/codec/CodecWrapperWorker.js",
         ]);
     },
     load_scripts_debug_client: async () => {

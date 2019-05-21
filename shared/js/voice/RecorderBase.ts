@@ -11,13 +11,6 @@ namespace audio {
             channels: number;
         }
 
-        export declare function devices() : InputDevice[];
-
-        export declare function device_refresh_available() : boolean;
-        export declare function refresh_devices() : Promise<void>;
-
-        export declare function create_input() : AbstractInput;
-
         export enum InputConsumerType {
             CALLBACK,
             NODE,
@@ -29,15 +22,11 @@ namespace audio {
         }
 
         export interface CallbackInputConsumer extends InputConsumer {
-            type: InputConsumerType.CALLBACK;
-
             callback_audio?: (buffer: AudioBuffer) => any;
             callback_buffer?: (buffer: Float32Array, samples: number, channels: number) => any;
         }
 
         export interface NodeInputConsumer extends InputConsumer {
-            type: InputConsumerType.NODE;
-
             callback_node: (source_node: AudioNode) => any;
             callback_disconnect: (source_node: AudioNode) => any;
         }
@@ -62,8 +51,6 @@ namespace audio {
             }
 
             export interface ThresholdFilter extends Filter, MarginedFilter {
-                type: Type.THRESHOLD;
-
                 get_threshold() : number;
                 set_threshold(value: number) : Promise<void>;
 
@@ -71,14 +58,10 @@ namespace audio {
             }
 
             export interface VoiceLevelFilter extends Filter, MarginedFilter {
-                type: Type.VOICE_LEVEL;
-
                 get_level() : number;
             }
 
             export interface StateFilter extends Filter {
-                type: Type.STATE;
-
                 set_state(state: boolean) : Promise<void>;
                 is_active() : boolean; /* if true the the filter allows data to pass */
             }
@@ -91,27 +74,27 @@ namespace audio {
             DRY
         }
 
-        export abstract class AbstractInput {
-            abstract current_state() : InputState;
-
-            abstract start() : Promise<void>;
-            abstract stop() : Promise<void>;
-
-            abstract current_device() : InputDevice | undefined;
-            abstract set_device(device: InputDevice | undefined) : Promise<void>;
-
-            abstract current_consumer() : InputConsumer | undefined;
-            abstract set_consumer(consumer: InputConsumer) : Promise<void>;
-
+        export interface AbstractInput {
             callback_state_change: () => any;
             callback_begin: () => any;
             callback_end: () => any;
 
-            abstract get_filter(type: filter.Type) : filter.Filter | undefined;
+            current_state() : InputState;
 
-            abstract clear_filter();
-            abstract disable_filter(type: filter.Type);
-            abstract enable_filter(type: filter.Type);
+            start() : Promise<void>;
+            stop() : Promise<void>;
+
+            current_device() : InputDevice | undefined;
+            set_device(device: InputDevice | undefined) : Promise<void>;
+
+            current_consumer() : InputConsumer | undefined;
+            set_consumer(consumer: InputConsumer) : Promise<void>;
+
+            get_filter(type: filter.Type) : filter.Filter | undefined;
+
+            clear_filter();
+            disable_filter(type: filter.Type);
+            enable_filter(type: filter.Type);
 
         }
     }

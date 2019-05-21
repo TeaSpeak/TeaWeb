@@ -21,3 +21,13 @@ if [ $? -ne 0 ]; then
     echo "Failed to build file"
     exit 1
 fi
+
+echo "Mergin files"
+
+if [ -e generated/client.js ]; then
+    rm generated/client.js
+fi
+cat ../shared/generated/shared.js > generated/client.js
+cat generated/web.js >> generated/client.js
+
+npm run minify-web-rel-file

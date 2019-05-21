@@ -1,5 +1,4 @@
-/// <reference path="../ConnectionHandler.ts" />
-/// <reference path="../codec/Codec.ts" />
+/// <reference path="../../declarations/imports_shared.d.ts"/>
 /// <reference path="VoiceClient.ts" />
 
 namespace audio {

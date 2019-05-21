@@ -1,6 +1,5 @@
 /// <reference path="../../ui/elements/modal.ts" />
 /// <reference path="../../proto.ts" />
-/// <reference path="../../voice/VoiceClient.ts" />
 /// <reference path="../../profiles/Identity.ts" />
 
 namespace Modals {

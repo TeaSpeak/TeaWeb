@@ -1,4 +1,4 @@
-/// <reference path="../connection/ConnectionBase.ts" />
+/// <reference path="../../declarations/imports_shared.d.ts"/>
 
 namespace audio {
     export namespace js {
