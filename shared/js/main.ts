@@ -9,6 +9,8 @@
 /// <reference path="log.ts" />
 /// <reference path="PPTListener.ts" />
 
+import type = app.type;
+
 let settings: Settings;
 
 const js_render = window.jsrender || $;
@@ -129,8 +131,9 @@ async function initialize_app() {
         audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER, 1) / 100);
     else
         console.warn("Client does not support audio.player.set_master_volume()... May client is too old?");
+    if(audio.recorder.device_refresh_available())
+        await audio.recorder.refresh_devices();
 
-    await audio.recorder.refresh_devices();
     default_recorder = new RecorderProfile("default");
     await default_recorder.initialize();
 
@@ -438,7 +441,9 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             } else
                 loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
         } catch (ex) {
-            console.error(ex.stack);
+            if(ex instanceof Error || typeof(ex.stack) !== "undefined")
+                console.error((tr || (msg => msg))("Critical error stack trace: %o"), ex.stack);
+
             if(ex instanceof ReferenceError || ex instanceof TypeError)
                 ex = ex.name + ": " + ex.message;
             displayCriticalError("Failed to boot app function:<br>" + ex);
