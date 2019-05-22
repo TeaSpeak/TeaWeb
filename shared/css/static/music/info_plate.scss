@@ -133,16 +133,22 @@ $ease: cubic-bezier(.45, 0, .55, 1);
 			background-size: calc(42px * 2) calc(42px * 2);
 			margin-left: 10px;
 			background: url("%%base_path%%/img/music/forward.svg") no-repeat center;
+			background: url("/img/music/forward.svg") no-repeat center;
+			background: url("img/music/forward.svg") no-repeat center;
 		}
 		.btn-rewind span {
 			background-size: calc(42px * 2) calc(42px * 2);
 			margin-left: 10px;
 			background: url("%%base_path%%/img/music/rewind.svg") no-repeat center;
+			background: url("/img/music/rewind.svg") no-repeat center;
+			background: url("img/music/rewind.svg") no-repeat center;
 		}
 		.btn-settings span {
 			background-size: calc(42px * 2) calc(42px * 2);
 			margin-left: 10px;
 			background: url("%%base_path%%/img/music/playlist.svg") no-repeat center;
+			background: url("/img/music/playlist.svg") no-repeat center;
+			background: url("img/music/playlist.svg") no-repeat center;
 		}
 	}
 
