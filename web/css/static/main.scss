@@ -32,6 +32,10 @@ html, body {
 
 $small_device: 650px;
 @media only screen and (max-width: $small_device) {
+	html, body {
+		padding: 0!important;
+	}
+
 	.app-container {
 		bottom: 25px;
 	}
