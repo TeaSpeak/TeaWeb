@@ -5,7 +5,6 @@
 namespace Modals {
     //TODO Upload/delete button
     export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
-        callback_icon = callback_icon || (() => {});
         selected_icon = selected_icon || 0;
 
         const modal = createModal({
@@ -132,11 +131,11 @@ namespace Modals {
         update_remote_icons();
         modal.htmlTag.find('.button-reload').on('click', () => update_remote_icons());
         button_select.prop("disabled", true).on('click', () => {
-            callback_icon(selected_icon);
+            if(callback_icon) callback_icon(selected_icon);
             modal.close();
         });
         modal.htmlTag.find(".button-select-no-icon").on('click', () => {
-            callback_icon(0);
+            if(callback_icon) callback_icon(0);
             modal.close();
         });
         modal.open();
