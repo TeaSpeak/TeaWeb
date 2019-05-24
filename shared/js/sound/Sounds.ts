@@ -106,10 +106,12 @@ namespace sound {
     export function set_master_volume(volume: number) {
         volume_require_save = volume_require_save || master_volume != volume;
         master_volume = volume;
-        if(master_mixed.gain.setValueAtTime)
-            master_mixed.gain.setValueAtTime(volume, 0);
-        else
-            master_mixed.gain.value = volume;
+        if(master_mixed) {
+            if(master_mixed.gain.setValueAtTime)
+                master_mixed.gain.setValueAtTime(volume, 0);
+            else
+                master_mixed.gain.value = volume;
+        }
     }
 
     export function overlap_activated() : boolean {
