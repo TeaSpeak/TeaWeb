@@ -448,6 +448,6 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             displayCriticalError("Failed to boot app function:<br>" + ex);
         }
     },
-    priority: 100
+    priority: 1000
 });
 

@@ -76,9 +76,10 @@ namespace loader {
             });
             return;
         }
+
         const task_array = tasks[stage] || [];
         task_array.push(task);
-        tasks[stage] = task_array.sort((a, b) => a.priority > b.priority ? 1 : 0);
+        tasks[stage] = task_array.sort((a, b) => a.priority - b.priority);
     }
 
     export async function execute() {
