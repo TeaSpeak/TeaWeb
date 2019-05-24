@@ -1,7 +1,9 @@
 enum ErrorID {
     PERMISSION_ERROR = 2568,
     EMPTY_RESULT = 0x0501,
-    PLAYLIST_IS_IN_USE = 0x2103
+    PLAYLIST_IS_IN_USE = 0x2103,
+
+    FILE_ALREADY_EXISTS = 2050,
 }
 
 class CommandResult {

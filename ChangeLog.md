@@ -1,4 +1,7 @@
 # Changelog:
+* **24.05.19**
+    - Implemented icon upload
+    
 * **21.05.19**
     - Restructured project
     - Redesigned the audio input API (required for the client)

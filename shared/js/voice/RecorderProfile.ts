@@ -79,7 +79,11 @@ class RecorderProfile {
     async initialize() : Promise<void> {
         await this.load();
         await this.reinitialize_filter();
-        await this.input.start();
+        try {
+            await this.input.start();
+        } catch(error) {
+            console.warn(tr("Failed to start recorder after initialize (%o)"), error);
+        }
     }
 
     private initialize_input() {
@@ -96,6 +100,7 @@ class RecorderProfile {
                 this.callback_stop();
         };
 
+        /*
         this.input.callback_state_change = () => {
             const new_state = this.input.current_state() === audio.recorder.InputState.RECORDING || this.input.current_state() === audio.recorder.InputState.DRY;
 
@@ -106,6 +111,7 @@ class RecorderProfile {
             if(this.callback_support_change)
                 this.callback_support_change();
         }
+        */
     }
 
     private async load() {

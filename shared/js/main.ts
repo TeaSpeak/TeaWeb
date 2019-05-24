@@ -326,6 +326,7 @@ function main() {
                 password: password,
                 hashed: password_hashed
             } : undefined);
+            Modals.spawnIconUpload(connection);
         } else {
             Modals.spawnConnectModal({
                 url: address,
@@ -336,6 +337,7 @@ function main() {
             });
         }
     }
+
 }
 
 const task_teaweb_starter: loader.Task = {

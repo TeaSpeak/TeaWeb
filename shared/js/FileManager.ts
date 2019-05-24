@@ -56,8 +56,8 @@ namespace transfer {
     export function spawn_download_transfer(key: DownloadKey) : DownloadTransfer {
         return new RequestFileDownload(key);
     }
-    export function spawn_upload_transfer(key: DownloadKey) : DownloadTransfer {
-        return new RequestFileDownload(key);
+    export function spawn_upload_transfer(key: UploadKey) : RequestFileUpload {
+        return new RequestFileUpload(key);
     }
 }
 
@@ -353,6 +353,28 @@ class FileManager extends connection.AbstractCommandHandler {
         (transfer["_callback"] as (val: transfer.UploadKey) => void)(transfer);
         this.pending_upload_requests.remove(transfer);
     }
+
+    /** File management **/
+    async delete_file(props: {
+        name: string,
+        path?: string;
+        cid?: number;
+        cpw?: string;
+    }) : Promise<void> {
+        if(!props.name)
+            throw "invalid name!";
+
+        try {
+            await this.handle.serverConnection.send_command("ftdeletefile", {
+                cid: props.cid || 0,
+                cpw: props.cpw,
+                path: props.path || "",
+                name: props.name
+            })
+        } catch(error) {
+            throw error;
+        }
+    }
 }
 
 class Icon {
@@ -386,8 +408,19 @@ function media_image_type(type: ImageType, file?: boolean) {
     }
 }
 
-function image_type(base64: string) {
-    const bin = atob(base64);
+function image_type(base64: string | ArrayBuffer) {
+    const ab2str10 = () => {
+        const buf = new Uint8Array(base64 as ArrayBuffer);
+        if(buf.byteLength < 10)
+            return "";
+
+        let result = "";
+        for(let index = 0; index < 10; index++)
+            result += String.fromCharCode(buf[index]);
+        return result;
+    };
+
+    const bin = typeof(base64) === "string" ? base64 : ab2str10();
     if(bin.length < 10) return ImageType.UNKNOWN;
 
     if(bin[0] == String.fromCharCode(66) && bin[1] == String.fromCharCode(77)) {
@@ -468,6 +501,15 @@ class IconManager {
 
         if(!IconManager.cache)
             IconManager.cache = new CacheManager("icons");
+    }
+
+    async delete_icon(id: number) : Promise<void> {
+        if(id <= 1000)
+            throw "invalid id!";
+
+        await this.handle.delete_file({
+            name: '/icon_' + id
+        });
     }
 
     iconList() : Promise<FileEntry[]> {

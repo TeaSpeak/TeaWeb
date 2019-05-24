@@ -85,6 +85,7 @@ class Modal {
     shown: boolean;
 
     close_listener: (() => any)[] = [];
+    close_elements: JQuery;
 
     constructor(props: ModalProperties) {
         this.properties = props;
@@ -117,7 +118,8 @@ class Modal {
             Object.assign(properties, this.properties.template_properties);
 
         const tag = template.renderTag(properties);
-
+        this.close_elements = tag.find(".button-modal-close");
+        this.close_elements.toggle(this.properties.closeable);
         this._htmlTag = tag;
         this._htmlTag.on('hide.bs.modal', event => !this.properties.closeable || this.close());
         this._htmlTag.on('hidden.bs.modal', event => this._htmlTag.detach());
@@ -144,6 +146,14 @@ class Modal {
         this.properties.triggerClose();
         for(const listener of this.close_listener)
             listener();
+    }
+
+    set_closeable(flag: boolean) {
+        if(flag === this.properties.closeable)
+            return;
+
+        this.properties.closeable = flag;
+        this.close_elements.toggle(flag);
     }
 }
 

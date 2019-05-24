@@ -84,6 +84,11 @@ namespace i18n {
         return translated;
     }
 
+    export function tra(message: string, ...args: any[]) {
+        message = tr(message);
+        return MessageHelper.formatMessage(message, ...args);
+    }
+
     async function load_translation_file(url: string, path: string) : Promise<TranslationFile> {
         return new Promise<TranslationFile>((resolve, reject) => {
             $.ajax({
@@ -297,3 +302,4 @@ namespace i18n {
 
 // @ts-ignore
 const tr: typeof i18n.tr = i18n.tr;
+const tra: typeof i18n.tra = i18n.tra;

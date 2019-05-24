@@ -541,6 +541,7 @@ const loader_javascript = {
             "js/crypto/sha.js",
             "js/crypto/hex.js",
             "js/crypto/asn1.js",
+            "js/crypto/crc32.js",
 
             //load the profiles
             "js/profiles/ConnectionProfile.js",
