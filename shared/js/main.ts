@@ -326,7 +326,6 @@ function main() {
                 password: password,
                 hashed: password_hashed
             } : undefined);
-            Modals.spawnInviteEditor(connection);
         } else {
             Modals.spawnConnectModal({
                 url: address,

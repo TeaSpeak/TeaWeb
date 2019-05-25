@@ -1,4 +1,11 @@
 # Changelog:
+* **25.05.19**
+    - Show icons within the permission editor
+    - Added the possibility to select icons within the permission editor
+    - Added server group clients list
+    - Improved invite buddy dialog
+    - Improved poke modal system
+    
 * **24.05.19**
     - Implemented icon upload
     

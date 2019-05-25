@@ -2586,13 +2586,11 @@
         </script>
         <script class="jsrender-template" id="tmpl_poke_popup" type="text/html">
             <div class="container-poke">
-                <div class="container-information">
-                    <a>{{tr "You have been poked by"/}} </a><node key="invoker"></node><a>:</a>
+                <div class="container-servers"></div>
+                <div class="buttons">
+                    <div class="spacer"></div>
+                    <button class="btn btn-raised btn-primary button-close">{{tr "Close" /}}</button>
                 </div>
-                <div class="container-message">
-                    <a class="message">{{>message}}</a>
-                </div>
-                <button class="button-close">{{tr "Close" /}}</button>
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_invite" type="text/html">

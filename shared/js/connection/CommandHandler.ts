@@ -733,7 +733,7 @@ namespace connection {
 
         handleNotifyClientPoke(json) {
             json = json[0];
-            Modals.spawnPoke({
+            Modals.spawnPoke(this.connection_handler, {
                 id: parseInt(json["invokerid"]),
                 name: json["invokername"],
                 unique_id: json["invokeruid"]

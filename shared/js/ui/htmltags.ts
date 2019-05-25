@@ -52,6 +52,7 @@ namespace htmltags {
         {
             if(properties.add_braces)
                 result = result + "\"";
+
             result = result + MessageHelper.htmlEscape(properties.client_name || "undefined").join(" ");
             if(properties.add_braces)
                 result = result + "\"";
