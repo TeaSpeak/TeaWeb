@@ -18,6 +18,7 @@
     "../js/workers"
   ],
   "include": [
+    "../types",
     "../declarations/imports_*.d.ts",
     "../backend",
     "../js/**/*.ts"

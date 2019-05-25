@@ -5,6 +5,9 @@
     "sourceMap": true,
     "outFile": "WorkerCodec.js"
   },
+  "include": [
+    "../../types/"
+  ],
   "files": [
     "codec/CodecWorker.ts",
     "codec/OpusCodec.ts",

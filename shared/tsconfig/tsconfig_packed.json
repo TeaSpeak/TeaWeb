@@ -21,6 +21,7 @@
     "../js/load.ts"
   ],
   "include": [
+    "../types",
     "../declarations/imports_*.d.ts",
     "../declarations/exports_loader.d.ts",
     "../js/**/*.ts",

@@ -5,7 +5,10 @@
     "sourceMap": true,
     "outFile": "WorkerPOW.js"
   },
+  "include": [
+    "../../types/*.d.ts"
+  ],
   "files": [
-    "pow/POWWorker.ts",
+    "pow/POWWorker.ts"
   ]
 }

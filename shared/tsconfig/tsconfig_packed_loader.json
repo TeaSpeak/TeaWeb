@@ -5,6 +5,7 @@
     "sourceMap": true
   },
   "include": [
+    "../types",
     "../declarations/imports_*.d.ts",
     "../declarations/exports_packed.d.ts",
     "../js/load.ts",
