@@ -280,8 +280,9 @@ modal-body {
 			white-space: nowrap;
 			cursor: pointer;
 
-			.icon, .icon_empty {
+			.icon, .icon_empty, .icon-container {
 				margin-right: 3px;
+				margin-left: 3px;
 			}
 
 			.name.savedb {
