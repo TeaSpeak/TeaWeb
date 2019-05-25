@@ -84,6 +84,7 @@ class Modal {
     properties: ModalProperties;
     shown: boolean;
 
+    open_listener: (() => any)[] = [];
     close_listener: (() => any)[] = [];
     close_elements: JQuery;
 
@@ -121,6 +122,7 @@ class Modal {
         this.close_elements = tag.find(".button-modal-close");
         this.close_elements.toggle(this.properties.closeable);
         this._htmlTag = tag;
+        this._htmlTag.on('shown.bs.modal', event => { for(const listener of this.open_listener) listener(); });
         this._htmlTag.on('hide.bs.modal', event => !this.properties.closeable || this.close());
         this._htmlTag.on('hidden.bs.modal', event => this._htmlTag.detach());
     }
@@ -198,6 +200,13 @@ function createInputModal(headMessage: BodyCreator, question: BodyCreator, valid
         input.attr("pattern", valid ? null : "^[a]{1000}$").toggleClass("is-invalid", !valid);
         button_submit.prop("disabled", !valid);
     });
+    input.on('keydown', event => {
+        if(event.keyCode !== JQuery.Key.Enter || event.shiftKey)
+            return;
+        if(button_submit.prop("disabled"))
+            return;
+        button_submit.trigger('click');
+    });
 
     button_submit.on('click', event => {
         if(!submited) {
@@ -219,6 +228,7 @@ function createInputModal(headMessage: BodyCreator, question: BodyCreator, valid
         modal.close();
     });
 
+    modal.open_listener.push(() => input.focus());
     modal.close_listener.push(() => button_cancel.trigger('click'));
     return modal;
 }

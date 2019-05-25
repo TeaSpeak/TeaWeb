@@ -5,6 +5,7 @@
     - Added server group clients list
     - Improved invite buddy dialog
     - Improved poke modal system
+    - Improved modal template for text input
     
 * **24.05.19**
     - Implemented icon upload
