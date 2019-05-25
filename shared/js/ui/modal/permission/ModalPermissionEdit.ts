@@ -424,13 +424,16 @@ namespace Modals {
         return modal;
     }
 
-    function build_channel_tree(connection: ConnectionHandler, channel_list: JQuery, select_callback: (channel: ChannelEntry) => any) {
+    function build_channel_tree(connection: ConnectionHandler, channel_list: JQuery, select_callback: (channel: ChannelEntry, icon_update: (id: number) => any) => any) {
         const root = connection.channelTree.get_first_channel();
         if(!root) return;
 
         const build_channel = (channel: ChannelEntry) => {
             let tag = $.spawn("div").addClass("channel").attr("channel-id", channel.channelId);
-            connection.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(tag);
+            let icon_tag = connection.fileManager.icons.generateTag(channel.properties.channel_icon_id);
+            icon_tag.appendTo(tag);
+            const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
+
             {
                 let name = $.spawn("a").text(channel.channelName() + " (" + channel.channelId + ")").addClass("name");
                 //if(connection.channelTree.server.properties. == group.id)
@@ -441,7 +444,7 @@ namespace Modals {
             tag.on('click', event => {
                 channel_list.find(".selected").removeClass("selected");
                 tag.addClass("selected");
-                select_callback(channel);
+                select_callback(channel, _update_icon);
             });
 
             return tag;
@@ -763,6 +766,7 @@ namespace Modals {
 
     function apply_channel_permission(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
         let current_channel: ChannelEntry | undefined;
+        let update_channel_icon: (id: number) => any;
 
         /* the editor */
         {
@@ -800,6 +804,10 @@ namespace Modals {
                             return connection.serverConnection.send_command("channeldelperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id,
+                            }).then(e => {
+                                if(permission.name === "i_icon_id" && update_channel_icon)
+                                    update_channel_icon(undefined);
+                                return e;
                             });
                         } else {
                             /* TODO Remove this because its totally useless. Remove this from the UI as well */
@@ -831,6 +839,10 @@ namespace Modals {
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
                                 permnegate: value.flag_negate
+                            }).then(e => {
+                                if(permission.name === "i_icon_id" && update_channel_icon)
+                                    update_channel_icon(value.value);
+                                return e;
                             });
                         } else {
                             /* TODO Remove this because its totally useless. Remove this from the UI as well */
@@ -857,15 +869,16 @@ namespace Modals {
         }
 
         let channel_list = tab_tag.find(".list-channel .entries");
-        build_channel_tree(connection, channel_list, channel => {
+        build_channel_tree(connection, channel_list, (channel, update) => {
             current_channel = channel;
+            update_channel_icon = update;
             editor.trigger_update();
         });
     }
 
     function apply_channel_groups(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
         let current_group;
-
+        let update_group_icon: (id: number) => any;
         /* the editor */
         {
             const pe_server = tab_tag.find("permission-editor.group-channel");
@@ -902,6 +915,10 @@ namespace Modals {
                             return connection.serverConnection.send_command("channelgroupdelperm", {
                                 cgid: current_group.id,
                                 permid: permission.id,
+                            }).then(e => {
+                                if(permission.name === "i_icon_id" && update_group_icon)
+                                    update_group_icon(undefined);
+                                return e;
                             });
                         } else {
                             log.info(LogCategory.PERMISSIONS, tr("Removing channel group grant permission %s. permission.id: %o"),
@@ -932,6 +949,10 @@ namespace Modals {
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
                                 permnegate: value.flag_negate
+                            }).then(e => {
+                                if(permission.name === "i_icon_id" && update_group_icon)
+                                    update_group_icon(value.value);
+                                return e;
                             });
                         } else {
                             log.info(LogCategory.PERMISSIONS, tr("Adding or updating channel group grant permission %s. permission.{id: %o, value: %o}"),
@@ -973,7 +994,10 @@ namespace Modals {
                 }
 
                 let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
-                connection.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
+                let icon_tag = connection.fileManager.icons.generateTag(group.properties.iconid);
+                icon_tag.appendTo(tag);
+                const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
+
                 {
                     let name = $.spawn("a").text(group.name + " (" + group.id + ")").addClass("name");
                     if(group.properties.savedb)
@@ -986,6 +1010,7 @@ namespace Modals {
 
                 tag.on('click', event => {
                     current_group = group;
+                    update_group_icon = _update_icon;
                     group_list.find(".selected").removeClass("selected");
                     tag.addClass("selected");
 

@@ -616,7 +616,7 @@ class IconManager {
         options = options || {};
 
         id = id >>> 0;
-        if(id == 0)
+        if(id == 0 || !id)
             return $.spawn("div").addClass("icon_empty");
         else if(id < 1000)
             return $.spawn("div").addClass("icon client-group_" + id);
