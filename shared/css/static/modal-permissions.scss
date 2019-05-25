@@ -315,3 +315,55 @@ permission-editor {
 		}
 	}
 }
+
+.layout-group-server {
+	.list-group-server { }
+
+	.permission-explorer {
+		flex-grow: 70;
+	}
+
+	.container-clients {
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		width: 175px;
+		min-width: 125px;
+
+
+		.container-filter {
+			flex-grow: 0;
+			flex-shrink: 0;
+		}
+
+		.container-list-clients {
+			flex-grow: 1;
+			flex-shrink: 1;
+
+			overflow-x: auto;
+			overflow-y: auto;
+
+			border: grey solid 1px;
+			position: relative;
+
+			width: 100%;
+
+			.list-clients {
+				width: fit-content;
+
+				.entry {
+					white-space : nowrap;
+					cursor: pointer;
+					padding: 2px;
+					width: 100%;
+
+					&.selected {
+						background: blue;
+						color: whitesmoke;
+					}
+				}
+			}
+		}
+	}
+}

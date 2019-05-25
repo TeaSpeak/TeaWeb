@@ -304,19 +304,6 @@ modal-body {
 	}
 }
 
-.layout-group-server {
-	.list-group-server { }
-
-	.permission-explorer {
-		flex-grow: 70;
-	}
-
-	.list-group-server-clients {
-		flex-grow: 0;
-		width: 200px;
-	}
-}
-
 .layout-channel, .layout-client-channel {
 	.list-channel {
 		display: flex;

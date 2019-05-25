@@ -1033,7 +1033,8 @@ namespace Modals {
         b_virtualserver_playlist_permission_list
      */
     function apply_server_groups(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
-        let current_group;
+        let current_group: Group;
+        let current_group_changed;
 
         /* list all groups */
         let update_icon: (icon_id: number) => any;
@@ -1066,8 +1067,13 @@ namespace Modals {
                 tag.appendTo(group_list);
 
                 tag.on('click', event => {
+                    if(current_group === group)
+                        return;
+
                     current_group = group;
                     update_icon = _update_icon;
+                    current_group_changed();
+
                     group_list.find(".selected").removeClass("selected");
                     tag.addClass("selected");
                     editor.trigger_update();
@@ -1170,6 +1176,80 @@ namespace Modals {
 
                 editor.trigger_update();
             });
+        }
+
+        /* client list */
+        {
+            //filter-client-list
+            const container_clients = tab_tag.find(".container-clients");
+            const container_client_list = container_clients.find(".list-clients");
+            const input_filter = container_clients.find(".filter-client-list");
+
+            const update_filter = () => {
+                const filter_text = (input_filter.val() || "").toString().toLowerCase();
+                if(!filter_text) {
+                    container_client_list.find(".entry").css('display', 'block');
+                } else {
+                    const entries = container_client_list.find(".entry");
+                    for(const _entry of entries) {
+                        const entry = $(_entry);
+                        if(entry.attr("search-string").toLowerCase().indexOf(filter_text) !== -1)
+                            entry.css('display', 'block');
+                        else
+                            entry.css('display', 'none');
+                    }
+                }
+            };
+
+            const update_client_list = () => {
+                container_client_list.empty();
+
+                connection.serverConnection.command_helper.request_clients_by_server_group(current_group.id).then(clients => {
+                    for(const client of clients) {
+                        const tag = $.spawn("div").addClass("entry").text(client.client_nickname);
+                        tag.attr("search-string", client.client_nickname + "-" + client.client_unique_identifier + "-" + client.client_database_id);
+                        container_client_list.append(tag);
+
+                        tag.on('click contextmenu', event => {
+                            container_client_list.find(".selected").removeClass("selected");
+                            tag.addClass("selected");
+                        });
+
+                        tag.on('contextmenu', event => {
+                            if(event.isDefaultPrevented())
+                                return;
+
+                            event.preventDefault();
+                            spawn_context_menu(event.pageX, event.pageY, {
+                                type: MenuEntryType.ENTRY,
+                                name: tr("Remove client"),
+                                icon: 'client-delete',
+                                callback: () => {
+                                    connection.serverConnection.send_command("servergroupdelclient", {
+                                        sgid: current_group.id,
+                                        cldbid: client.client_database_id
+                                    }).then(() => {
+                                        tag.detach();
+                                    });
+                                }
+                            }, {
+                                type: MenuEntryType.ENTRY,
+                                name: tr("Copy unique id"),
+                                icon: 'client-copy',
+                                callback: () => copy_to_clipboard(client.client_unique_identifier)
+                            })
+                        });
+                    }
+                    update_filter();
+                }).catch(error => {
+                    if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR)
+                        return;
+                    console.warn(tr("Failed to receive server group clients for group %d: %o"), current_group.id, error);
+                })
+            };
+
+            input_filter.on('change keyup', event => update_filter());
+            current_group_changed = update_client_list;
         }
     }
 }

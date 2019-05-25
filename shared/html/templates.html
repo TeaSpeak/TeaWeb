@@ -1716,7 +1716,18 @@
                             <div class="horizontal-stretch">
                                 <permission-editor class="group-server" />
                             </div>
-                            <div class="list-group-server-clients"></div>
+                            <div class="container-clients">
+                                <div class="container-filter">
+                                    <div class="form-group">
+                                        <label class="bmd-label-floating">{{tr "Search client" /}}</label>
+                                        <input type="text" class="form-control filter-client-list"/>
+                                    </div>
+                                </div>
+
+                                <div class="container-list-clients">
+                                    <div class="list-clients"></div>
+                                </div>
+                            </div>
                         </div>
                     </x-content>
                 </x-entry>
