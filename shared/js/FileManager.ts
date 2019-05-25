@@ -591,8 +591,23 @@ class IconManager {
         }
     }
 
-    loadIcon(id: number) : Promise<Icon> {
+    download_icon(id: number) : Promise<Icon> {
         return this._loading_promises[id] || (this._loading_promises[id] = this._load_icon(id));
+    }
+
+    async resolve_icon(id: number) : Promise<Icon> {
+        id = id >>> 0;
+        try {
+            return await this.resolved_cached(id);
+        } catch(error) { }
+
+        try {
+            return await this.download_icon(id);
+        } catch(error) {
+            console.error(tr("Icon download failed of icon %d: %o"), id, error);
+        }
+
+        throw "icon not found";
     }
 
     generateTag(id: number, options?: {
@@ -600,6 +615,7 @@ class IconManager {
     }) : JQuery<HTMLDivElement> {
         options = options || {};
 
+        id = id >>> 0;
         if(id == 0)
             return $.spawn("div").addClass("icon_empty");
         else if(id < 1000)
@@ -617,18 +633,7 @@ class IconManager {
             icon_load_image.appendTo(icon_container);
 
             (async () => {
-                let icon: Icon;
-                try {
-                    icon = await this.resolved_cached(id);
-                } catch(error) {
-                    console.error(error);
-                }
-
-                if(!icon)
-                    icon = await this.loadIcon(id);
-
-                if(!icon)
-                    throw "failed to download icon";
+                let icon: Icon = await this.resolve_icon(id);
 
                 icon_image.attr("src", icon.url);
                 icon_container.append(icon_image).removeClass("icon_empty");

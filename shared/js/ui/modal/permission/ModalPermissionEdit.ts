@@ -65,6 +65,9 @@ namespace Modals {
 
         private entry_editor: ui.PermissionEditor;
 
+        icon_resolver: (id: number) => Promise<HTMLImageElement>;
+        icon_selector: (current_id: number) => Promise<number>;
+
         constructor(permissions: GroupedPermissions[]) {
             this.permissions = permissions;
             this.entry_editor = new ui.PermissionEditor(permissions);
@@ -167,6 +170,15 @@ namespace Modals {
                             element.flag_negate = entry.flag_negate;
                         }
 
+                        if(permission.name === "i_icon_id") {
+                            this.icon_resolver(entry.value).then(e => {
+                                entry.set_icon_id_image(e);
+                                entry.request_full_draw();
+                                this.entry_editor.request_draw(false);
+                            }).catch(error => {
+                                console.warn(tr("Failed to load icon for permission editor: %o"), error);
+                            });
+                        }
                         entry.request_full_draw();
                         this.entry_editor.request_draw(false);
                     }).catch(() => {
@@ -301,10 +313,21 @@ namespace Modals {
                     entry.value = value.value;
                     entry.flag_skip = value.flag_skip;
                     entry.flag_negate = value.flag_negate;
+                    if(permission.name === "i_icon_id") {
+                        this.icon_resolver(value.value).then(e => {
+                            entry.set_icon_id_image(e);
+                            entry.request_full_draw();
+                            this.entry_editor.request_draw(false);
+                        }).catch(error => {
+                            console.warn(tr("Failed to load icon for permission editor: %o"), error);
+                        });
+                        entry.on_icon_select = this.icon_selector;
+                    }
                 } else {
                     entry.value = undefined;
                     entry.flag_skip = false;
                     entry.flag_negate = false;
+                    entry.set_icon_id_image(undefined);
                 }
 
                 if(value && value.hasGrant()) {
@@ -353,6 +376,22 @@ namespace Modals {
                 let tag = $("#tmpl_server_permissions").renderTag(properties);
                 const pe = new PermissionEditor(connection.permissions.groupedPermissions());
                 pe.build_tag();
+                pe.icon_resolver = id => connection.fileManager.icons.resolve_icon(id).then(async icon => {
+                    if(!icon)
+                        return undefined;
+
+                    const tag = document.createElement("img");
+                    await new Promise((resolve, reject) => {
+                        tag.onerror = reject;
+                        tag.onload = resolve;
+                        tag.src = icon.url;
+                    });
+                    return tag;
+                });
+                pe.icon_selector = current_icon => new Promise<number>(resolve => {
+                    spawnIconSelect(connection, id => resolve(new Int32Array([id])[0]), current_icon);
+                });
+
                 /* initialisation */
                 {
                     const pe_server = tag.find("permission-editor.group-server");
@@ -972,6 +1011,7 @@ namespace Modals {
         let current_group;
 
         /* list all groups */
+        let update_icon: (icon_id: number) => any;
         {
             let group_list = tab_tag.find(".list-group-server .entries");
 
@@ -986,7 +1026,10 @@ namespace Modals {
                         continue;
                 }
                 let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
-                connection.fileManager.icons.generateTag(group.properties.iconid).appendTo(tag);
+                let icon_tag = connection.fileManager.icons.generateTag(group.properties.iconid);
+                icon_tag.appendTo(tag);
+                const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
+
                 {
                     let name = $.spawn("a").text(group.name + " (" + group.id + ")").addClass("name");
                     if(group.properties.savedb)
@@ -999,6 +1042,7 @@ namespace Modals {
 
                 tag.on('click', event => {
                     current_group = group;
+                    update_icon = _update_icon;
                     group_list.find(".selected").removeClass("selected");
                     tag.addClass("selected");
                     editor.trigger_update();
@@ -1042,6 +1086,10 @@ namespace Modals {
                             return connection.serverConnection.send_command("servergroupdelperm", {
                                 sgid: current_group.id,
                                 permid: permission.id,
+                            }).then(e => {
+                                if(permission.name === "i_icon_id" && update_icon)
+                                    update_icon(0);
+                                return e;
                             });
                         } else {
                             log.info(LogCategory.PERMISSIONS, tr("Removing server group grant permission %s. permission.id: %o"),
@@ -1072,6 +1120,10 @@ namespace Modals {
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
                                 permnegate: value.flag_negate
+                            }).then(e => {
+                                if(permission.name === "i_icon_id" && update_icon)
+                                    update_icon(value.value);
+                                return e;
                             });
                         } else {
                             log.info(LogCategory.PERMISSIONS, tr("Adding or updating server group grant permission %s. permission.{id: %o, value: %o}"),

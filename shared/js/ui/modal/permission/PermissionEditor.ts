@@ -459,7 +459,9 @@ namespace ui {
         private _listener_value: InteractionListener;
         private _listener_grant: InteractionListener;
         private _listener_general: InteractionListener;
+        private _icon_image: HTMLImageElement | undefined;
 
+        on_icon_select?: (current_id: number) => Promise<number>;
         on_context_menu?: (x: number, y: number) => any;
         on_grant_change?: () => any;
         on_change?: () => any;
@@ -467,6 +469,16 @@ namespace ui {
         constructor(permission: PermissionInfo) {
             super();
             this._permission = permission;
+        }
+
+        set_icon_id_image(image: HTMLImageElement | undefined) {
+            if(this._icon_image === image)
+                return;
+            this._icon_image = image;
+            if(image) {
+                image.height = 16;
+                image.width = 16;
+            }
         }
 
         permission() { return this._permission; }
@@ -561,11 +573,19 @@ namespace ui {
                     const x = w + PermissionEntry.COLUMN_VALUE - PermissionEntry.CHECKBOX_HEIGHT;
                     const y = 1;
 
+                    this._listener_value.region.width = PermissionEntry.CHECKBOX_HEIGHT;
                     this._listener_value.region.x = original_x + x;
                     this._listener_value.region.y = original_y + y;
 
                     this._draw_checkbox_field(ctx, this.colors.permission.value_b, x, y, PermissionEntry.CHECKBOX_HEIGHT, this.value > 0, this.flag_value_hovered);
+                } else if(this._permission.name === "i_icon_id" && this._icon_image) {
+                    this._listener_value.region.x = original_x + w;
+                    this._listener_value.region.y = original_y;
+                    this._listener_value.region.width = PermissionEntry.CHECKBOX_HEIGHT;
+
+                    this._draw_icon_field(ctx, this.colors.permission.value_b, w, 0, PermissionEntry.COLUMN_VALUE, this.flag_value_hovered, this._icon_image);
                 } else {
+                    this._listener_value.region.width = PermissionEntry.COLUMN_VALUE;
                     this._listener_value.region.x = original_x + w;
                     this._listener_value.region.y = original_y;
 
@@ -600,6 +620,20 @@ namespace ui {
             this._listener_general.region.x = -1e8;
         }
 
+        private _draw_icon_field(ctx: CanvasRenderingContext2D, scheme: scheme.CheckBox, x: number, y: number, width: number, hovered: boolean, image: HTMLImageElement) {
+            const line = ctx.lineWidth;
+            ctx.lineWidth = 2;
+            ctx.fillStyle = scheme.border;
+            ctx.strokeRect(x + 1, y + 1, PermissionEntry.HEIGHT - 2, PermissionEntry.HEIGHT - 2);
+            ctx.lineWidth = line;
+
+            ctx.fillStyle = hovered ? scheme.background_hovered : scheme.background;
+            ctx.fillRect(x + 1, y + 1, PermissionEntry.HEIGHT - 2, PermissionEntry.HEIGHT - 2);
+
+            const center_y = y + PermissionEntry.HEIGHT / 2;
+            const center_x = x + PermissionEntry.HEIGHT / 2;
+            ctx.drawImage(image, center_x - image.width / 2, center_y - image.height / 2);
+        }
 
         private _draw_number_field(ctx: CanvasRenderingContext2D, scheme: scheme.TextField, x: number, y: number, width: number, value: number, hovered: boolean) {
             ctx.fillStyle = hovered ? scheme.background_hovered : scheme.background;
@@ -721,6 +755,14 @@ namespace ui {
                         if(this.on_change)
                             this.on_change();
                         return RepaintMode.REPAINT_OBJECT_FULL;
+                    } else if(this._permission.name === "i_icon_id") {
+                        this.on_icon_select(this.value).then(value => {
+                            this.value = value;
+                            if(this.on_change)
+                                this.on_change();
+                        }).catch(error => {
+                            console.warn(tr("Failed to select icon: %o"), error);
+                        })
                     } else {
                         this._spawn_number_edit(
                             this._listener_value.region.x,
