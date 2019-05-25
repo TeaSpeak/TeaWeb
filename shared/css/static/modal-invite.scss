@@ -1,0 +1,37 @@
+.modal-invite {
+	user-select: none;
+	
+	.general-properties {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		> .form-group:first-of-type {
+			flex-grow: 1;
+			margin-right: 5px;
+		}
+	}
+
+	.text-output {
+		border-radius: 2px;
+		padding: 5px;
+		background: #00000012;
+		min-height: 120px;
+
+		width: 100%;
+		resize: none;
+	}
+
+	.buttons {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+
+		margin-top: 5px;
+
+		.icon {
+			vertical-align: middle;
+			margin-right: 5px;
+		}
+	}
+}

@@ -61,6 +61,7 @@ class LaterPromise<T> extends Promise<T> {
 }
 
 const copy_to_clipboard = str => {
+    console.log(tr("Copy text to clipboard: %s"), str);
     const el = document.createElement('textarea');
     el.value = str;
     el.setAttribute('readonly', '');

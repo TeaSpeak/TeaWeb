@@ -2595,6 +2595,38 @@
                 <button class="button-close">{{tr "Close" /}}</button>
             </div>
         </script>
+        <script class="jsrender-template" id="tmpl_invite" type="text/html">
+            <div class="modal-invite">
+                <div class="general-properties">
+                    <div class="form-group property-type">
+                        <label>{{tr "Link type:" /}}</label>
+                        <select class="form-control">
+                            <option value="0">{{tr "TeaWeb" /}}</option>
+                            <option value="1" disabled>{{tr "TeaClient (Not supported yet)" /}}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="switch flag-direct-connect">
+                            <label>
+                                <input type="checkbox">
+                                {{tr "Connect directly" /}}
+                            </label>
+                        </div>
+                        <div class="switch flag-resolved-address">
+                            <label>
+                                <input type="checkbox">
+                                {{tr "Use resolved address" /}}
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <textarea class="text-output" readonly></textarea>
+                <div class="buttons">
+                    <button class="btn btn-primary button-copy"><div class="icon client-copy"></div>{{tr "Copy" /}}</button>
+                    <button class="btn btn-primary button-close">{{tr "Close" /}}</button>
+                </div>
+            </div>
+        </script>
 
         <script class="jsrender-template" id="tmpl_query_create" type="text/html">
             <div class="query-create">
