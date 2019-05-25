@@ -598,11 +598,17 @@ class IconManager {
     async resolve_icon(id: number) : Promise<Icon> {
         id = id >>> 0;
         try {
-            return await this.resolved_cached(id);
+            const result = await this.resolved_cached(id);
+            if(result)
+                return result;
+            throw "";
         } catch(error) { }
 
         try {
-            return await this.download_icon(id);
+            const result =  await this.download_icon(id);
+            if(result)
+                return result;
+            throw "load result is empty";
         } catch(error) {
             console.error(tr("Icon download failed of icon %d: %o"), id, error);
         }
