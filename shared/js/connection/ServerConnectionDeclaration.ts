@@ -39,6 +39,12 @@ interface ClientNameFromUid {
     response: ClientNameInfo[]
 }
 
+interface ServerGroupClient {
+    client_nickname: string;
+    client_unique_identifier: string;
+    client_database_id: number;
+}
+
 interface QueryListEntry {
     username: string;
     unique_id: string;

@@ -238,6 +238,44 @@ namespace connection {
             });
         }
 
+        async request_clients_by_server_group(group_id: number) : Promise<ServerGroupClient[]> {
+            //servergroupclientlist sgid=2
+            //notifyservergroupclientlist sgid=6 cldbid=2 client_nickname=WolverinDEV client_unique_identifier=xxjnc14LmvTk+Lyrm8OOeo4tOqw=
+            return new Promise<ServerGroupClient[]>((resolve, reject) => {
+                const single_handler: SingleCommandHandler = {
+                    command: "notifyservergroupclientlist",
+                    function: command => {
+                        if (command.arguments[0]["sgid"] != group_id) {
+                            log.error(LogCategory.NETWORKING, tr("Received invalid notification for server group client list"));
+                            return false;
+                        }
+
+                        try {
+                            const result: ServerGroupClient[] = [];
+                            for(const entry of command.arguments)
+                                result.push({
+                                    client_database_id: parseInt(entry["cldbid"]),
+                                    client_nickname: entry["client_nickname"],
+                                    client_unique_identifier: entry["client_unique_identifier"]
+                                });
+                            resolve(result);
+                        } catch (error) {
+                            log.error(LogCategory.NETWORKING, tr("Failed to parse server group client list: %o"), error);
+                            reject("failed to parse info");
+                        }
+
+                        return true;
+                    }
+                };
+                this.handler_boss.register_single_handler(single_handler);
+
+                this.connection.send_command("servergroupclientlist", {sgid: group_id}).catch(error => {
+                    this.handler_boss.remove_single_handler(single_handler);
+                    reject(error);
+                })
+            });
+        }
+
         request_playlist_info(playlist_id: number) : Promise<PlaylistInfo> {
             return new Promise((resolve, reject) => {
                 const single_handler: SingleCommandHandler = {
