@@ -750,7 +750,7 @@ class ChannelTree {
                 this.select_next_channel(channel, false);
             } else if(this.currently_selected instanceof ServerEntry)
                 this.onSelect(this.channel_first, true);
-        } else if(event.keyCode == KeyCode.KEY_ENTER) {
+        } else if(event.keyCode == KeyCode.KEY_RETURN) {
             if(this.currently_selected instanceof ChannelEntry) {
                 this.currently_selected.joinChannel();
             }

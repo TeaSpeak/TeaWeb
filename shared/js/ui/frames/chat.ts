@@ -373,7 +373,7 @@ class ChatBox {
         this._input_message.on('keypress',event => {
             if(!event.shiftKey) {
                 console.log(event.keyCode);
-                if(event.keyCode == KeyCode.KEY_ENTER) {
+                if(event.keyCode == KeyCode.KEY_RETURN) {
                     this.onSend();
                     return false;
                 } else if(event.keyCode == KeyCode.KEY_UP || event.keyCode == KeyCode.KEY_DOWN) {

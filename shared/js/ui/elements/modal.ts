@@ -201,7 +201,7 @@ function createInputModal(headMessage: BodyCreator, question: BodyCreator, valid
         button_submit.prop("disabled", !valid);
     });
     input.on('keydown', event => {
-        if(event.keyCode !== KeyCode.KEY_ENTER || event.shiftKey)
+        if(event.keyCode !== KeyCode.KEY_RETURN || event.shiftKey)
             return;
         if(button_submit.prop("disabled"))
             return;

@@ -46,7 +46,7 @@ namespace Modals {
                 flag_resolved_address = input[0].checked;
                 update_link();
             });
-            input[0].checked = flag_direct_connect;
+            input[0].checked = flag_resolved_address;
         }
 
         update_link();

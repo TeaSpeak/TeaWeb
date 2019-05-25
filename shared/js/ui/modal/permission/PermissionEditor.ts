@@ -898,7 +898,7 @@ namespace ui {
             });
 
             element.on('keypress', event => {
-                if(event.which == KeyCode.KEY_ENTER)
+                if(event.which == KeyCode.KEY_RETURN)
                     element.trigger('focusout');
 
                 const text = String.fromCharCode(event.which);
