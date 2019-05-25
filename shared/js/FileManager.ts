@@ -420,7 +420,7 @@ function image_type(base64: string | ArrayBuffer) {
         return result;
     };
 
-    const bin = typeof(base64) === "string" ? base64 : ab2str10();
+    const bin = typeof(base64) === "string" ? atob(base64) : ab2str10();
     if(bin.length < 10) return ImageType.UNKNOWN;
 
     if(bin[0] == String.fromCharCode(66) && bin[1] == String.fromCharCode(77)) {
