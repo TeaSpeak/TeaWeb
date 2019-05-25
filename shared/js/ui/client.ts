@@ -3,6 +3,8 @@
 /// <reference path="modal/ModalServerGroupDialog.ts" />
 /// <reference path="client_move.ts" />
 
+import KeyEvent = ppt.KeyEvent;
+
 enum ClientType {
     CLIENT_VOICE,
     CLIENT_QUERY,
@@ -879,7 +881,7 @@ class LocalClientEntry extends ClientEntry {
         _self.renaming = true;
 
         elm.keypress(function (e) {
-            if(e.keyCode == JQuery.Key.Enter) {
+            if(e.keyCode == KeyCode.KEY_ENTER) {
                 $(this).trigger("focusout");
                 return false;
             }

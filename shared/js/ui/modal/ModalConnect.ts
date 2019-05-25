@@ -53,7 +53,7 @@ namespace Modals {
             input_address
                 .on("keyup", () => updateFields())
                 .on('keydown', event => {
-                    if(event.keyCode == JQuery.Key.Enter && !event.shiftKey)
+                    if(event.keyCode == KeyCode.KEY_ENTER && !event.shiftKey)
                         button_connect.trigger('click');
                 });
 

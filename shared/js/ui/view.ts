@@ -690,7 +690,7 @@ class ChannelTree {
     handle_key_press(event: KeyboardEvent) {
         if(!this.selected_event || !this.currently_selected || $.isArray(this.currently_selected)) return;
 
-        if(event.keyCode == JQuery.Key.ArrowUp) {
+        if(event.keyCode == KeyCode.KEY_UP) {
             event.preventDefault();
             if(this.currently_selected instanceof ChannelEntry) {
                 let previous = this.currently_selected.channel_previous;
@@ -734,7 +734,7 @@ class ChannelTree {
                 return;
             }
 
-        } else if(event.keyCode == JQuery.Key.ArrowDown) {
+        } else if(event.keyCode == KeyCode.KEY_DOWN) {
             event.preventDefault();
             if(this.currently_selected instanceof ChannelEntry) {
                 this.select_next_channel(this.currently_selected, true);
@@ -750,7 +750,7 @@ class ChannelTree {
                 this.select_next_channel(channel, false);
             } else if(this.currently_selected instanceof ServerEntry)
                 this.onSelect(this.channel_first, true);
-        } else if(event.keyCode == JQuery.Key.Enter) {
+        } else if(event.keyCode == KeyCode.KEY_ENTER) {
             if(this.currently_selected instanceof ChannelEntry) {
                 this.currently_selected.joinChannel();
             }

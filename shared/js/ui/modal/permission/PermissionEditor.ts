@@ -898,7 +898,7 @@ namespace ui {
             });
 
             element.on('keypress', event => {
-                if(event.which == JQuery.Key.Enter)
+                if(event.which == KeyCode.KEY_ENTER)
                     element.trigger('focusout');
 
                 const text = String.fromCharCode(event.which);

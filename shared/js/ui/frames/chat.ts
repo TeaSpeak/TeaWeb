@@ -373,10 +373,10 @@ class ChatBox {
         this._input_message.on('keypress',event => {
             if(!event.shiftKey) {
                 console.log(event.keyCode);
-                if(event.keyCode == JQuery.Key.Enter) {
+                if(event.keyCode == KeyCode.KEY_ENTER) {
                     this.onSend();
                     return false;
-                } else if(event.keyCode == JQuery.Key.ArrowUp || event.keyCode == JQuery.Key.ArrowDown) {
+                } else if(event.keyCode == KeyCode.KEY_UP || event.keyCode == KeyCode.KEY_DOWN) {
                     if(this._activeChat) {
                         const message = (this._input_message.val() || "").toString();
                         const history = this._activeChat.send_history;
@@ -385,7 +385,7 @@ class ChatBox {
                             return;
 
                         if(message.replace(/[ \n\r\t]/, "").length == 0 || this._history_index == 0 || (this._history_index > 0 && message == this._activeChat.send_history[this._history_index - 1])) {
-                            if(event.keyCode == JQuery.Key.ArrowUp)
+                            if(event.keyCode == KeyCode.KEY_UP)
                                 this._history_index = Math.min(history.length, this._history_index + 1);
                             else
                                 this._history_index = Math.max(0, this._history_index - 1);
