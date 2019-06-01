@@ -250,17 +250,17 @@ namespace bipc {
         }
     }
 
-    interface MethodProxyInvokeData {
+    export interface MethodProxyInvokeData {
         method_name: string;
         arguments: any[];
         promise_id: string;
     }
-    interface MethodProxyResultData {
+    export interface MethodProxyResultData {
         promise_id: string;
         result: any;
         success: boolean;
     }
-    interface MethodProxyCallback {
+    export interface MethodProxyCallback {
         promise: Promise<any>;
         promise_id: string;
 

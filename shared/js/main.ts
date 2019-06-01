@@ -239,7 +239,64 @@ function Base64DecodeUrl(str: string, pad?: boolean){
     return str.replace(/-/g, '+').replace(/_/g, '/');
 }
 
+/*
+class TestProxy extends bipc.MethodProxy {
+    constructor(params: bipc.MethodProxyConnectParameters) {
+        super(bipc.get_handler(), params.channel_id && params.client_id ? params : undefined);
+
+        if(!this.is_slave()) {
+            this.register_method(this.add_slave);
+        }
+        if(!this.is_master()) {
+            this.register_method(this.say_hello);
+            this.register_method(this.add_master);
+        }
+    }
+
+    setup() {
+        super.setup();
+    }
+
+    protected on_connected() {
+        console.log("Test proxy connected");
+    }
+
+    protected on_disconnected() {
+        console.log("Test proxy disconnected");
+    }
+
+    private async say_hello() : Promise<void> {
+        console.log("Hello World");
+    }
+
+    private async add_slave(a: number, b: number) : Promise<number> {
+        return a + b;
+    }
+
+    private async add_master(a: number, b: number) : Promise<number> {
+        return a * b;
+    }
+}
+interface Window {
+    proxy_instance: TestProxy & {url: () => string};
+}
+*/
+
+
 function main() {
+    /*
+    window.proxy_instance = new TestProxy({
+        client_id: settings.static_global<string>("proxy_client_id", undefined),
+        channel_id: settings.static_global<string>("proxy_channel_id", undefined)
+    }) as any;
+    if(window.proxy_instance.is_master()) {
+        window.proxy_instance.setup();
+        window.proxy_instance.url = () => {
+            const data = window.proxy_instance.generate_connect_parameters();
+            return "proxy_channel_id=" + data.channel_id + "&proxy_client_id=" + data.client_id;
+        };
+    }
+    */
     //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
 
     server_connections = new ServerConnectionManager($("#connection-handlers"));

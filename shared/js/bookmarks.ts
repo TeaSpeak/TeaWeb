@@ -57,7 +57,13 @@ namespace bookmarks {
             return _bookmark_config;
 
         let bookmark_json = localStorage.getItem("bookmarks");
-        let bookmarks = JSON.parse(bookmark_json) || {} as BookmarkConfig;
+        let bookmarks;
+        try {
+            bookmarks = JSON.parse(bookmark_json) || {} as BookmarkConfig;
+        } catch(error) {
+            console.error(tr("Failed to load bookmarks: %o"), error);
+            bookmarks = {} as any;
+        }
 
         _bookmark_config = bookmarks;
         _bookmark_config.root_bookmark = _bookmark_config.root_bookmark || { content: [], display_name: "root", type: BookmarkType.DIRECTORY} as DirectoryBookmark;
