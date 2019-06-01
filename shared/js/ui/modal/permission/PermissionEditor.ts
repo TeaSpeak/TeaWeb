@@ -1084,6 +1084,7 @@ namespace ui {
 
             this.canvas_container = $.spawn("div")
                 .addClass("window-resize-listener") /* we want to handle resized */
+                .css("min-width", "750px")
                 .css("position", "relative")
                 .css("user-select", "none")
                 [0];
