@@ -155,8 +155,8 @@ namespace ui {
     }
 
     class PermissionGroup extends DrawableObject {
-        public static readonly HEIGHT = 24;
-        public static readonly ARROW_SIZE = 12;
+        public static readonly HEIGHT = parseFloat(getComputedStyle(document.documentElement).fontSize) * (3/2); /* 24 */
+        public static readonly ARROW_SIZE = 10; /* 12 */
 
         group: GroupedPermissions;
         _sub_elements: PermissionGroup[] = [];
@@ -425,7 +425,7 @@ namespace ui {
     }
 
     class PermissionEntry extends DrawableObject {
-        public static readonly HEIGHT = 24;
+        public static readonly HEIGHT = PermissionGroup.HEIGHT; /* 24 */
         public static readonly HALF_HEIGHT = PermissionEntry.HEIGHT / 2;
         public static readonly CHECKBOX_HEIGHT = PermissionEntry.HEIGHT - 2;
 
@@ -1049,8 +1049,8 @@ namespace ui {
     }
 
     export class PermissionEditor {
-        private static readonly PERMISSION_HEIGHT = 32;
-        private static readonly PERMISSION_GROUP_HEIGHT = 32;
+        private static readonly PERMISSION_HEIGHT = PermissionEntry.HEIGHT;
+        private static readonly PERMISSION_GROUP_HEIGHT = PermissionGroup.HEIGHT;
 
         readonly grouped_permissions: GroupedPermissions[];
         readonly canvas: HTMLCanvasElement;
@@ -1083,6 +1083,7 @@ namespace ui {
             this.grouped_permissions = permissions;
 
             this.canvas_container = $.spawn("div")
+                .addClass("window-resize-listener") /* we want to handle resized */
                 .css("position", "relative")
                 .css("user-select", "none")
                 [0];
@@ -1108,6 +1109,7 @@ namespace ui {
             this.canvas_container.oncontextmenu = (event: MouseEvent) => {
                 this._handle_repaint(this._intersect_manager.process_context_menu(event, event.offsetX, event.offsetY));
             };
+            this.canvas_container.onresize = () => this.request_draw(true);
 
 
             this.initialize();
