@@ -471,28 +471,35 @@ class ChannelEntry {
                 name: tr("<b>Switch to channel</b>"),
                 callback: () => this.joinChannel()
             },
-            MenuEntry.HR(),
-            {
-                type: MenuEntryType.ENTRY,
-                icon: "client-subscribe_to_channel",
-                name: tr("<b>Subscribe to channel</b>"),
-                callback: () => this.subscribe(),
-                visible: !this.flag_subscribed
-            },
-            {
-                type: MenuEntryType.ENTRY,
-                icon: "client-channel_unsubscribed",
-                name: tr("<b>Unsubscribe from channel</b>"),
-                callback: () => this.unsubscribe(),
-                visible: this.flag_subscribed
-            },
-            {
-                type: MenuEntryType.ENTRY,
-                icon: "client-subscribe_mode",
-                name: tr("<b>Use inherited subscribe mode</b>"),
-                callback: () => this.unsubscribe(true),
-                visible: this.subscribe_mode != ChannelSubscribeMode.INHERITED
-            },
+            ...(() => {
+                const local_client = this.channelTree.client.getClient();
+                if (!local_client || local_client.currentChannel() !== this)
+                    return [
+                        MenuEntry.HR(),
+                        {
+                            type: MenuEntryType.ENTRY,
+                            icon: "client-subscribe_to_channel",
+                            name: tr("<b>Subscribe to channel</b>"),
+                            callback: () => this.subscribe(),
+                            visible: !this.flag_subscribed
+                        },
+                        {
+                            type: MenuEntryType.ENTRY,
+                            icon: "client-channel_unsubscribed",
+                            name: tr("<b>Unsubscribe from channel</b>"),
+                            callback: () => this.unsubscribe(),
+                            visible: this.flag_subscribed
+                        },
+                        {
+                            type: MenuEntryType.ENTRY,
+                            icon: "client-subscribe_mode",
+                            name: tr("<b>Use inherited subscribe mode</b>"),
+                            callback: () => this.unsubscribe(true),
+                            visible: this.subscribe_mode != ChannelSubscribeMode.INHERITED
+                        }
+                    ];
+                return [];
+            })(),
             MenuEntry.HR(),
             {
                 type: MenuEntryType.ENTRY,
