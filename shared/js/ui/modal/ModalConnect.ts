@@ -28,7 +28,7 @@ namespace Modals {
             let updateFields = function () {
                 console.log("Updating");
                 if(selected_profile)
-                    input_nickname.attr("placeholder", selected_profile.default_username);
+                    input_nickname.attr("placeholder", settings.static_global(Settings.KEY_CONNECT_USERNAME, selected_profile.default_username));
                 else
                     input_nickname.attr("placeholder", "");
 
@@ -77,6 +77,10 @@ namespace Modals {
 
                 input_profile.on('change', event => {
                     selected_profile = profiles.find_profile(input_profile.val() as string);
+                    {
+                        settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, selected_profile.default_username);
+                        input_nickname.val(selected_profile.default_username);
+                    }
                     input_profile.toggleClass("is-invalid", !selected_profile || !selected_profile.valid());
                     updateFields();
                 });

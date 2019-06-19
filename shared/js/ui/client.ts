@@ -901,6 +901,7 @@ class LocalClientEntry extends ClientEntry {
 
             elm.text(_self.clientNickName());
             _self.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
+                settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, text);
                 this.channelTree.client.chat.serverChat().appendMessage(tr("Nickname successfully changed"));
             }).catch((e: CommandResult) => {
                 this.channelTree.client.chat.serverChat().appendError(tr("Could not change nickname ({})"),  e.extra_message);

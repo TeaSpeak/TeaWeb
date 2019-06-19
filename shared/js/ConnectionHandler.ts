@@ -509,7 +509,7 @@ class ConnectionHandler {
             console.log(tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
             const profile = this.serverConnection.handshake_handler().profile;
-            const name = this.serverConnection.handshake_handler().name;
+            const name = this.getClient().clientNickName();
             const password = this.serverConnection.handshake_handler().server_password;
 
             this._reconnect_timer = setTimeout(() => {
