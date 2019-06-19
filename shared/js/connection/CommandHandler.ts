@@ -441,6 +441,14 @@ namespace connection {
 
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_BANNED);
+                    } else if(reason_id == ViewReasonId.VREASON_TIMEOUT) {
+                        this.connection_handler.chat.serverChat().appendError(tr("{0} timed out ({1})"),
+                            client.createChatTag(true),
+                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
+                        );
+
+                        if(channel_from == own_channel)
+                            this.connection_handler.sound.play(Sound.USER_LEFT_TIMEOUT);
                     } else {
                         console.error(tr("Unknown client left reason!"));
                     }

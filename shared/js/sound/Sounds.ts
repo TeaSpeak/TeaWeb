@@ -40,6 +40,7 @@ enum Sound {
     USER_LEFT_KICKED_SERVER = "user.left.kicked.channel", //User is your channel was kicked from the server
     USER_LEFT_DISCONNECT = "user.left.disconnect",
     USER_LEFT_BANNED  = "user.left.banned",
+    USER_LEFT_TIMEOUT = "user.left.timeout",
 
     ERROR_INSUFFICIENT_PERMISSIONS = "error.insufficient_permissions",
 
