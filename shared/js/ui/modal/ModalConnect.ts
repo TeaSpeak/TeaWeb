@@ -28,7 +28,7 @@ namespace Modals {
             let updateFields = function () {
                 console.log("Updating");
                 if(selected_profile)
-                    input_nickname.attr("placeholder", settings.static_global(Settings.KEY_CONNECT_USERNAME, selected_profile.default_username));
+                    input_nickname.attr("placeholder", selected_profile.default_username);
                 else
                     input_nickname.attr("placeholder", "");
 
@@ -48,7 +48,6 @@ namespace Modals {
                 button_connect_tab.prop("disabled", flag_disabled);
             };
 
-            input_nickname.val(settings.static_global(Settings.KEY_CONNECT_USERNAME, undefined));
             input_address.val(defaultHost.enforce ? defaultHost.url : settings.static_global(Settings.KEY_CONNECT_ADDRESS, defaultHost.url));
             input_address
                 .on("keyup", () => updateFields())
@@ -68,6 +67,7 @@ namespace Modals {
                 return true;
             });
 
+            const last_nickname = settings.static_global(Settings.KEY_CONNECT_USERNAME, undefined);
             {
                 for(const profile of profiles.profiles()) {
                     input_profile.append(
@@ -86,7 +86,10 @@ namespace Modals {
                 });
                 input_profile.val(connect_profile && connect_profile.enforce ? connect_profile.profile.id : connect_profile && connect_profile.profile ? connect_profile.profile.id : 'default').trigger('change');
             }
+            if(last_nickname) /* restore */
+                settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, last_nickname);
 
+            input_nickname.val(last_nickname);
             input_nickname.on("keyup", () => updateFields());
             setTimeout(() => updateFields(), 100);
 
@@ -98,8 +101,10 @@ namespace Modals {
                     connection.startConnection(
                         input_address.val().toString(),
                         selected_profile,
-                        input_nickname.val().toString() || selected_profile.default_username,
-                        {password: input_password.val().toString(), hashed: false}
+                        {
+                            nickname: input_nickname.val().toString() || selected_profile.default_username,
+                            password: {password: input_password.val().toString(), hashed: false}
+                        }
                     );
                 } else {
                     button_connect_tab.trigger('click');
@@ -113,8 +118,10 @@ namespace Modals {
                 connection.startConnection(
                     input_address.val().toString(),
                     selected_profile,
-                    input_nickname.val().toString() || selected_profile.default_username,
-                    {password: input_password.val().toString(), hashed: false}
+                    {
+                        nickname: input_nickname.val().toString() || selected_profile.default_username,
+                        password: {password: input_password.val().toString(), hashed: false}
+                    }
                 );
             });
         }, {

@@ -13,13 +13,11 @@ namespace connection {
         private failed = false;
 
         readonly profile: profiles.ConnectionProfile;
-        readonly name: string;
-        readonly server_password: string;
+        readonly parameters: ConnectParameters;
 
-        constructor(profile: profiles.ConnectionProfile, name: string, password: string) {
+        constructor(profile: profiles.ConnectionProfile, parameters: ConnectParameters) {
             this.profile = profile;
-            this.server_password = password;
-            this.name = name;
+            this.parameters = parameters;
         }
 
         setConnection(con: AbstractServerConnection) {
@@ -84,12 +82,16 @@ namespace connection {
             const git_version = settings.static_global("version", "unknown");
             const browser_name = (navigator.browserSpecs || {})["name"] || " ";
             let data = {
-                client_nickname: this.name,
+                client_nickname: this.parameters.nickname || "Another TeaSpeak user",
                 client_platform: (browser_name ? browser_name + " " : "") + navigator.platform,
                 client_version: "TeaWeb " + git_version + " (" + navigator.userAgent + ")",
                 client_version_sign: undefined,
 
-                client_server_password: this.server_password,
+                client_default_channel: (this.parameters.channel || {} as any).target,
+                client_default_channel_password: (this.parameters.channel || {} as any).password,
+                client_default_token: this.parameters.token,
+
+                client_server_password: this.parameters.password ? this.parameters.password.password : undefined,
                 client_browser_engine: navigator.product,
 
                 client_input_hardware: this.connection.client.client_status.input_hardware,

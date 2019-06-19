@@ -794,6 +794,8 @@ class ChannelEntry {
             });
     }
 
+    cached_password() { return this._cachedPassword; }
+
     async subscribe() : Promise<void> {
         if(this.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED)
             return;

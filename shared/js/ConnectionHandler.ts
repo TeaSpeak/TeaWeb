@@ -68,6 +68,16 @@ interface VoiceStatus {
     queries_visible: boolean;
 }
 
+interface ConnectParameters {
+    nickname?: string;
+    channel?: {
+        target: string | number;
+        password?: string;
+    };
+    token?: string;
+    password?: {password: string, hashed: boolean};
+}
+
 class ConnectionHandler {
     channelTree: ChannelTree;
 
@@ -145,70 +155,65 @@ class ConnectionHandler {
 
     setup() { }
 
-    startConnection(addr: string, profile: profiles.ConnectionProfile, name?: string, password?: {password: string, hashed: boolean}) {
+    async startConnection(addr: string, profile: profiles.ConnectionProfile, parameters: ConnectParameters) {
         this.tag_connection_handler.find(".server-name").text(tr("Connecting"));
         this.cancel_reconnect();
         this._reconnect_attempt = false;
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
 
-        let idx = addr.lastIndexOf(':');
 
-        let port: number;
-        let host: string;
-        if(idx != -1) {
-            port = parseInt(addr.substr(idx + 1));
-            host = addr.substr(0, idx);
-        } else {
-            host = addr;
-            port = 9987;
-        }
-        console.log(tr("Start connection to %s:%d"), host, port);
-        this.channelTree.initialiseHead(addr, {host, port});
-
-        this.chat.serverChat().appendMessage(tr("Initializing connection to {0}{1}"), true, host, port == 9987 ? "" : ":" + port);
-        const do_connect = (address: string, port: number) => {
-            const remote_address = {
-                host: address,
-                port: port
-            };
-
-            this.chat.serverChat().appendMessage(tr("Connecting to {0}{1}"), true, address, port == 9987 ? "" : ":" + port);
-            if(password && !password.hashed) {
-                helpers.hashPassword(password.password).then(password => {
-                    /* errors will be already handled via the handle disconnect thing */
-                    this.serverConnection.connect(remote_address, new connection.HandshakeHandler(profile, name, password));
-                }).catch(error => {
-                    createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
-                })
-            } else {
-                /* errors will be already handled via the handle disconnect thing */
-                this.serverConnection.connect(remote_address, new connection.HandshakeHandler(profile, name, password ? password.password : undefined));
-            }
+        let server_address: ServerAddress = {
+            host: "",
+            port: -1
         };
+        {
+            let idx = addr.lastIndexOf(':');
+            if(idx != -1) {
+                server_address.port = parseInt(addr.substr(idx + 1));
+                server_address.host = addr.substr(0, idx);
+            } else {
+                server_address.host = addr;
+                server_address.port = 9987;
+            }
+        }
+        console.log(tr("Start connection to %s:%d"), server_address.host, server_address.port);
+        this.chat.serverChat().appendMessage(tr("Initializing connection to {0}{1}"), true, server_address.host, server_address.port == 9987 ? "" : ":" + server_address.port);
+        this.channelTree.initialiseHead(addr, server_address);
 
-        if(dns.supported() && !host.match(Modals.Regex.IP_V4) && !host.match(Modals.Regex.IP_V6)) {
+        if(parameters.password && !parameters.password.hashed){
+            try {
+                const password = await helpers.hashPassword(parameters.password.password);
+                parameters.password = {
+                    hashed: true,
+                    password: password
+                }
+            } catch(error) {
+                console.error(tr("Failed to hash connect password: %o"), error);
+                createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
+            }
+        }
+
+        if(dns.supported() && !server_address.host.match(Modals.Regex.IP_V4) && !server_address.host.match(Modals.Regex.IP_V6)) {
             const id = ++this._connect_initialize_id;
             this.chat.serverChat().appendMessage(tr("Resolving hostname..."));
-            dns.resolve_address(host, { timeout: 5000 }).then(result => {
+            try {
+                const resolved = await dns.resolve_address(server_address.host, { timeout: 5000 }) || {} as any;
                 if(id != this._connect_initialize_id)
                     return; /* we're old */
 
-                const _result = result || { target_ip: undefined, target_port: undefined };
-                //if(!result)
-                //    throw "empty result";
-
-                this.chat.serverChat().appendMessage(tr("Hostname successfully resolved to {0}"), true, _result.target_ip || host);
-                do_connect(_result.target_ip || host, _result.target_port || port);
-            }).catch(error => {
+                server_address.port = resolved.target_port || server_address.port;
+                server_address.host = resolved.target_ip || server_address.host;
+                this.chat.serverChat().appendMessage(tr("Hostname successfully resolved to {0}{1}"), true, server_address.host, server_address.port);
+            } catch(error) {
                 if(id != this._connect_initialize_id)
                     return; /* we're old */
 
                 this.handleDisconnect(DisconnectReason.DNS_FAILED, error);
-            });
-        } else {
-            do_connect(host, port);
+            }
         }
+
+        await this.serverConnection.connect(server_address, new connection.HandshakeHandler(profile, parameters));
     }
 
 
@@ -329,7 +334,10 @@ class ConnectionHandler {
                         this._certificate_modal.close();
 
                     popup.close(); /* no need, but nicer */
-                    this.startConnection(properties.connect_address, profiles.find_profile(properties.connect_profile) || profiles.default_profile());
+
+                    const profile = profiles.find_profile(properties.connect_profile) || profiles.default_profile();
+                    const cprops = this.reconnect_properties(profile);
+                    this.startConnection(properties.connect_address, profile, cprops);
                 });
 
                 const url = build_url(properties);
@@ -457,10 +465,12 @@ class ConnectionHandler {
                 this.chat.serverChat().appendError(tr("Server requires password"));
                 createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
+
+                    const cprops = this.reconnect_properties(this.serverConnection.handshake_handler().profile);
+                    cprops.password = {password: password as string, hashed: false};
                     this.startConnection(this.serverConnection.remote_address().host + ":" + this.serverConnection.remote_address().port,
                         this.serverConnection.handshake_handler().profile,
-                        this.serverConnection.handshake_handler().name,
-                        {password: password as string, hashed: false});
+                        cprops);
                 }).open();
                 break;
             case DisconnectReason.CLIENT_KICKED:
@@ -509,14 +519,13 @@ class ConnectionHandler {
             console.log(tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
             const profile = this.serverConnection.handshake_handler().profile;
-            const name = this.getClient().clientNickName();
-            const password = this.serverConnection.handshake_handler().server_password;
 
             this._reconnect_timer = setTimeout(() => {
                 this._reconnect_timer = undefined;
                 this.chat.serverChat().appendMessage(tr("Reconnecting..."));
-                log.info(LogCategory.NETWORKING, tr("Reconnecting..."))
-                this.startConnection(server_address.host + ":" + server_address.port, profile, name, password ? { password: password, hashed: true} : undefined);
+                log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
+
+                this.startConnection(server_address.host + ":" + server_address.port, profile, this.reconnect_properties(profile));
                 this._reconnect_attempt = true;
             }, 5000);
         }
@@ -664,5 +673,21 @@ class ConnectionHandler {
         }).then(() => {
             this.update_voice_status(undefined);
         });
+    }
+
+    reconnect_properties(profile?: profiles.ConnectionProfile) : ConnectParameters {
+        const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
+                        (this.serverConnection && this.serverConnection.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
+                        settings.static_global(Settings.KEY_CONNECT_USERNAME, profile ? profile.default_username : undefined) ||
+                        "Another TeaSpeak user";
+        const channel = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().channelId : 0) ||
+                        (this.serverConnection && this.serverConnection.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).target : "");
+        const channel_password = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().cached_password() : "") ||
+                                 (this.serverConnection && this.serverConnection.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).password : "");
+        return {
+            channel: channel ? {target: "/" + channel, password: channel_password} : undefined,
+            nickname: name,
+            password: this.serverConnection && this.serverConnection.handshake_handler() ? this.serverConnection.handshake_handler().parameters.password : undefined
+        }
     }
 }

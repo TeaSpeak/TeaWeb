@@ -379,10 +379,13 @@ function main() {
 
         if(profile && profile.valid()) {
             const connection = server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler();
-            connection.startConnection(address, profile, username, password.length > 0 ? {
-                password: password,
-                hashed: password_hashed
-            } : undefined);
+            connection.startConnection(address, profile, {
+                nickname: username,
+                password: password.length > 0 ? {
+                    password: password,
+                    hashed: password_hashed
+                } : undefined
+            });
         } else {
             Modals.spawnConnectModal({
                 url: address,

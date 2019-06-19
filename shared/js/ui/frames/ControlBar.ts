@@ -503,10 +503,12 @@ class ControlBar {
                         connection.startConnection(
                             mark.server_properties.server_address + ":" + mark.server_properties.server_port,
                             profile,
-                            mark.nickname,
                             {
-                                password: mark.server_properties.server_password_hash,
-                                hashed: true
+                                nickname: mark.nickname,
+                                password: {
+                                    password: mark.server_properties.server_password_hash,
+                                    hashed: true
+                                }
                             }
                         );
                     } else {
