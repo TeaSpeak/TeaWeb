@@ -54,6 +54,12 @@ namespace audio {
                 get_threshold() : number;
                 set_threshold(value: number) : Promise<void>;
 
+                get_attack_smooth() : number;
+                get_release_smooth() : number;
+
+                set_attack_smooth(value: number);
+                set_release_smooth(value: number);
+
                 callback_level?: (value: number) => any;
             }
 

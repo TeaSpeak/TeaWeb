@@ -90,6 +90,10 @@ namespace audio {
                 private _silence_count = 0;
                 private _margin_frames = 5;
 
+                private _current_level = 0;
+                private _smooth_release = 0;
+                private _smooth_attack = 0;
+
                 finalize() {
                     clearInterval(this._update_task);
                     this._update_task = 0;
@@ -159,8 +163,25 @@ namespace audio {
                         level = 100 + ( db * 1.92 );
                     }
 
+                    {
+                        const last_level = this._current_level;
+                        let smooth;
+                        if(this._silence_count == 0)
+                            smooth = this._smooth_release;
+                        else
+                            smooth = this._smooth_attack;
+                        this._current_level = last_level * smooth + level * (1 - smooth);
+                    }
+
+
+                    this._update_gain_node();
+                    if(this.callback_level)
+                        this.callback_level(this._current_level);
+                }
+
+                private _update_gain_node() {
                     let state = false;
-                    if(level > this._threshold) {
+                    if(this._current_level > this._threshold) {
                         this._silence_count = 0;
                         state = true;
                     } else {
@@ -179,9 +200,6 @@ namespace audio {
                             this.callback_active_change(true);
                         }
                     }
-
-                    if(this.callback_level)
-                        this.callback_level(level);
                 }
             }
 
