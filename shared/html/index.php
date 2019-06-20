@@ -34,6 +34,8 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <link rel="icon" href="./img/favicon.ico" type="image/x-icon">
+
         <meta charset="UTF-8">
         <!-- App min width: 450px -->
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">

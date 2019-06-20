@@ -599,8 +599,10 @@ class ChannelEntry {
             options = options.substr(0, options.indexOf("spacer"));
 
             console.log(tr("Channel options: '%o'"), options);
-            if(options.length == 0) options = "align-left";
-            else if(options.length > 1) options = options[0];
+            if(options.length == 0)
+                options = "l";
+            else if(options.length > 1)
+                options = options[0];
 
             switch (options) {
                 case "r":

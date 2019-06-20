@@ -169,8 +169,11 @@ class RecorderProfile {
             await filter.set_threshold(this.config.vad_threshold.threshold);
             await filter.set_margin_frames(10); /* 500ms */
 
-            filter.set_attack_smooth(.25);
-            filter.set_release_smooth(.9);
+            /* legacy client support */
+            if('set_attack_smooth' in filter)
+                filter.set_attack_smooth(.25);
+            if('set_release_smooth' in filter)
+                filter.set_release_smooth(.9);
 
             this.input.enable_filter(audio.recorder.filter.Type.THRESHOLD);
         } else if(this.config.vad_type === "push_to_talk") {
