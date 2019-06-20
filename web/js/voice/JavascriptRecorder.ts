@@ -136,6 +136,24 @@ namespace audio {
                     this._margin_frames = value;
                 }
 
+                get_attack_smooth(): number {
+                    return this._smooth_attack;
+                }
+
+                get_release_smooth(): number {
+                    return this._smooth_release;
+                }
+
+                set_attack_smooth(value: number) {
+                    this._smooth_attack = value;
+                }
+
+                set_release_smooth(value: number) {
+                    this._smooth_release = value;
+                }
+
+
+
                 get_threshold(): number {
                     return this._threshold;
                 }
