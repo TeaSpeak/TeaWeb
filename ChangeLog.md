@@ -1,4 +1,8 @@
 # Changelog:
+* **20.06.19**
+    - Improved the threshold audio filter
+    - Parsing `[spacerX]` channels properly
+    
 * **25.05.19**
     - Show icons within the permission editor
     - Added the possibility to select icons within the permission editor
