@@ -9,6 +9,14 @@
 			"path" => "./",
 			"local-path" => "./shared/html/"
 		],
+		[ /* shared javascript files (WebRTC adapter) */
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"build-target" => "dev|rel",
+
+			"path" => "adapter/",
+			"local-path" => "./shared/adapter/"
+		],
 		[ /* shared javascript files (development mode only) */
 			"type" => "js",
 			"search-pattern" => "/.*\.js$/",
@@ -184,7 +192,7 @@
 
 			"path" => "js/",
 			"local-path" => "./shared/generated/"
-		],
+		]
 	];
 
 	$APP_FILE_LIST_WEB_SOURCE = [

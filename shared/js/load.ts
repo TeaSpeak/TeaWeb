@@ -489,7 +489,7 @@ const loader_javascript = {
         await loader.load_scripts([
             ["vendor/bbcode/xbbcode.js"],
             ["vendor/moment/moment.js"],
-            ["https://webrtc.github.io/adapter/adapter-latest.js"]
+            ["adapter/adapter-latest.js", "https://webrtc.github.io/adapter/adapter-latest.js"]
         ]);
 
         if(app.type == app.Type.WEB_RELEASE || app.type == app.Type.CLIENT_RELEASE) {
