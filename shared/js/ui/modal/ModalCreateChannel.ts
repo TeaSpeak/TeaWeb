@@ -75,19 +75,20 @@ namespace Modals {
 
     function applyGeneralListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, button: JQuery, channel: ChannelEntry | undefined) {
         let updateButton = () => {
-            if(tag.find(".input_error").length == 0)
-                button.removeAttr("disabled");
-            else button.attr("disabled", "true");
+            const status = tag.find(".input_error").length != 0;
+            console.log("Disabled: %o", status);
+            button.prop("disabled", status);
         };
 
-        tag.find(".channel_name").on('change keyup', function (this: HTMLInputElement) {
-            properties.channel_name = this.value;
+        {
+            const channel_name = tag.find(".channel_name");
+            tag.find(".channel_name").on('change keyup', function (this: HTMLInputElement) {
+                properties.channel_name = this.value;
 
-            $(this).removeClass("input_error");
-            if(this.value.length < 1 || this.value.length > 40)
-                $(this).addClass("input_error");
-            updateButton();
-        }).prop("disabled", channel && !connection.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NAME).granted(1));
+                channel_name.toggleClass("input_error", this.value.length < 1 || this.value.length > 40);
+                updateButton();
+            }).prop("disabled", channel && !connection.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NAME).granted(1));
+        }
 
         tag.find(".button-select-icon").on('click', event => {
             Modals.spawnIconSelect(connection, id => {
@@ -100,17 +101,20 @@ namespace Modals {
             }, channel ? channel.properties.channel_icon_id : 0);
         });
 
-        tag.find(".channel_password").change(function (this: HTMLInputElement) {
-            properties.channel_flag_password = this.value.length != 0;
-            if(properties.channel_flag_password)
-                helpers.hashPassword(this.value).then(pass => properties.channel_password = pass);
+        {
+            const channel_password =  tag.find(".channel_password");
+            tag.find(".channel_password").change(function (this: HTMLInputElement) {
+                properties.channel_flag_password = this.value.length != 0;
+                if(properties.channel_flag_password)
+                    helpers.hashPassword(this.value).then(pass => properties.channel_password = pass);
 
-            $(this).removeClass("input_error");
-            if(!properties.channel_flag_password)
-                if(connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_FORCE_PASSWORD).granted(1))
-                    $(this).addClass("input_error");
-            updateButton();
-        }).prop("disabled", !connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_PASSWORD : PermissionType.B_CHANNEL_MODIFY_PASSWORD).granted(1));
+                channel_password.removeClass("input_error");
+                if(!properties.channel_flag_password)
+                    if(connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_FORCE_PASSWORD).granted(1))
+                        channel_password.addClass("input_error");
+                updateButton();
+            }).prop("disabled", !connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_PASSWORD : PermissionType.B_CHANNEL_MODIFY_PASSWORD).granted(1));
+        }
 
         tag.find(".channel_topic").change(function (this: HTMLInputElement) {
             properties.channel_topic = this.value;
