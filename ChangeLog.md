@@ -1,4 +1,8 @@
 # Changelog:
+* **22.06.19**
+    - Fixed channel create not working issue
+    - Added BB-Code support for pokes
+    
 * **20.06.19**
     - Improved the threshold audio filter
     - Parsing `[spacerX]` channels properly
