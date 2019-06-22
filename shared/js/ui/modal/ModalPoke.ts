@@ -59,7 +59,7 @@ namespace Modals {
                         }))).appendTo(container);
                         if(message) {
                             $.spawn("div").addClass("text").text(tr("pokes you:")).appendTo(container);
-                            $.spawn("div").addClass("poke-message").text(message).appendTo(container);
+                            $.spawn("div").addClass("poke-message").append(...MessageHelper.bbcode_chat(message)).appendTo(container);
                         } else {
                             $.spawn("div").addClass("text").text(tr("pokes you.")).appendTo(container);
                         }
