@@ -87,7 +87,8 @@
 					echo $type . "\t" . sha1_file($UI_RAW_BASE_PATH . $file) . "\t" . $path . "\t" . $name . (strlen($type) > 0 ? "." . $type : "") . "\n";
 				}
 				die;
-			} else if($_GET["type"] === "file") {
+			}
+			else if($_GET["type"] === "file") {
 				header("Content-Type: text/plain");
 
 				$path = realpath($UI_RAW_BASE_PATH . $_GET["path"]);
@@ -104,7 +105,8 @@
 
 				fdump( $path . DIRECTORY_SEPARATOR . $name);
 				die();
-			} else if ($_GET["type"] == "update-info") {
+			}
+			else if ($_GET["type"] == "update-info") {
 				global $CLIENT_BASE_PATH;
 				$raw_versions = file_get_contents($CLIENT_BASE_PATH . "/version.json");
 				if($raw_versions === false) error_exit("Missing file!");
@@ -113,7 +115,8 @@
 				$versions["success"] = true;
 
 				die(json_encode($versions));
-			} else if ($_GET["type"] == "update-download") {
+			}
+			else if ($_GET["type"] == "update-download") {
 				global $CLIENT_BASE_PATH;
 
 				$path = $CLIENT_BASE_PATH . $_GET["channel"] . DIRECTORY_SEPARATOR . $_GET["version"] . DIRECTORY_SEPARATOR;
@@ -136,7 +139,8 @@
 					die();
 				}
 				error_exit("Missing platform, arch or file");
-			} else if ($_GET["type"] == "ui-info") {
+			}
+			else if ($_GET["type"] == "ui-info") {
 				global $UI_BASE_PATH;
 
 				$version_info = file_get_contents($UI_BASE_PATH . "info.json");
@@ -164,34 +168,54 @@
 			} else if ($_GET["type"] == "ui-download") {
 				global $UI_BASE_PATH;
 
-				if(!isset($_GET["git-ref"]) || !isset($_GET["channel"]) || !isset($_GET["version"]))
+				if(!isset($_GET["channel"]) || !isset($_GET["version"]))
+					error_exit("missing required parameters");
+
+				if($_GET["version"] !== "latest" && !isset($_GET["git-ref"]))
 					error_exit("missing required parameters");
 
 				$version_info = file_get_contents($UI_BASE_PATH . "info.json");
 				if($version_info === false) $version_info = array();
 				else $version_info = json_decode($version_info, true);
 
-				if(!isset($version_info[$_GET["channel"]]))
-					error_exit("missing channel");
+				$channel_data = $version_info[$_GET["channel"]];
+				if(!isset($channel_data))
+					error_exit("channel unknown");
 
-				foreach ($version_info[$_GET["channel"]]["history"] as $entry) {
-					if($entry["version"] == $_GET["version"] && $entry["git-ref"] == $_GET["git-ref"]) {
-						header("Cache-Control: public"); // needed for internet explorer
-						header("Content-Type: application/binary");
-						header("Content-Transfer-Encoding: Binary");
-						header("Content-Disposition: attachment; filename=ui.tar.gz");
-						header("info-version: 1");
-						$read = readfile($entry["file"]);
-						header("Content-Length:" . $read);
-
-						if($read === false) error_exit("internal error: Failed to read file!");
-						die();
+				$ui_pack = false;
+				if($_GET["version"] === "latest") {
+					$ui_pack = $channel_data["latest"];
+				} else {
+					foreach ($channel_data["history"] as $entry) {
+						if($entry["version"] == $_GET["version"] && $entry["git-ref"] == $_GET["git-ref"]) {
+							$ui_pack = $entry;
+							break;
+						}
 					}
 				}
+				if($ui_pack === false)
+					error_exit("missing version");
 
-				error_exit("missing version");
+
+				header("Cache-Control: public"); // needed for internet explorer
+				header("Content-Type: application/binary");
+				header("Content-Transfer-Encoding: Binary");
+				header("Content-Disposition: attachment; filename=ui.tar.gz");
+				header("info-version: 1");
+
+				header("x-ui-timestamp", $ui_pack["timestamp"]);
+				header("x-ui-version", $ui_pack["version"]);
+				header("x-ui-git-ref", $ui_pack["git-ref"]);
+				header("x-ui-required_client", $ui_pack["required_client"]);
+
+				$read = readfile($ui_pack["file"]);
+				header("Content-Length:" . $read);
+
+				if($read === false) error_exit("internal error: Failed to read file!");
+				die();
 			}
-		} else if($_POST["type"] == "deploy-build") {
+		}
+		else if($_POST["type"] == "deploy-build") {
 			global $CLIENT_BASE_PATH;
 
 			if(!isset($_POST["secret"]) || !isset($_POST["version"]) || !isset($_POST["platform"]) || !isset($_POST["arch"]) || !isset($_POST["update_suffix"]) || !isset($_POST["installer_suffix"]))
@@ -273,7 +297,8 @@
 			die(json_encode([
 				"success" => true
 			]));
-		} else if($_POST["type"] == "deploy-ui-build") {
+		}
+		else if($_POST["type"] == "deploy-ui-build") {
 			global $UI_BASE_PATH;
 
 			if(!isset($_POST["secret"]) || !isset($_POST["channel"]) || !isset($_POST["version"]) || !isset($_POST["git_ref"]) || !isset($_POST["required_client"]))
@@ -323,7 +348,8 @@
 			die(json_encode([
 				"success" => true
 			]));
-		} else die(json_encode([
+		}
+		else die(json_encode([
 			"success" => false,
 			"error" => "invalid action!"
 		]));
