@@ -203,10 +203,10 @@
 				header("Content-Disposition: attachment; filename=ui.tar.gz");
 				header("info-version: 1");
 
-				header("x-ui-timestamp", $ui_pack["timestamp"]);
-				header("x-ui-version", $ui_pack["version"]);
-				header("x-ui-git-ref", $ui_pack["git-ref"]);
-				header("x-ui-required_client", $ui_pack["required_client"]);
+				header("x-ui-timestamp: " . $ui_pack["timestamp"]);
+				header("x-ui-version: " . $ui_pack["version"]);
+				header("x-ui-git-ref: " . $ui_pack["git-ref"]);
+				header("x-ui-required_client: " . $ui_pack["required_client"]);
 
 				$read = readfile($ui_pack["file"]);
 				header("Content-Length:" . $read);
