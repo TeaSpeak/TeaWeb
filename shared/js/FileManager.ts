@@ -84,8 +84,10 @@ class RequestFileDownload implements transfer.DownloadTransfer {
                 'Access-Control-Expose-Headers': '*'
             }
         });
-        if(!response.ok)
+        if(!response.ok) {
+            debugger;
             throw (response.type == 'opaque' || response.type == 'opaqueredirect' ? "invalid cross origin flag! May target isn't a TeaSpeak server?" : response.statusText || "response is not ok");
+        }
         return response;
     }
 
@@ -449,6 +451,22 @@ class CacheManager {
 
     setupped() : boolean { return !!this._cache_category; }
 
+    async reset() {
+        if(!window.caches)
+            return;
+
+        try {
+            await caches.delete(this.cache_name);
+        } catch(error) {
+            throw "Failed to delete cache: " + error;
+        }
+        try {
+            await this.setup();
+        } catch(error) {
+            throw "Failed to reinitialize cache!";
+        }
+    }
+
     async setup() {
         if(!window.caches)
             throw "Missing caches!";
@@ -501,6 +519,16 @@ class IconManager {
 
         if(!IconManager.cache)
             IconManager.cache = new CacheManager("icons");
+    }
+
+    async clear_cache() {
+        await IconManager.cache.reset();
+        if(URL.revokeObjectURL) {
+            for(const id of Object.keys(this._id_urls))
+                URL.revokeObjectURL(this._id_urls[id]);
+        }
+        this._id_urls = {};
+        this._loading_promises = {};
     }
 
     async delete_icon(id: number) : Promise<void> {

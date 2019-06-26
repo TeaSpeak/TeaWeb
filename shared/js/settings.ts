@@ -135,6 +135,11 @@ class StaticSettings extends SettingsBase {
 }
 
 class Settings extends StaticSettings {
+    static readonly KEY_DISABLE_COSMETIC_SLOWDOWN: SettingsKey<boolean> = {
+        key: 'disable_cosmetic_slowdown',
+        description: 'Disable the cosmetic slowdows in some processes, like icon upload.'
+    };
+
     static readonly KEY_DISABLE_CONTEXT_MENU: SettingsKey<boolean> = {
         key: 'disableContextMenu',
         description: 'Disable the context menu for the channel tree which allows to debug the DOM easier'

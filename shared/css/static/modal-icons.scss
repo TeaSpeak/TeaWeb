@@ -161,6 +161,8 @@
 	flex-direction: column;
 
 	.container-select {
+		min-height: 130px;
+
 		display: flex;
 		flex-direction: row;
 		justify-content: stretch;
@@ -171,7 +173,8 @@
 
 			width: min-content;
 			min-width: 150px;
-			min-height: 200px;
+			min-height: 130px;
+			overflow-y: auto;
 
 			margin-right: 5px;
 
@@ -226,6 +229,9 @@
 	}
 
 	.container-upload {
+		display: flex;
+		flex-direction: column;
+
 		margin-top: 5px;
 		border-top: 1px solid darkgray;
 		padding-top: 5px;
@@ -247,6 +253,7 @@
 
 		.container-success {
 			margin-top: 5px;
+			min-height: 100px;
 		}
 
 		.container-info {
@@ -258,6 +265,8 @@
 		.container-process {
 			width: 100%;
 			min-height: 100px;
+
+			overflow-y: auto;
 
 			border: gray solid 1px;
 			border-radius: 2px;

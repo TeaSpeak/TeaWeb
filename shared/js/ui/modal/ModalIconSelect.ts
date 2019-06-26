@@ -384,7 +384,8 @@ namespace Modals {
                         })
                     } catch(error) {
                         if(error instanceof CommandResult && error.id == ErrorID.FILE_ALREADY_EXISTS) {
-                            await new Promise(resolve => setTimeout(resolve, 500 + Math.floor(Math.random() * 500)));
+                            if(!settings.static_global(Settings.KEY_DISABLE_COSMETIC_SLOWDOWN, false))
+                                await new Promise(resolve => setTimeout(resolve, 500 + Math.floor(Math.random() * 500)));
                             bar.set_message(tr("icon already exists"));
                             bar.set_value(100);
                             icon.upload_state = "uploaded";
@@ -412,7 +413,8 @@ namespace Modals {
                     }
 
                     const time_end = Date.now();
-                    await new Promise(resolve => setTimeout(resolve, Math.max(0, 1000 - (time_end - time_begin))));
+                    if(!settings.static_global(Settings.KEY_DISABLE_COSMETIC_SLOWDOWN, false))
+                        await new Promise(resolve => setTimeout(resolve, Math.max(0, 1000 - (time_end - time_begin))));
                     bar.set_value(100);
                     bar.set_message(tr("upload completed"));
                     icon.upload_state = "uploaded";
