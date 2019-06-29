@@ -348,6 +348,7 @@ namespace connection {
                             }
                         }
                     }
+
                     if(client_chat) {
                         client_chat.appendMessage(
                             "{0}", true,
@@ -356,6 +357,7 @@ namespace connection {
                                 .text(tr("Your chat partner has reconnected"))
                         );
                         client_chat.flag_offline = false;
+                        client.initialize_chat(client_chat);
                     }
                 }
 
@@ -457,6 +459,8 @@ namespace connection {
                         const chat = client.chat(false);
                         if(chat) {
                             chat.flag_offline = true;
+                            chat.onMessageSend = undefined;
+                            chat.onClose = undefined;
                             chat.appendMessage(
                                 "{0}", true,
                                 $.spawn("div")

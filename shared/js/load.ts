@@ -487,7 +487,7 @@ const loader_javascript = {
 
         await loader.load_script("vendor/jsrender/jsrender.min.js");
         await loader.load_scripts([
-            ["vendor/bbcode/xbbcode.js"],
+            ["vendor/xbbcode/src/parser.js"],
             ["vendor/moment/moment.js"],
             ["adapter/adapter-latest.js", "https://webrtc.github.io/adapter/adapter-latest.js"]
         ]);
@@ -681,7 +681,7 @@ const loader_webassembly = {
 const loader_style = {
     load_style: async () => {
         await loader.load_styles([
-            "vendor/bbcode/xbbcode.css"
+            "vendor/xbbcode/src/xbbcode.css"
         ]);
 
         if(app.type == app.Type.WEB_DEBUG || app.type == app.Type.CLIENT_DEBUG) {

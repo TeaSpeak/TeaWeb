@@ -701,6 +701,10 @@ class ClientEntry {
         }
     }
 
+    private chat_name() {
+        return "client_" + this.clientUid() + ":" + this.clientId();
+    }
+
     chat(create: boolean = false) : ChatEntry {
         let chatName = "client_" + this.clientUid() + ":" + this.clientId();
         let chat = this.channelTree.client.chat.findChat(chatName);
@@ -709,20 +713,28 @@ class ClientEntry {
             chat.flag_closeable = true;
             chat.name = this.clientNickName();
             chat.owner_unique_id = this.properties.client_unique_identifier;
-
-            chat.onMessageSend = text => {
-                this.channelTree.client.serverConnection.command_helper.sendMessage(text, ChatType.CLIENT, this);
-            };
-
-            chat.onClose = () => {
-                if(!chat.flag_offline)
-                    this.channelTree.client.serverConnection.send_command("clientchatclosed", {"clid": this.clientId()}, {process_result: false}).catch(error => {
-                        log.warn(LogCategory.GENERAL, tr("Failed to notify chat participant (%o) that the chat has been closed. Error: %o"), this, error);
-                    });
-                return true;
-            }
         }
+
+        this.initialize_chat(chat);
         return chat;
+    }
+
+    initialize_chat(handle?: ChatEntry) {
+        handle = handle || this.channelTree.client.chat.findChat(this.chat_name());
+        if(!handle)
+            return;
+
+        handle.onMessageSend = text => {
+            this.channelTree.client.serverConnection.command_helper.sendMessage(text, ChatType.CLIENT, this);
+        };
+
+        handle.onClose = () => {
+            if(!handle.flag_offline)
+                this.channelTree.client.serverConnection.send_command("clientchatclosed", {"clid": this.clientId()}, {process_result: false}).catch(error => {
+                    log.warn(LogCategory.GENERAL, tr("Failed to notify chat participant (%o) that the chat has been closed. Error: %o"), this, error);
+                });
+            return true;
+        };
     }
 
     updateClientIcon() {
@@ -1107,6 +1119,9 @@ class MusicClientEntry extends ClientEntry {
                         max_volume = 100;
 
                     Modals.spawnChangeRemoteVolume(this.properties.player_volume, max_volume / 100, value => {
+                        if(typeof(value) !== "number")
+                            return;
+
                         this.channelTree.client.serverConnection.send_command("clientedit", {
                             clid: this.clientId(),
                             player_volume: value,

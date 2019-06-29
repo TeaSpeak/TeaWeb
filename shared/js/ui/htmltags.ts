@@ -156,49 +156,46 @@ namespace htmltags {
 
     namespace bbcodes {
         /* the = because we sometimes get that */
-        //const url_client_regex = /(?:=)?client:\/\/(?<client_id>[0-9]+)\/(?<client_unique_id>[a-zA-Z0-9+=#]+)~(?<client_name>(?:[^%]|%[0-9A-Fa-f]{2})+)$/g;
-        const url_client_regex = /(?:=)?client:\/\/([0-9]+)\/([a-zA-Z0-9+=/#]+)~((?:[^%]|%[0-9A-Fa-f]{2})+)$/g; /* IDK which browsers already support group naming */
-        const url_channel_regex = /(?:=)?channel:\/\/([0-9]+)~((?:[^%]|%[0-9A-Fa-f]{2})+)$/g;
+        //const url_client_regex = /?client:\/\/(?<client_id>[0-9]+)\/(?<client_unique_id>[a-zA-Z0-9+=#]+)~(?<client_name>(?:[^%]|%[0-9A-Fa-f]{2})+)$/g;
+        const url_client_regex = /client:\/\/([0-9]+)\/([a-zA-Z0-9+=/#]+)~((?:[^%]|%[0-9A-Fa-f]{2})+)$/g; /* IDK which browsers already support group naming */
+        const url_channel_regex = /channel:\/\/([0-9]+)~((?:[^%]|%[0-9A-Fa-f]{2})+)$/g;
 
         function initialize() {
-            const origin_url = XBBCODE.tags()["url"];
+            const origin_url = xbbcode.register.find_parser('url');
+            xbbcode.register.register_parser({
+                tag: 'url',
+                build_html_tag_open(layer: xbbcode.TagLayer): string {
+                    if(layer.options) {
+                        if(layer.options.match(url_channel_regex)) {
+                            const groups = url_channel_regex.exec(layer.options);
 
-            XBBCODE.addTags({
-                function: {
-                    openTag: (params, content) => {
-                        if(params) {
-                            if(params.match(url_channel_regex)) {
-                                const groups = url_channel_regex.exec(params);
+                            return generate_channel_open({
+                                add_braces: false,
+                                channel_id: parseInt(groups[1]),
+                                channel_name: decodeURIComponent(groups[2])
+                            });
+                        } else if(layer.options.match(url_client_regex)) {
+                            const groups = url_client_regex.exec(layer.options);
 
-                                return generate_channel_open({
-                                    add_braces: false,
-                                    channel_id: parseInt(groups[1]),
-                                    channel_name: decodeURIComponent(groups[2])
-                                });
-                            } else if(params.match(url_client_regex)) {
-                                const groups = url_client_regex.exec(params);
-
-                                return generate_client_open({
-                                    add_braces: false,
-                                    client_id: parseInt(groups[1]),
-                                    client_unique_id: groups[2],
-                                    client_name: decodeURIComponent(groups[3])
-                                });
-                            }
+                            return generate_client_open({
+                                add_braces: false,
+                                client_id: parseInt(groups[1]),
+                                client_unique_id: groups[2],
+                                client_name: decodeURIComponent(groups[3])
+                            });
                         }
-                        return origin_url.openTag(params, content);
-                    },
-                    closeTag: (params, content) => {
-                        if(params) {
-                            if(params.match(url_client_regex))
-                                return "</div>";
-                            if(params.match(url_channel_regex))
-                                return "</div>";
-                        }
-                        return origin_url.closeTag(params, content);
                     }
+                    return origin_url.build_html_tag_open(layer);
                 },
-                tag: "url"
+                build_html_tag_close(layer: xbbcode.TagLayer): string {
+                    if(layer.options) {
+                        if(layer.options.match(url_client_regex))
+                            return "</div>";
+                        if(layer.options.match(url_channel_regex))
+                            return "</div>";
+                    }
+                    return origin_url.build_html_tag_close(layer);
+                }
             })
             /*
               "img":  {

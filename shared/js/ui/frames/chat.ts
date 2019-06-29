@@ -90,11 +90,7 @@ namespace MessageHelper {
     }
 
     export function bbcode_chat(message: string) : JQuery[] {
-        let result = XBBCODE.process({
-            text: message,
-            escapeHtml: true,
-            addInLineBreaks: false,
-
+        const result: xbbcode.Result = xbbcode.parse(message, {
             /* TODO make this configurable and allow IMG */
             tag_whitelist: [
                 "b",
@@ -104,13 +100,14 @@ namespace MessageHelper {
                 "url"
             ]
         });
-
+        /*
         if(result.error) {
             log.error(LogCategory.GENERAL, tr("BBCode parse error: %o"), result.errorQueue);
             return formatElement(message);
         }
-
-        return result.html.split("\n").map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 ? "inline" : "") + "block").html(entry == "" && idx != 0 ? "&nbsp;" : entry));
+        */
+        return [$.spawn("div").html(result.build_html()).contents() as any];
+        //return result.root_tag.content.map(e => e.build_html()).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 ? "inline" : "") + "block").html(entry == "" && idx != 0 ? "&nbsp;" : entry));
     }
 }
 
