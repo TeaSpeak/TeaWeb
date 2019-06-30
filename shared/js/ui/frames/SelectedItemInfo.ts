@@ -1,5 +1,5 @@
 /// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../../../../vendor/bbcode/xbbcode.ts" />
+/// <reference path="../../../../vendor/xbbcode/src/parser.ts" />
 
 abstract class InfoManagerBase {
     private timers: NodeJS.Timer[] = [];

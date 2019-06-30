@@ -353,18 +353,16 @@ namespace unused {
                                     if(event.isDefaultPrevented()) return;
                                     event.preventDefault();
 
-                                    let entries: ContextMenuEntry[] = [];
+                                    let entries: contextmenu.MenuEntry[] = [];
                                     if(tag_permission.hasClass("value-unset")) {
                                         entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
+                                            type: contextmenu.MenuEntryType.ENTRY,
                                             name: tr("Add permission"),
                                             callback: () => tag_permission.trigger('dblclick')
                                         });
                                     } else {
                                         entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
+                                            type: contextmenu.MenuEntryType.ENTRY,
                                             name: tr("Remove permission"),
                                             callback: () => {
                                                 this.listener_change(permission, {
@@ -394,37 +392,32 @@ namespace unused {
 
                                     if(tag_permission.hasClass("grant-unset")) {
                                         entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
+                                            type: contextmenu.MenuEntryType.ENTRY,
                                             name: tr("Add grant permission"),
                                             callback: () => tag_permission.find(".column-granted").trigger('dblclick')
                                         });
                                     } else {
                                         entries.push({
-                                            type: MenuEntryType.ENTRY,
-                                            icon: "",
+                                            type: contextmenu.MenuEntryType.ENTRY,
                                             name: tr("Remove grant permission"),
                                             callback: () =>
                                                 tag_granted.val('').trigger('focusout') /* empty values are handled within focus out */
                                         });
                                     }
-                                    entries.push(MenuEntry.HR());
+                                    entries.push(contextmenu.Entry.HR());
                                     entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
+                                        type: contextmenu.MenuEntryType.ENTRY,
                                         name: tr("Expend all"),
                                         callback: () => update_collapse_status(true, true)
                                     });
                                     entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
+                                        type: contextmenu.MenuEntryType.ENTRY,
                                         name: tr("Collapse all"),
                                         callback: () => update_collapse_status(false, true)
                                     });
-                                    entries.push(MenuEntry.HR());
+                                    entries.push(contextmenu.Entry.HR());
                                     entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
+                                        type: contextmenu.MenuEntryType.ENTRY,
                                         name: tr("Show permission description"),
                                         callback: () => {
                                             createInfoModal(
@@ -434,15 +427,14 @@ namespace unused {
                                         }
                                     });
                                     entries.push({
-                                        type: MenuEntryType.ENTRY,
-                                        icon: "",
+                                        type: contextmenu.MenuEntryType.ENTRY,
                                         name: tr("Copy permission name"),
                                         callback: () => {
                                             copy_to_clipboard(permission.name);
                                         }
                                     });
 
-                                    spawn_context_menu(event.pageX, event.pageY, ...entries);
+                                    contextmenu.spawn_context_menu(event.pageX, event.pageY, ...entries);
                                 });
                             }
 
