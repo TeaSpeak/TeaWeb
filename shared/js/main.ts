@@ -396,58 +396,6 @@ function main() {
             });
         }
     }
-
-    $(document).on('contextmenu', event => {
-        if(event.isDefaultPrevented())
-            return;
-
-        event.preventDefault();
-        contextmenu.spawn_context_menu(event.pageX, event.pageY, {
-            name: 'Test item 1',
-            type: contextmenu.MenuEntryType.ENTRY,
-            callback: () => console.log("Test 1 item clicked!"),
-
-            disabled: true
-        }, {
-            name: 'Test item 2',
-            type: contextmenu.MenuEntryType.ENTRY,
-            callback: () => console.log("Test 2 item clicked!")
-        }, {
-            name: 'Test item 3',
-            type: contextmenu.MenuEntryType.SUB_MENU,
-            callback: () => console.log("Test 3 item clicked!"),
-            sub_menu: [
-                {
-                    name: 'Test sub item 1',
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    callback: () => console.log("Test sub 1 item clicked!")
-                }, {
-                    name: 'Test sub item 2',
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    callback: () => console.log("Test sub 2 item clicked!")
-                }, {
-                    name: 'Test sub item 4',
-                    type: contextmenu.MenuEntryType.ENTRY,
-                    callback: () => console.log("Test sub 3 item clicked!")
-                }
-            ]
-        },
-        contextmenu.Entry.HR(),
-        {
-            name: 'Test item 4',
-            type: contextmenu.MenuEntryType.ENTRY,
-            callback: () => console.log("Test 4 item clicked!")
-        }, {
-            name: 'Test item 5',
-            type: contextmenu.MenuEntryType.CHECKBOX,
-            callback: () => console.log("Test 5 item clicked!")
-        }, {
-            name: 'Test item 5',
-            type: contextmenu.MenuEntryType.CHECKBOX,
-            callback: () => console.log("Test 5 item clicked!"),
-            checkbox_checked: true
-        }, contextmenu.Entry.CLOSE(() => console.log("Menu closed!")))
-    })
 }
 
 const task_teaweb_starter: loader.Task = {
