@@ -215,6 +215,4 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
     }
 }
 
-//TODO: Improve
-if(!window.require)
-    contextmenu.set_provider(new HTMLContextMenuProvider());
+contextmenu.set_provider(new HTMLContextMenuProvider());
