@@ -181,24 +181,20 @@ namespace unused {
                             if(event.isDefaultPrevented()) return;
                             event.preventDefault();
 
-                            spawn_context_menu(event.pageX, event.pageY, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
+                            contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                                type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Expend group"),
                                 callback: () => update_collapse_status(true, false)
                             }, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
+                                type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Expend all"),
                                 callback: () => update_collapse_status(true, true)
                             }, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
+                                type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Collapse group"),
                                 callback: () => update_collapse_status(false, false)
                             }, {
-                                type: MenuEntryType.ENTRY,
-                                icon: "",
+                                type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Collapse all"),
                                 callback: () => update_collapse_status(false, true)
                             });

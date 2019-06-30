@@ -169,20 +169,15 @@ class ClientEntry {
         });
     }
 
-    protected assignment_context() : ContextMenuEntry[] {
-        let server_groups: ContextMenuEntry[] = [];
+    protected assignment_context() : contextmenu.MenuEntry[] {
+        let server_groups: contextmenu.MenuEntry[] = [];
         for(let group of this.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
             if(group.type != GroupType.NORMAL) continue;
 
-            let entry: ContextMenuEntry = {} as any;
+            let entry: contextmenu.MenuEntry = {} as any;
 
-            {
-                let tag = $.spawn("label").addClass("checkbox");
-                $.spawn("input").attr("type", "checkbox").prop("checked", this.groupAssigned(group)).appendTo(tag);
-                $.spawn("span").addClass("checkmark").appendTo(tag);
-                entry.icon = tag;
-            }
-
+            //TODO: May add the server group icon?
+            entry.checkbox_checked = this.groupAssigned(group);
             entry.name = group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]";
             if(this.groupAssigned(group)) {
                 entry.callback = () => {
@@ -201,21 +196,19 @@ class ClientEntry {
                 };
                 entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_REMOVE_POWER).granted(group.requiredMemberAddPower);
             }
-            entry.type = MenuEntryType.ENTRY;
+            entry.type = contextmenu.MenuEntryType.CHECKBOX;
+
             server_groups.push(entry);
         }
 
-        let channel_groups: ContextMenuEntry[] = [];
+        let channel_groups: contextmenu.MenuEntry[] = [];
         for(let group of this.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
             if(group.type != GroupType.NORMAL) continue;
 
-            let entry: ContextMenuEntry = {} as any;
-            {
-                let tag = $.spawn("label").addClass("checkbox");
-                $.spawn("input").attr("type", "checkbox").prop("checked", this.assignedChannelGroup() == group.id).appendTo(tag);
-                $.spawn("span").addClass("checkmark").appendTo(tag);
-                entry.icon = tag;
-            }
+            let entry: contextmenu.MenuEntry = {} as any;
+
+            //TODO: May add the channel group icon?
+            entry.checkbox_checked = this.assignedChannelGroup() == group.id;
             entry.name = group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]";
             entry.callback = () => {
                 this.channelTree.client.serverConnection.send_command("setclientchannelgroup", {
@@ -225,17 +218,17 @@ class ClientEntry {
                 });
             };
             entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
-            entry.type = MenuEntryType.ENTRY;
+            entry.type = contextmenu.MenuEntryType.CHECKBOX;
             channel_groups.push(entry);
         }
 
         return [{
-            type: MenuEntryType.SUB_MENU,
-            icon: "client-permission_server_groups",
+            type: contextmenu.MenuEntryType.SUB_MENU,
+            icon_class: "client-permission_server_groups",
             name: tr("Set server group"),
             sub_menu: [
                 {
-                    type: MenuEntryType.ENTRY,
+                    type: contextmenu.MenuEntryType.ENTRY,
                     icon: "client-permission_server_groups",
                     name: "Server groups dialog",
                     callback: () => {
@@ -253,19 +246,19 @@ class ClientEntry {
                         });
                     }
                 },
-                MenuEntry.HR(),
+                contextmenu.Entry.HR(),
                 ...server_groups
             ]
         },{
-            type: MenuEntryType.SUB_MENU,
-            icon: "client-permission_channel",
+            type: contextmenu.MenuEntryType.SUB_MENU,
+            icon_class: "client-permission_channel",
             name: tr("Set channel group"),
             sub_menu: [
                 ...channel_groups
             ]
         },{
-            type: MenuEntryType.SUB_MENU,
-            icon: "client-permission_client",
+            type: contextmenu.MenuEntryType.SUB_MENU,
+            icon_class: "client-permission_client",
             name: tr("Permissions"),
             disabled: true,
             sub_menu: [ ]
@@ -274,31 +267,33 @@ class ClientEntry {
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
         let trigger_close = true;
-        spawn_context_menu(x, y,
+        contextmenu.spawn_context_menu(x, y,
             {
-                type: MenuEntryType.ENTRY,
+                type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Show client info"),
                 callback: () => {
                     trigger_close = false;
                     this.channelTree.client.select_info.open_popover()
                 },
-                icon: "client-about",
+                icon_class: "client-about",
                 visible: this.channelTree.client.select_info.is_popover()
             }, {
-                type: MenuEntryType.HR,
+                type: contextmenu.MenuEntryType.HR,
                 visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-change_nickname",
-                name: tr("<b>Open text chat</b>"),
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-change_nickname",
+                name:   (contextmenu.get_provider().html_format_enabled() ? "<b>" : "") +
+                        tr("Open text chat") +
+                        (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 callback: () => {
                     this.channelTree.client.chat.activeChat = this.chat(true);
                     this.channelTree.client.chat.focus();
                 }
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-poke",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-poke",
                 name: tr("Poke client"),
                 callback: () => {
                     createInputModal(tr("Poke client"), tr("Poke message:<br>"), text => true, result => {
@@ -314,8 +309,8 @@ class ClientEntry {
                     }, { width: 400, maxLength: 512 }).open();
                 }
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-edit",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-edit",
                 name: tr("Change description"),
                 callback: () => {
                     createInputModal(tr("Change client description"), tr("New description:<br>"), text => true, result => {
@@ -331,11 +326,11 @@ class ClientEntry {
                     }, { width: 400, maxLength: 1024 }).open();
                 }
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             ...this.assignment_context(),
-            MenuEntry.HR(), {
-                type: MenuEntryType.ENTRY,
-                icon: "client-move_client_to_own_channel",
+            contextmenu.Entry.HR(), {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-move_client_to_own_channel",
                 name: tr("Move client to your channel"),
                 callback: () => {
                     this.channelTree.client.serverConnection.send_command("clientmove", {
@@ -344,8 +339,8 @@ class ClientEntry {
                     });
                 }
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-kick_channel",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-kick_channel",
                 name: tr("Kick client from channel"),
                 callback: () => {
                     createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
@@ -362,8 +357,8 @@ class ClientEntry {
                     }, { width: 400, maxLength: 255 }).open();
                 }
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-kick_server",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-kick_server",
                 name: tr("Kick client fom server"),
                 callback: () => {
                     createInputModal(tr("Kick client from server"), tr("Kick reason:<br>"), text => true, result => {
@@ -380,8 +375,8 @@ class ClientEntry {
                     }, { width: 400, maxLength: 255 }).open();
                 }
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-ban_client",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-ban_client",
                 name: tr("Ban client"),
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
@@ -398,7 +393,7 @@ class ClientEntry {
                     });
                 }
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             /*
             {
                 type: MenuEntryType.ENTRY,
@@ -418,8 +413,8 @@ class ClientEntry {
             MenuEntry.HR(),
             */
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-volume",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-volume",
                 name: tr("Change Volume"),
                 callback: () => {
                     Modals.spawnChangeVolume(this._audio_handle.get_volume(), volume => {
@@ -430,7 +425,7 @@ class ClientEntry {
                     });
                 }
             },
-            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
+            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 
@@ -839,15 +834,18 @@ class LocalClientEntry extends ClientEntry {
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
         const _self = this;
 
-        spawn_context_menu(x, y,
+        contextmenu.spawn_context_menu(x, y,
             {
-                name: tr("<b>Change name</b>"),
-                icon: "client-change_nickname",
+
+                name:   (contextmenu.get_provider().html_format_enabled() ? "<b>" : "") +
+                        tr("Change name") +
+                        (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
+                icon_class: "client-change_nickname",
                 callback: () =>_self.openRename(),
-                type: MenuEntryType.ENTRY
+                type: contextmenu.MenuEntryType.ENTRY
             }, {
                 name: tr("Change description"),
-                icon: "client-edit",
+                icon_class: "client-edit",
                 callback: () => {
                     createInputModal(tr("Change own description"), tr("New description:<br>"), text => true, result => {
                         if(result) {
@@ -860,11 +858,11 @@ class LocalClientEntry extends ClientEntry {
                         }
                     }, { width: 400, maxLength: 1024 }).open();
                 },
-                type: MenuEntryType.ENTRY
+                type: contextmenu.MenuEntryType.ENTRY
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             ...this.assignment_context(),
-            MenuEntry.CLOSE(on_close)
+            contextmenu.Entry.CLOSE(on_close)
         );
     }
 
@@ -968,23 +966,23 @@ class MusicClientEntry extends ClientEntry {
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
         let trigger_close = true;
-        spawn_context_menu(x, y,
+        contextmenu.spawn_context_menu(x, y,
             {
-                type: MenuEntryType.ENTRY,
+                type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Show bot info"),
                 callback: () => {
                     trigger_close = false;
                     this.channelTree.client.select_info.open_popover()
                 },
-                icon: "client-about",
+                icon_class: "client-about",
                 visible: this.channelTree.client.select_info.is_popover()
             }, {
-                type: MenuEntryType.HR,
+                type: contextmenu.MenuEntryType.HR,
                 visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
                 name: tr("<b>Change bot name</b>"),
-                icon: "client-change_nickname",
+                icon_class: "client-change_nickname",
                 disabled: false,
                 callback: () => {
                     createInputModal(tr("Change music bots nickname"), tr("New nickname:<br>"), text => text.length >= 3 && text.length <= 31, result => {
@@ -997,10 +995,10 @@ class MusicClientEntry extends ClientEntry {
                         }
                     }, { width: 400, maxLength: 255 }).open();
                 },
-                type: MenuEntryType.ENTRY
+                type: contextmenu.MenuEntryType.ENTRY
             }, {
                 name: tr("Change bot description"),
-                icon: "client-edit",
+                icon_class: "client-edit",
                 disabled: false,
                 callback: () => {
                     createInputModal(tr("Change music bots description"), tr("New description:<br>"), text => true, result => {
@@ -1013,7 +1011,7 @@ class MusicClientEntry extends ClientEntry {
                         }
                     }, { width: 400, maxLength: 255 }).open();
                 },
-                type: MenuEntryType.ENTRY
+                type: contextmenu.MenuEntryType.ENTRY
             },
             /*
             {
@@ -1026,7 +1024,7 @@ class MusicClientEntry extends ClientEntry {
             */
             {
                 name: tr("Open bot's playlist"),
-                icon: "client-edit",
+                icon_class: "client-edit",
                 disabled: false,
                 callback: () => {
                     this.channelTree.client.serverConnection.command_helper.request_playlist_list().then(lists => {
@@ -1041,11 +1039,11 @@ class MusicClientEntry extends ClientEntry {
                         createErrorModal(tr("Failed to query playlist."), tr("Failed to query playlist info.")).open();
                     });
                 },
-                type: MenuEntryType.ENTRY
+                type: contextmenu.MenuEntryType.ENTRY
             },
             {
                 name: tr("Quick url replay"),
-                icon: "client-edit",
+                icon_class: "client-edit",
                 disabled: false,
                 callback: () => {
                     createInputModal(tr("Please enter the URL"), tr("URL:"), text => true, result => {
@@ -1064,13 +1062,13 @@ class MusicClientEntry extends ClientEntry {
                         }
                     }, { width: 400, maxLength: 255 }).open();
                 },
-                type: MenuEntryType.ENTRY
+                type: contextmenu.MenuEntryType.ENTRY
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             ...super.assignment_context(),
-            MenuEntry.HR(),{
-                type: MenuEntryType.ENTRY,
-                icon: "client-move_client_to_own_channel",
+            contextmenu.Entry.HR(),{
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-move_client_to_own_channel",
                 name: tr("Move client to your channel"),
                 callback: () => {
                     this.channelTree.client.serverConnection.send_command("clientmove", {
@@ -1079,8 +1077,8 @@ class MusicClientEntry extends ClientEntry {
                     });
                 }
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-kick_channel",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-kick_channel",
                 name: tr("Kick client from channel"),
                 callback: () => {
                     createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
@@ -1095,10 +1093,10 @@ class MusicClientEntry extends ClientEntry {
                     }, { width: 400, maxLength: 255 }).open();
                 }
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-volume",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-volume",
                 name: tr("Change local volume"),
                 callback: () => {
                     Modals.spawnChangeVolume(this._audio_handle.get_volume(), volume => {
@@ -1110,8 +1108,8 @@ class MusicClientEntry extends ClientEntry {
                 }
             },
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-volume",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-volume",
                 name: tr("Change remote volume"),
                 callback: () => {
                     let max_volume = this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_MUSIC_CREATE_MODIFY_MAX_VOLUME).value;
@@ -1132,10 +1130,10 @@ class MusicClientEntry extends ClientEntry {
                     });
                 }
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             {
                 name: tr("Delete bot"),
-                icon: "client-delete",
+                icon_class: "client-delete",
                 disabled: false,
                 callback: () => {
                     const tag = $.spawn("div").append(MessageHelper.formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
@@ -1147,9 +1145,9 @@ class MusicClientEntry extends ClientEntry {
                        }
                     });
                 },
-                type: MenuEntryType.ENTRY
+                type: contextmenu.MenuEntryType.ENTRY
             },
-            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
+            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 

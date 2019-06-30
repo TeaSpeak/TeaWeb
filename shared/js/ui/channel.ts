@@ -452,58 +452,60 @@ class ChannelEntry {
         }
 
         let trigger_close = true;
-        spawn_context_menu(x, y, {
-                type: MenuEntryType.ENTRY,
+
+        const bold = text => contextmenu.get_provider().html_format_enabled() ? "<b>" + text + "</b>" : text;
+        contextmenu.spawn_context_menu(x, y, {
+                type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Show channel info"),
                 callback: () => {
                     trigger_close = false;
                     this.channelTree.client.select_info.open_popover()
                 },
-                icon: "client-about",
+                icon_class: "client-about",
                 visible: this.channelTree.client.select_info.is_popover()
             }, {
-                type: MenuEntryType.HR,
+                type: contextmenu.MenuEntryType.HR,
                 visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-channel_switch",
-                name: tr("<b>Switch to channel</b>"),
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_switch",
+                name: bold(tr("Switch to channel")),
                 callback: () => this.joinChannel()
             },
             ...(() => {
                 const local_client = this.channelTree.client.getClient();
                 if (!local_client || local_client.currentChannel() !== this)
                     return [
-                        MenuEntry.HR(),
+                        contextmenu.Entry.HR(),
                         {
-                            type: MenuEntryType.ENTRY,
+                            type: contextmenu.MenuEntryType.ENTRY,
                             icon: "client-subscribe_to_channel",
-                            name: tr("<b>Subscribe to channel</b>"),
+                            name: bold(tr("Subscribe to channel")),
                             callback: () => this.subscribe(),
                             visible: !this.flag_subscribed
                         },
                         {
-                            type: MenuEntryType.ENTRY,
+                            type: contextmenu.MenuEntryType.ENTRY,
                             icon: "client-channel_unsubscribed",
-                            name: tr("<b>Unsubscribe from channel</b>"),
+                            name: bold(tr("Unsubscribe from channel")),
                             callback: () => this.unsubscribe(),
                             visible: this.flag_subscribed
                         },
                         {
-                            type: MenuEntryType.ENTRY,
+                            type: contextmenu.MenuEntryType.ENTRY,
                             icon: "client-subscribe_mode",
-                            name: tr("<b>Use inherited subscribe mode</b>"),
+                            name: bold(tr("Use inherited subscribe mode")),
                             callback: () => this.unsubscribe(true),
                             visible: this.subscribe_mode != ChannelSubscribeMode.INHERITED
                         }
                     ];
                 return [];
             })(),
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-channel_edit",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_edit",
                 name: tr("Edit channel"),
                 invalidPermission: !channelModify,
                 callback: () => {
@@ -536,8 +538,8 @@ class ChannelEntry {
                 }
             },
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-channel_delete",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_delete",
                 name: tr("Delete channel"),
                 invalidPermission: !flagDelete,
                 callback: () => {
@@ -546,10 +548,10 @@ class ChannelEntry {
                     })
                 }
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-addon-collection",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-addon-collection",
                 name: tr("Create music bot"),
                 callback: () => {
                     this.channelTree.client.serverConnection.send_command("musicbotcreate", {cid: this.channelId}).then(() => {
@@ -563,21 +565,21 @@ class ChannelEntry {
                     });
                 }
             },
-            MenuEntry.HR(),
+            contextmenu.Entry.HR(),
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-channel_create_sub",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_create_sub",
                 name: tr("Create sub channel"),
                 invalidPermission: !(channelCreate && this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_CHILD).granted(1)),
                 callback: () => this.channelTree.spawnCreateChannel(this)
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-channel_create",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_create",
                 name: tr("Create channel"),
                 invalidPermission: !channelCreate,
                 callback: () => this.channelTree.spawnCreateChannel()
             },
-            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
+            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 

@@ -245,10 +245,10 @@ class ChatEntry {
         tag.on("contextmenu", (e) => {
             e.preventDefault();
 
-            let actions: ContextMenuEntry[] = [];
+            let actions: contextmenu.MenuEntry[] = [];
             actions.push({
-                type: MenuEntryType.ENTRY,
-                icon: "",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "",
                 name: tr("Clear"),
                 callback: () => {
                     this.history = [];
@@ -257,23 +257,23 @@ class ChatEntry {
             });
             if(this.flag_closeable) {
                 actions.push({
-                    type: MenuEntryType.ENTRY,
-                    icon: "client-tab_close_button",
+                    type: contextmenu.MenuEntryType.ENTRY,
+                    icon_class: "client-tab_close_button",
                     name: tr("Close"),
                     callback: () => this.handle.deleteChat(this)
                 });
             }
 
             actions.push({
-                type: MenuEntryType.ENTRY,
-                icon: "client-tab_close_button",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-tab_close_button",
                 name: tr("Close all private tabs"),
                 callback: () => {
                     //TODO Implement this?
                 },
                 visible: false
             });
-            spawn_context_menu(e.pageX, e.pageY, ...actions);
+            contextmenu.spawn_context_menu(e.pageX, e.pageY, ...actions);
         });
 
         tag_close.click(() => {

@@ -90,15 +90,15 @@ class ChannelTree {
             this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT).granted(1) ||
             this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_PERMANENT).granted(1);
 
-        spawn_context_menu(x, y,
+        contextmenu.spawn_context_menu(x, y,
             {
-                type: MenuEntryType.ENTRY,
-                icon: "client-channel_create",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_create",
                 name: tr("Create channel"),
                 invalidPermission: !channelCreate,
                 callback: () => this.spawnCreateChannel()
             },
-            MenuEntry.CLOSE(on_close)
+            contextmenu.Entry.CLOSE(on_close)
         );
     }
 
@@ -461,11 +461,11 @@ class ChannelTree {
         const music_entry = clients.map(e => e instanceof MusicClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
         const local_client = clients.map(e => e instanceof LocalClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
         console.log(tr("Music only: %o | Container music: %o | Container local: %o"), music_entry, music_entry, local_client);
-        let entries: ContextMenuEntry[] = [];
+        let entries: contextmenu.MenuEntry[] = [];
         if (!music_entry && !local_client) { //Music bots or local client cant be poked
             entries.push({
-                type: MenuEntryType.ENTRY,
-                icon: "client-poke",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-poke",
                 name: tr("Poke clients"),
                 callback: () => {
                     createInputModal(tr("Poke clients"), tr("Poke message:<br>"), text => true, result => {
@@ -482,8 +482,8 @@ class ChannelTree {
             });
         }
         entries.push({
-            type: MenuEntryType.ENTRY,
-            icon: "client-move_client_to_own_channel",
+            type: contextmenu.MenuEntryType.ENTRY,
+            icon_class: "client-move_client_to_own_channel",
             name: tr("Move clients to your channel"),
             callback: () => {
                 const target = this.client.getClient().currentChannel().getChannelId();
@@ -495,10 +495,10 @@ class ChannelTree {
             }
         });
         if (!local_client) {//local client cant be kicked and/or banned or kicked
-            entries.push(MenuEntry.HR());
+            entries.push(contextmenu.Entry.HR());
             entries.push({
-                type: MenuEntryType.ENTRY,
-                icon: "client-kick_channel",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-kick_channel",
                 name: tr("Kick clients from channel"),
                 callback: () => {
                     createInputModal(tr("Kick clients from channel"), tr("Kick reason:<br>"), text => true, result => {
@@ -517,8 +517,8 @@ class ChannelTree {
 
             if (!music_entry) { //Music bots  cant be banned or kicked
                 entries.push({
-                    type: MenuEntryType.ENTRY,
-                    icon: "client-kick_server",
+                    type: contextmenu.MenuEntryType.ENTRY,
+                    icon_class: "client-kick_server",
                     name: tr("Kick clients fom server"),
                     callback: () => {
                         createInputModal(tr("Kick clients from server"), tr("Kick reason:<br>"), text => true, result => {
@@ -534,8 +534,8 @@ class ChannelTree {
                         }, {width: 400, maxLength: 255}).open();
                     }
                 }, {
-                    type: MenuEntryType.ENTRY,
-                    icon: "client-ban_client",
+                    type: contextmenu.MenuEntryType.ENTRY,
+                    icon_class: "client-ban_client",
                     name: tr("Ban clients"),
                     invalidPermission: !this.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                     callback: () => {
@@ -555,10 +555,10 @@ class ChannelTree {
                 });
             }
             if(music_only) {
-                entries.push(MenuEntry.HR());
+                entries.push(contextmenu.Entry.HR());
                 entries.push({
                     name: tr("Delete bots"),
-                    icon: "client-delete",
+                    icon_class: "client-delete",
                     disabled: false,
                     callback: () => {
                         const param_string = clients.map((_, index) => "{" + index + "}").join(', ');
@@ -574,11 +574,11 @@ class ChannelTree {
                             }
                         });
                     },
-                    type: MenuEntryType.ENTRY
+                    type: contextmenu.MenuEntryType.ENTRY
                 });
             }
         }
-        spawn_context_menu(event.pageX, event.pageY, ...entries);
+        contextmenu.spawn_context_menu(event.pageX, event.pageY, ...entries);
     }
 
     clientsByGroup(group: Group) : ClientEntry[] {

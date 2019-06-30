@@ -136,22 +136,22 @@ class ServerEntry {
 
     spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
         let trigger_close = true;
-        spawn_context_menu(x, y, {
-                type: MenuEntryType.ENTRY,
+        contextmenu.spawn_context_menu(x, y, {
+                type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Show server info"),
                 callback: () => {
                     trigger_close = false;
                     this.channelTree.client.select_info.open_popover()
                 },
-                icon: "client-about",
+                icon_class: "client-about",
                 visible: this.channelTree.client.select_info.is_popover()
             }, {
-                type: MenuEntryType.HR,
+                type: contextmenu.MenuEntryType.HR,
                 visible: this.channelTree.client.select_info.is_popover(),
                 name: ''
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-virtualserver_edit",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-virtualserver_edit",
                 name: tr("Edit"),
                 callback: () => {
                     Modals.createServerModal(this, properties => {
@@ -164,22 +164,22 @@ class ServerEntry {
                     });
                 }
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-iconviewer",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-iconviewer",
                 name: tr("View icons"),
                 callback: () => Modals.spawnIconSelect(this.channelTree.client)
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: 'client-iconsview',
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: 'client-iconsview',
                 name: tr("View avatars"),
                 callback: () => Modals.spawnAvatarList(this.channelTree.client)
             }, {
-                type: MenuEntryType.ENTRY,
-                icon: "client-invite_buddy",
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-invite_buddy",
                 name: tr("Invite buddy"),
                 callback: () => Modals.spawnInviteEditor(this.channelTree.client)
             },
-            MenuEntry.CLOSE(() => (trigger_close ? on_close : () => {})())
+            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : () => {})())
         );
     }
 

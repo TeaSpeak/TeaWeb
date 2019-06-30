@@ -130,14 +130,12 @@ namespace Modals {
                     if(event.isDefaultPrevented()) return;
                     event.preventDefault();
 
-                    spawn_context_menu(event.pageX, event.pageY, {
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
+                    contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                        type: contextmenu.MenuEntryType.ENTRY,
                         name: tr("Expend all"),
                         callback: () => this.entry_editor.expend_all()
                     }, {
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
+                        type: contextmenu.MenuEntryType.ENTRY,
                         name: tr("Collapse all"),
                         callback: () => this.entry_editor.collapse_all()
                     });
@@ -221,18 +219,16 @@ namespace Modals {
                 };
 
                 entry.on_context_menu = (x, y) => {
-                    let entries: ContextMenuEntry[] = [];
+                    let entries: contextmenu.MenuEntry[] = [];
                     if(typeof(entry.value) === "undefined") {
                         entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
+                            type: contextmenu.MenuEntryType.ENTRY,
                             name: tr("Add permission"),
                             callback: () => entry.trigger_value_assign()
                         });
                     } else {
                         entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
+                            type: contextmenu.MenuEntryType.ENTRY,
                             name: tr("Remove permission"),
                             callback: () => {
                                 entry.value = undefined;
@@ -243,15 +239,13 @@ namespace Modals {
 
                     if(typeof(entry.granted) === "undefined") {
                         entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
+                            type: contextmenu.MenuEntryType.ENTRY,
                             name: tr("Add grant permission"),
                             callback: () => entry.trigger_grant_assign()
                         });
                     } else {
                         entries.push({
-                            type: MenuEntryType.ENTRY,
-                            icon: "",
+                            type: contextmenu.MenuEntryType.ENTRY,
                             name: tr("Remove grant permission"),
                             callback: () => {
                                 entry.granted = undefined;
@@ -259,23 +253,20 @@ namespace Modals {
                             }
                         });
                     }
-                    entries.push(MenuEntry.HR());
+                    entries.push(contextmenu.Entry.HR());
                     entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
+                        type: contextmenu.MenuEntryType.ENTRY,
                         name: tr("Expend all"),
                         callback: () => this.entry_editor.expend_all()
                     });
                     entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
+                        type: contextmenu.MenuEntryType.ENTRY,
                         name: tr("Collapse all"),
                         callback: () => this.entry_editor.collapse_all()
                     });
-                    entries.push(MenuEntry.HR());
+                    entries.push(contextmenu.Entry.HR());
                     entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
+                        type: contextmenu.MenuEntryType.ENTRY,
                         name: tr("Show permission description"),
                         callback: () => {
                             createInfoModal(
@@ -285,15 +276,14 @@ namespace Modals {
                         }
                     });
                     entries.push({
-                        type: MenuEntryType.ENTRY,
-                        icon: "",
+                        type: contextmenu.MenuEntryType.ENTRY,
                         name: tr("Copy permission name"),
                         callback: () => {
                             copy_to_clipboard(permission.name);
                         }
                     });
 
-                    spawn_context_menu(x, y, ...entries);
+                    contextmenu.spawn_context_menu(x, y, ...entries);
                 }
             }
         }
@@ -1220,10 +1210,10 @@ namespace Modals {
                                 return;
 
                             event.preventDefault();
-                            spawn_context_menu(event.pageX, event.pageY, {
-                                type: MenuEntryType.ENTRY,
+                            contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                                type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Remove client"),
-                                icon: 'client-delete',
+                                icon_class: 'client-delete',
                                 callback: () => {
                                     connection.serverConnection.send_command("servergroupdelclient", {
                                         sgid: current_group.id,
@@ -1233,9 +1223,9 @@ namespace Modals {
                                     });
                                 }
                             }, {
-                                type: MenuEntryType.ENTRY,
+                                type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Copy unique id"),
-                                icon: 'client-copy',
+                                icon_class: 'client-copy',
                                 callback: () => copy_to_clipboard(client.client_unique_identifier)
                             })
                         });

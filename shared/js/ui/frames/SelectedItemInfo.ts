@@ -455,7 +455,7 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
         properties["channel_name"] = channel.generate_tag(false);
         properties["channel_type"] = ChannelType.normalize(channel.channelType());
         properties["channel_clients"] = channel.channelTree.clientsByChannel(channel).length;
-        properties["channel_subscribed"] = true; //TODO
+        properties["channel_subscribed"] = channel.flag_subscribed;
         properties["server_encryption"] = channel.channelTree.server.properties.virtualserver_codec_encryption_mode;
 
         for(let key in channel.properties)
@@ -465,16 +465,15 @@ class ChannelInfoManager extends InfoManager<ChannelEntry> {
         properties["bbcode_channel_description"] = tag_channel_description;
 
         channel.getChannelDescription().then(description => {
-            let result = XBBCODE.process({
-                text: description,
-                escapeHtml: true,
-                addInLineBreaks: true
-            });
+            const result = xbbcode.parse(description, {});
+            /*
             if(result.error) {
                 console.log("BBCode parse error: %o", result.errorQueue);
             }
+            */
 
-            tag_channel_description.html(result.html)
+            tag_channel_description.empty()
+                .append($.spawn("div").html(result.build_html()).contents())
                 .css("overflow-y", "auto")
                 .css("flex-grow", "1");
         });

@@ -1,142 +1,220 @@
-let context_menu: JQuery;
+namespace contextmenu {
+    export interface MenuEntry {
+        callback?: () => void;
+        type: MenuEntryType;
+        name: (() => string) | string;
+        icon_class?: string;
+        icon_path?: string;
+        disabled?:  boolean;
+        visible?: boolean;
 
-$(document).bind("click", function (e) {
-    let menu = context_menu || (context_menu = $(".context-menu"));
+        checkbox_checked?: boolean;
 
-    if(!menu.is(":visible")) return;
+        invalidPermission?:  boolean;
+        sub_menu?: MenuEntry[];
+    }
 
-    if ($(e.target).parents(".context-menu").length == 0) {
+    export enum MenuEntryType {
+        CLOSE,
+        ENTRY,
+        CHECKBOX,
+        HR,
+        SUB_MENU
+    }
+
+    export class Entry {
+        static HR() {
+            return {
+                callback: () => {},
+                type: MenuEntryType.HR,
+                name: "",
+                icon: ""
+            };
+        };
+
+        static CLOSE(callback: () => void) {
+            return {
+                callback: callback,
+                type: MenuEntryType.CLOSE,
+                name: "",
+                icon: ""
+            };
+        }
+    }
+
+    export interface ContextMenuProvider {
         despawn_context_menu();
-        e.preventDefault();
+        spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]);
+
+        initialize();
+        finalize();
+
+        html_format_enabled() : boolean;
     }
-});
 
-let contextMenuCloseFn = undefined;
-function despawn_context_menu() {
-    let menu = context_menu || (context_menu = $(".context-menu"));
+    let provider: ContextMenuProvider;
+    export function spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]) {
+        if(!provider) {
+            console.error(tr("Failed to spawn context menu! Missing provider!"));
+            return;
+        }
 
-    if(!menu.is(":visible")) return;
-    menu.animate({opacity: 0}, 100, () => menu.css("display", "none"));
-    if(contextMenuCloseFn) contextMenuCloseFn();
-}
+        provider.spawn_context_menu(x, y, ...entries);
+    }
 
-enum MenuEntryType {
-    CLOSE,
-    ENTRY,
-    HR,
-    SUB_MENU
-}
+    export function despawn_context_menu() {
+        if(!provider)
+            return;
 
-class MenuEntry {
-    static HR() {
-        return {
-            callback: () => {},
-            type: MenuEntryType.HR,
-            name: "",
-            icon: ""
-        };
-    };
+        provider.despawn_context_menu();
+    }
 
-    static CLOSE(callback: () => void) {
-        return {
-            callback: callback,
-            type: MenuEntryType.CLOSE,
-            name: "",
-            icon: ""
-        };
+    export function get_provider() : ContextMenuProvider { return provider; }
+    export function set_provider(_provider: ContextMenuProvider) {
+        provider = _provider;
+        provider.initialize();
     }
 }
 
-interface ContextMenuEntry {
-    callback?:   () => void;
-    type:       MenuEntryType;
-    name:       (() => string) | string;
-    icon?:       (() => string) | string | JQuery;
-    disabled?:  boolean;
-    visible?: boolean;
+class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
+    private _global_click_listener: (event) => any;
+    private _context_menu: JQuery;
+    private _close_callbacks: (() => any)[] = [];
 
-    invalidPermission?:  boolean;
-    sub_menu?: ContextMenuEntry[];
-}
+    despawn_context_menu() {
+        let menu = this._context_menu || (this._context_menu = $(".context-menu"));
 
-function generate_tag(entry: ContextMenuEntry) : JQuery {
-    if(entry.type == MenuEntryType.HR) {
-        return $.spawn("hr");
-    } else if(entry.type == MenuEntryType.ENTRY) {
-        console.log(entry.icon);
-        let icon = $.isFunction(entry.icon) ? entry.icon() : entry.icon;
-        if(typeof(icon) === "string") {
+        if(!menu.is(":visible"))
+            return;
+
+        menu.animate({opacity: 0}, 100, () => menu.css("display", "none"));
+        for(const callback of this._close_callbacks)
+            callback();
+        this._close_callbacks = [];
+    }
+
+    finalize() {
+        $(document).unbind('click', this._global_click_listener);
+    }
+
+    initialize() {
+        this._global_click_listener = this.on_global_click.bind(this);
+        $(document).bind('click', this._global_click_listener);
+    }
+
+    private on_global_click(event) {
+        let menu = this._context_menu || (this._context_menu = $(".context-menu"));
+
+        if(!menu.is(":visible")) return;
+
+        if ($(event.target).parents(".context-menu").length == 0) {
+            this.despawn_context_menu();
+            event.preventDefault();
+        }
+    }
+
+    private generate_tag(entry: contextmenu.MenuEntry) : JQuery {
+        if(entry.type == contextmenu.MenuEntryType.HR) {
+            return $.spawn("hr");
+        } else if(entry.type == contextmenu.MenuEntryType.ENTRY) {
+            let icon = entry.icon_class;
             if(!icon || icon.length == 0) icon = "icon_empty";
             else icon = "icon " + icon;
-        }
 
-        let tag = $.spawn("div").addClass("entry");
-        tag.append(typeof(icon) === "string" ? $.spawn("div").addClass(icon) : icon);
-        tag.append($.spawn("div").html($.isFunction(entry.name) ? entry.name() : entry.name));
+            let tag = $.spawn("div").addClass("entry");
+            tag.append($.spawn("div").addClass(icon));
+            tag.append($.spawn("div").html($.isFunction(entry.name) ? entry.name() : entry.name));
 
-        if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
-        else {
-            tag.click(function () {
-                if($.isFunction(entry.callback)) entry.callback();
-                despawn_context_menu();
-            });
-        }
-        return tag;
-    } else if(entry.type == MenuEntryType.SUB_MENU) {
-        let icon = $.isFunction(entry.icon) ? entry.icon() : entry.icon;
-        if(typeof(icon) === "string") {
-            if(!icon || icon.length == 0) icon = "icon_empty";
-            else icon = "icon " + icon;
-        }
-
-        let tag = $.spawn("div").addClass("entry").addClass("sub-container");
-        tag.append(typeof(icon) === "string" ? $.spawn("div").addClass(icon) : icon);
-        tag.append($.spawn("div").html($.isFunction(entry.name) ? entry.name() : entry.name));
-
-        tag.append($.spawn("div").addClass("arrow right"));
-
-        if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
-        else {
-            let menu = $.spawn("div").addClass("sub-menu").addClass("context-menu-container");
-            for(const e of entry.sub_menu) {
-                if(typeof(entry.visible) === 'boolean' && !entry.visible)
-                    continue;
-                menu.append(generate_tag(e));
+            if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
+            else {
+                tag.click( () => {
+                    if($.isFunction(entry.callback))
+                        entry.callback();
+                    this.despawn_context_menu();
+                });
             }
-            menu.appendTo(tag);
+            return tag;
+        } else if(entry.type == contextmenu.MenuEntryType.CHECKBOX) {
+             let checkbox = $.spawn("label").addClass("checkbox");
+                $.spawn("input").attr("type", "checkbox").prop("checked", !!entry.checkbox_checked).appendTo(checkbox);
+                $.spawn("span").addClass("checkmark").appendTo(checkbox);
+
+            let tag = $.spawn("div").addClass("entry");
+            tag.append(checkbox);
+            tag.append($.spawn("div").html($.isFunction(entry.name) ? entry.name() : entry.name));
+
+            if(entry.disabled || entry.invalidPermission)
+                tag.addClass("disabled");
+            else {
+                tag.click( () => {
+                    if($.isFunction(entry.callback))
+                        entry.callback();
+                    this.despawn_context_menu();
+                });
+            }
+            return tag;
+        } else if(entry.type == contextmenu.MenuEntryType.SUB_MENU) {
+            let icon = entry.icon_class;
+            if(!icon || icon.length == 0) icon = "icon_empty";
+            else icon = "icon " + icon;
+
+            let tag = $.spawn("div").addClass("entry").addClass("sub-container");
+            tag.append($.spawn("div").addClass(icon));
+            tag.append($.spawn("div").html($.isFunction(entry.name) ? entry.name() : entry.name));
+
+            tag.append($.spawn("div").addClass("arrow right"));
+
+            if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
+            else {
+                let menu = $.spawn("div").addClass("sub-menu").addClass("context-menu-container");
+                for(const e of entry.sub_menu) {
+                    if(typeof(entry.visible) === 'boolean' && !entry.visible)
+                        continue;
+                    menu.append(this.generate_tag(e));
+                }
+                menu.appendTo(tag);
+            }
+            return tag;
         }
-        return tag;
-    }
-    return $.spawn("div").text("undefined");
-}
-
-function spawn_context_menu(x, y, ...entries: ContextMenuEntry[]) {
-    let menu_tag = context_menu || (context_menu = $(".context-menu"));
-    menu_tag.finish().empty().css("opacity", "0");
-
-    const menu_container = $.spawn("div").addClass("context-menu-container");
-    contextMenuCloseFn = undefined;
-
-    for(const entry of entries){
-        if(typeof(entry.visible) === 'boolean' && !entry.visible)
-            continue;
-
-        if(entry.type == MenuEntryType.CLOSE) {
-            contextMenuCloseFn = entry.callback;
-        } else
-            menu_container.append(generate_tag(entry));
+        return $.spawn("div").text("undefined");
     }
 
-    menu_tag.append(menu_container);
-    menu_tag.animate({opacity: 1}, 100).css("display", "block");
+    spawn_context_menu(x: number, y: number, ...entries: contextmenu.MenuEntry[]) {
+        let menu_tag = this._context_menu || (this._context_menu = $(".context-menu"));
+        menu_tag.finish().empty().css("opacity", "0");
 
-    const width = menu_container.visible_width();
-    if(x + width + 5 > window.innerWidth)
-        menu_container.addClass("left");
+        const menu_container = $.spawn("div").addClass("context-menu-container");
+        this._close_callbacks = [];
 
-    // In the right position (the mouse)
-    menu_tag.css({
-        "top": y + "px",
-        "left": x + "px"
-    });
+        for(const entry of entries){
+            if(typeof(entry.visible) === 'boolean' && !entry.visible)
+                continue;
+
+            if(entry.type == contextmenu.MenuEntryType.CLOSE) {
+                this._close_callbacks.push(entry.callback);
+            } else
+                menu_container.append(this.generate_tag(entry));
+        }
+
+        menu_tag.append(menu_container);
+        menu_tag.animate({opacity: 1}, 100).css("display", "block");
+
+        const width = menu_container.visible_width();
+        if(x + width + 5 > window.innerWidth)
+            menu_container.addClass("left");
+
+        // In the right position (the mouse)
+        menu_tag.css({
+            "top": y + "px",
+            "left": x + "px"
+        });
+    }
+
+    html_format_enabled(): boolean {
+        return true;
+    }
 }
+
+//TODO: Improve
+if(!window.require)
+    contextmenu.set_provider(new HTMLContextMenuProvider());

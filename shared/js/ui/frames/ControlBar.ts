@@ -541,17 +541,17 @@ class ControlBar {
                                         return;
                                     event.preventDefault();
 
-                                    spawn_context_menu(event.pageX,  event.pageY, {
-                                        type: MenuEntryType.ENTRY,
+                                    contextmenu.spawn_context_menu(event.pageX,  event.pageY, {
+                                        type: contextmenu.MenuEntryType.ENTRY,
                                         name: tr("Connect"),
-                                        icon: 'client-connect',
+                                        icon_class: 'client-connect',
                                         callback: () => bookmark_connect(false)
                                     }, {
-                                        type: MenuEntryType.ENTRY,
+                                        type: contextmenu.MenuEntryType.ENTRY,
                                         name: tr("Connect in a new tab"),
-                                        icon: 'client-connect',
+                                        icon_class: 'client-connect',
                                         callback: () => bookmark_connect(true)
-                                    }, MenuEntry.CLOSE(() => {
+                                    }, contextmenu.Entry.CLOSE(() => {
                                         setTimeout(() => {
                                             this.htmlTag.find(".btn_bookmark.button-dropdown").removeClass("force-show")
                                         }, 250);
