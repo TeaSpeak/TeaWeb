@@ -9872,6 +9872,735 @@
       "key": {
         "message": "Please select a user"
       }
+    }, 
+    {
+      "translated": "\u041f\u043e\u043b\u0443\u0447\u0435\u043d\u043e \u0441\u043e\u043e\u0431\u0449\u0435\u043d\u0438\u0435 \u043a\u0430\u043d\u0430\u043b\u0430 \u0434\u043b\u044f \u043d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u043e\u0433\u043e \u043a\u0430\u043d\u0430\u043b\u0430 (% s)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel message for unknown channel (%s)"
+      }
+    }, 
+    {
+      "translated": "\u0412\u044b\u0437\u043e\u0432 \u043c\u0435\u0442\u043e\u0434\u0430% s \u0441 \u0430\u0440\u0433\u0443\u043c\u0435\u043d\u0442\u0430\u043c\u0438:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invoking method %s with arguments: %o"
+      }
+    }, 
+    {
+      "translated": "\u0420\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Result: %o"
+      }
+    }, 
+    {
+      "translated": "\u041f\u043e\u043b\u0443\u0447\u0435\u043d \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u043c\u0435\u0442\u043e\u0434\u0430 \u043f\u0440\u043e\u043a\u0441\u0438 \u0434\u043b\u044f \u043d\u0435\u0438\u0437\u0432\u0435\u0441\u0442\u043d\u043e\u0433\u043e \u043e\u0431\u0435\u0449\u0430\u043d\u0438\u044f", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received proxy method result for unknown promise"
+      }
+    }, 
+    {
+      "translated": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0442\u0435\u043a\u0441\u0442 \u0432 \u0431\u0443\u0444\u0435\u0440 \u043e\u0431\u043c\u0435\u043d\u0430:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy text to clipboard: %s"
+      }
+    }, 
+    {
+      "translated": "\u041f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f \u043d\u0430 \u043a\u0430\u043d\u0430\u043b", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Switch to channel"
+      }
+    }, 
+    {
+      "translated": "\u041f\u043e\u0434\u043f\u0438\u0441\u0430\u0442\u044c\u0441\u044f \u043d\u0430 \u043a\u0430\u043d\u0430\u043b", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Subscribe to channel"
+      }
+    }, 
+    {
+      "translated": "\u041e\u0442\u043f\u0438\u0441\u0430\u0442\u044c\u0441\u044f \u043e\u0442 \u043a\u0430\u043d\u0430\u043b\u0430", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unsubscribe from channel"
+      }
+    }, 
+    {
+      "translated": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u0443\u043d\u0430\u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u043d\u044b\u0439 \u0440\u0435\u0436\u0438\u043c \u043f\u043e\u0434\u043f\u0438\u0441\u043a\u0438", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Use inherited subscribe mode"
+      }
+    }, 
+    {
+      "translated": "\u041e\u0442\u043a\u0440\u044b\u0442\u044c \u0442\u0435\u043a\u0441\u0442\u043e\u0432\u044b\u0439 \u0447\u0430\u0442", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Open text chat"
+      }
+    }, 
+    {
+      "translated": "\u0421\u043c\u0435\u043d\u0438\u0442\u044c \u0438\u043c\u044f", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change name"
+      }
+    }, 
+    {
+      "translated": "\u0422\u0430\u0439\u043c-\u0430\u0443\u0442 {0} ({1})", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "{0} timed out ({1})"
+      }
+    }, 
+    {
+      "translated": "\u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0438\u043a\u043e\u043d\u043a\u0438:% d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon download failed of icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "\u041f\u043e\u043b\u0443\u0447\u0438\u043b \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got device %o"
+      }
+    }, 
+    {
+      "translated": "\u0412\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0435 \u043c\u0438\u043a\u0440\u043e\u0444\u043e\u043d\u043d\u043e\u0435 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e: id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Selected microphone device: id: %o"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043d\u0430\u0439\u0442\u0438 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to find device!"
+      }
+    }, 
+    {
+      "translated": "\u0418\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u044f \u0441\u043e\u0435\u0434\u0438\u043d\u0435\u043d\u0438\u044f \u0441 {0} {1}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing connection to {0}{1}"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0445\u044d\u0448\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u043f\u0430\u0440\u043e\u043b\u044c \u0434\u043b\u044f \u043f\u043e\u0434\u043a\u043b\u044e\u0447\u0435\u043d\u0438\u044f:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to hash connect password: %o"
+      }
+    }, 
+    {
+      "translated": "\u0418\u043c\u044f \u0445\u043e\u0441\u0442\u0430 \u0443\u0441\u043f\u0435\u0448\u043d\u043e \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u043e \u0432 {0} {1}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hostname successfully resolved to {0}{1}"
+      }
+    }, 
+    {
+      "translated": "\u0426\u0435\u043b\u0435\u0432\u044b\u043c \u0441\u0435\u0440\u0432\u0435\u0440\u043e\u043c \u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0441\u0435\u0440\u0432\u0435\u0440 TeamSpeak 3! {: Br:} \u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0430\u0442\u044c\u0441\u044f \u043c\u043e\u0433\u0443\u0442 \u0442\u043e\u043b\u044c\u043a\u043e \u0443\u0434\u043e\u0441\u0442\u043e\u0432\u0435\u0440\u0435\u043d\u0438\u044f TeamSpeak 3. {: br:} \u041f\u043e\u0436\u0430\u043b\u0443\u0439\u0441\u0442\u0430, \u0432\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0434\u0440\u0443\u0433\u043e\u0439 \u043f\u0440\u043e\u0444\u0438\u043b\u044c \u0438\u043b\u0438 \u0438\u0437\u043c\u0435\u043d\u0438\u0442\u0435 \u0442\u0438\u043f \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0446\u0438\u0438.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u0440\u0435\u043a\u043e\u0440\u0434\u0435\u0440 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to acquire recorder (%o)"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0437\u0430\u043a\u043b\u0430\u0434\u043a\u0438:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load bookmarks: %o"
+      }
+    }, 
+    {
+      "translated": "\u041f\u043e\u043b\u0443\u0447\u0435\u043d\u043e \u043d\u0435\u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u0435 \u0434\u043b\u044f \u0441\u043f\u0438\u0441\u043a\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432 \u0433\u0440\u0443\u043f\u043f\u044b \u0441\u0435\u0440\u0432\u0435\u0440\u043e\u0432", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for server group client list"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u0440\u043e\u0430\u043d\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0441\u043f\u0438\u0441\u043e\u043a \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432 \u0433\u0440\u0443\u043f\u043f\u044b \u0441\u0435\u0440\u0432\u0435\u0440\u043e\u0432:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse server group client list: %o"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u043f\u0440\u043e\u0444\u0438\u043b\u044c JSON! \u0421\u0431\u0440\u043e\u0441 \u043f\u0440\u043e\u0444\u0438\u043b\u0435\u0439 :( (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid profile json! Resetting profiles :( (%o)"
+      }
+    }, 
+    {
+      "translated": "\u0414\u0430\u043d\u043d\u044b\u0435 \u043f\u0440\u043e\u0444\u0438\u043b\u044f \u043d\u0435\u0432\u0435\u0440\u043d\u044b", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile data invalid"
+      }
+    }, 
+    {
+      "translated": "\u0414\u0430\u043d\u043d\u044b\u0435 \u043f\u0440\u043e\u0444\u0438\u043b\u044f \u043d\u0435\u0432\u0435\u0440\u043d\u044b. {: Br:} \u042d\u0442\u043e \u043c\u043e\u0436\u0435\u0442 \u043f\u0440\u0438\u0432\u0435\u0441\u0442\u0438 \u043a \u043f\u043e\u0442\u0435\u0440\u0435 \u0434\u0430\u043d\u043d\u044b\u0445.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The profile data is invalid.{:br:}This might cause data loss."
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0441\u043e\u0437\u0434\u0430\u0442\u044c \u043a\u043e\u043d\u0442\u0435\u043a\u0441\u0442\u043d\u043e\u0435 \u043c\u0435\u043d\u044e! \u041e\u0442\u0441\u0443\u0442\u0441\u0442\u0432\u0443\u0435\u0442 \u043f\u0440\u043e\u0432\u0430\u0439\u0434\u0435\u0440!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to spawn context menu! Missing provider!"
+      }
+    }, 
+    {
+      "translated": "UI \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u0430\u044f \u0434\u043b\u0438\u043d\u0430 \u0438\u043a\u043e\u043d\u043a\u0438 \u043d\u0435 \u0440\u0430\u0432\u043d\u0430 1! (% \u041e)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "UI selected icon length does not equal with 1! (%o)"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u0437\u043d\u0430\u0447\u043e\u043a% d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0443\u0434\u0430\u043b\u0438\u0442\u044c \u0437\u043d\u0430\u0447\u043e\u043a", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete icon"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u0430\u0439\u043b% s: \u0444\u0430\u0439\u043b \u0441\u043b\u0438\u0448\u043a\u043e\u043c \u0431\u043e\u043b\u044c\u0448\u043e\u0439!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: File is too big!"
+      }
+    }, 
+    {
+      "translated": "\u041e\u0448\u0438\u0431\u043a\u0430 \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0438 \u0438\u043a\u043e\u043d\u043a\u0438", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon upload failed"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u0430\u0439\u043b% s: \u0432\u0430\u0448 \u0431\u0440\u0430\u0443\u0437\u0435\u0440 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442 \u0440\u0430\u0437\u043c\u0435\u0440\u044b \u0444\u0430\u0439\u043b\u043e\u0432!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Your browser does not support file sizes!"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u0430\u0439\u043b% s: \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 \u043d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Image failed to load"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u0430\u0439\u043b% s: \u0440\u0435\u0437\u0443\u043b\u044c\u0442\u0430\u0442 \u043d\u0435 \u044f\u0432\u043b\u044f\u0435\u0442\u0441\u044f \u0441\u0442\u0440\u043e\u043a\u043e\u0439 \u043c\u0443\u043b\u044c\u0442\u0438\u043c\u0435\u0434\u0438\u0430 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Result is not an media string (%o)"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u0430\u0439\u043b% s: \u043d\u0435\u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u044b\u0439 \u0442\u0438\u043f \u043d\u043e\u0441\u0438\u0442\u0435\u043b\u044f \u0434\u0430\u043d\u043d\u044b\u0445 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Invalid data media type (%o)"
+      }
+    }, 
+    {
+      "translated": "\u0414\u0430\u043d\u043d\u043e\u0435 \u0438\u0437\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u0435 \u0438\u043c\u0435\u0435\u0442 \u0442\u0438\u043f% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Given image has type %s"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u0430\u0439\u043b% s: Mimetype \u043d\u0435 \u0437\u0430\u043a\u043e\u0434\u0438\u0440\u043e\u0432\u0430\u043d \u0432 base64 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Mimetype isnt base64 encoded (%o)"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0444\u0430\u0439\u043b% s: \u043d\u0435\u0434\u043e\u043f\u0443\u0441\u0442\u0438\u043c\u044b\u0435 \u0433\u0440\u0430\u043d\u0438\u0446\u044b:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Invalid bounds: %s"
+      }
+    }, 
+    {
+      "translated": "\u043e\u0448\u0438\u0431\u043a\u0430:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "error: "
+      }
+    }, 
+    {
+      "translated": "\u043e\u0436\u0438\u0434\u0430\u043d\u0438\u0435", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "waiting"
+      }
+    }, 
+    {
+      "translated": "\u0412 \u043e\u0436\u0438\u0434\u0430\u043d\u0438\u0438 \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e\u0439 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0438", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Awaiting local processing"
+      }
+    }, 
+    {
+      "translated": "\u043b\u043e\u043a\u0430\u043b\u044c\u043d\u0430\u044f \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u043d\u0435 \u0443\u0434\u0430\u043b\u0430\u0441\u044c", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "local processing failed"
+      }
+    }, 
+    {
+      "translated": "\u043e\u0448\u0438\u0431\u043a\u0430 \u043b\u043e\u043a\u0430\u043b\u044c\u043d\u043e\u0439 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0438", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "local processing error"
+      }
+    }, 
+    {
+      "translated": "\u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u044f", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "initializing"
+      }
+    }, 
+    {
+      "translated": "\u0437\u043d\u0430\u0447\u043e\u043a \u0443\u0436\u0435 \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u0435\u0442", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "icon already exists"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0443:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize upload: %o"
+      }
+    }, 
+    {
+      "translated": "\u043d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0443", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "failed to initialize upload"
+      }
+    }, 
+    {
+      "translated": "\u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0430", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "uploading"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0437\u043d\u0430\u0447\u043e\u043a \u0434\u043b\u044f \u0437\u043d\u0430\u0447\u043a\u0430% s:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon upload failed for icon %s: %o"
+      }
+    }, 
+    {
+      "translated": "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043d\u0435 \u0443\u0434\u0430\u043b\u0430\u0441\u044c:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload failed: "
+      }
+    }, 
+    {
+      "translated": "\u0417\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u043d\u0435 \u0443\u0434\u0430\u043b\u0430\u0441\u044c", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload failed"
+      }
+    }, 
+    {
+      "translated": "\u0437\u0430\u0433\u0440\u0443\u0437\u043a\u0430 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043d\u0430", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload completed"
+      }
+    }, 
+    {
+      "translated": "\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0438\u043a\u043e\u043d\u043a\u0438", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload Icons"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u0434\u0435\u0441\u043a\u0440\u0438\u043f\u0442\u043e\u0440 \u043a\u043b\u0438\u0435\u043d\u0442\u0430", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid client handle"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435\u0432\u0435\u0440\u043d\u044b\u0439 \u0441\u043e\u0437\u0434\u0430\u0442\u0435\u043b\u044c URL", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid URL creator"
+      }
+    }, 
+    {
+      "translated": "\u0442\u044b\u0447\u0435\u0442 \u0432\u0430\u0441:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "pokes you:"
+      }
+    }, 
+    {
+      "translated": "\u0442\u044b\u0447\u0435\u0442 \u0432\u0430\u0441.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "pokes you."
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044c \u0437\u043d\u0430\u0447\u043e\u043a \u0434\u043b\u044f \u0440\u0435\u0434\u0430\u043a\u0442\u043e\u0440\u0430 \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u0438\u0439:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load icon for permission editor: %o"
+      }
+    }, 
+    {
+      "translated": "\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043a\u043b\u0438\u0435\u043d\u0442\u0430", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove client"
+      }
+    }, 
+    {
+      "translated": "\u0421\u043a\u043e\u043f\u0438\u0440\u043e\u0432\u0430\u0442\u044c \u0443\u043d\u0438\u043a\u0430\u043b\u044c\u043d\u044b\u0439 \u0438\u0434\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0442\u043e\u0440", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy unique id"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u043b\u0443\u0447\u0438\u0442\u044c \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432 \u0433\u0440\u0443\u043f\u043f\u044b \u0441\u0435\u0440\u0432\u0435\u0440\u043e\u0432 \u0434\u043b\u044f \u0433\u0440\u0443\u043f\u043f\u044b% d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to receive server group clients for group %d: %o"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0432\u044b\u0431\u0440\u0430\u0442\u044c \u0437\u043d\u0430\u0447\u043e\u043a:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to select icon: %o"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0437\u0430\u043f\u0443\u0441\u0442\u0438\u0442\u044c \u0440\u0435\u043a\u043e\u0440\u0434\u0435\u0440 \u043f\u043e\u0441\u043b\u0435 \u0438\u043d\u0438\u0446\u0438\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to start recorder after initialize (%o)"
+      }
+    }, 
+    {
+      "translated": "\u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d \u043f\u0440\u043e\u0444\u0438\u043b\u044c \u0437\u0430\u043f\u0438\u0441\u0438 \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u0430% s | % o (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loaded record profile device %s | %o (%o)"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u0443\u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u044c \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432\u043e \u0432\u0432\u043e\u0434\u0430 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to set input device (%o)"
+      }
+    }, 
+    {
+      "translated": "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043e\u0442\u043a\u043b\u044e\u0447\u0438\u0442\u044c \u0432\u0445\u043e\u0434\u043d\u043e\u0439 \u043f\u043e\u0442\u0440\u0435\u0431\u0438\u0442\u0435\u043b\u044c \u0434\u043b\u044f \u043f\u0440\u043e\u0444\u0438\u043b\u044f (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unmount input consumer for profile (%o)"
+      }
+    }, 
+    {
+      "translated": "\u041f\u043e\u0438\u0441\u043a \u043a\u043b\u0438\u0435\u043d\u0442\u0430", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Search client"
+      }
+    }, 
+    {
+      "translated": "\u0410\u0434\u0440\u0435\u0441 \u043f\u0430\u0440\u0442\u043d\u0435\u0440\u0430:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Peer address:"
+      }
+    }, 
+    {
+      "translated": "\u0422\u0438\u043f \u0441\u0441\u044b\u043b\u043a\u0438:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Link type:"
+      }
+    }, 
+    {
+      "translated": "TeaWeb", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaWeb"
+      }
+    }, 
+    {
+      "translated": "TeaClient (\u043f\u043e\u043a\u0430 \u043d\u0435 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u0438\u0432\u0430\u0435\u0442\u0441\u044f)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaClient (Not supported yet)"
+      }
+    }, 
+    {
+      "translated": "\u041f\u043e\u0434\u043a\u043b\u044e\u0447\u0438\u0442\u044c\u0441\u044f \u043d\u0430\u043f\u0440\u044f\u043c\u0443\u044e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect directly"
+      }
+    }, 
+    {
+      "translated": "\u0418\u0441\u043f\u043e\u043b\u044c\u0437\u043e\u0432\u0430\u0442\u044c \u0440\u0430\u0437\u0440\u0435\u0448\u0435\u043d\u043d\u044b\u0439 \u0430\u0434\u0440\u0435\u0441", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Use resolved address"
+      }
+    }, 
+    {
+      "translated": "\u043a\u043e\u043f\u0438\u044f", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy"
+      }
+    }, 
+    {
+      "translated": "\u0414\u043e\u0431\u0430\u0432\u0438\u0442\u044c \u0438\u043a\u043e\u043d\u043a\u0443", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add icon"
+      }
+    }, 
+    {
+      "translated": "\u0423\u0431\u0440\u0430\u0442\u044c \u0432\u044b\u0431\u0440\u0430\u043d\u043d\u043e\u0435", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove selected"
+      }
+    }, 
+    {
+      "translated": "\u0430\u0431\u043e\u0440\u0442", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "abort"
+      }
+    }, 
+    {
+      "translated": "\u0417\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043d\u044b\u0435 \u0438\u043a\u043e\u043d\u043a\u0438 (\u0432\u0441\u0435\u0433\u043e | \u0443\u0441\u043f\u0435\u0448\u043d\u043e | \u043e\u0448\u0438\u0431\u043a\u0430):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Uploaded icons (total | successfully | error): "
+      }
+    }, 
+    {
+      "translated": "\u0445\u043e\u0440\u043e\u0448\u043e", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "okey"
+      }
     }
   ]
 }

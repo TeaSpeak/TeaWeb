@@ -10295,6 +10295,735 @@
       "key": {
         "message": "Please select a user"
       }
+    }, 
+    {
+      "translated": "Bilinmeyen kanal i\u00e7in kanal mesaj\u0131 al\u0131nd\u0131 (% s)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel message for unknown channel (%s)"
+      }
+    }, 
+    {
+      "translated": "% S y\u00f6ntemini ba\u011f\u0131ms\u0131z de\u011fi\u015fkenlerle \u00e7a\u011f\u0131rmak:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invoking method %s with arguments: %o"
+      }
+    }, 
+    {
+      "translated": "Sonu\u00e7:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Result: %o"
+      }
+    }, 
+    {
+      "translated": "Bilinmeyen s\u00f6z i\u00e7in al\u0131nan proxy y\u00f6ntemi sonucu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received proxy method result for unknown promise"
+      }
+    }, 
+    {
+      "translated": "Metni panoya kopyala:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy text to clipboard: %s"
+      }
+    }, 
+    {
+      "translated": "Kanala ge\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Switch to channel"
+      }
+    }, 
+    {
+      "translated": "Kanala abone olun", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Subscribe to channel"
+      }
+    }, 
+    {
+      "translated": "Kanal aboneli\u011finden \u00e7\u0131k", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unsubscribe from channel"
+      }
+    }, 
+    {
+      "translated": "Miras al\u0131nan abone modunu kullan", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Use inherited subscribe mode"
+      }
+    }, 
+    {
+      "translated": "Metin sohbeti a\u00e7", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Open text chat"
+      }
+    }, 
+    {
+      "translated": "\u0130smini de\u011fi\u015ftir", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change name"
+      }
+    }, 
+    {
+      "translated": "{0} zaman a\u015f\u0131m\u0131na u\u011frad\u0131 ({1})", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "{0} timed out ({1})"
+      }
+    }, 
+    {
+      "translated": "% D:% o simgesinden simge indirilemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon download failed of icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "% O cihaz\u0131 ald\u0131m", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got device %o"
+      }
+    }, 
+    {
+      "translated": "Se\u00e7ilen mikrofon cihaz\u0131: id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Selected microphone device: id: %o"
+      }
+    }, 
+    {
+      "translated": "Cihaz bulunamad\u0131!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to find device!"
+      }
+    }, 
+    {
+      "translated": "{0} {1} ile ba\u011flant\u0131 ba\u015flat\u0131l\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing connection to {0}{1}"
+      }
+    }, 
+    {
+      "translated": "Karma ba\u011flant\u0131 \u015fifresi ba\u015far\u0131s\u0131z oldu:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to hash connect password: %o"
+      }
+    }, 
+    {
+      "translated": "Ana bilgisayar ad\u0131 ba\u015far\u0131yla {0} {1} olarak \u00e7\u00f6z\u00fcld\u00fc", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hostname successfully resolved to {0}{1}"
+      }
+    }, 
+    {
+      "translated": "Hedef sunucu bir TeamSpeak 3 sunucusudur! {: Br:} Sadece TeamSpeak 3 tabanl\u0131 kimlikleri ba\u011flayabilir. {: Br:} L\u00fctfen ba\u015fka bir profil se\u00e7in veya tan\u0131mlay\u0131c\u0131 tipini de\u011fi\u015ftirin.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."
+      }
+    }, 
+    {
+      "translated": "Kaydedici al\u0131namad\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to acquire recorder (%o)"
+      }
+    }, 
+    {
+      "translated": "Yer i\u015faretleri y\u00fcklenemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load bookmarks: %o"
+      }
+    }, 
+    {
+      "translated": "Sunucu grubu m\u00fc\u015fteri listesi i\u00e7in ge\u00e7ersiz bildirim al\u0131nd\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for server group client list"
+      }
+    }, 
+    {
+      "translated": "Sunucu grubu istemci listesi ayr\u0131\u015ft\u0131r\u0131lamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse server group client list: %o"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz profil json! Profilleri s\u0131f\u0131rlama :( (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid profile json! Resetting profiles :( (%o)"
+      }
+    }, 
+    {
+      "translated": "Profil verileri ge\u00e7ersiz", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile data invalid"
+      }
+    }, 
+    {
+      "translated": "Profil verileri ge\u00e7ersiz. {: Br:} Bu veri kayb\u0131na neden olabilir.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The profile data is invalid.{:br:}This might cause data loss."
+      }
+    }, 
+    {
+      "translated": "Ba\u011flam men\u00fcs\u00fc olu\u015fturulamad\u0131! Kay\u0131p sa\u011flay\u0131c\u0131!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to spawn context menu! Missing provider!"
+      }
+    }, 
+    {
+      "translated": "UI se\u00e7ilen simge uzunlu\u011fu 1 ile ayn\u0131 de\u011fil! (%O)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "UI selected icon length does not equal with 1! (%o)"
+      }
+    }, 
+    {
+      "translated": "% D:% o simgesi silinemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "Simge silinemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete icon"
+      }
+    }, 
+    {
+      "translated": "% S dosyas\u0131 y\u00fcklenemedi: Dosya \u00e7ok b\u00fcy\u00fck!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: File is too big!"
+      }
+    }, 
+    {
+      "translated": "Simge y\u00fckleme i\u015flemi ba\u015far\u0131s\u0131z oldu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon upload failed"
+      }
+    }, 
+    {
+      "translated": "% S dosyas\u0131 y\u00fcklenemedi: Taray\u0131c\u0131n\u0131z dosya boyutlar\u0131n\u0131 desteklemiyor!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Your browser does not support file sizes!"
+      }
+    }, 
+    {
+      "translated": "% S dosyas\u0131 y\u00fcklenemedi: Resim y\u00fcklenemedi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Image failed to load"
+      }
+    }, 
+    {
+      "translated": "% S dosyas\u0131 y\u00fcklenemedi: Sonu\u00e7, bir medya dizesi de\u011fil (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Result is not an media string (%o)"
+      }
+    }, 
+    {
+      "translated": "% S dosyas\u0131 y\u00fcklenemedi: Ge\u00e7ersiz veri ortam\u0131 t\u00fcr\u00fc (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Invalid data media type (%o)"
+      }
+    }, 
+    {
+      "translated": "Verilen g\u00f6r\u00fcnt\u00fc% s t\u00fcr\u00fcnde", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Given image has type %s"
+      }
+    }, 
+    {
+      "translated": "% S dosyas\u0131 y\u00fcklenemedi: Mimetype isnt base64 kodlanm\u0131\u015f (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Mimetype isnt base64 encoded (%o)"
+      }
+    }, 
+    {
+      "translated": "% S dosyas\u0131 y\u00fcklenemedi: Ge\u00e7ersiz s\u0131n\u0131rlar:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Invalid bounds: %s"
+      }
+    }, 
+    {
+      "translated": "hata:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "error: "
+      }
+    }, 
+    {
+      "translated": "bekleme", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "waiting"
+      }
+    }, 
+    {
+      "translated": "Yerel i\u015flem bekleniyor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Awaiting local processing"
+      }
+    }, 
+    {
+      "translated": "yerel i\u015flem ba\u015far\u0131s\u0131z", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "local processing failed"
+      }
+    }, 
+    {
+      "translated": "yerel i\u015flem hatas\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "local processing error"
+      }
+    }, 
+    {
+      "translated": "ba\u015flat\u0131l\u0131yor", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "initializing"
+      }
+    }, 
+    {
+      "translated": "simge zaten var", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "icon already exists"
+      }
+    }, 
+    {
+      "translated": "Y\u00fckleme ba\u015flat\u0131lamad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize upload: %o"
+      }
+    }, 
+    {
+      "translated": "y\u00fckleme ba\u015flat\u0131lamad\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "failed to initialize upload"
+      }
+    }, 
+    {
+      "translated": "y\u00fckleme", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "uploading"
+      }
+    }, 
+    {
+      "translated": "% S simgesi i\u00e7in simge y\u00fckleme ba\u015far\u0131s\u0131z oldu:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon upload failed for icon %s: %o"
+      }
+    }, 
+    {
+      "translated": "y\u00fckleme ba\u015far\u0131s\u0131z:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload failed: "
+      }
+    }, 
+    {
+      "translated": "y\u00fckleme ba\u015far\u0131s\u0131z", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload failed"
+      }
+    }, 
+    {
+      "translated": "y\u00fckleme tamamland\u0131", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload completed"
+      }
+    }, 
+    {
+      "translated": "Simgeleri Y\u00fckle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload Icons"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz m\u00fc\u015fteri i\u015fleci", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid client handle"
+      }
+    }, 
+    {
+      "translated": "Ge\u00e7ersiz URL olu\u015fturucu", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid URL creator"
+      }
+    }, 
+    {
+      "translated": "seni d\u00fcrt\u00fcyor:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "pokes you:"
+      }
+    }, 
+    {
+      "translated": "seni d\u00fcrt\u00fcyor.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "pokes you."
+      }
+    }, 
+    {
+      "translated": "\u0130zin edit\u00f6r\u00fc i\u00e7in simge y\u00fcklenemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load icon for permission editor: %o"
+      }
+    }, 
+    {
+      "translated": "\u0130stemciyi kald\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove client"
+      }
+    }, 
+    {
+      "translated": "Benzersiz kimli\u011fi kopyala", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy unique id"
+      }
+    }, 
+    {
+      "translated": "% D grubu i\u00e7in sunucu grubu istemcileri al\u0131namad\u0131:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to receive server group clients for group %d: %o"
+      }
+    }, 
+    {
+      "translated": "Simge se\u00e7ilemedi:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to select icon: %o"
+      }
+    }, 
+    {
+      "translated": "Ba\u015flatt\u0131ktan sonra kay\u0131t cihaz\u0131 ba\u015flat\u0131lamad\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to start recorder after initialize (%o)"
+      }
+    }, 
+    {
+      "translated": "Y\u00fcklenen kay\u0131t profili ayg\u0131t\u0131% s | % o (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loaded record profile device %s | %o (%o)"
+      }
+    }, 
+    {
+      "translated": "Giri\u015f cihaz\u0131 ayarlanamad\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to set input device (%o)"
+      }
+    }, 
+    {
+      "translated": "Giri\u015f t\u00fcketicisi profili i\u00e7in atamad\u0131 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unmount input consumer for profile (%o)"
+      }
+    }, 
+    {
+      "translated": "Arama istemcisi", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Search client"
+      }
+    }, 
+    {
+      "translated": "E\u015f adresi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Peer address:"
+      }
+    }, 
+    {
+      "translated": "Ba\u011flant\u0131 tipi:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Link type:"
+      }
+    }, 
+    {
+      "translated": "TeaWeb", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaWeb"
+      }
+    }, 
+    {
+      "translated": "TeaClient (Hen\u00fcz desteklenmiyor)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaClient (Not supported yet)"
+      }
+    }, 
+    {
+      "translated": "Do\u011frudan ba\u011flan\u0131n", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect directly"
+      }
+    }, 
+    {
+      "translated": "\u00c7\u00f6z\u00fclm\u00fc\u015f adres kullan", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Use resolved address"
+      }
+    }, 
+    {
+      "translated": "kopya", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy"
+      }
+    }, 
+    {
+      "translated": "Simge ekle", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add icon"
+      }
+    }, 
+    {
+      "translated": "Se\u00e7ileni kald\u0131r", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove selected"
+      }
+    }, 
+    {
+      "translated": "k\u00fcrtaj", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "abort"
+      }
+    }, 
+    {
+      "translated": "Y\u00fcklenen simgeler (toplam | ba\u015far\u0131yla | hata):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Uploaded icons (total | successfully | error): "
+      }
+    }, 
+    {
+      "translated": "okey", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "okey"
+      }
     }
   ]
 }

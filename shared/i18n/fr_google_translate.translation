@@ -10295,6 +10295,735 @@
       "key": {
         "message": "Please select a user"
       }
+    }, 
+    {
+      "translated": "Message de canal re\u00e7u pour un canal inconnu (% s)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received channel message for unknown channel (%s)"
+      }
+    }, 
+    {
+      "translated": "Invocation de la m\u00e9thode% s avec des arguments:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invoking method %s with arguments: %o"
+      }
+    }, 
+    {
+      "translated": "R\u00e9sultat:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Result: %o"
+      }
+    }, 
+    {
+      "translated": "R\u00e9sultat de la m\u00e9thode proxy re\u00e7u pour une promesse inconnue", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received proxy method result for unknown promise"
+      }
+    }, 
+    {
+      "translated": "Copier le texte dans le presse-papiers:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy text to clipboard: %s"
+      }
+    }, 
+    {
+      "translated": "Passer au canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Switch to channel"
+      }
+    }, 
+    {
+      "translated": "S&#39;abonner \u00e0 la cha\u00eene", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Subscribe to channel"
+      }
+    }, 
+    {
+      "translated": "Se d\u00e9sabonner du canal", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Unsubscribe from channel"
+      }
+    }, 
+    {
+      "translated": "Utiliser le mode d&#39;abonnement h\u00e9rit\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Use inherited subscribe mode"
+      }
+    }, 
+    {
+      "translated": "Ouvrir le chat texte", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Open text chat"
+      }
+    }, 
+    {
+      "translated": "Changer de nom", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Change name"
+      }
+    }, 
+    {
+      "translated": "{0} expir\u00e9 ({1})", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "{0} timed out ({1})"
+      }
+    }, 
+    {
+      "translated": "Echec du t\u00e9l\u00e9chargement de l&#39;ic\u00f4ne de l&#39;ic\u00f4ne% d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon download failed of icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "Vous avez un p\u00e9riph\u00e9rique% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Got device %o"
+      }
+    }, 
+    {
+      "translated": "P\u00e9riph\u00e9rique de microphone s\u00e9lectionn\u00e9: id:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Selected microphone device: id: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de trouver le p\u00e9riph\u00e9rique!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to find device!"
+      }
+    }, 
+    {
+      "translated": "Initialisation de la connexion sur {0} {1}", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Initializing connection to {0}{1}"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du hachage du mot de passe de connexion:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to hash connect password: %o"
+      }
+    }, 
+    {
+      "translated": "Le nom d&#39;h\u00f4te a \u00e9t\u00e9 r\u00e9solu avec succ\u00e8s en {0} {1}.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Hostname successfully resolved to {0}{1}"
+      }
+    }, 
+    {
+      "translated": "Le serveur cible est un serveur TeamSpeak 3. {: br:} Seules les identit\u00e9s bas\u00e9es sur TeamSpeak 3 peuvent se connecter. {: Br:} Veuillez s\u00e9lectionner un autre profil ou modifier le type d\u2019identit\u00e9.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;acquisition de l&#39;enregistreur (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to acquire recorder (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement des favoris:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load bookmarks: %o"
+      }
+    }, 
+    {
+      "translated": "Notification invalide re\u00e7ue pour la liste de clients du groupe de serveurs", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Received invalid notification for server group client list"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de l&#39;analyse de la liste des clients du groupe de serveurs:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to parse server group client list: %o"
+      }
+    }, 
+    {
+      "translated": "Profil non valide json! R\u00e9initialisation des profils :( (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid profile json! Resetting profiles :( (%o)"
+      }
+    }, 
+    {
+      "translated": "Donn\u00e9es de profil non valides", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Profile data invalid"
+      }
+    }, 
+    {
+      "translated": "Les donn\u00e9es de profil ne sont pas valides. {: Br:} Ceci pourrait entra\u00eener une perte de donn\u00e9es.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "The profile data is invalid.{:br:}This might cause data loss."
+      }
+    }, 
+    {
+      "translated": "Impossible de g\u00e9n\u00e9rer le menu contextuel! Fournisseur manquant!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to spawn context menu! Missing provider!"
+      }
+    }, 
+    {
+      "translated": "La longueur de l&#39;ic\u00f4ne s\u00e9lectionn\u00e9e par l&#39;interface utilisateur n&#39;est pas \u00e9gale \u00e0 1! (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "UI selected icon length does not equal with 1! (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la suppression de l&#39;ic\u00f4ne% d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete icon %d: %o"
+      }
+    }, 
+    {
+      "translated": "Impossible de supprimer l&#39;ic\u00f4ne", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to delete icon"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement du fichier% s: le fichier est trop gros!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: File is too big!"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du t\u00e9l\u00e9chargement de l&#39;ic\u00f4ne", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon upload failed"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement du fichier% s: Votre navigateur ne supporte pas les tailles de fichier!", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Your browser does not support file sizes!"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement du fichier% s: \u00c9chec du chargement de l&#39;image.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Image failed to load"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement du fichier% s: le r\u00e9sultat n&#39;est pas une cha\u00eene de support (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Result is not an media string (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement du fichier% s: type de support de donn\u00e9es non valide (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Invalid data media type (%o)"
+      }
+    }, 
+    {
+      "translated": "L&#39;image donn\u00e9e a le type% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Given image has type %s"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement du fichier% s: le type Mimet n&#39;est pas cod\u00e9 en base64 (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Mimetype isnt base64 encoded (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement du fichier% s: limites non valides:% s", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load file %s: Invalid bounds: %s"
+      }
+    }, 
+    {
+      "translated": "Erreur:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "error: "
+      }
+    }, 
+    {
+      "translated": "attendre", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "waiting"
+      }
+    }, 
+    {
+      "translated": "En attente de traitement local", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Awaiting local processing"
+      }
+    }, 
+    {
+      "translated": "le traitement local a \u00e9chou\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "local processing failed"
+      }
+    }, 
+    {
+      "translated": "erreur de traitement local", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "local processing error"
+      }
+    }, 
+    {
+      "translated": "initialisation", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "initializing"
+      }
+    }, 
+    {
+      "translated": "l&#39;ic\u00f4ne existe d\u00e9j\u00e0", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "icon already exists"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec d&#39;initialisation du t\u00e9l\u00e9chargement:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to initialize upload: %o"
+      }
+    }, 
+    {
+      "translated": "\u00e9chec de l&#39;initialisation du t\u00e9l\u00e9chargement", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "failed to initialize upload"
+      }
+    }, 
+    {
+      "translated": "T\u00e9l\u00e9chargement", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "uploading"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du t\u00e9l\u00e9chargement de l&#39;ic\u00f4ne pour l&#39;ic\u00f4ne% s:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Icon upload failed for icon %s: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du t\u00e9l\u00e9chargement:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload failed: "
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du t\u00e9l\u00e9chargement", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload failed"
+      }
+    }, 
+    {
+      "translated": "t\u00e9l\u00e9chargement termin\u00e9", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "upload completed"
+      }
+    }, 
+    {
+      "translated": "Ic\u00f4nes de t\u00e9l\u00e9chargement", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Upload Icons"
+      }
+    }, 
+    {
+      "translated": "Num\u00e9ro de client invalide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid client handle"
+      }
+    }, 
+    {
+      "translated": "Cr\u00e9ateur d&#39;URL invalide", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Invalid URL creator"
+      }
+    }, 
+    {
+      "translated": "vous pousse:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "pokes you:"
+      }
+    }, 
+    {
+      "translated": "vous pousse.", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "pokes you."
+      }
+    }, 
+    {
+      "translated": "\u00c9chec du chargement de l&#39;ic\u00f4ne pour l&#39;\u00e9diteur d&#39;autorisations:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to load icon for permission editor: %o"
+      }
+    }, 
+    {
+      "translated": "Supprimer le client", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove client"
+      }
+    }, 
+    {
+      "translated": "Copier l&#39;identifiant unique", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy unique id"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de r\u00e9ception des clients du groupe de serveurs pour le groupe% d:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to receive server group clients for group %d: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la s\u00e9lection de l&#39;ic\u00f4ne:% o", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to select icon: %o"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de d\u00e9marrage de l&#39;enregistreur apr\u00e8s l&#39;initialisation (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to start recorder after initialize (%o)"
+      }
+    }, 
+    {
+      "translated": "Dispositif de profil d&#39;enregistrement charg\u00e9% s | % o (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Loaded record profile device %s | %o (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de la d\u00e9finition du p\u00e9riph\u00e9rique d&#39;entr\u00e9e (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to set input device (%o)"
+      }
+    }, 
+    {
+      "translated": "\u00c9chec de d\u00e9montage du consommateur d&#39;entr\u00e9e pour le profil (% o)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Failed to unmount input consumer for profile (%o)"
+      }
+    }, 
+    {
+      "translated": "Client de recherche", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Search client"
+      }
+    }, 
+    {
+      "translated": "Adresse du pair:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Peer address:"
+      }
+    }, 
+    {
+      "translated": "Type de lien:", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Link type:"
+      }
+    }, 
+    {
+      "translated": "TeaWeb", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaWeb"
+      }
+    }, 
+    {
+      "translated": "TeaClient (Pas encore support\u00e9)", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "TeaClient (Not supported yet)"
+      }
+    }, 
+    {
+      "translated": "Connecter directement", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Connect directly"
+      }
+    }, 
+    {
+      "translated": "Utiliser l&#39;adresse r\u00e9solue", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Use resolved address"
+      }
+    }, 
+    {
+      "translated": "Copie", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Copy"
+      }
+    }, 
+    {
+      "translated": "Ajouter une ic\u00f4ne", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Add icon"
+      }
+    }, 
+    {
+      "translated": "Enlever la s\u00e9lection", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Remove selected"
+      }
+    }, 
+    {
+      "translated": "avortement", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "abort"
+      }
+    }, 
+    {
+      "translated": "Ic\u00f4nes t\u00e9l\u00e9charg\u00e9es (total | avec succ\u00e8s | erreur):", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "Uploaded icons (total | successfully | error): "
+      }
+    }, 
+    {
+      "translated": "d&#39;accord", 
+      "flags": [
+        "google-translate"
+      ], 
+      "key": {
+        "message": "okey"
+      }
     }
   ]
 }
