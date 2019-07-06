@@ -3,9 +3,12 @@ declare function unescape(string: string): string;
 declare class _sha1 {
     static arrayBuffer($: ArrayBuffer) : ArrayBuffer;
 }
+
+/*
 interface Window {
     TextEncoder: any;
 }
+*/
 
 namespace sha {
     /*
@@ -381,7 +384,7 @@ namespace sha {
     })();
 
     export function encode_text(buffer: string) : ArrayBuffer {
-        if (window.TextEncoder) {
+        if ((window as any).TextEncoder) {
             return new TextEncoder().encode(buffer).buffer;
         }
         let utf8 = unescape(encodeURIComponent(buffer));

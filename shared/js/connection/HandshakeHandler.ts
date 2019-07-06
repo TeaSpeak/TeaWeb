@@ -1,4 +1,3 @@
-declare const native: any; //FIXME: Read client declarations!
 namespace connection {
     export interface HandshakeIdentityHandler {
         connection: AbstractServerConnection;
@@ -68,8 +67,9 @@ namespace connection {
         }
 
         private handshake_finished(version?: string) {
-            if(native_client && window["native"] && native.client_version && !version) {
-                native.client_version()
+            const _native = window["native"];
+            if(native_client && _native && _native.client_version && !version) {
+                _native.client_version()
                     .then( this.handshake_finished.bind(this))
                     .catch(error => {
                         console.error(tr("Failed to get version:"));

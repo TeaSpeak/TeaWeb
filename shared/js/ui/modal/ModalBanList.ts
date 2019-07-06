@@ -296,13 +296,13 @@ namespace Modals {
 
             event.preventDefault();
 
-            spawn_context_menu(event.pageX, event.pageY, {
+            contextmenu.spawn_context_menu(event.pageX, event.pageY, {
                 name: "Edit",
-                type: MenuEntryType.ENTRY,
+                type: contextmenu.MenuEntryType.ENTRY,
                 callback: () => cb_edit(parseInt(element.attr("ban-id")))
             }, {
                 name: "Delete",
-                type: MenuEntryType.ENTRY,
+                type: contextmenu.MenuEntryType.ENTRY,
                 callback: () => cb_delete(parseInt(element.attr("ban-id")))
             });
         };
