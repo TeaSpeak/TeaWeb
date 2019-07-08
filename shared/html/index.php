@@ -169,6 +169,19 @@
             </div>
         </div>
 
+        <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
+            <img src="img/style/default.png">
+        </div>
+        <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; top: 2px;">toggle style</button>
+        <script>
+            setTimeout(() => {
+                $("#spoiler-style").hide();
+                $(".toggle-spoiler-style").on('click', () => {
+                    $("#spoiler-style").toggle();
+                });
+            }, 1000);
+        </script>
+
         <div id="music-test"></div>
         <div id="templates"></div>
         <div id="sounds"></div>
