@@ -41,6 +41,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">
         <meta name="description" content="TeaSpeak Web Client, connect to any TeaSpeak server without installing anything." />
         <link rel="icon" href="img/favicon/teacup.png">
+        <meta name="keywords" content="TeaSpeak, TeaWeb, TeaSpeak-Web,Web client TeaSpeak, веб клієнт TeaSpeak, TSDNS, багатомовність, мультимовність, теми, функціонал"/>
         <!-- TODO Needs some fix -->
         <link rel="manifest" href="manifest.json">
 
