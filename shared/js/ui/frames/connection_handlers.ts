@@ -5,9 +5,10 @@ class ServerConnectionManager {
     private connection_handlers: ConnectionHandler[] = [];
     private active_handler: ConnectionHandler | undefined;
 
+    private _container_log_server: JQuery;
     private _container_channel_tree: JQuery;
     private _container_select_info: JQuery;
-    private _container_chat_box: JQuery;
+    private _container_chat: JQuery;
 
     private _tag: JQuery;
     private _tag_connection_entries: JQuery;
@@ -29,9 +30,10 @@ class ServerConnectionManager {
         this._tag_button_scoll_left.on('click', this._button_scroll_left_clicked.bind(this));
         this._tag_button_scoll_right.on('click', this._button_scroll_right_clicked.bind(this));
 
+        this._container_log_server = $("#server-log");
         this._container_channel_tree = $("#channelTree");
         this._container_select_info = $("#select_info");
-        this._container_chat_box = $("#chat");
+        this._container_chat = $("#chat");
 
         this.set_active_connection_handler(undefined);
     }
@@ -43,8 +45,8 @@ class ServerConnectionManager {
         control_bar.initialize_connection_handler_state(handler);
 
         handler.tag_connection_handler.appendTo(this._tag_connection_entries);
+        this._tag.toggleClass("shown", this.connection_handlers.length > 1);
         this._update_scroll();
-
         return handler;
     }
 
@@ -52,6 +54,7 @@ class ServerConnectionManager {
         this.connection_handlers.remove(handler);
         handler.tag_connection_handler.detach();
         this._update_scroll();
+        this._tag.toggleClass("shown", this.connection_handlers.length > 1);
 
         if(handler.serverConnection) {
             const connected = handler.connected;
@@ -72,7 +75,8 @@ class ServerConnectionManager {
         this._tag_connection_entries.find(".active").removeClass("active");
         this._container_channel_tree.children().detach();
         this._container_select_info.children().detach();
-        this._container_chat_box.children().detach();
+        this._container_chat.children().detach();
+        this._container_log_server.children().detach();
 
         control_bar.set_connection_handler(handler);
         if(handler) {
@@ -80,7 +84,8 @@ class ServerConnectionManager {
 
             this._container_channel_tree.append(handler.channelTree.tag_tree());
             this._container_select_info.append(handler.select_info.get_tag());
-            this._container_chat_box.append(handler.chat.htmlTag);
+            this._container_chat.append(handler.chat_frame.html_tag());
+            this._container_log_server.append(handler.log.html_tag());
 
             if(handler.invoke_resized_on_activate)
                 handler.resize_elements();

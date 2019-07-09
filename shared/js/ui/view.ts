@@ -643,7 +643,11 @@ class ChannelTree {
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
             }).then(channel => {
-                this.client.chat.serverChat().appendMessage(tr("Channel {} successfully created!"), true, channel.generate_tag(true));
+                this.client.log.log(log.server.Type.CHANNEL_CREATE, {
+                    channel: channel.log_data(),
+                    creator: this.client.getClient().log_data(),
+                    own_action: true
+                });
                 this.client.sound.play(Sound.CHANNEL_CREATED);
             });
         });

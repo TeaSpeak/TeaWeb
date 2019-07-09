@@ -393,7 +393,10 @@ namespace audio {
                 } else if(json["request"] == "status") {
                     if(json["state"] == "failed") {
                         const chandler = this.connection.client;
-                        chandler.chat.serverChat().appendError(tr("Failed to setup voice bridge ({}). Allow reconnect: {}"), json["reason"], json["allow_reconnect"]);
+                        chandler.log.log(log.server.Type.CONNECTION_VOICE_SETUP_FAILED, {
+                            reason: json["reason"],
+                            reconnect_delay: json["allow_reconnect"] ? 1 : 0
+                        });
                         log.error(LogCategory.NETWORKING, tr("Failed to setup voice bridge (%s). Allow reconnect: %s"), json["reason"], json["allow_reconnect"]);
                         if(json["allow_reconnect"] == true) {
                             this.createSession();

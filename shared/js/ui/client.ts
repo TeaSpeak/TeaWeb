@@ -817,7 +817,15 @@ class ClientEntry {
         if(!this._channel) return;
         const index = this._channel.calculate_family_index();
 
-        this.tag.css('padding-left', (index + 2) * 16 + "px");
+        this.tag.css('padding-left', (5 + (index + 2) * 16) + "px");
+    }
+
+    log_data() : log.server.base.Client {
+        return {
+            client_unique_id: this.properties.client_unique_identifier,
+            client_name: this.clientNickName(),
+            client_id: this._clientId
+        }
     }
 }
 
@@ -912,9 +920,14 @@ class LocalClientEntry extends ClientEntry {
             elm.text(_self.clientNickName());
             _self.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
                 settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, text);
-                this.channelTree.client.chat.serverChat().appendMessage(tr("Nickname successfully changed"));
+                this.channelTree.client.log.log(log.server.Type.CLIENT_NICKNAME_CHANGED, {
+                    client: this.log_data(),
+                    own_action: true
+                });
             }).catch((e: CommandResult) => {
-                this.channelTree.client.chat.serverChat().appendError(tr("Could not change nickname ({})"),  e.extra_message);
+                this.channelTree.client.log.log(log.server.Type.CLIENT_NICKNAME_CHANGE_FAILED, {
+                    reason: e.extra_message
+                });
                 _self.openRename();
             });
         });

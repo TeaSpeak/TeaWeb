@@ -1,4 +1,8 @@
 # Changelog:
+* **XX.XX.XX**
+    - Removed icon size restriction for SVGs
+    - Fixed permission editor icon select for not granted icon permissions
+    
 * **22.06.19**
     - Fixed channel create not working issue
     - Added BB-Code support for pokes

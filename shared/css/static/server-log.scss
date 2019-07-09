@@ -1,0 +1,56 @@
+.container-log {
+	display: block;
+	overflow-y: auto;
+
+	height: 100%;
+	width: 100%;
+
+	.container-messages {
+		width: 100%;
+		line-height: 16px;
+	}
+
+	.log-message {
+		flex-shrink: 0;
+		flex-grow: 0;
+
+		color: #6e6e6e;
+
+		overflow-x: hidden;
+		overflow-y: hidden;
+
+		display: block;
+
+		&, > * {
+			overflow-wrap: break-word;
+			word-wrap: break-word;
+
+			max-width: 100%;
+		}
+
+		> * {
+			display: inline-block;
+
+			font-family: sans-serif;
+			font-size: 13px;
+			line-height: 1;
+		}
+
+		> .timestamp {
+			padding-right: 5px;
+		}
+
+
+		.log-error {
+			color: rgba(230, 34, 34, 1);
+
+			&:hover {
+				color: rgba(230, 34, 34, 1);
+			}
+		}
+
+		.htmltag-client, .htmltag-channel {
+			color: #d8d8d8;
+		}
+	}
+}

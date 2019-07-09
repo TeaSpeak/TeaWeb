@@ -58,10 +58,14 @@ namespace connection {
                         if(!res.success) {
                             if(res.id == 2568) { //Permission error
                                 res.message = tr("Insufficient client permissions. Failed on permission ") + this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number).name;
-                                this.connection_handler.chat.serverChat().appendError(tr("Insufficient client permissions. Failed on permission {}"), this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number).name);
+                                this.connection_handler.log.log(log.server.Type.ERROR_PERMISSION, {
+                                    permission: this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number)
+                                });
                                 this.connection_handler.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
                             } else {
-                                this.connection_handler.chat.serverChat().appendError(res.extra_message.length == 0 ? res.message : res.extra_message);
+                                this.connection_handler.log.log(log.server.Type.ERROR_CUSTOM, {
+                                    message: res.extra_message.length == 0 ? res.message : res.extra_message
+                                });
                             }
                         }
                     } else if(typeof(ex) === "string") {
@@ -144,7 +148,9 @@ namespace connection {
 
 
             this.connection_handler.chat.serverChat().name = this.connection.client.channelTree.server.properties["virtualserver_name"];
-            this.connection_handler.chat.serverChat().appendMessage(tr("Connected as {0}"), true, this.connection.client.getClient().createChatTag(true));
+            this.connection_handler.log.log(log.server.Type.CONNECTION_CONNECTED, {
+                own_client: this.connection_handler.getClient().log_data()
+            });
             this.connection_handler.sound.play(Sound.CONNECTION_CONNECTED);
             this.connection.client.onConnected();
         }
@@ -283,38 +289,32 @@ namespace connection {
 
                 if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
                     const own_channel = this.connection.client.getClient().currentChannel();
+                    this.connection_handler.log.log(log.server.Type.CLIENT_VIEW_ENTER, {
+                        channel_from: old_channel ? old_channel.log_data() : undefined,
+                        channel_to: channel ? channel.log_data() : undefined,
+                        client: client.log_data(),
+                        invoker: invokeruid ? {
+                            client_id: invokerid,
+                            client_name: invokername,
+                            client_unique_id: invokeruid
+                        } : undefined,
+                        message:reason_msg,
+                        reason: parseInt(reason_id),
+                        own_channel: channel == own_channel
+                    });
+
                     if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
                         if(own_channel == channel)
                             if(old_channel)
                                 this.connection_handler.sound.play(Sound.USER_ENTERED);
                             else
                                 this.connection_handler.sound.play(Sound.USER_ENTERED_CONNECT);
-                        if(old_channel) {
-                            this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}"), true, client.createChatTag(true), old_channel.generate_tag(true), channel.generate_tag(true));
-                        } else {
-                            this.connection_handler.chat.serverChat().appendMessage(tr("{0} connected to channel {1}"), true, client.createChatTag(true), channel.generate_tag(true));
-                        }
                     } else if(reason_id == ViewReasonId.VREASON_MOVED) {
                         if(own_channel == channel)
                             this.connection_handler.sound.play(Sound.USER_ENTERED_MOVED);
-
-                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, moved by {3}"), true,
-                            client.createChatTag(true),
-                            old_channel ? old_channel.generate_tag(true) : undefined,
-                            channel.generate_tag(true),
-                            ClientEntry.chatTag(invokerid, invokername, invokeruid),
-                        );
                     } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
                         if(own_channel == channel)
                             this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
-
-                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} appeared from {1} to {2}, kicked by {3}{4}"), true,
-                            client.createChatTag(true),
-                            old_channel ? old_channel.generate_tag(true) : undefined,
-                            channel.generate_tag(true),
-                            ClientEntry.chatTag(invokerid, invokername, invokeruid),
-                            reason_msg.length > 0 ? " (" + entry["msg"] + ")" : ""
-                        );
                     } else {
                         console.warn(tr("Unknown reasonid for %o"), reason_id);
                     }
@@ -363,6 +363,7 @@ namespace connection {
 
                 if(client instanceof LocalClientEntry) {
                     this.connection_handler.update_voice_status();
+                    this.connection_handler.chat_frame.info_frame().update_channel_talk();
                 }
             }
         }
@@ -389,6 +390,7 @@ namespace connection {
                         this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, entry);
                     } else
                         this.connection.client.handleDisconnect(DisconnectReason.UNKNOWN, entry);
+                    this.connection_handler.chat_frame.info_frame().update_channel_talk();
                     return;
                 }
 
@@ -398,57 +400,36 @@ namespace connection {
                     let channel_from = tree.findChannel(entry["cfid"]);
                     let channel_to = tree.findChannel(entry["ctid"]);
 
+                    this.connection_handler.log.log(log.server.Type.CLIENT_VIEW_LEAVE, {
+                        channel_from: channel_from ? channel_from.log_data() : undefined,
+                        channel_to: channel_to ? channel_to.log_data() : undefined,
+                        client: client.log_data(),
+                        invoker: entry["invokeruid"] ? {
+                            client_id: entry["invokerid"],
+                            client_name: entry["invokername"],
+                            client_unique_id: entry["invokeruid"]
+                        } : undefined,
+                        message: entry["reasonmsg"],
+                        reason: parseInt(entry["reasonid"]),
+                        ban_time: parseInt(entry["bantime"]),
+                        own_channel: channel_from == own_channel
+                    });
                     if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
-                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} disappeared from {1} to {2}"), true, client.createChatTag(true), channel_from.generate_tag(true), channel_to.generate_tag(true));
-
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT);
                     } else if(reason_id == ViewReasonId.VREASON_SERVER_LEFT) {
-                        this.connection_handler.chat.serverChat().appendMessage(tr("{0} left the server{1}"), true,
-                            client.createChatTag(true),
-                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
-                        );
-
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_DISCONNECT);
                     } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK) {
-                        this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from the server by {1}.{2}"),
-                            client.createChatTag(true),
-                            ClientEntry.chatTag(entry["invokerid"], entry["invokername"], entry["invokeruid"]),
-                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
-                        );
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_SERVER);
                     } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
-                        this.connection_handler.chat.serverChat().appendError(tr("{0} was kicked from your channel by {1}.{2}"),
-                            client.createChatTag(true),
-                            ClientEntry.chatTag(entry["invokerid"], entry["invokername"], entry["invokeruid"]),
-                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
-                        );
-
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
                     } else if(reason_id == ViewReasonId.VREASON_BAN) {
-                        //"Mulus" was banned for 1 second from the server by "WolverinDEV" (Sry brauchte kurz ein opfer :P <3 (Nohomo))
-                        let duration = "permanently";
-                        if(entry["bantime"])
-                            duration = "for " + formatDate(Number.parseInt(entry["bantime"]));
-
-                        this.connection_handler.chat.serverChat().appendError(tr("{0} was banned {1} by {2}.{3}"),
-                            client.createChatTag(true),
-                            duration,
-                            ClientEntry.chatTag(entry["invokerid"], entry["invokername"], entry["invokeruid"]),
-                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
-                        );
-
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_BANNED);
                     } else if(reason_id == ViewReasonId.VREASON_TIMEOUT) {
-                        this.connection_handler.chat.serverChat().appendError(tr("{0} timed out ({1})"),
-                            client.createChatTag(true),
-                            entry["reasonmsg"] ? " (" + entry["reasonmsg"] + ")" : ""
-                        );
-
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_TIMEOUT);
                     } else {
@@ -507,14 +488,40 @@ namespace connection {
                 if(entry !== client && entry.get_audio_handle())
                     entry.get_audio_handle().abort_replay();
 
+            if(self)
+                this.connection_handler.chat_frame.info_frame().update_channel_talk();
+
             const own_channel = this.connection.client.getClient().currentChannel();
+            this.connection_handler.log.log(log.server.Type.CLIENT_VIEW_MOVE, {
+                channel_from: channel_from ? {
+                    channel_id: channel_from.channelId,
+                    channel_name: channel_from.channelName()
+                } : undefined,
+                channel_from_own: channel_from == own_channel,
+
+                channel_to: channel_to ? {
+                    channel_id: channel_to.channelId,
+                    channel_name: channel_to.channelName()
+                } : undefined,
+                channel_to_own: channel_to == own_channel,
+
+                client: {
+                    client_id: client.clientId(),
+                    client_name: client.clientNickName(),
+                    client_unique_id: client.properties.client_unique_identifier
+                },
+                client_own: self,
+
+                invoker: json["invokeruid"] ? {
+                    client_id: parseInt(json["invokerid"]),
+                    client_name: json["invokername"],
+                    client_unique_id: json["invokeruid"]
+                } : undefined,
+
+                message: json["reasonmsg"],
+                reason: parseInt(json["reasonid"]),
+            });
             if(json["reasonid"] == ViewReasonId.VREASON_MOVED) {
-                this.connection_handler.chat.serverChat().appendMessage(self ? tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}"), true,
-                    client.createChatTag(true),
-                    channel_from ? channel_from.generate_tag(true) : undefined,
-                    channel_to.generate_tag(true),
-                    ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"])
-                );
                 if(self)
                     this.connection_handler.sound.play(Sound.USER_MOVED_SELF);
                 else if(own_channel == channel_to)
@@ -522,24 +529,12 @@ namespace connection {
                 else if(own_channel == channel_from)
                     this.connection_handler.sound.play(Sound.USER_LEFT_MOVED);
             } else if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
-                this.connection_handler.chat.serverChat().appendMessage(self ? tr("You switched from channel {1} to {2}") : tr("{0} switched from channel {1} to {2}"), true,
-                    client.createChatTag(true),
-                    channel_from ? channel_from.generate_tag(true) : undefined,
-                    channel_to.generate_tag(true)
-                );
                 if(self) {} //If we do an action we wait for the error response
                 else if(own_channel == channel_to)
                     this.connection_handler.sound.play(Sound.USER_ENTERED);
                 else if(own_channel == channel_from)
                     this.connection_handler.sound.play(Sound.USER_LEFT);
             } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
-                this.connection_handler.chat.serverChat().appendMessage(self ? tr("You got kicked out of the channel {1} to channel {2} by {3}{4}") : tr("{0} got kicked from channel {1} to {2} by {3}{4}"), true,
-                    client.createChatTag(true),
-                    channel_from ? channel_from.generate_tag(true) : undefined,
-                    channel_to.generate_tag(true),
-                    ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"]),
-                    json["reasonmsg"] ? " (" + json["reasonmsg"] + ")" : ""
-                );
                 if(self) {
                     this.connection_handler.sound.play(Sound.CHANNEL_KICKED);
                 } else if(own_channel == channel_to)
@@ -632,7 +627,14 @@ namespace connection {
                     this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
                 this.connection_handler.chat.channelChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]))
             } else if(mode == 3) {
-                this.connection_handler.chat.serverChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
+                this.connection_handler.log.log(log.server.Type.GLOBAL_MESSAGE, {
+                    message: json["msg"],
+                    sender: {
+                        client_unique_id: json["invokeruid"],
+                        client_name: json["invokername"],
+                        client_id: parseInt(json["invokerid"])
+                    }
+                });
             }
         }
 

@@ -45,7 +45,7 @@ namespace connection {
 
         on_connect: () => void = () => {
             console.log(tr("Socket connected"));
-            this.client.chat.serverChat().appendMessage(tr("Logging in..."));
+            this.client.log.log(log.server.Type.CONNECTION_LOGIN, {});
             this._handshakeHandler.initialize();
             this._handshakeHandler.startHandshake();
         };

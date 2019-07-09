@@ -408,7 +408,7 @@ class ChatBox {
 
         this.createChat("chat_server", ChatType.SERVER).onMessageSend = (text: string) => {
             if(!this.connection_handler.serverConnection) {
-                this.serverChat().appendError(tr("Could not send chant message (Not connected)"));
+                this.serverChat().appendError(tr("Could not send chat message (Not connected)"));
                 return;
             }
 

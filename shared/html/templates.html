@@ -13,13 +13,13 @@
                     <div class="container-control-bar">
                         <div id="control_bar" class="control_bar">
                             <div class="button btn_connect container-connect" title="{{tr 'Connect to a server' /}}">
-                                <div class="icon_x32 client-connect"></div>
+                                <div class="icon_x24 client-connect"></div>
                             </div>
 
                             <div class="button-dropdown container-disconnect" title="{{tr 'Disconnect from server' /}}" style="display: none">
                                 <div class="buttons">
-                                    <div class="button icon_x32 client-disconnect btn_disconnect"></div>
-                                    <div class="button-dropdown">
+                                    <div class="button icon_x24 client-disconnect btn_disconnect"></div>
+                                    <div class="dropdown-arrow">
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
@@ -28,16 +28,13 @@
                                     <div class="btn_connect"><div class="icon client-connect"></div><a>{{tr "Connect to a server" /}}</a></div>
                                 </div>
                             </div>
-                            <!--
-                            <div class="button btn_disconnect" title="{{tr 'Disconnect from server' /}}" style="display: none">
-                                <div class="icon_x32 client-disconnect"></div>
-                            </div>
-                            -->
 
                             <div class="button-dropdown btn_bookmark" title="{{tr 'Bookmarks' /}}">
                                 <div class="buttons">
-                                    <div class="button icon_x32 client-bookmark_manager btn_bookmark_list"></div>
-                                    <div class="button-dropdown">
+                                    <div class="button btn_bookmark_list">
+                                        <div class="icon_x24 client-bookmark_manager"></div>
+                                    </div>
+                                    <div class="dropdown-arrow">
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
@@ -54,8 +51,10 @@
 
                             <div class="hide-small button-dropdown btn_away" title="{{tr 'Toggle away status' /}}">
                                 <div class="buttons">
-                                    <div class="button icon_x32 client-away btn_away_toggle"></div>
-                                    <div class="button-dropdown">
+                                    <div class="button btn_away_toggle">
+                                        <div class="icon_x24 client-away"></div>
+                                    </div>
+                                    <div class="dropdown-arrow">
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
@@ -69,17 +68,19 @@
                                     <div class="btn_away_disable_global"><div class="icon client-present"></div><a>{{tr "Go online for all servers" /}}</a></div>
                                 </div>
                             </div>
-                            <div class="hide-small button btn_mute_input">
-                                <div class="icon_x32 client-input_muted" title="{{tr 'Mute/unmute microphone' /}}"></div>
+                            <div class="hide-small button button-red btn_mute_input">
+                                <div class="icon_x24 client-input_muted" title="{{tr 'Mute/unmute microphone' /}}"></div>
                             </div>
-                            <div class="hide-small button btn_mute_output">
-                                <div class="icon_x32 client-output_muted" title="{{tr 'Mute/unmute headphones' /}}"></div>
+                            <div class="hide-small button button-red btn_mute_output">
+                                <div class="icon_x24 client-output_muted" title="{{tr 'Mute/unmute headphones' /}}"></div>
                             </div>
 
                             <div class="show-small button-dropdown dropdown-audio" title="{{tr 'Audio settings' /}}">
                                 <div class="buttons">
-                                    <div class="button button-display icon_x32 client-music"></div>
-                                    <div class="button-dropdown">
+                                    <div class="button button-display">
+                                        <div class="icon_x24 client-music"></div>
+                                    </div>
+                                    <div class="dropdown-arrow">
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
@@ -96,12 +97,14 @@
                             </div>
                             <div class="divider"></div>
                             <div class="button button-subscribe-mode">
-                                <div class="icon_x32" title="{{tr 'Toggle channel subscribe mode' /}}"></div>
+                                <div class="icon_x24" title="{{tr 'Toggle channel subscribe mode' /}}"></div>
                             </div>
                             <div class="hide-small button-dropdown btn_token" title="{{tr 'Use token' /}}">
                                 <div class="buttons">
-                                    <div class="button icon_x32 client-token btn_token_use"></div>
-                                    <div class="button-dropdown">
+                                    <div class="button btn_token_use">
+                                        <div class="icon_x24 client-token"></div>
+                                    </div>
+                                    <div class="dropdown-arrow">
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
@@ -115,8 +118,10 @@
 
                             <div class="show-small button-dropdown dropdown-servertools" title="{{tr 'Server tools' /}}">
                                 <div class="buttons">
-                                    <div class="button button-display icon_x32 client-virtualserver_edit"></div>
-                                    <div class="button-dropdown">
+                                    <div class="button button-display">
+                                        <div class="icon_x24 client-virtualserver_edit"></div>
+                                    </div>
+                                    <div class="dropdown-arrow">
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
@@ -145,20 +150,22 @@
                             </div>
 
                             <div class="hide-small button button-playlist-manage" title="{{tr 'Playlists' /}}">
-                                <div class="icon_x32 icon-playlist-manage"></div>
+                                <div class="icon_x24 icon-playlist-manage"></div>
                             </div>
                             <div class="hide-small button btn_banlist" title="{{tr 'Banlist' /}}">
-                                <div class="icon_x32 client-ban_list"></div>
+                                <div class="icon_x24 client-ban_list"></div>
                             </div>
                             <div class="hide-small button btn_permissions" title="{{tr 'View/edit permissions' /}}">
-                                <div class="icon_x32 client-permission_overview"></div>
+                                <div class="icon_x24 client-permission_overview"></div>
                             </div>
 
                             <!-- the query button -->
                             <div class="hide-small button-dropdown btn_query" title="{{tr 'Show/hide server queries' /}}">
                                 <div class="buttons">
-                                    <div class="button icon_x32 client-server_query btn_query_toggle"></div>
-                                    <div class="button-dropdown">
+                                    <div class="button btn_query_toggle">
+                                        <div class="icon_x24 client-server_query"></div>
+                                    </div>
+                                    <div class="dropdown-arrow">
                                         <div class="arrow down"></div>
                                     </div>
                                 </div>
@@ -170,7 +177,7 @@
                             </div>
                             <div class="divider"></div>
                             <div class="button btn_open_settings" title="{{tr 'Edit global client settings' /}}">
-                                <div class="icon_x32 client-settings"></div>
+                                <div class="icon_x24 client-settings"></div>
                             </div>
                         </div>
                     </div>
@@ -189,21 +196,101 @@
                     <div class="container-app-main">
                         <div class="container-channel-chat">
                             <!-- Channel tree -->
-                            <div class="container-channel-tree main_container">
+                            <div class="container-channel-tree">
                                 <div class="channel-tree" id="channelTree"></div>
                             </div>
 
-                            <div class="container-seperator horizontal" seperator-id="seperator-channel-chat"></div>
+                            <div class="container-seperator vertical" seperator-id="seperator-channel-chat"></div>
                             <!-- Chat window -->
-                            <div class="main_container container-chat" id="chat"> </div>
+                            <div class="container-chat" id="chat"> </div>
                         </div>
-                        <div class="container-seperator vertical" seperator-id="seperator-main-info"></div>
-                        <div id="select_info" class="main_container container-info"> </div> <!-- Selection info -->
+                        <div class="container-seperator horizontal" seperator-id="seperator-main-log"></div>
+                        <div id="server-log" class="container-server-log"> </div> <!-- Selection info -->
                     </div>
                 </div>
             </div>
             <div id="contextMenu" class="context-menu"></div>
         </script>
+
+        <script class="jsrender-template" id="tmpl_frame_chat" type="text/html">
+            <div class="container-chat-frame">
+                <div class="container-info"></div>
+                <div class="container-chat"></div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_frame_chat_info" type="text/html">
+            <div class="lane">
+                <div class="block left">
+                    <div class="title">{{tr "You're talking in Channel" /}}</div>
+                    <div class="value value-voice-channel"></div>
+                    <div class="small-value value-voice-limit"></div>
+                </div>
+                <div class="block right">
+                    <div class="title">{{tr "Your ping" /}}</div>
+                    <div class="value value-ping">11 ms</div>
+                </div>
+            </div>
+            <div class="lane">
+                <div class="block left">
+                    <div class="title">{{tr "You're chatting in Channel" /}}</div>
+                    <div class="value value-text-channel">XXXXXY</div>
+                    <div class="small-value value-limit">0 / Unlimited</div>
+                </div>
+                <div class="block right">
+                    <div class="title">{{tr "Private chats" /}} <div class="container-indicator"><div class="chat-counter">2</div></div></div>
+                    <div class="value value-ping">12 conversations</div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_frame_chat_private" type="text/html">
+            <div class="container-private-conversations">
+                <div class="conversation-list">
+                    <div class="no-chats">
+                        <div>{{tr "You&nbsp;dont&nbsp;have any&nbsp;chats&nbsp;yet!" /}}</div>
+                    </div>
+                </div>
+                <div class="container-seperator vertical" seperator-id="seperator-conversation-list-messages"></div>
+                <div class="conversation">
+                    <div class="messages"></div>
+                    <div class="chatbox"></div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_frame_chat_private_entry" type="text/html">
+            <div class="conversation-entry">
+                <div class="container-avatar">
+                    <div class="avatar" style="display: flex">
+                        <img style="width: 100%; height: 100%" src="img/style/avatar.png">
+                    </div>
+                    <div class="chat-unread"></div>
+                </div>
+                <div class="info">
+                    <a class="client-name">{{>client_name}}</a>
+                    <a class="last-message">Today at 12:59 AM</a>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_frame_chat_chatbox" type="text/html">
+            <div class="container-chatbox">
+                {{if emojy_support}}
+                <div class="container-emojis">
+                    <div class="button-emoji">
+                        <div class="container-icon">
+                            <img src="img/smiley-smile.svg">
+                        </div>
+                    </div>
+                </div>
+                {{/if}}
+                <div class="container-input">
+                    <textarea placeholder="{{tr 'Type your message here...' /}}"></textarea>
+                </div>
+            </div>
+        </script>
+
 
         <script class="jsrender-template" id="tmpl_select_info" type="text/html">
             <div class="select_info" style="width: 100%; max-width: 100%">
@@ -213,26 +300,6 @@
                 <div class="container-banner"></div>
                 <!-- <div class="container-seperator horizontal" seperator-id="seperator-hostbanner-info"></div> -->
                 <div class="container-select-info"></div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_frame_chat" type="text/html">
-            <div class="container-frame-chat">
-                <div class="messages">
-                    <div class="message_box"></div>
-                </div>
-                <div class="chats"></div>
-                <div class="input">
-                    <!--<div contentEditable="true" class="input_box"></div>-->
-                    <div class="form-group">
-                                            <textarea id="input-chat-input"
-                                                      type="text"
-                                                      class="form-control input-message client-chat-box-field"
-                                                      placeholder="{{tr 'enter a chat message...' /}}"
-                                                      autocomplete="off"></textarea>
-                    </div>
-                    <button class="btn btn-primary button-send">{{tr "Send" /}}</button>
-                </div>
             </div>
         </script>
 
@@ -1334,7 +1401,7 @@
                                         </div>
                                         <div class="property">
                                             <div class="key muted-sounds">
-                                                Mute sounds when output is muted:
+                                                {{tr "Mute sounds when output is muted:" /}}
                                             </div>
                                             <div class="value muted-sounds">
                                                 <div class="switch">

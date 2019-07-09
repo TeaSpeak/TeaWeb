@@ -88,6 +88,7 @@ class ConnectionHandler {
     permissions: PermissionManager;
     groups: GroupManager;
 
+    chat_frame: chat.Frame;
     select_info: InfoBar;
     chat: ChatBox;
 
@@ -117,13 +118,16 @@ class ConnectionHandler {
     };
 
     invoke_resized_on_activate: boolean = false;
+    log: log.ServerLog;
 
     constructor() {
         this.settings = new ServerSettings();
 
+        this.log = new log.ServerLog(this);
         this.select_info = new InfoBar(this);
         this.channelTree = new ChannelTree(this);
         this.chat = new ChatBox(this);
+        this.chat_frame = new chat.Frame(this);
         this.sound = new sound.SoundManager(this);
 
         this.serverConnection = connection.spawn_server_connection(this);
@@ -178,7 +182,13 @@ class ConnectionHandler {
             }
         }
         console.log(tr("Start connection to %s:%d"), server_address.host, server_address.port);
-        this.chat.serverChat().appendMessage(tr("Initializing connection to {0}{1}"), true, server_address.host, server_address.port == 9987 ? "" : ":" + server_address.port);
+        this.log.log(log.server.Type.CONNECTION_BEGIN, {
+            address: {
+                server_hostname: server_address.host,
+                server_port: server_address.port
+            },
+            client_nickname: parameters.nickname
+        });
         this.channelTree.initialiseHead(addr, server_address);
 
         if(parameters.password && !parameters.password.hashed){
@@ -196,7 +206,7 @@ class ConnectionHandler {
 
         if(dns.supported() && !server_address.host.match(Modals.Regex.IP_V4) && !server_address.host.match(Modals.Regex.IP_V6)) {
             const id = ++this._connect_initialize_id;
-            this.chat.serverChat().appendMessage(tr("Resolving hostname..."));
+            this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVE, {});
             try {
                 const resolved = await dns.resolve_address(server_address.host, { timeout: 5000 }) || {} as any;
                 if(id != this._connect_initialize_id)
@@ -204,7 +214,12 @@ class ConnectionHandler {
 
                 server_address.port = resolved.target_port || server_address.port;
                 server_address.host = resolved.target_ip || server_address.host;
-                this.chat.serverChat().appendMessage(tr("Hostname successfully resolved to {0}{1}"), true, server_address.host, server_address.port);
+                this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVED, {
+                    address: {
+                        server_port: server_address.port,
+                        server_hostname: server_address.host
+                    }
+                });
             } catch(error) {
                 if(id != this._connect_initialize_id)
                     return; /* we're old */
@@ -375,13 +390,15 @@ class ConnectionHandler {
                 break;
             case DisconnectReason.DNS_FAILED:
                 console.error(tr("Failed to resolve hostname: %o"), data);
-                this.chat.serverChat().appendError(tr("Failed to resolve hostname: {0}"), data);
+                this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVE_ERROR, {
+                    message: data as any
+                });
                 this.sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.CONNECT_FAILURE:
                 if(this._reconnect_attempt) {
                     auto_reconnect = true;
-                    this.chat.serverChat().appendError(tr("Connect failed"));
+                    this.log.log(log.server.Type.CONNECTION_FAILED, {});
                     break;
                 }
                 console.error(tr("Could not connect to remote host! Error: %o"), data);
@@ -514,7 +531,7 @@ class ConnectionHandler {
                 console.log(tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
             }
-            this.chat.serverChat().appendMessage(tr("Reconnecting in 5 seconds"));
+            this.log.log(log.server.Type.RECONNECT_SCHEDULED, {timeout: 50000});
 
             console.log(tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
@@ -522,7 +539,7 @@ class ConnectionHandler {
 
             this._reconnect_timer = setTimeout(() => {
                 this._reconnect_timer = undefined;
-                this.chat.serverChat().appendMessage(tr("Reconnecting..."));
+                this.log.log(log.server.Type.RECONNECT_CANCELED, {});
                 log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
 
                 this.startConnection(server_address.host + ":" + server_address.port, profile, this.reconnect_properties(profile));
@@ -533,7 +550,7 @@ class ConnectionHandler {
 
     cancel_reconnect() {
         if(this._reconnect_timer) {
-            this.chat.serverChat().appendMessage(tr("Reconnect canceled"));
+            this.log.log(log.server.Type.RECONNECT_CANCELED, {});
             clearTimeout(this._reconnect_timer);
             this._reconnect_timer = undefined;
         }
@@ -581,7 +598,7 @@ class ConnectionHandler {
             if(Object.keys(property_update).length > 0) {
                 this.serverConnection.send_command("clientupdate", property_update).catch(error => {
                     log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
-                    this.chat.serverChat().appendError(tr("Failed to update audio hardware properties."));
+                    this.log.log(log.server.Type.ERROR_CUSTOM, {message: tr("Failed to update audio hardware properties.")});
 
                     /* Update these properties anyways (for case the server fails to handle the command) */
                     const updates = [];
@@ -640,7 +657,7 @@ class ConnectionHandler {
                 client_output_hardware: this.client_status.sound_playback_supported
             }).catch(error => {
                 log.warn(LogCategory.GENERAL, tr("Failed to sync handler state with server. Error: %o"), error);
-                this.chat.serverChat().appendError(tr("Failed to sync handler state with server."));
+                this.log.log(log.server.Type.ERROR_CUSTOM, {message: tr("Failed to sync handler state with server.")});
             });
     }
 
@@ -654,7 +671,7 @@ class ConnectionHandler {
             client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
         }).catch(error => {
             log.warn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
-            this.chat.serverChat().appendError(tr("Failed to update away status."));
+            this.log.log(log.server.Type.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
         });
 
         control_bar.update_button_away();

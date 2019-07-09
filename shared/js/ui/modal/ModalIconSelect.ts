@@ -280,17 +280,19 @@ namespace Modals {
                     icon.state = "error";
                 };
 
-                if(image.naturalWidth > 32 && image.naturalHeight > 32) {
-                    width_error("width and height (max 32px)");
-                    return;
-                }
-                if(image.naturalWidth > 32) {
-                    width_error("width (max 32px)");
-                    return;
-                }
-                if(image.naturalHeight > 32) {
-                    width_error("height (max 32px)");
-                    return;
+                if(!result.startsWith("data:image/svg+xml")) {
+                    if(image.naturalWidth > 32 && image.naturalHeight > 32) {
+                        width_error("width and height (max 32px). Given: " + image.naturalWidth + "x" + image.naturalHeight);
+                        return;
+                    }
+                    if(image.naturalWidth > 32) {
+                        width_error("width (max 32px)");
+                        return;
+                    }
+                    if(image.naturalHeight > 32) {
+                        width_error("height (max 32px)");
+                        return;
+                    }
                 }
                 console.log("Image loaded (%dx%d) %s (%s)", image.naturalWidth, image.naturalHeight, image.name, icon.icon_id);
                 icon.image_element = () => {

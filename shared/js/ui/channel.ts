@@ -685,6 +685,7 @@ class ChannelEntry {
             log.table("Clannel update properties", entries);
         }
 
+        let info_update = false;
         for(let variable of variables) {
             let key = variable.key;
             let value = variable.value;
@@ -692,6 +693,7 @@ class ChannelEntry {
 
             if(key == "channel_name") {
                 this.__updateChannelName();
+                info_update = true;
             } else if(key == "channel_order") {
                 let order = this.channelTree.findChannel(this.properties.channel_order);
                 this.channelTree.moveChannel(this, order, this.parent);
@@ -707,6 +709,7 @@ class ChannelEntry {
                     tag.children().detach();
                     this.channelTree.client.fileManager.icons.generateTag(this.properties.channel_icon_id).appendTo(tag);
                 }
+                info_update = true;
             } else if(key == "channel_codec") {
                 (this.properties.channel_codec == 5 || this.properties.channel_codec == 3 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_music"));
                 this.channelTag().find(".icons .icon_no_sound").toggle(!(
@@ -727,10 +730,19 @@ class ChannelEntry {
                 this._cached_channel_description_promise_resolve = undefined;
                 this._cached_channel_description_promise_reject = undefined;
             }
-            if(key == "channel_maxclients" || key == "channel_maxfamilyclients" || key == "channel_flag_private" || key == "channel_flag_password")
+            if(key == "channel_maxclients" || key == "channel_maxfamilyclients" || key == "channel_flag_private" || key == "channel_flag_password") {
                 this.updateChannelTypeIcon();
+                info_update = true;
+            }
         }
         group.end();
+
+        if(info_update) {
+            const _client = this.channelTree.client.getClient();
+            if(_client.currentChannel() === this)
+                this.channelTree.client.chat_frame.info_frame().update_channel_talk();
+            //TODO chat channel!
+        }
     }
 
     updateChannelTypeIcon() {
@@ -861,5 +873,12 @@ class ChannelEntry {
 
         this._subscribe_mode = mode;
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), mode);
+    }
+
+    log_data() : log.server.base.Channel {
+        return {
+            channel_name: this.channelName(),
+            channel_id: this.channelId
+        }
     }
 }

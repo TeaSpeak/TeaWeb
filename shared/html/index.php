@@ -170,9 +170,10 @@
         </div>
 
         <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
-            <img src="img/style/default.png">
+            <!-- <img src="img/style/default.png"> -->
+            <img src="img/style/user-selected.png">
         </div>
-        <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; top: 2px;">toggle style</button>
+        <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; bottom: 2px;">toggle style</button>
         <script>
             setTimeout(() => {
                 $("#spoiler-style").hide();

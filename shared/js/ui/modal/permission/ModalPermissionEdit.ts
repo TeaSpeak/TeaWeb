@@ -299,6 +299,11 @@ namespace Modals {
                 const permission = entry.permission();
                 const value: PermissionValue = this.permission_value_map[permission.id];
 
+                if(permission.name === "i_icon_id") {
+                    entry.set_icon_id_image(undefined);
+                    entry.on_icon_select = this.icon_selector;
+                }
+
                 if(value && value.hasValue()) {
                     entry.value = value.value;
                     entry.flag_skip = value.flag_skip;
@@ -311,13 +316,11 @@ namespace Modals {
                         }).catch(error => {
                             console.warn(tr("Failed to load icon for permission editor: %o"), error);
                         });
-                        entry.on_icon_select = this.icon_selector;
                     }
                 } else {
                     entry.value = undefined;
                     entry.flag_skip = false;
                     entry.flag_negate = false;
-                    entry.set_icon_id_image(undefined);
                 }
 
                 if(value && value.hasGrant()) {

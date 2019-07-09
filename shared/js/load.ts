@@ -587,7 +587,9 @@ const loader_javascript = {
             "js/ui/frames/SelectedItemInfo.js",
             "js/ui/frames/ControlBar.js",
             "js/ui/frames/chat.js",
+            "js/ui/frames/chat_frame.js",
             "js/ui/frames/connection_handlers.js",
+            "js/ui/frames/server_log.js",
 
             //Load permissions
             "js/permission/PermissionManager.js",
@@ -697,6 +699,7 @@ const loader_style = {
     load_style_debug: async () => {
         await loader.load_styles([
             "css/static/main.css",
+            "css/static/main-layout.css",
             "css/static/helptag.css",
             "css/static/scroll.css",
             "css/static/channel-tree.css",
@@ -724,7 +727,9 @@ const loader_style = {
             "css/static/frame/SelectInfo.css",
             "css/static/control_bar.css",
             "css/static/context_menu.css",
+            "css/static/frame-chat.css",
             "css/static/connection_handlers.css",
+            "css/static/server-log.css",
             "css/static/htmltags.css"
         ]);
     },

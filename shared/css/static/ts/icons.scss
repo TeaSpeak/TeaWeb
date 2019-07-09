@@ -928,7 +928,7 @@
     background-position: calc(-128px * 2) calc(-192px * 2);
 }
 .icon_x32.client-message_info {
-    background-position: calc(-160px * 2)pe the key you wish calc(-192px * 2);
+    background-position: calc(-160px * 2) calc(-192px * 2);
 }
 .icon_x32.client-message_outgoing {
     background-position: calc(-192px * 2) calc(-192px * 2);
@@ -969,7 +969,7 @@
 .icon_x32.client-permission_overview {
     background-position: calc(-64px * 2) calc(-224px * 2);
 }
-.icon_x32.client-permission_server_groups pe the key you wish{
+.icon_x32.client-permission_server_groups {
     background-position: calc(-96px * 2) calc(-224px * 2);
 }
 .icon_x32.client-phoneticsnickname {
@@ -1220,4 +1220,615 @@
 }
 .icon_x32.client-home {
     background-position: calc(-192px * 2) calc(-384px * 2);
+}
+
+
+/*  replace pattern: "background-position: calc\(((\-?[0-9]{1,3})(px)? \* 2)\) calc\(((\-?[0-9]{1,3})(px)? \* 2)\);" */
+/*  replace with: "background-position: calc\($2px * 1.5) calc($5px * 1.5);" */
+/*  Icons x24 */
+
+.icon_x24 {
+    display: inline-block;
+    background: url('../../../img/client_icon_sprite.svg'), url('../../img/client_icon_sprite.svg') no-repeat;
+    background-size: calc(496px * 1.5) calc(400px * 1.5);
+    height: 24px;
+    width: 24px;
+}
+
+.icon_x24.client-d_sound {
+    background-position: calc(0px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-d_sound_me {
+    background-position: calc(-32px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-d_sound_user {
+    background-position: calc(-64px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-about {
+    background-position: calc(-96px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-activate_microphone {
+    background-position: calc(-128px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-add {
+    background-position: calc(-160px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-add_foe {
+    background-position: calc(-192px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-add_folder {
+    background-position: calc(-224px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-add_friend {
+    background-position: calc(-256px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-addon {
+    background-position: calc(-288px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-addon-collection {
+    background-position: calc(-320px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-apply {
+    background-position: calc(-352px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-arrow_down {
+    background-position: calc(-384px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-arrow_left {
+    background-position: calc(-416px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-arrow_right {
+    background-position: calc(-448px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-arrow_up {
+    background-position: calc(-480px * 1.5) calc(0px * 1.5);
+}
+.icon_x24.client-away {
+    background-position: calc(0px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-ban_client {
+    background-position: calc(-32px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-ban_list {
+    background-position: calc(-64px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-bookmark_add {
+    background-position: calc(-96px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-bookmark_add_folder {
+    background-position: calc(-128px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-bookmark_duplicate {
+    background-position: calc(-160px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-bookmark_manager {
+    background-position: calc(-192px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-bookmark_remove {
+    background-position: calc(-224px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-broken_image {
+    background-position: calc(-256px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-browse-addon-online {
+    background-position: calc(-288px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-capture {
+    background-position: calc(-320px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-changelog {
+    background-position: calc(-352px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-change_nickname {
+    background-position: calc(-384px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-channel_chat {
+    background-position: calc(-416px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-channel_collapse_all {
+    background-position: calc(-448px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-channel_commander {
+    background-position: calc(-480px * 1.5) calc(-32px * 1.5);
+}
+.icon_x24.client-channel_create {
+    background-position: calc(0px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_create_sub {
+    background-position: calc(-32px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_default {
+    background-position: calc(-64px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_delete {
+    background-position: calc(-96px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_edit {
+    background-position: calc(-128px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_expand_all {
+    background-position: calc(-160px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_green {
+    background-position: calc(-192px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_green_subscribed {
+    background-position: calc(-224px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_private {
+    background-position: calc(-256px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_red {
+    background-position: calc(-288px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_red_subscribed {
+    background-position: calc(-320px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_switch {
+    background-position: calc(-352px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_unsubscribed {
+    background-position: calc(-384px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_yellow {
+    background-position: calc(-416px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-channel_yellow_subscribed {
+    background-position: calc(-448px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-check_update {
+    background-position: calc(-480px * 1.5) calc(-64px * 1.5);
+}
+.icon_x24.client-client_hide {
+    background-position: calc(0px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-client_show {
+    background-position: calc(-32px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-close_button {
+    background-position: calc(-64px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-complaint_list {
+    background-position: calc(-96px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-conflict-icon {
+    background-position: calc(-128px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-connect {
+    background-position: calc(-160px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-contact {
+    background-position: calc(-192px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-copy {
+    background-position: calc(-224px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-copy_url {
+    background-position: calc(-256px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-default {
+    background-position: calc(-288px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-default_for_all_bookmarks {
+    background-position: calc(-320px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-delete {
+    background-position: calc(-352px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-delete_avatar {
+    background-position: calc(-384px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-disconnect {
+    background-position: calc(-416px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-down {
+    background-position: calc(-448px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-download {
+    background-position: calc(-480px * 1.5) calc(-96px * 1.5);
+}
+.icon_x24.client-edit {
+    background-position: calc(0px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-edit_friend_foe_status {
+    background-position: calc(-32px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-emoticon {
+    background-position: calc(-64px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-error {
+    background-position: calc(-96px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-file_home {
+    background-position: calc(-128px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-file_refresh {
+    background-position: calc(-160px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-filetransfer {
+    background-position: calc(-192px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-find {
+    background-position: calc(-224px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-folder {
+    background-position: calc(-256px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-folder_up {
+    background-position: calc(-288px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-group_100 {
+    background-position: calc(-320px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-group_200 {
+    background-position: calc(-352px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-group_300 {
+    background-position: calc(-384px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-group_500 {
+    background-position: calc(-416px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-group_600 {
+    background-position: calc(-448px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-guisetup {
+    background-position: calc(-480px * 1.5) calc(-128px * 1.5);
+}
+.icon_x24.client-hardware_input_muted {
+    background-position: calc(0px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-hardware_output_muted {
+    background-position: calc(-32px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-hoster_button {
+    background-position: calc(-64px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-hotkeys {
+    background-position: calc(-96px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-icon-pack {
+    background-position: calc(-128px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-iconsview {
+    background-position: calc(-160px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-iconviewer {
+    background-position: calc(-192px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-identity_default {
+    background-position: calc(-224px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-identity_export {
+    background-position: calc(-256px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-identity_import {
+    background-position: calc(-288px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-identity_manager {
+    background-position: calc(-320px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-info {
+    background-position: calc(-352px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-input_muted {
+    background-position: calc(-384px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-input_muted_local {
+    background-position: calc(-416px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-invite_buddy {
+    background-position: calc(-448px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-is_talker {
+    background-position: calc(-480px * 1.5) calc(-160px * 1.5);
+}
+.icon_x24.client-kick_channel {
+    background-position: calc(0px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-kick_server {
+    background-position: calc(-32px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-listview {
+    background-position: calc(-64px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-loading_image {
+    background-position: calc(-96px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-message_incoming {
+    background-position: calc(-128px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-message_info {
+    background-position: calc(-160px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-message_outgoing {
+    background-position: calc(-192px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-messages {
+    background-position: calc(-224px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-moderated {
+    background-position: calc(-256px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-move_client_to_own_channel {
+    background-position: calc(-288px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-music {
+    background-position: calc(-320px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-new_chat {
+    background-position: calc(-352px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-notifications {
+    background-position: calc(-384px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-offline_messages {
+    background-position: calc(-416px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-on_whisperlist {
+    background-position: calc(-448px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-output_muted {
+    background-position: calc(-480px * 1.5) calc(-192px * 1.5);
+}
+.icon_x24.client-permission_channel {
+    background-position: calc(0px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-permission_client {
+    background-position: calc(-32px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-permission_overview {
+    background-position: calc(-64px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-permission_server_groups {
+    background-position: calc(-96px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-phoneticsnickname {
+    background-position: calc(-128px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-ping_1 {
+    background-position: calc(-160px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-ping_2 {
+    background-position: calc(-192px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-ping_3 {
+    background-position: calc(-224px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-ping_4 {
+    background-position: calc(-256px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-ping_calculating {
+    background-position: calc(-288px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-ping_disconnected {
+    background-position: calc(-320px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-play {
+    background-position: calc(-352px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-player_chat {
+    background-position: calc(-384px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-player_commander_off {
+    background-position: calc(-416px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-player_commander_on {
+    background-position: calc(-448px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-player_off {
+    background-position: calc(-480px * 1.5) calc(-224px * 1.5);
+}
+.icon_x24.client-player_on {
+    background-position: calc(0px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-player_whisper {
+    background-position: calc(-32px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-plugins {
+    background-position: calc(-64px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-poke {
+    background-position: calc(-96px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-present {
+    background-position: calc(-128px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-recording_start {
+    background-position: calc(-160px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-recording_stop {
+    background-position: calc(-192px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-refresh {
+    background-position: calc(-224px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-register {
+    background-position: calc(-256px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-reload {
+    background-position: calc(-288px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-remove_foe {
+    background-position: calc(-320px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-remove_friend {
+    background-position: calc(-352px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-security {
+    background-position: calc(-384px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-selectfolder {
+    background-position: calc(-416px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-send_complaint {
+    background-position: calc(-448px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-server_green {
+    background-position: calc(-480px * 1.5) calc(-256px * 1.5);
+}
+.icon_x24.client-server_log {
+    background-position: calc(0px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-server_query {
+    background-position: calc(-32px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-settings {
+    background-position: calc(-64px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-sort_by_name {
+    background-position: calc(-96px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-soundpack {
+    background-position: calc(-128px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-sound-pack {
+    background-position: calc(-160px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-stop {
+    background-position: calc(-192px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-subscribe_mode {
+    background-position: calc(-224px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-subscribe_to_all_channels {
+    background-position: calc(-256px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-subscribe_to_channel {
+    background-position: calc(-288px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-subscribe_to_channel_family {
+    background-position: calc(-320px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-switch_advanced {
+    background-position: calc(-352px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-switch_standard {
+    background-position: calc(-384px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-sync-disable {
+    background-position: calc(-416px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-sync-enable {
+    background-position: calc(-448px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-sync-icon {
+    background-position: calc(-480px * 1.5) calc(-288px * 1.5);
+}
+.icon_x24.client-tab_close_button {
+    background-position: calc(0px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-talk_power_grant {
+    background-position: calc(-32px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-talk_power_grant_next {
+    background-position: calc(-64px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-talk_power_request {
+    background-position: calc(-96px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-talk_power_request_cancel {
+    background-position: calc(-128px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-talk_power_revoke {
+    background-position: calc(-160px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-talk_power_revoke_all_grant_next {
+    background-position: calc(-192px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-temp_server_password {
+    background-position: calc(-224px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-temp_server_password_add {
+    background-position: calc(-256px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-textformat {
+    background-position: calc(-288px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-textformat_bold {
+    background-position: calc(-320px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-textformat_foreground {
+    background-position: calc(-352px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-textformat_italic {
+    background-position: calc(-384px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-textformat_underline {
+    background-position: calc(-416px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-theme {
+    background-position: calc(-448px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-toggle_server_query_clients {
+    background-position: calc(-480px * 1.5) calc(-320px * 1.5);
+}
+.icon_x24.client-toggle_whisper {
+    background-position: calc(0px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-token {
+    background-position: calc(-32px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-token_use {
+    background-position: calc(-64px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-translation {
+    background-position: calc(-96px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-unsubscribe_from_all_channels {
+    background-position: calc(-128px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-unsubscribe_from_channel_family {
+    background-position: calc(-160px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-unsubscribe_mode {
+    background-position: calc(-192px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-up {
+    background-position: calc(-224px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-upload {
+    background-position: calc(-256px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-upload_avatar {
+    background-position: calc(-288px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-urlcatcher {
+    background-position: calc(-320px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-user-account {
+    background-position: calc(-352px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-virtualserver_edit {
+    background-position: calc(-384px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-volume {
+    background-position: calc(-416px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-warning {
+    background-position: calc(-448px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-warning_external_link {
+    background-position: calc(-480px * 1.5) calc(-352px * 1.5);
+}
+.icon_x24.client-warning_info {
+    background-position: calc(0px * 1.5) calc(-384px * 1.5);
+}
+.icon_x24.client-warning_question {
+    background-position: calc(-32px * 1.5) calc(-384px * 1.5);
+}
+.icon_x24.client-weblist {
+    background-position: calc(-64px * 1.5) calc(-384px * 1.5);
+}
+.icon_x24.client-whisper {
+    background-position: calc(-96px * 1.5) calc(-384px * 1.5);
+}
+.icon_x24.client-whisperlists {
+    background-position: calc(-128px * 1.5) calc(-384px * 1.5);
+}
+.icon_x24.client-channel_green_subscribed2 {
+    background-position: calc(-160px * 1.5) calc(-384px * 1.5);
+}
+.icon_x24.client-home {
+    background-position: calc(-192px * 1.5) calc(-384px * 1.5);
 }

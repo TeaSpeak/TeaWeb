@@ -80,7 +80,7 @@ class ControlBar {
 
     initialise() {
         let dropdownify = (tag: JQuery) => {
-            tag.find(".button-dropdown").on('click', () => {
+            tag.find(".dropdown-arrow").on('click', () => {
                 tag.addClass("displayed");
             }).hover(() => {
                 tag.addClass("displayed");
@@ -553,11 +553,11 @@ class ControlBar {
                                         callback: () => bookmark_connect(true)
                                     }, contextmenu.Entry.CLOSE(() => {
                                         setTimeout(() => {
-                                            this.htmlTag.find(".btn_bookmark.button-dropdown").removeClass("force-show")
+                                            this.htmlTag.find(".btn_bookmark.dropdown-arrow").removeClass("force-show")
                                         }, 250);
                                     }));
 
-                                    this.htmlTag.find(".btn_bookmark.button-dropdown").addClass("force-show");
+                                    this.htmlTag.find(".btn_bookmark.dropdown-arrow").addClass("force-show");
                                 })
                         )
             } else {

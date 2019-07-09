@@ -65,6 +65,10 @@ namespace htmltags {
         return result;
     }
 
+    export function generate_client_object(properties: ClientProperties) : JQuery {
+        return $(this.generate_client(properties));
+    }
+
     /* required for the bbcodes */
     function generate_channel_open(properties: ChannelProperties) : string {
         let result = "";
@@ -101,6 +105,10 @@ namespace htmltags {
             result += "</div>";
         }
         return result;
+    }
+
+    export function generate_channel_object(properties: ChannelProperties) : JQuery {
+        return $(this.generate_channel(properties));
     }
 
 

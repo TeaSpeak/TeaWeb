@@ -366,6 +366,16 @@ function main() {
     };
 
     server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
+    const convs = server_connections.active_connection_handler().chat_frame.private_conversations();
+    let conv = convs.create_conversation("xxxx0", "WolverinDEV");
+    conv = convs.create_conversation("xxxx1", "Darkatzu");
+    conv = convs.create_conversation("xxxx2", "ZameXxX");
+    conv.set_unread_flag(true);
+
+    conv = convs.create_conversation("xxxx3", "Vagur");
+
+    //for(let i = 0; i < 100; i++)
+    //    convs.create_conversation('xx' + i, "WolverinDEV #" + i);
 
     if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
         const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
