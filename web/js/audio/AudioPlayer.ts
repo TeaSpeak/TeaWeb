@@ -1,8 +1,3 @@
-interface Navigator {
-    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-}
-
 namespace audio.player {
     let _globalContext: AudioContext;
     let _global_destination: GainNode;
@@ -81,7 +76,11 @@ namespace audio.player {
             _initialized_listener.push(cb);
     }
 
-    export const WEB_DEVICE: Device = {device_id: "default", name: "default playback"};
+    export const WEB_DEVICE: Device = {
+        device_id: "default",
+        name: "default playback",
+        driver: 'Web Audio'
+    };
 
     export function available_devices() : Promise<Device[]> {
         return Promise.resolve([WEB_DEVICE])

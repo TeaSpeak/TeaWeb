@@ -1,5 +1,9 @@
 /// <reference path="../../declarations/imports_shared.d.ts"/>
 
+interface MediaStream {
+    stop();
+}
+
 namespace audio {
     export namespace recorder {
         let _queried_devices: JavascriptInputDevice[];

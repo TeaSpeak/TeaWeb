@@ -260,7 +260,7 @@ namespace connection {
                     });
 
                     if(json["command"] === "initserver") {
-                        this._ping.thread_id = setInterval(() => this.do_ping(), this._ping.interval);
+                        this._ping.thread_id = setInterval(() => this.do_ping(), this._ping.interval) as any;
                         this.do_ping();
                         this.updateConnectionState(ConnectionState.CONNECTED);
                         if(this._voice_connection)

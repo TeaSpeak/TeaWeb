@@ -1,7 +1,4 @@
 namespace pe {
-    import PermissionEditorMode = Modals.PermissionEditorMode;
-    import KeyDownEvent = JQuery.KeyDownEvent;
-
     class HTMLPermission {
         readonly handle: HTMLPermissionEditor;
         readonly group: HTMLPermissionGroup;
@@ -57,7 +54,7 @@ namespace pe {
         }
 
         private static number_filter_re = /^[-+]?([0-9]{0,9})$/;
-        private static number_filter = (event: KeyDownEvent) => {
+        private static number_filter = (event: KeyboardEvent) => {
             if(event.ctrlKey)
                 return;
 
@@ -77,7 +74,7 @@ namespace pe {
                     return;
                 }
             } else {
-                const e = <KeyDownEvent>event; /* for some reason typescript deducts the event type to "never" */
+                const e = <JQuery.Event>event; /* for some reason typescript deducts the event type to "never" */
                 if(!HTMLPermission.number_filter_re.test(e.key)) {
                     e.preventDefault();
                     return;
@@ -120,7 +117,7 @@ namespace pe {
                 this._tag_value = $.spawn("input").addClass("number");
                 this._tag_value_input = this._tag_value;
 
-                this._tag_value_input.on('keydown', HTMLPermission.number_filter);
+                this._tag_value_input.on('keydown', HTMLPermission.number_filter as any);
                 this._tag_value_input.on('change', event => {
                      const str_value =  this._tag_value_input.val() as string;
                      const value = parseInt(str_value);
@@ -202,7 +199,7 @@ namespace pe {
                 this._tag_granted = $.spawn("input").addClass("number");
                 this._tag_granted_input = this._tag_granted;
 
-                this._tag_granted_input.on('keydown', HTMLPermission.number_filter);
+                this._tag_granted_input.on('keydown', HTMLPermission.number_filter as any);
                 this._tag_granted_input.on('change', event => {
                     const str_value =  this._tag_granted_input.val() as string;
                     const value = parseInt(str_value);
@@ -786,7 +783,7 @@ namespace pe {
                 contextmenu.spawn_context_menu(event.pageX, event.pageY, ...entries);
             });
 
-            this.set_mode(PermissionEditorMode.UNSET);
+            this.set_mode(Modals.PermissionEditorMode.UNSET);
         }
 
         html_tag(): JQuery<HTMLElement> {
@@ -816,10 +813,10 @@ namespace pe {
             this.update_filter();
         }
 
-        set_mode(mode: PermissionEditorMode) {
-            this.mode_container_permissions.css('display', mode == PermissionEditorMode.VISIBLE ? 'flex' : 'none');
-            this.mode_container_error_permission.css('display', mode == PermissionEditorMode.NO_PERMISSION ? 'flex' : 'none');
-            this.mode_container_unset.css('display', mode == PermissionEditorMode.UNSET ? 'block' : 'none');
+        set_mode(mode: Modals.PermissionEditorMode) {
+            this.mode_container_permissions.css('display', mode == Modals.PermissionEditorMode.VISIBLE ? 'flex' : 'none');
+            this.mode_container_error_permission.css('display', mode == Modals.PermissionEditorMode.NO_PERMISSION ? 'flex' : 'none');
+            this.mode_container_unset.css('display', mode == Modals.PermissionEditorMode.UNSET ? 'block' : 'none');
         }
 
         trigger_change(permission: PermissionInfo, value?: Modals.PermissionEditor.PermissionValue) : Promise<void> {
