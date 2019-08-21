@@ -690,7 +690,8 @@ class ConnectionHandler {
 
         if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().record_supported) {
             const active = !this.client_status.input_muted && !this.client_status.output_muted;
-            if(active) {
+            /* No need to start the microphone when we're not even connected */
+            if(active && this.serverConnection.connected()) {
                 if(vconnection.voice_recorder().input.current_state() === audio.recorder.InputState.PAUSED) {
                     vconnection.voice_recorder().input.start().then(result => {
                         if(result != audio.recorder.InputStartResult.EOK) {

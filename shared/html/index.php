@@ -4,6 +4,9 @@
 	error_reporting(E_ALL);
 
 	$WEB_CLIENT = http_response_code() !== false;
+    $localhost = false;
+    if(gethostname() == "WolverinDEV")
+        $localhost = true;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -135,6 +138,7 @@
             </div>
         </div>
 
+        <?php if($localhost) { ?>
         <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
             <!-- <img src="https://www.chromatic-solutions.de/teaspeak/window/connect_opened.png"> -->
             <!-- <img src="http://puu.sh/DZDgO/9149c0a1aa.png"> -->
@@ -163,6 +167,7 @@
                 });
             }, 2500);
         </script>
+        <?php } ?>
 
         <div id="music-test"></div>
         <div id="templates"></div>

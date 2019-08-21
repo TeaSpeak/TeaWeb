@@ -409,7 +409,7 @@ namespace audio {
                     audio_constrains.echoCancellation = true;
                     /* may supported */ (audio_constrains as any).autoGainControl = true;
                     /* may supported */ (audio_constrains as any).noiseSuppression = true;
-                    audio_constrains.sampleSize = {min: 420, max: 960 * 10, ideal: 960};
+                    /* disabled because most the time we get a OverconstrainedError */ //audio_constrains.sampleSize = {min: 420, max: 960 * 10, ideal: 960};
 
                     const stream = await media_function({audio: audio_constrains, video: undefined});
                     if(!_queried_permissioned) query_devices(); /* we now got permissions, requery devices */
@@ -441,8 +441,10 @@ namespace audio {
                     if(!this._current_device)
                         throw tr("invalid device");
 
-                    if(!this._audio_context)
+                    if(!this._audio_context) {
+                        debugger;
                         throw tr("missing audio context");
+                    }
 
                     const _result = await JavascriptInput.request_media_stream(this._current_device.device_id, this._current_device.group_id);
                     if(!(_result instanceof MediaStream)) {

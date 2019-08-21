@@ -82,11 +82,16 @@ class RecorderProfile {
     async initialize() : Promise<void> {
         await this.load();
         await this.reinitialize_filter();
+        //Why we started directly after initialize?
+        //After we connect to a server the ConnectionHandler will automatically
+        //start the VoiceRecorder as soon we've a voice bridge.
+        /*
         try {
             await this.input.start();
         } catch(error) {
             console.warn(tr("Failed to start recorder after initialize (%o)"), error);
         }
+        */
     }
 
     private initialize_input() {

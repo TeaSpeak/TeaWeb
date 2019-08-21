@@ -72,3 +72,5 @@
 
 TODO:
 Fix these icons: https://img.did.science/Screenshot_20-11-06.png
+Fix auto TS compile for vendor emoji-picker
+Make identity settings a bit smaller (Even scroll on my Laptop)

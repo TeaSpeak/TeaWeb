@@ -1,3 +1,5 @@
+/// <reference path="./ModalPermissionEdit.ts" /> /* first needs the AbstractPermissionEdit */
+
 namespace pe {
     class HTMLPermission {
         readonly handle: HTMLPermissionEditor;
