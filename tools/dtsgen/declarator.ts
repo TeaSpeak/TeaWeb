@@ -185,7 +185,8 @@ export function generate(file: ts.SourceFile, settings?: Settings) : ts.Node[]{
 
 export function print(source: ts.SourceFile, nodes: ts.Node[]) : string {
     const printer = ts.createPrinter({
-        newLine: ts.NewLineKind.LineFeed
+        newLine: ts.NewLineKind.LineFeed,
+        removeComments: true /* quick fix for comments mess up our target file. May consider to copy comments? (For example a method doc) */
     });
 
     return printer.printList(
