@@ -1,5 +1,6 @@
 
-/* File: /home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/tools/dtsgen/test/test_04.ts */
-type T = "a" | "b" | "c";
-declare function _t(parm: T);
-declare function __t();
+/* File: C:\Users\WolverinDEV\TeaSpeak\TeaWeb\tools\dtsgen\test\test_05.ts */
+/// <reference path="A" />
+/// <reference path="B" />
+declare abstract class InfoManagerBase {
+}

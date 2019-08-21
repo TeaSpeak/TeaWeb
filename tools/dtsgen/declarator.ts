@@ -24,9 +24,25 @@ function has_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersArra
 function append_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersArray | undefined, target: T) : ts.ModifiersArray {
     if(has_modifier(modifiers, target)) return modifiers;
 
-    return ts.createNodeArray([ts.createModifier(target as number), ...(modifiers || [])], (modifiers || {hasTrailingComma: false}).hasTrailingComma);
+    return ts.createNodeArray(
+        [ts.createModifier(target as number), ...(modifiers || [])].map((e, index, array) => {
+            const range = ts.getCommentRange(e);
+            if(range.end === -1 && range.pos === -1)
+                return e;
+            ts.setCommentRange(e, {pos: -1, end: -1});
+
+            const first_range = ts.getCommentRange(array[0]);
+            if(first_range.end === -1 && first_range.pos === -1)
+                ts.setCommentRange(array[0], range);
+            else
+                console.warn("Dropping comment on node because first node already has a comment");
+            return e;
+        }),
+        (modifiers || {hasTrailingComma: false}).hasTrailingComma
+    );
 }
 
+//TODO: Transfer comments?
 function remove_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersArray | undefined, target: T) : ts.ModifiersArray {
     if(!has_modifier(modifiers, target)) return modifiers;
 
@@ -103,7 +119,7 @@ class StackParameters implements StackParameter {
 const generators: {[key: number]:((settings: _Settings, stack: StackParameters, node: ts.Node) => ts.Node | undefined) | undefined} = {};
 
 function _generate(settings: _Settings, stack: StackParameters, layer: ts.Node[], node: ts.Node) {
-    //console.log(SyntaxKind[node.kind]);
+    console.log(SyntaxKind[node.kind]);
     if(generators[node.kind]) {
         const result = generators[node.kind](settings, stack, node);
         if(result)
@@ -185,8 +201,7 @@ export function generate(file: ts.SourceFile, settings?: Settings) : ts.Node[]{
 
 export function print(source: ts.SourceFile, nodes: ts.Node[]) : string {
     const printer = ts.createPrinter({
-        newLine: ts.NewLineKind.LineFeed,
-        removeComments: true /* quick fix for comments mess up our target file. May consider to copy comments? (For example a method doc) */
+        newLine: ts.NewLineKind.LineFeed
     });
 
     return printer.printList(
