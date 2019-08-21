@@ -86,7 +86,7 @@ source_files.forEach(file => {
         );
 
         console.log("Compile " + _file);
-        result += "\n/* File: " + _file + " */\n" + decl.print(decl.generate(source, {
+        result += "\n/* File: " + _file + " */\n" + decl.print(source, decl.generate(source, {
             remove_private: false
         }));
     });

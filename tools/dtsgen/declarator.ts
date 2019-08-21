@@ -183,15 +183,7 @@ export function generate(file: ts.SourceFile, settings?: Settings) : ts.Node[]{
     return layer;
 }
 
-export function print(nodes: ts.Node[]) : string {
-    const dummy_file = ts.createSourceFile(
-        "dummy_file",
-        "",
-        ts.ScriptTarget.ES2016,
-        false,
-        ts.ScriptKind.TS
-    );
-
+export function print(source: ts.SourceFile, nodes: ts.Node[]) : string {
     const printer = ts.createPrinter({
         newLine: ts.NewLineKind.LineFeed
     });
@@ -199,7 +191,7 @@ export function print(nodes: ts.Node[]) : string {
     return printer.printList(
         ts.ListFormat.SpaceBetweenBraces | ts.ListFormat.MultiLine | ts.ListFormat.PreferNewLine,
         nodes as any,
-        dummy_file
+        source
     );
 }
 
@@ -379,18 +371,13 @@ generators[SyntaxKind.TypeAliasDeclaration] = (settings, stack, node: ts.TypeAli
         const union = <ts.UnionTypeNode>node.type;
 
         for(const element of union.types as any as any[]) {
-            if(element.kind === SyntaxKind.LiteralType && element.literal && element.literal.text) {
-                union_members.push(ts.createStringLiteral(element.literal.text));
-            }
-            else
-                union_members.push(element);
-            console.log(SyntaxKind[element.kind]);
+            union_members.push(element);
         }
 
         type = ts.createUnionTypeNode(union_members);
     }
 
-    return ts.createTypeAliasDeclaration(node.decorators, node.modifiers, node.name, node.typeParameters, type);
+    return ts.createTypeAliasDeclaration(node.decorators, append_declare(node.modifiers, !stack.flag_declare), node.name, node.typeParameters, type);
 };
 
 generators[SyntaxKind.EnumMember] = (settings, stack, node: ts.EnumMember) => {
