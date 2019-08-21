@@ -104,7 +104,8 @@ namespace i18n {
 
                         file.full_url = url;
                         file.path = path;
-                        //TODO validate file
+
+                        //TODO: Validate file
                         resolve(file);
                     } catch(error) {
                         log.warn(LogCategory.I18N, tr("Failed to load translation file %s. Failed to parse or process json: %o"), url, error);
@@ -119,10 +120,16 @@ namespace i18n {
     }
 
     export function load_file(url: string, path: string) : Promise<void> {
-        return load_translation_file(url, path).then(result => {
+        return load_translation_file(url, path).then(async result => {
+            /* TODO: Improve this test?!*/
+            try {
+                tr("Dummy translation test");
+            } catch(error) {
+                throw "dummy test failed";
+            }
+
             log.info(LogCategory.I18N, tr("Successfully initialized up translation file from %s"), url);
             translations = result.translations;
-            return Promise.resolve();
         }).catch(error => {
             log.warn(LogCategory.I18N, tr("Failed to load translation file from \"%s\". Error: %o"), url, error);
             return Promise.reject(error);
@@ -292,6 +299,7 @@ namespace i18n {
             try {
                 await load_file(cfg.current_translation_url, cfg.current_translation_path);
             } catch (error) {
+                console.error(tr("Failed to initialize selected translation: %o"), error);
                 createErrorModal(tr("Translation System"), tr("Failed to load current selected translation file.") + "<br>File: " + cfg.current_translation_url + "<br>Error: " + error + "<br>" + tr("Using default fallback translations.")).open();
             }
         }
@@ -303,3 +311,6 @@ namespace i18n {
 // @ts-ignore
 const tr: typeof i18n.tr = i18n.tr;
 const tra: typeof i18n.tra = i18n.tra;
+
+(window as any).tr = i18n.tr;
+(window as any).tra = i18n.tra;

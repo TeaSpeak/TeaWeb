@@ -7,6 +7,7 @@ class ServerConnectionManager {
 
     private _container_log_server: JQuery;
     private _container_channel_tree: JQuery;
+    private _container_hostbanner: JQuery;
     private _container_select_info: JQuery;
     private _container_chat: JQuery;
 
@@ -32,6 +33,7 @@ class ServerConnectionManager {
 
         this._container_log_server = $("#server-log");
         this._container_channel_tree = $("#channelTree");
+        this._container_hostbanner = $("#hostbanner");
         this._container_select_info = $("#select_info");
         this._container_chat = $("#chat");
 
@@ -52,7 +54,7 @@ class ServerConnectionManager {
 
     destroy_server_connection_handler(handler: ConnectionHandler) {
         this.connection_handlers.remove(handler);
-        handler.tag_connection_handler.detach();
+        handler.tag_connection_handler.remove();
         this._update_scroll();
         this._tag.toggleClass("shown", this.connection_handlers.length > 1);
 
@@ -64,11 +66,14 @@ class ServerConnectionManager {
 
         if(handler === this.active_handler)
             this.set_active_connection_handler(this.connection_handlers[0]);
+
+        /* destroy all elements */
+        handler.destroy();
     }
 
     set_active_connection_handler(handler: ConnectionHandler) {
         if(handler && this.connection_handlers.indexOf(handler) == -1)
-            throw "Handler hasn't been registrated or is already obsolete!";
+            throw "Handler hasn't been registered or is already obsolete!";
 
         if(this.active_handler)
             this.active_handler.select_info.close_popover();
@@ -77,19 +82,22 @@ class ServerConnectionManager {
         this._container_select_info.children().detach();
         this._container_chat.children().detach();
         this._container_log_server.children().detach();
+        this._container_hostbanner.children().detach();
 
         control_bar.set_connection_handler(handler);
         if(handler) {
             handler.tag_connection_handler.addClass("active");
 
+            this._container_hostbanner.append(handler.hostbanner.html_tag);
             this._container_channel_tree.append(handler.channelTree.tag_tree());
             this._container_select_info.append(handler.select_info.get_tag());
-            this._container_chat.append(handler.chat_frame.html_tag());
+            this._container_chat.append(handler.side_bar.html_tag());
             this._container_log_server.append(handler.log.html_tag());
 
             if(handler.invoke_resized_on_activate)
                 handler.resize_elements();
         }
+        top_menu.update_state();
         this.active_handler = handler;
     }
 

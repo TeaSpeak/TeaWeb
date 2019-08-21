@@ -2,6 +2,7 @@ namespace audio {
     export namespace recorder {
         export interface InputDevice {
             unique_id: string;
+            driver: string;
             name: string;
             default_input: boolean;
 
@@ -80,13 +81,21 @@ namespace audio {
             DRY
         }
 
+        export enum InputStartResult {
+            EOK = "eok",
+            EUNKNOWN = "eunknown",
+            EBUSY = "ebusy",
+            ENOTALLOWED = "enotallowed",
+            ENOTSUPPORTED = "enotsupported"
+        }
+
         export interface AbstractInput {
             callback_begin: () => any;
             callback_end: () => any;
 
             current_state() : InputState;
 
-            start() : Promise<void>;
+            start() : Promise<InputStartResult>;
             stop() : Promise<void>;
 
             current_device() : InputDevice | undefined;
@@ -102,6 +111,16 @@ namespace audio {
             disable_filter(type: filter.Type);
             enable_filter(type: filter.Type);
 
+            get_volume() : number;
+            set_volume(volume: number);
+        }
+
+        export interface LevelMeter {
+            device() : InputDevice;
+
+            set_observer(callback: (value: number) => any);
+
+            destory();
         }
     }
 }

@@ -6,6 +6,14 @@ sound.egg;WolverinDEV is the best and I love TeaSpeak!
 away_activated;See you soon
 away_deactivated;Welcome back
 
+#Microphone
+microphone.muted;Microphone muted
+microphone.activated;Microphone activated
+
+#Sound
+sound.muted;Sound muted
+sound.activated;Sound activated
+
 #Connection
 connection.connected;Connected
 connection.disconnected;Disconnected
@@ -44,6 +52,7 @@ user.left.kicked.server;User in your channel got kicked from the server
 user.left.moved;User was moved out of your channel
 user.left.disconnect;User disconnected from your channel
 user.left.banned;User in your channel was banned from the server
+user.left.timeout;User in your channel timed out
 
 #Error
 error.insufficient_permissions;insufficient permissions

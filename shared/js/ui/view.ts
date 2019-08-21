@@ -9,8 +9,8 @@ class ChannelTree {
     client: ConnectionHandler;
     server: ServerEntry;
 
-    channels: ChannelEntry[];
-    clients: ClientEntry[];
+    channels: ChannelEntry[] = [];
+    clients: ClientEntry[] = [];
 
     currently_selected: ClientEntry | ServerEntry | ChannelEntry | (ClientEntry | ServerEntry)[] = undefined;
     currently_selected_context_callback: (event) => any = undefined;
@@ -24,11 +24,11 @@ class ChannelTree {
     private channel_last?: ChannelEntry;
     private channel_first?: ChannelEntry;
 
-    private selected_event?: Event;
+    private _focused = false;
+    private _listener_document_click;
+    private _listener_document_key;
 
     constructor(client) {
-        document.addEventListener("touchstart", function(){}, true);
-
         this.client = client;
 
         this._tag_container = $.spawn("div").addClass("channel-tree-container");
@@ -56,20 +56,45 @@ class ChannelTree {
         }
 
         this._tag_container.on('resize', this.handle_resized.bind(this));
-
-        /* TODO release these events again when ChannelTree get deinitialized */
-        $(document).on('click', event => {
-            if(this.selected_event != event.originalEvent)
-                this.selected_event = undefined;
-        });
-        $(document).on('keydown', this.handle_key_press.bind(this));
-        this._tag_container.on('click', event => {{
-            this.selected_event = event.originalEvent;
-        }});
+        this._listener_document_key = event => this.handle_key_press(event);
+        this._listener_document_click = event => {
+            this._focused = false;
+            let element = event.target as HTMLElement;
+            while(element) {
+                if(element === this._tag_container[0]) {
+                    this._focused = true;
+                    break;
+                }
+                element = element.parentNode as HTMLElement;
+            }
+        };
+        document.addEventListener('click', this._listener_document_click);
+        document.addEventListener('keydown', this._listener_document_key);
     }
 
     tag_tree() : JQuery {
         return this._tag_container;
+    }
+
+    destroy() {
+        this._listener_document_click && document.removeEventListener('click', this._listener_document_click);
+        this._listener_document_click = undefined;
+
+        this._listener_document_key && document.removeEventListener('keydown', this._listener_document_key);
+        this._listener_document_key = undefined;
+
+        if(this.server) {
+            this.server.destroy();
+            this.server = undefined;
+        }
+        this.reset(); /* cleanup channel and clients */
+
+        this.channel_first = undefined;
+        this.channel_last = undefined;
+
+        this._tag_container.remove();
+        this.currently_selected = undefined;
+        this.currently_selected_context_callback = undefined;
     }
 
     hide_channel_tree() {
@@ -103,6 +128,10 @@ class ChannelTree {
     }
 
     initialiseHead(serverName: string, address: ServerAddress) {
+        if(this.server) {
+            this.server.destroy();
+            this.server = undefined;
+        }
         this.server = new ServerEntry(this, serverName, address);
         this.server.htmlTag.appendTo(this._tag_entries);
         this.server.initializeListener();
@@ -112,6 +141,7 @@ class ChannelTree {
         let tag = element instanceof ChannelEntry ? element.rootTag() : element.tag;
         tag.fadeOut("slow", () => {
             tag.detach();
+            element.destroy();
         });
     }
 
@@ -311,7 +341,7 @@ class ChannelTree {
                 voice_connection.unregister_client(client.get_audio_handle());
             }
         }
-        client.set_audio_handle(undefined); /* just to be sure */
+        client.set_audio_handle(undefined);
     }
 
     registerClient(client: ClientEntry) {
@@ -321,6 +351,12 @@ class ChannelTree {
         const voice_connection = this.client.serverConnection.voice_connection();
         if(voice_connection)
             client.set_audio_handle(voice_connection.register_client(client.clientId()));
+    }
+
+    unregisterClient(client: ClientEntry) {
+        if(!this.clients.remove(client))
+            return;
+        client.tree_unregistered();
     }
 
     insertClient(client: ClientEntry, channel: ChannelEntry) : ClientEntry {
@@ -400,7 +436,6 @@ class ChannelTree {
     }
 
     onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry, enforce_single?: boolean, flag_shift?: boolean) {
-        console.log("Select: " + entry);
         if(this.currently_selected && (ppt.key_pressed(ppt.SpecialKey.SHIFT) || flag_shift) && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
             if(!entry) return; //Nowhere
 
@@ -448,6 +483,17 @@ class ChannelTree {
         else if(entry instanceof ServerEntry)
             (entry as ServerEntry).htmlTag.addClass("selected");
 
+        if(!$.isArray(this.currently_selected)) {
+            if(this.currently_selected instanceof ClientEntry && settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
+                this.client.side_bar.show_client_info(this.currently_selected);
+            } else if(this.currently_selected instanceof ChannelEntry && settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
+                this.client.side_bar.channel_conversations().set_current_channel(this.currently_selected.channelId);
+                this.client.side_bar.show_channel_conversations();
+            } else if(this.currently_selected instanceof ServerEntry && settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
+                this.client.side_bar.channel_conversations().set_current_channel(0);
+                this.client.side_bar.show_channel_conversations();
+            }
+        }
         this.client.select_info.setCurrentSelected($.isArray(this.currently_selected) ? undefined : entry);
     }
 
@@ -460,7 +506,6 @@ class ChannelTree {
         const music_only = clients.map(e => e instanceof MusicClientEntry ? 0 : 1).reduce((a, b) => a + b, 0) == 0;
         const music_entry = clients.map(e => e instanceof MusicClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
         const local_client = clients.map(e => e instanceof LocalClientEntry ? 1 : 0).reduce((a, b) => a + b, 0) > 0;
-        console.log(tr("Music only: %o | Container music: %o | Container local: %o"), music_entry, music_entry, local_client);
         let entries: contextmenu.MenuEntry[] = [];
         if (!music_entry && !local_client) { //Music bots or local client cant be poked
             entries.push({
@@ -604,10 +649,21 @@ class ChannelTree {
     }
 
     reset(){
-        this.server = null;
+        const voice_connection = this.client.serverConnection ? this.client.serverConnection.voice_connection() : undefined;
+        for(const client of this.clients) {
+            if(client.get_audio_handle() && voice_connection) {
+                voice_connection.unregister_client(client.get_audio_handle());
+                client.set_audio_handle(undefined);
+            }
+            client.destroy();
+        }
         this.clients = [];
+
+        for(const channel of this.channels)
+            channel.destroy();
         this.channels = [];
-        this._tag_entries.children().detach(); //Do not remove the listener!
+
+        this._tag_entries.children().detach(); //Dont remove listeners
 
         this.channel_first = undefined;
         this.channel_last = undefined;
@@ -692,7 +748,8 @@ class ChannelTree {
     }
 
     handle_key_press(event: KeyboardEvent) {
-        if(!this.selected_event || !this.currently_selected || $.isArray(this.currently_selected)) return;
+        console.log("Keydown: %o | %o | %o", this._focused, this.currently_selected, Array.isArray(this.currently_selected));
+        if(!this._focused || !this.currently_selected || Array.isArray(this.currently_selected)) return;
 
         if(event.keyCode == KeyCode.KEY_UP) {
             event.preventDefault();

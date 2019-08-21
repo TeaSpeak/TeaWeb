@@ -1,6 +1,8 @@
 /// <reference path="ConnectionBase.ts" />
 
 namespace connection {
+    import Conversation = chat.channel.Conversation;
+
     export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
         constructor(connection: AbstractServerConnection) {
             super(connection);
@@ -23,6 +25,7 @@ namespace connection {
             this["notifychannelhide"] = this.handleCommandChannelHide;
             this["notifychannelshow"] = this.handleCommandChannelShow;
 
+            this["notifyserverconnectioninfo"] = this.handleNotifyServerConnectionInfo;
             this["notifycliententerview"] = this.handleCommandClientEnterView;
             this["notifyclientleftview"] = this.handleCommandClientLeftView;
             this["notifyclientmoved"] = this.handleNotifyClientMoved;
@@ -45,6 +48,9 @@ namespace connection {
 
             this["notifychannelsubscribed"] = this.handleNotifyChannelSubscribed;
             this["notifychannelunsubscribed"] = this.handleNotifyChannelUnsubscribed;
+
+            this["notifyconversationhistory"] = this.handleNotifyConversationHistory;
+            this["notifyconversationmessagedelete"] = this.handleNotifyConversationMessageDelete;
         }
 
         proxy_command_promise(promise: Promise<CommandResult>, options: connection.CommandOptions) {
@@ -56,20 +62,21 @@ namespace connection {
                     if(ex instanceof CommandResult) {
                         let res = ex;
                         if(!res.success) {
-                            if(res.id == 2568) { //Permission error
-                                res.message = tr("Insufficient client permissions. Failed on permission ") + this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number).name;
+                            if(res.id == ErrorID.PERMISSION_ERROR) { //Permission error
+                                const permission = this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number);
+                                res.message = tr("Insufficient client permissions. Failed on permission ") + (permission ? permission.name : "unknown");
                                 this.connection_handler.log.log(log.server.Type.ERROR_PERMISSION, {
                                     permission: this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number)
                                 });
                                 this.connection_handler.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
-                            } else {
+                            } else if(res.id != ErrorID.EMPTY_RESULT) {
                                 this.connection_handler.log.log(log.server.Type.ERROR_CUSTOM, {
                                     message: res.extra_message.length == 0 ? res.message : res.extra_message
                                 });
                             }
                         }
                     } else if(typeof(ex) === "string") {
-                        this.connection_handler.chat.serverChat().appendError(tr("Command execution results in ") + ex);
+                        this.connection_handler.log.log(log.server.Type.CONNECTION_COMMAND_ERROR, {error: ex});
                     } else {
                         console.error(tr("Invalid promise result type: %o. Result:"), typeof (ex));
                         console.error(ex);
@@ -131,6 +138,8 @@ namespace connection {
 
             json = json[0]; //Only one bulk
 
+            this.connection_handler.channelTree.registerClient(this.connection_handler.getClient());
+            this.connection.client.side_bar.channel_conversations().reset();
             this.connection.client.clientId = parseInt(json["aclid"]);
             this.connection.client.getClient().updateVariables({key: "client_nickname", value: json["acn"]});
 
@@ -146,13 +155,76 @@ namespace connection {
             }
             this.connection.client.channelTree.server.updateVariables(false, ...updates);
 
+            const properties = this.connection.client.channelTree.server.properties;
+            /* host message */
+            if(properties.virtualserver_hostmessage_mode > 0) {
+                if(properties.virtualserver_hostmessage_mode == 1) {
+                    /* show in log */
+                    this.connection_handler.log.log(log.server.Type.SERVER_HOST_MESSAGE, {
+                        message: properties.virtualserver_hostmessage
+                    });
+                } else {
+                    /* create modal/create modal and quit */
+                    createModal({
+                        header: tr("Host message"),
+                        body: MessageHelper.bbcode_chat(properties.virtualserver_hostmessage),
+                        footer: undefined
+                    }).open();
 
-            this.connection_handler.chat.serverChat().name = this.connection.client.channelTree.server.properties["virtualserver_name"];
+                    if(properties.virtualserver_hostmessage_mode == 3) {
+                        /* first let the client initialize his stuff */
+                        setTimeout(() => {
+                            this.connection_handler.log.log(log.server.Type.SERVER_HOST_MESSAGE_DISCONNECT, {
+                                message: properties.virtualserver_welcomemessage
+                            });
+
+                            this.connection.disconnect("host message disconnect");
+                            this.connection_handler.handleDisconnect(DisconnectReason.SERVER_HOSTMESSAGE);
+                            this.connection_handler.sound.play(Sound.CONNECTION_DISCONNECTED);
+                        }, 100);
+                    }
+                }
+            }
+
+            /* welcome message */
+            if(properties.virtualserver_welcomemessage) {
+                this.connection_handler.log.log(log.server.Type.SERVER_WELCOME_MESSAGE, {
+                    message: properties.virtualserver_welcomemessage
+                });
+            }
+
+            /* priviledge key */
+            if(properties.virtualserver_ask_for_privilegekey) {
+                createInputModal(tr("Use a privilege key"), tr("This is a newly created server for which administrator privileges have not yet been claimed.<br>Please enter the \"privilege key\" that was automatically generated when this server was created to gain administrator permissions."), message => message.length > 0, result => {
+                    if(!result) return;
+                    const scon = server_connections.active_connection_handler();
+
+                    if(scon.serverConnection.connected)
+                        scon.serverConnection.send_command("tokenuse", {
+                            token: result
+                        }).then(() => {
+                            createInfoModal(tr("Use privilege key"), tr("Privilege key successfully used!")).open();
+                        }).catch(error => {
+                            createErrorModal(tr("Use privilege key"), MessageHelper.formatMessage(tr("Failed to use privilege key: {}"), error instanceof CommandResult ? error.message : error)).open();
+                        });
+                }, { field_placeholder: 'Enter Privilege Key' }).open();
+            }
+
             this.connection_handler.log.log(log.server.Type.CONNECTION_CONNECTED, {
                 own_client: this.connection_handler.getClient().log_data()
             });
             this.connection_handler.sound.play(Sound.CONNECTION_CONNECTED);
             this.connection.client.onConnected();
+        }
+
+        handleNotifyServerConnectionInfo(json) {
+            json = json[0];
+
+            /* everything is a number, so lets parse it */
+            for(const key of Object.keys(json))
+                json[key] = parseInt(json[key]);
+
+            this.connection_handler.channelTree.server.set_connection_info(json);
         }
 
         private createChannelFromJson(json, ignoreOrder: boolean = false) {
@@ -223,9 +295,11 @@ namespace connection {
 
         handleCommandChannelDelete(json) {
             let tree = this.connection.client.channelTree;
+            const conversations = this.connection.client.side_bar.channel_conversations();
 
             console.log(tr("Got %d channel deletions"), json.length);
             for(let index = 0; index < json.length; index++) {
+                conversations.delete_conversation(parseInt(json[index]["cid"]));
                 let channel = tree.findChannel(json[index]["cid"]);
                 if(!channel) {
                     console.error(tr("Invalid channel onDelete (Unknown channel)"));
@@ -237,9 +311,11 @@ namespace connection {
 
         handleCommandChannelHide(json) {
             let tree = this.connection.client.channelTree;
+            const conversations = this.connection.client.side_bar.channel_conversations();
 
             console.log(tr("Got %d channel hides"), json.length);
             for(let index = 0; index < json.length; index++) {
+                conversations.delete_conversation(parseInt(json[index]["cid"]));
                 let channel = tree.findChannel(json[index]["cid"]);
                 if(!channel) {
                     console.error(tr("Invalid channel on hide (Unknown channel)"));
@@ -282,8 +358,6 @@ namespace connection {
                     client.properties.client_type = parseInt(entry["client_type"]);
                     client = tree.insertClient(client, channel);
                 } else {
-                    if(client == this.connection.client.getClient())
-                        this.connection_handler.chat.channelChat().name = channel.channelName();
                     tree.moveClient(client, channel);
                 }
 
@@ -338,32 +412,25 @@ namespace connection {
 
                 client.updateVariables(...updates);
 
-                {
-                    let client_chat = client.chat(false);
-                    if(!client_chat) {
-                        for(const c of this.connection_handler.chat.open_chats()) {
-                            if(c.owner_unique_id == client.properties.client_unique_identifier && c.flag_offline) {
-                                client_chat = c;
-                                break;
-                            }
-                        }
-                    }
-
-                    if(client_chat) {
-                        client_chat.appendMessage(
-                            "{0}", true,
-                            $.spawn("div")
-                                .addClass("event-message event-partner-connect")
-                                .text(tr("Your chat partner has reconnected"))
-                        );
-                        client_chat.flag_offline = false;
-                        client.initialize_chat(client_chat);
-                    }
+                if(!old_channel) {
+                    /* client new join */
+                    const conversation_manager = this.connection_handler.side_bar.private_conversations();
+                    const conversation = conversation_manager.find_conversation({
+                        unique_id: client.properties.client_unique_identifier,
+                        client_id: client.clientId(),
+                        name: client.clientNickName()
+                    }, {
+                        create: false,
+                        attach: true
+                    });
                 }
 
                 if(client instanceof LocalClientEntry) {
+                    client.initializeListener();
                     this.connection_handler.update_voice_status();
-                    this.connection_handler.chat_frame.info_frame().update_channel_talk();
+                    this.connection_handler.side_bar.info_frame().update_channel_talk();
+                    const conversations = this.connection.client.side_bar.channel_conversations();
+                    conversations.set_current_channel(client.currentChannel().channelId);
                 }
             }
         }
@@ -390,7 +457,7 @@ namespace connection {
                         this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, entry);
                     } else
                         this.connection.client.handleDisconnect(DisconnectReason.UNKNOWN, entry);
-                    this.connection_handler.chat_frame.info_frame().update_channel_talk();
+                    this.connection_handler.side_bar.info_frame().update_channel_talk();
                     return;
                 }
 
@@ -436,19 +503,19 @@ namespace connection {
                         console.error(tr("Unknown client left reason!"));
                     }
 
-                    {
-                        const chat = client.chat(false);
-                        if(chat) {
-                            chat.flag_offline = true;
-                            chat.onMessageSend = undefined;
-                            chat.onClose = undefined;
-                            chat.appendMessage(
-                                "{0}", true,
-                                $.spawn("div")
-                                    .addClass("event-message event-partner-disconnect")
-                                    .text(tr("Your chat partner has disconnected"))
-                            );
-                        }
+                    if(!channel_to) {
+                        /* client left the server */
+                        const conversation_manager = this.connection_handler.side_bar.private_conversations();
+                        const conversation = conversation_manager.find_conversation({
+                            unique_id: client.properties.client_unique_identifier,
+                            client_id: client.clientId(),
+                            name: client.clientNickName()
+                        }, {
+                            create: false,
+                            attach: false
+                        });
+                        if(conversation)
+                            conversation.set_state(chat.PrivateConversationState.DISCONNECTED);
                     }
                 }
 
@@ -478,7 +545,6 @@ namespace connection {
             let self = client instanceof LocalClientEntry;
             let current_clients: ClientEntry[];
             if(self) {
-                this.connection_handler.chat.channelChat().name = channel_to.channelName();
                 current_clients = client.channelTree.clientsByChannel(client.currentChannel());
                 this.connection_handler.update_voice_status(channel_to);
             }
@@ -488,8 +554,20 @@ namespace connection {
                 if(entry !== client && entry.get_audio_handle())
                     entry.get_audio_handle().abort_replay();
 
-            if(self)
-                this.connection_handler.chat_frame.info_frame().update_channel_talk();
+            if(self) {
+                const side_bar = this.connection_handler.side_bar;
+                side_bar.info_frame().update_channel_talk();
+
+                const conversation_to = side_bar.channel_conversations().conversation(channel_to.channelId, false);
+                if(conversation_to)
+                    conversation_to.update_private_state();
+
+                const conversation_from = side_bar.channel_conversations().conversation(channel_from.channelId, false);
+                if(conversation_from)
+                    conversation_from.update_private_state();
+
+                side_bar.channel_conversations().update_chat_box();
+            }
 
             const own_channel = this.connection.client.getClient().currentChannel();
             this.connection_handler.log.log(log.server.Type.CLIENT_VIEW_MOVE, {
@@ -603,29 +681,65 @@ namespace connection {
 
             let mode = json["targetmode"];
             if(mode == 1){
-                let invoker = this.connection.client.channelTree.findClient(json["invokerid"]);
-                let target = this.connection.client.channelTree.findClient(json["target"]);
-                if(!invoker) { //TODO spawn chat (Client is may invisible)
-                    console.error(tr("Got private message from invalid client!"));
+                //json["invokerid"], json["invokername"], json["invokeruid"]
+                const target_client_id = parseInt(json["target"]);
+                const target_own = target_client_id === this.connection.client.getClientId();
+
+                if(target_own && target_client_id === json["invokerid"]) {
+                    console.error(tr("Received conversation message from invalid client id. Data: %o", json));
                     return;
                 }
-                if(!target) { //TODO spawn chat (Client is may invisible)
-                    console.error(tr("Got private message from invalid client!"));
+
+                const conversation_manager = this.connection_handler.side_bar.private_conversations();
+                const conversation = conversation_manager.find_conversation({
+                    client_id: target_own ? parseInt(json["invokerid"]) : target_client_id,
+                    unique_id: target_own ? json["invokeruid"] : undefined,
+                    name: target_own ? json["invokername"] : undefined
+                }, {
+                    create: target_own,
+                    attach: target_own
+                });
+                if(!conversation) {
+                    console.error(tr("Received conversation message for unknown conversation! (%s)"), target_own ? tr("Remote message") : tr("Own message"));
                     return;
                 }
-                if(invoker == this.connection.client.getClient()) {
-                    this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
-                    target.chat(true).appendMessage("{0}: {1}", true, this.connection.client.getClient().createChatTag(true), MessageHelper.bbcode_chat(json["msg"]));
-                } else {
+
+                conversation.append_message(json["msg"], {
+                    type: target_own ? "partner" : "self",
+                    name: json["invokername"],
+                    unique_id: json["invokeruid"],
+                    client_id: parseInt(json["invokerid"])
+                });
+
+                if(target_own) {
                     this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
-                    invoker.chat(true).appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]));
+                } else {
+                    this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
                 }
             } else if(mode == 2) {
+                const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
+                const own_channel_id = this.connection.client.getClient().currentChannel().channelId;
+                const channel_id = typeof(json["cid"]) !== "undefined" ? parseInt(json["cid"]) : own_channel_id;
+                const channel = this.connection_handler.channelTree.findChannel(channel_id);
+
                 if(json["invokerid"] == this.connection.client.clientId)
                     this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
-                else
+                else if(channel_id == own_channel_id) {
                     this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
-                this.connection_handler.chat.channelChat().appendMessage("{0}: {1}", true, ClientEntry.chatTag(json["invokerid"], json["invokername"], json["invokeruid"], true), MessageHelper.bbcode_chat(json["msg"]))
+                }
+
+                const conversations = this.connection_handler.side_bar.channel_conversations();
+                const conversation = conversations.conversation(channel_id);
+                conversation.register_new_message({
+                    sender_database_id: invoker ? invoker.properties.client_database_id : 0,
+                    sender_name: json["invokername"],
+                    sender_unique_id: json["invokeruid"],
+
+                    timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
+                    message: json["msg"]
+                });
+                if(conversation.is_unread())
+                    channel.flag_text_unread = true;
             } else if(mode == 3) {
                 this.connection_handler.log.log(log.server.Type.GLOBAL_MESSAGE, {
                     message: json["msg"],
@@ -634,6 +748,18 @@ namespace connection {
                         client_name: json["invokername"],
                         client_id: parseInt(json["invokerid"])
                     }
+                });
+
+                const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
+                const conversations = this.connection_handler.side_bar.channel_conversations();
+                const conversation = conversations.conversation(0);
+                conversation.register_new_message({
+                    sender_database_id: invoker ? invoker.properties.client_database_id : 0,
+                    sender_name: json["invokername"],
+                    sender_unique_id: json["invokeruid"],
+
+                    timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
+                    message: json["msg"]
                 });
             }
         }
@@ -646,28 +772,20 @@ namespace connection {
             //clid: "6"
             //cluid: "YoWmG+dRGKD+Rxb7SPLAM5+B9tY="
 
-            const client = this.connection.client.channelTree.findClient(json["clid"]);
-            if(!client) {
-                log.warn(LogCategory.GENERAL, tr("Received chat close for unknown client"));
-                return;
-            }
-            if(client.properties.client_unique_identifier !== json["cluid"]) {
-                log.warn(LogCategory.GENERAL, tr("Received chat close for client, but unique ids dosn't match. (expected %o, received %o)"), client.properties.client_unique_identifier, json["cluid"]);
-                return;
-            }
-
-            const chat = client.chat(false);
-            if(!chat) {
+            const conversation_manager = this.connection_handler.side_bar.private_conversations();
+            const conversation = conversation_manager.find_conversation({
+                client_id: parseInt(json["clid"]),
+                unique_id: json["cluid"],
+                name: undefined
+            }, {
+                create: false,
+                attach: false
+            });
+            if(!conversation) {
                 log.warn(LogCategory.GENERAL, tr("Received chat close for client, but we haven't a chat open."));
                 return;
             }
-            chat.flag_offline = true;
-            chat.appendMessage(
-                "{0}", true,
-                $.spawn("div")
-                    .addClass("event-message event-partner-closed")
-                    .text(tr("Your chat partner has close the conversation"))
-            );
+            conversation.set_state(chat.PrivateConversationState.CLOSED);
         }
 
         handleNotifyClientUpdated(json) {
@@ -809,6 +927,39 @@ namespace connection {
                 channel.flag_subscribed = false;
                 for(const client of channel.clients(false))
                     this.connection.client.channelTree.deleteClient(client);
+            }
+        }
+
+        handleNotifyConversationHistory(json: any[]) {
+            const conversations = this.connection.client.side_bar.channel_conversations();
+            const conversation = conversations.conversation(parseInt(json[0]["cid"]));
+            if(!conversation) {
+                log.warn(LogCategory.NETWORKING, tr("Received conversation history for invalid or unknown conversation (%o)"), json[0]["cid"]);
+                return;
+            }
+
+            for(const entry of json) {
+                conversation.register_new_message({
+                    message: entry["msg"],
+                    sender_unique_id: entry["sender_unique_id"],
+                    sender_name: entry["sender_name"],
+                    timestamp: parseInt(entry["timestamp"]),
+                    sender_database_id: parseInt(entry["sender_database_id"])
+                }, false);
+            }
+            conversation.fix_scroll(true);
+        }
+
+        handleNotifyConversationMessageDelete(json: any[]) {
+            let conversation: Conversation;
+            const conversations = this.connection.client.side_bar.channel_conversations();
+            for(const entry of json) {
+                if(typeof(entry["cid"]) !== "undefined")
+                    conversation = conversations.conversation(parseInt(entry["cid"]), false);
+                if(!conversation)
+                    continue;
+
+                conversation.delete_messages(parseInt(entry["timestamp_begin"]), parseInt(entry["timestamp_end"]), parseInt(entry["cldbid"]), parseInt(entry["limit"]));
             }
         }
     }

@@ -166,7 +166,11 @@ namespace ppt {
         if(key.key_windows)
             result += " + " + tr("Win");
 
-        result += " + " + (key.key_code ? key.key_code : tr("unset"));
+        if(!result && !key.key_code)
+            return tr("unset");
+
+        if(key.key_code)
+            result += " + " + key.key_code;
         return result.substr(3);
     }
 }

@@ -88,8 +88,13 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
             return;
 
         menu.animate({opacity: 0}, 100, () => menu.css("display", "none"));
-        for(const callback of this._close_callbacks)
+        for(const callback of this._close_callbacks) {
+            if(typeof(callback) !== "function") {
+                console.error(tr("Given close callback is not a function!. Callback: %o"), callback);
+                continue;
+            }
             callback();
+        }
         this._close_callbacks = [];
     }
 
@@ -135,7 +140,7 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
             }
             return tag;
         } else if(entry.type == contextmenu.MenuEntryType.CHECKBOX) {
-             let checkbox = $.spawn("label").addClass("checkbox");
+             let checkbox = $.spawn("label").addClass("ccheckbox");
                 $.spawn("input").attr("type", "checkbox").prop("checked", !!entry.checkbox_checked).appendTo(checkbox);
                 $.spawn("span").addClass("checkmark").appendTo(checkbox);
 
@@ -191,7 +196,8 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
                 continue;
 
             if(entry.type == contextmenu.MenuEntryType.CLOSE) {
-                this._close_callbacks.push(entry.callback);
+                if(entry.callback)
+                    this._close_callbacks.push(entry.callback);
             } else
                 menu_container.append(this.generate_tag(entry));
         }

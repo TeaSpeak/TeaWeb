@@ -216,7 +216,7 @@ namespace Modals {
         };
         result.clear = () => {
             entries = [];
-            modal.htmlTag.find(".entry-container .entries").children().detach();
+            modal.htmlTag.find(".entry-container .entries").children().remove();
             update_function();
         };
         result.modal = modal;

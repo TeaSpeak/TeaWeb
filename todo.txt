@@ -1,0 +1,74 @@
+- Modals
+    - Settings (X)
+    - Banlist
+        - Add/Edit
+    - Query
+        - List
+        - Create
+    - Manage favorites
+        - Create favorite
+    - Entity info (Popup)
+        - Server
+        - Client
+        - Channel
+    - Icon Select
+        - Icon uploiad
+    - Avatar list
+    - Server group assignments checkbox
+    - Identity improve
+    - Identity import
+
+
+
+- Application Options
+    - Crash
+        - Focus crash window on crash
+        - Add a notification (Like the browser notifications)
+
+
+
+- Client info popup
+    - Basic Info
+        - Name/Unique ID (Database ID vil auch? Oder als hover irgendwo)
+        - TeaForo connected? Ist premium ja nein?
+        - Country
+        - Avatar
+        - IP (Wenn permission)
+        - Status
+            Away (+ Away message?)
+            Microphone disabled
+            Speakers/Headphones disabled
+            Speakers/Headphones Muted
+            Microphone Muted
+
+        - Description
+        - Server groups
+        - Channel group
+        - Connect count (Wie oft der client schon connectet ist)
+        - Online seit | Idle time
+        - Ping
+
+        Nur TeaClient; Nicht für WebClient clients
+        - Bandwidth
+        - Packets send/received | Packet Loss
+        - Up/Download Quota
+
+
+
+- Server "short" info?
+- Server info popup
+    - Name
+    - Version
+    - Clients (TS3 | TeaSpeak | Query | Web) /Max Client/Reserved
+    - Uptime
+    - License?
+    - Address
+    - Average ping + Packet loss
+    - Bandwidth last minutes (In & Out)
+    - Bandwidth last second (In & Out)
+    - Packets + Bytes transfered (In & Out)
+    - File Transfer Bandwidth (Up + Download)
+    - File Transfer bytes transferred, month & global (Up + Download)
+
+TODO:
+Fix these icons: https://img.did.science/Screenshot_20-11-06.png

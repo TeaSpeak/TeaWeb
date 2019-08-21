@@ -34,7 +34,7 @@
 
 			"path" => "js/",
 			"local-path" => "./shared/js/",
-			"req-parm" => ["-js-map"]
+			"req-parm" => ["--mappings"]
 		],
 		[ /* shared generated worker codec */
 			"type" => "js",
@@ -51,6 +51,15 @@
 
 			"path" => "css/",
 			"local-path" => "./shared/css/"
+		],
+		[ /* shared css mapping files (development mode only) */
+			"type" => "css",
+			"search-pattern" => "/.*\.(css.map|scss)$/",
+			"build-target" => "dev",
+
+			"path" => "css/",
+			"local-path" => "./shared/css/",
+			"req-parm" => ["--mappings"]
 		],
 		[ /* shared release css files */
 			"type" => "css",
@@ -137,7 +146,7 @@
 	$APP_FILE_LIST_SHARED_VENDORS = [
 		[
 			"type" => "js",
-			"search-pattern" => "/.*\.js$/",
+			"search-pattern" => "/.*(\.min)?\.js$/",
 			"build-target" => "dev|rel",
 
 			"path" => "vendor/",

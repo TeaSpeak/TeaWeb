@@ -86,65 +86,66 @@
 			position: absolute;
 			margin-left: 3px;
 		}
+	}
+}
 
-		.checkbox {
-			margin-top: 1px;
-			margin-left: 1px;
-			display: block;
-			position: relative;
-			padding-left: 14px;
-			margin-bottom: 12px;
-			cursor: pointer;
-			font-size: 22px;
-			-webkit-user-select: none;
-			-moz-user-select: none;
-			-ms-user-select: none;
-			user-select: none;
+/* we call it "ccheckbox" else it will be messed up the the global checkbox */
+.ccheckbox {
+	margin-top: 1px;
+	margin-left: 1px;
+	display: block;
+	position: relative;
+	padding-left: 14px;
+	margin-bottom: 12px;
+	cursor: pointer;
+	font-size: 22px;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 
-			/* Hide the browser's default checkbox */
-			input {
-				position: absolute;
-				opacity: 0;
-				cursor: pointer;
-				display: none;
-			}
+	/* Hide the browser's default checkbox */
+	input {
+		position: absolute;
+		opacity: 0;
+		cursor: pointer;
+		display: none;
+	}
 
-			.checkmark {
-				position: absolute;
-				top: 0;
-				left: 0;
-				height: 11px;
-				width: 11px;
-				background-color: #eee;
+	.checkmark {
+		position: absolute;
+		top: 0;
+		left: 0;
+		height: 11px;
+		width: 11px;
+		background-color: #eee;
 
-				&:after {
-					content: "";
-					position: absolute;
-					display: none;
+		&:after {
+			content: "";
+			position: absolute;
+			display: none;
 
-					left: 4px;
-					top: 1px;
-					width: 3px;
-					height: 7px;
-					border: solid white;
-					border-width: 0 2px 2px 0;
-					-webkit-transform: rotate(45deg);
-					-ms-transform: rotate(45deg);
-					transform: rotate(45deg);
-				}
-			}
-
-			&:hover input ~ .checkmark {
-				background-color: #ccc;
-			}
-
-			input:checked ~ .checkmark {
-				background-color: #2196F3;
-			}
-
-			input:checked ~ .checkmark:after {
-				display: block;
-			}
+			left: 4px;
+			top: 1px;
+			width: 3px;
+			height: 7px;
+			border: solid white;
+			border-width: 0 2px 2px 0;
+			-webkit-transform: rotate(45deg);
+			-ms-transform: rotate(45deg);
+			transform: rotate(45deg);
 		}
+	}
+
+	&:hover input ~ .checkmark {
+		background-color: #ccc;
+	}
+
+	input:checked ~ .checkmark {
+		background-color: #2196F3;
+	}
+
+	input:checked ~ .checkmark:after {
+		display: block;
 	}
 }

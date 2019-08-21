@@ -55,7 +55,11 @@ class Group {
             this.handle.handle.channelTree.clientsByGroup(this).forEach(client => {
                 client.updateGroupIcon(this);
             });
-        }
+        } else if(key == "sortid")
+            this.handle.handle.channelTree.clientsByGroup(this).forEach(client => {
+                client.update_group_icon_order();
+            });
+
     }
 }
 
@@ -71,6 +75,12 @@ class GroupManager extends connection.AbstractCommandHandler {
 
         client.serverConnection.command_handler_boss().register_handler(this);
         this.handle = client;
+    }
+
+    destroy() {
+        this.handle.serverConnection && this.handle.serverConnection.command_handler_boss().unregister_handler(this);
+        this.serverGroups = undefined;
+        this.channelGroups = undefined;
     }
 
     handle_command(command: connection.ServerCommand): boolean {
@@ -94,6 +104,11 @@ class GroupManager extends connection.AbstractCommandHandler {
 
     static sorter() : (a: Group, b: Group) => number {
         return (a, b) => {
+            if(!a)
+                return b ? 1 : 0;
+            if(!b)
+                return a ? -1 : 0;
+
             if(a.properties.sortid > b.properties.sortid)
                 return 1;
             if(a.properties.sortid < b.properties.sortid)

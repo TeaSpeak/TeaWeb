@@ -24,6 +24,7 @@ enum DisconnectReason {
     HANDSHAKE_BANNED,
     SERVER_CLOSED,
     SERVER_REQUIRES_PASSWORD,
+    SERVER_HOSTMESSAGE,
     IDENTITY_TOO_LOW,
     UNKNOWN
 }
@@ -88,14 +89,15 @@ class ConnectionHandler {
     permissions: PermissionManager;
     groups: GroupManager;
 
-    chat_frame: chat.Frame;
+    side_bar: chat.Frame;
     select_info: InfoBar;
-    chat: ChatBox;
 
     settings: ServerSettings;
     sound: sound.SoundManager;
 
-    readonly tag_connection_handler: JQuery;
+    hostbanner: Hostbanner;
+
+    tag_connection_handler: JQuery;
 
     private _clientId: number = 0;
     private _local_client: LocalClientEntry;
@@ -126,42 +128,50 @@ class ConnectionHandler {
         this.log = new log.ServerLog(this);
         this.select_info = new InfoBar(this);
         this.channelTree = new ChannelTree(this);
-        this.chat = new ChatBox(this);
-        this.chat_frame = new chat.Frame(this);
+        this.side_bar = new chat.Frame(this);
         this.sound = new sound.SoundManager(this);
+        this.hostbanner = new Hostbanner(this);
 
         this.serverConnection = connection.spawn_server_connection(this);
         this.serverConnection.onconnectionstatechanged = this.on_connection_state_changed.bind(this);
 
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
+        this.side_bar.channel_conversations().initialize_needed_listener();
+
         this.groups = new GroupManager(this);
         this._local_client = new LocalClientEntry(this);
-        this.channelTree.registerClient(this._local_client);
 
-        //settings.static_global(Settings.KEY_DISABLE_VOICE, false)
-        this.chat.initialize();
-        this.tag_connection_handler = $.spawn("div").addClass("connection-container");
-        $.spawn("div").addClass("server-icon icon client-server_green").appendTo(this.tag_connection_handler);
-        $.spawn("div").addClass("server-name").text(tr("Not connected")).appendTo(this.tag_connection_handler);
-        $.spawn("div").addClass("button-close icon client-tab_close_button").appendTo(this.tag_connection_handler);
-        this.tag_connection_handler.on('click', event => {
-            if(event.isDefaultPrevented())
-                return;
+        /* initialize connection handler tab entry */
+        {
+            this.tag_connection_handler = $.spawn("div").addClass("connection-container");
+            $.spawn("div").addClass("server-icon icon client-server_green").appendTo(this.tag_connection_handler);
+            $.spawn("div").addClass("server-name").appendTo(this.tag_connection_handler);
+            $.spawn("div").addClass("button-close icon client-tab_close_button").appendTo(this.tag_connection_handler);
+            this.tag_connection_handler.on('click', event => {
+                if(event.isDefaultPrevented())
+                    return;
 
-            server_connections.set_active_connection_handler(this);
-        });
-        this.tag_connection_handler.find(".button-close").on('click', event => {
-            server_connections.destroy_server_connection_handler(this);
-            event.preventDefault();
-        });
+                server_connections.set_active_connection_handler(this);
+            });
+            this.tag_connection_handler.find(".button-close").on('click', event => {
+                server_connections.destroy_server_connection_handler(this);
+                event.preventDefault();
+            });
+            this.tab_set_name(tr("Not connected"));
+        }
+    }
+
+    tab_set_name(name: string) {
+        this.tag_connection_handler.toggleClass('cutoff-name', name.length > 30);
+        this.tag_connection_handler.find(".server-name").text(name);
     }
 
     setup() { }
 
-    async startConnection(addr: string, profile: profiles.ConnectionProfile, parameters: ConnectParameters) {
-        this.tag_connection_handler.find(".server-name").text(tr("Connecting"));
-        this.cancel_reconnect();
+    async startConnection(addr: string, profile: profiles.ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
+        this.tab_set_name(tr("Connecting"));
+        this.cancel_reconnect(false);
         this._reconnect_attempt = false;
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
@@ -172,8 +182,9 @@ class ConnectionHandler {
             port: -1
         };
         {
+            let _v6_end = addr.indexOf(']');
             let idx = addr.lastIndexOf(':');
-            if(idx != -1) {
+            if(idx != -1 && idx > _v6_end) {
                 server_address.port = parseInt(addr.substr(idx + 1));
                 server_address.host = addr.substr(0, idx);
             } else {
@@ -203,7 +214,14 @@ class ConnectionHandler {
                 createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
             }
         }
+        if(parameters.password) {
+            connection_log.update_address_password({
+                hostname: server_address.host,
+                port: server_address.port
+            }, parameters.password.password);
+        }
 
+        const original_address = {host: server_address.host, port: server_address.port};
         if(dns.supported() && !server_address.host.match(Modals.Regex.IP_V4) && !server_address.host.match(Modals.Regex.IP_V6)) {
             const id = ++this._connect_initialize_id;
             this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVE, {});
@@ -229,6 +247,15 @@ class ConnectionHandler {
         }
 
         await this.serverConnection.connect(server_address, new connection.HandshakeHandler(profile, parameters));
+        setTimeout(() => {
+            const connected = this.serverConnection.connected();
+            if(user_action && connected) {
+                connection_log.log_connect({
+                    hostname: original_address.host,
+                    port: original_address.port
+                });
+            }
+        }, 50);
     }
 
 
@@ -252,7 +279,6 @@ class ConnectionHandler {
      */
     onConnected() {
         console.log("Client connected!");
-        this.channelTree.registerClient(this._local_client);
         this.permissions.requestPermissionList();
         if(this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
@@ -352,7 +378,7 @@ class ConnectionHandler {
 
                     const profile = profiles.find_profile(properties.connect_profile) || profiles.default_profile();
                     const cprops = this.reconnect_properties(profile);
-                    this.startConnection(properties.connect_address, profile, cprops);
+                    this.startConnection(properties.connect_address, profile, true, cprops);
                 });
 
                 const url = build_url(properties);
@@ -379,10 +405,11 @@ class ConnectionHandler {
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         this._connect_initialize_id++;
 
-        this.tag_connection_handler.find(".server-name").text(tr("Not connected"));
+        this.tab_set_name(tr("Not connected"));
         let auto_reconnect = false;
         switch (type) {
             case DisconnectReason.REQUESTED:
+            case DisconnectReason.SERVER_HOSTMESSAGE: /* already handled */
                 break;
             case DisconnectReason.HANDLER_DESTROYED:
                 if(data)
@@ -468,7 +495,8 @@ class ConnectionHandler {
 
                 break;
             case DisconnectReason.SERVER_CLOSED:
-                this.chat.serverChat().appendError(tr("Server closed ({0})"), data.reasonmsg);
+                this.log.log(log.server.Type.SERVER_CLOSED, {message: data.reasonmsg});
+                //this.chat.serverChat().appendError(tr("Server closed ({0})"), data.reasonmsg);
                 createErrorModal(
                     tr("Server closed"),
                     "The server is closed.<br>" + //TODO tr
@@ -479,15 +507,23 @@ class ConnectionHandler {
                 auto_reconnect = true;
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
-                this.chat.serverChat().appendError(tr("Server requires password"));
+                this.log.log(log.server.Type.SERVER_REQUIRES_PASSWORD, {});
+                //this.chat.serverChat().appendError(tr("Server requires password"));
+
                 createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
 
-                    const cprops = this.reconnect_properties(this.serverConnection.handshake_handler().profile);
+                    const profile = this.serverConnection.handshake_handler().profile;
+                    const cprops = this.reconnect_properties(profile);
                     cprops.password = {password: password as string, hashed: false};
-                    this.startConnection(this.serverConnection.remote_address().host + ":" + this.serverConnection.remote_address().port,
-                        this.serverConnection.handshake_handler().profile,
-                        cprops);
+
+                    connection_log.update_address_info({
+                        port: this.channelTree.server.remote_address.port,
+                        hostname: this.channelTree.server.remote_address.host
+                    }, {
+                        flag_password: true
+                    } as any);
+                    this.startConnection(this.channelTree.server.remote_address.host + ":" + this.channelTree.server.remote_address.port, profile, false, cprops);
                 }).open();
                 break;
             case DisconnectReason.CLIENT_KICKED:
@@ -499,15 +535,29 @@ class ConnectionHandler {
                 auto_reconnect = false;
                 break;
             case DisconnectReason.HANDSHAKE_BANNED:
-                this.chat.serverChat().appendError(tr("You got banned from the server by {0}{1}"),
-                    ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
-                    data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
+                this.log.log(log.server.Type.SERVER_BANNED, {
+                    invoker: {
+                        client_name: data["invokername"],
+                        client_id: parseInt(data["invokerid"]),
+                        client_unique_id: data["invokeruid"]
+                    },
+
+                    message: data["reasonmsg"],
+                    time: parseInt(data["time"])
+                });
                 this.sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
                 break;
             case DisconnectReason.CLIENT_BANNED:
-                this.chat.serverChat().appendError(tr("You got banned from the server by {0}{1}"),
-                    ClientEntry.chatTag(data["invokerid"], data["invokername"], data["invokeruid"]),
-                    data["reasonmsg"] ? " (" + data["reasonmsg"] + ")" : "");
+                this.log.log(log.server.Type.SERVER_BANNED, {
+                    invoker: {
+                        client_name: data["invokername"],
+                        client_id: parseInt(data["invokerid"]),
+                        client_unique_id: data["invokeruid"]
+                    },
+
+                    message: data["reasonmsg"],
+                    time: parseInt(data["time"])
+                });
                 this.sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
                 break;
             default:
@@ -517,6 +567,7 @@ class ConnectionHandler {
                 break;
         }
 
+        this.channelTree.unregisterClient(this._local_client); /* if we dont unregister our client here the client will be destroyed */
         this.channelTree.reset();
         if(this.serverConnection)
             this.serverConnection.disconnect();
@@ -524,7 +575,8 @@ class ConnectionHandler {
         if(control_bar.current_connection_handler() == this)
             control_bar.update_connection_state();
         this.select_info.setCurrentSelected(null);
-        this.select_info.update_banner();
+        this.side_bar.private_conversations().clear_client_ids();
+        this.hostbanner.update();
 
         if(auto_reconnect) {
             if(!this.serverConnection) {
@@ -542,15 +594,15 @@ class ConnectionHandler {
                 this.log.log(log.server.Type.RECONNECT_CANCELED, {});
                 log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
 
-                this.startConnection(server_address.host + ":" + server_address.port, profile, this.reconnect_properties(profile));
+                this.startConnection(server_address.host + ":" + server_address.port, profile, false, this.reconnect_properties(profile));
                 this._reconnect_attempt = true;
             }, 5000);
         }
     }
 
-    cancel_reconnect() {
+    cancel_reconnect(log_event: boolean) {
         if(this._reconnect_timer) {
-            this.log.log(log.server.Type.RECONNECT_CANCELED, {});
+            if(log_event) this.log.log(log.server.Type.RECONNECT_CANCELED, {});
             clearTimeout(this._reconnect_timer);
             this._reconnect_timer = undefined;
         }
@@ -562,6 +614,8 @@ class ConnectionHandler {
     }
 
     update_voice_status(targetChannel?: ChannelEntry) {
+        if(!this._local_client) return; /* we've been destroyed */
+
         targetChannel = targetChannel || this.getClient().currentChannel();
 
         const vconnection = this.serverConnection.voice_connection();
@@ -636,10 +690,21 @@ class ConnectionHandler {
 
         if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().record_supported) {
             const active = !this.client_status.input_muted && !this.client_status.output_muted;
-            if(active)
-                vconnection.voice_recorder().input.start();
-            else
+            if(active) {
+                if(vconnection.voice_recorder().input.current_state() === audio.recorder.InputState.PAUSED) {
+                    vconnection.voice_recorder().input.start().then(result => {
+                        if(result != audio.recorder.InputStartResult.EOK) {
+                            console.warn(tr("Failed to start microphone input (%s)."), result);
+                            createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), result)).open();
+                        }
+                    }).catch(error => {
+                        console.warn(tr("Failed to start microphone input (%s)."), error);
+                        createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
+                    });
+                }
+            } else {
                 vconnection.voice_recorder().input.stop();
+            }
         }
 
         if(control_bar.current_connection_handler() === this)
@@ -664,6 +729,12 @@ class ConnectionHandler {
     set_away_status(state: boolean | string) {
         if(this.client_status.away === state)
             return;
+
+        if(state) {
+            this.sound.play(Sound.AWAY_ACTIVATED);
+        } else {
+            this.sound.play(Sound.AWAY_DEACTIVATED);
+        }
 
         this.client_status.away = state;
         this.serverConnection.send_command("clientupdate", {
@@ -706,5 +777,142 @@ class ConnectionHandler {
             nickname: name,
             password: this.serverConnection && this.serverConnection.handshake_handler() ? this.serverConnection.handshake_handler().parameters.password : undefined
         }
+    }
+
+    update_avatar() {
+        Modals.spawnAvatarUpload(data => {
+            if(typeof(data) === "undefined")
+                return;
+            if(data === null) {
+                console.log(tr("Deleting existing avatar"));
+                this.serverConnection.send_command('ftdeletefile', {
+                    name: "/avatar_", /* delete own avatar */
+                    path: "",
+                    cid: 0
+                }).then(() => {
+                    createInfoModal(tr("Avatar deleted"), tr("Avatar successfully deleted")).open();
+                }).catch(error => {
+                    console.error(tr("Failed to reset avatar flag: %o"), error);
+
+                    let message;
+                    if(error instanceof CommandResult)
+                        message = MessageHelper.formatMessage(tr("Failed to delete avatar.{:br:}Error: {0}"), error.extra_message || error.message);
+                    if(!message)
+                        message = MessageHelper.formatMessage(tr("Failed to delete avatar.{:br:}Lookup the console for more details"));
+                    createErrorModal(tr("Failed to delete avatar"), message).open();
+                    return;
+                });
+            } else {
+                console.log(tr("Uploading new avatar"));
+                (async () => {
+                    let key: transfer.UploadKey;
+                    try {
+                        key = await this.fileManager.upload_file({
+                            size: data.byteLength,
+                            path: '',
+                            name: '/avatar',
+                            overwrite: true,
+                            channel: undefined,
+                            channel_password: undefined
+                        });
+                    } catch(error) {
+                        console.error(tr("Failed to initialize avatar upload: %o"), error);
+                        let message;
+                        if(error instanceof CommandResult) {
+                            //TODO: Resolve permission name
+                            //i_client_max_avatar_filesize
+                            if(error.id == ErrorID.PERMISSION_ERROR) {
+                                message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Missing permission {0}"), error["failed_permid"]);
+                            } else {
+                                message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Error: {0}"), error.extra_message || error.message);
+                            }
+                        }
+                        if(!message)
+                            message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
+                        createErrorModal(tr("Failed to upload avatar"), message).open();
+                        return;
+                    }
+
+                    try {
+                        await transfer.spawn_upload_transfer(key).put_data(data);
+                    } catch(error) {
+                        console.error(tr("Failed to upload avatar: %o"), error);
+
+                        let message;
+                        if(typeof(error) === "string")
+                            message = MessageHelper.formatMessage(tr("Failed to upload avatar.{:br:}Error: {0}"), error);
+
+                        if(!message)
+                            message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
+                        createErrorModal(tr("Failed to upload avatar"), message).open();
+                        return;
+                    }
+                    try {
+                        await this.serverConnection.send_command('clientupdate', {
+                            client_flag_avatar: guid()
+                        });
+                    } catch(error) {
+                        console.error(tr("Failed to update avatar flag: %o"), error);
+
+                        let message;
+                        if(error instanceof CommandResult)
+                            message = MessageHelper.formatMessage(tr("Failed to update avatar flag.{:br:}Error: {0}"), error.extra_message || error.message);
+                        if(!message)
+                            message = MessageHelper.formatMessage(tr("Failed to update avatar flag.{:br:}Lookup the console for more details"));
+                        createErrorModal(tr("Failed to set avatar"), message).open();
+                        return;
+                    }
+
+                    createInfoModal(tr("Avatar successfully uploaded"), tr("Your avatar has been uploaded successfully!")).open();
+                })();
+
+            }
+        });
+    }
+
+    destroy() {
+        this.cancel_reconnect(true);
+
+        this.tag_connection_handler && this.tag_connection_handler.remove();
+        this.tag_connection_handler = undefined;
+
+        this.hostbanner && this.hostbanner.destroy();
+        this.hostbanner = undefined;
+
+        this._local_client && this._local_client.destroy();
+        this._local_client = undefined;
+
+        this.channelTree && this.channelTree.destroy();
+        this.channelTree = undefined;
+
+        this.side_bar && this.side_bar.destroy();
+        this.side_bar = undefined;
+
+        this.select_info && this.select_info.destroy();
+        this.select_info = undefined;
+
+        this.log && this.log.destroy();
+        this.log = undefined;
+
+        this.permissions && this.permissions.destroy();
+        this.permissions = undefined;
+
+        this.groups && this.groups.destroy();
+        this.groups = undefined;
+
+        this.fileManager && this.fileManager.destroy();
+        this.fileManager = undefined;
+
+        this.settings && this.settings.destroy();
+        this.settings = undefined;
+
+        if(this.serverConnection) {
+            this.serverConnection.onconnectionstatechanged = undefined;
+            connection.destroy_server_connection(this.serverConnection);
+        }
+        this.serverConnection = undefined;
+
+        this.sound = undefined;
+        this._local_client = undefined;
     }
 }

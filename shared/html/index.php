@@ -1,46 +1,17 @@
 <?php
-	$testXF = false;
-	$localhost = false;
-	$_INCLIDE_ONLY = true;
-
-	if (file_exists('auth.php'))
-		include_once('auth.php');
-	else if (file_exists('auth/auth.php'))
-		include_once('auth/auth.php');
-	else {
-		function authPath() {
-			return "";
-		}
-
-		function redirectOnInvalidSession()
-		{
-		}
-
-		function logged_in() {
-		    return false;
-        }
-	}
-
-	if(function_exists("setup_forum_auth"))
-		setup_forum_auth();
-
-	$localhost |= gethostname() == "WolverinDEV";
-	if(!$localhost || $testXF) {
-		//redirectOnInvalidSession();
-	}
+	ini_set('display_errors', 1);
+	ini_set('display_startup_errors', 1);
+	error_reporting(E_ALL);
 
 	$WEB_CLIENT = http_response_code() !== false;
 ?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <link rel="icon" href="./img/favicon.ico" type="image/x-icon">
-
         <meta charset="UTF-8">
         <!-- App min width: 450px -->
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">
         <meta name="description" content="TeaSpeak Web Client, connect to any TeaSpeak server without installing anything." />
-        <link rel="icon" href="img/favicon/teacup.png">
         <meta name="keywords" content="TeaSpeak, TeaWeb, TeaSpeak-Web,Web client TeaSpeak, веб клієнт TeaSpeak, TSDNS, багатомовність, мультимовність, теми, функціонал"/>
         <!-- TODO Needs some fix -->
         <link rel="manifest" href="manifest.json">
@@ -50,6 +21,7 @@
                 echo "<title>TeaClient</title>";
             } else {
 				echo "<title>TeaSpeak-Web</title>";
+				echo '<link rel="icon" href="img/favicon/teacup.png" type="image/x-icon">';
             }
         ?>
 
@@ -64,13 +36,6 @@
 
 				spawn_property('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
 				spawn_property('localhost_debug', $localhost ? "true" : "false");
-				if(isset($_COOKIE)) {
-				    if(array_key_exists("COOKIE_NAME_USER_DATA", $GLOBALS) && array_key_exists($GLOBALS["COOKIE_NAME_USER_DATA"], $_COOKIE))
-						spawn_property('forum_user_data', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_DATA"]]);
-					if(array_key_exists("COOKIE_NAME_USER_SIGN", $GLOBALS) && array_key_exists($GLOBALS["COOKIE_NAME_USER_SIGN"], $_COOKIE))
-					    spawn_property('forum_user_sign', $_COOKIE[$GLOBALS["COOKIE_NAME_USER_SIGN"]]);
-				}
-				spawn_property('forum_path', authPath());
 
 				$version = file_get_contents("./version");
 				if ($version === false)
@@ -171,8 +136,23 @@
         </div>
 
         <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
+            <!-- <img src="https://www.chromatic-solutions.de/teaspeak/window/connect_opened.png"> -->
+            <!-- <img src="http://puu.sh/DZDgO/9149c0a1aa.png"> -->
+            <!-- <img src="http://puu.sh/E0QUb/ce5e3f93ae.png"> -->
             <!-- <img src="img/style/default.png"> -->
-            <img src="img/style/user-selected.png">
+            <!-- <img src="img/style/user-selected.png"> -->
+            <!-- <img src="img/style/privat_chat.png"> -->
+            <!-- <img src="http://puu.sh/E1aBL/3c40ae3c2c.png"> -->
+            <!-- <img src="http://puu.sh/E2qb2/b27bb2fde5.png"> -->
+            <!-- <img src="http://puu.sh/E2UQR/1e0d7e03a3.png"> -->
+            <!-- <img src="http://puu.sh/E38yX/452e27864c.png"> -->
+            <!-- <img src="http://puu.sh/E3fjq/e2b4447bcd.png"> -->
+            <!-- <img src="http://puu.sh/E3WlW/f791a9e7b1.png"> -->
+            <!-- <img src="http://puu.sh/E4lHJ/1a4afcdf0b.png"> -->
+            <!-- <img src="http://puu.sh/E4HKK/5ee74d4cc7.png"> -->
+            <!-- <img src="http://puu.sh/E6LN1/8518c10898.png"> -->
+
+            <img src="http://puu.sh/E6NXv/eb2f19c7c3.png">
         </div>
         <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; bottom: 2px;">toggle style</button>
         <script>
@@ -181,7 +161,7 @@
                 $(".toggle-spoiler-style").on('click', () => {
                     $("#spoiler-style").toggle();
                 });
-            }, 1000);
+            }, 2500);
         </script>
 
         <div id="music-test"></div>
@@ -191,28 +171,10 @@
             <div class="container">
             </div>
         </div>
+        <div id="global-tooltip">
+            <a></a>
+        </div>
     </body>
 
-    <?php
-        $footer_style = "display: none;";
-        $footer_forum = '';
-
-		if($WEB_CLIENT) {
-			$footer_style = "display: block;";
-
-			if (logged_in()) {
-				$footer_forum = "<a href=\"" . authPath() . "auth.php?type=logout\">logout</a>";
-			} else {
-				$footer_forum = "<a href=\"" . authPath() . "login.php\">Login</a> via the TeaSpeak forum.";
-			}
-		}
-    ?>
-
-    <footer style="<?php echo $footer_style; ?>">
-        <div class="container" style="display: flex; flex-direction: row; align-content: space-between;">
-            <div class="hide-small" style="align-self: center; position: fixed; left: 5px;">Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web" style="display: inline-block; position: relative">github.com</a></div>
-            <div style="align-self: center;">TeaSpeak Web (<?php echo $version; ?>) by WolverinDEV</div>
-            <div class="hide-small" style="align-self: center; position: fixed; right: 5px;"><?php echo $footer_forum; ?></div>
-        </div>
-    </footer>
+    <div id="top-menu-bar"></div>
 </html>

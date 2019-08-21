@@ -1,0 +1,29 @@
+{
+  "name": "lsx-emojipicker",
+  "version": "1.1.2",
+  "description": "A simple emoji picker plugin for jQuery",
+  "repository": "https://github.com/LascauxSRL/lsx-emojipicker.git",
+  "author": "Lascaux S.r.l.",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn build:dev",
+    "build:dev": "webpack --config webpack.config.js --progress",
+    "start": "webpack --config webpack.config.js --progress --watch",
+    "build:prod": "webpack --config webpack.config.js --env=production",
+    "version": "yarn install && yarn build:prod && git add -A",
+    "postversion": "git push"
+  },
+  "devDependencies": {
+    "css-loader": "^0.28.2",
+    "style-loader": "^0.18.0",
+    "uglifyjs-webpack-plugin": "1.1.2",
+    "webpack": "3.10.0"
+  },
+  "contributors": [
+    {
+      "name": "Lorenzo Cioni",
+      "email": "lorenzo.cioni@lascaux.it",
+      "url": "https://github.com/lorecioni"
+    }
+  ]
+}

@@ -16,7 +16,6 @@ namespace connection {
 
         private _command_boss: ServerConnectionCommandBoss;
         private _command_handler_default: ConnectionCommandHandler;
-        private _command_handler_handshake: AbstractCommandHandler; //The new handshake handler :)
 
         private _connect_timeout_timer: NodeJS.Timer = undefined;
         private _connected: boolean = false;
@@ -25,6 +24,20 @@ namespace connection {
 
         private _connection_state_listener: connection.ConnectionStateListener;
         private _voice_connection: audio.js.VoiceConnection;
+
+        private _ping = {
+            thread_id: 0,
+
+            last_request: 0,
+            last_response: 0,
+
+            request_id: 0,
+            interval: 5000,
+            timeout: 7500,
+
+            value: 0,
+            value_native: 0 /* ping value for native (WS)  */
+        };
 
         constructor(client : ConnectionHandler) {
             super(client);
@@ -43,6 +56,35 @@ namespace connection {
                 this._voice_connection = new audio.js.VoiceConnection(this);
         }
 
+        destroy() {
+            this.disconnect("handle destroyed").catch(error => {
+                console.warn(tr("Failed to disconnect on server connection destroy: %o"), error);
+            }).then(() => {
+                clearInterval(this._ping.thread_id);
+                clearTimeout(this._connect_timeout_timer);
+
+                for(const listener of this._retListener) {
+                    try {
+                        listener.reject("handler destroyed");
+                    } catch(error) {
+                        console.warn(tr("Failed to reject command promise: %o"), error);
+                    }
+                }
+                this._retListener = undefined;
+
+                this.command_helper.destroy();
+
+                this._command_handler_default && this._command_boss.unregister_handler(this._command_handler_default);
+                this._command_handler_default = undefined;
+
+                this._voice_connection && this._voice_connection.destroy();
+                this._voice_connection = undefined;
+
+                this._command_boss && this._command_boss.destroy();
+                this._command_boss = undefined;
+            });
+        }
+
         on_connect: () => void = () => {
             console.log(tr("Socket connected"));
             this.client.log.log(log.server.Type.CONNECTION_LOGIN, {});
@@ -55,7 +97,7 @@ namespace connection {
         }
 
         async connect(address : ServerAddress, handshake: HandshakeHandler, timeout?: number) : Promise<void> {
-            timeout = typeof(timeout) === "number" ? timeout : 0;
+            timeout = typeof(timeout) === "number" ? timeout : 5000;
 
             if(this._connect_timeout_timer) {
                 clearTimeout(this._connect_timeout_timer);
@@ -79,7 +121,7 @@ namespace connection {
             try {
 
                 local_timeout_timer = setTimeout(async () => {
-                    console.log(tr("Connect timeout triggered!"));
+                    log.error(LogCategory.NETWORKING, tr("Connect timeout triggered!"));
                     try {
                         await this.disconnect();
                     } catch(error) {
@@ -90,17 +132,37 @@ namespace connection {
                 this._connect_timeout_timer = local_timeout_timer;
 
                 this._socket = (local_socket = new WebSocket('wss://' + address.host + ":" + address.port)); /* this may hangs */
+
+                if(this._socket != local_socket)
+                    return; /* something had changed and we dont use this connection anymore! */
+
+                try {
+                    await new Promise((resolve, reject) => {
+                        local_socket.onopen = resolve;
+                        local_socket.onerror = event => reject(event);
+                        local_socket.onclose = event => reject(event);
+                        if(local_socket.readyState == WebSocket.OPEN)
+                            resolve();
+                    });
+                } catch(error) {
+                    log.error(LogCategory.NETWORKING, tr("Failed to wait for connected (%o)"), error);
+                    try {
+                        await this.disconnect();
+                    } catch(error) {
+                        log.warn(LogCategory.NETWORKING, tr("Failed to close connection after timeout had been triggered! (%o)"), error);
+                    }
+                    this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
+                    return;
+                }
                 clearTimeout(local_timeout_timer);
                 if(this._connect_timeout_timer == local_timeout_timer)
                     this._connect_timeout_timer = undefined;
 
-                if(this._socket != local_socket) return; /* something had changed and we dont use this connection anymore! */
-                local_socket.onopen = () => {
-                    if(this._socket != local_socket) return; /* this socket isn't from interest anymore */
+                if(this._socket != local_socket)
+                    return; /* this socket isn't from interest anymore */
 
-                    this._connected = true;
-                    this.on_connect();
-                };
+                this._connected = true;
+                this.on_connect();
 
                 local_socket.onclose = event => {
                     if(this._socket != local_socket) return; /* this socket isn't from interest anymore */
@@ -123,6 +185,7 @@ namespace connection {
 
                     self.handle_socket_message(msg.data);
                 };
+
                 this.updateConnectionState(ConnectionState.INITIALISING);
             } catch (e) {
                 clearTimeout(local_timeout_timer);
@@ -143,9 +206,16 @@ namespace connection {
         }
 
         async disconnect(reason?: string) : Promise<void> {
+            clearTimeout(this._connect_timeout_timer);
+            this._connect_timeout_timer = undefined;
+
+            clearTimeout(this._ping.thread_id);
+            this._ping.thread_id = undefined;
+
             if(typeof(reason) === "string") {
                 //TODO send disconnect reason
             }
+
 
             if(this._connectionState == ConnectionState.UNCONNECTED)
                 return;
@@ -189,16 +259,35 @@ namespace connection {
                         arguments: json["data"]
                     });
 
-                    if(json["command"] === "initserver" && this._voice_connection)
-                        this._voice_connection.createSession(); /* FIXME: Move it to a handler boss and not here! */
+                    if(json["command"] === "initserver") {
+                        this._ping.thread_id = setInterval(() => this.do_ping(), this._ping.interval);
+                        this.do_ping();
+                        this.updateConnectionState(ConnectionState.CONNECTED);
+                        if(this._voice_connection)
+                            this._voice_connection.createSession(); /* FIXME: Move it to a handler boss and not here! */
+                    }
                     group.end();
                 } else if(json["type"] === "WebRTC") {
                     if(this._voice_connection)
                         this._voice_connection.handleControlPacket(json);
                     else
                         console.log(tr("Dropping WebRTC command packet, because we haven't a bridge."))
-                }
-                else {
+                } else if(json["type"] === "ping") {
+                  this.sendData(JSON.stringify({
+                      type: 'pong',
+                      payload: json["payload"]
+                  }));
+                } else if(json["type"] === "pong") {
+                    const id = parseInt(json["payload"]);
+                    if(id != this._ping.request_id) {
+                        log.warn(LogCategory.NETWORKING, tr("Received pong which is older than the last request. Delay may over %oms? (Index: %o, Current index: %o)"), this._ping.timeout, id, this._ping.request_id);
+                    } else {
+                        this._ping.last_response = 'now' in performance ? performance.now() : Date.now();
+                        this._ping.value = this._ping.last_response - this._ping.last_request;
+                        this._ping.value_native = parseInt(json["ping_native"]) / 1000; /* we're getting it in microseconds and not milliseconds */
+                        log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
+                    }
+                } else {
                     console.log(tr("Unknown command type %o"), json["type"]);
                 }
             } else {
@@ -223,6 +312,7 @@ namespace connection {
                         return value;
                 }
             });
+
         }
 
         send_command(command: string, data?: any | any[], _options?: CommandOptions) : Promise<CommandResult> {
@@ -267,7 +357,7 @@ namespace connection {
         }
 
         connected() : boolean {
-            return this._socket && this._socket.readyState == WebSocket.OPEN;
+            return !!this._socket && this._socket.readyState == WebSocket.OPEN;
         }
 
         support_voice(): boolean {
@@ -297,9 +387,36 @@ namespace connection {
         remote_address(): ServerAddress {
             return this._remote_address;
         }
+
+        private do_ping() {
+            if(this._ping.last_request + this._ping.timeout < Date.now()) {
+                this._ping.value = this._ping.timeout;
+                this._ping.last_response = this._ping.last_request + 1;
+            }
+            if(this._ping.last_response > this._ping.last_request) {
+                this._ping.last_request = 'now' in performance ? performance.now() : Date.now();
+                this.sendData(JSON.stringify({
+                    type: 'ping',
+                    payload: (++this._ping.request_id).toString()
+                }));
+            }
+        }
+
+        ping(): { native: number; javascript?: number } {
+            return {
+                javascript: this._ping.value,
+                native: this._ping.value_native
+            };
+        }
     }
 
     export function spawn_server_connection(handle: ConnectionHandler) : AbstractServerConnection {
         return new ServerConnection(handle); /* will be overridden by the client */
+    }
+
+    export function destroy_server_connection(handle: AbstractServerConnection) {
+        if(!(handle instanceof ServerConnection))
+            throw "invalid handle";
+        handle.destroy();
     }
 }

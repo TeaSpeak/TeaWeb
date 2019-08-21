@@ -14,10 +14,8 @@ html, body {
 	justify-content: stretch;
 	position: absolute;
 
-    right: 10px;
-    left: 10px;
-    bottom: 40px;
-    top: 10px;
+	top: 1.5em!important;
+    bottom: 0;
 
     transition: all .5s linear;
     
@@ -37,6 +35,6 @@ $small_device: 650px;
 	}
 
 	.app-container {
-		bottom: 25px;
+		bottom: 0;
 	}
 }

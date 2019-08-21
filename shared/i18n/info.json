@@ -74,7 +74,7 @@
       ]
     }, {
       "key": "ru_gt",
-      "country_code": "gt",
+      "country_code": "ru",
       "path": "ru_google_translate.translation",
 
       "name": "Auto translated messages for language ru",

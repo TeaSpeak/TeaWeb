@@ -11,6 +11,20 @@ namespace app {
     export function is_web() {
         return type == Type.WEB_RELEASE || type == Type.WEB_DEBUG;
     }
+
+    let _ui_version;
+    export function ui_version() {
+        if(typeof(_ui_version) !== "string") {
+            const version_node = document.getElementById("app_version");
+            if(!version_node) return undefined;
+
+            const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
+            if(!version) return undefined;
+
+            return (_ui_version = version);
+        }
+        return _ui_version;
+    }
 }
 
 namespace loader {
@@ -150,19 +164,31 @@ namespace loader {
                     console.groupCollapsed("Executing loading stage %s", Stage[current_stage]);
             }
         }
+
+        /* cleanup */
+        {
+            _script_promises = {};
+        }
         console.debug("[loader] finished loader. (Total time: %dms)", Date.now() - load_begin);
     }
 
-    type SourcePath = string | string[];
+    type DependSource = {
+        url: string;
+        depends: string[];
+    }
+    type SourcePath = string | DependSource | string[];
 
-    function script_name(path: string | string[]) {
+    function script_name(path: SourcePath) {
         if(Array.isArray(path)) {
             let buffer = "";
             let _or = " or ";
             for(let entry of path)
                 buffer += _or + script_name(entry);
             return buffer.slice(_or.length);
-        } else return "<code>" + path + "</code>";
+        } else if(typeof(path) === "string")
+            return "<code>" + path + "</code>";
+        else
+            return "<code>" + path.url + "</code>";
     }
 
     class SyntaxError {
@@ -173,6 +199,7 @@ namespace loader {
         }
     }
 
+    let _script_promises: {[key: string]: Promise<void>} = {};
     export async function load_script(path: SourcePath) : Promise<void> {
         if(Array.isArray(path)) { //We have some fallback
             return load_script(path[0]).catch(error => {
@@ -185,45 +212,64 @@ namespace loader {
                 return Promise.reject(error);
             });
         } else {
-            return new Promise<void>((resolve, reject) =>  {
+            const source = typeof(path) === "string" ? {url: path, depends: []} : path;
+            if(source.url.length == 0) return Promise.resolve();
+
+            return _script_promises[source.url] = (async () =>  {
+                /* await depends */
+                for(const depend of source.depends) {
+                    if(!_script_promises[depend])
+                        throw "Missing dependency " + depend;
+                    await _script_promises[depend];
+                }
+
                 const tag: HTMLScriptElement = document.createElement("script");
 
-                let error = false;
-                const error_handler = (event: ErrorEvent) => {
-                    if(event.filename == tag.src && event.message.indexOf("Illegal constructor") == -1) { //Our tag throw an uncaught error
-                        console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
+                await new Promise((resolve, reject) => {
+                    let error = false;
+                    const error_handler = (event: ErrorEvent) => {
+                        if(event.filename == tag.src && event.message.indexOf("Illegal constructor") == -1) { //Our tag throw an uncaught error
+                            console.log("msg: %o, url: %o, line: %o, col: %o, error: %o", event.message, event.filename, event.lineno, event.colno, event.error);
+                            window.removeEventListener('error', error_handler as any);
+
+                            reject(new SyntaxError(event.error));
+                            event.preventDefault();
+                            error = true;
+                        }
+                    };
+                    window.addEventListener('error', error_handler as any);
+
+                    const cleanup = () => {
+                        tag.onerror = undefined;
+                        tag.onload = undefined;
+
+                        clearTimeout(timeout_handle);
                         window.removeEventListener('error', error_handler as any);
+                    };
+                    const timeout_handle = setTimeout(() => {
+                        cleanup();
+                        reject("timeout");
+                    }, 5000);
+                    tag.type = "application/javascript";
+                    tag.async = true;
+                    tag.defer = true;
+                    tag.onerror = error => {
+                        cleanup();
+                        tag.remove();
+                        reject(error);
+                    };
+                    tag.onload = () => {
+                        cleanup();
 
-                        reject(new SyntaxError(event.error));
-                        event.preventDefault();
-                        error = true;
-                    }
-                };
-                window.addEventListener('error', error_handler as any);
+                        console.debug("Script %o loaded", path);
+                        setTimeout(resolve, 100);
+                    };
 
-                const timeout_handle = setTimeout(() => {
-                    reject("timeout");
-                }, 5000);
-                tag.type = "application/javascript";
-                tag.async = true;
-                tag.defer = true;
-                tag.onerror = error => {
-                    clearTimeout(timeout_handle);
-                    window.removeEventListener('error', error_handler as any);
-                    tag.remove();
-                    reject(error);
-                };
-                tag.onload = () => {
-                    clearTimeout(timeout_handle);
-                    window.removeEventListener('error', error_handler as any);
-                    console.debug("Script %o loaded", path);
-                    setTimeout(resolve, 100);
-                };
+                    document.getElementById("scripts").appendChild(tag);
 
-                document.getElementById("scripts").appendChild(tag);
-
-                tag.src = path + (cache_tag || "");
-            });
+                    tag.src = source.url + (cache_tag || "");
+                });
+            })();
         }
     }
 
@@ -257,7 +303,7 @@ namespace loader {
 
     export async function load_style(path: SourcePath) : Promise<void> {
         if(Array.isArray(path)) { //We have some fallback
-            return load_script(path[0]).catch(error => {
+            return load_style(path[0]).catch(error => {
                 if(error instanceof SyntaxError)
                     return Promise.reject(error.source);
 
@@ -267,6 +313,10 @@ namespace loader {
                 return Promise.reject(error);
             });
         } else {
+            if(!path) {
+                return Promise.resolve();
+            }
+
             return new Promise<void>((resolve, reject) =>  {
                 const tag: HTMLLinkElement = document.createElement("link");
 
@@ -283,21 +333,30 @@ namespace loader {
                 };
                 window.addEventListener('error', error_handler as any);
 
+                tag.type = "text/css";
+                tag.rel = "stylesheet";
+
+                const cleanup = () => {
+                    tag.onerror = undefined;
+                    tag.onload = undefined;
+
+                    clearTimeout(timeout_handle);
+                    window.removeEventListener('error', error_handler as any);
+                };
+
                 const timeout_handle = setTimeout(() => {
+                    cleanup();
                     reject("timeout");
                 }, 5000);
 
-                tag.type = "text/css";
-                tag.rel="stylesheet";
-
                 tag.onerror = error => {
-                    clearTimeout(timeout_handle);
-                    window.removeEventListener('error', error_handler as any);
+                    cleanup();
                     tag.remove();
                     console.error("File load error for file %s: %o", path, error);
                     reject("failed to load file " + path);
                 };
                 tag.onload = () => {
+                    cleanup();
                     {
                         const css: CSSStyleSheet = tag.sheet as CSSStyleSheet;
                         const rules = css.cssRules;
@@ -324,8 +383,6 @@ namespace loader {
                             css.insertRule(rule, rules_remove[0]);
                     }
 
-                    clearTimeout(timeout_handle);
-                    window.removeEventListener('error', error_handler as any);
                     console.debug("Style sheet %o loaded", path);
                     setTimeout(resolve, 100);
                 };
@@ -464,6 +521,7 @@ const loader_javascript = {
         if(!window.require) {
             await loader.load_script(["vendor/jquery/jquery.min.js"]);
         } else {
+            /*
             loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                 name: "forum sync",
                 priority: 10,
@@ -471,25 +529,35 @@ const loader_javascript = {
                     forum.sync_main();
                 }
             });
+            */
         }
+        await loader.load_script(["vendor/DOMPurify/purify.min.js"]);
 
         /* bootstrap material design and libs */
-        await loader.load_script(["vendor/popper/popper.js"]);
+        //await loader.load_script(["vendor/popper/popper.js"]);
 
         //depends on popper
-        await loader.load_script(["vendor/bootstrap-material/bootstrap-material-design.js"]);
+        //await loader.load_script(["vendor/bootstrap-material/bootstrap-material-design.js"]);
 
+        /*
         loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             name: "materialize body",
             priority: 10,
             function: async () => { $(document).ready(function() { $('body').bootstrapMaterialDesign(); }); }
         });
+        */
 
         await loader.load_script("vendor/jsrender/jsrender.min.js");
         await loader.load_scripts([
             ["vendor/xbbcode/src/parser.js"],
             ["vendor/moment/moment.js"],
+            ["vendor/twemoji/twemoji.min.js", ""], /* empty string means not required */
+            ["vendor/highlight/highlight.pack.js", ""], /* empty string means not required */
+            ["vendor/remarkable/remarkable.min.js", ""], /* empty string means not required */
             ["adapter/adapter-latest.js", "https://webrtc.github.io/adapter/adapter-latest.js"]
+        ]);
+        await loader.load_scripts([
+            ["vendor/emoji-picker/src/jquery.lsxemojipicker.js"]
         ]);
 
         if(app.type == app.Type.WEB_RELEASE || app.type == app.Type.CLIENT_RELEASE) {
@@ -547,14 +615,19 @@ const loader_javascript = {
             //load the profiles
             "js/profiles/ConnectionProfile.js",
             "js/profiles/Identity.js",
+            "js/profiles/identities/teaspeak-forum.js",
 
             //Basic UI elements
             "js/ui/elements/context_divider.js",
             "js/ui/elements/context_menu.js",
             "js/ui/elements/modal.js",
             "js/ui/elements/tab.js",
+            "js/ui/elements/slider.js",
+            "js/ui/elements/tooltip.js",
 
             //Load UI
+            "js/ui/modal/ModalAbout.js",
+            "js/ui/modal/ModalAvatar.js",
             "js/ui/modal/ModalAvatarList.js",
             "js/ui/modal/ModalQuery.js",
             "js/ui/modal/ModalQueryManage.js",
@@ -569,13 +642,16 @@ const loader_javascript = {
             "js/ui/modal/ModalBanClient.js",
             "js/ui/modal/ModalIconSelect.js",
             "js/ui/modal/ModalInvite.js",
+            "js/ui/modal/ModalIdentity.js",
             "js/ui/modal/ModalBanCreate.js",
             "js/ui/modal/ModalBanList.js",
             "js/ui/modal/ModalYesNo.js",
             "js/ui/modal/ModalPoke.js",
-            "js/ui/modal/ModalServerGroupDialog.js",
+            "js/ui/modal/ModalKeySelect.js",
+            "js/ui/modal/ModalGroupAssignment.js",
             "js/ui/modal/permission/ModalPermissionEdit.js",
-            "js/ui/modal/permission/PermissionEditor.js",
+            {url: "js/ui/modal/permission/CanvasPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
+            {url: "js/ui/modal/permission/HTMLPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
 
             "js/ui/channel.js",
             "js/ui/client.js",
@@ -590,6 +666,8 @@ const loader_javascript = {
             "js/ui/frames/chat_frame.js",
             "js/ui/frames/connection_handlers.js",
             "js/ui/frames/server_log.js",
+            "js/ui/frames/hostbanner.js",
+            "js/ui/frames/MenuBar.js",
 
             //Load permissions
             "js/permission/PermissionManager.js",
@@ -640,12 +718,11 @@ const loader_javascript = {
             //Load codec
             "js/codec/Codec.js",
             "js/codec/BasicCodec.js",
-            "js/codec/CodecWrapperWorker.js",
+            {url: "js/codec/CodecWrapperWorker.js", depends: ["js/codec/BasicCodec.js"]},
         ]);
     },
     load_scripts_debug_client: async () => {
         await loader.load_scripts([
-            ["js/teaforo.js"]
         ]);
     },
 
@@ -685,15 +762,18 @@ const loader_style = {
         await loader.load_styles([
             "vendor/xbbcode/src/xbbcode.css"
         ]);
+        await loader.load_styles([
+            "vendor/emoji-picker/src/jquery.lsxemojipicker.css"
+        ]);
+        await loader.load_styles([
+            ["vendor/highlight/styles/darcula.css", ""], /* empty string means not required */
+        ]);
 
         if(app.type == app.Type.WEB_DEBUG || app.type == app.Type.CLIENT_DEBUG) {
             await loader_style.load_style_debug();
         } else {
             await loader_style.load_style_release();
         }
-
-        /* the material design */
-        await loader.load_style("css/theme/bootstrap-material-design.css");
     },
 
     load_style_debug: async () => {
@@ -706,9 +786,12 @@ const loader_style = {
             "css/static/ts/tab.css",
             "css/static/ts/chat.css",
             "css/static/ts/icons.css",
+            "css/static/ts/icons_em.css",
             "css/static/ts/country.css",
             "css/static/general.css",
+            "css/static/modal.css",
             "css/static/modals.css",
+            "css/static/modal-about.css",
             "css/static/modal-avatar.css",
             "css/static/modal-icons.css",
             "css/static/modal-bookmarks.css",
@@ -722,7 +805,9 @@ const loader_style = {
             "css/static/modal-settings.css",
             "css/static/modal-poke.css",
             "css/static/modal-server.css",
+            "css/static/modal-keyselect.css",
             "css/static/modal-permissions.css",
+            "css/static/modal-group-assignment.css",
             "css/static/music/info_plate.css",
             "css/static/frame/SelectInfo.css",
             "css/static/control_bar.css",
@@ -730,7 +815,9 @@ const loader_style = {
             "css/static/frame-chat.css",
             "css/static/connection_handlers.css",
             "css/static/server-log.css",
-            "css/static/htmltags.css"
+            "css/static/htmltags.css",
+            "css/static/hostbanner.css",
+            "css/static/menu-bar.css"
         ]);
     },
 
@@ -740,7 +827,7 @@ const loader_style = {
             "css/static/main.css",
         ]);
     }
-}
+};
 
 async function load_templates() {
     try {
@@ -773,13 +860,9 @@ async function load_templates() {
 /* test if all files shall be load from cache or fetch again */
 async function check_updates() {
     const app_version = (() => {
-        const version_node = document.getElementById("app_version");
-        if(!version_node) return undefined;
+        const version = app.ui_version();
 
-        const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
-        if(!version) return undefined;
-
-        if(version == "unknown" || version.replace(/0+/, "").length == 0)
+        if(!version || version == "unknown" || version.replace(/0+/, "").length == 0)
             return undefined;
 
         return version;
@@ -959,6 +1042,11 @@ loader.register_task(loader.Stage.LOADED, {
         }
     },
     priority: 20
+});
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+    name: "lsx emoji picker setup",
+    function: async () => await (window as any).setup_lsx_emoji_picker({twemoji: typeof(window.twemoji) !== "undefined"}),
+    priority: 10
 });
 
 

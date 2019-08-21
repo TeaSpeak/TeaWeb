@@ -1,73 +1,349 @@
+@import "mixin";
+
 .modal .modal-connect {
+	@include user-select(none);
 
-	/*
-	margin-top: 5px;
+	font-size: 1rem;
+	max-width: 100000px; /* max 100000px width, else we shrink the modal */
+	padding: 0!important; /* override the default padding */
 
-	> div:not(:first-of-type) {
-		margin-top: 5px;
-	}
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
 
-	.profile-select-container {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
+	.container-connect-input {
+		flex-grow: 0;
+		flex-shrink: 0;
 
-		select {
-			width: 150px;
+		/* apply the default padding */
+		padding: .75em 24px;
+
+		border-left: 2px solid #0073d4;
+
+		> .row {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			> *:not(:last-of-type) {
+				margin-right: 3em;
+			}
+		}
+
+		.container-address-password {
+			.container-address {
+				flex-grow: 1;
+				flex-shrink: 1;
+			}
+
+			.container-password {
+				flex-grow: 0;
+				flex-shrink: 4;
+
+				min-width: 21.5em;
+			}
+		}
+
+		.container-profile-manage {
+			flex-grow: 0;
+			flex-shrink: 4;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			.container-select-profile {
+				flex-grow: 1;
+				flex-shrink: 1;
+
+				min-width: 14em;
+
+				> .invalid-feedback {
+					width: max-content; /* allow overflow here */
+				}
+			}
+
+			.container-manage {
+				flex-grow: 0;
+				flex-shrink: 4;
+
+				margin-left: 15px;
+			}
+
+			.button-manage-profiles {
+				min-width: 7em;
+				margin-left: 0.5em;
+			}
+		}
+
+		.container-nickname {
+			flex-grow: 1;
+			flex-shrink: 1;
+		}
+
+		.container-buttons {
+			padding-top: 1em;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+
+			.container-buttons-connect {
+				display: flex;
+				flex-direction: row;
+			}
+
+			.button-right {
+				min-width: 7em;
+				margin-left: 0.5em;
+			}
+
+			.button-left {
+				min-width: 14em;
+			}
+		}
+
+		.arrow {
+			border-color: #7a7a7a;
+			margin-left: .5em;
 		}
 	}
 
-	.profile-invalid {
+	.container-last-servers {
+		flex-grow: 0;
+		flex-shrink: 1;
+
 		display: flex;
 		flex-direction: column;
-		justify-content: start;
-
-		> div {
-			display: inline-flex;
-			flex-direction: row;
-		}
-
-		color: red;
-	}
-	*/
-
-	.container-address-password {
-		display: flex;
-		flex-direction: row;
 		justify-content: stretch;
 
-		.container-address {
-			flex-grow: 1;
-			flex-shrink: 1;
+		max-height: 0;
+		opacity: 0;
+		overflow: hidden;
+		padding: 0;
+
+		min-width: 0;
+
+
+		border: none;
+		border-left: 2px solid #7a7a7a;
+
+		@include transition(max-height .5s ease-in-out, opacity .5s ease-in-out, padding .5s ease-in-out);
+		&.shown {
+			/* apply the default padding */
+			padding: 0 24px 24px;
+
+			max-height: 100%;
+			opacity: 1;
+
+			@include transition(max-height .5s ease-in-out, opacity .5s ease-in-out, padding .5s ease-in-out)
 		}
 
-		.container-password {
-			flex-grow: 0;
-			flex-shrink: 4;
+		hr {
+			height: 0;
+			width: calc(100% + 46px);
+			min-width: 0;
 
-			margin-left: 15px;
+			margin: 0 0 0 -23px;
+
+			padding: 0;
+
+			border: none;
+			border-top: 1px solid #090909;
+
+			margin-bottom: .75em;
+		}
+
+		color: #7a7a7a;
+
+		/* general table class */
+		.table {
+			width: 100em;
+			max-width: 100%;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: stretch;
+
+			.head {
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				border: none;
+				border-bottom: 1px solid #161618;
+			}
+
+
+			.body {
+				flex-grow: 0;
+				flex-shrink: 1;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: stretch;
+
+				overflow: auto;
+
+				.row {
+					cursor: pointer;
+
+					flex-grow: 0;
+					flex-shrink: 0;
+
+					display: flex;
+					flex-direction: row;
+					justify-content: stretch;
+
+					&:hover {
+						background-color: #202022;
+					}
+
+					&.selected {
+						background-color: #131315;
+					}
+				}
+
+				.body-empty {
+					height: 3em;
+					text-align: center;
+					display: flex;
+					flex-direction: column;
+					justify-content: space-around;
+					font-size: 1.25em;
+					color: #7979797F;
+				}
+			}
+
+			.column {
+				flex-grow: 1;
+				flex-shrink: 1;
+
+				overflow: hidden;
+				white-space: nowrap;
+
+				padding-right: .25em;
+				padding-left: .25em;
+
+				display: flex;
+				flex-direction: row;
+				justify-content: flex-start;
+
+				&:not(:last-of-type) {
+					border-right: 1px solid #161618;
+				}
+
+				> a {
+					max-width: 100%;
+					text-overflow: ellipsis;
+					overflow: hidden;
+				}
+			}
+		}
+
+		/* connect table */
+		.table {
+			margin-left: -1.5em; /* the delete row */
+
+			.head {
+				margin-left: 1.5em; /* the delete row */
+				.column.delete {
+					display: none;
+				}
+			}
+
+			.column {
+				align-self: center;
+				.country, .icon-container {
+					align-self: center;
+					margin-right: 0.1em;
+				}
+
+
+				@mixin fixed-column($name, $width) {
+					&.#{$name} {
+						flex-grow: 0;
+						flex-shrink: 0;
+
+						width: $width;
+					}
+				}
+
+				@include fixed-column(delete, 1.5em);
+				@include fixed-column(password, 5em);
+				@include fixed-column(country-name, 7em);
+				@include fixed-column(clients, 4em);
+				@include fixed-column(connections, 6.5em);
+
+				&.delete {
+					opacity: 0;
+					border-right: none;
+					border-bottom: none;
+
+					text-align: center;
+					@include transition(opacity .25 ease-in-out);
+
+					&:hover {
+						opacity: 1;
+						@include transition(opacity .25 ease-in-out);
+					}
+				}
+
+				&.address {
+					flex-grow: 1;
+					flex-shrink: 1;
+
+					width: 40%;
+				}
+
+				&.name {
+					flex-grow: 1;
+					flex-shrink: 1;
+
+					width: 60%;
+				}
+			}
 		}
 	}
+}
 
-	.container-profile-manage {
-		display: flex;
-		flex-direction: row;
-		justify-content: stretch;
+@media all and (max-width: 55rem) {
+	.modal .modal-connect {
+		min-width: calc(21.25em + 24px * 2)!important;
+		width: 1000em; /* allocate space */
 
-		.container-select-profile {
-			flex-grow: 1;
-			flex-shrink: 1;
+		.container-address-password {
+			.container-password {
+				min-width: unset!important;
+				margin-left: 1em!important;
+			}
 		}
 
-		.container-manage {
-			flex-grow: 0;
-			flex-shrink: 4;
+		.container-buttons {
+			justify-content: flex-end!important;
 
-			margin-left: 15px;
+			.button-toggle-last-servers {
+				display: none;
+			}
 		}
-	}
 
-	.invalid-feedback {
-		position: absolute;
+		.container-profile-name {
+			flex-direction: column!important;
+		}
+
+		.container-connect-input {
+			> .row {
+				> div {
+					margin-right: 0!important;
+				}
+			}
+		}
+
+		.container-last-servers {
+			display: none;
+		}
 	}
 }

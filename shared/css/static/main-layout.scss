@@ -8,6 +8,10 @@ $animation_length: .5s;
 	min-height: 330px;
 
 	.container-app-main {
+		height: 100%;
+		width: 100%;
+
+		min-height: 500px;
 		margin-top: 5px;
 
 		position: relative;
@@ -15,13 +19,13 @@ $animation_length: .5s;
 		flex-direction: column;
 		justify-content: stretch;
 
-		height: 100%;
-		width: 100%;
 
 		.container-channel-chat {
-			min-height: 200px;
-			min-width: 100px;
+			height: 80%; /* "default" settings */
 			width: 100%;
+
+			min-height: 25em;
+			min-width: 100px;
 
 			display: flex;
 			flex-direction: row;
@@ -34,25 +38,44 @@ $animation_length: .5s;
 				border-radius: 5px;
 			}
 
-			.container-channel-tree {
+			> .container-channel-tree {
+				width: 50%; /* "default" settings */
+				height: 100%;
+
 				background: #353535;
 				min-width: 200px;
 
 				display: flex;
+				flex-direction: column;
 				justify-content: stretch;
-				height: 100%;
+
 				min-height: 100px;
 
-				padding-top: 5px;
-				/*
-				overflow: auto;
-				overflow-x: visible;
-				*/
 				overflow: hidden;
-				overflow-y: auto;
+
+				> .hostbanner {
+					flex-grow: 0;
+					flex-shrink: 0;
+
+					max-height: 9em; /* same size as the info pannel */
+
+					display: flex;
+					flex-direction: column;
+					justify-content: stretch;
+				}
+
+				> .channel-tree {
+					padding-top: 5px;
+
+					flex-grow: 1;
+					flex-shrink: 1;
+				}
 			}
 
-			.container-chat {
+			> .container-chat {
+				width: 50%; /* "default" settings */
+				height: 100%;
+
 				background: #353535;
 				min-width: 350px;
 
@@ -62,16 +85,66 @@ $animation_length: .5s;
 			}
 		}
 
-		.container-server-log {
-			min-height: 0;
-			height: 250px;
+
+		> .container-bottom {
+			height: 20%;
+
+			min-height: 1.5em;
 			width: 100%;
 
-			border-radius: 5px;
-			padding-right: 5px;
-			padding-left: 5px;
+			display: flex;
+			flex-direction: column;
+			justify-content: stretch;
 
-			background: #353535;
+			> .container-server-log {
+				display: flex;
+				flex-direction: column;
+				justify-content: stretch;
+
+				flex-shrink: 1;
+				flex-grow: 1;
+
+				min-height: 0;
+				width: 100%;
+
+				border-radius: 5px 5px 0 0;
+
+				padding-right: 5px;
+				padding-left: 5px;
+
+				background: #353535;
+			}
+
+			> .container-footer {
+				flex-shrink: 0;
+				flex-grow: 0;
+
+				height: 1.5em;
+
+				background: #252525;
+				color: #353535;
+
+				border-radius: 0 0 5px 5px;
+				padding-right: 5px;
+				padding-left: 5px;
+				padding-top: 2px;
+
+				-webkit-box-shadow: inset 0px 2px 5px 0px rgba(0,0,0,0.125);
+				-moz-box-shadow: inset 0px 2px 5px 0px rgba(0,0,0,0.125);
+				box-shadow: inset 0px 2px 5px 0px rgba(0,0,0,0.125);
+
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+
+				> * {
+					align-self: center;
+				}
+
+				a[href], a[href]:visited {
+					color: #353535!important;
+				}
+			}
 		}
 	}
 
@@ -82,7 +155,7 @@ $animation_length: .5s;
 
 		border-radius: 5px;
 
-		height: 30px;
+		height: 2em;
 		width: 100%;
 
 		background-color: #454545;
@@ -121,39 +194,6 @@ $animation_length: .5s;
 }
 
 @media only screen and (max-width: $small_device) {
-	.app {
-		.container-app-main {
-			.container-info {
-				display: none;
-				position: absolute;
-
-				width: 100% !important; /* override the seperator property */
-				height: 100%;
-
-				z-index: 1000;
-
-				&.shown {
-					display: block;
-				}
-
-				.select_info {
-					> .close {
-						display: block;
-					}
-				}
-			}
-
-			.container-channel-chat + .container-seperator {
-				display: none;
-				animation: fadeout $animation_length linear;
-			}
-
-			.container-channel-chat {
-				width: 100% !important; /* override the seperator property */
-			}
-		}
-	}
-
 	.hide-small {
 		display: none;
 		opacity: 0;

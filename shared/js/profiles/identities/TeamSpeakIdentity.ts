@@ -2,6 +2,20 @@
 
 namespace profiles.identities {
     export namespace CryptoHelper {
+        export function base64_url_encode(str){
+            return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
+        }
+
+        export function base64_url_decode(str: string, pad?: boolean){
+            if(typeof(pad) === 'undefined' || pad)
+                str = (str + '===').slice(0, str.length + (str.length % 4));
+            return str.replace(/-/g, '+').replace(/_/g, '/');
+        }
+
+        export function arraybuffer_to_string(buf) {
+            return String.fromCharCode.apply(null, new Uint16Array(buf));
+        }
+
         export async function export_ecc_key(crypto_key: CryptoKey, public_key: boolean) {
             /*
                 Tomcrypt public key export:
@@ -50,7 +64,7 @@ namespace profiles.identities {
                 buffer[index++] = 0x02; /* type */
                 buffer[index++] = 0x20; /* length */
 
-                const raw = atob(Base64DecodeUrl(key_data.x, false));
+                const raw = atob(base64_url_decode(key_data.x, false));
                 if(raw.charCodeAt(0) > 0x7F) {
                     buffer[index - 1] += 1;
                     buffer[index++] = 0;
@@ -68,7 +82,7 @@ namespace profiles.identities {
                 buffer[index++] = 0x02; /* type */
                 buffer[index++] = 0x20; /* length */
 
-                const raw = atob(Base64DecodeUrl(key_data.y, false));
+                const raw = atob(base64_url_decode(key_data.y, false));
                 if(raw.charCodeAt(0) > 0x7F) {
                     buffer[index - 1] += 1;
                     buffer[index++] = 0;
@@ -87,7 +101,7 @@ namespace profiles.identities {
                     buffer[index++] = 0x02; /* type */
                     buffer[index++] = 0x20; /* length */
 
-                    const raw = atob(Base64DecodeUrl(key_data.d, false));
+                    const raw = atob(base64_url_decode(key_data.d, false));
                     if(raw.charCodeAt(0) > 0x7F) {
                         buffer[index - 1] += 1;
                         buffer[index++] = 0;
@@ -104,7 +118,7 @@ namespace profiles.identities {
 
             buffer[1] = index - 2; /* set the final sequence length */
 
-            return base64ArrayBuffer(buffer.buffer.slice(0, index));
+            return base64_encode_ab(buffer.buffer.slice(0, index));
         }
 
         const crypt_key = "b9dfaa7bee6ac57ac7b65f1094a1c155e747327bc2fe5d51c512023fe54a280201004e90ad1daaae1075d53b7d571c30e063b5a62a4a017bb394833aa0983e6e";
@@ -125,7 +139,7 @@ namespace profiles.identities {
             for(let i = 0; i < length; i++)
                 buffer[i] ^= crypt_key.charCodeAt(i);
 
-            return ab2str(buffer);
+            return arraybuffer_to_string(buffer);
         }
 
         export async function encrypt_ts_identity(buffer: Uint8Array) : Promise<string> {
@@ -137,7 +151,7 @@ namespace profiles.identities {
             for(let i = 0; i < 20; i++)
                 buffer[i] ^= hash[i];
 
-            return base64ArrayBuffer(buffer);
+            return base64_encode_ab(buffer);
         }
 
         /**
@@ -185,9 +199,9 @@ namespace profiles.identities {
             */
             return {
                 crv: "P-256",
-                d: Base64EncodeUrl(btoa(k)),
-                x: Base64EncodeUrl(btoa(x)),
-                y: Base64EncodeUrl(btoa(y)),
+                d: base64_url_encode(btoa(k)),
+                x: base64_url_encode(btoa(x)),
+                y: base64_url_encode(btoa(y)),
 
                 ext: true,
                 key_ops:["deriveKey", "sign"],
@@ -587,7 +601,7 @@ namespace profiles.identities {
             if(carry)
                 char_result.push(49);
 
-            return String.fromCharCode.apply(null, char_result.reverse());
+            return String.fromCharCode.apply(null, char_result.slice().reverse());
         }
 
 
@@ -774,7 +788,7 @@ namespace profiles.identities {
 
             try {
                 this.public_key = await CryptoHelper.export_ecc_key(this._crypto_key, true);
-                this._unique_id = base64ArrayBuffer(await sha.sha1(this.public_key));
+                this._unique_id = base64_encode_ab(await sha.sha1(this.public_key));
             } catch(error) {
                 log.error(LogCategory.IDENTITIES, error);
                 throw "failed to calculate unique id";
@@ -840,7 +854,7 @@ namespace profiles.identities {
             }
             buffer[1] = index - 2;
 
-            return base64ArrayBuffer(buffer.subarray(0, index));
+            return base64_encode_ab(buffer.subarray(0, index));
         }
 
         spawn_identity_handshake_handler(connection: connection.AbstractServerConnection): connection.HandshakeIdentityHandler {

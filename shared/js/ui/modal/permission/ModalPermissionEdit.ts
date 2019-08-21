@@ -17,7 +17,7 @@ interface JQuery<TElement = HTMLElement> {
 }
 
 namespace Modals {
-    namespace PermissionEditor {
+    export namespace PermissionEditor {
         export interface PermissionEntry {
             tag: JQuery;
             tag_value: JQuery;
@@ -41,375 +41,150 @@ namespace Modals {
             flag_negate?: boolean;
         }
 
-        export type change_listener_t = (permission: PermissionInfo, value?: PermissionEditor.PermissionValue) => Promise<any>;
+        export type change_listener_t = (permission: PermissionInfo, value?: PermissionEditor.PermissionValue) => Promise<void>;
     }
-    enum PermissionEditorMode {
+    export enum PermissionEditorMode {
         VISIBLE,
         NO_PERMISSION,
         UNSET
     }
-    
-    class PermissionEditor {
-        readonly permissions: GroupedPermissions[];
 
-        container: JQuery;
-
-        private mode_container_permissions: JQuery;
-        private mode_container_error_permission: JQuery;
-        private mode_container_unset: JQuery;
-
-        /* references within the container tag */
-        private permission_value_map: {[key:number]:PermissionValue} = {};
-        private listener_change: PermissionEditor.change_listener_t = () => Promise.resolve();
-        private listener_update: () => any;
-
-        private entry_editor: ui.PermissionEditor;
+    export abstract class AbstractPermissionEditor {
+        protected _permissions: GroupedPermissions[];
+        protected _listener_update: () => any;
+        protected _listener_change: PermissionEditor.change_listener_t = () => Promise.resolve();
+        protected _toggle_callback: () => string;
 
         icon_resolver: (id: number) => Promise<HTMLImageElement>;
         icon_selector: (current_id: number) => Promise<number>;
 
-        constructor(permissions: GroupedPermissions[]) {
-            this.permissions = permissions;
-            this.entry_editor = new ui.PermissionEditor(permissions);
-        }
+        protected constructor() {}
 
-        build_tag() {
-            this.container = $("#tmpl_permission_editor").renderTag();
-            /* search for that as long we've not that much nodes */
-            this.mode_container_permissions = this.container.find(".container-mode-permissions");
-            this.mode_container_error_permission = this.container.find(".container-mode-no-permissions");
-            this.mode_container_unset = this.container.find(".container-mode-unset");
-            this.set_mode(PermissionEditorMode.UNSET);
+        abstract set_mode(mode: PermissionEditorMode);
 
-            /* the filter */
-            {
-                const tag_filter_input = this.container.find(".filter-input");
-                const tag_filter_granted = this.container.find(".filter-granted");
-
-                tag_filter_granted.on('change', event => tag_filter_input.trigger('change'));
-                tag_filter_input.on('keyup change', event => {
-                    let filter_mask = tag_filter_input.val() as string;
-                    let req_granted = tag_filter_granted.prop("checked");
-
-
-                    for(const entry of this.entry_editor.permission_entries()) {
-                        const permission = entry.permission();
-
-                        let shown = filter_mask.length == 0 || permission.name.indexOf(filter_mask) != -1;
-                        if(shown && req_granted) {
-                            const value: PermissionValue = this.permission_value_map[permission.id];
-                            shown = value && (value.hasValue() || value.hasGrant());
-                        }
-
-                        entry.hidden = !shown;
-                    }
-                    this.entry_editor.request_draw(true);
-                });
-            }
-
-            /* update button */
-            {
-                this.container.find(".button-update").on('click', this.trigger_update.bind(this));
-            }
-
-            /* global context menu listener */
-            {
-                this.container.on('contextmenu', event => {
-                    if(event.isDefaultPrevented()) return;
-                    event.preventDefault();
-
-                    /* TODO allow collapse and expend all */
-                });
-            }
-
-            {
-                const tag_container = this.container.find(".entry-editor-container");
-                tag_container.append(this.entry_editor.canvas_container);
-
-                tag_container.parent().on('contextmenu', event => {
-                    if(event.isDefaultPrevented()) return;
-                    event.preventDefault();
-
-                    contextmenu.spawn_context_menu(event.pageX, event.pageY, {
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Expend all"),
-                        callback: () => this.entry_editor.expend_all()
-                    }, {
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Collapse all"),
-                        callback: () => this.entry_editor.collapse_all()
-                    });
-                });
-            }
-
-            /* setup the permissions */
-            for(const entry of this.entry_editor.permission_entries()) {
-                const permission = entry.permission();
-                entry.on_change = () => {
-                    const flag_remove = typeof(entry.value) !== "number";
-                    this.listener_change(permission, {
-                        remove: flag_remove,
-                        flag_negate: entry.flag_negate,
-                        flag_skip: entry.flag_skip,
-                        value: flag_remove ? -2 : entry.value
-                    }).then(() => {
-                        if(flag_remove) {
-                            const element = this.permission_value_map[permission.id];
-                            if(!element) return; /* This should never happen, if so how are we displaying this permission?! */
-
-                            element.value = undefined;
-                            element.flag_negate = false;
-                            element.flag_skip = false;
-                        } else {
-                            const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
-
-                            element.value = entry.value;
-                            element.flag_skip = entry.flag_skip;
-                            element.flag_negate = entry.flag_negate;
-                        }
-
-                        if(permission.name === "i_icon_id") {
-                            this.icon_resolver(entry.value).then(e => {
-                                entry.set_icon_id_image(e);
-                                entry.request_full_draw();
-                                this.entry_editor.request_draw(false);
-                            }).catch(error => {
-                                console.warn(tr("Failed to load icon for permission editor: %o"), error);
-                            });
-                        }
-                        entry.request_full_draw();
-                        this.entry_editor.request_draw(false);
-                    }).catch(() => {
-                        const element = this.permission_value_map[permission.id];
-
-                        entry.value = element && element.hasValue() ? element.value : undefined;
-                        entry.flag_skip = element && element.flag_skip;
-                        entry.flag_negate = element && element.flag_negate;
-
-                        entry.request_full_draw();
-                        this.entry_editor.request_draw(false);
-                    });
-                };
-
-                entry.on_grant_change = () => {
-                    const flag_remove = typeof(entry.granted) !== "number";
-
-                    this.listener_change(permission, {
-                        remove: flag_remove,
-                        granted: flag_remove ? -2 : entry.granted,
-                    }).then(() => {
-                        if(flag_remove) {
-                            const element = this.permission_value_map[permission.id];
-                            if (!element) return; /* This should never happen, if so how are we displaying this permission?! */
-
-                            element.granted_value = undefined;
-                        } else {
-                            const element = this.permission_value_map[permission.id] || (this.permission_value_map[permission.id] = new PermissionValue(permission));
-                            element.granted_value = entry.granted;
-                        }
-                        entry.request_full_draw();
-                        this.entry_editor.request_draw(false);
-                    }).catch(() => {
-                        const element = this.permission_value_map[permission.id];
-
-                        entry.granted = element && element.hasGrant() ? element.granted_value : undefined;
-                        entry.request_full_draw();
-                        this.entry_editor.request_draw(false);
-                    });
-                };
-
-                entry.on_context_menu = (x, y) => {
-                    let entries: contextmenu.MenuEntry[] = [];
-                    if(typeof(entry.value) === "undefined") {
-                        entries.push({
-                            type: contextmenu.MenuEntryType.ENTRY,
-                            name: tr("Add permission"),
-                            callback: () => entry.trigger_value_assign()
-                        });
-                    } else {
-                        entries.push({
-                            type: contextmenu.MenuEntryType.ENTRY,
-                            name: tr("Remove permission"),
-                            callback: () => {
-                                entry.value = undefined;
-                                entry.on_change();
-                            }
-                        });
-                    }
-
-                    if(typeof(entry.granted) === "undefined") {
-                        entries.push({
-                            type: contextmenu.MenuEntryType.ENTRY,
-                            name: tr("Add grant permission"),
-                            callback: () => entry.trigger_grant_assign()
-                        });
-                    } else {
-                        entries.push({
-                            type: contextmenu.MenuEntryType.ENTRY,
-                            name: tr("Remove grant permission"),
-                            callback: () => {
-                                entry.granted = undefined;
-                                entry.on_grant_change();
-                            }
-                        });
-                    }
-                    entries.push(contextmenu.Entry.HR());
-                    entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Expend all"),
-                        callback: () => this.entry_editor.expend_all()
-                    });
-                    entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Collapse all"),
-                        callback: () => this.entry_editor.collapse_all()
-                    });
-                    entries.push(contextmenu.Entry.HR());
-                    entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Show permission description"),
-                        callback: () => {
-                            createInfoModal(
-                                tr("Permission description"),
-                                tr("Permission description for permission ") + permission.name + ": <br>" + permission.description
-                            ).open();
-                        }
-                    });
-                    entries.push({
-                        type: contextmenu.MenuEntryType.ENTRY,
-                        name: tr("Copy permission name"),
-                        callback: () => {
-                            copy_to_clipboard(permission.name);
-                        }
-                    });
-
-                    contextmenu.spawn_context_menu(x, y, ...entries);
-                }
-            }
-        }
-
-        set_permissions(permissions?: PermissionValue[]) {
-            permissions = permissions || [];
-            this.permission_value_map = {};
-
-            for(const permission of permissions)
-                this.permission_value_map[permission.type.id] = permission;
-
-            for(const entry of this.entry_editor.permission_entries()) {
-                const permission = entry.permission();
-                const value: PermissionValue = this.permission_value_map[permission.id];
-
-                if(permission.name === "i_icon_id") {
-                    entry.set_icon_id_image(undefined);
-                    entry.on_icon_select = this.icon_selector;
-                }
-
-                if(value && value.hasValue()) {
-                    entry.value = value.value;
-                    entry.flag_skip = value.flag_skip;
-                    entry.flag_negate = value.flag_negate;
-                    if(permission.name === "i_icon_id") {
-                        this.icon_resolver(value.value).then(e => {
-                            entry.set_icon_id_image(e);
-                            entry.request_full_draw();
-                            this.entry_editor.request_draw(false);
-                        }).catch(error => {
-                            console.warn(tr("Failed to load icon for permission editor: %o"), error);
-                        });
-                    }
-                } else {
-                    entry.value = undefined;
-                    entry.flag_skip = false;
-                    entry.flag_negate = false;
-                }
-
-                if(value && value.hasGrant()) {
-                    entry.granted = value.granted_value;
-                } else {
-                    entry.granted = undefined;
-                }
-            }
-            this.entry_editor.request_draw(true);
-        }
+        abstract initialize(permissions: GroupedPermissions[]);
+        abstract html_tag() : JQuery;
+        abstract set_permissions(permissions?: PermissionValue[]);
 
         set_listener(listener?: PermissionEditor.change_listener_t) {
-            this.listener_change = listener || (() => Promise.resolve());
+            this._listener_change = listener || (() => Promise.resolve());
         }
 
-        set_listener_update(listener?: () => any) {
-            this.listener_update = listener;
-        }
+        set_listener_update(listener?: () => any) { this._listener_update = listener; }
+        trigger_update() { if(this._listener_update) this._listener_update(); }
 
-        trigger_update() {
-            if(this.listener_update)
-                this.listener_update();
-        }
-
-        set_mode(mode: PermissionEditorMode) {
-            this.mode_container_permissions.css('display', mode == PermissionEditorMode.VISIBLE ? 'flex' : 'none');
-            this.mode_container_error_permission.css('display', mode == PermissionEditorMode.NO_PERMISSION ? 'flex' : 'none');
-            this.mode_container_unset.css('display', mode == PermissionEditorMode.UNSET ? 'block' : 'none');
-            if(mode == PermissionEditorMode.VISIBLE)
-                this.entry_editor.draw(true);
-        }
-
-        update_ui() {
-            this.entry_editor.draw(true);
-        }
+        abstract set_toggle_button(callback: () => string, initial: string);
     }
 
-    export function spawnPermissionEdit(connection: ConnectionHandler) : Modal {
+    export type OptionsServerGroup = {};
+    export type OptionsChannelGroup = {};
+    export type OptionsClientPermissions = { unique_id?: string };
+    export type OptionsChannelPermissions = { channel_id?: number };
+    export type OptionsClientChannelPermissions = OptionsClientPermissions & OptionsChannelPermissions;
+    export interface OptionMap {
+        "sg": OptionsServerGroup,
+        "cg": OptionsChannelGroup,
+        "clp": OptionsClientPermissions,
+        "chp": OptionsChannelPermissions,
+        "clchp": OptionsClientChannelPermissions
+    }
+
+    export function _space() {
+        const now = Date.now();
+        while(now + 100 > Date.now());
+    }
+
+    export function spawnPermissionEdit<T extends keyof OptionMap>(connection: ConnectionHandler, selected_tab?: T, options?: OptionMap[T]) : Modal {
+        options = options || {};
+
         const modal = createModal({
             header: function() {
                 return tr("Server Permissions");
             },
             body: function () {
                 let properties: any = {};
-
                 let tag = $("#tmpl_server_permissions").renderTag(properties);
-                const pe = new PermissionEditor(connection.permissions.groupedPermissions());
-                pe.build_tag();
-                pe.icon_resolver = id => connection.fileManager.icons.resolve_icon(id).then(async icon => {
-                    if(!icon)
-                        return undefined;
 
-                    const tag = document.createElement("img");
-                    await new Promise((resolve, reject) => {
-                        tag.onerror = reject;
-                        tag.onload = resolve;
-                        tag.src = icon.url;
+                /* build the permission editor */
+                const permission_editor: AbstractPermissionEditor = (() => {
+                    const editor = new pe.HTMLPermissionEditor();
+                    editor.initialize(connection.permissions.groupedPermissions());
+                    editor.icon_resolver = id => connection.fileManager.icons.resolve_icon(id).then(async icon => {
+                        if(!icon)
+                            return undefined;
+
+                        const tag = document.createElement("img");
+                        await new Promise((resolve, reject) => {
+                            tag.onerror = reject;
+                            tag.onload = resolve;
+                            tag.src = icon.url;
+                        });
+                        return tag;
                     });
-                    return tag;
-                });
-                pe.icon_selector = current_icon => new Promise<number>(resolve => {
-                    spawnIconSelect(connection, id => resolve(new Int32Array([id])[0]), current_icon);
-                });
+                    editor.icon_selector = current_icon => new Promise<number>(resolve => {
+                        spawnIconSelect(connection, id => resolve(new Int32Array([id])[0]), current_icon);
+                    });
 
-                /* initialisation */
+                    if(editor instanceof pe.CanvasPermissionEditor)
+                        setTimeout(() => editor.update_ui(), 500);
+                    return editor;
+                })();
+
+                const container_tab_list = tag.find(".right > .header");
                 {
-                    const pe_server = tag.find("permission-editor.group-server");
-                    pe_server.append(pe.container); /* fuck off workaround to initialize form listener */
-                }
-                setTimeout(() => {
-                    pe.update_ui();
-                }, 500);
+                    const label_current = tag.find(".left .container-selected");
+                    const create_tab = (tab_entry: JQuery, container_name: string) => {
+                        const target_container = tag.find(".body .container." + container_name);
 
-                apply_server_groups(connection, pe, tag.find(".tab-group-server"));
-                apply_channel_groups(connection, pe, tag.find(".tab-group-channel"));
-                apply_channel_permission(connection, pe, tag.find(".tab-channel"));
-                apply_client_permission(connection, pe, tag.find(".tab-client"));
-                apply_client_channel_permission(connection, pe, tag.find(".tab-client-channel"));
-                return tag.tabify(false);
+                        tab_entry.on('click', () => {
+                            /* Using a timeout here prevents unnecessary style calculations required by other click event handlers */
+                            setTimeout(() => {
+                                container_tab_list.find(".selected").removeClass("selected");
+                                tab_entry.addClass("selected");
+                                label_current.text(tab_entry.find("a").text());
+
+                                /* dont use show() here because it causes a style recalculation */
+                                for(const element of tag.find(".body .container"))
+                                    (<HTMLElement>element).style.display = "none";
+
+                                permission_editor.html_tag()[0].remove();
+                                target_container.find(".permission-editor").trigger('show');
+                                target_container.find(".permission-editor").append(permission_editor.html_tag());
+
+                                for(const element of target_container)
+                                    (<HTMLElement>element).style.display = null;
+                            }, 0);
+                        });
+                    };
+
+                    create_tab(container_tab_list.find(".sg"), "container-view-server-groups");
+                    create_tab(container_tab_list.find(".cg"), "container-view-channel-groups");
+                    create_tab(container_tab_list.find(".chp"), "container-view-channel-permissions");
+                    create_tab(container_tab_list.find(".clp"), "container-view-client-permissions");
+                    create_tab(container_tab_list.find(".clchp"), "container-view-client-channel-permissions");
+                }
+
+                apply_server_groups(connection, permission_editor, tag.find(".left .container-view-server-groups"), tag.find(".right .container-view-server-groups"));
+                apply_channel_groups(connection, permission_editor, tag.find(".left .container-view-channel-groups"), tag.find(".right .container-view-channel-groups"));
+                apply_channel_permission(connection, permission_editor, tag.find(".left .container-view-channel-permissions"), tag.find(".right .container-view-channel-permissions"));
+                apply_client_permission(connection, permission_editor, tag.find(".left .container-view-client-permissions"), tag.find(".right .container-view-client-permissions"), selected_tab == "clp" ? <any>options : {});
+                apply_client_channel_permission(connection, permission_editor, tag.find(".left .container-view-client-channel-permissions"), tag.find(".right .container-view-client-channel-permissions"), selected_tab == "clchp" ? <any>options : {});
+
+                setTimeout(() => container_tab_list.find("." + (selected_tab || "sg")).trigger('click'), 0);
+                return tag.dividerfy();
             },
             footer: undefined,
 
-            width: "90%",
+            min_width: "30em",
             height: "80%",
             trigger_tab: false,
             full_size: true
         });
 
         const tag = modal.htmlTag;
+        tag.find(".modal-body").addClass("modal-permission-editor");
+        if(selected_tab)
+            setTimeout(() => tag.find(".tab-header .entry[x-id=" + selected_tab + "]").first().trigger("click"), 1);
         tag.find(".btn_close").on('click', () => {
             modal.close();
         });
@@ -417,20 +192,18 @@ namespace Modals {
         return modal;
     }
 
-    function build_channel_tree(connection: ConnectionHandler, channel_list: JQuery, select_callback: (channel: ChannelEntry, icon_update: (id: number) => any) => any) {
+    function build_channel_tree(connection: ConnectionHandler, channel_list: JQuery, selected_channel: number, select_callback: (channel: ChannelEntry, icon_update: (id: number) => any) => any) {
         const root = connection.channelTree.get_first_channel();
         if(!root) return;
 
-        const build_channel = (channel: ChannelEntry) => {
-            let tag = $.spawn("div").addClass("channel").attr("channel-id", channel.channelId);
+        const build_channel = (channel: ChannelEntry, level: number) => {
+            let tag = $.spawn("div").addClass("channel").css("padding-left", "calc(0.25em + " + (level * 16) + "px)").attr("channel-id", channel.channelId);
             let icon_tag = connection.fileManager.icons.generateTag(channel.properties.channel_icon_id);
             icon_tag.appendTo(tag);
             const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
 
             {
                 let name = $.spawn("a").text(channel.channelName() + " (" + channel.channelId + ")").addClass("name");
-                //if(connection.channelTree.server.properties. == group.id)
-                //    name.addClass("default");
                 name.appendTo(tag);
             }
 
@@ -443,29 +216,33 @@ namespace Modals {
             return tag;
         };
 
-        const build_channels = (root: ChannelEntry) => {
-            build_channel(root).appendTo(channel_list);
-            for(const child of root.children())
-                build_channels(child);
-            while(root.channel_next) {
-                root = root.channel_next;
-                build_channel(root).appendTo(channel_list);
-            }
+        const build_channels = (root: ChannelEntry, level: number) => {
+            build_channel(root, level).appendTo(channel_list);
+            const child_head = root.children(false).find(e => e.channel_previous === undefined);
+            if(child_head)
+                build_channels(child_head, level + 1);
+            if(root.channel_next)
+                build_channels(root.channel_next, level)
         };
-        build_channels(root);
-        setTimeout(() => channel_list.find('.channel').first().trigger('click'), 0);
+        build_channels(root, 0);
+
+        let selected_channel_tag = channel_list.find(".channel[channel-id=" + selected_channel + "]");
+        if(!selected_channel_tag || selected_channel_tag.length < 1)
+            selected_channel_tag = channel_list.find('.channel').first();
+        setTimeout(() => selected_channel_tag.trigger('click'), 0);
     }
 
-    function apply_client_channel_permission(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_client_channel_permission(connection: ConnectionHandler, editor: AbstractPermissionEditor, tab_left: JQuery, tab_right: JQuery, options: OptionsClientChannelPermissions) {
         let current_cldbid: number = 0;
         let current_channel: ChannelEntry;
 
         /* the editor */
         {
-            const pe_client = tab_tag.find("permission-editor.client-channel");
-            tab_tag.on('show', event => {
-                console.error("Channel tab show");
-                pe_client.append(editor.container);
+            const pe_client = tab_right.find(".permission-editor");
+            tab_right.on('show', event => {
+                console.error("client channel tab show");
+                editor.set_toggle_button(undefined, undefined);
+                pe_client.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
                     if(current_cldbid && current_channel)
                         editor.set_mode(PermissionEditorMode.VISIBLE);
@@ -488,11 +265,12 @@ namespace Modals {
                     });
                 });
 
-                editor.set_listener((permission, value) => {
+                /* TODO: Error handling? */
+                editor.set_listener(async (permission, value) => {
                     if (!current_cldbid)
-                        return Promise.reject("unset client");
+                        throw "unset client";
                     if (!current_channel)
-                        return Promise.reject("unset channel");
+                        throw "unset channel";
 
                     if (value.remove) {
                         /* remove the permission */
@@ -502,7 +280,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return connection.serverConnection.send_command("channelclientdelperm", {
+                            await connection.serverConnection.send_command("channelclientdelperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id,
@@ -514,7 +292,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("channelclientdelperm", {
+                            await connection.serverConnection.send_command("channelclientdelperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
@@ -531,13 +309,13 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return connection.serverConnection.send_command("channelclientaddperm", {
+                            await connection.serverConnection.send_command("channelclientaddperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id,
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
-                                permnegate: value.flag_negate
+                                permnegated: value.flag_negate
                             });
                         } else {
                             log.info(LogCategory.PERMISSIONS, tr("Adding or updating client channel grant permission %s. permission.{id: %o, value: %o}"),
@@ -546,13 +324,13 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("channelclientaddperm", {
+                            await connection.serverConnection.send_command("channelclientaddperm", {
                                 cldbid: current_cldbid,
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
                                 permskip: false,
-                                permnegate: false
+                                permnegated: false
                             });
                         }
                     }
@@ -563,7 +341,7 @@ namespace Modals {
             });
         }
 
-        build_channel_tree(connection, tab_tag.find(".list-channel .entries"), channel => {
+        build_channel_tree(connection, tab_left.find(".list-channel .entries"), options.channel_id || 0, channel => {
             if(current_channel == channel) return;
 
             current_channel = channel;
@@ -573,18 +351,21 @@ namespace Modals {
         });
 
         {
-            const tag_select_uid = tab_tag.find(".client-select input");
-            const tag_select_error = tab_tag.find(".client-select .invalid-feedback");
 
-            const tag_client_name = tab_tag.find(".client-name");
-            const tag_client_uid = tab_tag.find(".client-uid");
-            const tag_client_dbid = tab_tag.find(".client-dbid");
+            const tag_select = tab_left.find(".client-select");
+            const tag_select_uid = tag_select.find("input");
+            const tag_select_error = tag_select.find(".invalid-feedback");
+
+            const tag_client_name = tab_left.find(".client-name");
+            const tag_client_uid = tab_left.find(".client-uid");
+            const tag_client_dbid = tab_left.find(".client-dbid");
+
 
             const resolve_client = () => {
                 let client_uid = tag_select_uid.val() as string;
                 connection.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                     if(!result || result.length == 0) return Promise.reject("invalid data");
-                    tag_select_uid.attr('pattern', null).removeClass('is-invalid');
+                    tag_select.removeClass('is-invalid');
 
                     tag_client_name.val(result[0].client_nickname );
                     tag_client_uid.val(result[0].client_unique_id);
@@ -606,25 +387,30 @@ namespace Modals {
                     tag_client_dbid.val("");
 
                     tag_select_error.text(error);
-                    tag_select_uid.attr('pattern', '^[a]{1000}$').addClass('is-invalid');
+                    tag_select.addClass('is-invalid');
                     editor.set_mode(PermissionEditorMode.UNSET);
                 });
             };
 
-            tab_tag.find(".client-select-uid").on('change', event => resolve_client());
+            tag_select_uid.on('change', event => resolve_client());
+            if(options.unique_id) {
+                tag_select_uid.val(options.unique_id);
+                setTimeout(() => resolve_client());
+            }
         }
     }
 
-    function apply_client_permission(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_client_permission(connection: ConnectionHandler, editor: AbstractPermissionEditor, tab_left: JQuery, tab_right: JQuery, options: OptionsClientPermissions) {
         let current_cldbid: number = 0;
 
         /* the editor */
         {
-            const pe_client = tab_tag.find("permission-editor.client");
-            tab_tag.on('show', event => {
+            const pe_client = tab_right.find("permission-editor.client");
+            tab_right.on('show', event => {
                 console.error("Channel tab show");
 
-                pe_client.append(editor.container);
+                editor.set_toggle_button(undefined, undefined);
+                pe_client.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
                     if(current_cldbid)
                         editor.set_mode(PermissionEditorMode.VISIBLE);
@@ -646,9 +432,10 @@ namespace Modals {
                     });
                 });
 
-                editor.set_listener((permission, value) => {
+                /* TODO: Error handling? */
+                editor.set_listener(async (permission, value) => {
                     if (!current_cldbid)
-                        return Promise.reject("unset client");
+                        throw "unset client";
 
                     if (value.remove) {
                         /* remove the permission */
@@ -658,7 +445,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return connection.serverConnection.send_command("clientaddperm", {
+                            await connection.serverConnection.send_command("clientdelperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id,
                             });
@@ -669,7 +456,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("clientaddperm", {
+                            await connection.serverConnection.send_command("clientdelperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id_grant(),
                             });
@@ -685,12 +472,12 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return connection.serverConnection.send_command("clientaddperm", {
+                            await connection.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id,
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
-                                permnegate: value.flag_negate
+                                permnegated: value.flag_negate
                             });
                         } else {
                             log.info(LogCategory.PERMISSIONS, tr("Adding or updating client grant permission %s. permission.{id: %o, value: %o}"),
@@ -699,12 +486,12 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("clientaddperm", {
+                            await connection.serverConnection.send_command("clientaddperm", {
                                 cldbid: current_cldbid,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
                                 permskip: false,
-                                permnegate: false
+                                permnegated: false
                             });
                         }
                     }
@@ -716,18 +503,19 @@ namespace Modals {
         }
 
 
-        const tag_select_uid = tab_tag.find(".client-select input");
-        const tag_select_error = tab_tag.find(".client-select .invalid-feedback");
+        const tag_select = tab_left.find(".client-select");
+        const tag_select_uid = tag_select.find("input");
+        const tag_select_error = tag_select.find(".invalid-feedback");
 
-        const tag_client_name = tab_tag.find(".client-name");
-        const tag_client_uid = tab_tag.find(".client-uid");
-        const tag_client_dbid = tab_tag.find(".client-dbid");
+        const tag_client_name = tab_left.find(".client-name");
+        const tag_client_uid = tab_left.find(".client-uid");
+        const tag_client_dbid = tab_left.find(".client-dbid");
 
         const resolve_client = () => {
             let client_uid = tag_select_uid.val() as string;
             connection.serverConnection.command_helper.info_from_uid(client_uid).then(result => {
                 if(!result || result.length == 0) return Promise.reject("invalid data");
-                tag_select_uid.attr('pattern', null).removeClass('is-invalid');
+                tag_select.removeClass("is-invalid");
 
                 tag_client_name.val(result[0].client_nickname );
                 tag_client_uid.val(result[0].client_unique_id);
@@ -749,24 +537,29 @@ namespace Modals {
                 tag_client_dbid.val("");
 
                 tag_select_error.text(error);
-                tag_select_uid.attr('pattern', '^[a]{1000}$').addClass('is-invalid');
+                tag_select.addClass("is-invalid");
                 editor.set_mode(PermissionEditorMode.UNSET);
             });
         };
 
-        tab_tag.find(".client-select-uid").on('change', event => resolve_client());
+        tag_select_uid.on('change', event => resolve_client());
+        if(options.unique_id) {
+            tag_select_uid.val(options.unique_id);
+            setTimeout(() => resolve_client());
+        }
     }
 
-    function apply_channel_permission(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_channel_permission(connection: ConnectionHandler, editor: AbstractPermissionEditor, tab_left: JQuery, tab_right: JQuery) {
         let current_channel: ChannelEntry | undefined;
         let update_channel_icon: (id: number) => any;
 
         /* the editor */
         {
-            const pe_channel = tab_tag.find("permission-editor.channel");
-            tab_tag.on('show', event => {
+            const pe_channel = tab_right.find(".permission-editor");
+            tab_right.on('show', event => {
                 console.error("Channel tab show");
-                pe_channel.append(editor.container);
+                editor.set_toggle_button(undefined, undefined);
+                pe_channel.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNEL_PERMISSION_LIST).granted(1))
                     editor.set_mode(PermissionEditorMode.VISIBLE);
                 else {
@@ -782,9 +575,9 @@ namespace Modals {
                     });
                 });
 
-                editor.set_listener((permission, value) => {
+                editor.set_listener(async (permission, value) => {
                     if (!current_channel)
-                        return Promise.reject("unset channel");
+                        throw "unset channel";
 
                     if (value.remove) {
                         /* remove the permission */
@@ -794,7 +587,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return connection.serverConnection.send_command("channeldelperm", {
+                            await connection.serverConnection.send_command("channeldelperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id,
                             }).then(e => {
@@ -810,7 +603,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("channeldelperm", {
+                            await connection.serverConnection.send_command("channeldelperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
                             });
@@ -826,12 +619,12 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return connection.serverConnection.send_command("channeladdperm", {
+                            await connection.serverConnection.send_command("channeladdperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id,
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
-                                permnegate: value.flag_negate
+                                permnegated: value.flag_negate
                             }).then(e => {
                                 if(permission.name === "i_icon_id" && update_channel_icon)
                                     update_channel_icon(value.value);
@@ -845,12 +638,12 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("channeladdperm", {
+                            await connection.serverConnection.send_command("channeladdperm", {
                                 cid: current_channel.channelId,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
                                 permskip: false,
-                                permnegate: false
+                                permnegated: false
                             });
                         }
                     }
@@ -861,23 +654,27 @@ namespace Modals {
             });
         }
 
-        let channel_list = tab_tag.find(".list-channel .entries");
-        build_channel_tree(connection, channel_list, (channel, update) => {
+        let channel_list = tab_left.find(".list-channel .entries");
+        build_channel_tree(connection, channel_list, 0, (channel, update) => {
             current_channel = channel;
             update_channel_icon = update;
             editor.trigger_update();
         });
     }
 
-    function apply_channel_groups(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
+    function apply_channel_groups(connection: ConnectionHandler, editor: AbstractPermissionEditor, tab_left: JQuery, tab_right: JQuery) {
         let current_group;
         let update_group_icon: (id: number) => any;
+        let update_groups: (selected_group: number) => any;
+        let update_buttons: () => any;
+
         /* the editor */
         {
-            const pe_server = tab_tag.find("permission-editor.group-channel");
-            tab_tag.on('show', event => {
+            const pe_server = tab_right.find(".permission-editor");
+            tab_right.on('show', event => {
                 console.error("Channel group tab show");
-                pe_server.append(editor.container);
+                editor.set_toggle_button(undefined, undefined);
+                pe_server.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_PERMISSION_LIST).granted(1))
                     editor.set_mode(PermissionEditorMode.VISIBLE);
                 else {
@@ -893,9 +690,9 @@ namespace Modals {
                     });
                 });
 
-                editor.set_listener((permission, value) => {
+                editor.set_listener(async (permission, value) => {
                     if (!current_group)
-                        return Promise.reject("unset channel group");
+                        throw "unset channel group";
 
                     if (value.remove) {
                         /* remove the permission */
@@ -905,7 +702,7 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return connection.serverConnection.send_command("channelgroupdelperm", {
+                            await connection.serverConnection.send_command("channelgroupdelperm", {
                                 cgid: current_group.id,
                                 permid: permission.id,
                             }).then(e => {
@@ -920,7 +717,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("channelgroupdelperm", {
+                            await connection.serverConnection.send_command("channelgroupdelperm", {
                                 cgid: current_group.id,
                                 permid: permission.id_grant(),
                             });
@@ -936,12 +733,12 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return connection.serverConnection.send_command("channelgroupaddperm", {
+                            await connection.serverConnection.send_command("channelgroupaddperm", {
                                 cgid: current_group.id,
                                 permid: permission.id,
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
-                                permnegate: value.flag_negate
+                                permnegated: value.flag_negate
                             }).then(e => {
                                 if(permission.name === "i_icon_id" && update_group_icon)
                                     update_group_icon(value.value);
@@ -954,12 +751,12 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("channelgroupaddperm", {
+                            await connection.serverConnection.send_command("channelgroupaddperm", {
                                 cgid: current_group.id,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
                                 permskip: false,
-                                permnegate: false
+                                permnegated: false
                             });
                         }
                     }
@@ -970,119 +767,403 @@ namespace Modals {
             });
         }
 
-
         /* list all channel groups */
         {
-            let group_list = tab_tag.find(".list-group-channel .entries");
+            let group_list = tab_left.find(".list-groups .entries");
 
-            const allow_query_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1);
-            const allow_template_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1);
-            for(let group of connection.groups.channelGroups.sort(GroupManager.sorter())) {
-                if(group.type == GroupType.QUERY) {
-                    if(!allow_query_groups)
-                        continue;
-                } else if(group.type == GroupType.TEMPLATE) {
-                    if(!allow_template_groups)
-                        continue;
+            update_groups = (selected_group: number) => {
+                group_list.children().remove();
+
+                const allow_query_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1);
+                const allow_template_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1);
+                for (let group of connection.groups.channelGroups.sort(GroupManager.sorter())) {
+                    if (group.type == GroupType.QUERY) {
+                        if (!allow_query_groups)
+                            continue;
+                    } else if (group.type == GroupType.TEMPLATE) {
+                        if (!allow_template_groups)
+                            continue;
+                    }
+
+                    let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
+                    let icon_tag = connection.fileManager.icons.generateTag(group.properties.iconid);
+                    icon_tag.appendTo(tag);
+                    const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
+
+                    {
+                        let name = $.spawn("a").text(group.name + " (" + group.id + ")").addClass("name");
+                        if (group.properties.savedb)
+                            name.addClass("savedb");
+                        if (connection.channelTree.server.properties.virtualserver_default_channel_group == group.id)
+                            name.addClass("default");
+                        name.appendTo(tag);
+                    }
+                    tag.appendTo(group_list);
+
+                    tag.on('click', event => {
+                        current_group = group;
+                        update_group_icon = _update_icon;
+                        group_list.find(".selected").removeClass("selected");
+                        tag.addClass("selected");
+
+                        update_buttons();
+                        //TODO trigger only if the editor is in channel group mode!
+                        editor.trigger_update();
+                    });
+                    tag.on('contextmenu', event => {
+                        if(event.isDefaultPrevented())
+                            return;
+
+                        contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Create a channel group"),
+                            icon_class: 'client-add',
+                            invalidPermission: !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_CREATE).granted(1),
+                            callback: () => tab_left.find(".button-add").trigger('click')
+                        }, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Rename channel group"),
+                            icon_class: 'client-edit',
+                            invalidPermission: !connection.permissions.neededPermission(PermissionType.I_CHANNEL_GROUP_MODIFY_POWER).granted(current_group.requiredModifyPower),
+                            callback: () => tab_left.find(".button-rename").trigger('click')
+                        }, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Duplicate channel group"),
+                            icon_class: 'client-copy',
+                            callback: () => tab_left.find(".button-duplicate").trigger('click')
+                        }, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Delete channel group"),
+                            icon_class: 'client-delete',
+                            invalidPermission: !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_DELETE).granted(1),
+                            callback: () => tab_left.find(".button-delete").trigger('click')
+                        });
+                        event.preventDefault();
+                    });
+                    if(group.id === selected_group) {
+                        setTimeout(() => tag.trigger('click'), 0);
+                        selected_group = undefined;
+                    }
                 }
 
-                let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
-                let icon_tag = connection.fileManager.icons.generateTag(group.properties.iconid);
-                icon_tag.appendTo(tag);
-                const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
-
-                {
-                    let name = $.spawn("a").text(group.name + " (" + group.id + ")").addClass("name");
-                    if(group.properties.savedb)
-                        name.addClass("savedb");
-                    if(connection.channelTree.server.properties.virtualserver_default_channel_group == group.id)
-                        name.addClass("default");
-                    name.appendTo(tag);
+                /* because the server menu is the first which will be shown */
+                if(typeof(selected_group) !== "undefined") {
+                    setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
                 }
-                tag.appendTo(group_list);
+            };
 
-                tag.on('click', event => {
-                    current_group = group;
-                    update_group_icon = _update_icon;
-                    group_list.find(".selected").removeClass("selected");
-                    tag.addClass("selected");
+            tab_left.find(".list-groups").on('contextmenu', event => {
+                if(event.isDefaultPrevented())
+                    return;
 
-                    //TODO trigger only if the editor is in channel group mode!
-                    editor.trigger_update();
+                contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                    type: contextmenu.MenuEntryType.ENTRY,
+                    name: tr("Create a channel group"),
+                    icon_class: 'client-add',
+                    callback: () => tab_left.find(".button-add").trigger('click')
                 });
-            }
-
-            /* because the server menu is the first which will be shown */
-            setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
+                event.preventDefault();
+            });
         }
-    }
 
-    /*
-        b_virtualserver_servergroup_permission_list
-        b_virtualserver_channel_permission_list
-        b_virtualserver_client_permission_list
-        b_virtualserver_channelgroup_permission_list
-        b_virtualserver_channelclient_permission_list
-        b_virtualserver_playlist_permission_list
-     */
-    function apply_server_groups(connection: ConnectionHandler, editor: PermissionEditor, tab_tag: JQuery) {
-        let current_group: Group;
-        let current_group_changed;
-
-        /* list all groups */
-        let update_icon: (icon_id: number) => any;
         {
-            let group_list = tab_tag.find(".list-group-server .entries");
+            const container_buttons = tab_left.find(".container-buttons");
 
-            const allow_query_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1);
-            const allow_template_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1);
-            for(const group of connection.groups.serverGroups.sort(GroupManager.sorter())) {
-                if(group.type == GroupType.QUERY) {
-                    if(!allow_query_groups)
-                        continue;
-                } else if(group.type == GroupType.TEMPLATE) {
-                    if(!allow_template_groups)
-                        continue;
-                }
-                let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
-                let icon_tag = connection.fileManager.icons.generateTag(group.properties.iconid);
-                icon_tag.appendTo(tag);
-                const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
+            const button_add = container_buttons.find(".button-add");
+            const button_rename = container_buttons.find(".button-rename");
+            const button_duplicate = container_buttons.find(".button-duplicate");
+            const button_delete = container_buttons.find(".button-delete");
 
-                {
-                    let name = $.spawn("a").text(group.name + " (" + group.id + ")").addClass("name");
-                    if(group.properties.savedb)
-                        name.addClass("savedb");
-                    if(connection.channelTree.server.properties.virtualserver_default_server_group == group.id)
-                        name.addClass("default");
-                    name.appendTo(tag);
-                }
-                tag.appendTo(group_list);
+            button_add.prop("disabled", !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_CREATE).granted(1));
+            button_delete.prop("disabled", !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_CREATE).granted(1));
+            update_buttons = () => {
+                const permission_modify = current_group && connection.permissions.neededPermission(PermissionType.I_CHANNEL_GROUP_MODIFY_POWER).granted(current_group.requiredModifyPower);
+                button_rename.prop("disabled", !permission_modify);
+                button_duplicate.prop("disabled", !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_CREATE).granted(1));
+            };
 
-                tag.on('click', event => {
-                    if(current_group === group)
+            button_add.on('click', () => {
+                spawnGroupAdd(false, connection.permissions, (name, type) => name.length > 0 && !connection.groups.channelGroups.find(e => e.target == GroupTarget.CHANNEL && e.name.toLowerCase() === name.toLowerCase() && e.type == type) , (name, type) => {
+                    console.log("Creating channel group: %o, %o", name, type);
+                    connection.serverConnection.send_command('channelgroupadd', {
+                        name: name,
+                        type: type
+                    }).then(() => {
+                        createInfoModal(tr("Group created"), tr("The channel group has been created.")).open();
+                        update_groups(0); //TODO: May get the created group?
+                    }).catch(error => {
+                        console.warn(tr("Failed to create channel group: %o"), error);
+                        if(error instanceof CommandResult) {
+                            error = error.extra_message || error.message;
+                        }
+                        createErrorModal(tr("Failed to create group"), MessageHelper.formatMessage(tr("Failed to create group:{:br:}"), error)).open();
+                    });
+                });
+            });
+
+            button_rename.on('click', () => {
+                if(!current_group)
+                    return;
+
+                createInputModal(tr("Rename group"), tr("Enter the new group name"), name => name.length > 0 && !connection.groups.channelGroups.find(e => e.target == GroupTarget.CHANNEL && e.name.toLowerCase() === name.toLowerCase() && e.type == current_group.type), result => {
+                    if(typeof(result) !== "string" || !result)
+                        return;
+                    connection.serverConnection.send_command('channelgrouprename', {
+                        cgid: current_group.id,
+                        name: result
+                    }).then(() => {
+                        createInfoModal(tr("Group renamed"), tr("The channel group has been renamed.")).open();
+                        update_groups(current_group.id);
+                    }).catch(error => {
+                        console.warn(tr("Failed to rename channel group: %o"), error);
+                        if(error instanceof CommandResult) {
+                            error = error.extra_message || error.message;
+                        }
+                        createErrorModal(tr("Failed to rename group"), MessageHelper.formatMessage(tr("Failed to rename group:{:br:}"), error)).open();
+                    });
+                }).open();
+            });
+
+            button_duplicate.on('click', () => {
+                createErrorModal(tr("Not implemented yet"), tr("This function hasn't been implemented yet!")).open();
+            });
+
+            button_delete.on('click', () => {
+                if(!current_group)
+                    return;
+
+                spawnYesNo(tr("Are you sure?"), MessageHelper.formatMessage(tr("Do you really want to delete the group {}?"), current_group.name), result => {
+                    if(result !== true)
                         return;
 
-                    current_group = group;
-                    update_icon = _update_icon;
-                    current_group_changed();
-
-                    group_list.find(".selected").removeClass("selected");
-                    tag.addClass("selected");
-                    editor.trigger_update();
+                    connection.serverConnection.send_command("channelgroupdel", {
+                        cgid: current_group.id,
+                        force: true
+                    }).then(() => {
+                        createInfoModal(tr("Group deleted"), tr("The channel group has been deleted.")).open();
+                        update_groups(0);
+                    }).catch(error => {
+                        console.warn(tr("Failed to delete channel group: %o"), error);
+                        if(error instanceof CommandResult) {
+                            error = error.extra_message || error.message;
+                        }
+                        createErrorModal(tr("Failed to delete group"), MessageHelper.formatMessage(tr("Failed to delete group:{:br:}"), error)).open();
+                    });
                 });
-            }
-
-            /* because the server menu is the first which will be shown */
-            setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
+            });
         }
+        update_groups(0);
+    }
+
+    function apply_server_groups(connection: ConnectionHandler, editor: AbstractPermissionEditor, tab_left: JQuery, tab_right: JQuery) {
+        let current_group: Group;
+        let current_group_changed: (() => any)[] = [];
+
+        let update_buttons: () => any;
+        /* list all groups */
+
+        let update_icon: ((icon_id: number) => any)[] = [];
+
+        let update_groups: (selected_group: number) => any;
+        {
+            let group_list = tab_left.find(".container-group-list .list-groups .entries");
+            let group_list_update_icon: (i: number) => any;
+            update_icon.push(i => group_list_update_icon(i));
+
+            update_groups = (selected_group: number) => {
+                group_list.children().remove();
+
+                const allow_query_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1);
+                const allow_template_groups = connection.permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1);
+                for(const group of connection.groups.serverGroups.sort(GroupManager.sorter())) {
+                    if(group.type == GroupType.QUERY) {
+                        if(!allow_query_groups)
+                            continue;
+                    } else if(group.type == GroupType.TEMPLATE) {
+                        if(!allow_template_groups)
+                            continue;
+                    }
+                    let tag = $.spawn("div").addClass("group").attr("group-id", group.id);
+                    let icon_tag = connection.fileManager.icons.generateTag(group.properties.iconid);
+                    icon_tag.appendTo(tag);
+                    const _update_icon = icon_id => icon_tag.replaceWith(icon_tag = connection.fileManager.icons.generateTag(icon_id));
+
+                    {
+                        let name = $.spawn("div").text(group.name + " (" + group.id + ")").addClass("name");
+                        if(group.properties.savedb)
+                            name.addClass("savedb");
+                        if(connection.channelTree.server.properties.virtualserver_default_server_group == group.id)
+                            name.addClass("default");
+                        name.appendTo(tag);
+                    }
+                    tag.appendTo(group_list);
+
+                    tag.on('click', event => {
+                        if(current_group === group)
+                            return;
+
+                        current_group = group;
+                        group_list_update_icon = _update_icon;
+                        if(update_buttons)
+                            update_buttons();
+                        for(const entry of current_group_changed)
+                            entry();
+
+                        group_list.find(".selected").removeClass("selected");
+                        tag.addClass("selected");
+                        editor.trigger_update();
+                    });
+                    tag.on('contextmenu', event => {
+                        if(event.isDefaultPrevented())
+                            return;
+
+                        contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Create a server group"),
+                            icon_class: 'client-add',
+                            invalidPermission: !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_CREATE).granted(1),
+                            callback: () => tab_left.find(".button-add").trigger('click')
+                        }, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Rename server group"),
+                            icon_class: 'client-edit',
+                            invalidPermission: !connection.permissions.neededPermission(PermissionType.I_SERVER_GROUP_MODIFY_POWER).granted(current_group.requiredModifyPower),
+                            callback: () => tab_left.find(".button-rename").trigger('click')
+                        }, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Duplicate server group"),
+                            icon_class: 'client-copy',
+                            callback: () => tab_left.find(".button-duplicate").trigger('click')
+                        }, {
+                            type: contextmenu.MenuEntryType.ENTRY,
+                            name: tr("Delete server group"),
+                            icon_class: 'client-delete',
+                            invalidPermission: !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_DELETE).granted(1),
+                            callback: () => tab_left.find(".button-delete").trigger('click')
+                        });
+                        event.preventDefault();
+                    });
+
+                    if(group.id === selected_group) {
+                        setTimeout(() => tag.trigger('click'), 0);
+                        selected_group = undefined;
+                    }
+                }
+
+                /* because the server menu is the first which will be shown */
+                if(typeof(selected_group) !== "undefined") {
+                    setTimeout(() => group_list.find('.group').first().trigger('click'), 0);
+                }
+            };
+
+
+            tab_left.find(".list-groups").on('contextmenu', event => {
+                if(event.isDefaultPrevented())
+                    return;
+
+                contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                    type: contextmenu.MenuEntryType.ENTRY,
+                    name: tr("Create a server group"),
+                    icon_class: 'client-add',
+                    callback: () => tab_left.find(".button-add").trigger('click')
+                });
+                event.preventDefault();
+            });
+        }
+        {
+            const container_buttons = tab_left.find(".container-group-list .container-buttons");
+
+            const button_add = container_buttons.find(".button-add");
+            const button_rename = container_buttons.find(".button-rename");
+            const button_duplicate = container_buttons.find(".button-duplicate");
+            const button_delete = container_buttons.find(".button-delete");
+
+            button_add.prop("disabled", !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_CREATE).granted(1));
+            button_delete.prop("disabled", !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_DELETE).granted(1));
+            update_buttons = () => {
+                const permission_modify = current_group && connection.permissions.neededPermission(PermissionType.I_SERVER_GROUP_MODIFY_POWER).granted(current_group.requiredModifyPower);
+                button_rename.prop("disabled", !permission_modify);
+                button_duplicate.prop("disabled", !connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_CREATE).granted(1));
+            };
+
+            button_add.on('click', () => {
+                spawnGroupAdd(true, connection.permissions, (name, type) => name.length > 0 && !connection.groups.serverGroups.find(e => e.target == GroupTarget.SERVER && e.name.toLowerCase() === name.toLowerCase() && e.type == type) , (name, type) => {
+                    console.log("Creating group: %o, %o", name, type);
+                    connection.serverConnection.send_command('servergroupadd', {
+                        name: name,
+                        type: type
+                    }).then(() => {
+                        createInfoModal(tr("Group created"), tr("The server group has been created.")).open();
+                        update_groups(0); //TODO: May get the created group?
+                    }).catch(error => {
+                        console.warn(tr("Failed to create server group: %o"), error);
+                        if(error instanceof CommandResult) {
+                            error = error.extra_message || error.message;
+                        }
+                        createErrorModal(tr("Failed to create group"), MessageHelper.formatMessage(tr("Failed to create group:{:br:}"), error)).open();
+                    });
+                });
+            });
+
+            button_rename.on('click', () => {
+                if(!current_group)
+                    return;
+
+                createInputModal(tr("Rename group"), tr("Enter the new group name"), name => name.length > 0 && !connection.groups.serverGroups.find(e => e.target == GroupTarget.SERVER && e.name.toLowerCase() === name.toLowerCase() && e.type == current_group.type), result => {
+                    if(typeof(result) !== "string" || !result)
+                        return;
+                    connection.serverConnection.send_command('servergrouprename', {
+                        sgid: current_group.id,
+                        name: result
+                    }).then(() => {
+                        createInfoModal(tr("Group renamed"), tr("The server group has been renamed.")).open();
+                        update_groups(current_group.id);
+                    }).catch(error => {
+                        console.warn(tr("Failed to rename server group: %o"), error);
+                        if(error instanceof CommandResult) {
+                            error = error.extra_message || error.message;
+                        }
+                        createErrorModal(tr("Failed to rename group"), MessageHelper.formatMessage(tr("Failed to rename group:{:br:}"), error)).open();
+                    });
+                }).open();
+            });
+
+            button_duplicate.on('click', () => {
+                createErrorModal(tr("Not implemented yet"), tr("This function hasn't been implemented yet!")).open();
+            });
+
+            button_delete.on('click', () => {
+                if(!current_group)
+                    return;
+
+                spawnYesNo(tr("Are you sure?"), MessageHelper.formatMessage(tr("Do you really want to delete the group {}?"), current_group.name), result => {
+                    if(result !== true)
+                        return;
+
+                    connection.serverConnection.send_command("servergroupdel", {
+                        sgid: current_group.id,
+                        force: true
+                    }).then(() => {
+                        createInfoModal(tr("Group deleted"), tr("The server group has been deleted.")).open();
+                        update_groups(0);
+                    }).catch(error => {
+                        console.warn(tr("Failed to delete server group: %o"), error);
+                        if(error instanceof CommandResult) {
+                            error = error.extra_message || error.message;
+                        }
+                        createErrorModal(tr("Failed to delete group"), MessageHelper.formatMessage(tr("Failed to delete group:{:br:}"), error)).open();
+                    });
+                });
+            });
+        }
+        update_groups(0);
 
         /* the editor */
         {
-            const pe_server = tab_tag.find("permission-editor.group-server");
-            tab_tag.on('show', event => {
+            const pe_server = tab_right.find(".permission-editor");
+            tab_right.on('show', event => {
                 console.error("Server tab show");
-                pe_server.append(editor.container);
+                pe_server.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_PERMISSION_LIST).granted(1))
                     editor.set_mode(PermissionEditorMode.VISIBLE);
                 else {
@@ -1090,14 +1171,15 @@ namespace Modals {
                     return;
                 }
                 editor.set_listener_update(() => {
+                    console.log("Updating permissions");
                     connection.groups.request_permissions(current_group).then(result => editor.set_permissions(result)).catch(error => {
                         console.log(error); //TODO handling?
                     });
                 });
 
-                editor.set_listener((permission, value) => {
+                editor.set_listener(async (permission, value) => {
                     if (!current_group)
-                        return Promise.reject("unset server group");
+                        throw "unset server group";
 
                     if (value.remove) {
                         /* remove the permission */
@@ -1107,12 +1189,13 @@ namespace Modals {
                                 permission.id,
                             );
 
-                            return connection.serverConnection.send_command("servergroupdelperm", {
+                            await connection.serverConnection.send_command("servergroupdelperm", {
                                 sgid: current_group.id,
                                 permid: permission.id,
                             }).then(e => {
-                                if(permission.name === "i_icon_id" && update_icon)
-                                    update_icon(0);
+                                if(permission.name === "i_icon_id")
+                                    for(const c of update_icon)
+                                        c(0);
                                 return e;
                             });
                         } else {
@@ -1122,7 +1205,7 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("servergroupdelperm", {
+                            await connection.serverConnection.send_command("servergroupdelperm", {
                                 sgid: current_group.id,
                                 permid: permission.id_grant(),
                             });
@@ -1138,15 +1221,16 @@ namespace Modals {
                                 value.flag_negate
                             );
 
-                            return connection.serverConnection.send_command("servergroupaddperm", {
+                            await connection.serverConnection.send_command("servergroupaddperm", {
                                 sgid: current_group.id,
                                 permid: permission.id,
                                 permvalue: value.value,
                                 permskip: value.flag_skip,
-                                permnegate: value.flag_negate
+                                permnegated: value.flag_negate
                             }).then(e => {
-                                if(permission.name === "i_icon_id" && update_icon)
-                                    update_icon(value.value);
+                                if(permission.name === "i_icon_id")
+                                    for(const c of update_icon)
+                                        c(value.value);
                                 return e;
                             });
                         } else {
@@ -1156,12 +1240,12 @@ namespace Modals {
                                 value.granted,
                             );
 
-                            return connection.serverConnection.send_command("servergroupaddperm", {
+                            await connection.serverConnection.send_command("servergroupaddperm", {
                                 sgid: current_group.id,
                                 permid: permission.id_grant(),
                                 permvalue: value.granted,
                                 permskip: false,
-                                permnegate: false
+                                permnegated: false
                             });
                         }
                     }
@@ -1173,17 +1257,30 @@ namespace Modals {
 
         /* client list */
         {
-            //filter-client-list
-            const container_clients = tab_tag.find(".container-clients");
-            const container_client_list = container_clients.find(".list-clients");
-            const input_filter = container_clients.find(".filter-client-list");
+            //container-client-list container-group-list
+            let clients_visible = false;
+            let selected_client: {
+                tag: JQuery,
+                dbid: number
+            };
+
+            const container_client_list = tab_left.find(".container-client-list").addClass("hidden");
+            const container_group_list = tab_left.find(".container-group-list");
+
+            const container_selected_group = container_client_list.find(".container-current-group");
+            const container_clients = container_client_list.find(".list-clients .entries");
+
+            const input_filter = container_client_list.find(".filter-client-list");
+
+            const button_add = container_client_list.find(".button-add");
+            const button_delete = container_client_list.find(".button-delete");
 
             const update_filter = () => {
                 const filter_text = (input_filter.val() || "").toString().toLowerCase();
                 if(!filter_text) {
-                    container_client_list.find(".entry").css('display', 'block');
+                    container_clients.find(".entry").css('display', 'block');
                 } else {
-                    const entries = container_client_list.find(".entry");
+                    const entries = container_clients.find(".entry");
                     for(const _entry of entries) {
                         const entry = $(_entry);
                         if(entry.attr("search-string").toLowerCase().indexOf(filter_text) !== -1)
@@ -1195,17 +1292,24 @@ namespace Modals {
             };
 
             const update_client_list = () => {
-                container_client_list.empty();
+                container_clients.empty();
+                button_delete.prop('disabled', true);
 
                 connection.serverConnection.command_helper.request_clients_by_server_group(current_group.id).then(clients => {
                     for(const client of clients) {
-                        const tag = $.spawn("div").addClass("entry").text(client.client_nickname);
+                        const tag = $.spawn("div").addClass("client").text(client.client_nickname);
                         tag.attr("search-string", client.client_nickname + "-" + client.client_unique_identifier + "-" + client.client_database_id);
-                        container_client_list.append(tag);
+                        container_clients.append(tag);
 
                         tag.on('click contextmenu', event => {
-                            container_client_list.find(".selected").removeClass("selected");
+                            container_clients.find(".selected").removeClass("selected");
                             tag.addClass("selected");
+
+                            selected_client = {
+                                tag: tag,
+                                dbid: client.client_database_id
+                            };
+                            button_delete.prop('disabled', false);
                         });
 
                         tag.on('contextmenu', event => {
@@ -1215,16 +1319,14 @@ namespace Modals {
                             event.preventDefault();
                             contextmenu.spawn_context_menu(event.pageX, event.pageY, {
                                 type: contextmenu.MenuEntryType.ENTRY,
+                                name: tr("Add client"),
+                                icon_class: 'client-add',
+                                callback: () => button_add.trigger('click')
+                            }, {
+                                type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Remove client"),
                                 icon_class: 'client-delete',
-                                callback: () => {
-                                    connection.serverConnection.send_command("servergroupdelclient", {
-                                        sgid: current_group.id,
-                                        cldbid: client.client_database_id
-                                    }).then(() => {
-                                        tag.detach();
-                                    });
-                                }
+                                callback: () => button_delete.trigger('click')
                             }, {
                                 type: contextmenu.MenuEntryType.ENTRY,
                                 name: tr("Copy unique id"),
@@ -1238,11 +1340,175 @@ namespace Modals {
                     if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR)
                         return;
                     console.warn(tr("Failed to receive server group clients for group %d: %o"), current_group.id, error);
-                })
+                });
             };
+            current_group_changed.push(update_client_list);
 
-            input_filter.on('change keyup', event => update_filter());
-            current_group_changed = update_client_list;
+            button_delete.on('click', event => {
+                const client = selected_client;
+                if(!client) return;
+
+                connection.serverConnection.send_command("servergroupdelclient", {
+                    sgid: current_group.id,
+                    cldbid: client.dbid
+                }).then(() => {
+                    selected_client.tag.detach();
+                    button_delete.prop('disabled', true); /* nothing is selected */
+                }).catch(error => {
+                    console.log(tr("Failed to delete client %o from server group %o: %o"), client.dbid, current_group.id, error);
+                    if(error instanceof CommandResult)
+                        error = error.extra_message || error.message;
+                    createErrorModal(tr("Failed to remove client"), tr("Failed to remove client from server group")).open();
+                });
+            });
+
+            button_add.on('click', event => {
+                createInputModal(tr("Add client to server group"), tr("Enter the client unique id or database id"), text => {
+                    if(!text) return false;
+                    if(!!text.match(/^[0-9]+$/))
+                        return true;
+                    try {
+                        return atob(text).length >= 20;
+                    } catch(error) {
+                        return false;
+                    }
+                }, async text => {
+                    if(typeof(text) !== "string")
+                        return;
+
+                    let dbid;
+                    if(!!text.match(/^[0-9]+$/)) {
+                        dbid = parseInt(text);
+                        debugger;
+                    } else {
+                        try {
+                            const data = await connection.serverConnection.command_helper.info_from_uid(text.trim());
+                            dbid = data[0].client_database_id;
+                        } catch(error) {
+                            console.log(tr("Failed to resolve client database id from unique id (%s): %o"), text, error);
+                            if(error instanceof CommandResult)
+                                error = error.extra_message || error.message;
+                            createErrorModal(tr("Failed to add client"), MessageHelper.formatMessage(tr("Failed to add client to server group\nFailed to resolve database id: {}."), error)).open();
+                            return;
+                        }
+                    }
+                    if(!dbid) {
+                        console.log(tr("Failed to resolve client database id from unique id (%s): Client not found"));
+                        createErrorModal(tr("Failed to add client"), tr("Failed to add client to server group\nClient database id not found")).open();
+                        return;
+                    }
+
+
+                    connection.serverConnection.send_command("servergroupaddclient", {
+                        sgid: current_group.id,
+                        cldbid: dbid
+                    }).then(() => {
+                        update_client_list();
+                    }).catch(error => {
+                        console.log(tr("Failed to add client %o to server group %o: %o"), dbid, current_group.id, error);
+                        if(error instanceof CommandResult)
+                            error = error.extra_message || error.message;
+                        createErrorModal(tr("Failed to add client"), tr("Failed to add client to server group\n" + error)).open();
+                    });
+                }).open();
+            });
+
+            container_client_list.on('contextmenu', event => {
+                if(event.isDefaultPrevented())
+                    return;
+
+                event.preventDefault();
+                contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                    type: contextmenu.MenuEntryType.ENTRY,
+                    name: tr("Add client"),
+                    icon_class: 'client-add',
+                    callback: () => button_add.trigger('click')
+                })
+            });
+
+            /* icon handler and current group display */
+            {
+                let update_icon_callback: (i: number) => any;
+                update_icon.push(i => update_icon_callback(i));
+
+                input_filter.on('change keyup', event => update_filter());
+                current_group_changed.push(() => {
+                    container_selected_group.empty();
+                    if(!current_group) return;
+
+                    let icon_container = $.spawn("div").addClass("icon-container").appendTo(container_selected_group);
+
+                    connection.fileManager.icons.generateTag(current_group.properties.iconid).appendTo(icon_container);
+                    update_icon_callback = icon => {
+                        icon_container.empty();
+                        connection.fileManager.icons.generateTag(icon).appendTo(icon_container);
+                    };
+                    $.spawn("div").addClass("name").text(current_group.name + " (" + current_group.id + ")").appendTo(container_selected_group);
+                });
+            }
+
+            tab_right.on('show', event => {
+                editor.set_toggle_button(() => {
+                    clients_visible = !clients_visible;
+
+                    container_client_list.toggleClass("hidden", !clients_visible);
+                    container_group_list.toggleClass("hidden", clients_visible);
+
+                    return clients_visible ? tr("Hide clients in group") : tr("Show clients in group");
+                }, clients_visible ? tr("Hide clients in group") : tr("Show clients in group"));
+            });
         }
+    }
+
+    function spawnGroupAdd(server_group: boolean, permissions: PermissionManager, valid_name: (name: string, group_type: number) => boolean, callback: (group_name: string, group_type: number) => any) {
+        let modal: Modal;
+        modal = createModal({
+            header: tr("Create a new group"),
+            body: () => {
+                let tag = $("#tmpl_group_add").renderTag({
+                    server_group: server_group
+                });
+
+                tag.find(".group-type-template").prop("disabled", !permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_TEMPLATES).granted(1));
+                tag.find(".group-type-query").prop("disabled", !permissions.neededPermission(PermissionType.B_SERVERINSTANCE_MODIFY_QUERYGROUP).granted(1));
+
+                const container_name = tag.find(".group-name");
+                const button_create = tag.find(".button-create");
+
+                const group_type = () => (tag.find(".group-type")[0] as HTMLSelectElement).selectedIndex;
+                container_name.on('keyup change', (event: Event) => {
+                    if(event.type === 'keyup') {
+                        const kevent = event as KeyboardEvent;
+                        if(!kevent.shiftKey && kevent.key == 'Enter') {
+                            button_create.trigger('click');
+                            return;
+                        }
+                    }
+                    const valid = valid_name(container_name.val() as string, group_type());
+                    button_create.prop("disabled", !valid);
+                    container_name.parent().toggleClass("is-invalid", !valid);
+                }).trigger('change');
+                tag.find(".group-type").on('change', () => container_name.trigger('change'));
+
+                button_create.on('click', event => {
+                    if(button_create.prop("disabled"))
+                        return;
+                    button_create.prop("disabled", true); /* disable double clicking */
+
+                    modal.close();
+                    callback(container_name.val() as string, group_type());
+                });
+                return tag;
+            },
+            footer: null,
+
+            width: 600
+        });
+        modal.htmlTag.find(".modal-body").addClass("modal-group-add");
+        modal.open_listener.push(() => {
+            modal.htmlTag.find(".group-name").focus();
+        });
+
+        modal.open();
     }
 }

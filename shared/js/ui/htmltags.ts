@@ -33,11 +33,21 @@ namespace htmltags {
         if(properties.client_id)
             result = result + "client-id='" + properties.client_id + "' ";
 
-        if(properties.client_unique_id && properties.client_unique_id != "unknown")
-            result = result + "client-unique-id='" + encodeURIComponent(properties.client_unique_id) + "' ";
+        if(properties.client_unique_id && properties.client_unique_id != "unknown") {
+            try {
+                result = result + "client-unique-id='" + encodeURIComponent(properties.client_unique_id) + "' ";
+            } catch(error) {
+                console.warn(tr("Failed to generate client tag attribute 'client-unique-id': %o"), error);
+            }
+        }
 
-        if(properties.client_name)
-            result = result + "client-name='" + encodeURIComponent(properties.client_name) + "' ";
+        if(properties.client_name) {
+            try {
+                result = result + "client-name='" + encodeURIComponent(properties.client_name) + "' ";
+            } catch(error) {
+                console.warn(tr("Failed to generate client tag attribute 'client-name': %o"), error);
+            }
+        }
 
         /* add the click handler */
         result += "oncontextmenu='return htmltags.callbacks.callback_context_client($(this));'";

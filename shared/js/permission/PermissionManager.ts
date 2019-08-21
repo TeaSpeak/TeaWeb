@@ -396,8 +396,6 @@ class PermissionValue {
 }
 
 class NeededPermissionValue extends PermissionValue {
-    changeListener: ((newValue: number) => void)[] = [];
-
     constructor(type, value) {
         super(type, value);
     }
@@ -423,6 +421,8 @@ class PermissionManager extends connection.AbstractCommandHandler {
     permissionList: PermissionInfo[] = [];
     permissionGroups: PermissionGroup[] = [];
     neededPermissions: NeededPermissionValue[] = [];
+
+    needed_permission_change_listener: {[permission: string]:(() => any)[]} = {};
 
     requests_channel_permissions: ChannelPermissionRequest[] = [];
     requests_client_permissions: TeaPermissionRequest[] = [];
@@ -513,6 +513,24 @@ class PermissionManager extends connection.AbstractCommandHandler {
         client.serverConnection.command_handler_boss().register_handler(this);
 
         this.handle = client;
+    }
+
+    destroy() {
+        this.handle.serverConnection && this.handle.serverConnection.command_handler_boss().unregister_handler(this);
+        this.needed_permission_change_listener = {};
+
+        this.permissionList = undefined;
+        this.permissionGroups = undefined;
+
+        this.neededPermissions = undefined;
+
+        this.requests_channel_permissions = undefined;
+        this.requests_client_permissions = undefined;
+        this.requests_client_channel_permissions = undefined;
+        this.requests_playlist_permissions = undefined;
+
+        this.initializedListener = undefined;
+        this._cacheNeededPermissions = undefined;
     }
 
     handle_command(command: connection.ServerCommand): boolean {
@@ -631,8 +649,8 @@ class PermissionManager extends connection.AbstractCommandHandler {
             if(entry.value == parseInt(e["permvalue"])) continue;
             entry.value = parseInt(e["permvalue"]);
 
-            for(let listener of entry.changeListener)
-                listener(entry.value);
+            for(const listener of this.needed_permission_change_listener[entry.type.name] || [])
+                listener();
 
             table_entries.push({
                 "permission": entry.type.name,
@@ -643,13 +661,26 @@ class PermissionManager extends connection.AbstractCommandHandler {
         log.table("Needed client permissions", table_entries);
         group.end();
 
-        //TODO tr
-        log.debug(LogCategory.PERMISSIONS, "Dropping " + copy.length + " needed permissions and added " + addcount + " permissions.");
+        log.debug(LogCategory.PERMISSIONS, tr("Dropping %o needed permissions and added %o permissions."), copy.length, addcount);
         for(let e of copy) {
             e.value = -2;
-            for(let listener of e.changeListener)
-                listener(e.value);
+            for(const listener of this.needed_permission_change_listener[e.type.name] || [])
+                listener();
         }
+    }
+
+    register_needed_permission(key: PermissionType, listener: () => any) {
+        const array = this.needed_permission_change_listener[key] || [];
+        array.push(listener);
+        this.needed_permission_change_listener[key] = array;
+    }
+
+    unregister_needed_permission(key: PermissionType, listener: () => any) {
+        const array = this.needed_permission_change_listener[key];
+        if(!array) return;
+
+        array.remove(listener);
+        this.needed_permission_change_listener[key] = array.length > 0 ? array : undefined;
     }
 
     private onChannelPermList(json) {
@@ -780,7 +811,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
         return request.promise;
     }
 
-    neededPermission(key: number | string | PermissionType | PermissionInfo) : PermissionValue {
+    neededPermission(key: number | string | PermissionType | PermissionInfo) : NeededPermissionValue {
         for(let perm of this.neededPermissions)
             if(perm.type.id == key || perm.type.name == key || perm.type == key)
                 return perm;

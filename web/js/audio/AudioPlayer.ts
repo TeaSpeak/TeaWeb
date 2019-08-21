@@ -10,6 +10,7 @@ namespace audio.player {
     let _globalContextPromise: Promise<void>;
     let _initialized_listener: (() => any)[] = [];
     let _master_volume: number = 1;
+    let _no_device = false;
 
     export function initialize() : boolean {
         context();
@@ -35,7 +36,7 @@ namespace audio.player {
 
         _initialized_listener.unshift(() => {
             _global_destination = _globalContext.createGain();
-            _global_destination.gain.value = _master_volume;
+            _global_destination.gain.value = _no_device ? 0 : _master_volume;
             _global_destination.connect(_globalContext.destination);
         });
         if(_globalContext.state == "suspended") {
@@ -47,14 +48,14 @@ namespace audio.player {
                 });
             }
             _globalContext.resume(); //We already have our listener
-            return undefined;
+            return _globalContext;
         }
 
         if(_globalContext.state == "running") {
             fire_initialized();
             return _globalContext;
         }
-        return undefined;
+        return _globalContext;
     }
 
     export function get_master_volume() : number {
@@ -62,6 +63,8 @@ namespace audio.player {
     }
     export function set_master_volume(volume: number) {
         _master_volume = volume;
+        if(_global_destination)
+            _global_destination.gain.value = _no_device ? 0 : _master_volume;
     }
 
     export function destination() : AudioNode {
@@ -78,13 +81,16 @@ namespace audio.player {
             _initialized_listener.push(cb);
     }
 
-    export const WEB_DEVICE: Device = {device_id: "", name: "default playback"};
+    export const WEB_DEVICE: Device = {device_id: "default", name: "default playback"};
 
     export function available_devices() : Promise<Device[]> {
         return Promise.resolve([WEB_DEVICE])
     }
 
     export function set_device(device_id: string) : Promise<void> {
+        _no_device = !device_id;
+        _global_destination.gain.value = _no_device ? 0 : _master_volume;
+
         return Promise.resolve();
     }
 

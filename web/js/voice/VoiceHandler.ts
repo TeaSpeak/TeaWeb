@@ -145,6 +145,23 @@ namespace audio {
                 this.send_task = setInterval(this.send_next_voice_packet.bind(this), 20); /* send all 20ms out voice packets */
             }
 
+            destroy() {
+                clearInterval(this.send_task);
+                this.dropSession();
+                this.acquire_voice_recorder(undefined, true).catch(error => {
+                    console.warn(tr("Failed to release voice recorder: %o"), error);
+                }).then(() => {
+                    for(const client of this._audio_clients)  {
+                        client.abort_replay();
+                        client.callback_playback = undefined;
+                        client.callback_state_changed = undefined;
+                        client.callback_stopped = undefined;
+                    }
+                    this._audio_clients = undefined;
+                    this._audio_source = undefined;
+                });
+            }
+
             native_encoding_supported() : boolean {
                 const context = window.webkitAudioContext || window.AudioContext;
                 if(!context)
@@ -515,7 +532,8 @@ namespace audio {
 
             private handleVoiceEnded() {
                 const chandler = this.connection.client;
-                chandler.getClient().speaking = false;
+                const ch = chandler.getClient();
+                if(ch) ch.speaking = false;
 
                 if(!chandler.connected)
                     return false;
@@ -530,7 +548,9 @@ namespace audio {
             private handleVoiceStarted() {
                 const chandler = this.connection.client;
                 console.log(tr("Local voice started"));
-                chandler.getClient().speaking = true;
+
+                const ch = chandler.getClient();
+                if(ch) ch.speaking = true;
             }
 
             private on_recoder_yield() {

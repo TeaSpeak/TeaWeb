@@ -1,7 +1,27 @@
 # Changelog:
+    
 * **XX.XX.XX**
     - Removed icon size restriction for SVGs
     - Fixed permission editor icon select for not granted icon permissions
+    - Fixed "disconnect" button not showing up after beeing connected
+    - Improved handling of `disableMultiSession` settings (Connect in a new tab does not show up anymore)
+    - Implemented avatar upload
+    - Sorting server group icons within client channel tree
+    - Fixed buggy away message position
+    - Logging the servers welcome message [#54](https://github.com/TeaSpeak/TeaWeb/issues/54)
+    - Showing servers hostbutton
+    - Fixed microphone and sound action sounds [#67](https://github.com/TeaSpeak/TeaWeb/issues/67)
+    - Added option to mute clients [#64](https://github.com/TeaSpeak/TeaWeb/issues/64)
+    - Improved debug loader (no dependency faults anymore)
+    - Saving private conversations and showing the messages again after client restart
+    - Fixed some general memory leaks
+    - Implemented the hostmessage functions
+    - Fixed bookmark server password
+    
+    Big UI Improvement:
+    - New "dark theme" design
+    - All elements are responsive to the font-size (Supporting now large & small screens (No mobile support yet))
+    - Implemented an active ping calculation
     
 * **22.06.19**
     - Fixed channel create not working issue

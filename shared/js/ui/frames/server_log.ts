@@ -10,8 +10,17 @@ namespace log {
             CONNECTION_FAILED = "connection_failed",
 
             CONNECTION_VOICE_SETUP_FAILED = "connection_voice_setup_failed",
+            CONNECTION_COMMAND_ERROR = "connection_command_error",
 
             GLOBAL_MESSAGE = "global_message",
+
+            SERVER_WELCOME_MESSAGE = "server_welcome_message",
+            SERVER_HOST_MESSAGE = "server_host_message",
+            SERVER_HOST_MESSAGE_DISCONNECT = "server_host_message_disconnect",
+
+            SERVER_CLOSED = "server_closed",
+            SERVER_BANNED = "server_banned",
+            SERVER_REQUIRES_PASSWORD = "server_requires_password",
 
             CLIENT_VIEW_ENTER = "client_view_enter",
             CLIENT_VIEW_LEAVE = "client_view_leave",
@@ -77,6 +86,14 @@ namespace log {
 
             export type ErrorPermission = {
                 permission: PermissionInfo;
+            }
+
+            export type WelcomeMessage = {
+                message: string;
+            }
+
+            export type HostMessageDisconnect = {
+                message: string;
             }
 
             //tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}")
@@ -158,13 +175,34 @@ namespace log {
                 reconnect_delay: number; /* if less or equal to 0 reconnect is prohibited */
             }
 
+            export type ConnectionCommandError = {
+                error: any;
+            }
+
             export type ClientNicknameChanged = {
-                own_action: boolean;
+                own_client: boolean;
+
                 client: base.Client;
+
+                old_name: string;
+                new_name: string;
             }
 
             export type ClientNicknameChangeFailed = {
                 reason: string;
+            }
+
+            export type ServerClosed = {
+                message: string;
+            }
+
+            export type ServerRequiresPassword = {}
+
+            export type ServerBanned = {
+                message: string;
+                time: number;
+
+                invoker: base.Client;
             }
         }
 
@@ -188,10 +226,19 @@ namespace log {
             "connection_login": event.ConnectionLogin;
             "connection_connected": event.ConnectionConnected;
             "connection_voice_setup_failed": event.ConnectionVoiceSetupFailed;
+            "connection_command_error": event.ConnectionCommandError;
 
             "reconnect_scheduled": event.ReconnectScheduled;
             "reconnect_canceled": event.ReconnectCanceled;
             "reconnect_execute": event.ReconnectExecute;
+
+            "server_welcome_message": event.WelcomeMessage;
+            "server_host_message": event.WelcomeMessage;
+            "server_host_message_disconnect": event.HostMessageDisconnect;
+
+            "server_closed": event.ServerClosed;
+            "server_requires_password": event.ServerRequiresPassword;
+            "server_banned": event.ServerBanned;
 
             "client_view_enter": event.ClientEnter;
             "client_view_move": event.ClientMove;
@@ -208,9 +255,6 @@ namespace log {
         type MessageBuilder<T extends keyof server.TypeInfo> = (data: TypeInfo[T], options: MessageBuilderOptions) => JQuery[] | undefined;
 
         export const MessageBuilders: {[key: string]: MessageBuilder<any>} = {
-            "global_message": (data: event.GlobalMessage, options) => {
-                return [];
-            },
             "error_custom": (data: event.ErrorCustom, options) => {
                 return [$.spawn("div").addClass("log-error").text(data.message)]
             }
@@ -242,7 +286,7 @@ namespace log {
                 }
 
                 this.auto_follow = (this._html_tag[0].scrollTop + this._html_tag[0].clientHeight + this._html_tag[0].clientHeight * .125) > this._html_tag[0].scrollHeight;
-            })
+            });
         }
 
         log<T extends keyof server.TypeInfo>(type: T, data: server.TypeInfo[T]) {
@@ -261,6 +305,14 @@ namespace log {
 
         html_tag() : JQuery {
             return this._html_tag;
+        }
+
+        destroy() {
+            this._html_tag && this._html_tag.remove();
+            this._html_tag = undefined;
+            this._log_container = undefined;
+
+            this._log = undefined;
         }
 
         private append_log(message: server.LogMessage) {
@@ -283,7 +335,7 @@ namespace log {
                     MessageHelper.formatMessage(tr("missing log message builder {0}!"), message.type).forEach(e => e.addClass("log-error").appendTo(container));
                 } else {
                     const elements = builder(message.data, {});
-                    if(!elements)
+                    if(!elements || elements.length == 0)
                         return; /* discard message */
                     container.append(...elements);
                 }
@@ -297,7 +349,7 @@ namespace log {
             while(messages.length - index > this.history_length)
                 index++;
             const hide_elements = messages.filter(idx => idx < index);
-            hide_elements.hide(250, () => hide_elements.detach());
+            hide_elements.hide(250, () => hide_elements.remove());
 
             if(this.auto_follow)
                 this._html_tag.scrollTop(this._html_tag[0].scrollHeight);
@@ -339,7 +391,7 @@ namespace log {
             };
 
             MessageBuilders["error_permission"] = (data: event.ErrorPermission, options) => {
-                return MessageHelper.formatMessage(tr("Insufficient client permissions. Failed on permission {0}"), data.permission.name).map(e => e.addClass("log-error"));
+                return MessageHelper.formatMessage(tr("Insufficient client permissions. Failed on permission {0}"), data.permission ? data.permission.name : "unknown").map(e => e.addClass("log-error"));
             };
 
             MessageBuilders["client_view_enter"] = (data: event.ClientEnter, options) => {
@@ -442,6 +494,26 @@ namespace log {
                     return MessageHelper.formatMessage(tr("{0} timed out{1}"), client_tag(data.client), data.message ? (" (" + data.message + ")") : "");
                 }
                 return [$.spawn("div").addClass("log-error").text("Invalid view leave reason id (" + data.message + ")")];
+            };
+
+            MessageBuilders["server_welcome_message"] = (data: event.WelcomeMessage, options) => {
+                return MessageHelper.bbcode_chat("[color=green]" + data.message + "[/color]");
+            };
+
+            MessageBuilders["server_host_message"] = (data: event.WelcomeMessage, options) => {
+                return MessageHelper.bbcode_chat("[color=green]" + data.message + "[/color]");
+            };
+
+            MessageBuilders["client_nickname_changed"] = (data: event.ClientNicknameChanged, options) => {
+                if(data.own_client) {
+                    return MessageHelper.formatMessage(tr("Nickname successfully changed."));
+                } else {
+                    return MessageHelper.formatMessage(tr("{0} changed his nickname from \"{1}\" to \"{2}\""), client_tag(data.client), data.old_name, data.new_name);
+                }
+            };
+
+            MessageBuilders["global_message"] = (data: event.GlobalMessage, options) => {
+                return []; /* we do not show global messages within log */
             }
         }
     }

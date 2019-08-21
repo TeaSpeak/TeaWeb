@@ -1,0 +1,145 @@
+/* Some general browser helpers */
+
+@mixin transition($transition...) {
+	-moz-transition:    $transition;
+	-o-transition:      $transition;
+	-webkit-transition: $transition;
+	transition:         $transition;
+}
+@mixin transition-property($property...) {
+	-moz-transition-property:    $property;
+	-o-transition-property:      $property;
+	-webkit-transition-property: $property;
+	transition-property:         $property;
+}
+@mixin transition-duration($duration...) {
+	-moz-transition-property:    $duration;
+	-o-transition-property:      $duration;
+	-webkit-transition-property: $duration;
+	transition-property:         $duration;
+}
+@mixin transition-timing-function($timing...) {
+	-moz-transition-timing-function:    $timing;
+	-o-transition-timing-function:      $timing;
+	-webkit-transition-timing-function: $timing;
+	transition-timing-function:         $timing;
+}
+@mixin transition-delay($delay...) {
+	-moz-transition-delay:    $delay;
+	-o-transition-delay:      $delay;
+	-webkit-transition-delay: $delay;
+	transition-delay:         $delay;
+}
+
+@mixin transform($transform...) {
+	-webkit-transform: 	$transform;
+	-o-transform: 		$transform;
+	-ms-transform: 		$transform;
+	transform: 			$transform;
+}
+
+@mixin placeholder($element) {
+	#{$element}::-webkit-input-placeholder {
+		@content;
+	}
+	#{$element}:-moz-placeholder {
+		@content;
+	}
+	#{$element}::-moz-placeholder {
+		@content;
+	}
+	#{$element}:-ms-input-placeholder {
+		@content;
+	}
+	#{$element}::-ms-input-placeholder {
+		@content;
+	}
+	#{$element}::placeholder {
+		@content;
+	}
+}
+
+@mixin user-select($mode) {
+	-webkit-user-select: $mode;
+	-moz-user-select: $mode;
+	-ms-user-select: $mode;
+	user-select: $mode;
+}
+
+@mixin chat-scrollbar() {
+	& {
+		/* for moz */
+		scrollbar-color: #353535 #555;
+	}
+
+	&::-webkit-scrollbar-track {
+		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+		border-radius: .25em;
+		background-color: transparent;
+	}
+
+	&::-webkit-scrollbar {
+		width: .5em;
+		background-color: transparent;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		border-radius: .25em;
+		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+		background-color: #555;
+	}
+}
+
+@mixin chat-scrollbar-vertical() {
+	& {
+		/* for moz */
+		scrollbar-color: #353535 #555;
+		scrollbarWidth: .5em;
+	}
+
+	&::-webkit-scrollbar-track {
+		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+		border-radius: .25em;
+		background-color: transparent;
+		cursor: pointer;
+	}
+
+	&::-webkit-scrollbar {
+		width: .5em;
+		background-color: transparent;
+		cursor: pointer;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		border-radius: .25em;
+		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+		background-color: #555;
+	}
+}
+
+@mixin chat-scrollbar-horizontal() {
+	& {
+		/* for moz */
+		scrollbar-color: #353535 #555;
+		scrollbarWidth: .5em;
+	}
+
+	&::-webkit-scrollbar-track {
+		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+		border-radius: .25em;
+		background-color: transparent;
+		cursor: pointer;
+	}
+
+	&::-webkit-scrollbar {
+		height: .5em;
+		background-color: transparent;
+		cursor: pointer;
+	}
+
+	&::-webkit-scrollbar-thumb {
+		border-radius: .25em;
+		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+		background-color: #555;
+	}
+}

@@ -1,13 +1,14 @@
+@import "properties";
+@import "mixin";
+
 $border_color_activated: rgba(255, 255, 255, .75);
 
+/* max height is 2em */
 .control_bar {
 	display: flex;
 	flex-direction: row;
 
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	user-select: none;
+	@include user-select(none);
 
 	height: 100%;
 	align-items: center;
@@ -25,8 +26,8 @@ $border_color_activated: rgba(255, 255, 255, .75);
 	.button, .dropdown-arrow {
 		text-align: center;
 
-		border: 1px solid rgba(0, 0, 0, 0);
-		border-radius: 3px;
+		border: .05em solid rgba(0, 0, 0, 0);
+		border-radius: $border_radius_small;
 
 		background-color: #454545;
 
@@ -56,6 +57,8 @@ $border_color_activated: rgba(255, 255, 255, .75);
 			}
 		}
 
+		@include transition(background-color $button_hover_animation_time ease-in-out, border-color $button_hover_animation_time ease-in-out);
+
 		> .icon_x24 {
 			vertical-align: middle;
 		}
@@ -69,9 +72,25 @@ $border_color_activated: rgba(255, 255, 255, .75);
 		margin-left: 5px;
 
 		&:not(.icon_x24) {
-			min-width: 28px;
-			max-width: 28px;
-			height: 28px;
+			min-width: 2em;
+			max-width: 2em;
+			height: 2em;
+		}
+
+		.icon_em {
+			vertical-align: text-top;
+		}
+
+		&.button-hostbutton {
+			img {
+				min-width: 1.5em;
+				max-width: 1.5em;
+
+				height: 1.5em;
+				width: 1.5em;
+			}
+
+			padding: .25em;
 		}
 	}
 
@@ -80,8 +99,7 @@ $border_color_activated: rgba(255, 255, 255, .75);
 		position: relative;
 
 		.buttons {
-			margin-top: 1px;
-			height: 28px;
+			height: 2em;
 
 			align-items: center;
 
@@ -89,14 +107,14 @@ $border_color_activated: rgba(255, 255, 255, .75);
             flex-direction: row;
 
 			.dropdown-arrow {
-				height: 28px;
+				height: 2em;
 
 				display: inline-flex;
 				justify-content: space-around;
-				width: 18px;
+				width: 1.5em;
 				cursor: pointer;
 
-				border-radius: 0 3px 3px 0;
+				border-radius: 0 $border_radius_small $border_radius_small 0;
 				align-items: center;
 				border-left: 0;
 			}
@@ -131,8 +149,8 @@ $border_color_activated: rgba(255, 255, 255, .75);
 
 			background-color: #2d3032;
 			align-items: center;
-			border: 1px solid #2c2525;
-			border-radius: 0 5px 5px 5px;
+			border: .05em solid #2c2525;
+			border-radius: 0 $border_radius_middle $border_radius_middle $border_radius_middle;
 
 			width: 230px;
 
@@ -143,7 +161,7 @@ $border_color_activated: rgba(255, 255, 255, .75);
 				right: 0;
 			}
 
-			.icon {
+			.icon, .icon-container, .icon_em {
 				vertical-align: middle;
 				margin-right: 5px;
 			}
@@ -159,16 +177,16 @@ $border_color_activated: rgba(255, 255, 255, .75);
 			}
 
 			& > div:first-of-type {
-				border-radius: 2px 2px 0 0;
+				border-radius: .1em .1em 0 0;
 			}
 
 			& > div:last-of-type {
-				border-radius: 0 0 2px 2px;
+				border-radius: 0 0 .1em .1em;
 			}
 
 			&.display_left {
 				margin-left: -179px;
-				border-radius: 5px 0 5px 5px;
+				border-radius: $border_radius_middle 0 $border_radius_middle $border_radius_middle;
 			}
 		}
 
@@ -262,5 +280,9 @@ $border_color_activated: rgba(255, 255, 255, .75);
 				margin-left: 3px;
 			}
 		}
+	}
+
+	.icon_em {
+		font-size: 1.5em;
 	}
 }

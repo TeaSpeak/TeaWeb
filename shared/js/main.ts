@@ -14,10 +14,15 @@ let settings: Settings;
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
-function getUserMediaFunction() : (constraints: MediaStreamConstraints, success: (stream: MediaStream) => any, fail: (error: any) => any) => any {
-    if((navigator as any).mediaDevices && (navigator as any).mediaDevices.getUserMedia)
-        return (settings, success, fail) => { (navigator as any).mediaDevices.getUserMedia(settings).then(success).catch(fail); };
-    return (navigator as any).getUserMedia || (navigator as any).webkitGetUserMedia || (navigator as any).mozGetUserMedia;
+function getUserMediaFunctionPromise() : (constraints: MediaStreamConstraints) => Promise<MediaStream> {
+    if('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices)
+        return constraints => navigator.mediaDevices.getUserMedia(constraints);
+
+    const _callbacked_function = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    if(!_callbacked_function)
+        return undefined;
+
+    return constraints => new Promise<MediaStream>((resolve, reject) => _callbacked_function(constraints, resolve, reject));
 }
 
 interface Window {
@@ -36,18 +41,41 @@ function setup_close() {
             if(!native_client) {
                 event.returnValue = "Are you really sure?<br>You're still connected!";
             } else {
+                const do_exit = () => {
+                    const dp = server_connections.server_connection_handlers().map(e => {
+                        if(e.serverConnection.connected())
+                            return e.serverConnection.disconnect(tr("client closed"));
+                        return Promise.resolve();
+                    }).map(e => e.catch(error => {
+                        console.warn(tr("Failed to disconnect from server on client close: %o"), e);
+                    }));
+
+                    const exit = () => {
+                        const {remote} = require('electron');
+                        remote.getCurrentWindow().close();
+                    };
+
+                    Promise.all(dp).then(exit);
+                    /* force exit after 2500ms */
+                    setTimeout(exit, 2500);
+                };
                 if(window.open_connected_question) {
                     event.preventDefault();
                     event.returnValue = "question";
                     window.open_connected_question().then(result => {
                         if(result) {
-                            window.onbeforeunload = undefined;
+                            /* prevent quitting because we try to disconnect */
+                            window.onbeforeunload = e => e.preventDefault();
 
-                            const {remote} = require('electron');
-                            remote.getCurrentWindow().close();
+                            /* allow a force quit after 5 seconds */
+                            setTimeout(() => window.onbeforeunload, 5000);
+                            do_exit();
                         }
                     });
-                } else { /* we're in debugging mode */ }
+                } else {
+                    /* we're in debugging mode */
+                    do_exit();
+                }
             }
         }
     };
@@ -102,7 +130,6 @@ async function initialize() {
     bipc.setup();
 }
 
-
 async function initialize_app() {
     const display_load_error = message => {
         if(typeof(display_critical_load) !== "undefined")
@@ -112,7 +139,10 @@ async function initialize_app() {
     };
 
     try { //Initialize main template
-        const main = $("#tmpl_main").renderTag().dividerfy();
+        const main = $("#tmpl_main").renderTag({
+            multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
+            app_version: app.ui_version()
+        }).dividerfy();
 
         $("body").append(main);
     } catch(error) {
@@ -126,7 +156,7 @@ async function initialize_app() {
     if(!audio.player.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
     if(audio.player.set_master_volume)
-        audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER, 1) / 100);
+        audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100);
     else
         console.warn("Client does not support audio.player.set_master_volume()... May client is too old?");
     if(audio.recorder.device_refresh_available())
@@ -138,7 +168,7 @@ async function initialize_app() {
     sound.initialize().then(() => {
         console.log(tr("Sounds initialitzed"));
     });
-    sound.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER_SOUNDS, 1) / 100);
+    sound.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
 
     await profiles.load();
 
@@ -151,10 +181,6 @@ async function initialize_app() {
     }
 
     setup_close();
-}
-
-function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint16Array(buf));
 }
 
 function str2ab8(str) {
@@ -177,66 +203,56 @@ function arrayBufferBase64(base64: string) {
     return buf;
 }
 
-function base64ArrayBuffer(arrayBuffer) {
-    var base64    = ''
-    var encodings = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+function base64_encode_ab(source: ArrayBufferLike) {
+    const encodings = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let base64      = "";
 
-    var bytes         = new Uint8Array(arrayBuffer)
-    var byteLength    = bytes.byteLength
-    var byteRemainder = byteLength % 3
-    var mainLength    = byteLength - byteRemainder
+    const bytes          = new Uint8Array(source);
+    const byte_length    = bytes.byteLength;
+    const byte_reminder  = byte_length % 3;
+    const main_length    = byte_length - byte_reminder;
 
-    var a, b, c, d
-    var chunk
+    let a, b, c, d;
+    let chunk;
 
     // Main loop deals with bytes in chunks of 3
-    for (var i = 0; i < mainLength; i = i + 3) {
+    for (let i = 0; i < main_length; i = i + 3) {
         // Combine the three bytes into a single integer
-        chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2]
+        chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
 
         // Use bitmasks to extract 6-bit segments from the triplet
-        a = (chunk & 16515072) >> 18 // 16515072 = (2^6 - 1) << 18
-        b = (chunk & 258048)   >> 12 // 258048   = (2^6 - 1) << 12
-        c = (chunk & 4032)     >>  6 // 4032     = (2^6 - 1) << 6
-        d = chunk & 63               // 63       = 2^6 - 1
+        a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
+        b = (chunk & 258048)   >> 12; // 258048   = (2^6 - 1) << 12
+        c = (chunk & 4032)     >>  6; // 4032     = (2^6 - 1) <<  6
+        d = (chunk & 63)       >>  0; // 63       = (2^6 - 1) <<  0
 
         // Convert the raw binary segments to the appropriate ASCII encoding
-        base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d]
+        base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
     }
 
     // Deal with the remaining bytes and padding
-    if (byteRemainder == 1) {
-        chunk = bytes[mainLength]
+    if (byte_reminder == 1) {
+        chunk = bytes[main_length];
 
-        a = (chunk & 252) >> 2 // 252 = (2^6 - 1) << 2
+        a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
 
         // Set the 4 least significant bits to zero
-        b = (chunk & 3)   << 4 // 3   = 2^2 - 1
+        b = (chunk & 3)   << 4; // 3   = 2^2 - 1
 
-        base64 += encodings[a] + encodings[b] + '=='
-    } else if (byteRemainder == 2) {
-        chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1]
+        base64 += encodings[a] + encodings[b] + '==';
+    } else if (byte_reminder == 2) {
+        chunk = (bytes[main_length] << 8) | bytes[main_length + 1];
 
-        a = (chunk & 64512) >> 10 // 64512 = (2^6 - 1) << 10
-        b = (chunk & 1008)  >>  4 // 1008  = (2^6 - 1) << 4
+        a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
+        b = (chunk & 1008)  >>  4; // 1008  = (2^6 - 1) <<  4
 
         // Set the 2 least significant bits to zero
-        c = (chunk & 15)    <<  2 // 15    = 2^4 - 1
+        c = (chunk & 15)    <<  2; // 15    = 2^4 - 1
 
-        base64 += encodings[a] + encodings[b] + encodings[c] + '='
+        base64 += encodings[a] + encodings[b] + encodings[c] + '=';
     }
 
     return base64
-}
-
-function Base64EncodeUrl(str){
-    return str.replace(/\+/g, '-').replace(/\//g, '_').replace(/\=+$/, '');
-}
-
-function Base64DecodeUrl(str: string, pad?: boolean){
-    if(typeof(pad) === 'undefined' || pad)
-        str = (str + '===').slice(0, str.length + (str.length % 4));
-    return str.replace(/-/g, '+').replace(/_/g, '/');
 }
 
 /*
@@ -282,7 +298,6 @@ interface Window {
 }
 */
 
-
 function main() {
     /*
     window.proxy_instance = new TestProxy({
@@ -299,6 +314,23 @@ function main() {
     */
     //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
 
+    /* initialize font */
+    {
+        const font = settings.static_global(Settings.KEY_FONT_SIZE, parseInt(getComputedStyle(document.body).fontSize));
+        $(document.body).css("font-size", font + "px");
+    }
+
+    /* context menu prevent */
+    $(document).on('contextmenu', event => {
+        if(event.isDefaultPrevented())
+            return;
+
+        if(!settings.static_global(Settings.KEY_DISABLE_GLOBAL_CONTEXT_MENU))
+            event.preventDefault();
+    });
+
+    top_menu.initialize();
+
     server_connections = new ServerConnectionManager($("#connection-handlers"));
     control_bar.initialise(); /* before connection handler to allow property apply */
 
@@ -306,7 +338,7 @@ function main() {
     initial_handler.acquire_recorder(default_recorder, false);
     control_bar.set_connection_handler(initial_handler);
     /** Setup the XF forum identity **/
-    profiles.identities.setup_forum();
+    profiles.identities.update_forum();
 
     let _resize_timeout: NodeJS.Timer;
     $(window).on('resize', event => {
@@ -334,11 +366,6 @@ function main() {
         console.log("Received user count update: %o", status);
     });
 
-    /*
-    setTimeout(() => {
-        Modals.spawnAvatarList(globalClient);
-    }, 1000);
-    */
     (<any>window).test_upload = (message?: string) => {
         message = message || "Hello World";
 
@@ -366,16 +393,6 @@ function main() {
     };
 
     server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
-    const convs = server_connections.active_connection_handler().chat_frame.private_conversations();
-    let conv = convs.create_conversation("xxxx0", "WolverinDEV");
-    conv = convs.create_conversation("xxxx1", "Darkatzu");
-    conv = convs.create_conversation("xxxx2", "ZameXxX");
-    conv.set_unread_flag(true);
-
-    conv = convs.create_conversation("xxxx3", "Vagur");
-
-    //for(let i = 0; i < 100; i++)
-    //    convs.create_conversation('xx' + i, "WolverinDEV #" + i);
 
     if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
         const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
@@ -389,7 +406,7 @@ function main() {
 
         if(profile && profile.valid()) {
             const connection = server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler();
-            connection.startConnection(address, profile, {
+            connection.startConnection(address, profile, true, {
                 nickname: username,
                 password: password.length > 0 ? {
                     password: password,
@@ -397,7 +414,7 @@ function main() {
                 } : undefined
             });
         } else {
-            Modals.spawnConnectModal({
+            Modals.spawnConnectModal({},{
                 url: address,
                 enforce: true
             }, {
@@ -406,6 +423,18 @@ function main() {
             });
         }
     }
+
+    setTimeout(() => {
+        const connection = server_connections.active_connection_handler();
+        /*
+        Modals.createChannelModal(connection, undefined, undefined, connection.permissions, (cb, perms) => {
+            
+        });
+        */
+        //Modals.createServerModal(connection.channelTree.server, properties => Promise.resolve());
+    }, 1000);
+    //Modals.spawnSettingsModal("audio-sounds");
+    //Modals.spawnKeySelect(console.log);
 }
 
 const task_teaweb_starter: loader.Task = {

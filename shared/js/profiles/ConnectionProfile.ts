@@ -66,7 +66,7 @@ namespace profiles {
             const identity = this.selected_identity();
             if(!identity || !identity.valid()) return false;
 
-            return this.default_username !== undefined;
+            return true;
         }
     }
 

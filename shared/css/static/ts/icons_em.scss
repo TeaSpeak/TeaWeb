@@ -1,0 +1,607 @@
+/* sprite bounds (px): width="496" height="400" */
+.icon_em {
+    display: inline-block;
+    background: url('../../../img/client_icon_sprite.svg'), url('../../img/client_icon_sprite.svg') no-repeat;
+    background-size: calc(496em / 16) calc(400em / 16);
+    height: 1em;
+    width: 1em;
+}
+
+/*  Icons 1em */
+.icon_em.client-d_sound {
+    background-position: calc(0em / 16) calc(0em / 16);
+}
+.icon_em.client-d_sound_me {
+    background-position: calc(-32em / 16) calc(0em / 16);
+}
+.icon_em.client-d_sound_user {
+    background-position: calc(-64em / 16) calc(0em / 16);
+}
+.icon_em.client-about {
+    background-position: calc(-96em / 16) calc(0em / 16);
+}
+.icon_em.client-activate_microphone {
+    background-position: calc(-128em / 16) calc(0em / 16);
+}
+.icon_em.client-add {
+    background-position: calc(-160em / 16) calc(0em / 16);
+}
+.icon_em.client-add_foe {
+    background-position: calc(-192em / 16) calc(0em / 16);
+}
+.icon_em.client-add_folder {
+    background-position: calc(-224em / 16) calc(0em / 16);
+}
+.icon_em.client-add_friend {
+    background-position: calc(-256em / 16) calc(0em / 16);
+}
+.icon_em.client-addon {
+    background-position: calc(-288em / 16) calc(0em / 16);
+}
+.icon_em.client-addon-collection {
+    background-position: calc(-320em / 16) calc(0em / 16);
+}
+.icon_em.client-apply {
+    background-position: calc(-352em / 16) calc(0em / 16);
+}
+.icon_em.client-arrow_down {
+    background-position: calc(-384em / 16) calc(0em / 16);
+}
+.icon_em.client-arrow_left {
+    background-position: calc(-416em / 16) calc(0em / 16);
+}
+.icon_em.client-arrow_right {
+    background-position: calc(-448em / 16) calc(0em / 16);
+}
+.icon_em.client-arrow_up {
+    background-position: calc(-480em / 16) calc(0em / 16);
+}
+.icon_em.client-away {
+    background-position: calc(0em / 16) calc(-32em / 16);
+}
+.icon_em.client-ban_client {
+    background-position: calc(-32em / 16) calc(-32em / 16);
+}
+.icon_em.client-ban_list {
+    background-position: calc(-64em / 16) calc(-32em / 16);
+}
+.icon_em.client-bookmark_add {
+    background-position: calc(-96em / 16) calc(-32em / 16);
+}
+.icon_em.client-bookmark_add_folder {
+    background-position: calc(-128em / 16) calc(-32em / 16);
+}
+.icon_em.client-bookmark_duplicate {
+    background-position: calc(-160em / 16) calc(-32em / 16);
+}
+.icon_em.client-bookmark_manager {
+    background-position: calc(-192em / 16) calc(-32em / 16);
+}
+.icon_em.client-bookmark_remove {
+    background-position: calc(-224em / 16) calc(-32em / 16);
+}
+.icon_em.client-broken_image {
+    background-position: calc(-256em / 16) calc(-32em / 16);
+}
+.icon_em.client-browse-addon-online {
+    background-position: calc(-288em / 16) calc(-32em / 16);
+}
+.icon_em.client-capture {
+    background-position: calc(-320em / 16) calc(-32em / 16);
+}
+.icon_em.client-changelog {
+    background-position: calc(-352em / 16) calc(-32em / 16);
+}
+.icon_em.client-change_nickname {
+    background-position: calc(-384em / 16) calc(-32em / 16);
+}
+.icon_em.client-channel_chat {
+    background-position: calc(-416em / 16) calc(-32em / 16);
+}
+.icon_em.client-channel_collapse_all {
+    background-position: calc(-448em / 16) calc(-32em / 16);
+}
+.icon_em.client-channel_commander {
+    background-position: calc(-480em / 16) calc(-32em / 16);
+}
+.icon_em.client-channel_create {
+    background-position: calc(0em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_create_sub {
+    background-position: calc(-32em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_default {
+    background-position: calc(-64em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_delete {
+    background-position: calc(-96em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_edit {
+    background-position: calc(-128em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_expand_all {
+    background-position: calc(-160em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_green {
+    background-position: calc(-192em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_green_subscribed {
+    background-position: calc(-224em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_private {
+    background-position: calc(-256em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_red {
+    background-position: calc(-288em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_red_subscribed {
+    background-position: calc(-320em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_switch {
+    background-position: calc(-352em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_unsubscribed {
+    background-position: calc(-384em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_yellow {
+    background-position: calc(-416em / 16) calc(-64em / 16);
+}
+.icon_em.client-channel_yellow_subscribed {
+    background-position: calc(-448em / 16) calc(-64em / 16);
+}
+.icon_em.client-check_update {
+    background-position: calc(-480em / 16) calc(-64em / 16);
+}
+.icon_em.client-client_hide {
+    background-position: calc(0em / 16) calc(-96em / 16);
+}
+.icon_em.client-client_show {
+    background-position: calc(-32em / 16) calc(-96em / 16);
+}
+.icon_em.client-close_button {
+    background-position: calc(-64em / 16) calc(-96em / 16);
+}
+.icon_em.client-complaint_list {
+    background-position: calc(-96em / 16) calc(-96em / 16);
+}
+.icon_em.client-conflict-icon {
+    background-position: calc(-128em / 16) calc(-96em / 16);
+}
+.icon_em.client-connect {
+    background-position: calc(-160em / 16) calc(-96em / 16);
+}
+.icon_em.client-contact {
+    background-position: calc(-192em / 16) calc(-96em / 16);
+}
+.icon_em.client-copy {
+    background-position: calc(-224em / 16) calc(-96em / 16);
+}
+.icon_em.client-copy_url {
+    background-position: calc(-256em / 16) calc(-96em / 16);
+}
+.icon_em.client-default {
+    background-position: calc(-288em / 16) calc(-96em / 16);
+}
+.icon_em.client-default_for_all_bookmarks {
+    background-position: calc(-320em / 16) calc(-96em / 16);
+}
+.icon_em.client-delete {
+    background-position: calc(-352em / 16) calc(-96em / 16);
+}
+.icon_em.client-delete_avatar {
+    background-position: calc(-384em / 16) calc(-96em / 16);
+}
+.icon_em.client-disconnect {
+    background-position: calc(-416em / 16) calc(-96em / 16);
+}
+.icon_em.client-down {
+    background-position: calc(-448em / 16) calc(-96em / 16);
+}
+.icon_em.client-download {
+    background-position: calc(-480em / 16) calc(-96em / 16);
+}
+.icon_em.client-edit {
+    background-position: calc(0em / 16) calc(-128em / 16);
+}
+.icon_em.client-edit_friend_foe_status {
+    background-position: calc(-32em / 16) calc(-128em / 16);
+}
+.icon_em.client-emoticon {
+    background-position: calc(-64em / 16) calc(-128em / 16);
+}
+.icon_em.client-error {
+    background-position: calc(-96em / 16) calc(-128em / 16);
+}
+.icon_em.client-file_home {
+    background-position: calc(-128em / 16) calc(-128em / 16);
+}
+.icon_em.client-file_refresh {
+    background-position: calc(-160em / 16) calc(-128em / 16);
+}
+.icon_em.client-filetransfer {
+    background-position: calc(-192em / 16) calc(-128em / 16);
+}
+.icon_em.client-find {
+    background-position: calc(-224em / 16) calc(-128em / 16);
+}
+.icon_em.client-folder {
+    background-position: calc(-256em / 16) calc(-128em / 16);
+}
+.icon_em.client-folder_up {
+    background-position: calc(-288em / 16) calc(-128em / 16);
+}
+.icon_em.client-group_100 {
+    background-position: calc(-320em / 16) calc(-128em / 16);
+}
+.icon_em.client-group_200 {
+    background-position: calc(-352em / 16) calc(-128em / 16);
+}
+.icon_em.client-group_300 {
+    background-position: calc(-384em / 16) calc(-128em / 16);
+}
+.icon_em.client-group_500 {
+    background-position: calc(-416em / 16) calc(-128em / 16);
+}
+.icon_em.client-group_600 {
+    background-position: calc(-448em / 16) calc(-128em / 16);
+}
+.icon_em.client-guisetup {
+    background-position: calc(-480em / 16) calc(-128em / 16);
+}
+.icon_em.client-hardware_input_muted {
+    background-position: calc(0em / 16) calc(-160em / 16);
+}
+.icon_em.client-hardware_output_muted {
+    background-position: calc(-32em / 16) calc(-160em / 16);
+}
+.icon_em.client-hoster_button {
+    background-position: calc(-64em / 16) calc(-160em / 16);
+}
+.icon_em.client-hotkeys {
+    background-position: calc(-96em / 16) calc(-160em / 16);
+}
+.icon_em.client-icon-pack {
+    background-position: calc(-128em / 16) calc(-160em / 16);
+}
+.icon_em.client-iconsview {
+    background-position: calc(-160em / 16) calc(-160em / 16);
+}
+.icon_em.client-iconviewer {
+    background-position: calc(-192em / 16) calc(-160em / 16);
+}
+.icon_em.client-identity_default {
+    background-position: calc(-224em / 16) calc(-160em / 16);
+}
+.icon_em.client-identity_export {
+    background-position: calc(-256em / 16) calc(-160em / 16);
+}
+.icon_em.client-identity_import {
+    background-position: calc(-288em / 16) calc(-160em / 16);
+}
+.icon_em.client-identity_manager {
+    background-position: calc(-320em / 16) calc(-160em / 16);
+}
+.icon_em.client-info {
+    background-position: calc(-352em / 16) calc(-160em / 16);
+}
+.icon_em.client-input_muted {
+    background-position: calc(-384em / 16) calc(-160em / 16);
+}
+.icon_em.client-input_muted_local {
+    background-position: calc(-416em / 16) calc(-160em / 16);
+}
+.icon_em.client-invite_buddy {
+    background-position: calc(-448em / 16) calc(-160em / 16);
+}
+.icon_em.client-is_talker {
+    background-position: calc(-480em / 16) calc(-160em / 16);
+}
+.icon_em.client-kick_channel {
+    background-position: calc(0em / 16) calc(-192em / 16);
+}
+.icon_em.client-kick_server {
+    background-position: calc(-32em / 16) calc(-192em / 16);
+}
+.icon_em.client-listview {
+    background-position: calc(-64em / 16) calc(-192em / 16);
+}
+.icon_em.client-loading_image {
+    background-position: calc(-96em / 16) calc(-192em / 16);
+}
+.icon_em.client-message_incoming {
+    background-position: calc(-128em / 16) calc(-192em / 16);
+}
+.icon_em.client-message_info {
+    background-position: calc(-160em / 16) calc(-192em / 16);
+}
+.icon_em.client-message_outgoing {
+    background-position: calc(-192em / 16) calc(-192em / 16);
+}
+.icon_em.client-messages {
+    background-position: calc(-224em / 16) calc(-192em / 16);
+}
+.icon_em.client-moderated {
+    background-position: calc(-256em / 16) calc(-192em / 16);
+}
+.icon_em.client-move_client_to_own_channel {
+    background-position: calc(-288em / 16) calc(-192em / 16);
+}
+.icon_em.client-music {
+    background-position: calc(-320em / 16) calc(-192em / 16);
+}
+.icon_em.client-new_chat {
+    background-position: calc(-352em / 16) calc(-192em / 16);
+}
+.icon_em.client-notifications {
+    background-position: calc(-384em / 16) calc(-192em / 16);
+}
+.icon_em.client-offline_messages {
+    background-position: calc(-416em / 16) calc(-192em / 16);
+}
+.icon_em.client-on_whisperlist {
+    background-position: calc(-448em / 16) calc(-192em / 16);
+}
+.icon_em.client-output_muted {
+    background-position: calc(-480em / 16) calc(-192em / 16);
+}
+.icon_em.client-permission_channel {
+    background-position: calc(0em / 16) calc(-224em / 16);
+}
+.icon_em.client-permission_client {
+    background-position: calc(-32em / 16) calc(-224em / 16);
+}
+.icon_em.client-permission_overview {
+    background-position: calc(-64em / 16) calc(-224em / 16);
+}
+.icon_em.client-permission_server_groups {
+    background-position: calc(-96em / 16) calc(-224em / 16);
+}
+.icon_em.client-phoneticsnickname {
+    background-position: calc(-128em / 16) calc(-224em / 16);
+}
+.icon_em.client-ping_1 {
+    background-position: calc(-160em / 16) calc(-224em / 16);
+}
+.icon_em.client-ping_2 {
+    background-position: calc(-192em / 16) calc(-224em / 16);
+}
+.icon_em.client-ping_3 {
+    background-position: calc(-224em / 16) calc(-224em / 16);
+}
+.icon_em.client-ping_4 {
+    background-position: calc(-256em / 16) calc(-224em / 16);
+}
+.icon_em.client-ping_calculating {
+    background-position: calc(-288em / 16) calc(-224em / 16);
+}
+.icon_em.client-ping_disconnected {
+    background-position: calc(-320em / 16) calc(-224em / 16);
+}
+.icon_em.client-play {
+    background-position: calc(-352em / 16) calc(-224em / 16);
+}
+.icon_em.client-player_chat {
+    background-position: calc(-384em / 16) calc(-224em / 16);
+}
+.icon_em.client-player_commander_off {
+    background-position: calc(-416em / 16) calc(-224em / 16);
+}
+.icon_em.client-player_commander_on {
+    background-position: calc(-448em / 16) calc(-224em / 16);
+}
+.icon_em.client-player_off {
+    background-position: calc(-480em / 16) calc(-224em / 16);
+}
+.icon_em.client-player_on {
+    background-position: calc(0em / 16) calc(-256em / 16);
+}
+.icon_em.client-player_whisper {
+    background-position: calc(-32em / 16) calc(-256em / 16);
+}
+.icon_em.client-plugins {
+    background-position: calc(-64em / 16) calc(-256em / 16);
+}
+.icon_em.client-poke {
+    background-position: calc(-96em / 16) calc(-256em / 16);
+}
+.icon_em.client-present {
+    background-position: calc(-128em / 16) calc(-256em / 16);
+}
+.icon_em.client-recording_start {
+    background-position: calc(-160em / 16) calc(-256em / 16);
+}
+.icon_em.client-recording_stop {
+    background-position: calc(-192em / 16) calc(-256em / 16);
+}
+.icon_em.client-refresh {
+    background-position: calc(-224em / 16) calc(-256em / 16);
+}
+.icon_em.client-register {
+    background-position: calc(-256em / 16) calc(-256em / 16);
+}
+.icon_em.client-reload {
+    background-position: calc(-288em / 16) calc(-256em / 16);
+}
+.icon_em.client-remove_foe {
+    background-position: calc(-320em / 16) calc(-256em / 16);
+}
+.icon_em.client-remove_friend {
+    background-position: calc(-352em / 16) calc(-256em / 16);
+}
+.icon_em.client-security {
+    background-position: calc(-384em / 16) calc(-256em / 16);
+}
+.icon_em.client-selectfolder {
+    background-position: calc(-416em / 16) calc(-256em / 16);
+}
+.icon_em.client-send_complaint {
+    background-position: calc(-448em / 16) calc(-256em / 16);
+}
+.icon_em.client-server_green {
+    background-position: calc(-480em / 16) calc(-256em / 16);
+}
+.icon_em.client-server_log {
+    background-position: calc(0em / 16) calc(-288em / 16);
+}
+.icon_em.client-server_query {
+    background-position: calc(-32em / 16) calc(-288em / 16);
+}
+.icon_em.client-settings {
+    background-position: calc(-64em / 16) calc(-288em / 16);
+}
+.icon_em.client-sort_by_name {
+    background-position: calc(-96em / 16) calc(-288em / 16);
+}
+.icon_em.client-soundpack {
+    background-position: calc(-128em / 16) calc(-288em / 16);
+}
+.icon_em.client-sound-pack {
+    background-position: calc(-160em / 16) calc(-288em / 16);
+}
+.icon_em.client-stop {
+    background-position: calc(-192em / 16) calc(-288em / 16);
+}
+.icon_em.client-subscribe_mode {
+    background-position: calc(-224em / 16) calc(-288em / 16);
+}
+.icon_em.client-subscribe_to_all_channels {
+    background-position: calc(-256em / 16) calc(-288em / 16);
+}
+.icon_em.client-subscribe_to_channel {
+    background-position: calc(-288em / 16) calc(-288em / 16);
+}
+.icon_em.client-subscribe_to_channel_family {
+    background-position: calc(-320em / 16) calc(-288em / 16);
+}
+.icon_em.client-switch_advanced {
+    background-position: calc(-352em / 16) calc(-288em / 16);
+}
+.icon_em.client-switch_standard {
+    background-position: calc(-384em / 16) calc(-288em / 16);
+}
+.icon_em.client-sync-disable {
+    background-position: calc(-416em / 16) calc(-288em / 16);
+}
+.icon_em.client-sync-enable {
+    background-position: calc(-448em / 16) calc(-288em / 16);
+}
+.icon_em.client-sync-icon {
+    background-position: calc(-480em / 16) calc(-288em / 16);
+}
+.icon_em.client-tab_close_button {
+    background-position: calc(0em / 16) calc(-320em / 16);
+}
+.icon_em.client-talk_power_grant {
+    background-position: calc(-32em / 16) calc(-320em / 16);
+}
+.icon_em.client-talk_power_grant_next {
+    background-position: calc(-64em / 16) calc(-320em / 16);
+}
+.icon_em.client-talk_power_request {
+    background-position: calc(-96em / 16) calc(-320em / 16);
+}
+.icon_em.client-talk_power_request_cancel {
+    background-position: calc(-128em / 16) calc(-320em / 16);
+}
+.icon_em.client-talk_power_revoke {
+    background-position: calc(-160em / 16) calc(-320em / 16);
+}
+.icon_em.client-talk_power_revoke_all_grant_next {
+    background-position: calc(-192em / 16) calc(-320em / 16);
+}
+.icon_em.client-temp_server_password {
+    background-position: calc(-224em / 16) calc(-320em / 16);
+}
+.icon_em.client-temp_server_password_add {
+    background-position: calc(-256em / 16) calc(-320em / 16);
+}
+.icon_em.client-textformat {
+    background-position: calc(-288em / 16) calc(-320em / 16);
+}
+.icon_em.client-textformat_bold {
+    background-position: calc(-320em / 16) calc(-320em / 16);
+}
+.icon_em.client-textformat_foreground {
+    background-position: calc(-352em / 16) calc(-320em / 16);
+}
+.icon_em.client-textformat_italic {
+    background-position: calc(-384em / 16) calc(-320em / 16);
+}
+.icon_em.client-textformat_underline {
+    background-position: calc(-416em / 16) calc(-320em / 16);
+}
+.icon_em.client-theme {
+    background-position: calc(-448em / 16) calc(-320em / 16);
+}
+.icon_em.client-toggle_server_query_clients {
+    background-position: calc(-480em / 16) calc(-320em / 16);
+}
+.icon_em.client-toggle_whisper {
+    background-position: calc(0em / 16) calc(-352em / 16);
+}
+.icon_em.client-token {
+    background-position: calc(-32em / 16) calc(-352em / 16);
+}
+.icon_em.client-token_use {
+    background-position: calc(-64em / 16) calc(-352em / 16);
+}
+.icon_em.client-translation {
+    background-position: calc(-96em / 16) calc(-352em / 16);
+}
+.icon_em.client-unsubscribe_from_all_channels {
+    background-position: calc(-128em / 16) calc(-352em / 16);
+}
+.icon_em.client-unsubscribe_from_channel_family {
+    background-position: calc(-160em / 16) calc(-352em / 16);
+}
+.icon_em.client-unsubscribe_mode {
+    background-position: calc(-192em / 16) calc(-352em / 16);
+}
+.icon_em.client-up {
+    background-position: calc(-224em / 16) calc(-352em / 16);
+}
+.icon_em.client-upload {
+    background-position: calc(-256em / 16) calc(-352em / 16);
+}
+.icon_em.client-upload_avatar {
+    background-position: calc(-288em / 16) calc(-352em / 16);
+}
+.icon_em.client-urlcatcher {
+    background-position: calc(-320em / 16) calc(-352em / 16);
+}
+.icon_em.client-user-account {
+    background-position: calc(-352em / 16) calc(-352em / 16);
+}
+.icon_em.client-virtualserver_edit {
+    background-position: calc(-384em / 16) calc(-352em / 16);
+}
+.icon_em.client-volume {
+    background-position: calc(-416em / 16) calc(-352em / 16);
+}
+.icon_em.client-warning {
+    background-position: calc(-448em / 16) calc(-352em / 16);
+}
+.icon_em.client-warning_external_link {
+    background-position: calc(-480em / 16) calc(-352em / 16);
+}
+.icon_em.client-warning_info {
+    background-position: calc(0em / 16) calc(-384em / 16);
+}
+.icon_em.client-warning_question {
+    background-position: calc(-32em / 16) calc(-384em / 16);
+}
+.icon_em.client-weblist {
+    background-position: calc(-64em / 16) calc(-384em / 16);
+}
+.icon_em.client-whisper {
+    background-position: calc(-96em / 16) calc(-384em / 16);
+}
+.icon_em.client-whisperlists {
+    background-position: calc(-128em / 16) calc(-384em / 16);
+}
+.icon_em.client-channel_green_subscribed2 {
+    background-position: calc(-160em / 16) calc(-384em / 16);
+}
+.icon_em.client-home {
+    background-position: calc(-192em / 16) calc(-384em / 16);
+}

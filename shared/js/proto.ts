@@ -24,6 +24,9 @@ interface JQuery<TElement = HTMLElement> {
     alert() : JQuery<TElement>;
     modal(properties: any) : this;
     bootstrapMaterialDesign() : this;
+
+    /* first element which matches the selector, could be the element itself or a parent */
+    firstParent(selector: string) : JQuery;
 }
 
 interface JQueryStatic<TElement extends Node = HTMLElement> {
@@ -184,6 +187,12 @@ if(typeof ($) !== "undefined") {
             this.attr("style", original_style || "");
             return result;
         }
+    if(!$.fn.firstParent)
+        $.fn.firstParent = function (this: JQuery<HTMLElement>, selector: string) {
+            if(this.is(selector))
+                return this;
+            return this.parent(selector);
+        }
 }
 
 if (!String.prototype.format) {
@@ -247,8 +256,39 @@ function calculate_width(text: string) : number {
     return size;
 }
 
+interface Twemoji {
+    parse(message: string) : string;
+}
+declare let twemoji: Twemoji;
+
+interface HighlightJS {
+    listLanguages() : string[];
+    getLanguage(name: string) : any | undefined;
+
+    highlight(language: string, text: string, ignore_illegals?: boolean) : HighlightJSResult;
+    highlightAuto(text: string) : HighlightJSResult;
+}
+
+interface HighlightJSResult {
+    language: string;
+    relevance: number;
+
+    value: string;
+    second_best?: any;
+}
+
+interface DOMPurify {
+    sanitize(html: string, config?: {
+        ADD_ATTR?: string[]
+    }) : string;
+}
+declare let DOMPurify: DOMPurify;
+
+declare let remarkable: typeof window.remarkable;
+
 declare class webkitAudioContext extends AudioContext {}
 declare class webkitOfflineAudioContext extends OfflineAudioContext {}
+
 interface Window {
     readonly webkitAudioContext: typeof webkitAudioContext;
     readonly AudioContext: typeof webkitAudioContext;
@@ -257,6 +297,10 @@ interface Window {
     readonly RTCPeerConnection: typeof RTCPeerConnection;
     readonly Pointer_stringify: any;
     readonly jsrender: any;
+
+    twemoji: Twemoji;
+    hljs: HighlightJS;
+    remarkable: any;
 
     require(id: string): any;
 }

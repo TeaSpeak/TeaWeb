@@ -39,6 +39,11 @@ namespace connection {
 
         abstract remote_address() : ServerAddress; /* only valid when connected */
         abstract handshake_handler() : HandshakeHandler; /* only valid when connected */
+
+        abstract ping() : {
+            native: number,
+            javascript?: number
+        };
     }
 
     export namespace voice {
@@ -126,6 +131,11 @@ namespace connection {
 
         protected constructor(connection: AbstractServerConnection) {
             this.connection = connection;
+        }
+
+        destroy() {
+            this.command_handlers = undefined;
+            this.single_command_handler = undefined;
         }
 
         register_handler(handler: AbstractCommandHandler) {

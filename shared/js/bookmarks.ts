@@ -9,6 +9,37 @@ namespace bookmarks {
         return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
     }
 
+    export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
+        const profile = profiles.find_profile(mark.connect_profile) || profiles.default_profile();
+        if(profile.valid()) {
+            const connection = (typeof(new_tab) !== "boolean" || !new_tab) ? server_connections.active_connection_handler() : server_connections.spawn_server_connection_handler();
+            server_connections.set_active_connection_handler(connection);
+            connection.startConnection(
+                mark.server_properties.server_address + ":" + mark.server_properties.server_port,
+                profile,
+                true,
+                {
+                    nickname: mark.nickname,
+                    password: mark.server_properties.server_password_hash ? {
+                        password: mark.server_properties.server_password_hash,
+                        hashed: true
+                    } : mark.server_properties.server_password ? {
+                        hashed: false,
+                        password: mark.server_properties.server_password
+                    } : undefined
+                }
+            );
+        } else {
+            Modals.spawnConnectModal({}, {
+                url: mark.server_properties.server_address + ":" + mark.server_properties.server_port,
+                enforce: true
+            }, {
+                profile: profile,
+                enforce: true
+            })
+        }
+    };
+
     export interface ServerProperties {
         server_address: string;
         server_port: number;
@@ -35,6 +66,8 @@ namespace bookmarks {
         default_channel_password?: string;
 
         connect_profile: string;
+
+        last_icon_id?: number;
     }
 
     export interface DirectoryBookmark {
@@ -86,6 +119,19 @@ namespace bookmarks {
 
     export function bookmarks() : DirectoryBookmark {
         return bookmark_config().root_bookmark;
+    }
+
+    export function bookmarks_flat() : Bookmark[] {
+        const result: Bookmark[] = [];
+        const _flat = (bookmark: Bookmark | DirectoryBookmark) => {
+            if(bookmark.type == BookmarkType.DIRECTORY)
+                for(const book of (bookmark as DirectoryBookmark).content)
+                    _flat(book);
+            else
+                result.push(bookmark as Bookmark);
+        };
+        _flat(bookmark_config().root_bookmark);
+        return result;
     }
 
     function find_bookmark_recursive(parent: DirectoryBookmark, uuid: string) : Bookmark | DirectoryBookmark {
@@ -168,5 +214,28 @@ namespace bookmarks {
 
     export function delete_bookmark(bookmark: Bookmark | DirectoryBookmark) {
         delete_bookmark_recursive(bookmarks(), bookmark)
+    }
+
+    export function add_current_server() {
+        const ch = server_connections.active_connection_handler();
+        if(ch && ch.connected) {
+            createInputModal(tr("Enter bookmarks name"), tr("Please enter the bookmarks name:<br>"), text => true, result => {
+                if(result) {
+                    const bookmark = create_bookmark(result as string, bookmarks(), {
+                        server_port: ch.serverConnection.remote_address().port,
+                        server_address: ch.serverConnection.remote_address().host,
+
+                        server_password: "",
+                        server_password_hash: ""
+                    }, this.connection_handler.getClient().clientNickName());
+                    save_bookmark(bookmark);
+
+                    control_bar.update_bookmarks();
+                    top_menu.rebuild_bookmarks();
+                }
+            }).open();
+        } else {
+            createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
+        }
     }
 }

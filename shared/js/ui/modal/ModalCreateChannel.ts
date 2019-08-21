@@ -13,41 +13,67 @@ namespace Modals {
                 });
                 render_properties["channel_icon_tab"] = connection.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
                 render_properties["channel_icon_general"] = connection.fileManager.icons.generateTag(channel ? channel.properties.channel_icon_id : 0);
+                render_properties["create"] = !channel;
 
                 let template = $("#tmpl_channel_edit").renderTag(render_properties);
-                return template.tabify();
+
+                /* the tab functionality */
+                {
+                    const container_tabs = template.find(".container-advanced");
+                    container_tabs.find(".categories .entry").on('click', event => {
+                        const entry = $(event.target);
+
+                        container_tabs.find(".bodies > .body").addClass("hidden");
+                        container_tabs.find(".categories > .selected").removeClass("selected");
+
+                        entry.addClass("selected");
+                        container_tabs.find(".bodies > .body." + entry.attr("container")).removeClass("hidden");
+                    });
+
+                    container_tabs.find(".entry").first().trigger('click');
+                }
+
+                /* Advanced/normal switch */
+                {
+                    const input = template.find(".input-advanced-mode");
+                    const container_mode = template.find(".mode-container");
+                    const container_advanced = container_mode.find(".container-advanced");
+                    const container_simple = container_mode.find(".container-simple");
+                    input.on('change', event => {
+                        const advanced = input.prop("checked");
+                        settings.changeGlobal(Settings.KEY_CHANNEL_EDIT_ADVANCED, advanced);
+
+                        container_mode.css("overflow", "hidden");
+                        container_advanced.show().toggleClass("hidden", !advanced);
+                        container_simple.show().toggleClass("hidden", advanced);
+
+                        setTimeout(() => {
+                            container_advanced.toggle(advanced);
+                            container_simple.toggle(!advanced);
+                            container_mode.css("overflow", "visible");
+                        }, 300);
+                    }).prop("checked", settings.static_global(Settings.KEY_CHANNEL_EDIT_ADVANCED)).trigger('change');
+                }
+
+                return template.tabify().children(); /* the "render" div */
             },
-            footer: () => {
-                let footer = $.spawn("div");
-                footer.addClass("modal-button-group");
-                footer.css("margin", "5px");
-
-                let buttonCancel = $.spawn("button");
-                buttonCancel.text(tr("Cancel")).addClass("button_cancel");
-
-                let buttonOk = $.spawn("button");
-                buttonOk.text(tr("Ok")).addClass("button_ok");
-
-                footer.append(buttonCancel);
-                footer.append(buttonOk);
-
-                return footer;
-            },
+            footer: null,
             width: 500
         });
+        modal.htmlTag.find(".modal-body").addClass("modal-channel modal-blue");
 
 
-        applyGeneralListener(connection, properties, modal.htmlTag.find(".general_properties"), modal.htmlTag.find(".button_ok"), channel);
-        applyStandardListener(connection, properties, modal.htmlTag.find(".settings_standard"), modal.htmlTag.find(".button_ok"), parent, !channel);
-        applyPermissionListener(connection, properties, modal.htmlTag.find(".settings_permissions"), modal.htmlTag.find(".button_ok"), permissions, channel);
-        applyAudioListener(connection, properties, modal.htmlTag.find(".container-channel-settings-audio"), modal.htmlTag.find(".button_ok"), channel);
-        applyAdvancedListener(connection, properties, modal.htmlTag.find(".settings_advanced"), modal.htmlTag.find(".button_ok"), channel);
+        applyGeneralListener(connection, properties, modal.htmlTag.find(".container-general"), modal.htmlTag.find(".button_ok"), channel);
+        applyStandardListener(connection, properties, modal.htmlTag.find(".container-standard"), modal.htmlTag.find(".container-simple"), parent, channel);
+        applyPermissionListener(connection, properties, modal.htmlTag.find(".container-permissions"), modal.htmlTag.find(".button_ok"), permissions, channel);
+        applyAudioListener(connection, properties, modal.htmlTag.find(".container-audio"), modal.htmlTag.find(".container-simple"), channel);
+        applyAdvancedListener(connection, properties, modal.htmlTag.find(".container-misc"), modal.htmlTag.find(".button_ok"), channel);
 
         let updated: PermissionValue[] = [];
         modal.htmlTag.find(".button_ok").click(() => {
-            modal.htmlTag.find(".settings_permissions").find("input[permission]").each((index, _element) => {
+            modal.htmlTag.find(".container-permissions").find("input[permission]").each((index, _element) => {
                 let element = $(_element);
-                if(!element.prop("changed")) return;
+                if(element.val() == element.attr("original-value")) return;
                 let permission = permissions.resolveInfo(element.attr("permission"));
                 if(!permission) {
                     log.error(LogCategory.PERMISSIONS, tr("Failed to resolve channel permission for name %o"), element.attr("permission"));
@@ -60,9 +86,13 @@ namespace Modals {
             console.log(tr("Updated permissions %o"), updated);
         }).click(() => {
             modal.close();
+            for(const key of Object.keys(channel ? channel.properties : {}))
+                if(channel.properties[key] == properties[key])
+                    delete properties[key];
             callback(properties, updated); //First may create the channel
         });
 
+        tooltip(modal.htmlTag);
         modal.htmlTag.find(".button_cancel").click(() => {
             modal.close();
             callback();
@@ -92,13 +122,22 @@ namespace Modals {
 
         tag.find(".button-select-icon").on('click', event => {
             Modals.spawnIconSelect(connection, id => {
-                const icon_node = tag.find(".button-select-icon").find(".icon-node");
-                icon_node.empty();
+                const icon_node = tag.find(".icon-preview");
+                icon_node.children().remove();
                 icon_node.append(connection.fileManager.icons.generateTag(id));
 
                 console.log("Selected icon ID: %d", id);
                 properties.channel_icon_id = id;
             }, channel ? channel.properties.channel_icon_id : 0);
+        });
+
+        tag.find(".button-icon-remove").on('click', event => {
+            const icon_node = tag.find(".icon-preview");
+            icon_node.children().remove();
+            icon_node.append(connection.fileManager.icons.generateTag(0));
+
+            console.log("Remove channel icon");
+            properties.channel_icon_id = 0;
         });
 
         {
@@ -120,6 +159,42 @@ namespace Modals {
             properties.channel_topic = this.value;
         }).prop("disabled", !connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_TOPIC : PermissionType.B_CHANNEL_MODIFY_TOPIC).granted(1));
 
+        {
+            const container = tag.find(".container-description");
+            const input = container.find("textarea");
+
+            const insert_tag = (open: string, close: string) => {
+                if(input.prop("disabled"))
+                    return;
+
+                const node = input[0] as HTMLTextAreaElement;
+                if (node.selectionStart || node.selectionStart == 0) {
+                    const startPos = node.selectionStart;
+                    const endPos = node.selectionEnd;
+                    node.value = node.value.substring(0, startPos) + open + node.value.substring(startPos, endPos) + close + node.value.substring(endPos);
+                    node.selectionEnd = endPos + open.length;
+                    node.selectionStart = node.selectionEnd;
+                } else {
+                    node.value += open + close;
+                    node.selectionEnd = node.value.length - close.length;
+                    node.selectionStart = node.selectionEnd;
+                }
+
+                input.focus().trigger('change');
+            };
+
+            input.on('change', event => {
+                console.log(tr("Channel description edited: %o"), input.val());
+                properties.channel_description = input.val() as string;
+            });
+
+            container.find(".button-bold").on('click', () => insert_tag('[b]', '[/b]'));
+            container.find(".button-italic").on('click', () => insert_tag('[i]', '[/i]'));
+            container.find(".button-underline").on('click', () => insert_tag('[u]', '[/u]'));
+            container.find(".button-color input").on('change', event => {
+                insert_tag('[color=' + (event.target as HTMLInputElement).value + ']', '[/color]')
+            })
+        }
         tag.find(".channel_description").change(function (this: HTMLInputElement) {
             properties.channel_description = this.value;
         }).prop("disabled", !connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_DESCRIPTION : PermissionType.B_CHANNEL_MODIFY_DESCRIPTION).granted(1));
@@ -132,61 +207,277 @@ namespace Modals {
         }
     }
 
-    function applyStandardListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, button: JQuery, parent: ChannelEntry, create: boolean) {
-        tag.find("input[name=\"channel_type\"]").change(function (this: HTMLInputElement) {
-            switch(this.value) {
-                case "semi":
-                    properties.channel_flag_permanent = false;
-                    properties.channel_flag_semi_permanent = true;
-                    break;
-                case "perm":
-                    properties.channel_flag_permanent = true;
-                    properties.channel_flag_semi_permanent = false;
-                    break;
-                default:
-                    properties.channel_flag_permanent = false;
-                    properties.channel_flag_semi_permanent = false;
-                    break;
+    function applyStandardListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, simple: JQuery, parent: ChannelEntry, channel: ChannelEntry) {
+        /*  Channel type */
+        {
+            const input_advanced_type = tag.find("input[name='channel_type']");
+
+            let _in_update = false;
+            const update_simple_type = () => {
+                if(_in_update)
+                    return;
+
+                let type;
+                if(properties.channel_flag_default || (typeof(properties.channel_flag_default) === "undefined" && channel && channel.properties.channel_flag_default))
+                    type = "def";
+                else if(properties.channel_flag_permanent || (typeof(properties.channel_flag_permanent) === "undefined" && channel && channel.properties.channel_flag_permanent))
+                    type = "perm";
+                else if(properties.channel_flag_semi_permanent || (typeof(properties.channel_flag_semi_permanent) === "undefined" && channel && channel.properties.channel_flag_semi_permanent))
+                    type = "semi";
+                else
+                    type = "temp";
+
+                console.log(type);
+                console.log(Object.assign({}, properties));
+                simple.find("option[name='channel-type'][value='" + type + "']").prop("selected", true);
+            };
+
+            input_advanced_type.on('change', event => {
+                switch(input_advanced_type.val()) {
+                    case "semi":
+                        properties.channel_flag_permanent = false;
+                        properties.channel_flag_semi_permanent = true;
+                        break;
+                    case "perm":
+                        properties.channel_flag_permanent = true;
+                        properties.channel_flag_semi_permanent = false;
+                        break;
+                    default:
+                        properties.channel_flag_permanent = false;
+                        properties.channel_flag_semi_permanent = false;
+                        break;
+                }
+                update_simple_type();
+            });
+
+            const permission_temp = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_TEMPORARY : PermissionType.B_CHANNEL_MODIFY_MAKE_TEMPORARY).granted(1);
+            const permission_semi = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_SEMI_PERMANENT).granted(1);
+            const permission_perm = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1);
+            const permission_default = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1) &&
+                connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_DEFAULT : PermissionType.B_CHANNEL_MODIFY_MAKE_DEFAULT).granted(1);
+
+            /* advanced type listeners */
+            const container_types = tag.find(".container-channel-type");
+            const tag_type_temp = container_types.find(".type-temp");
+            const tag_type_semi = container_types.find(".type-semi");
+            const tag_type_perm = container_types.find(".type-perm");
+            const select_default = tag.find(".input-flag-default");
+
+            {
+
+                if(!channel) {
+                    if(permission_perm)
+                        tag_type_perm.find("input").trigger('click');
+                    else if(permission_semi)
+                        tag_type_semi.find("input").trigger('click');
+                    else
+                        tag_type_temp.find("input").trigger('click');
+                }
+
+                select_default.on('change', event => {
+                    const node = select_default[0] as HTMLInputElement;
+                    console.log(node.checked);
+
+                    properties.channel_flag_default = node.checked;
+
+                    if(node.checked)
+                        tag_type_perm.find("input").prop("checked", true);
+
+                    tag_type_temp
+                        .toggleClass("disabled", node.checked || !permission_temp)
+                        .find("input").prop("disabled", node.checked || !permission_temp);
+
+                    tag_type_semi
+                        .toggleClass("disabled", node.checked || !permission_semi)
+                        .find("input").prop("disabled", node.checked || !permission_semi);
+
+                    tag_type_perm
+                        .toggleClass("disabled", node.checked || !permission_perm)
+                        .find("input").prop("disabled", node.checked || !permission_perm);
+
+                    update_simple_type();
+                }).prop("disabled", !permission_default).trigger('change').parent().toggleClass("disabled", !permission_default);
             }
-        });
-        tag.find("input[name=\"channel_type\"][value=\"temp\"]")
-            .prop("disabled", !connection.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_TEMPORARY : PermissionType.B_CHANNEL_MODIFY_MAKE_TEMPORARY).granted(1));
-        tag.find("input[name=\"channel_type\"][value=\"semi\"]")
-            .prop("disabled", !connection.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_SEMI_PERMANENT).granted(1));
-        tag.find("input[name=\"channel_type\"][value=\"perm\"]")
-            .prop("disabled", !connection.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1));
-        if(create)
-            tag.find("input[name=\"channel_type\"]:not(:disabled)").last().prop("checked", true).trigger('change');
 
-        tag.find("input[name=\"channel_default\"]").change(function (this: HTMLInputElement) {
-            console.log(this.checked);
-            properties.channel_flag_default = this.checked;
+            /* simple */
+            {
+                simple.find("option[name='channel-type'][value='def']").prop("disabled", !permission_default);
+                simple.find("option[name='channel-type'][value='perm']").prop("disabled", !permission_perm);
+                simple.find("option[name='channel-type'][value='semi']").prop("disabled", !permission_semi);
+                simple.find("option[name='channel-type'][value='temp']").prop("disabled", !permission_temp);
 
-            let elements = tag.find("input[name=\"channel_type\"]");
-            elements.prop("disabled", this.checked);
-            if(this.checked) {
-                elements.prop("checked", false);
-                tag.find("input[name=\"channel_type\"][value=\"perm\"]").prop("checked", true).trigger("change");
+                simple.find("select[name='channel-type']").on('change', event => {
+                    try {
+                        _in_update = true;
+                        switch ((event.target as HTMLSelectElement).value) {
+                            case "temp":
+                                properties.channel_flag_permanent = false;
+                                properties.channel_flag_semi_permanent = false;
+                                properties.channel_flag_default = false;
+                                select_default.prop("checked", false).trigger('change');
+                                tag_type_temp.trigger('click');
+                                break;
+                            case "semi":
+                                properties.channel_flag_permanent = false;
+                                properties.channel_flag_semi_permanent = true;
+                                properties.channel_flag_default = false;
+                                select_default.prop("checked", false).trigger('change');
+                                tag_type_semi.trigger('click');
+                                break;
+                            case "perm":
+                                properties.channel_flag_permanent = true;
+                                properties.channel_flag_semi_permanent = false;
+                                properties.channel_flag_default = false;
+                                select_default.prop("checked", false).trigger('change');
+                                tag_type_perm.trigger('click');
+                                break;
+                            case "def":
+                                properties.channel_flag_permanent = true;
+                                properties.channel_flag_semi_permanent = false;
+                                properties.channel_flag_default = true;
+                                select_default.prop("checked", true).trigger('change');
+                                break;
+                        }
+                    } finally {
+                        _in_update = false;
+                        /* We dont need to update the simple type because we changed the advanced part to the just changed simple part */
+                        //update_simple_type();
+                    }
+                });
             }
-        }).prop("disabled",
-            !connection.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_PERMANENT : PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1) ||
-            !connection.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_DEFAULT : PermissionType.B_CHANNEL_MODIFY_MAKE_DEFAULT).granted(1));
+        }
 
-        tag.find("input[name=\"talk_power\"]").change(function (this: HTMLInputElement) {
-            properties.channel_needed_talk_power = parseInt(this.value);
-        }).prop("disabled", !connection.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_NEEDED_TALK_POWER : PermissionType.B_CHANNEL_MODIFY_NEEDED_TALK_POWER).granted(1));
+        /* Talk power */
+        {
+            const permission = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_NEEDED_TALK_POWER : PermissionType.B_CHANNEL_MODIFY_NEEDED_TALK_POWER).granted(1);
+            const input_advanced = tag.find("input[name='talk_power']").prop("disabled", !permission);
+            const input_simple = simple.find("input[name='talk_power']").prop("disabled", !permission);
 
-        let orderTag = tag.find(".order_id");
-        for(let channel of (parent ? parent.children() : connection.channelTree.rootChannel()))
-            $.spawn("option").attr("channelId", channel.channelId.toString()).text(channel.channelName()).appendTo(orderTag);
+            input_advanced.on('change', event => {
+                properties.channel_needed_talk_power = parseInt(input_advanced.val() as string);
+                input_simple.val(input_advanced.val());
+            });
 
-        orderTag.change(function (this: HTMLSelectElement) {
-            let selected = $(this.options.item(this.selectedIndex));
-            properties.channel_order = parseInt(selected.attr("channelId"));
-        }).prop("disabled", !connection.permissions.neededPermission(create ? PermissionType.B_CHANNEL_CREATE_WITH_SORTORDER : PermissionType.B_CHANNEL_MODIFY_SORTORDER).granted(1));
-        orderTag.find("option").last().prop("selected", true);
+            input_simple.on('change', event => {
+                properties.channel_needed_talk_power = parseInt(input_simple.val() as string);
+                input_advanced.val(input_simple.val());
+            });
+        }
+
+        /* Channel order */
+        {
+            const permission = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_SORTORDER : PermissionType.B_CHANNEL_MODIFY_SORTORDER).granted(1);
+
+            const advanced_order_id = tag.find(".order_id").prop("disabled", !permission) as JQuery<HTMLSelectElement>;
+            const simple_order_id = simple.find(".order_id").prop("disabled", !permission) as JQuery<HTMLSelectElement>;
+
+            for(let previous_channel of (parent ? parent.children() : connection.channelTree.rootChannel())) {
+                let selected = channel && channel.properties.channel_order == previous_channel.channelId;
+                $.spawn("option").attr("channelId", previous_channel.channelId.toString()).prop("selected", selected).text(previous_channel.channelName()).appendTo(advanced_order_id);
+                $.spawn("option").attr("channelId", previous_channel.channelId.toString()).prop("selected", selected).text(previous_channel.channelName()).appendTo(simple_order_id);
+            }
+
+            advanced_order_id.on('change', event => {
+                simple_order_id[0].selectedIndex = advanced_order_id[0].selectedIndex;
+                const selected = $(advanced_order_id[0].options.item(advanced_order_id[0].selectedIndex));
+                properties.channel_order = parseInt(selected.attr("channelId"));
+            });
+
+            simple_order_id.on('change', event => {
+                advanced_order_id[0].selectedIndex = simple_order_id[0].selectedIndex;
+                const selected = $(simple_order_id[0].options.item(simple_order_id[0].selectedIndex));
+                properties.channel_order = parseInt(selected.attr("channelId"));
+            });
+        }
+
+
+        /* Advanced only */
+        {
+            const container_max_users = tag.find(".container-max-users");
+
+            const container_unlimited = container_max_users.find(".container-unlimited");
+            const container_limited = container_max_users.find(".container-limited");
+
+            const input_unlimited = container_unlimited.find("input[value='unlimited']");
+            const input_limited = container_limited.find("input[value='limited']");
+            const input_limit = container_limited.find(".channel_maxclients");
+
+            const permission = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_MAXCLIENTS : PermissionType.B_CHANNEL_MODIFY_MAXCLIENTS).granted(1);
+
+            if(!permission) {
+                input_unlimited.prop("disabled", true);
+                input_limited.prop("disabled", true);
+                input_limit.prop("disabled", true);
+
+                container_limited.addClass("disabled");
+                container_unlimited.addClass("disabled");
+            } else {
+                container_max_users.find("input[name='max_users']").on('change', event => {
+                    const node = event.target as HTMLInputElement;
+                    console.log(tr("Channel max user mode: %o"), node.value);
+
+                    const flag = node.value === "unlimited";
+                    input_limit
+                        .prop("disabled", flag)
+                        .parent().toggleClass("disabled", flag);
+                    properties.channel_flag_maxclients_unlimited = flag;
+                });
+
+                input_limit.on('change', event => {
+                    properties.channel_maxclients = parseInt(input_limit.val() as string);
+                    console.log(tr("Changed max user limit to %o"), properties.channel_maxclients);
+                });
+
+                setTimeout(() => container_max_users.find("input:checked").trigger('change'), 100);
+            }
+        }
+
+        {
+            const container_max_users = tag.find(".container-max-family-users");
+
+            const container_unlimited = container_max_users.find(".container-unlimited");
+            const container_inherited = container_max_users.find(".container-inherited");
+            const container_limited = container_max_users.find(".container-limited");
+
+            const input_unlimited = container_unlimited.find("input[value='unlimited']");
+            const input_inherited = container_inherited.find("input[value='inherited']");
+            const input_limited = container_limited.find("input[value='limited']");
+            const input_limit = container_limited.find(".channel_maxfamilyclients");
+
+            const permission = connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_MAXCLIENTS : PermissionType.B_CHANNEL_MODIFY_MAXCLIENTS).granted(1);
+
+            if(!permission) {
+                input_unlimited.prop("disabled", true);
+                input_inherited.prop("disabled", true);
+                input_limited.prop("disabled", true);
+                input_limit.prop("disabled", true);
+
+                container_limited.addClass("disabled");
+                container_unlimited.addClass("disabled");
+                container_inherited.addClass("disabled");
+            } else {
+                container_max_users.find("input[name='max_family_users']").on('change', event => {
+                    const node = event.target as HTMLInputElement;
+                    console.log(tr("Channel max family user mode: %o"), node.value);
+
+                    const flag_unlimited = node.value === "unlimited";
+                    const flag_inherited = node.value === "inherited";
+                    input_limit
+                        .prop("disabled", flag_unlimited || flag_inherited)
+                        .parent().toggleClass("disabled", flag_unlimited || flag_inherited);
+                    properties.channel_flag_maxfamilyclients_unlimited = flag_unlimited;
+                    properties.channel_flag_maxfamilyclients_inherited = flag_inherited;
+                });
+
+                input_limit.on('change', event => {
+                    properties.channel_maxfamilyclients = parseInt(input_limit.val() as string);
+                    console.log(tr("Changed max family user limit to %o"), properties.channel_maxfamilyclients);
+                });
+
+                setTimeout(() => container_max_users.find("input:checked").trigger('change'), 100);
+            }
+        }
     }
-
 
     function applyPermissionListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, button: JQuery, permissions: PermissionManager, channel?: ChannelEntry) {
         let apply_permissions = (channel_permissions: PermissionValue[]) => {
@@ -200,6 +491,9 @@ namespace Modals {
 
             tag.find("input[permission]").each((index, _element) => {
                 let element = $(_element);
+                element.attr("original-value", 0);
+                element.val(0);
+
                 let permission = permissions.resolveInfo(element.attr("permission"));
                 if(!permission) {
                     log.error(LogCategory.PERMISSIONS, tr("Failed to resolve channel permission for name %o"), element.attr("permission"));
@@ -207,23 +501,16 @@ namespace Modals {
                     return;
                 }
 
-                let old_value: number = 0;
-                element.on("click keyup", () => {
-                    console.log(tr("Permission triggered! %o"), element.val() != old_value);
-                    element.prop("changed", element.val() != old_value);
-                });
-
                 for(let cperm of channel_permissions)
                     if(cperm.type == permission) {
-                        element.val(old_value = cperm.value);
+                        element.val(cperm.value);
+                        element.attr("original-value", cperm.value);
                         return;
                     }
-                element.val(0);
             });
 
-            if(!permissions.neededPermission(PermissionType.I_CHANNEL_MODIFY_POWER).granted(required_power, false)) {
-                tag.find("input[permission]").prop("disabled", false); //No permissions
-            }
+            const permission = permissions.neededPermission(PermissionType.I_CHANNEL_MODIFY_POWER).granted(required_power, false);
+            tag.find("input[permission]").prop("disabled", !permission).parent(".input-boxed").toggleClass("disabled", !permission); //No permissions
         };
 
         if(channel) {
@@ -234,7 +521,17 @@ namespace Modals {
         } else apply_permissions([]);
     }
 
-    function applyAudioListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, button: JQuery, channel?: ChannelEntry) {
+    function applyAudioListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, simple: JQuery, channel?: ChannelEntry) {
+        const bandwidth_mapping = [
+            /* SPEEX narrow */ [2.49, 2.69, 2.93, 3.17, 3.17, 3.56, 3.56, 4.05, 4.05,  4.44,  5.22],
+            /* SPEEX wide */   [2.69, 2.93, 3.17, 3.42, 3.76, 4.25, 4.74, 5.13, 5.62,  6.40,  7.37],
+            /* SPEEX ultra */  [2.73, 3.12, 3.37, 3.61, 4.00, 4.49, 4.93, 5.32, 5.81,  6.59,  7.57],
+            /* CELT */         [6.10, 6.10, 7.08, 7.08, 7.08, 8.06, 8.06, 8.06, 8.06, 10.01, 13.92],
+
+            /* Opus Voice */   [2.73, 3.22, 3.71, 4.20, 4.74, 5.22, 5.71, 6.20,  6.74,  7.23,  7.71],
+            /* Opus Music */   [3.08, 3.96, 4.83, 5.71, 6.59, 7.47, 8.35, 9.23, 10.11, 10.99, 11.87]
+        ];
+
         let update_template = () => {
             let codec = properties.channel_codec;
             if(!codec && channel)
@@ -246,14 +543,25 @@ namespace Modals {
                 quality = channel.properties.channel_codec_quality;
             if(!quality) return;
 
-            if(codec == 4 && quality == 4)
-                tag.find("input[name=\"voice_template\"][value=\"voice_mobile\"]").prop("checked", true);
-            else if(codec == 4 && quality == 6)
-                tag.find("input[name=\"voice_template\"][value=\"voice_desktop\"]").prop("checked", true);
-            else if(codec == 5 && quality == 6)
-                tag.find("input[name=\"voice_template\"][value=\"music\"]").prop("checked", true);
+            let template_name = "custom";
+
+            {
+                if(codec == 4 && quality == 4)
+                    template_name = "voice_mobile";
+                else if(codec == 4 && quality == 6)
+                    template_name = "voice_desktop";
+                else if(codec == 5 && quality == 6)
+                    template_name = "music";
+            }
+            tag.find("input[name='voice_template'][value='" + template_name + "']").prop("checked", true);
+            simple.find("option[name='voice_template'][value='" + template_name + "']").prop("selected", true);
+
+            let bandwidth;
+            if(codec < 0 || codec > bandwidth_mapping.length)
+                bandwidth = 0;
             else
-                tag.find("input[name=\"voice_template\"][value=\"custom\"]").prop("checked", true);
+                bandwidth = bandwidth_mapping[codec][quality] || 0; /* OOB access results in undefined, but is allowed */
+            tag.find(".container-needed-bandwidth").text(bandwidth.toFixed(2) + " KiB/s");
         };
 
         let change_codec = codec => {
@@ -264,20 +572,30 @@ namespace Modals {
             update_template();
         };
 
-        let quality_slider = tag.find(".voice_quality_slider");
-        let quality_number = tag.find(".voice_quality_number");
+        const container_quality = tag.find(".container-quality");
+        const slider_quality = sliderfy(container_quality.find(".container-slider"), {
+            initial_value: properties.channel_codec_quality || 6,
+            unit: "",
+            min_value: 1,
+            max_value: 10,
+            step: 1,
+            value_field: container_quality.find(".container-value")
+        });
+
         let change_quality = (quality: number) => {
             if(properties.channel_codec_quality == quality) return;
 
             properties.channel_codec_quality = quality;
-            if(quality_slider.val() != quality)
-                quality_slider.val(quality);
-            if(parseInt(quality_number.text()) != quality)
-                quality_number.text(quality);
+            slider_quality.value(quality);
             update_template();
         };
 
-        tag.find("input[name=\"voice_template\"]").change(function (this: HTMLInputElement) {
+        container_quality.find(".container-slider").on('change', event => {
+            properties.channel_codec_quality = slider_quality.value();
+            update_template();
+        });
+
+        tag.find("input[name='voice_template']").change(function (this: HTMLInputElement) {
             switch(this.value) {
                 case "custom":
                     break;
@@ -295,12 +613,43 @@ namespace Modals {
                     break;
             }
         });
-        tag.find("input[name=\"voice_template\"][value=\"voice_mobile\"]")
-            .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE).granted(1));
-        tag.find("input[name=\"voice_template\"][value=\"voice_desktop\"]")
-            .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE).granted(1));
-        tag.find("input[name=\"voice_template\"][value=\"music\"]")
-            .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSMUSIC).granted(1));
+
+        simple.find("select[name='voice_template']").change(function (this: HTMLInputElement) {
+            switch(this.value) {
+                case "custom":
+                    break;
+                case "music":
+                    change_codec(5);
+                    change_quality(6);
+                    break;
+                case "voice_desktop":
+                    change_codec(4);
+                    change_quality(6);
+                    break;
+                case "voice_mobile":
+                    change_codec(4);
+                    change_quality(4);
+                    break;
+            }
+        });
+
+        /* disable not granted templates */
+        {
+            tag.find("input[name='voice_template'][value='voice_mobile']")
+                .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE).granted(1));
+            simple.find("option[name='voice_template'][value='voice_mobile']")
+                .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE).granted(1));
+
+            tag.find("input[name='voice_template'][value=\"voice_desktop\"]")
+                .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE).granted(1));
+            simple.find("option[name='voice_template'][value=\"voice_desktop\"]")
+                .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSVOICE).granted(1));
+
+            tag.find("input[name='voice_template'][value=\"music\"]")
+                .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSMUSIC).granted(1));
+            simple.find("option[name='voice_template'][value=\"music\"]")
+                .prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_OPUSMUSIC).granted(1));
+        }
 
         let codecs = tag.find(".voice_codec option");
         codecs.eq(0).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_MODIFY_WITH_CODEC_SPEEX8).granted(1));
@@ -323,8 +672,6 @@ namespace Modals {
             change_quality(channel.properties.channel_codec_quality);
         }
         update_template();
-
-        quality_slider.on('input', event => change_quality(parseInt(quality_slider.val() as string)));
     }
 
     function applyAdvancedListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, button: JQuery, channel?: ChannelEntry) {
@@ -332,58 +679,26 @@ namespace Modals {
             properties.channel_topic = this.value;
         });
 
-        tag.find(".channel_delete_delay").change(function (this: HTMLInputElement) {
-            properties.channel_delete_delay = parseInt(this.value);
-        }).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_TEMP_DELETE_DELAY).granted(1));
-
-        tag.find(".channel_codec_is_unencrypted").change(function (this: HTMLInputElement) {
-            properties.channel_codec_is_unencrypted = parseInt(this.value) == 0;
-        }).prop("disabled", !connection.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_CODEC_ENCRYPTED).granted(1));
-
         {
-            let tag_infinity = tag.find("input[name=\"max_users\"][value=\"infinity\"]");
-            let tag_limited = tag.find("input[name=\"max_users\"][value=\"limited\"]");
-            let tag_limited_value = tag.find(".channel_maxclients");
-
-            if(!connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_MAXCLIENTS : PermissionType.B_CHANNEL_MODIFY_MAXCLIENTS).granted(1)) {
-                tag_infinity.prop("disabled", true);
-                tag_limited.prop("disabled", true);
-                tag_limited_value.prop("disabled", true);
-            } else {
-                tag.find("input[name=\"max_users\"]").change(function (this: HTMLInputElement) {
-                    console.log(this.value);
-                    let infinity = this.value == "infinity";
-                    tag_limited_value.prop("disabled", infinity);
-                    properties.channel_flag_maxclients_unlimited = infinity;
-                });
-
-                tag_limited_value.change(event => properties.channel_maxclients = parseInt(tag_limited_value.val() as string));
-                tag.find("input[name=\"max_users\"]:checked").trigger('change');
-            }
+            const permission = connection.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_TEMP_DELETE_DELAY).granted(1);
+            tag.find(".channel_delete_delay").change(function (this: HTMLInputElement) {
+                properties.channel_delete_delay = parseInt(this.value);
+            }).prop("disabled", !permission).parent(".input-boxed").toggleClass("disabled", !permission);
         }
 
         {
-            let tag_inherited = tag.find("input[name=\"max_users_family\"][value=\"inherited\"]");
-            let tag_infinity = tag.find("input[name=\"max_users_family\"][value=\"infinity\"]");
-            let tag_limited = tag.find("input[name=\"max_users_family\"][value=\"limited\"]");
-            let tag_limited_value = tag.find(".channel_maxfamilyclients");
+            tag.find(".button-delete-max").on('click', event => {
+                const power = connection.permissions.neededPermission(PermissionType.I_CHANNEL_CREATE_MODIFY_WITH_TEMP_DELETE_DELAY).value;
+                let value = power == -2 ? 0 : power == -1 ? (7 * 24 * 60 * 60) : power;
+                tag.find(".channel_delete_delay").val(value).trigger('change');
+            });
+        }
 
-            if(!connection.permissions.neededPermission(!channel ? PermissionType.B_CHANNEL_CREATE_WITH_MAXCLIENTS : PermissionType.B_CHANNEL_MODIFY_MAXCLIENTS).granted(1)) {
-                tag_inherited.prop("disabled", true);
-                tag_infinity.prop("disabled", true);
-                tag_limited.prop("disabled", true);
-                tag_limited_value.prop("disabled", true);
-            } else {
-                tag.find("input[name=\"max_users_family\"]").change(function (this: HTMLInputElement) {
-                    console.log(this.value);
-                    tag_limited_value.prop("disabled", this.value != "limited");
-                    properties.channel_flag_maxfamilyclients_unlimited = this.value == "infinity";
-                    properties.channel_flag_maxfamilyclients_inherited = this.value == "inherited";
-                });
-
-                tag_limited_value.change(event => properties.channel_maxfamilyclients = parseInt(tag_limited_value.val() as string));
-                tag.find("input[name=\"max_users_family\"]:checked").trigger('change');
-            }
+        {
+            const permission = connection.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_CODEC_ENCRYPTED).granted(1);
+            tag.find(".channel_codec_is_unencrypted").change(function (this: HTMLInputElement) {
+                properties.channel_codec_is_unencrypted = parseInt(this.value) == 0;
+            }).prop("disabled", !permission).parent(".input-boxed").toggleClass("disabled", !permission);
         }
     }
 }

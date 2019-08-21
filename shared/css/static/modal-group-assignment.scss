@@ -1,0 +1,149 @@
+@import "mixin";
+@import "properties";
+
+.modal-server-group-assignments {
+	@include user-select(none);
+
+	min-width: 25em;
+	max-height: calc(100vh - 10rem);
+
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
+
+	.group-assignment-list {
+		flex-grow: 1;
+
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		color: #999999;
+
+		a {
+			flex-shrink: 0;
+			flex-grow: 0;
+
+			.htmltag-client {
+				display: inline;
+				color: #999999;
+			}
+		}
+
+		.group-list {
+			flex-shrink: 1;
+			flex-grow: 1;
+
+			border: none;
+			border-radius: $border_radius_middle;
+			padding: 3px;
+			overflow-y: auto;
+
+			@include chat-scrollbar-vertical();
+
+			.group-entry {
+				flex-shrink: 0;
+				flex-grow: 0;
+
+				display: flex;
+				flex-direction: row;
+				height: max-content;
+			}
+
+			.icon-container {
+				align-self: center;
+				margin-right: 4px;
+				margin-left: 2px;
+				margin-top: -2px;
+			}
+
+			a {
+				align-self: center;
+			}
+
+			.checkbox {
+				align-self: center;
+				height: 8px;
+
+				margin-top: 1px;
+				margin-left: 1px;
+				display: block;
+				position: relative;
+				padding-left: 18px;
+				margin-bottom: 12px;
+				cursor: pointer;
+				font-size: 22px;
+
+				/* Hide the browser's default checkbox */
+				input {
+					position: absolute;
+					opacity: 0;
+					cursor: pointer;
+					display: none;
+				}
+
+				.checkmark {
+					position: absolute;
+					top: 0;
+					left: 0;
+					height: 16px;
+					width: 16px;
+					background-color: #eee;
+					margin-right: 4px;
+
+					&:after {
+						content: "";
+						position: absolute;
+						display: none;
+
+						left: 5px;
+						top: 1px;
+						width: 6px;
+						height: 12px;
+						border: solid white;
+						border-width: 0 3px 3px 0;
+						-webkit-transform: rotate(45deg);
+						-ms-transform: rotate(45deg);
+						transform: rotate(45deg);
+					}
+				}
+
+				&:hover:not(.disabled) input ~ .checkmark {
+					background-color: #ccc;
+				}
+
+				input:checked ~ .checkmark {
+					background-color: #2196F3;
+				}
+
+				input:checked ~ .checkmark:after {
+					display: block;
+				}
+
+				&.disabled {
+					user-select: none;
+					pointer-events: none;
+					cursor: not-allowed;
+
+					.checkmark {
+						background-color: #00000055;
+						&:after {
+							border-color: #00000055;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	.container-buttons {
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		padding-top: 1em;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+}

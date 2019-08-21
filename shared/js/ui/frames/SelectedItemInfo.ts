@@ -60,7 +60,6 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     private _current_manager: InfoManagerBase = undefined;
     private managers: InfoManagerBase[] = [];
-    private banner_manager: Hostbanner;
 
     constructor(client: ConnectionHandler) {
         this.handle = client;
@@ -74,13 +73,21 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
         this.managers.push(new ChannelInfoManager());
         this.managers.push(new ServerInfoManager());
 
-        this.banner_manager = new Hostbanner(client, this._tag_banner);
-
         this._tag.find("button.close").on('click', () => this.close_popover());
     }
 
     get_tag() : JQuery {
         return this._tag;
+    }
+
+    destroy() {
+        this._tag && this._tag.remove();
+        this._tag = undefined;
+
+        this.managers = undefined;
+        this._current_manager = undefined;
+
+        this.current_selected = undefined;
     }
 
     handle_resize() {
@@ -90,8 +97,6 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
             if(this.is_popover())
                 this._tag.parent().addClass('shown');
         }
-
-        this.banner_manager.handle_resize();
     }
 
     setCurrentSelected(entry: AvailableTypes) {
@@ -126,10 +131,6 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
             (this._current_manager as InfoManager<AvailableTypes>).updateFrame(this.current_selected, this._tag_info);
     }
 
-    update_banner() {
-        this.banner_manager.update();
-    }
-
     current_manager() { return this._current_manager; }
 
     is_popover() : boolean {
@@ -138,7 +139,6 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 
     open_popover() {
         this._tag.parent().toggleClass('shown', true);
-        this.banner_manager.handle_resize();
     }
 
     close_popover() {
@@ -153,161 +153,6 @@ class InfoBar<AvailableTypes = ServerEntry | ChannelEntry | ClientEntry | undefi
 interface Window {
     Image: typeof HTMLImageElement;
     HTMLImageElement: typeof HTMLImageElement;
-}
-
-class Hostbanner {
-    readonly html_tag: JQuery<HTMLElement>;
-    readonly client: ConnectionHandler;
-
-    private updater: NodeJS.Timer;
-    private _hostbanner_url: string;
-
-    constructor(client: ConnectionHandler, htmlTag: JQuery<HTMLElement>) {
-        this.client = client;
-        this.html_tag = htmlTag;
-    }
-
-    update() {
-        if(this.updater) {
-            clearTimeout(this.updater);
-            this.updater = undefined;
-        }
-
-        const tag = this.generate_tag();
-
-        if(tag) {
-            tag.then(element => {
-                const children = this.html_tag.children();
-                this.html_tag.append(element).removeClass("disabled");
-
-                /* allow the new image be loaded from cache URL */
-                {
-                    children
-                        .css('z-index', '2')
-                        .css('position', 'absolute')
-                        .css('height', '100%')
-                        .css('width', '100%');
-                    setTimeout(() => {
-                        children.detach();
-                    }, 250);
-                }
-            }).catch(error => {
-                console.warn(tr("Failed to load hostbanner: %o"), error);
-                this.html_tag.empty().addClass("disabled");
-            })
-        } else {
-            this.html_tag.empty().addClass("disabled");
-        }
-    }
-
-    handle_resize() {
-        this.html_tag.find("[x-divider-require-resize]").trigger('resize');
-    }
-
-    private generate_tag?() : Promise<JQuery<HTMLElement>> {
-        if(!this.client.connected) return undefined;
-
-        const server = this.client.channelTree.server;
-        if(!server) return undefined;
-        if(!server.properties.virtualserver_hostbanner_gfx_url) return undefined;
-
-        let properties: any = {};
-        for(let key in server.properties)
-            properties["property_" + key] = server.properties[key];
-
-        properties["hostbanner_gfx_url"] = server.properties.virtualserver_hostbanner_gfx_url;
-        if(server.properties.virtualserver_hostbanner_gfx_interval > 0) {
-            const update_interval = Math.max(server.properties.virtualserver_hostbanner_gfx_interval, 60);
-            const update_timestamp = (Math.floor((Date.now() / 1000) / update_interval) * update_interval).toString();
-            try {
-                const url = new URL(server.properties.virtualserver_hostbanner_gfx_url);
-                if(url.search.length == 0)
-                    properties["hostbanner_gfx_url"] += "?_ts=" + update_timestamp;
-                else
-                    properties["hostbanner_gfx_url"] += "&_ts=" + update_timestamp;
-            } catch(error) {
-                console.warn(tr("Failed to parse banner URL: %o"), error);
-                properties["hostbanner_gfx_url"] += "&_ts=" + update_timestamp;
-            }
-
-            this.updater = setTimeout(() => this.update(), update_interval * 1000);
-        }
-
-        const rendered = $("#tmpl_selected_hostbanner").renderTag(properties);
-
-        /* ration watcher */
-        if(server.properties.virtualserver_hostbanner_mode == 2) {
-            const jimage = rendered.find(".meta-image");
-            if(jimage.length == 0) {
-                log.warn(LogCategory.SERVER, tr("Missing hostbanner meta image tag"));
-            } else {
-                const image = jimage[0];
-                image.onload = event => {
-                    const image: HTMLImageElement = jimage[0] as any;
-                    rendered.on('resize', event => {
-                        const container = rendered.parent();
-                        container.css('height', null);
-                        container.css('flex-grow', '1');
-
-                        const max_height = rendered.visible_height();
-                        const max_width = rendered.visible_width();
-                        container.css('flex-grow', '0');
-
-
-                        const original_height = image.naturalHeight;
-                        const original_width = image.naturalWidth;
-
-                        const ratio_height = max_height / original_height;
-                        const ratio_width = max_width / original_width;
-
-                        const ratio = Math.min(ratio_height, ratio_width);
-
-                        if(ratio == 0)
-                            return;
-                        const hostbanner_height = ratio * original_height;
-                        container.css('height', Math.ceil(hostbanner_height) + "px");
-                        /* the width is ignorable*/
-                    });
-                    setTimeout(() => rendered.trigger('resize'), 100);
-                };
-            }
-        }
-
-        if(window.fetch) {
-            return (async () => {
-                const start = Date.now();
-
-                const tag_image = rendered.find(".hostbanner-image");
-
-                _fetch:
-                try {
-                    const result = await fetch(properties["hostbanner_gfx_url"]);
-
-                    if(!result.ok) {
-                        if(result.type === 'opaque' || result.type === 'opaqueredirect') {
-                            log.warn(LogCategory.SERVER, tr("Could not load hostbanner because 'Access-Control-Allow-Origin' isnt valid!"));
-                            break _fetch;
-                        }
-                    }
-
-                    if(this._hostbanner_url) {
-                        log.debug(LogCategory.SERVER, tr("Revoked old hostbanner url %s"), this._hostbanner_url);
-                        URL.revokeObjectURL(this._hostbanner_url);
-                    }
-                    const url = (this._hostbanner_url = URL.createObjectURL(await result.blob()));
-                    tag_image.css('background-image', 'url(' + url + ')');
-                    tag_image.attr('src', url);
-                    log.debug(LogCategory.SERVER, tr("Fetsched hostbanner successfully (%o, type: %o, url: %o)"), Date.now() - start, result.type, url);
-                } catch(error) {
-                    log.warn(LogCategory.SERVER, tr("Failed to fetch hostbanner image: %o"), error);
-                }
-                return rendered;
-            })();
-        } else {
-            console.debug(tr("Hostbanner has been loaded"));
-            return Promise.resolve(rendered);
-        }
-    }
 }
 
 class ClientInfoManager extends InfoManager<ClientEntry> {

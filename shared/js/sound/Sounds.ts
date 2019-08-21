@@ -5,6 +5,12 @@ enum Sound {
     AWAY_ACTIVATED = "away_activated",
     AWAY_DEACTIVATED = "away_deactivated",
 
+    MICROPHONE_MUTED = "microphone.muted",
+    MICROPHONE_ACTIVATED = "microphone.activated",
+
+    SOUND_MUTED = "sound.muted",
+    SOUND_ACTIVATED = "sound.activated",
+
     CONNECTION_CONNECTED = "connection.connected",
     CONNECTION_DISCONNECTED = "connection.disconnected",
     CONNECTION_BANNED = "connection.banned",
@@ -155,23 +161,22 @@ namespace sound {
             const data: any = {};
             data.version = 1;
 
-            for(const sound in Sound) {
-                if(typeof(speech_volume[sound]) !== "undefined")
-                    data[sound] = speech_volume[sound];
+            for(const key in Sound) {
+                if(typeof(speech_volume[Sound[key]]) !== "undefined")
+                    data[Sound[key]] = speech_volume[Sound[key]];
             }
             data.master = master_volume;
             data.overlap = overlap_sounds;
             data.ignore_muted = ignore_muted;
 
             settings.changeGlobal("sound_volume", JSON.stringify(data));
-            console.error(data);
         }
     }
 
     export function initialize() : Promise<void> {
         $.ajaxSetup({
             beforeSend: function(jqXHR,settings){
-                if (settings.dataType === 'binary'){
+                if (settings.dataType === 'binary') {
                     settings.xhr().responseType = 'arraybuffer';
                     settings.processData = false;
                 }
@@ -181,12 +186,11 @@ namespace sound {
         /* volumes */
         {
             const data = JSON.parse(settings.static_global("sound_volume", "{}"));
-            for(const sound in Sound) {
-                if(typeof(data[sound]) !== "undefined")
-                    speech_volume[sound] = data[sound];
+            for(const sound_key in Sound) {
+                if(typeof(data[Sound[sound_key]]) !== "undefined")
+                    speech_volume[Sound[sound_key]] = data[Sound[sound_key]];
             }
 
-            console.error(data);
             master_volume = data.master || 1;
             overlap_sounds = data.overlap || true;
             ignore_muted = data.ignore_muted || true;
@@ -223,6 +227,8 @@ namespace sound {
         ignore_overlap?: boolean;
 
         default_volume?: number;
+
+        callback?: (flag: boolean) => any;
     }
 
     export async function resolve_sound(sound: Sound) : Promise<SoundHandle> {
@@ -358,6 +364,8 @@ namespace sound {
 
                     handle.replaying = true;
                     player.onended = event => {
+                        if(options.callback)
+                            options.callback(true);
                         delete this._playing_sounds[_sound];
                     };
 
@@ -375,11 +383,24 @@ namespace sound {
                     }
                 } else if(handle.node) {
                     handle.node.currentTime = 0;
-                    handle.node.play();
+                    handle.node.play().then(() => {
+                        if(options.callback)
+                            options.callback(true);
+                    }).catch(error => {
+                        console.warn(tr("Sound playback for sound %o resulted in an error: %o"), sound, error);
+                        if(options.callback)
+                            options.callback(false);
+                    });
                 } else {
-                    console.warn(tr("Failed to replay sound because of missing handles."), sound);
+                    console.warn(tr("Failed to replay sound %o because of missing handles."), sound);
+                    if(options.callback)
+                        options.callback(false);
                     return;
                 }
+            }).catch(error => {
+                console.warn(tr("Failed to replay sound %o because it could not be resolved: %o"), sound, error);
+                if(options.callback)
+                    options.callback(false);
             });
         }
     }

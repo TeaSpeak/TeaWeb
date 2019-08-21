@@ -1,0 +1,125 @@
+@import "mixin";
+
+.top-menu-bar {
+	@include user-select(none);
+
+	height: 1.5em;
+	width: 100%;
+
+	background: #fafafa;
+
+	display: flex;
+	flex-direction: row;
+	justify-content: flex-start;
+
+	position: fixed;
+	top: 0;
+	z-index: 201;
+
+	font-family: Arial, serif;
+
+	.container-menu-item {
+		position: relative;
+
+		.menu-item {
+			cursor: pointer;
+
+			padding-left: .4em;
+			padding-right: .4em;
+
+			height: 100%;
+
+			display: flex;
+			flex-direction: row;
+			width: max-content;
+
+			> * {
+				vertical-align: middle;
+			}
+
+			.container-icon {
+				height: 1.2em;
+				width: 1.2em;
+				padding: .1em;
+				font-size: 1em;
+
+				margin-right: .2em;
+				display: inline-block;
+			}
+
+			.container-label {
+				display: inline-block;
+				align-self: center;
+			}
+		}
+
+		&:hover:not(.disabled) {
+			background-color: #00000044;
+		}
+
+		&.disabled {
+			background-color: #00000022;
+		}
+
+		.sub-menu {
+			z-index: 1000;
+			display: none;
+
+			background: white;
+			position: absolute;
+
+			top: 100%;
+			border: 1px solid black;
+
+			> .container-menu-item {
+				padding-right: .5em;
+			}
+		}
+
+		&.type-side {
+			&.sub-entries:after {
+				position: absolute;
+
+				display: block;
+				content: '>';
+
+				top: 0;
+				bottom: 0;
+
+				right: .4em;
+			}
+
+			> .sub-menu {
+				top: -1px; /* border */
+				left: 100%;
+			}
+
+			&:hover {
+				> .sub-menu {
+					display: block;
+				}
+			}
+		}
+
+		&.active {
+			background-color: #00000044;
+
+			> .sub-menu {
+				display: block;
+			}
+		}
+	}
+
+	> .container-menu-item {
+		> .menu-item {
+			.container-icon {
+				display: none;
+			}
+		}
+	}
+
+	hr {
+		margin-top: .125em;
+		margin-bottom: .125em;
+	}
+}

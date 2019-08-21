@@ -50,6 +50,8 @@ class ChannelProperties {
 
     //Only after request
     channel_description: string = "";
+
+    channel_flag_conversation_private: boolean = false;
 }
 
 class ChannelEntry {
@@ -70,6 +72,7 @@ class ChannelEntry {
     private _tag_siblings:          JQuery<HTMLElement>; /* container for all sub channels */
     private _tag_clients:           JQuery<HTMLElement>; /* container for all clients */
     private _tag_channel:           JQuery<HTMLElement>; /* container for the channel info itself */
+    private _destroyed = false;
 
     private _cachedPassword: string;
     private _cached_channel_description: string = undefined;
@@ -89,6 +92,26 @@ class ChannelEntry {
 
         this.initializeTag();
         this.__updateChannelName();
+    }
+
+    destroy() {
+        this._destroyed = true;
+        if(this._tag_root) {
+            this._tag_root.remove(); /* removes also all other tags */
+            this._tag_root = undefined;
+        }
+        this._tag_siblings = undefined;
+        this._tag_channel = undefined;
+        this._tag_clients = undefined;
+
+        this._cached_channel_description_promise = undefined;
+        this._cached_channel_description_promise_resolve = undefined;
+        this._cached_channel_description_promise_reject = undefined;
+
+        this.channel_previous = undefined;
+        this.parent = undefined;
+        this.channel_next = undefined;
+        this.channelTree = undefined;
     }
 
     channelName(){
@@ -186,7 +209,7 @@ class ChannelEntry {
         if(current_index == new_index && !enforce) return;
 
         this._tag_channel.css("z-index", this._family_index);
-        this._tag_channel.css("padding-left", (this._family_index + 1) * 16 + "px");
+        this._tag_channel.css("padding-left", ((this._family_index + 1) * 16 + 10) + "px");
     }
 
     calculate_family_index(enforce_recalculate: boolean = false) : number {
@@ -212,6 +235,15 @@ class ChannelEntry {
 
             container_entry.attr("channel-id", this.channelId);
             container_entry.addClass(this._channel_name_alignment);
+
+            /* unread marker */
+            {
+                container_entry.append(
+                    $.spawn("div")
+                        .addClass("marker-text-unread hidden")
+                        .attr("conversation", this.channelId)
+                );
+            }
 
             /* channel icon (type) */
             {
@@ -317,7 +349,7 @@ class ChannelEntry {
         /*
         setInterval(() => {
             let color = (Math.random() * 10000000).toString(16).substr(0, 6);
-            bg.css("background", "#" + color);
+            tag_channel.css("background", "#" + color);
         }, 150);
         */
 
@@ -456,22 +488,30 @@ class ChannelEntry {
         const bold = text => contextmenu.get_provider().html_format_enabled() ? "<b>" + text + "</b>" : text;
         contextmenu.spawn_context_menu(x, y, {
                 type: contextmenu.MenuEntryType.ENTRY,
-                name: tr("Show channel info"),
-                callback: () => {
-                    trigger_close = false;
-                    this.channelTree.client.select_info.open_popover()
-                },
-                icon_class: "client-about",
-                visible: this.channelTree.client.select_info.is_popover()
-            }, {
-                type: contextmenu.MenuEntryType.HR,
-                visible: this.channelTree.client.select_info.is_popover(),
-                name: ''
-            }, {
-                type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-channel_switch",
                 name: bold(tr("Switch to channel")),
                 callback: () => this.joinChannel()
+            }, {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_switch",
+                name: bold(tr("Join text channel")),
+                callback: () => {
+                    this.channelTree.client.side_bar.channel_conversations().set_current_channel(this.getChannelId());
+                    this.channelTree.client.side_bar.show_channel_conversations();
+                },
+                visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
+            }, {
+                type: contextmenu.MenuEntryType.HR,
+                name: ''
+            }, {
+                type: contextmenu.MenuEntryType.ENTRY,
+                name: tr("Show channel info"),
+                callback: () => {
+                    trigger_close = false;
+
+                    alert('TODO!');
+                },
+                icon_class: "client-about"
             },
             ...(() => {
                 const local_client = this.channelTree.client.getClient();
@@ -734,13 +774,19 @@ class ChannelEntry {
                 this.updateChannelTypeIcon();
                 info_update = true;
             }
+            if(key == "channel_flag_conversation_private") {
+                const conversations = this.channelTree.client.side_bar.channel_conversations();
+                const conversation = conversations.conversation(this.channelId, false);
+                if(conversation)
+                    conversation.set_flag_private(this.properties.channel_flag_conversation_private);
+            }
         }
         group.end();
 
         if(info_update) {
             const _client = this.channelTree.client.getClient();
             if(_client.currentChannel() === this)
-                this.channelTree.client.chat_frame.info_frame().update_channel_talk();
+                this.channelTree.client.side_bar.info_frame().update_channel_talk();
             //TODO chat channel!
         }
     }
@@ -855,6 +901,7 @@ class ChannelEntry {
     get flag_subscribed() : boolean {
         return this._flag_subscribed;
     }
+
     set flag_subscribed(flag: boolean) {
         if(this._flag_subscribed == flag)
             return;
@@ -873,6 +920,10 @@ class ChannelEntry {
 
         this._subscribe_mode = mode;
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), mode);
+    }
+
+    set flag_text_unread(flag: boolean) {
+        this._tag_channel.find(".marker-text-unread").toggleClass("hidden", !flag);
     }
 
     log_data() : log.server.base.Channel {

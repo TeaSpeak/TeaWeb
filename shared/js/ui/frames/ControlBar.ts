@@ -27,6 +27,8 @@ class ControlBar {
 
     private connection_handler: ConnectionHandler | undefined;
 
+    private _button_hostbanner: JQuery;
+
     htmlTag: JQuery;
     constructor(htmlTag: JQuery) {
         this.htmlTag = htmlTag;
@@ -47,6 +49,7 @@ class ControlBar {
 
         this.connection_handler = handler;
         this.apply_server_state();
+        this.update_connection_state();
     }
 
     apply_server_state() {
@@ -63,7 +66,21 @@ class ControlBar {
         this.button_query_visible = this.connection_handler.client_status.queries_visible;
         this.button_subscribe_all = this.connection_handler.client_status.channel_subscribe_all;
 
+        this.apply_server_hostbutton();
         this.apply_server_voice_state();
+    }
+
+    apply_server_hostbutton() {
+        const server = this.connection_handler.channelTree.server;
+        if(server && server.properties.virtualserver_hostbutton_gfx_url) {
+            this._button_hostbanner
+                .attr("title", server.properties.virtualserver_hostbutton_tooltip || server.properties.virtualserver_hostbutton_gfx_url)
+                .attr("href", server.properties.virtualserver_hostbutton_url);
+            this._button_hostbanner.find("img").attr("src", server.properties.virtualserver_hostbutton_gfx_url);
+            this._button_hostbanner.show();
+        } else {
+            this._button_hostbanner.hide();
+        }
     }
 
     apply_server_voice_state() {
@@ -72,6 +89,7 @@ class ControlBar {
 
         this.button_microphone = !this.connection_handler.client_status.input_hardware ? "disabled" : this.connection_handler.client_status.input_muted ? "muted" : "enabled";
         this.button_speaker = this.connection_handler.client_status.output_muted ? "muted" : "enabled";
+        top_menu.update_state(); //TODO: Only run "small" update?
     }
 
     current_connection_handler() {
@@ -95,6 +113,7 @@ class ControlBar {
         };
 
         this.htmlTag.find(".btn_connect").on('click', this.on_open_connect.bind(this));
+        this.htmlTag.find(".btn_connect_new_tab").on('click', this.on_open_connect_new_tab.bind(this));
         this.htmlTag.find(".btn_disconnect").on('click', this.on_execute_disconnect.bind(this));
 
         this.htmlTag.find(".btn_mute_input").on('click', this.on_toggle_microphone.bind(this));
@@ -110,6 +129,15 @@ class ControlBar {
         this.htmlTag.find(".btn_token_use").on('click', this.on_token_use.bind(this));
         this.htmlTag.find(".btn_token_list").on('click', this.on_token_list.bind(this));
 
+        (this._button_hostbanner = this.htmlTag.find(".button-hostbutton")).hide().on('click', () => {
+            if(!this.connection_handler) return;
+
+            const server = this.connection_handler.channelTree.server;
+            if(!server || !server.properties.virtualserver_hostbutton_url) return;
+
+            window.open(server.properties.virtualserver_hostbutton_url, '_blank');
+        });
+
 
         {
             this.htmlTag.find(".btn_away_disable").on('click', this.on_away_disable.bind(this));
@@ -124,6 +152,7 @@ class ControlBar {
             this.htmlTag.find(".btn_away_toggle").on('click', this.on_away_toggle.bind(this));
         }
 
+        dropdownify(this.htmlTag.find(".container-connect"));
         dropdownify(this.htmlTag.find(".container-disconnect"));
         dropdownify(this.htmlTag.find(".btn_token"));
         dropdownify(this.htmlTag.find(".btn_away"));
@@ -202,12 +231,19 @@ class ControlBar {
         this._button_microphone = state;
 
         let tag = this.htmlTag.find(".btn_mute_input");
-        const tag_icon = tag.find(".icon_x32, .icon");
+        const tag_icon = tag.find(".icon_em, .icon");
         tag.toggleClass('activated', state === "muted");
 
+        /*
         tag_icon
             .toggleClass('client-input_muted', state === "muted")
             .toggleClass('client-capture', state === "enabled")
+            .toggleClass('client-activate_microphone', state === "disabled");
+         */
+
+        tag_icon
+            .toggleClass('client-input_muted', state !== "disabled")
+            .toggleClass('client-capture', false)
             .toggleClass('client-activate_microphone', state === "disabled");
 
         if(state === "disabled")
@@ -224,12 +260,17 @@ class ControlBar {
         this._button_speakers = state;
 
         let tag = this.htmlTag.find(".btn_mute_output");
-        const tag_icon = tag.find(".icon_x32, .icon");
+        const tag_icon = tag.find(".icon_em, .icon");
 
         tag.toggleClass('activated', state === "muted");
+        /*
         tag_icon
             .toggleClass('client-output_muted', state !== "enabled")
             .toggleClass('client-volume', state === "enabled");
+         */
+        tag_icon
+            .toggleClass('client-output_muted', true)
+            .toggleClass('client-volume', false);
 
         if(state === "enabled")
             tag_icon.attr('title', tr("Mute sound"));
@@ -245,7 +286,7 @@ class ControlBar {
         this.htmlTag
             .find(".button-subscribe-mode")
             .toggleClass('activated', this._button_subscribe_all)
-            .find('.icon_x32')
+            .find('.icon_em')
             .toggleClass('client-unsubscribe_from_all_channels', !this._button_subscribe_all)
             .toggleClass('client-subscribe_to_all_channels', this._button_subscribe_all);
     }
@@ -320,10 +361,13 @@ class ControlBar {
 
 
     private on_toggle_microphone() {
-        if(this._button_microphone === "disabled" || this._button_microphone === "muted")
+        if(this._button_microphone === "disabled" || this._button_microphone === "muted") {
             this.button_microphone = "enabled";
-        else
+            sound.manager.play(Sound.MICROPHONE_ACTIVATED);
+        } else {
             this.button_microphone = "muted";
+            sound.manager.play(Sound.MICROPHONE_MUTED);
+        }
 
         if(this.connection_handler) {
             this.connection_handler.client_status.input_muted = this._button_microphone !== "enabled";
@@ -338,10 +382,13 @@ class ControlBar {
     }
 
     private on_toggle_sound() {
-        if(this._button_speakers === "muted")
+        if(this._button_speakers === "muted") {
             this.button_speaker = "enabled";
-        else
+            sound.manager.play(Sound.SOUND_ACTIVATED);
+        } else {
             this.button_speaker = "muted";
+            sound.manager.play(Sound.SOUND_MUTED);
+        }
 
         if(this.connection_handler) {
             this.connection_handler.client_status.output_muted = this._button_speakers !== "enabled";
@@ -379,8 +426,17 @@ class ControlBar {
 
     private on_open_connect() {
         if(this.connection_handler)
-            this.connection_handler.cancel_reconnect();
+            this.connection_handler.cancel_reconnect(true);
+        Modals.spawnConnectModal({}, {
+            url: "ts.TeaSpeak.de",
+            enforce: false
+        });
+    }
+
+    private on_open_connect_new_tab() {
         Modals.spawnConnectModal({
+            default_connect_new_tab: true
+        }, {
             url: "ts.TeaSpeak.de",
             enforce: false
         });
@@ -410,7 +466,7 @@ class ControlBar {
     }
 
     private on_execute_disconnect() {
-        this.connection_handler.cancel_reconnect();
+        this.connection_handler.cancel_reconnect(true);
         this.connection_handler.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
         this.update_connection_state();
         this.connection_handler.sound.play(Sound.CONNECTION_DISCONNECTED);
@@ -426,7 +482,7 @@ class ControlBar {
                     createInfoModal(tr("Use token"), tr("Toke successfully used!")).open();
                 }).catch(error => {
                     //TODO tr
-                    createErrorModal(tr("Use token"), "Failed to use token: " + (error instanceof CommandResult ? error.message : error)).open();
+                    createErrorModal(tr("Use token"), MessageHelper.formatMessage(tr("Failed to use token: {}"), error instanceof CommandResult ? error.message : error)).open();
                 });
         }).open();
     }
@@ -459,23 +515,7 @@ class ControlBar {
     }
 
     private on_bookmark_server_add() {
-        if(this.connection_handler && this.connection_handler.connected) {
-            createInputModal(tr("Enter bookmarks name"), tr("Please enter the bookmarks name:<br>"), text => true, result => {
-                if(result) {
-                    const bookmark = bookmarks.create_bookmark(result as string, bookmarks.bookmarks(), {
-                        server_port: this.connection_handler.serverConnection.remote_address().port,
-                        server_address: this.connection_handler.serverConnection.remote_address().host,
-
-                        server_password: "",
-                        server_password_hash: ""
-                    }, this.connection_handler.getClient().clientNickName());
-                    bookmarks.save_bookmark(bookmark);
-                    this.update_bookmarks()
-                }
-            }).open();
-        } else {
-            createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
-        }
+        bookmarks.add_current_server();
     }
 
     update_bookmark_status() {
@@ -486,8 +526,8 @@ class ControlBar {
 
     update_bookmarks() {
         //<div class="btn_bookmark_connect" target="localhost"><a>Localhost</a></div>
-        let tag_bookmark = this.htmlTag.find(".btn_bookmark .dropdown");
-        tag_bookmark.find(".bookmark, .directory").detach();
+        let tag_bookmark = this.htmlTag.find(".btn_bookmark > .dropdown");
+        tag_bookmark.find(".bookmark, .directory").remove();
 
         const build_entry = (bookmark: bookmarks.DirectoryBookmark | bookmarks.Bookmark) => {
             if(bookmark.type == bookmarks.BookmarkType.ENTRY) {
@@ -495,37 +535,14 @@ class ControlBar {
 
                 const bookmark_connect = (new_tab: boolean) => {
                     this.htmlTag.find(".btn_bookmark").find(".dropdown").removeClass("displayed"); //FIXME Not working
-
-                    const profile = profiles.find_profile(mark.connect_profile) || profiles.default_profile();
-                    if(profile.valid()) {
-                        const connection = this.connection_handler && !new_tab ? this.connection_handler : server_connections.spawn_server_connection_handler();
-                        server_connections.set_active_connection_handler(connection);
-                        connection.startConnection(
-                            mark.server_properties.server_address + ":" + mark.server_properties.server_port,
-                            profile,
-                            {
-                                nickname: mark.nickname,
-                                password: {
-                                    password: mark.server_properties.server_password_hash,
-                                    hashed: true
-                                }
-                            }
-                        );
-                    } else {
-                        Modals.spawnConnectModal({
-                            url: mark.server_properties.server_address + ":" + mark.server_properties.server_port,
-                            enforce: true
-                        }, {
-                            profile: profile,
-                            enforce: true
-                        })
-                    }
+                    bookmarks.boorkmak_connect(mark, new_tab);
                 };
 
                 return $.spawn("div")
                         .addClass("bookmark")
                         .append(
-                            $.spawn("div").addClass("icon client-server")
+                            //$.spawn("div").addClass("icon client-server")
+                            IconManager.generate_tag(IconManager.load_cached_icon(mark.last_icon_id || 0), {animate: false}) /* must be false */
                         )
                         .append(
                             $.spawn("div")
@@ -550,7 +567,8 @@ class ControlBar {
                                         type: contextmenu.MenuEntryType.ENTRY,
                                         name: tr("Connect in a new tab"),
                                         icon_class: 'client-connect',
-                                        callback: () => bookmark_connect(true)
+                                        callback: () => bookmark_connect(true),
+                                        visible: !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION)
                                     }, contextmenu.Entry.CLOSE(() => {
                                         setTimeout(() => {
                                             this.htmlTag.find(".btn_bookmark.dropdown-arrow").removeClass("force-show")
@@ -564,10 +582,7 @@ class ControlBar {
                 const mark = <bookmarks.DirectoryBookmark>bookmark;
                 const container = $.spawn("div").addClass("sub-menu dropdown");
 
-                for(const member of mark.content)
-                    container.append(build_entry(member));
-
-                return $.spawn("div")
+                const result = $.spawn("div")
                         .addClass("directory")
                         .append(
                             $.spawn("div").addClass("icon client-folder")
@@ -583,7 +598,13 @@ class ControlBar {
                         .append(
                             $.spawn("div").addClass("sub-container")
                                 .append(container)
-                        )
+                        );
+
+                /* we've to keep it this order because we're then keeping the reference of the loading icons... */
+                for(const member of mark.content)
+                    container.append(build_entry(member));
+
+                return result;
             }
         };
 

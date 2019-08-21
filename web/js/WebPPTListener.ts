@@ -111,7 +111,7 @@ namespace ppt {
             current_state.code = event.key_code;
 
             for(const hook of key_hooks) {
-                if(hook.key_code != event.key_code) continue;
+                if(hook.key_code && hook.key_code != event.key_code) continue;
                 if(hook.key_alt != event.key_alt) continue;
                 if(hook.key_ctrl != event.key_ctrl) continue;
                 if(hook.key_shift != event.key_shift) continue;

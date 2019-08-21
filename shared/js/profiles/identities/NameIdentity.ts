@@ -60,7 +60,7 @@ namespace profiles.identities {
         }
 
         valid(): boolean {
-            return this._name != undefined && this._name.length >= 3;
+            return this._name != undefined && this._name.length >= 5;
         }
 
         decode(data) : Promise<void> {

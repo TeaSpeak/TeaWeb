@@ -2,8 +2,8 @@
 
 namespace audio {
     export namespace recorder {
-        /* TODO: Recognise if we got device permission and update list */
         let _queried_devices: JavascriptInputDevice[];
+        let _queried_permissioned: boolean = false;
 
         export interface JavascriptInputDevice extends InputDevice {
             device_id: string;
@@ -11,11 +11,15 @@ namespace audio {
         }
 
         async function query_devices() {
-            const general_supported = !!getUserMediaFunction();
+            const general_supported = !!getUserMediaFunctionPromise();
 
             try {
                 const context = player.context();
                 const devices = await navigator.mediaDevices.enumerateDevices();
+
+                _queried_permissioned = false;
+                if(devices.filter(e => !!e.label).length > 0)
+                    _queried_permissioned = true;
 
                 _queried_devices = devices.filter(e => e.kind === "audioinput").map((e: MediaDeviceInfo): JavascriptInputDevice => {
                     return {
@@ -23,6 +27,8 @@ namespace audio {
                         sample_rate: context ? context.sampleRate : 44100,
 
                         default_input: e.deviceId == "default",
+
+                        driver: "WebAudio",
                         name: e.label || "device-id{" + e.deviceId+ "}",
 
                         supported: general_supported,
@@ -30,9 +36,11 @@ namespace audio {
                         device_id: e.deviceId,
                         group_id: e.groupId,
 
-                        unique_id: e.groupId + "-" + e.deviceId
+                        unique_id: e.deviceId
                     }
                 });
+                if(_queried_devices.length > 0 && _queried_devices.filter(e => e.default_input).length == 0)
+                    _queried_devices[0].default_input = true;
             } catch(error) {
                 console.warn(tr("Failed to query microphone devices (%o)"), error);
                 _queried_devices = [];
@@ -52,7 +60,17 @@ namespace audio {
 
         export function create_input() : AbstractInput { return new JavascriptInput(); }
 
-        query_devices(); /* general query */
+        export async function create_levelmeter(device: InputDevice) : Promise<LevelMeter> {
+            const meter = new JavascriptLevelmeter(device as any);
+            await meter.initialize();
+            return meter;
+        }
+
+        loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+            function: async () => { query_devices(); }, /* May wait for it? */
+            priority: 10,
+            name: "query media devices"
+        });
 
         export namespace filter {
             export abstract class JAbstractFilter<NodeType extends AudioNode> implements Filter {
@@ -76,7 +94,7 @@ namespace audio {
             }
 
             export class JThresholdFilter extends JAbstractFilter<GainNode> implements ThresholdFilter {
-                private static update_task_interval = 20; /* 20ms */
+                public static update_task_interval = 20; /* 20ms */
 
                 type = Type.THRESHOLD;
                 callback_level?: (value: number) => any;
@@ -163,17 +181,16 @@ namespace audio {
                     return Promise.resolve();
                 }
 
-                private _analyse() {
+                public static process(buffer: Uint8Array, ftt_size: number, previous: number, smooth: number) {
                     let level;
                     {
                         let total = 0, float, rms;
-                        this._analyser.getByteTimeDomainData(this._analyse_buffer);
 
-                        for(let index = 0; index < this._analyser.fftSize; index++) {
-                            float = ( this._analyse_buffer[index++] / 0x7f ) - 1;
+                        for(let index = 0; index < ftt_size; index++) {
+                            float = ( buffer[index++] / 0x7f ) - 1;
                             total += (float * float);
                         }
-                        rms = Math.sqrt(total / this._analyser.fftSize);
+                        rms = Math.sqrt(total / ftt_size);
                         let db  = 20 * ( Math.log(rms) / Math.log(10) );
                         // sanity check
 
@@ -181,16 +198,19 @@ namespace audio {
                         level = 100 + ( db * 1.92 );
                     }
 
-                    {
-                        const last_level = this._current_level;
-                        let smooth;
-                        if(this._silence_count == 0)
-                            smooth = this._smooth_release;
-                        else
-                            smooth = this._smooth_attack;
-                        this._current_level = last_level * smooth + level * (1 - smooth);
-                    }
+                    return previous * smooth + level * (1 - smooth);
+                }
 
+                private _analyse() {
+                    this._analyser.getByteTimeDomainData(this._analyse_buffer);
+
+                    let smooth;
+                    if(this._silence_count == 0)
+                        smooth = this._smooth_release;
+                    else
+                        smooth = this._smooth_attack;
+
+                    this._current_level = JThresholdFilter.process(this._analyse_buffer, this._analyser.fftSize, this._current_level, smooth);
 
                     this._update_gain_node();
                     if(this.callback_level)
@@ -272,10 +292,13 @@ namespace audio {
             private _audio_context: AudioContext;
             private _source_node: AudioNode; /* last node which could be connected to the target; target might be the _consumer_node */
             private _consumer_callback_node: ScriptProcessorNode;
+            private _volume_node: GainNode;
             private _mute_node: GainNode;
 
             private _filters: filter.Filter[] = [];
             private _filter_active: boolean = false;
+
+            private _volume: number = 1;
 
             callback_begin: () => any = undefined;
             callback_end: () => any = undefined;
@@ -297,6 +320,9 @@ namespace audio {
                 this._consumer_callback_node.addEventListener('audioprocess', event => this._audio_callback(event));
                 this._consumer_callback_node.connect(this._mute_node);
 
+                this._volume_node = this._audio_context.createGain();
+                this._volume_node.gain.value = this._volume;
+
                 if(this._state === InputState.INITIALIZING)
                     this.start();
             }
@@ -308,9 +334,9 @@ namespace audio {
                         filter.finalize();
                 }
 
-                if(this._audio_context && this._current_audio_stream) {
+                if(this._audio_context && this._volume_node) {
                     const active_filter = filters.filter(e => e.is_enabled());
-                    let stream: AudioNode = this._current_audio_stream;
+                    let stream: AudioNode = this._volume_node;
                     for(const f of active_filter) {
                         f.initialize(this._audio_context, stream);
                         stream = f.audio_node;
@@ -333,55 +359,115 @@ namespace audio {
 
             current_state() : InputState { return this._state; };
 
-            async start() {
-                this._state = InputState.INITIALIZING;
-                if(!this._current_device)
-                    return;
+            private _start_promise: Promise<InputStartResult>;
+            async start() : Promise<InputStartResult> {
+                if(this._start_promise) {
+                    try {
+                        await this._start_promise;
+                        if(this._state != InputState.PAUSED)
+                            return;
+                    } catch(error) {
+                        console.debug(tr("JavascriptInput:start() Start promise await resulted in an error: %o"), error);
+                    }
+                }
 
-                if(!this._audio_context)
-                    return;
+                return await (this._start_promise = this._start());
+            }
+
+            /* request permission for devices only one per time! */
+            private static _running_request: Promise<MediaStream | InputStartResult>;
+            static async request_media_stream(device_id: string, group_id: string) : Promise<MediaStream | InputStartResult> {
+                while(this._running_request) {
+                    try {
+                        await this._running_request;
+                    } catch(error) { }
+                }
+                const promise = (this._running_request = this.request_media_stream0(device_id, group_id));
+                try {
+                    return await this._running_request;
+                } finally {
+                    if(this._running_request === promise)
+                        this._running_request = undefined;
+                }
+            }
+
+            static async request_media_stream0(device_id: string, group_id: string) : Promise<MediaStream | InputStartResult> {
+                const media_function = getUserMediaFunctionPromise();
+                if(!media_function) return InputStartResult.ENOTSUPPORTED;
 
                 try {
-                    const media_function = getUserMediaFunction();
-                    if(!media_function)
-                        throw tr("recording isn't supported");
+                    console.info(tr("Requesting a microphone stream for device %s in group %s"), device_id, group_id);
 
-                    try {
-                        this._current_stream = await new Promise<MediaStream>((resolve, reject) => {
-                            media_function({
-                                audio: {
-                                    deviceId: this._current_device.device_id,
-                                    groupId: this._current_device.group_id,
+                    const audio_constrains: MediaTrackConstraints = {};
+                    audio_constrains.deviceId = device_id;
+                    audio_constrains.groupId = group_id;
 
-                                    echoCancellation: true /* enable by default */
-                                },
-                                video: false
-                            }, stream => resolve(stream), error => reject(error));
-                        });
-                    } catch(error) {
-                        if(error instanceof DOMException) {
-                            if(error.code == 0 || error.name == "NotAllowedError") {
-                                console.warn(tr("Browser does not allow microphone access"));
-                                this._state = InputState.PAUSED;
-                                createErrorModal(tr("Failed to create microphone"), tr("Microphone recording failed. Please allow TeaWeb access to your microphone")).open();
-                                return;
-                            }
+                    audio_constrains.echoCancellation = true;
+                    /* may supported */ (audio_constrains as any).autoGainControl = true;
+                    /* may supported */ (audio_constrains as any).noiseSuppression = true;
+                    audio_constrains.sampleSize = {min: 420, max: 960 * 10, ideal: 960};
+
+                    const stream = await media_function({audio: audio_constrains, video: undefined});
+                    if(!_queried_permissioned) query_devices(); /* we now got permissions, requery devices */
+                    return stream;
+                } catch(error) {
+                    if('name' in error) {
+                        if(error.name === "NotAllowedError") {
+                            //createErrorModal(tr("Failed to create microphone"), tr("Microphone recording failed. Please allow TeaWeb access to your microphone")).open();
+                            //FIXME: Move this to somewhere else!
+
+                            console.warn(tr("Microphone request failed (No permissions). Browser message: %o"), error.message);
+                            return InputStartResult.ENOTALLOWED;
+                        } else {
+                            console.warn(tr("Microphone request failed. Request resulted in error: %o: %o"), error.name, error);
                         }
+                    } else {
                         console.warn(tr("Failed to initialize recording stream (%o)"), error);
-                        throw tr("record stream initialisation failed");
                     }
+                    return InputStartResult.EUNKNOWN;
+                }
+            }
+
+            private async _start() : Promise<InputStartResult> {
+                try {
+                    if(this._state != InputState.PAUSED)
+                        throw tr("recorder already started");
+
+                    this._state = InputState.INITIALIZING;
+                    if(!this._current_device)
+                        throw tr("invalid device");
+
+                    if(!this._audio_context)
+                        throw tr("missing audio context");
+
+                    const _result = await JavascriptInput.request_media_stream(this._current_device.device_id, this._current_device.group_id);
+                    if(!(_result instanceof MediaStream)) {
+                        this._state = InputState.PAUSED;
+                        return _result;
+                    }
+                    this._current_stream = _result;
 
                     this._current_audio_stream = this._audio_context.createMediaStreamSource(this._current_stream);
-                    this._initialize_filters();
+                    this._current_audio_stream.connect(this._volume_node);
                     this._state = InputState.RECORDING;
+                    return InputStartResult.EOK;
                 } catch(error) {
-                    this._state = InputState.PAUSED;
+                    if(this._state == InputState.INITIALIZING) {
+                        this._state = InputState.PAUSED;
+                    }
                     throw error;
+                } finally {
+                    this._start_promise = undefined;
                 }
-                return undefined;
             }
 
             async stop() {
+                /* await all starts */
+                try {
+                    if(this._start_promise)
+                        await this._start_promise;
+                } catch(error) {}
+
                 this._state = InputState.PAUSED;
                 if(this._current_audio_stream)
                     this._current_audio_stream.disconnect();
@@ -397,7 +483,6 @@ namespace audio {
 
                 this._current_stream = undefined;
                 this._current_audio_stream = undefined;
-                this._initialize_filters();
                 return undefined;
             }
 
@@ -420,11 +505,11 @@ namespace audio {
 
                 this._current_device = device as any; /* TODO: Test for device_id and device_group */
                 if(!device) {
-                    this._state = InputState.PAUSED;
+                    this._state = saved_state === InputState.PAUSED ? InputState.PAUSED : InputState.DRY;
                     return;
                 }
 
-                if(saved_state == InputState.DRY || saved_state == InputState.INITIALIZING || saved_state == InputState.RECORDING) {
+                if(saved_state !== InputState.PAUSED) {
                     try {
                         await this.start()
                     } catch(error) {
@@ -475,20 +560,6 @@ namespace audio {
                 for(const filter of this._filters)
                     if(filter.type == type)
                         return filter as any;
-                return undefined;
-            }
-
-            private previous_filter(type: filter.Type) : filter.JAbstractFilter<AudioNode> | undefined {
-                for(let index = 1; index < this._filters.length; index++)
-                    if(this._filters[index].type === type)
-                        return this._filters.slice(0, index).reverse().find(e => e.is_enabled()) as any;
-                return undefined;
-            }
-
-            private next_filter(type: filter.Type) : filter.JAbstractFilter<AudioNode> | undefined {
-                for(let index = 0; index < this._filters.length - 1; index++)
-                    if(this._filters[index].type === type)
-                        return this._filters.slice(index + 1).find(e => e.is_enabled()) as any;
                 return undefined;
             }
 
@@ -588,6 +659,146 @@ namespace audio {
                     }
                 }
                 this._source_node = new_node;
+            }
+
+            get_volume(): number {
+                return this._volume;
+            }
+
+            set_volume(volume: number) {
+                if(volume === this._volume)
+                    return;
+                this._volume = volume;
+                this._volume_node.gain.value = volume;
+            }
+        }
+
+        class JavascriptLevelmeter implements LevelMeter {
+            private static _instances: JavascriptLevelmeter[] = [];
+            private static _update_task: number;
+
+            readonly _device: JavascriptInputDevice;
+
+            private _callback: (num: number) => any;
+
+            private _context: AudioContext;
+            private _gain_node: GainNode;
+            private _source_node: MediaStreamAudioSourceNode;
+            private _analyser_node: AnalyserNode;
+
+            private _media_stream: MediaStream;
+
+            private _analyse_buffer: Uint8Array;
+
+            private _current_level = 0;
+
+            constructor(device: JavascriptInputDevice) {
+                this._device = device;
+            }
+
+            async initialize() {
+                try {
+                    await new Promise((resolve, reject) => {
+                        const timeout = setTimeout(reject, 5000);
+                        player.on_ready(() => {
+                            clearTimeout(timeout);
+                            resolve();
+                        });
+                    });
+                } catch(error) {
+                    throw tr("audio context timeout");
+                }
+                this._context = player.context();
+                if(!this._context) throw tr("invalid context");
+
+                this._gain_node = this._context.createGain();
+                this._gain_node.gain.setValueAtTime(0, 0);
+
+                /* analyser node */
+                this._analyser_node = this._context.createAnalyser();
+
+                const optimal_ftt_size = Math.ceil(this._context.sampleRate * (filter.JThresholdFilter.update_task_interval / 1000));
+                this._analyser_node.fftSize = Math.pow(2, Math.ceil(Math.log2(optimal_ftt_size)));
+
+                if(!this._analyse_buffer || this._analyse_buffer.length < this._analyser_node.fftSize)
+                    this._analyse_buffer = new Uint8Array(this._analyser_node.fftSize);
+
+                /* starting stream */
+                const _result = await JavascriptInput.request_media_stream(this._device.device_id, this._device.group_id);
+                if(!(_result instanceof MediaStream)){
+                    if(_result === InputStartResult.ENOTALLOWED)
+                        throw tr("No permissions");
+                    if(_result === InputStartResult.ENOTSUPPORTED)
+                        throw tr("Not supported");
+                    if(_result === InputStartResult.EBUSY)
+                        throw tr("Device busy");
+                    if(_result === InputStartResult.EUNKNOWN)
+                        throw tr("an error occurred");
+                    throw _result;
+                }
+                this._media_stream = _result;
+
+                this._source_node = this._context.createMediaStreamSource(this._media_stream);
+                this._source_node.connect(this._analyser_node);
+                this._analyser_node.connect(this._gain_node);
+                this._gain_node.connect(this._context.destination);
+
+                JavascriptLevelmeter._instances.push(this);
+                if(JavascriptLevelmeter._instances.length == 1) {
+                    clearInterval(JavascriptLevelmeter._update_task);
+                    JavascriptLevelmeter._update_task = setInterval(() => JavascriptLevelmeter._analyse_all(), filter.JThresholdFilter.update_task_interval) as any;
+                }
+            }
+
+            destory() {
+                JavascriptLevelmeter._instances.remove(this);
+                if(JavascriptLevelmeter._instances.length == 0) {
+                    clearInterval(JavascriptLevelmeter._update_task);
+                    JavascriptLevelmeter._update_task = 0;
+                }
+
+                if(this._source_node) {
+                    this._source_node.disconnect();
+                    this._source_node = undefined;
+                }
+                if(this._media_stream) {
+                    if(this._media_stream.stop)
+                        this._media_stream.stop();
+                    else
+                        this._media_stream.getTracks().forEach(value => {
+                            value.stop();
+                        });
+                    this._media_stream = undefined;
+                }
+                if(this._gain_node) {
+                    this._gain_node.disconnect();
+                    this._gain_node = undefined;
+                }
+                if(this._analyser_node) {
+                    this._analyser_node.disconnect();
+                    this._analyser_node = undefined;
+                }
+            }
+
+            device(): audio.recorder.InputDevice {
+                return this._device;
+            }
+
+            set_observer(callback: (value: number) => any) {
+                this._callback = callback;
+            }
+
+            private static _analyse_all() {
+                for(const instance of [...this._instances])
+                    instance._analyse();
+            }
+
+            private _analyse() {
+                this._analyser_node.getByteTimeDomainData(this._analyse_buffer);
+
+                this._current_level = filter.JThresholdFilter.process(this._analyse_buffer, this._analyser_node.fftSize, this._current_level, .75);
+                if(this._callback)
+                    this._callback(this._current_level);
             }
         }
     }

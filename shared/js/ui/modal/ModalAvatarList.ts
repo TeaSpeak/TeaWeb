@@ -10,7 +10,7 @@ namespace Modals {
             const lower_nibble = id.charCodeAt(index + 1) - 97;
             buffer[index / 2] = (upper_nibble << 4) | lower_nibble;
         }
-        return base64ArrayBuffer(buffer);
+        return base64_encode_ab(buffer);
     };
 
     export const human_file_size = (size: number) => {
@@ -80,7 +80,7 @@ namespace Modals {
                             .css("display", "none")
                             .appendTo($("body"));
                         element[0].click();
-                        element.detach();
+                        element.remove();
                     };
                 }
             }));

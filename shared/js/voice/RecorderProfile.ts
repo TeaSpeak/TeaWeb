@@ -7,10 +7,13 @@ interface RecorderProfileConfig {
     /* devices unique id */
     device_id: string | undefined;
 
+    volume: number;
+
     vad_type: VadType;
     vad_threshold: {
         threshold: number;
     }
+
     vad_push_to_talk: {
         delay: number;
         key_code: string;
@@ -59,7 +62,7 @@ class RecorderProfile {
                     const filter = this.input.get_filter(audio.recorder.filter.Type.STATE) as audio.recorder.filter.StateFilter;
                     if(filter)
                         filter.set_state(true);
-                }, this.config.vad_push_to_talk.delay);
+                }, Math.min(this.config.vad_push_to_talk.delay, 0));
             },
             callback_press: () => {
                 if(this._ppt_timeout)
@@ -115,27 +118,30 @@ class RecorderProfile {
     }
 
     private async load() {
-        this.config = settings.static_global(Settings.FN_PROFILE_RECORD(this.name), {}) as RecorderProfileConfig;
-        if(typeof(this.config.version) === "undefined") {
-            /* default config */
-            this.config = {
-                version: 1,
-                device_id: undefined,
+        const config = settings.static_global(Settings.FN_PROFILE_RECORD(this.name), {}) as RecorderProfileConfig;
 
-                vad_threshold: {
-                    threshold: 50
-                },
-                vad_type: "threshold",
-                vad_push_to_talk: {
-                    delay: 300,
-                    key_alt: false,
-                    key_ctrl: false,
-                    key_shift: false,
-                    key_windows: false,
-                    key_code: 't'
-                }
+        /* default values */
+        this.config = {
+            version: 1,
+            device_id: undefined,
+            volume: 100,
+
+            vad_threshold: {
+                threshold: 50
+            },
+            vad_type: "threshold",
+            vad_push_to_talk: {
+                delay: 300,
+                key_alt: false,
+                key_ctrl: false,
+                key_shift: false,
+                key_windows: false,
+                key_code: 't'
             }
-        }
+        };
+
+        Object.assign(this.config, config || {});
+        this.input.set_volume(this.config.volume / 100);
 
         {
             const all_devices = audio.recorder.devices();
@@ -216,7 +222,7 @@ class RecorderProfile {
         this.save();
     }
 
-    get_vad_threshold() { return this.config.vad_threshold.threshold; }
+    get_vad_threshold() { return parseInt(this.config.vad_threshold.threshold as any); } /* for some reason it might be a string... */
     set_vad_threshold(value: number) {
         if(this.config.vad_threshold.threshold === value)
             return;
@@ -251,5 +257,15 @@ class RecorderProfile {
         this.config.device_id = device ? device.unique_id : undefined;
         this.save();
         return this.input.set_device(device);
+    }
+
+    get_volume() : number { return this.input ? (this.input.get_volume() * 100) : this.config.volume; }
+    set_volume(volume: number) {
+        if(this.config.volume === volume)
+            return;
+
+        this.config.volume = volume;
+        this.input && this.input.set_volume(volume / 100);
+        this.save();
     }
 }

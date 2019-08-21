@@ -1,4 +1,15 @@
 @import "properties";
+@import "mixin";
+
+.channel-tree-container {
+    height: 100%;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    overflow: hidden;
+    overflow-y: auto;
+}
 
 /* the channel tree */
 .channel-tree {
@@ -71,6 +82,11 @@
 
                 align-self: center;
                 color: $channel_tree_entry_text_color;
+
+                min-width: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
 
             .icon_property {
@@ -84,6 +100,8 @@
             flex-direction: column;
 
             .container-channel {
+                position: relative;
+
                 display: flex;
                 flex-direction: row;
                 justify-content: stretch;
@@ -93,6 +111,39 @@
 
                 align-items: center;
                 cursor: pointer;
+
+                .marker-text-unread {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+
+                    width: 1px;
+                    background-color: #a814147F;
+
+                    opacity: 1;
+
+                    &:before {
+                        content: '';
+                        position: absolute;
+
+                        left: 0;
+                        top: 0;
+                        bottom: 0;
+
+                        width: 24px;
+
+                        background: -moz-linear-gradient(left,  rgba(168,20,20,.18) 0%, rgba(168,20,20,0) 100%); /* FF3.6-15 */
+                        background: -webkit-linear-gradient(left,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* Chrome10-25,Safari5.1-6 */
+                        background: linear-gradient(to right,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                    }
+
+                    &.hidden {
+                        opacity: 0;
+                    }
+
+                    @include transition(opacity $button_hover_animation_time);
+                }
 
                 .channel-type {
                     flex-grow: 0;
@@ -125,6 +176,17 @@
                     .channel-name {
                         align-self: center;
                         color: $channel_tree_entry_text_color;
+
+                        min-width: 0;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    &.align-repetitive {
+                        .channel-name {
+                            text-overflow: clip;
+                        }
                     }
                 }
 
@@ -174,16 +236,20 @@
             }
 
             .client-name {
+                line-height: 16px;
+
+                flex-grow: 0;
+                flex-shrink: 1;
+
+                padding-right: .25em;
+                color: $channel_tree_entry_text_color;
+
                 &.client-name-own {
                     font-weight: bold;
                 }
+            }
 
-                line-height: 16px;
-
-                flex-grow: 1;
-                flex-shrink: 1;
-
-                min-width: 75px;
+            .client-away-message {
                 color: $channel_tree_entry_text_color;
             }
 
@@ -191,7 +257,8 @@
                 margin-right: 0; /* override from previous thing */
 
                 position: absolute;
-                right: 5px;
+                right: 0;
+                padding-right: 5px;
 
                 display: flex;
                 flex-direction: row;
@@ -211,14 +278,30 @@
             }
 
             &.selected {
+                &:focus-within {
+                    .container-icons {
+                        background-color: $channel_tree_entry_selected;
+                        padding-left: 5px;
+                        z-index: 1001; /* show before client name */
+
+                        height: 18px;
+                    }
+                }
+
                 .client-name {
                     &:focus {
+                        position: absolute;
                         color: black;
 
                         padding-top: 1px;
                         padding-bottom: 1px;
 
                         z-index: 1000;
+
+                        margin-right: -10px;
+                        margin-left: 18px;
+
+                        width: 100%;
                     }
                 }
             }

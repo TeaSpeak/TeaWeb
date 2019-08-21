@@ -1,3 +1,5 @@
+import ClickEvent = JQuery.ClickEvent;
+
 enum ElementType {
     HEADER,
     BODY,
@@ -22,7 +24,7 @@ const ModalFunctions = {
         switch (typeof val){
             case "string":
                 if(type == ElementType.HEADER)
-                    return $.spawn("h5").addClass("modal-title").text(val);
+                    return $.spawn("div").addClass("modal-title").text(val);
                 return $("<div>" + val + "</div>");
             case "object": return val as JQuery;
             case "undefined":
@@ -61,6 +63,7 @@ class ModalProperties {
         return this;
     }
     width: number | string = "60%";
+    min_width?: number | string;
     height: number | string = "auto";
 
     closeable: boolean = true;
@@ -78,8 +81,33 @@ class ModalProperties {
     full_size?: boolean = false;
 }
 
-class Modal {
+$(document).on('mousedown', (event: MouseEvent) => {
+    /* pageX or pageY are undefined if this is an event executed via .trigger('click'); */
+    if(_global_modal_count == 0 || typeof(event.pageX) === "undefined" || typeof(event.pageY) === "undefined")
+        return;
 
+
+    let element = event.target as HTMLElement;
+    do {
+        if(element.classList.contains('modal-content'))
+            break;
+
+        if(!element.classList.contains('modal'))
+            continue;
+
+        if(element == _global_modal_last && _global_modal_last_time + 100 > Date.now())
+            break;
+
+        $(element).find("> .modal-dialog > .modal-content > .modal-header .button-modal-close").trigger('click');
+        break;
+    } while((element = element.parentElement));
+});
+
+let _global_modal_count = 0;
+let _global_modal_last: HTMLElement;
+let _global_modal_last_time: number;
+
+class Modal {
     private _htmlTag: JQuery;
     properties: ModalProperties;
     shown: boolean;
@@ -119,32 +147,57 @@ class Modal {
             Object.assign(properties, this.properties.template_properties);
 
         const tag = template.renderTag(properties);
+        if(typeof(this.properties.width) !== "undefined")
+            tag.find(".modal-content").css("min-width", this.properties.width);
+        if(typeof(this.properties.min_width) !== "undefined")
+            tag.find(".modal-content").css("min-width", this.properties.min_width);
+
         this.close_elements = tag.find(".button-modal-close");
-        this.close_elements.toggle(this.properties.closeable);
+        this.close_elements.toggle(this.properties.closeable).on('click', event => {
+            if(this.properties.closeable)
+                this.close();
+        });
         this._htmlTag = tag;
-        this._htmlTag.on('shown.bs.modal', event => { for(const listener of this.open_listener) listener(); });
+
+        this._htmlTag.find("input").on('change', event => {
+            $(event.target).parents(".form-group").toggleClass('is-filled', !!(event.target as HTMLInputElement).value);
+        });
+
+        //TODO: After the animation!
         this._htmlTag.on('hide.bs.modal', event => !this.properties.closeable || this.close());
-        this._htmlTag.on('hidden.bs.modal', event => this._htmlTag.detach());
+        this._htmlTag.on('hidden.bs.modal', event => this._htmlTag.remove());
     }
 
     open() {
+        if(this.shown)
+            return;
+
+        _global_modal_last_time = Date.now();
+        _global_modal_last = this.htmlTag[0];
+
         this.shown = true;
         this.htmlTag.appendTo($("body"));
 
-        this.htmlTag.bootstrapMaterialDesign().modal(this.properties.closeable ? 'show' : {
-            backdrop: 'static',
-            keyboard: false,
-        });
+        _global_modal_count++;
+        this.htmlTag.show();
+        setTimeout(() => this.htmlTag.addClass('shown'), 0);
 
-        if(this.properties.trigger_tab)
-            this.htmlTag.one('shown.bs.modal', () => this.htmlTag.find(".tab").trigger('tab.resize'));
+        setTimeout(() => {
+            for(const listener of this.open_listener) listener();
+            this.htmlTag.find(".tab").trigger('tab.resize');
+        }, 300);
     }
 
     close() {
         if(!this.shown) return;
 
+        _global_modal_count--;
         this.shown = false;
-        this.htmlTag.modal('hide');
+        this.htmlTag.removeClass('shown');
+        setTimeout(() => {
+            this.htmlTag.remove();
+            this._htmlTag = undefined;
+        }, 300);
         this.properties.triggerClose();
         for(const listener of this.close_listener)
             listener();

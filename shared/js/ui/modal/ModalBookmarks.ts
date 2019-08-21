@@ -252,7 +252,10 @@ namespace Modals {
             width: 750
         });
 
-        modal.close_listener.push(() => control_bar.update_bookmarks());
+        modal.close_listener.push(() => {
+            control_bar.update_bookmarks();
+            top_menu.rebuild_bookmarks();
+        });
         modal.open();
     }
 }

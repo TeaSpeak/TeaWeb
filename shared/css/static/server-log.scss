@@ -1,9 +1,14 @@
+@import "mixin";
+
 .container-log {
 	display: block;
 	overflow-y: auto;
 
 	height: 100%;
 	width: 100%;
+
+	@include chat-scrollbar-vertical();
+	@include chat-scrollbar-horizontal();
 
 	.container-messages {
 		width: 100%;
@@ -33,7 +38,7 @@
 
 			font-family: sans-serif;
 			font-size: 13px;
-			line-height: 1;
+			line-height: initial;
 		}
 
 		> .timestamp {

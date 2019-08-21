@@ -75,6 +75,9 @@ var TabFunctions = {
 
                 if(header_tag.attr("x-entry-class"))
                     tag_header.addClass(header_tag.attr("x-entry-class"));
+                if(header_tag.attr("x-entry-id"))
+                    tag_header.attr("x-id", header_tag.attr("x-entry-id"));
+
                 tag_header.append(header_data);
 
                 /* listener if the tab might got removed */

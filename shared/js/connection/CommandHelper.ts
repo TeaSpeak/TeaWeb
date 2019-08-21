@@ -12,7 +12,14 @@ namespace connection {
 
         initialize() {
             this.connection.command_handler_boss().register_handler(this);
-            /* notifyquerylist */
+        }
+
+        destroy() {
+            if(this.connection) {
+                const hboss = this.connection.command_handler_boss();
+                hboss && hboss.unregister_handler(this);
+            }
+            this._awaiters_unique_ids = undefined;
         }
 
         handle_command(command: connection.ServerCommand): boolean {
