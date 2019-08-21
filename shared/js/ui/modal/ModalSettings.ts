@@ -1127,16 +1127,7 @@ namespace Modals {
                 });
 
                 button_setup.on('click', event => {
-                    if(app.is_web()) {
-                        modal.htmlTag.find('.entry[container="identity-forum"]').trigger('click');
-                    } else {
-                        const call = () => {
-                            if (modal.shown)
-                                update_profiles(selected_profile ? selected_profile.identity.id : undefined);
-                        };
-                        forum.register_callback(call);
-                        forum.open();
-                    }
+                    modal.htmlTag.find('.entry[container="identity-forum"]').trigger('click');
                 });
             }
 

@@ -1612,5 +1612,9 @@ namespace pe {
         update_ui() {
             this.entry_editor.draw(true);
         }
+
+        set_toggle_button(callback: () => string, initial: string) {
+            throw "not implemented";
+        }
     }
 }

@@ -25,7 +25,7 @@ namespace profiles.identities {
                 identity = new NameIdentity();
                 break;
             case IdentitifyType.TEAFORO:
-                identity = new TeaForumIdentity(undefined, undefined);
+                identity = new TeaForumIdentity(undefined);
                 break;
             case IdentitifyType.TEAMSPEAK:
                 identity = new TeaSpeakIdentity(undefined, undefined);
@@ -52,7 +52,7 @@ namespace profiles.identities {
                 identity = new NameIdentity();
                 break;
             case IdentitifyType.TEAFORO:
-                identity = new TeaForumIdentity(undefined, undefined);
+                identity = new TeaForumIdentity(undefined);
                 break;
             case IdentitifyType.TEAMSPEAK:
                 identity = new TeaSpeakIdentity(undefined, undefined);

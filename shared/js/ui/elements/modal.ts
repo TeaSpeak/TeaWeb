@@ -1,4 +1,4 @@
-import ClickEvent = JQuery.ClickEvent;
+import MouseDownEvent = JQuery.MouseDownEvent;
 
 enum ElementType {
     HEADER,
@@ -81,7 +81,7 @@ class ModalProperties {
     full_size?: boolean = false;
 }
 
-$(document).on('mousedown', (event: MouseEvent) => {
+$(document).on('mousedown', (event: MouseDownEvent) => {
     /* pageX or pageY are undefined if this is an event executed via .trigger('click'); */
     if(_global_modal_count == 0 || typeof(event.pageX) === "undefined" || typeof(event.pageY) === "undefined")
         return;

@@ -213,11 +213,11 @@ class ClientInfoManager extends InfoManager<ClientEntry> {
         for(let key in client.properties)
             properties["property_" + key] = client.properties[key];
 
-        if(client.properties.client_teaforum_id > 0) {
+        if(client.properties.client_teaforo_id > 0) {
             properties["teaspeak_forum"] = $.spawn("a")
-                .attr("href", "//forum.teaspeak.de/index.php?members/" + client.properties.client_teaforum_id)
+                .attr("href", "//forum.teaspeak.de/index.php?members/" + client.properties.client_teaforo_id)
                 .attr("target", "_blank")
-                .text(client.properties.client_teaforum_id);
+                .text(client.properties.client_teaforo_id);
         }
 
         if(client.properties.client_flag_avatar && client.properties.client_flag_avatar.length > 0) {
