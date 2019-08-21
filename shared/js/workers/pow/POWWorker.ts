@@ -1,5 +1,5 @@
 declare namespace WebAssembly {
-    export function instantiateStreaming(stream: Promise<Response>, imports?: any) : Promise<ResultObject>;
+    export function instantiateStreaming(stream: Promise<Response>, imports?: any) : Promise<WebAssembly.WebAssemblyInstantiatedSource>;
 }
 declare function postMessage(message: any): void;
 
@@ -9,7 +9,7 @@ let initialized = false;
 
 let memory: WebAssembly.Memory;
 let memory_u8: Uint8Array;
-let wasm_object: WebAssembly.ResultObject;
+let wasm_object: WebAssembly.WebAssemblyInstantiatedSource;
 
 function post_status(code: string | undefined, result: boolean | string | any) {
     let data: any = {};
