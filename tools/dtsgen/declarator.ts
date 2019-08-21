@@ -397,7 +397,7 @@ generators[SyntaxKind.TypeAliasDeclaration] = (settings, stack, node: ts.TypeAli
 };
 
 generators[SyntaxKind.EnumMember] = (settings, stack, node: ts.EnumMember) => {
-    return ts.createEnumMember(node.name, undefined);
+    return ts.createEnumMember(node.name, node.initializer);
 };
 
 generators[SyntaxKind.EnumDeclaration] = (settings, stack, node: ts.EnumDeclaration) => {
