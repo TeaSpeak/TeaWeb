@@ -94,7 +94,7 @@ namespace bookmarks {
         try {
             bookmarks = JSON.parse(bookmark_json) || {} as BookmarkConfig;
         } catch(error) {
-            console.error(tr("Failed to load bookmarks: %o"), error);
+            log.error(LogCategory.BOOKMARKS, tr("Failed to load bookmarks: %o"), error);
             bookmarks = {} as any;
         }
 

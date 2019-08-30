@@ -1,0 +1,229 @@
+@import "mixin";
+
+.modal-body.modal-server-info {
+	padding: 0!important;
+	width: 55em;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+
+	background-color: #2f2f35;
+
+	.container-tooltip {
+		flex-shrink: 0;
+		flex-grow: 0;
+
+		position: relative;
+		width: 1.6em;
+		margin-left: .5em;
+		font-size: .9em;
+
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+
+		img {
+			height: 1em;
+			width: 1em;
+
+			align-self: center;
+			font-size: 1.2em;
+		}
+
+		.tooltip {
+			display: none;
+		}
+	}
+
+	.hostbanner {
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		max-height: 9em;
+		//width: 30em; /* set a default width where we have to grow/shrink */
+
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		.container-hostbanner {
+			border: none;
+			border-radius: 0;
+			//background-color: #261f30;
+			background-color: hsla(265, 10%, 15%, 1);
+		}
+
+		&.hidden {
+			display: none;
+		}
+	}
+
+	.group {
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		margin: 1em;
+		padding: .5em;
+
+		border-radius: .2em;
+		border: 1px solid #1f2122;
+
+		background-color: #28292b;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		height: 10em;
+		max-height: 10em;
+
+		.container-image {
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			max-width: 15em;
+			max-height: 9em; /* minus one padding */
+
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+
+			img {
+				object-fit: contain;
+				max-height: 100%;
+				max-width: 100%;
+			}
+
+			margin-right: 2em;
+			@include transition(.25s ease-in-out);
+		}
+
+		.container-properties {
+			flex-shrink: 1;
+			flex-grow: 1;
+
+			min-width: 25em;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: flex-start;
+
+			height: inherit;
+
+			.row {
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				height: 1.8em;
+
+				display: flex;
+				flex-direction: row;
+				justify-content: flex-start;
+
+				.key {
+					flex-shrink: 0;
+					flex-grow: 0;
+
+					color: #557edc;
+					text-transform: uppercase;
+					align-self: center;
+
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+
+					width: 15em;
+				}
+
+				.value {
+					color: #d6d6d7;
+					align-self: center;
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
+
+					.country {
+						display: inline-block;
+						margin-right: .25em;
+					}
+
+					&.server-version {
+						display: flex;
+						flex-direction: row;
+						justify-content: flex-start;
+					}
+				}
+			}
+
+			.container-network {
+				display: flex;
+				flex-direction: row;
+				justify-content: center;
+
+				.container-button {
+					margin-right: 1em;
+
+					flex-shrink: 1;
+					min-width: 5em;
+
+					display: flex;
+					flex-direction: column;
+					justify-content: flex-end;
+
+					button {
+						height: 2.5em;
+						width: 12em;
+
+						max-width: 100%;
+
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
+					}
+				}
+
+				.right {
+					flex-grow: 1;
+				}
+			}
+		}
+
+		&.reverse {
+			flex-direction: row-reverse;
+			text-align: right;
+
+			.container-image {
+				margin-right: 0;
+				margin-left: 2em;
+			}
+
+			.container-properties {
+				.row {
+					flex-direction: row-reverse;
+				}
+			}
+		}
+	}
+
+	.container-buttons {
+		margin: 1em;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+
+		button {
+			min-width: 8em;
+		}
+	}
+}
+
+@media all and (max-width: 50em) {
+	.modal-body.modal-server-info {
+		.container-image {
+			margin: 0!important;
+			max-width: 0!important;
+		}
+	}
+}

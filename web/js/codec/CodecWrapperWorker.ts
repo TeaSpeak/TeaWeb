@@ -152,16 +152,14 @@ class CodecWrapperWorker extends BasicCodec {
     }
 
     private onWorkerMessage(message: any) {
-        if(Date.now() - message["timestamp"] > 5)
-            console.warn(tr("Worker message stock time: %d"), Date.now() - message["timestamp"]);
         if(!message["token"]) {
-            console.error(tr("Invalid worker token!"));
+            log.error(LogCategory.VOICE, tr("Invalid worker token!"));
             return;
         }
 
         if(message["token"] == this._workerCallbackToken) {
             if(message["type"] == "loaded") {
-                console.log(tr("[Codec] Got worker init response: Success: %o Message: %o"), message["success"], message["message"]);
+                log.info(LogCategory.VOICE, tr("[Codec] Got worker init response: Success: %o Message: %o"), message["success"], message["message"]);
                 if(message["success"]) {
                     if(this._workerCallbackResolve)
                         this._workerCallbackResolve();
@@ -176,9 +174,13 @@ class CodecWrapperWorker extends BasicCodec {
                 //FIXME?
                 return;
             }
-            console.log(tr("Costume callback! (%o)"), message);
+            log.debug(LogCategory.VOICE, tr("Costume callback! (%o)"), message);
             return;
         }
+
+        /* lets warn on general packets. Control packets are allowed to "stuck" a bit longer */
+        if(Date.now() - message["timestamp"] > 5)
+            log.warn(LogCategory.VOICE, tr("Worker message stock time: %d"), Date.now() - message["timestamp"]);
 
         for(let entry of this._workerListener) {
             if(entry.token == message["token"]) {
@@ -188,8 +190,7 @@ class CodecWrapperWorker extends BasicCodec {
             }
         }
 
-        //TODO tr
-        console.error("Could not find worker token entry! (" + message["token"] + ")");
+        log.error(LogCategory.VOICE, tr("Could not find worker token entry! (%o)"), message["token"]);
     }
 
     private spawnWorker() : Promise<Boolean> {

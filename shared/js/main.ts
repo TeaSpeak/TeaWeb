@@ -84,11 +84,11 @@ function setup_close() {
 declare function moment(...arguments) : any;
 function setup_jsrender() : boolean {
     if(!js_render) {
-        displayCriticalError("Missing jsrender extension!");
+        loader.critical_error("Missing jsrender extension!");
         return false;
     }
     if(!js_render.views) {
-        displayCriticalError("Missing jsrender viewer extension!");
+        loader.critical_error("Missing jsrender viewer extension!");
         return false;
     }
     js_render.views.settings.allowCode(true);
@@ -108,10 +108,10 @@ function setup_jsrender() : boolean {
     });
 
     $(".jsrender-template").each((idx, _entry) => {
-        if(!js_render.templates(_entry.id, _entry.innerHTML)) { //, _entry.innerHTML
-            console.error("Failed to cache template " + _entry.id + " for js render!");
+        if(!js_render.templates(_entry.id, _entry.innerHTML)) {
+            log.error(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), _entry.id);
         } else
-            console.debug("Successfully loaded jsrender template " + _entry.id);
+            log.info(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);
     });
     return true;
 }
@@ -123,7 +123,7 @@ async function initialize() {
         await i18n.initialize();
     } catch(error) {
         console.error(tr("Failed to initialized the translation system!\nError: %o"), error);
-        displayCriticalError("Failed to setup the translation system");
+        loader.critical_error("Failed to setup the translation system");
         return;
     }
 
@@ -131,13 +131,6 @@ async function initialize() {
 }
 
 async function initialize_app() {
-    const display_load_error = message => {
-        if(typeof(display_critical_load) !== "undefined")
-            display_critical_load(message);
-        else
-            displayCriticalError(message);
-    };
-
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag({
             multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
@@ -146,8 +139,8 @@ async function initialize_app() {
 
         $("body").append(main);
     } catch(error) {
-        console.error(error);
-        display_load_error(tr("Failed to setup main page!"));
+        log.error(LogCategory.GENERAL, error);
+        loader.critical_error(tr("Failed to setup main page!"));
         return;
     }
 
@@ -158,7 +151,7 @@ async function initialize_app() {
     if(audio.player.set_master_volume)
         audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100);
     else
-        console.warn("Client does not support audio.player.set_master_volume()... May client is too old?");
+        log.warn(LogCategory.GENERAL, tr("Client does not support audio.player.set_master_volume()... May client is too old?"));
     if(audio.recorder.device_refresh_available())
         await audio.recorder.refresh_devices();
 
@@ -166,7 +159,7 @@ async function initialize_app() {
     await default_recorder.initialize();
 
     sound.initialize().then(() => {
-        console.log(tr("Sounds initialitzed"));
+        log.info(LogCategory.AUDIO, tr("Sounds initialized"));
     });
     sound.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
 
@@ -175,8 +168,8 @@ async function initialize_app() {
     try {
         await ppt.initialize();
     } catch(error) {
-        console.error(tr("Failed to initialize ppt!\nError: %o"), error);
-        displayCriticalError(tr("Failed to initialize ppt!"));
+        log.error(LogCategory.GENERAL, tr("Failed to initialize ppt!\nError: %o"), error);
+        loader.critical_error(tr("Failed to initialize ppt!"));
         return;
     }
 
@@ -274,15 +267,15 @@ class TestProxy extends bipc.MethodProxy {
     }
 
     protected on_connected() {
-        console.log("Test proxy connected");
+        log.info(LogCategory.IPC, "Test proxy connected");
     }
 
     protected on_disconnected() {
-        console.log("Test proxy disconnected");
+        log.info(LogCategory.IPC, "Test proxy disconnected");
     }
 
     private async say_hello() : Promise<void> {
-        console.log("Hello World");
+        log.info(LogCategory.IPC, "Hello World");
     }
 
     private async add_slave(a: number, b: number) : Promise<number> {
@@ -363,7 +356,7 @@ function main() {
         volatile_collection_only: false
     });
     stats.register_user_count_listener(status => {
-        console.log("Received user count update: %o", status);
+        log.info(LogCategory.STATISTICS, tr("Received user count update: %o"), status);
     });
 
     (<any>window).test_upload = (message?: string) => {
@@ -377,7 +370,6 @@ function main() {
             name: '/HelloWorld.txt',
             path: ''
         }).then(key => {
-            console.log("Got key: %o", key);
             const upload = new RequestFileUpload(key);
 
             const buffer = new Uint8Array(message.length);
@@ -396,7 +388,6 @@ function main() {
 
     if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
         const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
-        console.log("UUID: %s", profile_uuid);
         const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
         const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
         const username = settings.static(Settings.KEY_CONNECT_USERNAME, "Another TeaSpeak user");
@@ -431,9 +422,10 @@ function main() {
             
         });
         */
+       // Modals.openServerInfo(connection.channelTree.server);
         //Modals.createServerModal(connection.channelTree.server, properties => Promise.resolve());
     }, 1000);
-    //Modals.spawnSettingsModal("audio-sounds");
+    Modals.spawnSettingsModal("identity-profiles");
     //Modals.spawnKeySelect(console.log);
 }
 
@@ -454,7 +446,7 @@ const task_teaweb_starter: loader.Task = {
             console.error(ex.stack);
             if(ex instanceof ReferenceError || ex instanceof TypeError)
                 ex = ex.name + ": " + ex.message;
-            displayCriticalError("Failed to invoke main function:<br>" + ex);
+            loader.critical_error("Failed to invoke main function:<br>" + ex);
         }
     },
     priority: 10
@@ -519,7 +511,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             if(!setup_jsrender())
                 throw "invalid load";
         } catch (error) {
-            displayCriticalError(tr("Failed to setup jsrender"));
+            loader.critical_error(tr("Failed to setup jsrender"));
             console.error(tr("Failed to load jsrender! %o"), error);
             return;
         }
@@ -543,7 +535,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 
             if(ex instanceof ReferenceError || ex instanceof TypeError)
                 ex = ex.name + ": " + ex.message;
-            displayCriticalError("Failed to boot app function:<br>" + ex);
+            loader.critical_error("Failed to boot app function:<br>" + ex);
         }
     },
     priority: 1000

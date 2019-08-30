@@ -5,6 +5,7 @@ enum ChatType {
     CLIENT
 }
 
+declare const xbbcode: any;
 namespace MessageHelper {
     export function htmlEscape(message: string) : string[] {
         const div = document.createElement('div');
@@ -90,7 +91,7 @@ namespace MessageHelper {
     }
 
     export function bbcode_chat(message: string) : JQuery[] {
-        const result: xbbcode.Result = xbbcode.parse(message, {
+        const result = xbbcode.parse(message, {
             /* TODO make this configurable and allow IMG */
             tag_whitelist: [
                 "b", "big",
@@ -133,6 +134,123 @@ namespace MessageHelper {
         //return result.root_tag.content.map(e => e.build_html()).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 ? "inline" : "") + "block").html(entry == "" && idx != 0 ? "&nbsp;" : entry));
     }
 
+    export namespace network {
+        export const KB = 1024;
+        export const MB = 1024 * KB;
+        export const GB = 1024 * MB;
+        export const TB = 1024 * GB;
+
+        export function format_bytes(value: number, options?: {
+            time?: string,
+            unit?: string,
+            exact?: boolean
+        }) : string {
+            options = Object.assign(options || {}, {
+                time: undefined,
+                unit: "Bytes",
+                exact: true
+            });
+
+            let points = value.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+
+            let v, unit;
+            if(value > 2 * TB) {
+                unit = "TB";
+                v = value / TB;
+            } else if(value > GB) {
+                unit = "GB";
+                v = value / GB;
+            } else if(value > MB) {
+                unit = "MB";
+                v = value / MB;
+            } else if(value > KB) {
+                unit = "KB";
+                v = value / KB;
+            } else {
+                unit = "";
+                v = value;
+            }
+            if(unit && options.time)
+                unit = unit + "/" + options.time;
+            return (options.exact || !unit ? (points + " " + (options.unit || "")) : "") + (unit ? (" / " + v.toFixed(2) + " " + unit) : "");
+        }
+    }
+
+    export const K = 1000;
+    export const M = 1000 * K;
+    export const G = 1000 * M;
+    export const T = 1000 * G;
+    export function format_number(value: number, options?: {
+        time?: string,
+        unit?: string
+    }) {
+        options = Object.assign(options || {}, {});
+
+        let points = value.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+
+        let v, unit;
+        if(value > 2 * T) {
+            unit = "T";
+            v = value / T;
+        } else if(value > G) {
+            unit = "G";
+            v = value / G;
+        } else if(value > M) {
+            unit = "M";
+            v = value / M;
+        } else if(value > K) {
+            unit = "K";
+            v = value / K;
+        } else {
+            unit = "";
+            v = value;
+        }
+        if(unit && options.time)
+            unit = unit + "/" + options.time;
+        return points + " " + (options.unit || "") + (unit ? (" / " + v.toFixed(2) + " " + unit) : "");
+    }
+
+    export const TIME_SECOND = 1000;
+    export const TIME_MINUTE = 60 * TIME_SECOND;
+    export const TIME_HOUR = 60 * TIME_MINUTE;
+    export const TIME_DAY = 24 * TIME_HOUR;
+    export const TIME_WEEK = 7 * TIME_DAY;
+
+    export function format_time(time: number, default_value: string) {
+        let result = "";
+        if(time > TIME_WEEK) {
+            const amount = Math.floor(time / TIME_WEEK);
+            result += " " + amount + " " + (amount > 1 ? tr("Weeks") : tr("Week"));
+            time -= amount * TIME_WEEK;
+        }
+
+        if(time > TIME_DAY) {
+            const amount = Math.floor(time / TIME_DAY);
+            result += " " + amount + " " + (amount > 1 ? tr("Days") : tr("Day"));
+            time -= amount * TIME_DAY;
+        }
+
+        if(time > TIME_HOUR) {
+            const amount = Math.floor(time / TIME_HOUR);
+            result += " " + amount + " " + (amount > 1 ? tr("Hours") : tr("Hour"));
+            time -= amount * TIME_HOUR;
+        }
+
+        if(time > TIME_MINUTE) {
+            const amount = Math.floor(time / TIME_MINUTE);
+            result += " " + amount + " " + (amount > 1 ? tr("Minutes") : tr("Minute"));
+            time -= amount * TIME_MINUTE;
+        }
+
+        if(time > TIME_SECOND) {
+            const amount = Math.floor(time / TIME_SECOND);
+            result += " " + amount + " " + (amount > 1 ? tr("Seconds") : tr("Second"));
+            time -= amount * TIME_SECOND;
+        }
+
+        return result.length > 0 ? result.substring(1) : default_value;
+    }
+
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         name: "XBBCode code tag init",
         function: async () => {
@@ -141,7 +259,7 @@ namespace MessageHelper {
                 tag: ["code", "icode", "i-code"],
                 content_tags_whitelist: [],
 
-                build_html(layer: xbbcode.TagLayer) : string {
+                build_html(layer) : string {
                     const klass = layer.tag_normalized != 'code' ? "tag-hljs-inline-code" : "tag-hljs-code";
                     const language = (layer.options || "").replace("\"", "'").toLowerCase();
 

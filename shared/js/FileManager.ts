@@ -235,7 +235,7 @@ class FileManager extends connection.AbstractCommandHandler {
         }
 
         if(!entry) {
-            console.error(tr("Invalid file list entry. Path: %s"), json[0]["path"]);
+            log.error(LogCategory.CLIENT, tr("Invalid file list entry. Path: %s"), json[0]["path"]);
             return;
         }
         for(let e of (json as Array<FileEntry>)) {
@@ -258,7 +258,7 @@ class FileManager extends connection.AbstractCommandHandler {
         }
 
         if(!entry) {
-            console.error(tr("Invalid file list entry finish. Path: "), json[0]["path"]);
+            log.error(LogCategory.CLIENT, tr("Invalid file list entry finish. Path: "), json[0]["path"]);
             return;
         }
         entry.callback(entry.entries);
@@ -659,7 +659,7 @@ class IconManager {
             try {
                 download_key = await this.create_icon_download(id);
             } catch(error) {
-                console.error(tr("Could not request download for icon %d: %o"), id, error);
+                log.error(LogCategory.CLIENT, tr("Could not request download for icon %d: %o"), id, error);
                 throw "Failed to request icon";
             }
 
@@ -668,7 +668,7 @@ class IconManager {
             try {
                 response = await downloader.request_file();
             } catch(error) {
-                console.error(tr("Could not download icon %d: %o"), id, error);
+                log.error(LogCategory.CLIENT, tr("Could not download icon %d: %o"), id, error);
                 throw "failed to download icon";
             }
 
@@ -713,7 +713,7 @@ class IconManager {
                 return result;
             throw "load result is empty";
         } catch(error) {
-            console.error(tr("Icon download failed of icon %d: %o"), id, error);
+            log.error(LogCategory.CLIENT, tr("Icon download failed of icon %d: %o"), id, error);
         }
 
         throw "icon not found";
@@ -759,7 +759,7 @@ class IconManager {
         };
         if(icon instanceof Promise) {
             icon.then(_apply).catch(error => {
-                console.error(tr("Could not load icon. Reason: %s"), error);
+                log.error(LogCategory.CLIENT, tr("Could not load icon. Reason: %s"), error);
                 icon_load_image.removeClass("icon_loading").addClass("icon client-warning").attr("tag", "Could not load icon");
             });
         } else {
@@ -858,7 +858,7 @@ class AvatarManager {
     }
 
     create_avatar_download(client_avatar_id: string) : Promise<transfer.DownloadKey> {
-        console.log(tr("Downloading avatar %s"), client_avatar_id);
+        log.debug(LogCategory.GENERAL, "Requesting download for avatar %s", client_avatar_id);
         return this.handle.download_file("", "/avatar_" + client_avatar_id);
     }
 
@@ -868,7 +868,7 @@ class AvatarManager {
             try {
                 download_key = await this.create_avatar_download(client_avatar_id);
             } catch(error) {
-                console.error(tr("Could not request download for avatar %s: %o"), client_avatar_id, error);
+                log.error(LogCategory.GENERAL, tr("Could not request download for avatar %s: %o"), client_avatar_id, error);
                 throw "failed to request avatar download";
             }
 
@@ -877,7 +877,7 @@ class AvatarManager {
             try {
                 response = await downloader.request_file();
             } catch(error) {
-                console.error(tr("Could not download avatar %s: %o"), client_avatar_id, error);
+                log.error(LogCategory.GENERAL, tr("Could not download avatar %s: %o"), client_avatar_id, error);
                 throw "failed to download avatar";
             }
 
@@ -915,7 +915,7 @@ class AvatarManager {
             if(_cached.avatar_id === avatar_id)
                 return; /* cache is up2date */
 
-            console.log(tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), client_avatar_id, _cached.avatar_id, avatar_id);
+            log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), client_avatar_id, _cached.avatar_id, avatar_id);
             delete this._cached_avatars[client_avatar_id];
             AvatarManager.cache.delete("avatar_" + client_avatar_id).catch(error => {
                 log.error(LogCategory.GENERAL, tr("Failed to delete cached avatar for client %o: %o"), client_avatar_id, error);
@@ -961,7 +961,7 @@ class AvatarManager {
                 try {
                     avatar = await this.resolved_cached(client_avatar_id, avatar_id);
                 } catch(error) {
-                    console.error(error);
+                    log.error(LogCategory.CLIENT, error);
                 }
 
                 if(!avatar)
@@ -984,7 +984,7 @@ class AvatarManager {
                     });
                 });
             })().catch(reason => {
-                console.error(tr("Could not load avatar for id %s. Reason: %s"), client_avatar_id, reason);
+                log.error(LogCategory.CLIENT, tr("Could not load avatar for id %s. Reason: %s"), client_avatar_id, reason);
                 //TODO Broken image
                 loader_image.addClass("icon client-warning").attr("tag", tr("Could not load avatar ") + client_avatar_id);
             })
@@ -1049,7 +1049,7 @@ class AvatarManager {
         if(avatar_id) {
             if(this._cached_avatars[avatar_id]) { /* Test if we're may able to load the client avatar sync without a loading screen */
                 const cache: Avatar = this._cached_avatars[avatar_id];
-                console.log("[AVATAR] Using cached avatar. ID: %o | Version: %o (Cached: %o)", avatar_id, client_handle ? client_handle.properties.client_flag_avatar : undefined, cache.avatar_id);
+                log.debug(LogCategory.GENERAL, tr("Using cached avatar. ID: %o | Version: %o (Cached: %o)"), avatar_id, client_handle ? client_handle.properties.client_flag_avatar : undefined, cache.avatar_id);
                 if(!client_handle || client_handle.properties.client_flag_avatar == cache.avatar_id) {
                     const image = $.spawn("img").attr("src", cache.url).css({width: '100%', height: '100%'});
                     return container.append(image);
@@ -1063,13 +1063,13 @@ class AvatarManager {
                 let avatar: Avatar;
                 let loaded_image = this.generate_default_image();
 
-                console.log("[AVATAR] Resolving avatar. ID: %o | Version: %o", avatar_id, client_handle ? client_handle.properties.client_flag_avatar : undefined);
+                log.debug(LogCategory.GENERAL, tr("Resolving avatar. ID: %o | Version: %o"), avatar_id, client_handle ? client_handle.properties.client_flag_avatar : undefined);
                 try {
                     //TODO: Cache if avatar load failed and try again in some minutes/may just even consider using the default avatar 'till restart
                     try {
                         avatar = await this.resolved_cached(avatar_id, client_handle ? client_handle.properties.client_flag_avatar : undefined);
                     } catch(error) {
-                        console.error(tr("Failed to use cached avatar: %o"), error);
+                        log.error(LogCategory.GENERAL, tr("Failed to use cached avatar: %o"), error);
                     }
 
                     if(!avatar)

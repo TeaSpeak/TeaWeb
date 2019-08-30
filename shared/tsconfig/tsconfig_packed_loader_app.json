@@ -1,14 +1,16 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "commonjs",
-    "sourceMap": true
+    "module": "none",
+    "sourceMap": true,
+    "outFile": "../generated/loader_app.js"
   },
   "include": [
     "../types",
     "../declarations/imports_*.d.ts",
     "../declarations/exports_packed.d.ts",
-    "../js/load.ts",
+    "../loader/loader.ts",
+    "../loader/app.ts",
     "../backend"
   ]
 }

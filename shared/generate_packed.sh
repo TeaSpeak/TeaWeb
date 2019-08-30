@@ -5,7 +5,7 @@ cd "$BASEDIR"
 source ../scripts/resolve_commands.sh
 
 #Generate the loader definitions first
-LOADER_FILE="declarations/exports_loader.d.ts"
+LOADER_FILE="declarations/exports_loader_app.d.ts"
 if [[ -e ${LOADER_FILE} ]]; then
     rm ${LOADER_FILE}
     if [[ $? -ne 0 ]]; then
@@ -13,10 +13,9 @@ if [[ -e ${LOADER_FILE} ]]; then
     fi
 fi
 
-npm run dtsgen -- --config $(pwd)/tsconfig/dtsconfig_loader.json -v
+npm run dtsgen -- --config $(pwd)/tsconfig/dtsconfig_loader_app.json -v
 if [[ ! -e ${LOADER_FILE} ]]; then
     echo "Failed to generate definitions"
-    echo "$result"
     exit 1
 fi
 
@@ -26,11 +25,18 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-execute_ttsc -p tsconfig/tsconfig_packed_loader.json
+execute_ttsc -p tsconfig/tsconfig_packed_loader_app.json
 if [[ $? -ne 0 ]]; then
     echo "Failed to generate packed loader file!"
     exit 1
 fi
+
+npm run minify-web-rel-file `pwd`/generated/loader_app.min.js `pwd`/generated/loader_app.js
+if [[ $? -ne 0 ]]; then
+    echo "Failed to minimize packed loader file!"
+    exit 1
+fi
+
 
 execute_ttsc -p tsconfig/tsconfig_packed.json
 if [[ $? -ne 0 ]]; then
@@ -49,7 +55,7 @@ if [[ ! -d generated/static/ ]]; then
 fi
 
 # Create packed CSS file
-find css/static/ -name '*.css' -exec cat {} \; | npm run csso -- --output `pwd`/generated/static/base.css
+./css/generate_packed.sh
 
 echo "Packed file generated!"
 exit 0

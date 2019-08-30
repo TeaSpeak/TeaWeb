@@ -2,7 +2,6 @@
 /// <reference path="proto.ts" />
 /// <reference path="ui/view.ts" />
 /// <reference path="settings.ts" />
-/// <reference path="ui/frames/SelectedItemInfo.ts" />
 /// <reference path="FileManager.ts" />
 /// <reference path="permission/PermissionManager.ts" />
 /// <reference path="permission/GroupManager.ts" />
@@ -90,7 +89,6 @@ class ConnectionHandler {
     groups: GroupManager;
 
     side_bar: chat.Frame;
-    select_info: InfoBar;
 
     settings: ServerSettings;
     sound: sound.SoundManager;
@@ -126,7 +124,6 @@ class ConnectionHandler {
         this.settings = new ServerSettings();
 
         this.log = new log.ServerLog(this);
-        this.select_info = new InfoBar(this);
         this.channelTree = new ChannelTree(this);
         this.side_bar = new chat.Frame(this);
         this.sound = new sound.SoundManager(this);
@@ -192,7 +189,7 @@ class ConnectionHandler {
                 server_address.port = 9987;
             }
         }
-        console.log(tr("Start connection to %s:%d"), server_address.host, server_address.port);
+        log.info(LogCategory.CLIENT, tr("Start connection to %s:%d"), server_address.host, server_address.port);
         this.log.log(log.server.Type.CONNECTION_BEGIN, {
             address: {
                 server_hostname: server_address.host,
@@ -210,7 +207,7 @@ class ConnectionHandler {
                     password: password
                 }
             } catch(error) {
-                console.error(tr("Failed to hash connect password: %o"), error);
+                log.error(LogCategory.CLIENT, tr("Failed to hash connect password: %o"), error);
                 createErrorModal(tr("Error while hashing password"), tr("Failed to hash server password!<br>") + error).open();
             }
         }
@@ -278,7 +275,7 @@ class ConnectionHandler {
      * LISTENER
      */
     onConnected() {
-        console.log("Client connected!");
+        log.info(LogCategory.CLIENT, tr("Client connected"));
         this.permissions.requestPermissionList();
         if(this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
@@ -416,7 +413,7 @@ class ConnectionHandler {
                     this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 break;
             case DisconnectReason.DNS_FAILED:
-                console.error(tr("Failed to resolve hostname: %o"), data);
+                log.error(LogCategory.CLIENT, tr("Failed to resolve hostname: %o"), data);
                 this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVE_ERROR, {
                     message: data as any
                 });
@@ -428,7 +425,7 @@ class ConnectionHandler {
                     this.log.log(log.server.Type.CONNECTION_FAILED, {});
                     break;
                 }
-                console.error(tr("Could not connect to remote host! Error: %o"), data);
+                log.error(LogCategory.CLIENT, tr("Could not connect to remote host! Error: %o"), data);
 
                 if(native_client) {
                     createErrorModal(
@@ -452,7 +449,7 @@ class ConnectionHandler {
                 break;
             case DisconnectReason.HANDSHAKE_FAILED:
                 //TODO sound
-                console.error(tr("Failed to process handshake: %o"), data);
+                log.error(LogCategory.CLIENT, tr("Failed to process handshake: %o"), data);
                 createErrorModal(
                     tr("Could not connect"),
                     tr("Failed to process handshake: ") + data as string
@@ -476,7 +473,7 @@ class ConnectionHandler {
                 auto_reconnect = false;
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
-                console.error(tr("Lost connection to remote server!"));
+                log.error(LogCategory.CLIENT, tr("Lost connection to remote server!"));
                 createErrorModal(
                     tr("Connection closed"),
                     tr("The connection was closed by remote host")
@@ -486,7 +483,7 @@ class ConnectionHandler {
                 auto_reconnect = true;
                 break;
             case DisconnectReason.CONNECTION_PING_TIMEOUT:
-                console.error(tr("Connection ping timeout"));
+                log.error(LogCategory.CLIENT, tr("Connection ping timeout"));
                 this.sound.play(Sound.CONNECTION_DISCONNECTED_TIMEOUT);
                 createErrorModal(
                     tr("Connection lost"),
@@ -561,9 +558,8 @@ class ConnectionHandler {
                 this.sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
                 break;
             default:
-                console.error(tr("Got uncaught disconnect!"));
-                console.error(tr("Type: %o Data:"), type);
-                console.error(data);
+                log.error(LogCategory.CLIENT, tr("Got uncaught disconnect!"));
+                log.error(LogCategory.CLIENT, tr("Type: %o Data: %o"), type, data);
                 break;
         }
 
@@ -574,18 +570,17 @@ class ConnectionHandler {
 
         if(control_bar.current_connection_handler() == this)
             control_bar.update_connection_state();
-        this.select_info.setCurrentSelected(null);
         this.side_bar.private_conversations().clear_client_ids();
         this.hostbanner.update();
 
         if(auto_reconnect) {
             if(!this.serverConnection) {
-                console.log(tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
+                log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
             }
             this.log.log(log.server.Type.RECONNECT_SCHEDULED, {timeout: 50000});
 
-            console.log(tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
+            log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
             const profile = this.serverConnection.handshake_handler().profile;
 
@@ -695,11 +690,11 @@ class ConnectionHandler {
                 if(vconnection.voice_recorder().input.current_state() === audio.recorder.InputState.PAUSED) {
                     vconnection.voice_recorder().input.start().then(result => {
                         if(result != audio.recorder.InputStartResult.EOK) {
-                            console.warn(tr("Failed to start microphone input (%s)."), result);
+                            log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), result);
                             createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), result)).open();
                         }
                     }).catch(error => {
-                        console.warn(tr("Failed to start microphone input (%s)."), error);
+                        log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
                         createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
                     });
                 }
@@ -751,14 +746,13 @@ class ConnectionHandler {
 
     resize_elements() {
         this.channelTree.handle_resized();
-        this.select_info.handle_resize();
         this.invoke_resized_on_activate = false;
     }
 
     acquire_recorder(voice_recoder: RecorderProfile, update_control_bar: boolean) {
         const vconnection = this.serverConnection.voice_connection();
         (vconnection ? vconnection.acquire_voice_recorder(voice_recoder) : Promise.resolve()).catch(error => {
-            console.error(tr("Failed to acquire recorder (%o)"), error);
+            log.warn(LogCategory.VOICE, tr("Failed to acquire recorder (%o)"), error);
         }).then(() => {
             this.update_voice_status(undefined);
         });
@@ -785,7 +779,7 @@ class ConnectionHandler {
             if(typeof(data) === "undefined")
                 return;
             if(data === null) {
-                console.log(tr("Deleting existing avatar"));
+                log.info(LogCategory.CLIENT, tr("Deleting existing avatar"));
                 this.serverConnection.send_command('ftdeletefile', {
                     name: "/avatar_", /* delete own avatar */
                     path: "",
@@ -793,7 +787,7 @@ class ConnectionHandler {
                 }).then(() => {
                     createInfoModal(tr("Avatar deleted"), tr("Avatar successfully deleted")).open();
                 }).catch(error => {
-                    console.error(tr("Failed to reset avatar flag: %o"), error);
+                    log.error(LogCategory.GENERAL, tr("Failed to reset avatar flag: %o"), error);
 
                     let message;
                     if(error instanceof CommandResult)
@@ -804,7 +798,7 @@ class ConnectionHandler {
                     return;
                 });
             } else {
-                console.log(tr("Uploading new avatar"));
+                log.info(LogCategory.CLIENT, tr("Uploading new avatar"));
                 (async () => {
                     let key: transfer.UploadKey;
                     try {
@@ -817,7 +811,7 @@ class ConnectionHandler {
                             channel_password: undefined
                         });
                     } catch(error) {
-                        console.error(tr("Failed to initialize avatar upload: %o"), error);
+                        log.error(LogCategory.GENERAL, tr("Failed to initialize avatar upload: %o"), error);
                         let message;
                         if(error instanceof CommandResult) {
                             //TODO: Resolve permission name
@@ -837,7 +831,7 @@ class ConnectionHandler {
                     try {
                         await transfer.spawn_upload_transfer(key).put_data(data);
                     } catch(error) {
-                        console.error(tr("Failed to upload avatar: %o"), error);
+                        log.error(LogCategory.GENERAL, tr("Failed to upload avatar: %o"), error);
 
                         let message;
                         if(typeof(error) === "string")
@@ -853,7 +847,7 @@ class ConnectionHandler {
                             client_flag_avatar: guid()
                         });
                     } catch(error) {
-                        console.error(tr("Failed to update avatar flag: %o"), error);
+                        log.error(LogCategory.GENERAL, tr("Failed to update avatar flag: %o"), error);
 
                         let message;
                         if(error instanceof CommandResult)
@@ -888,9 +882,6 @@ class ConnectionHandler {
 
         this.side_bar && this.side_bar.destroy();
         this.side_bar = undefined;
-
-        this.select_info && this.select_info.destroy();
-        this.select_info = undefined;
 
         this.log && this.log.destroy();
         this.log = undefined;

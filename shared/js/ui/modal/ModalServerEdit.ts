@@ -327,42 +327,14 @@ namespace Modals {
             }
         }
 
-        const format_unit = (value: number) => {
-            const KB = 1024;
-            const MB = 1024 * KB;
-            const GB = 1024 * MB;
-            const TB = 1024 * GB;
-
-            let points = value.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-
-            let v, unit;
-            if(value > 2 * TB) {
-                unit = "TB";
-                v = value / TB;
-            } else if(value > GB) {
-                unit = "GB";
-                v = value / GB;
-            } else if(value > MB) {
-                unit = "MB";
-                v = value / MB;
-            } else if(value > KB) {
-                unit = "KB";
-                v = value / KB;
-            } else {
-                unit = "";
-                v = value;
-            }
-            return points + " Bytes" + (unit ? (" / " + v.toFixed(2) + " " + unit) : "");
-        };
-
         /* quota info */
         {
             server.updateProperties().then(() => {
-                tag.find(".value.virtualserver_month_bytes_downloaded").text(format_unit(server.properties.virtualserver_month_bytes_downloaded));
-                tag.find(".value.virtualserver_month_bytes_uploaded").text(format_unit(server.properties.virtualserver_month_bytes_uploaded));
+                tag.find(".value.virtualserver_month_bytes_downloaded").text(MessageHelper.network.format_bytes(server.properties.virtualserver_month_bytes_downloaded));
+                tag.find(".value.virtualserver_month_bytes_uploaded").text(MessageHelper.network.format_bytes(server.properties.virtualserver_month_bytes_uploaded));
 
-                tag.find(".value.virtualserver_total_bytes_downloaded").text(format_unit(server.properties.virtualserver_total_bytes_downloaded));
-                tag.find(".value.virtualserver_total_bytes_uploaded").text(format_unit(server.properties.virtualserver_total_bytes_uploaded));
+                tag.find(".value.virtualserver_total_bytes_downloaded").text(MessageHelper.network.format_bytes(server.properties.virtualserver_total_bytes_downloaded));
+                tag.find(".value.virtualserver_total_bytes_uploaded").text(MessageHelper.network.format_bytes(server.properties.virtualserver_total_bytes_uploaded));
             });
         }
 
@@ -381,14 +353,14 @@ namespace Modals {
 
                 server.request_connection_info().then(info => {
                     if(info.connection_filetransfer_bytes_sent_month && month_bytes_downloaded)
-                        month_bytes_downloaded.innerText = format_unit(info.connection_filetransfer_bytes_sent_month);
+                        month_bytes_downloaded.innerText = MessageHelper.network.format_bytes(info.connection_filetransfer_bytes_sent_month);
                     if(info.connection_filetransfer_bytes_received_month && month_bytes_uploaded)
-                        month_bytes_uploaded.innerText = format_unit(info.connection_filetransfer_bytes_received_month);
+                        month_bytes_uploaded.innerText = MessageHelper.network.format_bytes(info.connection_filetransfer_bytes_received_month);
 
                     if(info.connection_filetransfer_bytes_sent_total && total_bytes_downloaded)
-                        total_bytes_downloaded.innerText = format_unit(info.connection_filetransfer_bytes_sent_total);
+                        total_bytes_downloaded.innerText = MessageHelper.network.format_bytes(info.connection_filetransfer_bytes_sent_total);
                     if(info.connection_filetransfer_bytes_received_total && total_bytes_uploaded)
-                        total_bytes_uploaded.innerText = format_unit(info.connection_filetransfer_bytes_received_total);
+                        total_bytes_uploaded.innerText = MessageHelper.network.format_bytes(info.connection_filetransfer_bytes_received_total);
                 });
             }, 1000);
             modal.close_listener.push(() => clearInterval(id));

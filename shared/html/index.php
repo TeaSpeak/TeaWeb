@@ -93,7 +93,9 @@
             <link rel="stylesheet" href="css/loader/loader.css">
         </div>
         <div id="scripts">
-            <script type="application/javascript" src="js/load.js" defer></script>
+            <script type="application/javascript" src="loader/loader_app.min.js" defer></script>
+            <script type="application/javascript" src="loader/loader_app.js" defer></script>
+            <script type="application/javascript" src="loader/loader.js" defer></script>
         </div>
     </head>
     <body>
@@ -113,7 +115,7 @@
         </script>
 
         <!-- Loading screen -->
-        <div class="loader">
+        <div class="loader" id="loader-overlay">
             <div class="half right"></div>
             <div class="half left"></div>
             <div class="bookshelf_wrapper">
@@ -133,12 +135,12 @@
         <div class="fulloverlay" id="critical-load">
             <div class="container">
                 <img src="img/loading_error_right.svg" height="192px">
-                <h1 class="error" style="color: red">Ooops, we encountered some trouble while loading important files!</h1>
+                <h1 class="error" style="color: red"></h1>
                 <h3 class="detail"></h3>
             </div>
         </div>
 
-        <?php if($localhost) { ?>
+        <?php if($localhost && false) { ?>
         <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
             <!-- <img src="https://www.chromatic-solutions.de/teaspeak/window/connect_opened.png"> -->
             <!-- <img src="http://puu.sh/DZDgO/9149c0a1aa.png"> -->
@@ -155,8 +157,29 @@
             <!-- <img src="http://puu.sh/E4lHJ/1a4afcdf0b.png"> -->
             <!-- <img src="http://puu.sh/E4HKK/5ee74d4cc7.png"> -->
             <!-- <img src="http://puu.sh/E6LN1/8518c10898.png"> -->
+            <!--
+                http://puu.sh/E8IoF/242ed5ca3a.png
+                http://puu.sh/E8Ip9/9632d33591.png
+                http://puu.sh/E8Ips/6c314253e5.png
+                http://puu.sh/E8IpG/015a38b184.png
+                http://puu.sh/E8IpY/5be454a15e.png
 
-            <img src="http://puu.sh/E6NXv/eb2f19c7c3.png">
+                Identity imporve: http://puu.sh/E9jTp/380a734677.png
+                Identity select: http://puu.sh/E9jYi/3003c58a2f.png
+
+                Server Info Bandwidth: http://puu.sh/E9jTe/b41f6386de.png
+                Server Info: http://puu.sh/E9jT6/302912ae34.png
+
+                Bookmarks: http://puu.sh/Eb5w4/8d38fe5b8f.png
+
+                serveredit_1.png https://www.hypixel-koo.cf/tsapoijdsadpoijsadsapj.png
+                serveredit_2.png https://www.hypixel-koo.cf/tsandljsandljsamndoj3oiwejlkjmnlksandljsadmnlmsadnlsa.png
+                serveredit_3.png https://www.hypixel-koo.cf/toiuhsadouhgdsapoiugdsapouhdsapouhdsaouhwouhwwouhwwoiuhwoihwwoihwoijhwwoknw.png
+            -->
+
+            <!-- <img src="http://puu.sh/E6NXv/eb2f19c7c3.png"> -->
+            <!-- <img src="http://puu.sh/E9jT6/302912ae34.png"> -->
+            <img src="http://puu.sh/E9jYi/3003c58a2f.png">
         </div>
         <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; bottom: 2px;">toggle style</button>
         <script>

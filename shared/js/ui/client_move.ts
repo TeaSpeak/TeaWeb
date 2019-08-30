@@ -50,7 +50,7 @@ class ClientMover {
 
         this.selected_client = client;
         this.callback = callback;
-        console.log(tr("Starting mouse move"));
+        log.debug(LogCategory.GENERAL, tr("Starting mouse move"));
 
         ClientMover.listener_root.on('mouseup', this._bound_finish = this.finish_listener.bind(this)).on('mousemove', this._bound_move = this.move_listener.bind(this));
 
@@ -112,6 +112,7 @@ class ClientMover {
 
     private finish_listener(event) {
         ClientMover.move_element.hide();
+        log.debug(LogCategory.GENERAL, tr("Finishing mouse move"));
 
         const channel_id = this.hovered_channel ? parseInt(this.hovered_channel.getAttribute("channel-id")) : 0;
         ClientMover.listener_root.unbind('mouseleave', this._bound_finish);

@@ -1,0 +1,618 @@
+@import "mixin";
+@import "properties";
+
+.modal-body.modal-client-info {
+	padding: 0!important;
+
+	$avatar_size: 12em;
+	.head {
+		flex-shrink: 0;
+		flex-grow: 0;
+
+		z-index: 1;
+
+		height: 7em;
+		background-color: #212125;
+
+		.status-row {
+			flex-shrink: 0;
+			flex-grow: 0;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-start;
+
+			.status-entry {
+				font-size: 1.5em;
+
+				margin: .25em;
+
+				width: 1em;
+				height: 1em;
+			}
+		}
+
+		.container-away-message {
+			$offset_left: (.25em) * 1.5 /* 1.5 is the font size of the icons */;
+
+			position: relative;
+			margin-left: $offset_left;
+			margin-top: .25em;
+
+			background-color: #1c1c1c;
+			border: 1px solid #161515;
+			border-radius: 3px;
+
+			max-width: calc(50% - #{$avatar_size / 2 + $offset_left + 1em}); /* do actual 1em space to the avatar */
+			max-height: 4em; /* else it will overflow the header */
+
+			display: flex;
+			flex-direction: column;
+			justify-content: start;
+
+			width: max-content;
+			padding: .15em;
+
+			overflow: hidden;
+
+			//A verry long away message, because I want to tell a story. There was a child....
+			a {
+				font-size: .85em;
+			}
+
+			&:hover {
+				max-height: 200em;
+			}
+
+			@include transition(.5s ease-in-out);
+		}
+	}
+
+	.body {
+		flex-shrink: 1;
+		flex-grow: 0;
+
+		//TODO: Min height here!
+
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		background-color: #2f2f35;
+
+		.container-avatar {
+			z-index: 2; /* overlay the header */
+
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			position: relative;
+			display: inline-block;
+			margin: calc(#{$avatar_size} / -2) 0.75em 0.5em 0.5em;
+			align-self: center;
+
+			.avatar {
+				height: $avatar_size;
+				width: $avatar_size;
+
+				border-radius: 50%;
+				overflow: hidden;
+			}
+		}
+
+		.container-name {
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+
+			.htmltag-client {
+				text-align: center;
+				font-size: 1.5em;
+				color: #cccccc;
+				font-weight: bold;
+			}
+		}
+
+		.container-description {
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			padding-right: calc(10em / 2);
+			padding-left: calc(10em / 2);
+
+			text-align: center;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: stretch;
+
+			.client-description {
+				color: #6f6f6f;
+				max-width: 100%;
+				flex-shrink: 1;
+				flex-grow: 1;
+				overflow-wrap: break-word;
+			}
+		}
+
+
+		.container-categories {
+			margin-top: 1em;
+
+			display: flex;
+			flex-direction: column;
+			justify-content: stretch;
+
+			min-height: 14em;
+
+			.categories {
+				height: 2.5em;
+
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				display: flex;
+				flex-direction: row;
+				justify-content: stretch;
+
+				padding-left: 2.5em;
+				padding-right: 2.5em;
+
+				border-bottom: 1px solid #1d1d1d;
+
+				.entry {
+					padding: .5em;
+
+					text-align: center;
+
+					flex-grow: 1;
+					flex-shrink: 1;
+
+					cursor: pointer;
+
+					&:hover {
+						color: #b6c4d6;
+					}
+
+					&.selected {
+						border-bottom: 3px solid #245184;
+						margin-bottom: -2px;
+
+						color: #245184;
+					}
+
+					@include transition(color $button_hover_animation_time, border-bottom-color $button_hover_animation_time);
+				}
+			}
+
+			.bodies {
+				position: relative;
+
+				flex-shrink: 1;
+				flex-grow: 1;
+
+				display: flex;
+				justify-content: stretch;
+
+				padding-left: .5em;
+				padding-right: .5em;
+
+				min-height: 10em;
+				height: 21em; /* body size 20 + .5 padding */
+
+				.container-tooltip {
+					flex-shrink: 0;
+					flex-grow: 0;
+
+					font-size: .8em; /* shrink the tip a bit */
+
+					position: relative;
+					width: 1.6em;
+					margin-left: .5em;
+
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+
+					img {
+						height: 1em;
+						width: 1em;
+
+						align-self: center;
+						font-size: 1.2em;
+					}
+
+					.tooltip {
+						display: none;
+					}
+				}
+
+				.body {
+					position: absolute;
+
+					top: 0;
+					left: 0;
+					right: 0;
+					bottom: 0;
+
+					padding: .5em;
+
+					display: flex;
+					justify-content: stretch;
+
+					overflow: auto; /* else the tooltip will trigger the scrollbar */
+					@include chat-scrollbar-vertical();
+
+					&.hidden {
+						display: none;
+					}
+
+					&.container-basic {
+						flex-direction: row;
+
+						.spacer {
+							flex-grow: 0;
+							flex-shrink: 0;
+							width: 1em;
+						}
+
+						.left, .right {
+							height: 20em;
+							width: calc(50% - .5em); /* the spacer in the middle thats why -.5 em */
+
+							flex-grow: 1;
+							flex-shrink: 1;
+
+
+							border-radius: .2em;
+							border: 1px solid #1f2122;
+							background-color: #28292b;
+							padding: .5em;
+
+							.property {
+								flex-shrink: 0;
+								flex-grow: 0;
+
+								display: flex;
+								flex-direction: column;
+								justify-content: flex-start;
+
+								.title, .value {
+									display: flex;
+									flex-direction: row;
+									justify-content: stretch;
+
+									white-space: nowrap;
+									overflow: hidden;
+
+									> * {
+										flex-shrink: 0;
+										flex-grow: 0;
+
+										align-self: center;
+									}
+
+									a {
+										flex-shrink: 1;
+
+										overflow: hidden;
+										text-overflow: ellipsis;
+									}
+								}
+
+								.title {
+									color: #254d7b;
+									text-transform: uppercase;
+								}
+
+								.value {
+									color: #bdbdbd;
+
+									a, a:visited {
+										color: #bdbdbd!important;
+									}
+
+									.button {
+										width: 1.6em;
+										height: 1.6em;
+
+										display: flex;
+										flex-direction: column;
+										justify-content: space-around;
+
+										cursor: pointer;
+										opacity: .5;
+
+										> div {
+											align-self: center;
+										}
+
+										&:hover {
+											opacity: 1;
+										}
+
+										@include transition($button_hover_animation_time ease-in-out);
+									}
+
+									.country {
+										margin-right: .25em;
+									}
+								}
+
+								&:not(:first-of-type) {
+									margin-top: .5em;
+								}
+
+								&.property-unique-id, &.property-ip {
+									.value {
+										justify-content: space-between;
+									}
+								}
+
+								&.property-version {
+									.a-on {
+										flex-shrink: 0;
+										flex-grow: 0;
+										margin-left: .25em;
+										margin-right: .25em;
+									}
+								}
+							}
+						}
+					}
+
+					&.container-packets {
+						flex-direction: row;
+
+						.spacer {
+							flex-grow: 0;
+							flex-shrink: 0;
+							width: 1em;
+						}
+
+						.left, .right {
+							height: 20em;
+							width: calc(50% - .5em); /* the spacer in the middle thats why -.5 em */
+
+							flex-grow: 1;
+							flex-shrink: 1;
+
+
+							border-radius: .2em;
+							border: 1px solid #1f2122;
+							background-color: #28292b;
+							padding: .5em;
+
+							.statistic {
+								flex-shrink: 0;
+								flex-grow: 0;
+
+								display: flex;
+								flex-direction: column;
+								justify-content: flex-start;
+
+								.title, .upstream, .downstream {
+									display: flex;
+									flex-direction: row;
+									justify-content: stretch;
+
+									white-space: nowrap;
+									overflow: hidden;
+
+									> * {
+										flex-shrink: 0;
+										flex-grow: 0;
+
+										align-self: center;
+									}
+
+									a {
+										flex-shrink: 1;
+
+										overflow: hidden;
+										text-overflow: ellipsis;
+									}
+								}
+
+								.title {
+									color: #254d7b;
+									text-transform: uppercase;
+								}
+
+								.upstream, .downstream {
+									padding-top: .25em;
+
+
+									display: flex;
+									flex-direction: row;
+									justify-content: space-between;
+
+									> a {
+										align-self: center;
+									}
+								}
+
+								.upstream {
+									color: #fd3913;
+								}
+
+								.downstream {
+									color: #0e8afd;
+								}
+
+								&:not(:first-of-type) {
+									margin-top: .5em;
+								}
+							}
+						}
+					}
+
+					&.container-groups {
+						flex-direction: row;
+
+						.spacer {
+							flex-grow: 0;
+							flex-shrink: 0;
+							width: 1em;
+						}
+
+						.left, .right {
+							height: 20em;
+							width: calc(50% - .5em); /* the spacer in the middle thats why -.5 em */
+
+							flex-grow: 1;
+							flex-shrink: 1;
+
+							.title {
+								align-self: center;
+								color: #254d7b;
+								text-transform: uppercase;
+							}
+
+							.container {
+								margin-top: .5em;
+							}
+						}
+
+						.left {
+							display: flex;
+							flex-direction: column;
+							justify-content: stretch;
+
+							.container {
+								border-radius: .2em .2em 0 0;
+								border: 1px solid #1f2122;
+								border-bottom: 0;
+
+								padding: 0!important;
+								background-color: #28292b;
+
+								flex-grow: 1;
+								flex-shrink: 1;
+								overflow-y: auto;
+
+								min-height: 4em;
+								position: relative;
+
+								@include chat-scrollbar-vertical();
+
+								.entries {
+									flex-grow: 1;
+									flex-shrink: 1;
+
+									min-height: 4em;
+
+									.entry {
+										display: flex;
+										flex-direction: row;
+										justify-content: stretch;
+
+										height: 1.6em;
+										padding-left: .5em;
+										padding-right: .5em;
+
+										&:hover {
+											background-color: #232425;
+										}
+
+										> * {
+											align-self: center;
+										}
+
+										.icon-container {
+											margin-right: .25em;
+										}
+
+										.name {
+											flex-grow: 1;
+											flex-shrink: 1;
+
+											min-width: 1em;
+											line-height: normal;
+
+											overflow: hidden;
+											white-space: nowrap;
+											text-overflow: ellipsis;
+										}
+
+										.button-delete {
+											height: 1.3em;
+											width: 1.3em;
+
+											cursor: pointer;
+											border-radius: .2em;
+
+											&:hover {
+												background-color: #2c2d2e;
+											}
+
+											display: flex;
+											flex-direction: row;
+											justify-content: space-around;
+
+											> div {
+												align-self: center;
+											}
+
+											@include transition($button_hover_animation_time ease-in-out);
+										}
+									}
+								}
+
+								.container-default-groups {
+									position: absolute;
+									top: 0;
+									left: 0;
+									right: 0;
+									bottom: 0;
+									display: flex;
+									flex-direction: column;
+									justify-content: center;
+
+									a {
+										align-self: center;
+										font-size: 1.25em;
+										color: hsla(0, 0%, 30%, 1);
+									}
+								}
+							}
+
+							.buttons {
+								flex-grow: 0;
+								flex-shrink: 0;
+
+								border-radius: 0 0 .2em .2em;
+								border: 1px solid #1f2122;
+								background-color: #28292b;
+
+								padding: .5em;
+
+								display: flex;
+								flex-direction: row;
+								justify-content: space-around;
+
+								.button  {
+									align-self: center;
+								}
+							}
+						}
+
+						.right {
+							.container {
+								padding: 0!important;
+
+								select {
+									font-size: .8em;
+									width: 100%;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+}

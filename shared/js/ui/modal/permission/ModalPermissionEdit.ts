@@ -240,7 +240,6 @@ namespace Modals {
         {
             const pe_client = tab_right.find(".permission-editor");
             tab_right.on('show', event => {
-                console.error("client channel tab show");
                 editor.set_toggle_button(undefined, undefined);
                 pe_client.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
@@ -407,8 +406,6 @@ namespace Modals {
         {
             const pe_client = tab_right.find("permission-editor.client");
             tab_right.on('show', event => {
-                console.error("Channel tab show");
-
                 editor.set_toggle_button(undefined, undefined);
                 pe_client.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CLIENT_PERMISSION_LIST).granted(1)) {
@@ -557,7 +554,6 @@ namespace Modals {
         {
             const pe_channel = tab_right.find(".permission-editor");
             tab_right.on('show', event => {
-                console.error("Channel tab show");
                 editor.set_toggle_button(undefined, undefined);
                 pe_channel.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNEL_PERMISSION_LIST).granted(1))
@@ -672,7 +668,6 @@ namespace Modals {
         {
             const pe_server = tab_right.find(".permission-editor");
             tab_right.on('show', event => {
-                console.error("Channel group tab show");
                 editor.set_toggle_button(undefined, undefined);
                 pe_server.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CHANNELGROUP_PERMISSION_LIST).granted(1))
@@ -1162,7 +1157,6 @@ namespace Modals {
         {
             const pe_server = tab_right.find(".permission-editor");
             tab_right.on('show', event => {
-                console.error("Server tab show");
                 pe_server.append(editor.html_tag());
                 if(connection.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_SERVERGROUP_PERMISSION_LIST).granted(1))
                     editor.set_mode(PermissionEditorMode.VISIBLE);

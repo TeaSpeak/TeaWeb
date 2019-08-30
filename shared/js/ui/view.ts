@@ -494,7 +494,6 @@ class ChannelTree {
                 this.client.side_bar.show_channel_conversations();
             }
         }
-        this.client.select_info.setCurrentSelected($.isArray(this.currently_selected) ? undefined : entry);
     }
 
     private callback_multiselect_channel(event) {
@@ -748,7 +747,7 @@ class ChannelTree {
     }
 
     handle_key_press(event: KeyboardEvent) {
-        console.log("Keydown: %o | %o | %o", this._focused, this.currently_selected, Array.isArray(this.currently_selected));
+        //console.log("Keydown: %o | %o | %o", this._focused, this.currently_selected, Array.isArray(this.currently_selected));
         if(!this._focused || !this.currently_selected || Array.isArray(this.currently_selected)) return;
 
         if(event.keyCode == KeyCode.KEY_UP) {

@@ -97,13 +97,13 @@ class RecorderProfile {
     private initialize_input() {
         this.input = audio.recorder.create_input();
         this.input.callback_begin = () => {
-            console.log("Voice start");
+            log.debug(LogCategory.VOICE, "Voice start");
             if(this.callback_start)
                 this.callback_start();
         };
 
         this.input.callback_end = () => {
-            console.log("Voice end");
+            log.debug(LogCategory.VOICE, "Voice end");
             if(this.callback_stop)
                 this.callback_stop();
         };
@@ -153,11 +153,11 @@ class RecorderProfile {
             const devices = all_devices.filter(e => e.default_input || e.unique_id === this.config.device_id);
             const device = devices.find(e => e.unique_id === this.config.device_id) || devices[0];
 
-            console.log(tr("Loaded record profile device %s | %o (%o)"), this.config.device_id, device, all_devices);
+            log.info(LogCategory.VOICE, tr("Loaded record profile device %s | %o (%o)"), this.config.device_id, device, all_devices);
             try {
                 await this.input.set_device(device);
             } catch(error) {
-                console.error(tr("Failed to set input device (%o)"), error);
+                log.error(LogCategory.VOICE, tr("Failed to set input device (%o)"), error);
             }
         }
     }
@@ -207,7 +207,7 @@ class RecorderProfile {
             try {
                 await this.input.set_consumer(undefined);
             } catch(error) {
-                console.warn(tr("Failed to unmount input consumer for profile (%o)"), error);
+                log.warn(LogCategory.VOICE, tr("Failed to unmount input consumer for profile (%o)"), error);
             }
         }
 

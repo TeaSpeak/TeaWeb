@@ -46,7 +46,7 @@ namespace audio {
                 if(_queried_devices.length > 0 && _queried_devices.filter(e => e.default_input).length == 0)
                     _queried_devices[0].default_input = true;
             } catch(error) {
-                console.warn(tr("Failed to query microphone devices (%o)"), error);
+                log.error(LogCategory.AUDIO, tr("Failed to query microphone devices (%o)"), error);
                 _queried_devices = [];
             }
         }
@@ -357,7 +357,7 @@ namespace audio {
                 if(callback.callback_audio)
                     callback.callback_audio(event.inputBuffer);
                 if(callback.callback_buffer) {
-                    console.warn(tr("AudioInput has callback buffer, but this isn't supported yet!"));
+                    log.warn(LogCategory.AUDIO, tr("AudioInput has callback buffer, but this isn't supported yet!"));
                 }
             }
 
@@ -371,7 +371,7 @@ namespace audio {
                         if(this._state != InputState.PAUSED)
                             return;
                     } catch(error) {
-                        console.debug(tr("JavascriptInput:start() Start promise await resulted in an error: %o"), error);
+                        log.debug(LogCategory.AUDIO, tr("JavascriptInput:start() Start promise await resulted in an error: %o"), error);
                     }
                 }
 
@@ -400,7 +400,7 @@ namespace audio {
                 if(!media_function) return InputStartResult.ENOTSUPPORTED;
 
                 try {
-                    console.info(tr("Requesting a microphone stream for device %s in group %s"), device_id, group_id);
+                    log.info(LogCategory.AUDIO, tr("Requesting a microphone stream for device %s in group %s"), device_id, group_id);
 
                     const audio_constrains: MediaTrackConstraints = {};
                     audio_constrains.deviceId = device_id;
@@ -420,13 +420,13 @@ namespace audio {
                             //createErrorModal(tr("Failed to create microphone"), tr("Microphone recording failed. Please allow TeaWeb access to your microphone")).open();
                             //FIXME: Move this to somewhere else!
 
-                            console.warn(tr("Microphone request failed (No permissions). Browser message: %o"), error.message);
+                            log.warn(LogCategory.AUDIO, tr("Microphone request failed (No permissions). Browser message: %o"), error.message);
                             return InputStartResult.ENOTALLOWED;
                         } else {
-                            console.warn(tr("Microphone request failed. Request resulted in error: %o: %o"), error.name, error);
+                            log.warn(LogCategory.AUDIO, tr("Microphone request failed. Request resulted in error: %o: %o"), error.name, error);
                         }
                     } else {
-                        console.warn(tr("Failed to initialize recording stream (%o)"), error);
+                        log.warn(LogCategory.AUDIO, tr("Failed to initialize recording stream (%o)"), error);
                     }
                     return InputStartResult.EUNKNOWN;
                 }
@@ -506,7 +506,7 @@ namespace audio {
                 try {
                     await this.stop();
                 } catch(error) {
-                    console.warn(tr("Failed to stop previous record session (%o)"), error);
+                    log.warn(LogCategory.AUDIO, tr("Failed to stop previous record session (%o)"), error);
                 }
 
                 this._current_device = device as any; /* TODO: Test for device_id and device_group */
@@ -519,7 +519,7 @@ namespace audio {
                     try {
                         await this.start()
                     } catch(error) {
-                        console.warn(tr("Failed to start new recording stream (%o)"), error);
+                        log.warn(LogCategory.AUDIO, tr("Failed to start new recording stream (%o)"), error);
                         throw "failed to start record";
                     }
                 }

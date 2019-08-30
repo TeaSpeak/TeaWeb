@@ -251,8 +251,8 @@ namespace log {
             "channel_delete": event.ChannelDelete;
         }
 
-        type MessageBuilderOptions = {};
-        type MessageBuilder<T extends keyof server.TypeInfo> = (data: TypeInfo[T], options: MessageBuilderOptions) => JQuery[] | undefined;
+        export type MessageBuilderOptions = {};
+        export type MessageBuilder<T extends keyof server.TypeInfo> = (data: TypeInfo[T], options: MessageBuilderOptions) => JQuery[] | undefined;
 
         export const MessageBuilders: {[key: string]: MessageBuilder<any>} = {
             "error_custom": (data: event.ErrorCustom, options) => {

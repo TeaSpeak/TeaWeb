@@ -61,4 +61,7 @@ fi
 
 #Last but not least the client imports
 generate_link shared/declarations/exports.d.ts web/declarations/imports_shared.d.ts
+generate_link shared/declarations/exports_loader_app.d.ts web/declarations/imports_shared_loader.d.ts
+
 generate_link shared/declarations/exports.d.ts client/declarations/imports_shared.d.ts
+generate_link shared/declarations/exports_loader_app.d.ts client/declarations/imports_shared_loader.d.ts

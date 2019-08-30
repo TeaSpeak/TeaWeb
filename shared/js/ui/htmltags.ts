@@ -182,7 +182,7 @@ namespace htmltags {
             const origin_url = xbbcode.register.find_parser('url');
             xbbcode.register.register_parser({
                 tag: 'url',
-                build_html_tag_open(layer: xbbcode.TagLayer): string {
+                build_html_tag_open(layer): string {
                     if(layer.options) {
                         if(layer.options.match(url_channel_regex)) {
                             const groups = url_channel_regex.exec(layer.options);
@@ -205,7 +205,7 @@ namespace htmltags {
                     }
                     return origin_url.build_html_tag_open(layer);
                 },
-                build_html_tag_close(layer: xbbcode.TagLayer): string {
+                build_html_tag_close(layer): string {
                     if(layer.options) {
                         if(layer.options.match(url_client_regex))
                             return "</div>";

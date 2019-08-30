@@ -241,7 +241,7 @@
                 </div>
             </div>
             <div class="lane">
-                <div class="block left mode-based mode-channel_chat">
+                <div class="block left mode-based mode-channel_chat channel">
                     <div class="title"></div>
                     <div class="value value-text-channel"></div>
                     <div class="small-value value-text-limit"></div>
@@ -253,13 +253,18 @@
                     <div class="spacer-client-info"></div>
                 </div>
 
-                <div class="block right">
+                <div class="block right mode-based mode-private_chat mode-channel_chat">
                     <div class="title">{{tr "Private chats" /}}
                         <div class="container-indicator">
                             <div class="chat-unread-counter">-1</div>
                         </div>
                     </div>
                     <div class="value button chat-counter">Hmm... Something seems to be wrong!</div>
+                </div>
+
+                <div class="block right mode-based mode-client_info">
+                    <div class="title">&nbsp;</div>
+                    <div class="value button open-conversation">error: open conversation</div>
                 </div>
             </div>
         </script>
@@ -275,7 +280,10 @@
                 <div class="conversation">
                     <div class="spacer"></div>
                     <div class="messages"></div>
-                    <div class="chatbox"></div>
+                    <div class="chatbox">
+                        <div class="container-typing">{{tr "Partner is typing..." /}}</div>
+                        <node key="chatbox"></node>
+                    </div>
                 </div>
             </div>
         </script>
@@ -469,6 +477,7 @@
                     </div>
                 </div>
                 <div class="button-close"></div>
+                <div class="button-more">{{tr "Full Info" /}}</div>
             </div>
         </script>
 
@@ -2747,75 +2756,99 @@
         </script>
 
         <script class="jsrender-template" id="tmpl_settings-teamspeak_import" type="text/html">
-            <div class="container-teamspeak-import">
-                <div class="error">{{tr "Failed to import identity (my little error)" /}}</div>
-                <div class="load-data">
-                    <div>{{tr "Import an identity from TeamSpeak or an exported identity" /}}</div>
-                    <div class="buttons">
-                        <button class="button-load-text">{{tr "Load from text" /}}</button>
-                        <button class="button-load-file">{{tr "Load from file" /}}</button>
-                        <input class="input-file" type="file">
+            <div>
+                <div class="container-status"><a></a></div>
+                <fieldset class="">
+                    <div class="container-text">
+                        <label>
+                            <div class="radio-button">
+                                <input type="radio" name="type" value="text"/>
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Import from text" /}}</a>
+                        </label>
+                        <div class="form-group">
+                            <label>{{tr "Identity Data" /}}</label>
+                            <input class="form-control input-identity-text" placeholder="{{tr 'Please paste your identity data here' /}}"/>
+                        </div>
                     </div>
-                </div>
-                <div class="success">
-                    {{tr "Identity successfully loaded. Ready to import" /}}
-                </div>
+                    <div class="container-file">
+                        <label>
+                            <div class="radio-button">
+                                <input type="radio" name="type" value="file"/>
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Import from file" /}}</a>
+                        </label>
+                        <button class="btn btn-brown button-load-file">{{tr "Select file" /}}</button>
+                        <a class="current-file">{{tr "No file selected" /}}</a>
+                    </div>
+                </fieldset>
+                <input type="file" class="file-selector"/>
                 <div class="footer">
-                    <button class="button-import">{{tr "Import" /}}</button>
+                    <button class="btn btn-success button-import">{{tr "Import" /}}</button>
                 </div>
             </div>
         </script>
 
         <script class="jsrender-template" id="tmpl_settings-teamspeak_improve" type="text/html">
-            <div class="container-teamspeak-improve">
-                <div class="form-group identity-unique-id">
-                    <label>{{tr "Identity:" /}}</label>
-                    <input class="form-control" value="" readonly>
-                </div>
-                <div class="form-group identity-level">
-                    <label>{{tr "Current level: " /}}</label>
-                    <input class="form-control" value="loading" readonly>
-                </div>
-                <div class="form-group identity-target-level">
-                    <div class="bmd-label-static">
-                        <div class="help-tagged">{{tr "Target level: " /}}</div>
-                        <div class="help-tip-container"> <!-- lets be absolute -->
-                            <div class="help-tip tip-right tip-small">
-                                <p>
-                                    {{tr "A value of zero means unlimited. Improve until you abort"/}}
-                                </p>
-                            </div>
+            <div>
+                <div class="options">
+                    <div class="title">{{tr "Identity: "/}} {{>identity_name}}</div>
+                    <div class="row">
+                        <div class="form-group identity-unique-id">
+                            <label>{{tr "Unique ID:" /}}</label>
+                            <input class="form-control" value="" readonly>
+                        </div>
+                        <div class="form-group identity-level">
+                            <label>{{tr "Current level: " /}}</label>
+                            <input class="form-control" value="loading" readonly>
                         </div>
                     </div>
-                    <input class="form-control" value="0" type="number" min="0" max="160">
-                </div>
-                <div class="form-group threads">
-                    <div class="bmd-label-static">
-                        <div class="help-tagged">{{tr "Threads: " /}}</div>
-                        <div class="help-tip-container"> <!-- lets be absolute -->
-                            <div class="help-tip tip-right tip-small">
-                                <p>
-                                    {{tr "The number of threads used to improve your identity<br>The optimal value is
-                                    equal to the amount of kernal threads."/}}
-                                </p>
+                    <div class="row">
+                        <div class="form-group identity-target-level">
+                            <div class="bmd-label-static">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip.svg"/>
+                                    <div class="tooltip">
+                                        <a>
+                                            {{tr "The number of threads used to improve your identity" /}}<br>
+                                            {{tr "The optimal value is equal to the amount of kernel threads." /}}
+                                        </a>
+                                    </div>
+                                </div>
+                                {{tr "Target level: " /}}
                             </div>
+                            <input class="form-control" value="0" type="number" min="0" max="160">
+                        </div>
+                        <div class="form-group threads">
+                            <div class="bmd-label-static">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip.svg"/>
+                                    <div class="tooltip">
+                                        <a>{{tr "A value of zero means unlimited. Improve until you abort" /}}</a>
+                                    </div>
+                                </div>
+                                {{tr "Threads: " /}}
+                            </div>
+                            <input class="form-control" value="2" type="number" min="1" max="32">
                         </div>
                     </div>
-                    <input class="form-control" value="2" type="number" min="1" max="32">
                 </div>
-                <hr>
-                <div class="form-row">
-                    <div class="form-group hash-rate">
-                        <label>{{tr "Hashes/second:" /}}</label>
-                        <input class="form-control" value="0" readonly>
-                    </div>
-                    <div class="form-group time-elapsed">
-                        <label>{{tr "Elapsed time:" /}}</label>
-                        <input class="form-control" value="00:00" readonly>
+                <div class="status">
+                    <div class="row">
+                        <div class="form-group hash-rate">
+                            <label>{{tr "Hashes/second:" /}}</label>
+                            <input class="form-control" value="0" readonly>
+                        </div>
+                        <div class="form-group time-elapsed">
+                            <label>{{tr "Elapsed time:" /}}</label>
+                            <input class="form-control" value="00:00" readonly>
+                        </div>
                     </div>
                 </div>
                 <div class="buttons">
-                    <button class="btn btn-secondary btn-raised button-close">{{tr "Close" /}}</button>
+                    <button class="btn btn-danger btn-raised button-close">{{tr "Close" /}}</button>
                     <button class="btn btn-success btn-raised button-start-stop">{{tr "Start" /}}</button>
                 </div>
             </div>
@@ -4750,6 +4783,400 @@
                 <div class="container-buttons">
                     <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
                     <button class="btn btn-success button-save">{{tr "Save Key" /}}</button>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_client_info" type="text/html">
+            <div> <!-- Important for the renderer -->
+                <div class="head">
+                    <div class="status-row">
+                        <div class="status-entry status-away">
+                            <div class="icon_em client-away"></div>
+                        </div>
+                        <div class="status-entry status-output-muted">
+                            <div class="icon_em client-output_muted"></div>
+                        </div>
+                        <div class="status-entry status-output-disabled">
+                            <div class="icon_em client-hardware_output_muted"></div>
+                        </div>
+                        <div class="status-entry status-input-muted">
+                            <div class="icon_em client-input_muted"></div>
+                        </div>
+                        <div class="status-entry status-input-disabled">
+                            <div class="icon_em client-hardware_input_muted"></div>
+                        </div>
+                    </div>
+                    <div class="container-away-message" title="{{tr 'Away message' /}}">
+                        <a>A verry long away message, because I want to tell a story. There was a child....A verry long away message, because I want to tell a story. There was a child....A verry long away message, because I want to tell a story. There was a child....A verry long away message, because I want to tell a story. There was a child....A verry long away message, because I want to tell a story. There was a child....A verry long away message, because I want to tell a story. There was a child....A verry long away message, because I want to tell a story. There was a child....A verry long away message, because I want to tell a story. There was a child....</a>
+                    </div>
+                </div>
+                <div class="body">
+                    <div class="container-avatar">
+                    </div>
+                    <div class="container-name"></div>
+                    <div class="container-description">
+                        <div class="client-description"></div>
+                    </div>
+
+                    <div class="container-categories">
+                        <div class="categories">
+                            <div class="entry" container="container-basic">{{tr "Basic Info" /}}</div>
+                            <div class="entry" container="container-groups">{{tr "Groups" /}}</div>
+                            <div class="entry" container="container-packets">{{tr "Packets" /}}</div>
+                        </div>
+                        <div class="bodies">
+                            <div class="body container-basic">
+                                <div class="left">
+                                    <div class="property property-unique-id">
+                                        <div class="title">
+                                            <a>{{tr "Unique ID" /}}</a>
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "Database ID:" /}} <span class="value-dbid">error: database id</span></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="value">
+                                            <a>error: unique id</a>
+                                            <div class="button button-copy">
+                                                <div class="icon_em client-copy"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="property property-teaforo">
+                                        <div class="title">
+                                            <a>{{tr "TeaForo Connection" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>This will be a really long string...</a>
+                                        </div>
+                                    </div>
+                                    <div class="property property-version">
+                                        <div class="title">
+                                            <a>{{tr "Version" /}}</a>
+                                            <div class="container-tooltip">
+                                                <img src="img/icon_tooltip.svg"/>
+                                                <div class="tooltip">
+                                                    <a>{{tr "Build timestamp:" /}} <span class="value-timestamp">error: no timestamp</span></a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="value">
+                                            <a>This will be a really long string...</a>
+                                        </div>
+                                    </div>
+                                    <div class="property property-country">
+                                        <div class="title">
+                                            <a>{{tr "Country" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>This will be a really long string...</a>
+                                        </div>
+                                    </div>
+                                    <div class="property property-ip">
+                                        <div class="title">
+                                            <a>{{tr "IP Address" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>error: IP</a>
+                                            <div class="button button-copy">
+                                                <div class="icon_em client-copy"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spacer"></div>
+                                <div class="right">
+                                    <div class="property property-first-connected">
+                                        <div class="title">
+                                            <a>{{tr "First connected" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>error: first connected</a>
+                                        </div>
+                                    </div>
+                                    <div class="property property-connect-count">
+                                        <div class="title">
+                                            <a>{{tr "Connect count" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>error: connect count</a>
+                                        </div>
+                                    </div>
+                                    <div class="property property-online-since">
+                                        <div class="title">
+                                            <a>{{tr "Online since" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>error: online since</a>
+                                        </div>
+                                    </div>
+                                    <div class="property property-idle-time">
+                                        <div class="title">
+                                            <a>{{tr "Idle time" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>error: idle time</a>
+                                        </div>
+                                    </div>
+                                    <div class="property property-ping">
+                                        <div class="title">
+                                            <a>{{tr "Ping" /}}</a>
+                                        </div>
+                                        <div class="value">
+                                            <a>error: ping</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="body container-groups">
+                                <div class="left">
+                                    <!-- <div class="title">{{tr "Server Groups" /}}</div> -->
+                                    <div class="container">
+                                        <div class="entries">
+                                        </div>
+                                        <div class="container-default-groups">
+                                            <a>{{tr "Client has no own server group" /}}</a>
+                                        </div>
+                                    </div>
+                                    <div class="buttons">
+                                        <button class="btn btn-success button-group-add">{{tr "Manage client server groups" /}}</button>
+                                    </div>
+                                </div>
+                                <!--
+                                <div class="spacer"></div>
+                                <div class="right">
+                                    <div class="title">{{tr "Channel Groups" /}}</div>
+                                    <div class="container">
+                                    </div>
+                                </div>
+                                -->
+                            </div>
+                            <div class="body container-packets">
+                                <div class="left">
+                                    <div class="statistic statistic-packet-loss">
+                                        <div class="title">
+                                            <a>{{tr "Packetloss" /}}</a>
+                                        </div>
+                                        <div class="downstream">
+                                            <a>{{tr "Downstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                        <div class="upstream">
+                                            <a>{{tr "Upstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                    </div>
+                                    <div class="statistic statistic-transmitted-packets">
+                                        <div class="title">
+                                            <a>{{tr "Transmitted Packets" /}}</a>
+                                        </div>
+                                        <div class="downstream">
+                                            <a>{{tr "Downstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                        <div class="upstream">
+                                            <a>{{tr "Upstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                    </div>
+                                    <div class="statistic statistic-transmitted-bytes">
+                                        <div class="title">
+                                            <a>{{tr "Transmitted Bytes" /}}</a>
+                                        </div>
+                                        <div class="downstream">
+                                            <a>{{tr "Downstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                        <div class="upstream">
+                                            <a>{{tr "Upstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spacer"></div>
+                                <div class="right">
+                                    <div class="statistic statistic-quota">
+                                        <div class="title">
+                                            <a>{{tr "Used/Max file transfer quota" /}}</a>
+                                        </div>
+                                        <div class="downstream">
+                                            <a>{{tr "Downstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                        <div class="upstream">
+                                            <a>{{tr "Upstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                    </div>
+                                    <div class="statistic statistic-bandwidth-second">
+                                        <div class="title">
+                                            <a>{{tr "Bandwidth last second" /}}</a>
+                                        </div>
+                                        <div class="downstream">
+                                            <a>{{tr "Downstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                        <div class="upstream">
+                                            <a>{{tr "Upstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                    </div>
+                                    <div class="statistic statistic-bandwidth-minute">
+                                        <div class="title">
+                                            <a>{{tr "Bandwidth last minute" /}}</a>
+                                        </div>
+                                        <div class="downstream">
+                                            <a>{{tr "Downstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                        <div class="upstream">
+                                            <a>{{tr "Upstream" /}}</a>
+                                            <a class="value"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_server_info" type="text/html">
+            <div> <!-- required for the renderer -->
+                <div class="container-top hostbanner">
+                </div>
+                <div class="container-body">
+                    <div class="group">
+                        <div class="container-image">
+                            <img src="img/serveredit_1.png">
+                        </div>
+                        <div class="container-properties">
+                            <div class="row">
+                                <a class="key">{{tr "Server name" /}}</a>
+                                <div class="value server-name">
+                                    error: name
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Server region" /}}</a>
+                                <div class="value server-region">
+                                    error: region
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Slots" /}}</a>
+                                <div class="value server-slots">
+                                    error: slots
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "First run" /}}</a>
+                                <div class="value server-first-run">
+                                    error: first run
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Uptime" /}}</a>
+                                <div class="value server-uptime">
+                                    error: uptime
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group reverse">
+                        <div class="container-image">
+                            <img src="img/serveredit_2.png">
+                        </div>
+                        <div class="container-properties">
+                            <div class="row">
+                                <a class="key">{{tr "IP Address" /}}</a>
+                                <div class="value server-ip">
+                                    error: ip
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Version" /}}</a>
+                                <div class="value server-version">
+                                    <div class="container-tooltip">
+                                        <img src="img/icon_tooltip.svg"/>
+                                        <div class="tooltip">
+                                            <a></a>
+                                        </div>
+                                    </div>
+                                    <a></a>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Platform" /}}</a>
+                                <div class="value server-platform">
+                                    error: platform
+                                </div>
+                            </div>
+                            <div class="container-network">
+                                <div class="container-button">
+                                    <button class="btn btn-purple button-show-bandwidth">{{tr "Show Bandwidth" /}}</button>
+                                </div>
+                                <div class="right">
+                                    <div class="row">
+                                        <a class="key">{{tr "Average ping" /}}</a>
+                                        <div class="value server-ping">
+                                            error: average ping
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <a class="key">{{tr "Average packet loss" /}}</a>
+                                        <div class="value server-packet-loss">
+                                            error: average packet loss
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="group">
+                        <div class="container-image">
+                            <img src="img/serveredit_3.png">
+                        </div>
+                        <div class="container-properties">
+                            <div class="row">
+                                <a class="key">{{tr "Global unique ID" /}}</a>
+                                <div class="value server-unique-id">
+                                    error: unique id
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Current Channels" /}}</a>
+                                <div class="value server-channel-count">
+                                    error: channel count
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Voice data encoded" /}}</a>
+                                <div class="value server-voice-encryption">
+                                    error: voice encryption
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Minimal security level" /}}</a>
+                                <div class="value server-min-security-level">
+                                    error: security level
+                                </div>
+                            </div>
+                            <div class="row">
+                                <a class="key">{{tr "Complains until ban" /}}</a>
+                                <div class="value server-complains">
+                                    error: complains
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="container-buttons">
+                        <button class="btn btn-danger button-close">{{tr "Close" /}}</button>
+                    </div>
                 </div>
             </div>
         </script>

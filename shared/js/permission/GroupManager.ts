@@ -51,7 +51,6 @@ class Group {
 
         if(key == "iconid") {
             this.properties.iconid = (new Uint32Array([this.properties.iconid]))[0];
-            console.log("Icon id " + this.properties.iconid);
             this.handle.handle.channelTree.clientsByGroup(this).forEach(client => {
                 client.updateGroupIcon(this);
             });
@@ -139,7 +138,7 @@ class GroupManager extends connection.AbstractCommandHandler {
         if(json[0]["sgid"]) target = GroupTarget.SERVER;
         else if(json[0]["cgid"]) target = GroupTarget.CHANNEL;
         else {
-            console.error(tr("Could not resolve group target! => %o"), json[0]);
+            log.error(LogCategory.CLIENT, tr("Could not resolve group target! => %o"), json[0]);
             return;
         }
 
@@ -155,8 +154,7 @@ class GroupManager extends connection.AbstractCommandHandler {
                 case 1: type = GroupType.NORMAL; break;
                 case 2: type = GroupType.QUERY; break;
                 default:
-                    //TODO tr
-                    console.error("Invalid group type: " + groupData["type"] + " for group " + groupData["name"]);
+                    log.error(LogCategory.CLIENT, tr("Invalid group type: %o for group %s"), groupData["type"],groupData["name"]);
                     continue;
             }
 
@@ -180,7 +178,6 @@ class GroupManager extends connection.AbstractCommandHandler {
                 this.channelGroups.push(group);
         }
 
-        console.log("Got " + json.length + " new " + target + " groups:");
         for(const client of this.handle.channelTree.clients)
             client.update_displayed_client_groups();
     }

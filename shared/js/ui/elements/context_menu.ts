@@ -80,14 +80,15 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
     private _global_click_listener: (event) => any;
     private _context_menu: JQuery;
     private _close_callbacks: (() => any)[] = [];
+    private _visible = false;
 
     despawn_context_menu() {
-        let menu = this._context_menu || (this._context_menu = $(".context-menu"));
-
-        if(!menu.is(":visible"))
+        if(!this._visible)
             return;
 
+        let menu = this._context_menu || (this._context_menu = $(".context-menu"));
         menu.animate({opacity: 0}, 100, () => menu.css("display", "none"));
+        this._visible = false;
         for(const callback of this._close_callbacks) {
             if(typeof(callback) !== "function") {
                 console.error(tr("Given close callback is not a function!. Callback: %o"), callback);
@@ -185,6 +186,8 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
     }
 
     spawn_context_menu(x: number, y: number, ...entries: contextmenu.MenuEntry[]) {
+        this._visible = true;
+
         let menu_tag = this._context_menu || (this._context_menu = $(".context-menu"));
         menu_tag.finish().empty().css("opacity", "0");
 

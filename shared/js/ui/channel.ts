@@ -393,8 +393,9 @@ class ChannelEntry {
             for(let index = 0; index + 1 < clients.length; index++)
                 clients[index].tag.before(clients[index + 1].tag);
 
+            log.debug(LogCategory.CHANNEL, tr("Reordered channel clients: %d"), clients.length);
             for(let client of clients) {
-                console.log("- %i %s", client.properties.client_talk_power, client.properties.client_nickname);
+                log.debug(LogCategory.CHANNEL, "- %i %s", client.properties.client_talk_power, client.properties.client_nickname);
             }
         }
     }
@@ -624,23 +625,23 @@ class ChannelEntry {
     }
 
     handle_frame_resized() {
-        this.__updateChannelName();
+        if(this._channel_name_formatted === "align-repetitive")
+            this.__updateChannelName();
     }
 
     private static NAME_ALIGNMENTS: string[] = ["align-left", "align-center", "align-right", "align-repetitive"];
     private __updateChannelName() {
         this._channel_name_formatted = undefined;
 
-        parseType:
+        parse_type:
         if(this.parent_channel() == null && this.properties.channel_name.charAt(0) == '[') {
             let end = this.properties.channel_name.indexOf(']');
-            if(end == -1) break parseType;
+            if(end == -1) break parse_type;
 
             let options = this.properties.channel_name.substr(1, end - 1);
-            if(options.indexOf("spacer") == -1) break parseType;
+            if(options.indexOf("spacer") == -1) break parse_type;
             options = options.substr(0, options.indexOf("spacer"));
 
-            console.log(tr("Channel options: '%o'"), options);
             if(options.length == 0)
                 options = "l";
             else if(options.length > 1)
@@ -661,11 +662,10 @@ class ChannelEntry {
                     break;
                 default:
                     this._channel_name_alignment = undefined;
-                    break parseType;
+                    break parse_type;
             }
 
             this._channel_name_formatted = this.properties.channel_name.substr(end + 1) || "";
-            console.log(tr("Got formated channel name: %o"), this._channel_name_formatted);
         }
 
         this._tag_channel.find(".show-channel-normal-only").toggleClass("channel-normal", this._channel_name_formatted === undefined);
@@ -696,14 +696,13 @@ class ChannelEntry {
                             index = 63;
                     } while (tag_name.parent().width() >= tag_name.width() && ++index < 64);
                     if(index == 64)
-                        console.warn(LogCategory.CHANNEL, tr("Repeating spacer took too much repeats!"));
+                        log.warn(LogCategory.CHANNEL, tr("Repeating spacer took too much repeats!"));
                     if(lastSuccess.length > 0) {
                         tag_name.text(lastSuccess);
                     }
                 }
             }
         }
-        console.log(tr("Align: %s"), this._channel_name_alignment);
     }
 
     recalculate_repetitive_name() {
@@ -722,7 +721,7 @@ class ChannelEntry {
                     value: variable.value,
                     type: typeof (this.properties[variable.key])
                 });
-            log.table("Clannel update properties", entries);
+            log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Clannel update properties", entries);
         }
 
         let info_update = false;

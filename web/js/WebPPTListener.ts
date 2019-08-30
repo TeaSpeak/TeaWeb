@@ -120,7 +120,7 @@ namespace ppt {
                 new_hooks.push(hook);
                 if(!old_hooks.remove(hook) && hook.callback_press) {
                     hook.callback_press();
-                    console.debug("Trigger key press for %o!", hook);
+                    log.trace(LogCategory.GENERAL, tr("Trigger key press for %o!"), hook);
                 }
             }
         }
@@ -129,7 +129,7 @@ namespace ppt {
         for(const hook of old_hooks)
             if(hook.callback_release) {
                 hook.callback_release();
-                console.debug("Trigger key release for %o!", hook);
+                log.trace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
             }
         key_hooks_active = new_hooks;
     }

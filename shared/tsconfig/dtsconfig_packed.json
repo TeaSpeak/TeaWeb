@@ -3,8 +3,7 @@
     "../js/**/*.ts"
   ],
   "exclude": [
-    "../js/workers/**/*.ts",
-    "../js/load.ts"
+    "../js/workers/**/*.ts"
   ],
   "target_file": "../declarations/exports_packed.d.ts"
 }

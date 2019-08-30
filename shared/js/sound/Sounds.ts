@@ -201,7 +201,7 @@ namespace sound {
 
         manager = new SoundManager(undefined);
         audio.player.on_ready(reinitialisize_audio);
-        return new Promise<void>(resolve => {
+        return new Promise<void>((resolve, reject) => {
             $.ajax({
                 url: "audio/speech/mapping.json",
                 success: response => {
@@ -211,9 +211,9 @@ namespace sound {
                         register_sound(entry.key, "speech/" + entry.file);
                     resolve();
                 },
-                error: () => {
-                    console.log("error!");
-                    console.dir(...arguments);
+                error: error => {
+                    log.error(LogCategory.AUDIO, "error: %o", error);
+                    reject();
                 },
                 timeout: 5000,
                 async: true,
@@ -254,19 +254,17 @@ namespace sound {
         if(context.decodeAudioData) {
             if(!file.cached) {
                 const decode_data = buffer => {
-                    console.log(buffer);
                     try {
-                        console.log(tr("Decoding data"));
+                        log.info(LogCategory.AUDIO, tr("Decoding data"));
                         context.decodeAudioData(buffer, result => {
                             file.cached = result;
                         }, error => {
-                            console.error(tr("Failed to decode audio data for %o"), sound);
-                            console.error(error);
+                            log.error(LogCategory.AUDIO, tr("Failed to decode audio data for %o: %o"), sound, error);
                             file.not_supported = true;
                             file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
                         })
                     } catch (error) {
-                        console.error(error);
+                        log.error(LogCategory.AUDIO, error);
                         file.not_supported = true;
                         file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
                     }
@@ -288,15 +286,15 @@ namespace sound {
                     if (xhr.status != 200)
                         throw "invalid response code (" + xhr.status + ")";
 
-                    console.log(tr("Decoding data"));
+                    log.debug(LogCategory.AUDIO, tr("Decoding data"));
                     try {
                         file.cached = await context.decodeAudioData(xhr.response);
                     } catch(error) {
-                        console.error(error);
+                        log.error(LogCategory.AUDIO, error);
                         throw "failed to decode audio data";
                     }
                 } catch(error) {
-                    console.error(tr("Failed to load audio file %s. Error: %o"), sound, error);
+                    log.error(LogCategory.AUDIO, tr("Failed to load audio file %s. Error: %o"), sound, error);
                     file.not_supported = true;
                     file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
                 }
@@ -305,7 +303,7 @@ namespace sound {
             if(!file.node) {
                 if(!warned) {
                     warned = true;
-                    console.warn(tr("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!"));
+                    log.warn(LogCategory.AUDIO, tr("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!"));
                 }
                 const container = $("#sounds");
                 const node = $.spawn("audio").attr("src", path);
@@ -332,7 +330,7 @@ namespace sound {
             options = options || {};
 
             const volume = get_sound_volume(_sound, options.default_volume);
-            console.log(tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), _sound, volume, master_volume);
+            log.info(LogCategory.AUDIO, tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), _sound, volume, master_volume);
 
             if(volume == 0 || master_volume == 0)
                 return;
@@ -342,7 +340,7 @@ namespace sound {
 
             const context = audio.player.context();
             if(!context) {
-                console.warn(tr("Tried to replay a sound without an audio context (Sound: %o). Dropping playback"), _sound);
+                log.warn(LogCategory.AUDIO, tr("Tried to replay a sound without an audio context (Sound: %o). Dropping playback"), _sound);
                 return;
             }
 
@@ -351,7 +349,7 @@ namespace sound {
                     return;
 
                 if(!options.ignore_overlap && (this._playing_sounds[_sound] > 0) && !sound.overlap_activated()) {
-                    console.log(tr("Dropping requested playback for sound %s because it would overlap."), _sound);
+                    log.info(LogCategory.AUDIO, tr("Dropping requested playback for sound %s because it would overlap."), _sound);
                     return;
                 }
 
@@ -387,18 +385,18 @@ namespace sound {
                         if(options.callback)
                             options.callback(true);
                     }).catch(error => {
-                        console.warn(tr("Sound playback for sound %o resulted in an error: %o"), sound, error);
+                        log.warn(LogCategory.AUDIO, tr("Sound playback for sound %o resulted in an error: %o"), sound, error);
                         if(options.callback)
                             options.callback(false);
                     });
                 } else {
-                    console.warn(tr("Failed to replay sound %o because of missing handles."), sound);
+                    log.warn(LogCategory.AUDIO, tr("Failed to replay sound %o because of missing handles."), sound);
                     if(options.callback)
                         options.callback(false);
                     return;
                 }
             }).catch(error => {
-                console.warn(tr("Failed to replay sound %o because it could not be resolved: %o"), sound, error);
+                log.warn(LogCategory.AUDIO, tr("Failed to replay sound %o because it could not be resolved: %o"), sound, error);
                 if(options.callback)
                     options.callback(false);
             });

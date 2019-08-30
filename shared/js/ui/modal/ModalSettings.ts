@@ -1005,7 +1005,7 @@ namespace Modals {
                     const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
                     if (!profile) return;
 
-                    Modals.spawnTeamSpeakIdentityImprove(profile).close_listener.push(() => {
+                    Modals.spawnTeamSpeakIdentityImprove(profile, selected_profile.identity.profile_name).close_listener.push(() => {
                         profiles.mark_need_save();
                         for(const listener of profile_identity_changed)
                             listener();

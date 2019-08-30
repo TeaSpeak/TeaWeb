@@ -9,7 +9,7 @@ class AudioResampler {
 
     resample(buffer: AudioBuffer) : Promise<AudioBuffer> {
         if(!buffer) {
-            console.warn(tr("Received empty buffer as input! Returning empty output!"));
+            log.warn(LogCategory.AUDIO, tr("Received empty buffer as input! Returning empty output!"));
             return Promise.resolve(buffer);
         }
         //console.log("Encode from %i to %i", buffer.sampleRate, this.targetSampleRate);

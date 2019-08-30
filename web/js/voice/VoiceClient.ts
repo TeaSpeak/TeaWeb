@@ -34,23 +34,23 @@ namespace audio {
 
             playback_buffer(buffer: AudioBuffer) {
                 if(!buffer) {
-                    console.warn(tr("[AudioController] Got empty or undefined buffer! Dropping it"));
+                    log.warn(LogCategory.VOICE, tr("[AudioController] Got empty or undefined buffer! Dropping it"));
                     return;
                 }
 
                 if(!this.speakerContext) {
-                    console.warn(tr("[AudioController] Failed to replay audio. Global audio context not initialized yet!"));
+                    log.warn(LogCategory.VOICE, tr("[AudioController] Failed to replay audio. Global audio context not initialized yet!"));
                     return;
                 }
 
                 if (buffer.sampleRate != this.speakerContext.sampleRate)
-                    console.warn(tr("[AudioController] Source sample rate isn't equal to playback sample rate! (%o | %o)"), buffer.sampleRate, this.speakerContext.sampleRate);
+                    log.warn(LogCategory.VOICE, tr("[AudioController] Source sample rate isn't equal to playback sample rate! (%o | %o)"), buffer.sampleRate, this.speakerContext.sampleRate);
 
                 this.apply_volume_to_buffer(buffer);
 
                 this._buffered_samples.push(buffer);
                 if(this._player_state == connection.voice.PlayerState.STOPPED || this._player_state == connection.voice.PlayerState.STOPPING) {
-                    console.log(tr("[Audio] Starting new playback"));
+                    log.info(LogCategory.VOICE, tr("[Audio] Starting new playback"));
                     this.set_state(connection.voice.PlayerState.PREBUFFERING);
                 }
 
@@ -67,11 +67,11 @@ namespace audio {
                                 break;
                         }
                         if(this._player_state == connection.voice.PlayerState.PREBUFFERING) {
-                            console.log(tr("[Audio] Prebuffering succeeded (Replaying now)"));
+                            log.info(LogCategory.VOICE, tr("[Audio] Prebuffering succeeded (Replaying now)"));
                             if(this.callback_playback)
                                 this.callback_playback();
                         } else if(this.allowBuffering) {
-                            console.log(tr("[Audio] Buffering succeeded (Replaying now)"));
+                            log.info(LogCategory.VOICE, tr("[Audio] Buffering succeeded (Replaying now)"));
                         }
                         this._player_state = connection.voice.PlayerState.PLAYING;
                     case connection.voice.PlayerState.PLAYING:
@@ -86,7 +86,7 @@ namespace audio {
                 let buffer: AudioBuffer;
                 while((buffer = this._buffered_samples.pop_front())) {
                     if(this._playing_nodes.length >= this._latency_buffer_length * 1.5 + 3) {
-                        console.log(tr("Dropping buffer because playing queue grows to much"));
+                        log.info(LogCategory.VOICE, tr("Dropping buffer because playing queue grows to much"));
                         continue; /* drop the data (we're behind) */
                     }
                     if(this._time_index < this.speakerContext.currentTime)
@@ -135,7 +135,7 @@ namespace audio {
 
                         this._player_state = connection.voice.PlayerState.BUFFERING;
                         if(!this.allowBuffering)
-                            console.warn(tr("[Audio] Detected a buffer underflow!"));
+                            log.warn(LogCategory.VOICE, tr("[Audio] Detected a buffer underflow!"));
                         this.reset_buffer_timeout(true);
                     } else {
                         this._player_state = connection.voice.PlayerState.STOPPED;
@@ -152,7 +152,7 @@ namespace audio {
                 if(restart)
                     this._buffer_timeout = setTimeout(() => {
                         if(this._player_state == connection.voice.PlayerState.PREBUFFERING || this._player_state == connection.voice.PlayerState.BUFFERING) {
-                            console.warn(tr("[Audio] Buffering exceeded timeout. Flushing and stopping replay"));
+                            log.warn(LogCategory.VOICE, tr("[Audio] Buffering exceeded timeout. Flushing and stopping replay"));
                             this.stopAudio();
                         }
                         this._buffer_timeout = undefined;

@@ -1,0 +1,7 @@
+{
+  "source_files": [
+    "../loader/loader.ts",
+    "../loader/app.ts"
+  ],
+  "target_file": "../declarations/exports_loader_app.d.ts"
+}

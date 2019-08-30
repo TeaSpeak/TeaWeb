@@ -14,7 +14,7 @@
     "ttsc": "ttsc",
     "csso": "csso",
     "rebuild-structure-web-dev": "php files.php generate web dev",
-    "minify-web-rel-file": "minify web/generated/client.js --outFile web/generated/client.min.js --evaluate --removeDebugger --undefinedToVoid --mangle.keepClassName --deadcode.keepFnArgs"
+    "minify-web-rel-file": "terser --compress --mangle --ecma 6 --keep_classnames --keep_fnames --output"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
@@ -25,15 +25,15 @@
     "@types/node": "^12.7.2",
     "@types/sha256": "^0.2.0",
     "@types/websocket": "0.0.40",
-    "babel-minify": "^0.5.1",
+    "clean-css": "^4.2.1",
     "csso-cli": "^2.0.2",
     "gulp": "^4.0.2",
     "sass": "^1.22.10",
     "sha256": "^0.2.0",
+    "terser": "^4.2.1",
     "ttypescript": "^1.5.7",
     "typescript": "^3.5.3",
-    "wat2wasm": "^1.0.2",
-    "clean-css": "^4.2.1"
+    "wat2wasm": "^1.0.2"
   },
   "repository": {
     "type": "git",

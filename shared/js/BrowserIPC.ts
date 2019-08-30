@@ -61,7 +61,7 @@ namespace bipc {
         abstract send_message(type: string, data: any, target?: string);
 
         protected handle_message(message: BroadcastMessage) {
-            console.log("Received: %o", message);
+            log.trace(LogCategory.IPC, tr("Received message %o"), message);
 
             if(message.receiver === BasicIPCHandler.BROADCAST_UNIQUE_ID) {
                 if(message.type == "process-query") {
@@ -327,10 +327,10 @@ namespace bipc {
         protected register_method<R>(method: (...args: any[]) => Promise<R> | string) {
             let method_name: string;
             if(typeof method === "function") {
-                console.log("Proxy method: %o", method.name);
+                log.debug(LogCategory.IPC, tr("Registering method proxy for %s"), method.name);
                 method_name = method.name;
             } else {
-                console.log("Proxy method: %o", method);
+                log.debug(LogCategory.IPC, tr("Registering method proxy for %s"), method);
                 method_name = method;
             }
 
@@ -415,11 +415,11 @@ namespace bipc {
             }
 
             try {
-                console.log(tr("Invoking method %s with arguments: %o"), data.method_name, data.arguments);
+                log.info(LogCategory.IPC, tr("Invoking method %s with arguments: %o"), data.method_name, data.arguments);
 
                 const promise = this[data.method_name](...data.arguments);
                 promise.then(result => {
-                    console.log(tr("Result: %o"), result);
+                    log.info(LogCategory.IPC, tr("Result: %o"), result);
                     this._send_result(data.promise_id, true, result);
                 }).catch(error => {
                     this._send_result(data.promise_id, false, error);

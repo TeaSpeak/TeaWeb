@@ -1,6 +1,0 @@
-{
-  "source_files": [
-    "../js/load.ts"
-  ],
-  "target_file": "../declarations/exports_loader.d.ts"
-}

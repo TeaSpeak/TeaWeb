@@ -26,16 +26,16 @@ namespace audio {
                     const dummy_client_id = 0xFFEF;
 
                     this.ownCodec(dummy_client_id, _ => {}).then(codec => {
-                        console.log(tr("Release again! (%o)"), codec);
+                        log.info(LogCategory.VOICE, tr("Release again! (%o)"), codec);
                         this.releaseCodec(dummy_client_id);
                     }).catch(error => {
                         if(this._supported) {
-                            console.warn(tr("Disabling codec support for "), this.name);
+                            log.warn(LogCategory.VOICE, tr("Disabling codec support for "), this.name);
                             createErrorModal(tr("Could not load codec driver"), tr("Could not load or initialize codec ") + this.name + "<br>" +
                                 "Error: <code>" + JSON.stringify(error) + "</code>").open();
-                            console.error(tr("Failed to initialize the opus codec. Error: %o"), error);
+                            log.error(LogCategory.VOICE, tr("Failed to initialize the opus codec. Error: %o"), error);
                         } else {
-                            console.debug(tr("Failed to initialize already disabled codec. Error: %o"), error);
+                            log.debug(LogCategory.VOICE, tr("Failed to initialize already disabled codec. Error: %o"), error);
                         }
                         this._supported = false;
                     });
@@ -61,7 +61,7 @@ namespace audio {
                                         //TODO test success flag
                                         this.ownCodec(clientId, callback_encoded, false).then(resolve).catch(reject);
                                     }).catch(error => {
-                                        console.error(tr("Could not initialize codec!\nError: %o"), error);
+                                        log.error(LogCategory.VOICE, tr("Could not initialize codec!\nError: %o"), error);
                                         reject(typeof(error) === 'string' ? error : tr("Could not initialize codec!"));
                                     });
                                 }
@@ -149,7 +149,7 @@ namespace audio {
                 clearInterval(this.send_task);
                 this.dropSession();
                 this.acquire_voice_recorder(undefined, true).catch(error => {
-                    console.warn(tr("Failed to release voice recorder: %o"), error);
+                    log.warn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
                 }).then(() => {
                     for(const client of this._audio_clients)  {
                         client.abort_replay();
@@ -306,17 +306,17 @@ namespace audio {
                     try {
                         this.dataChannel.send(packet);
                     } catch (error) {
-                        console.warn(tr("Failed to send voice packet. Error: %o"), error);
+                        log.warn(LogCategory.VOICE, tr("Failed to send voice packet. Error: %o"), error);
                     }
                 } else {
-                    console.warn(tr("Could not transfer audio (not connected)"));
+                    log.warn(LogCategory.VOICE, tr("Could not transfer audio (not connected)"));
                 }
             }
 
 
             createSession() {
                 if(!audio.player.initialized()) {
-                    console.log(tr("Audio player isn't initialized yet. Waiting for gesture."));
+                    log.info(LogCategory.VOICE, tr("Audio player isn't initialized yet. Waiting for gesture."));
                     audio.player.on_ready(() => this.createSession());
                     return;
                 }
@@ -352,13 +352,13 @@ namespace audio {
                 this.rtcPeerConnection.onicecandidate = this.on_local_ice_candidate.bind(this);
                 if(this.local_audio_stream) { //May a typecheck?
                     this.rtcPeerConnection.addStream(this.local_audio_stream.stream);
-                    console.log(tr("Adding stream (%o)!"), this.local_audio_stream.stream);
+                    log.info(LogCategory.VOICE, tr("Adding stream (%o)!"), this.local_audio_stream.stream);
                 }
 
                 this.rtcPeerConnection.createOffer(sdpConstraints).then(offer => {
                     this.on_local_offer_created(offer);
                 }).catch(error => {
-                    console.error(tr("Could not create ice offer! error: %o"), error);
+                    log.error(LogCategory.VOICE, tr("Could not create ice offer! error: %o"), error);
                 });
             }
 
@@ -384,27 +384,27 @@ namespace audio {
             handleControlPacket(json) {
                 if(json["request"] === "answer") {
                     const session_description = new RTCSessionDescription(json["msg"]);
-                    console.log(tr("Received answer to our offer. Answer: %o"), session_description);
+                    log.info(LogCategory.VOICE, tr("Received answer to our offer. Answer: %o"), session_description);
                     this.rtcPeerConnection.setRemoteDescription(session_description).then(() => {
-                        console.log(tr("Answer applied successfully. Applying ICE candidates (%d)."), this._ice_cache.length);
+                        log.info(LogCategory.VOICE, tr("Answer applied successfully. Applying ICE candidates (%d)."), this._ice_cache.length);
                         this._ice_use_cache = false;
                         for(let msg of this._ice_cache) {
                             this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(msg)).catch(error => {
-                                console.log(tr("Failed to add remote cached ice candidate %s: %o"), msg, error);
+                                log.info(LogCategory.VOICE, tr("Failed to add remote cached ice candidate %s: %o"), msg, error);
                             });
                         }
                         this._ice_cache = [];
                     }).catch(error => {
-                        console.log(tr("Failed to apply remote description: %o"), error); //FIXME error handling!
+                        log.info(LogCategory.VOICE, tr("Failed to apply remote description: %o"), error); //FIXME error handling!
                     });
                 } else if(json["request"] === "ice") {
                     if(!this._ice_use_cache) {
-                        console.log(tr("Add remote ice! (%o)"), json["msg"]);
+                        log.info(LogCategory.VOICE, tr("Add remote ice! (%o)"), json["msg"]);
                         this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(json["msg"])).catch(error => {
-                            console.log(tr("Failed to add remote ice candidate %s: %o"), json["msg"], error);
+                            log.info(LogCategory.VOICE, tr("Failed to add remote ice candidate %s: %o"), json["msg"], error);
                         });
                     } else {
-                        console.log(tr("Cache remote ice! (%o)"), json["msg"]);
+                        log.info(LogCategory.VOICE, tr("Cache remote ice! (%o)"), json["msg"]);
                         this._ice_cache.push(json["msg"]);
                     }
                 } else if(json["request"] == "status") {
@@ -429,7 +429,7 @@ namespace audio {
                     //if(event.candidate && event.candidate.protocol !== "udp")
                     //    return;
 
-                    console.log(tr("Gathered local ice candidate %o."), event.candidate);
+                    log.info(LogCategory.VOICE, tr("Gathered local ice candidate %o."), event.candidate);
                     if(event.candidate) {
                         this.connection.sendData(JSON.stringify({
                             type: 'WebRTC',
@@ -446,18 +446,18 @@ namespace audio {
             }
 
             private on_local_offer_created(localSession) {
-                console.log(tr("Local offer created. Setting up local description. (%o)"), localSession);
+                log.info(LogCategory.VOICE, tr("Local offer created. Setting up local description. (%o)"), localSession);
                 this.rtcPeerConnection.setLocalDescription(localSession).then(() => {
-                    console.log(tr("Offer applied successfully. Sending offer to server."));
+                    log.info(LogCategory.VOICE, tr("Offer applied successfully. Sending offer to server."));
                     this.connection.sendData(JSON.stringify({type: 'WebRTC', request: "create", msg: localSession}));
                 }).catch(error => {
-                    console.log(tr("Failed to apply local description: %o"), error);
+                    log.info(LogCategory.VOICE, tr("Failed to apply local description: %o"), error);
                     //FIXME error handling
                 });
             }
 
             private on_data_channel(channel) {
-                console.log(tr("Got new data channel! (%s)"), this.dataChannel.readyState);
+                log.info(LogCategory.VOICE, tr("Got new data channel! (%s)"), this.dataChannel.readyState);
 
                 this.connection.client.update_voice_status();
             }
@@ -471,16 +471,16 @@ namespace audio {
                 let clientId = bin[2] << 8 | bin[3];
                 let packetId = bin[0] << 8 | bin[1];
                 let codec = bin[4];
-                //console.log("Client id " + clientId + " PacketID " + packetId + " Codec: " + codec);
+                //log.info(LogCategory.VOICE, "Client id " + clientId + " PacketID " + packetId + " Codec: " + codec);
                 let client = this.find_client(clientId);
                 if(!client) {
-                    console.error(tr("Having voice from unknown audio client? (ClientID: %o)"), clientId);
+                    log.error(LogCategory.VOICE, tr("Having voice from unknown audio client? (ClientID: %o)"), clientId);
                     return;
                 }
 
                 let codec_pool = VoiceConnection.codec_pool[codec];
                 if(!codec_pool) {
-                    console.error(tr("Could not playback codec %o"), codec);
+                    log.error(LogCategory.VOICE, tr("Could not playback codec %o"), codec);
                     return;
                 }
 
@@ -496,9 +496,9 @@ namespace audio {
                     codec_pool.ownCodec(clientId, e => this.handleEncodedVoicePacket(e, codec), true)
                         .then(decoder => decoder.decodeSamples(client.get_codec_cache(codec), encodedData))
                         .then(buffer => client.playback_buffer(buffer)).catch(error => {
-                        console.error(tr("Could not playback client's (%o) audio (%o)"), clientId, error);
+                        log.error(LogCategory.VOICE, tr("Could not playback client's (%o) audio (%o)"), clientId, error);
                         if(error instanceof Error)
-                            console.error(error.stack);
+                            log.error(LogCategory.VOICE, error.stack);
                     });
                 }
             }
@@ -539,7 +539,7 @@ namespace audio {
                     return false;
                 if(chandler.client_status.input_muted)
                     return false;
-                console.log(tr("Local voice ended"));
+                log.info(LogCategory.VOICE, tr("Local voice ended"));
 
                 if(this.dataChannel)
                     this.send_voice_packet(new Uint8Array(0), this.current_channel_codec());
@@ -547,14 +547,14 @@ namespace audio {
 
             private handleVoiceStarted() {
                 const chandler = this.connection.client;
-                console.log(tr("Local voice started"));
+                log.info(LogCategory.VOICE, tr("Local voice started"));
 
                 const ch = chandler.getClient();
                 if(ch) ch.speaking = true;
             }
 
             private on_recoder_yield() {
-                console.log("Lost recorder!");
+                log.info(LogCategory.VOICE, "Lost recorder!");
                 this._audio_source = undefined;
                 this.acquire_voice_recorder(undefined, true); /* we can ignore the promise because we should finish this directly */
             }

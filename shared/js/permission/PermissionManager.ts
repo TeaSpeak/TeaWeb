@@ -1,6 +1,8 @@
 /// <reference path="../ConnectionHandler.ts" />
 /// <reference path="../connection/ConnectionBase.ts" />
 
+import LogType = log.LogType;
+
 enum PermissionType {
     B_SERVERINSTANCE_HELP_VIEW = "b_serverinstance_help_view", /* Permission ID: 1 */
     B_SERVERINSTANCE_VERSION_VIEW = "b_serverinstance_version_view", /* Permission ID: 2 */
@@ -601,7 +603,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
                 "description": perm.description
             });
         }
-        log.table("Permission list", table_entries);
+        log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Permission list", table_entries);
         group.end();
 
         log.info(LogCategory.PERMISSIONS, tr("Got %i permissions"), this.permissionList.length);
@@ -658,7 +660,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
             });
         }
 
-        log.table("Needed client permissions", table_entries);
+        log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Needed client permissions", table_entries);
         group.end();
 
         log.debug(LogCategory.PERMISSIONS, tr("Dropping %o needed permissions and added %o permissions."), copy.length, addcount);

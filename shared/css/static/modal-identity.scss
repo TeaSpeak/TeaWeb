@@ -1,0 +1,188 @@
+@import "mixin";
+
+.modal-body.modal-identity-improve {
+	padding: 0!important;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+
+	.container-tooltip {
+		flex-grow: 0!important;
+		flex-shrink: 0!important;
+		min-width: unset!important;
+
+		position: relative;
+		width: .8em;
+		margin-right: .5em;
+		font-size: .9em;
+
+		display: inline-flex;
+		flex-direction: column;
+		justify-content: center;
+		vertical-align: middle;
+		margin-bottom: .1em;
+
+		img {
+			height: 1em;
+			width: 1em;
+
+			align-self: center;
+			font-size: 1.2em;
+		}
+
+		.tooltip {
+			display: none;
+		}
+	}
+
+	.options, .status {
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		padding: 1em;
+
+		.title {
+			color: #387fb5;
+		}
+
+		.row {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+
+			div {
+				flex-grow: 1;
+				flex-shrink: 1;
+				min-width: 4em;
+
+				&:not(:first-of-type) {
+					margin-left: 1em;
+				}
+			}
+		}
+	}
+
+	.status {
+		border-top: 3px solid #20262d;
+	}
+
+	.buttons {
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		margin: 0 1em 1em;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+
+		button {
+			min-width: 8em;
+
+			&:not(:first-of-type) {
+				margin-left: 1em;
+			}
+		}
+	}
+}
+
+.modal-body.modal-identity-import {
+	padding: 0!important;
+
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+
+	@include user-select(none);
+
+	.container-status {
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+
+		margin: 1em 1em -1em;
+		height: 1.6em;
+
+		overflow: hidden;
+
+		color: #389738;
+		&.error {
+			color: #973838;
+		}
+
+		&.loading {
+			color: #96903a;
+		}
+
+		&.hidden {
+			height: 0;
+		}
+
+		a {
+			align-self: center;
+		}
+
+		@include transition(.2s ease-in-out);
+	}
+
+	.container-text, .container-file {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		> label {
+			flex-shrink: 0;
+			flex-grow: 0;
+
+			width: 10em;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-start;
+
+			padding-left: .25em;
+			align-self: center;
+
+			margin-right: 1em;
+
+			.radio-button {
+				align-self: center;
+				margin-right: .5em;
+			}
+		}
+
+		> * {
+			align-self: center;
+		}
+
+		.form-group {
+			margin-bottom: 1.75em;
+			width: 100%;
+		}
+
+		button {
+			min-width: 8em;
+			margin-right: 1em;
+		}
+	}
+
+	.footer {
+		flex-shrink: 0;
+		flex-grow: 0;
+
+		padding: 1em;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+
+		button {
+			min-width: 8em;
+		}
+	}
+
+	.file-selector {
+		display: none;
+	}
+}

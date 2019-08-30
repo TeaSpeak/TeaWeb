@@ -16,9 +16,18 @@ if(!$.fn.dividerfy) {
             const seperator_id = element.attr("seperator-id");
             const vertical = element.hasClass("vertical");
 
-            const apply_view = (property: string, previous: number, next: number) => {
-                previous_element.css(property, "calc(" + previous + "% - " + (vertical ? element.width() : element.height()) + "px)");
-                next_element.css(property, "calc(" +next + "% - " + (vertical ? element.width() : element.height()) + "px)");
+            const apply_view = (property: "width" | "height", previous: number, next: number) => {
+                const value_a = "calc(" + previous + "% - " + (vertical ? element.width() : element.height()) + "px)";
+                const value_b = "calc(" + next + "% - " + (vertical ? element.width() : element.height()) + "px)";
+
+                /* dont cause a reflow here */
+                if(property === "height") {
+                    (previous_element[0] as HTMLElement).style.height = value_a;
+                    (next_element[0] as HTMLElement).style.height = value_b;
+                } else {
+                    (previous_element[0] as HTMLElement).style.width = value_a;
+                    (next_element[0] as HTMLElement).style.width = value_b;
+                }
             };
 
             const listener_move = (event: MouseEvent | TouchEvent) => {
@@ -105,12 +114,12 @@ if(!$.fn.dividerfy) {
                 try {
                     const config = JSON.parse(settings.global("seperator-settings-" + seperator_id));
                     if(config) {
-                        console.log("Apply previous changed: %o", config);
+                        log.debug(LogCategory.GENERAL, tr("Applying previous changed sperator settings for %s: %o"), seperator_id, config);
                         apply_view(config.property, config.previous, config.next);
                     }
                 } catch(e) {
                     if(!(e instanceof SyntaxError))
-                        console.error(e);
+                        log.error(LogCategory.GENERAL, tr("Failed to parse seperator settings for sperator %s: %o"), seperator_id, e);
                 }
             }
         });

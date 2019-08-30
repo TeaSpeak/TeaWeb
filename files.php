@@ -9,6 +9,24 @@
 			"path" => "./",
 			"local-path" => "./shared/html/"
 		],
+
+		[ /* javascript loader */
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"build-target" => "dev",
+
+			"path" => "loader/",
+			"local-path" => "./shared/loader/"
+		],
+		[ /* javascript loader for releases */
+			"type" => "js",
+			"search-pattern" => "/.*loader_[\S]+.min.js$/",
+			"build-target" => "rel",
+
+			"path" => "loader/",
+			"local-path" => "./shared/generated/"
+		],
+
 		[ /* shared javascript files (WebRTC adapter) */
 			"type" => "js",
 			"search-pattern" => "/.*\.js$/",
@@ -17,6 +35,7 @@
 			"path" => "adapter/",
 			"local-path" => "./shared/adapter/"
 		],
+
 		[ /* shared javascript files (development mode only) */
 			"type" => "js",
 			"search-pattern" => "/.*\.js$/",
@@ -36,6 +55,7 @@
 			"local-path" => "./shared/js/",
 			"req-parm" => ["--mappings"]
 		],
+
 		[ /* shared generated worker codec */
 			"type" => "js",
 			"search-pattern" => "/(WorkerPOW.js)$/",
@@ -230,16 +250,6 @@
 
 			"path" => "js/",
 			"local-path" => "./web/generated/"
-		],
-		[ /* Add the shared generated files. Exclude the shared file because we're including it already */
-			"web-only" => true,
-			"type" => "js",
-			"search-pattern" => "/.*\.js$/",
-			"search-exclude" => "/shared\.js(.map)?$/",
-			"build-target" => "rel",
-
-			"path" => "js/",
-			"local-path" => "./shared/generated/"
 		],
 		[ /* web css files */
 			"web-only" => true,

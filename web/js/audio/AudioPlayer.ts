@@ -17,7 +17,7 @@ namespace audio.player {
     }
 
     function fire_initialized() {
-        console.log("Fire initialized: %o", _initialized_listener);
+        log.info(LogCategory.AUDIO, tr("File initialized for %d listeners"), _initialized_listener.length);
         while(_initialized_listener.length > 0)
             _initialized_listener.pop_front()();
     }
@@ -39,7 +39,7 @@ namespace audio.player {
                 (_globalContextPromise = _globalContext.resume()).then(() => {
                     fire_initialized();
                 }).catch(error => {
-                    displayCriticalError("Failed to initialize global audio context! (" + error + ")");
+                    loader.critical_error("Failed to initialize global audio context! (" + error + ")");
                 });
             }
             _globalContext.resume(); //We already have our listener

@@ -51,11 +51,21 @@ $client_info_avatar_size: 10em;
 
 				&.right {
 					text-align: right;
+
+					&.mode-client_info {
+						max-width: calc(50% - #{$client_info_avatar_size / 2});
+						margin-left: calc(#{$client_info_avatar_size / 2});
+					}
 				}
 
 				&.left {
 					text-align: left;
 					padding-right: 10px;
+
+					&.mode-client_info {
+						max-width: calc(50% - #{$client_info_avatar_size / 2});
+						margin-right: calc(#{$client_info_avatar_size} / 2);
+					}
 				}
 
 				.title, .value, .small-value {
@@ -166,11 +176,6 @@ $client_info_avatar_size: 10em;
 						background-color: #4e4e4e; /* TODO: Evaluate color */
 					}
 					@include transition(background-color $button_hover_animation_time ease-in-out);
-				}
-
-				&.mode-client_info {
-					min-width: 50%;
-					margin-right: calc(#{$client_info_avatar_size} / 2);
 				}
 			}
 		}
@@ -507,6 +512,21 @@ $client_info_avatar_size: 10em;
 					flex-direction: column;
 
 					min-height: 2em;
+
+					.container-typing {
+						font-size: .85em;
+						padding-left: .6em;
+						line-height: 1;
+						color: hsla(0, 0%, 30%, 1);
+
+						opacity: 1;
+
+						&.hidden {
+							opacity: 0;
+						}
+
+						@include transition($button_hover_animation_time ease-in-out);
+					}
 				}
 			}
 
@@ -1201,8 +1221,6 @@ $client_info_avatar_size: 10em;
 				}
 			}
 
-
-
 			.button-close {
 				font-size: 4em;
 
@@ -1242,6 +1260,32 @@ $client_info_avatar_size: 10em;
 				&:after {
 					transform: rotate(-45deg);
 				}
+			}
+
+			.button-more {
+				flex-grow: 0;
+				flex-shrink: 0;
+
+				height: 1.5em;
+				font-size: 1.25em;
+
+				text-align: center;
+
+				color: #999999;
+				cursor: pointer;
+
+				margin-left: -5px;
+				margin-right: -5px;
+
+				background-color: #2d2d2d;
+
+				border-bottom-right-radius: 5px;
+				border-bottom-left-radius: 5px;
+
+				&:hover {
+					background-color: #393939;
+				}
+				@include transition($button_hover_animation_time ease-in-out);
 			}
 		}
 

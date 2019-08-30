@@ -17,13 +17,12 @@
     ]
   },
   "exclude": [
-    "../js/workers",
-    "../js/load.ts"
+    "../js/workers"
   ],
   "include": [
     "../types",
     "../declarations/imports_*.d.ts",
-    "../declarations/exports_loader.d.ts",
+    "../declarations/exports_loader_app.d.ts",
     "../js/**/*.ts",
     "../backend"
   ]

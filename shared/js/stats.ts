@@ -73,7 +73,7 @@ namespace stats {
     export function initialize(config: Config) {
         current_config = initialize_config_object(config || {}, DEFAULT_CONFIG);
         if(current_config.verbose)
-            console.log(LOG_PREFIX + tr("Initializing statistics with this config: %o"), current_config);
+            log.info(LogCategory.STATISTICS, tr("Initializing statistics with this config: %o"), current_config);
 
         connection.start_connection();
     }
@@ -110,7 +110,7 @@ namespace stats {
                     if(connection_copy !== connection) return;
 
                     if(current_config.verbose)
-                        console.log(LOG_PREFIX + tr("Lost connection to statistics server (Connection closed). Reason: %o. Event object: %o"), CloseCodes[event.code] || event.code, event);
+                        log.warn(LogCategory.STATISTICS, tr("Lost connection to statistics server (Connection closed). Reason: %o. Event object: %o"), CloseCodes[event.code] || event.code, event);
 
                     if(event.code != CloseCodes.BANNED)
                         invoke_reconnect();
@@ -120,7 +120,7 @@ namespace stats {
                     if(connection_copy !== connection) return;
 
                     if(current_config.verbose)
-                        console.log(LOG_PREFIX + tr("Successfully connected to server. Initializing session."));
+                        log.info(LogCategory.STATISTICS, tr("Successfully connected to server. Initializing session."));
 
                     connection_state = ConnectionState.INITIALIZING;
                     initialize_session();
@@ -130,7 +130,7 @@ namespace stats {
                     if(connection_copy !== connection) return;
 
                     if(current_config.verbose)
-                        console.log(LOG_PREFIX + tr("Received an error. Closing connection. Object: %o"), event);
+                        log.warn(LogCategory.STATISTICS, tr("Received an error. Closing connection. Object: %o"), event);
 
                     connection.close(CloseCodes.INTERNAL_ERROR);
                     invoke_reconnect();
@@ -141,7 +141,7 @@ namespace stats {
 
                     if(typeof(event.data) !== 'string') {
                         if(current_config.verbose)
-                            console.warn(LOG_PREFIX + tr("Received an message which isn't a string. Event object: %o"), event);
+                            log.info(LogCategory.STATISTICS, tr("Received an message which isn't a string. Event object: %o"), event);
                         return;
                     }
 
@@ -170,11 +170,11 @@ namespace stats {
             }
 
             if(current_config.verbose)
-                console.log(LOG_PREFIX + tr("Scheduled reconnect in %dms"), current_config.reconnect_interval);
+                log.info(LogCategory.STATISTICS, tr("Scheduled reconnect in %dms"), current_config.reconnect_interval);
 
             reconnect_timer = setTimeout(() => {
                 if(current_config.verbose)
-                    console.log(LOG_PREFIX + tr("Reconnecting"));
+                    log.info(LogCategory.STATISTICS, tr("Reconnecting"));
                 start_connection();
             }, current_config.reconnect_interval);
         }
@@ -212,10 +212,10 @@ namespace stats {
 
             if(typeof(handler[type]) === 'function') {
                 if(current_config.verbose)
-                    console.debug(LOG_PREFIX + tr("Handling message of type %s"), type);
+                    log.debug(LogCategory.STATISTICS, tr("Handling message of type %s"), type);
                 handler[type](data);
             } else if(current_config.verbose) {
-                console.warn(LOG_PREFIX + tr("Received message with an unknown type (%s). Dropping message. Full message: %o"), type, data_object);
+                log.warn(LogCategory.STATISTICS, tr("Received message with an unknown type (%s). Dropping message. Full message: %o"), type, data_object);
             }
         }
 
@@ -231,7 +231,7 @@ namespace stats {
             interface NotifyInitialized {}
             function handle_notify_initialized(json: NotifyInitialized) {
                 if(current_config.verbose)
-                    console.log(LOG_PREFIX + tr("Session successfully initialized."));
+                    log.info(LogCategory.STATISTICS, tr("Session successfully initialized."));
 
                 connection_state = ConnectionState.CONNECTED;
             }

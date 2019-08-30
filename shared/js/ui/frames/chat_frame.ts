@@ -1,7 +1,6 @@
 /* the bar on the right with the chats (Channel & Client) */
 namespace chat {
-    /* Fix some declare issues... */
-    import instantiate = WebAssembly.instantiate;
+    import Event = JQuery.Event;
 
     declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
     declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
@@ -19,6 +18,8 @@ namespace chat {
 
         private _value_ping: JQuery;
         private _ping_updater: number;
+
+        private _button_conversation: HTMLElement;
 
         constructor(handle: Frame) {
             this.handle = handle;
@@ -44,6 +45,20 @@ namespace chat {
             this._html_tag.find(".button-switch-chat-channel").on('click', () => this.handle.show_channel_conversations());
             this._value_ping = this._html_tag.find(".value-ping");
             this._html_tag.find(".chat-counter").on('click', event => this.handle.show_private_conversations());
+            this._button_conversation = this._html_tag.find(".button.open-conversation").on('click', event => {
+                const selected_client = this.handle.client_info().current_client();
+                if(!selected_client) return;
+
+                const conversation = selected_client ? this.handle.private_conversations().find_conversation({
+                    name: selected_client.properties.client_nickname,
+                    unique_id: selected_client.properties.client_unique_identifier,
+                    client_id: selected_client.clientId()
+                }, { create: true, attach: true }) : undefined;
+                if(!conversation) return;
+
+                this.handle.private_conversations().set_selected_conversation(conversation);
+                this.handle.show_private_conversations();
+            })[0];
         }
 
         update_ping() {
@@ -115,7 +130,7 @@ namespace chat {
             const current_channel_id = channel_tree ? this.handle.channel_conversations().current_channel() : 0;
             const channel = channel_tree ? channel_tree.findChannel(current_channel_id) : undefined;
 
-            const tag_container = this._html_tag.find(".mode-channel_chat");
+            const tag_container = this._html_tag.find(".mode-channel_chat.channel");
             const html_tag_title = tag_container.find(".title");
             const html_tag =  tag_container.find(".value-text-channel");
             const html_limit_tag = tag_container.find(".value-text-limit");
@@ -179,11 +194,30 @@ namespace chat {
         }
 
         set_mode(mode: InfoFrameMode) {
-            if(this._mode === mode)
-                return;
-            this._mode = mode;
-            this._html_tag.find(".mode-based").hide();
-            this._html_tag.find(".mode-" + mode).show();
+            if(this._mode !== mode) {
+                this._mode = mode;
+                this._html_tag.find(".mode-based").hide();
+                this._html_tag.find(".mode-" + mode).show();
+            }
+
+            if(mode === InfoFrameMode.CLIENT_INFO && this._button_conversation) {
+                //Will be called every time a client is shown
+                const selected_client = this.handle.client_info().current_client();
+                const conversation = selected_client ? this.handle.private_conversations().find_conversation({
+                    name: selected_client.properties.client_nickname,
+                    unique_id: selected_client.properties.client_unique_identifier,
+                    client_id: selected_client.clientId()
+                }, { create: false, attach: false }) : undefined;
+
+                const visibility = (selected_client && selected_client.clientId() !== this.handle.handle.clientId) ? "visible" : "hidden";
+                if(this._button_conversation.style.visibility !== visibility)
+                    this._button_conversation.style.visibility = visibility;
+                if(conversation) {
+                    this._button_conversation.innerText = tr("Open conversation");
+                } else {
+                    this._button_conversation.innerText = tr("Start a conversation");
+                }
+            }
         }
     }
 
@@ -195,6 +229,11 @@ namespace chat {
         private __callback_key_down;
         private __callback_paste;
 
+        private _typing_timeout: number; /* ID when the next callback_typing will be called */
+        private _typing_last_event: number; /* timestamp of the last typing event */
+
+        typing_interval: number = 2000; /* update frequency */
+        callback_typing: () => any;
         callback_text: (text: string) => any;
 
         constructor() {
@@ -216,15 +255,18 @@ namespace chat {
             this._html_tag = undefined;
             this._html_input = undefined;
 
+            clearTimeout(this._typing_timeout);
+
             this.__callback_text_changed = undefined;
             this.__callback_key_down = undefined;
             this.__callback_paste = undefined;
 
             this.callback_text = undefined;
+            this.callback_typing = undefined;
         }
 
         private _initialize_listener() {
-            this._html_input.on("cut paste drop key keyup", (event) => this.__callback_text_changed(event));
+            this._html_input.on("cut paste drop keydown keyup", (event) => this.__callback_text_changed(event));
             this._html_input.on("change", this.__callback_text_changed);
             this._html_input.on("keydown", this.__callback_key_down);
             this._html_input.on("paste", this.__callback_paste);
@@ -246,7 +288,7 @@ namespace chat {
             });
         }
 
-        private _callback_text_changed(event) {
+        private _callback_text_changed(event: Event) {
             if(event && event.isDefaultPrevented())
                 return;
 
@@ -254,6 +296,28 @@ namespace chat {
             const text = this._html_input[0];
             text.style.height = "1em";
             text.style.height = text.scrollHeight + 'px';
+
+            if(!event || (event.type !== "keydown" && event.type !== "keyup" && event.type !== "change"))
+                return;
+
+            this._typing_last_event = Date.now();
+            if(this._typing_timeout)
+                return;
+
+            const _trigger_typing = (last_time: number) => {
+                if(this._typing_last_event <= last_time) {
+                    this._typing_timeout = 0;
+                    return;
+                }
+
+                try {
+                    if(this.callback_typing)
+                        this.callback_typing();
+                } finally {
+                    this._typing_timeout = setTimeout(_trigger_typing, this.typing_interval, this._typing_last_event);
+                }
+            };
+            _trigger_typing(0); /* We def want that*/
         }
 
         private _text(element: HTMLElement) {
@@ -331,8 +395,14 @@ namespace chat {
                     this.callback_text(helpers.preprocess_chat_message(text));
                 }
 
+                if(this._typing_timeout)
+                    clearTimeout(this._typing_timeout);
+                this._typing_timeout = 1; /* enforce no typing update while sending */
                 this._html_input.text("");
-                setTimeout(() => this.__callback_text_changed());
+                setTimeout(() => {
+                    this.__callback_text_changed();
+                    this._typing_timeout = 0; /* enable text change listener again */
+                });
             }
         }
 
@@ -392,7 +462,7 @@ namespace chat {
         }
 
         namespace md2bbc {
-            type RemarkToken = {
+            export type RemarkToken = {
                 type: string;
                 tight: boolean;
                 lines: number[];
@@ -764,11 +834,11 @@ test
         }
     }
 
-    type PrivateConversationViewEntry = {
+    export type PrivateConversationViewEntry = {
         html_tag: JQuery;
     }
 
-    type PrivateConversationMessageData = {
+    export type PrivateConversationMessageData = {
         message_id: string;
         message: string;
         sender: "self" | "partner";
@@ -780,10 +850,10 @@ test
         timestamp: number;
     };
 
-    type PrivateConversationViewMessage = PrivateConversationMessageData & PrivateConversationViewEntry & {
+    export type PrivateConversationViewMessage = PrivateConversationMessageData & PrivateConversationViewEntry & {
         time_update_id: number;
     };
-    type PrivateConversationViewSpacer = PrivateConversationViewEntry;
+    export type PrivateConversationViewSpacer = PrivateConversationViewEntry;
 
     export enum PrivateConversationState {
         OPEN,
@@ -791,7 +861,7 @@ test
         DISCONNECTED,
     }
 
-    type DisplayedMessage = {
+    export type DisplayedMessage = {
         timestamp: number;
 
         message: PrivateConversationViewMessage | PrivateConversationViewEntry;
@@ -817,6 +887,9 @@ test
         private _state: PrivateConversationState;
 
         private _last_message_updater_id: number;
+        private _last_typing: number = 0;
+        private _typing_timeout: number = 4000;
+        private _typing_timeout_task: number;
 
         _scroll_position: number | undefined; /* undefined to follow bottom | position for special stuff */
         _html_message_container: JQuery; /* only set when this chat is selected! */
@@ -888,6 +961,8 @@ test
             this._html_entry_tag = undefined;
 
             this._message_history = undefined;
+            if(this._typing_timeout_task)
+                clearTimeout(this._typing_timeout_task);
         }
 
         private _2d_flat<T>(array: T[][]) : T[] {
@@ -943,7 +1018,20 @@ test
                 while(this._message_history.length > 100)
                     this._message_history.pop();
             }
-            this._update_message_timestamp();
+
+            if(sender.type === "partner") {
+                clearTimeout(this._typing_timeout_task);
+                this._typing_timeout_task = 0;
+
+                if(this.typing_active()) {
+                    this._last_typing = 0;
+                    this.typing_expired();
+                } else {
+                    this._update_message_timestamp();
+                }
+            } else {
+                this._update_message_timestamp();
+            }
 
             if(typeof(save_history) !== "boolean" || save_history)
                 this.save_history();
@@ -1039,6 +1127,15 @@ test
         private _update_message_timestamp() {
             if(this._last_message_updater_id)
                 clearTimeout(this._last_message_updater_id);
+
+            if(!this._html_entry_tag)
+                return; /* we got deleted, not need for updates */
+
+            if(this.typing_active()) {
+                this._html_entry_tag.find(".last-message").text(tr("currently typing..."));
+                return;
+            }
+
             const last_message = this._message_history[0];
             if(!last_message) {
                 this._html_entry_tag.find(".last-message").text(tr("no history"));
@@ -1312,9 +1409,10 @@ test
             if(this._state == state)
                 return;
 
-            if(state == PrivateConversationState.DISCONNECTED)
+            if(state == PrivateConversationState.DISCONNECTED) {
                 this._append_state_change("disconnect");
-            else if(state == PrivateConversationState.OPEN && this._state != PrivateConversationState.CLOSED)
+                this.client_id = 0;
+            } else if(state == PrivateConversationState.OPEN && this._state != PrivateConversationState.CLOSED)
                 this._append_state_change("reconnect");
             else if(state == PrivateConversationState.CLOSED)
                 this._append_state_change("closed");
@@ -1355,6 +1453,31 @@ test
                 });
             }
         }
+
+        private typing_expired() {
+            this._update_message_timestamp();
+            if(this.handle.current_conversation() === this)
+                this.handle.update_typing_state();
+        }
+
+        trigger_typing() {
+            let _new = Date.now() - this._last_typing > this._typing_timeout;
+            this._last_typing = Date.now();
+
+            if(this._typing_timeout_task)
+                clearTimeout(this._typing_timeout_task);
+
+            if(_new)
+                this._update_message_timestamp();
+            if(this.handle.current_conversation() === this)
+                this.handle.update_typing_state();
+
+            this._typing_timeout_task = setTimeout(() => this.typing_expired(), this._typing_timeout);
+        }
+
+        typing_active() {
+            return Date.now() - this._last_typing < this._typing_timeout;
+        }
     }
 
     export class PrivateConverations {
@@ -1365,6 +1488,7 @@ test
         private _container_conversation: JQuery;
         private _container_conversation_messages: JQuery;
         private _container_conversation_list: JQuery;
+        private _container_typing: JQuery;
 
         private _html_no_chats: JQuery;
         private _conversations: PrivateConveration[] = [];
@@ -1378,12 +1502,29 @@ test
             this._build_html_tag();
 
             this.update_chatbox_state();
+            this.update_typing_state();
             this._chat_box.callback_text = message => {
                 if(!this._current_conversation) {
                     console.warn(tr("Dropping conversation message because of no active conversation."));
                     return;
                 }
                 this._current_conversation.call_message(message);
+            };
+
+            this._chat_box.callback_typing = () => {
+                if(!this._current_conversation) {
+                    console.warn(tr("Dropping conversation typing action because of no active conversation."));
+                    return;
+                }
+
+                console.log("TYPING!");
+                const connection = this.handle.handle.serverConnection;
+                if(!connection || !connection.connected())
+                    return;
+
+                connection.send_command("clientchatcomposing", {
+                    clid: this._current_conversation.client_id
+                });
             }
         }
 
@@ -1407,6 +1548,8 @@ test
             this._html_tag = undefined;
 
         }
+
+        current_conversation() : PrivateConveration | undefined { return this._current_conversation; }
 
         conversations() : PrivateConveration[] { return this._conversations; }
         create_conversation(client_uid: string, client_name: string, client_id: number) : PrivateConveration {
@@ -1523,8 +1666,14 @@ test
             this._chat_box.set_enabled(!!this._current_conversation && this._current_conversation.chat_enabled());
         }
 
+        update_typing_state() {
+            this._container_typing.toggleClass("hidden", !this._current_conversation || !this._current_conversation.typing_active());
+        }
+
         private _build_html_tag() {
-            this._html_tag = $("#tmpl_frame_chat_private").renderTag().dividerfy();
+            this._html_tag = $("#tmpl_frame_chat_private").renderTag({
+                chatbox: this._chat_box.html_tag()
+            }).dividerfy();
             this._container_conversation = this._html_tag.find(".conversation");
             this._container_conversation.on('click', event => { /* lets think if a user clicks within that field that he has read the messages */
                 if(this._current_conversation)
@@ -1542,10 +1691,10 @@ test
                 else
                     this._current_conversation._scroll_position = this._container_conversation_messages[0].scrollTop;
             });
-            this._container_conversation.find(".chatbox").append(this._chat_box.html_tag());
 
             this._container_conversation_list = this._html_tag.find(".conversation-list");
             this._html_no_chats = this._container_conversation_list.find(".no-chats");
+            this._container_typing = this._html_tag.find(".container-typing");
         }
 
         try_input_focus() {
@@ -1637,7 +1786,17 @@ test
                     } else {
                         this._scroll_position = this._container_messages[0].scrollTop;
                     }
-                    this._container_new_message.toggleClass("shown",!!this._first_unread_message && this._first_unread_message_pointer.html_element[0].offsetTop > exact_position);
+
+                    const will_visible = !!this._first_unread_message && this._first_unread_message_pointer.html_element[0].offsetTop > exact_position;
+                    const is_visible = this._container_new_message[0].classList.contains("shown");
+                    if(!is_visible && will_visible)
+                        this._container_new_message[0].classList.add("shown");
+
+                    if(is_visible && !will_visible)
+                        this._container_new_message[0].classList.remove("shown");
+
+                    //This causes a Layout recalc (Forced reflow)
+                    //this._container_new_message.toggleClass("shown",!!this._first_unread_message && this._first_unread_message_pointer.html_element[0].offsetTop > exact_position);
                 });
 
                 this._view_older_messages = this._generate_view_spacer(tr("Load older messages"), "old");
@@ -2147,6 +2306,12 @@ test
 
                 this.handle.set_content(this.previous_frame_content);
             });
+            this._html_tag.find(".button-more").on('click', () => {
+                if(!this._current_client)
+                    return;
+
+                Modals.openClientInfo(this._current_client);
+            });
             this._html_tag.find('.container-avatar-edit').on('click', () => this.handle.handle.update_avatar());
         }
 
@@ -2221,7 +2386,7 @@ test
                 }
 
                 const volume = this._html_tag.find(".client-local-volume");
-                volume.text((client && client.get_audio_handle() ? (client.get_audio_handle().get_volume() * 100) : -1) + "%");
+                volume.text((client && client.get_audio_handle() ? (client.get_audio_handle().get_volume() * 100) : -1).toFixed(0) + "%");
             }
 
             /* teaspeak forum */
@@ -2471,6 +2636,7 @@ test
 
         show_client_info(client: ClientEntry) {
             this._client_info.set_current_client(client);
+            this._info_frame.set_mode(InfoFrameMode.CLIENT_INFO); /* specially needs an update here to update the conversation button */
 
             if(this._content_type === FrameContent.CLIENT_INFO)
                 return;
@@ -2479,7 +2645,6 @@ test
             this._clear();
             this._content_type = FrameContent.CLIENT_INFO;
             this._container_chat.append(this._client_info.html_tag());
-            this._info_frame.set_mode(InfoFrameMode.CLIENT_INFO);
         }
 
         set_content(type: FrameContent) {

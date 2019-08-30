@@ -26,6 +26,8 @@ namespace connection {
             this["notifychannelshow"] = this.handleCommandChannelShow;
 
             this["notifyserverconnectioninfo"] = this.handleNotifyServerConnectionInfo;
+            this["notifyconnectioninfo"] = this.handleNotifyConnectionInfo;
+
             this["notifycliententerview"] = this.handleCommandClientEnterView;
             this["notifyclientleftview"] = this.handleCommandClientLeftView;
             this["notifyclientmoved"] = this.handleNotifyClientMoved;
@@ -33,6 +35,7 @@ namespace connection {
             this["notifychannelmoved"] = this.handleNotifyChannelMoved;
             this["notifychanneledited"] = this.handleNotifyChannelEdited;
             this["notifytextmessage"] = this.handleNotifyTextMessage;
+            this["notifyclientchatcomposing"] = this.notifyClientChatComposing;
             this["notifyclientchatclosed"] = this.handleNotifyClientChatClosed;
             this["notifyclientupdated"] = this.handleNotifyClientUpdated;
             this["notifyserveredited"] = this.handleNotifyServerEdited;
@@ -78,8 +81,7 @@ namespace connection {
                     } else if(typeof(ex) === "string") {
                         this.connection_handler.log.log(log.server.Type.CONNECTION_COMMAND_ERROR, {error: ex});
                     } else {
-                        console.error(tr("Invalid promise result type: %o. Result:"), typeof (ex));
-                        console.error(ex);
+                        log.error(LogCategory.NETWORKING, tr("Invalid promise result type: %s. Result: %o"), typeof (ex), ex);
                     }
                 }
 
@@ -110,7 +112,7 @@ namespace connection {
 
             let code : string = json["return_code"];
             if(!code || code.length == 0) {
-                console.log(tr("Invalid return code! (%o)"), json);
+                log.warn(LogCategory.NETWORKING, tr("Invalid return code! (%o)"), json);
                 return;
             }
             let retListeners = this.connection["_retListener"];
@@ -130,9 +132,9 @@ namespace connection {
         handleCommandServerInit(json){
             //We could setup the voice channel
             if(this.connection.support_voice()) {
-                console.log(tr("Setting up voice"));
+                log.debug(LogCategory.NETWORKING, tr("Setting up voice"));
             } else {
-                console.log(tr("Skipping voice setup (No voice bridge available)"));
+                log.debug(LogCategory.NETWORKING, tr("Skipping voice setup (No voice bridge available)"));
             }
 
 
@@ -222,9 +224,30 @@ namespace connection {
 
             /* everything is a number, so lets parse it */
             for(const key of Object.keys(json))
-                json[key] = parseInt(json[key]);
+                json[key] = parseFloat(json[key]);
 
             this.connection_handler.channelTree.server.set_connection_info(json);
+        }
+
+        handleNotifyConnectionInfo(json) {
+            json = json[0];
+
+            const object = new ClientConnectionInfo();
+            /* everything is a number (except ip), so lets parse it */
+            for(const key of Object.keys(json)) {
+                if(key === "connection_client_ip")
+                    object[key] = json[key];
+                else
+                    object[key] = parseFloat(json[key]);
+            }
+
+            const client = this.connection_handler.channelTree.findClient(parseInt(json["clid"]));
+            if(!client) {
+                log.warn(LogCategory.NETWORKING, tr("Received client connection info for unknown client (%o)"), json["clid"]);
+                return;
+            }
+
+            client.set_connection_info(object);
         }
 
         private createChannelFromJson(json, ignoreOrder: boolean = false) {
@@ -236,14 +259,14 @@ namespace connection {
                 let prev = tree.findChannel(json["channel_order"]);
                 if(!prev && json["channel_order"] != 0) {
                     if(!ignoreOrder) {
-                        console.error(tr("Invalid channel order id!"));
+                        log.error(LogCategory.NETWORKING, tr("Invalid channel order id!"));
                         return;
                     }
                 }
 
                 let parent = tree.findChannel(json["cpid"]);
                 if(!parent && json["cpid"] != 0) {
-                    console.error(tr("Invalid channel parent"));
+                    log.error(LogCategory.NETWORKING, tr("Invalid channel parent"));
                     return;
                 }
                 tree.moveChannel(channel, prev, parent); //TODO test if channel exists!
@@ -275,7 +298,7 @@ namespace connection {
 
         handleCommandChannelList(json) {
             this.connection.client.channelTree.hide_channel_tree(); /* dont perform channel inserts on the dom to prevent style recalculations */
-            console.log(tr("Got %d new channels"), json.length);
+            log.debug(LogCategory.NETWORKING, tr("Got %d new channels"), json.length);
             for(let index = 0; index < json.length; index++)
                 this.createChannelFromJson(json[index], true);
         }
@@ -297,12 +320,12 @@ namespace connection {
             let tree = this.connection.client.channelTree;
             const conversations = this.connection.client.side_bar.channel_conversations();
 
-            console.log(tr("Got %d channel deletions"), json.length);
+            log.info(LogCategory.NETWORKING, tr("Got %d channel deletions"), json.length);
             for(let index = 0; index < json.length; index++) {
                 conversations.delete_conversation(parseInt(json[index]["cid"]));
                 let channel = tree.findChannel(json[index]["cid"]);
                 if(!channel) {
-                    console.error(tr("Invalid channel onDelete (Unknown channel)"));
+                    log.error(LogCategory.NETWORKING, tr("Invalid channel onDelete (Unknown channel)"));
                     continue;
                 }
                 tree.deleteChannel(channel);
@@ -313,12 +336,12 @@ namespace connection {
             let tree = this.connection.client.channelTree;
             const conversations = this.connection.client.side_bar.channel_conversations();
 
-            console.log(tr("Got %d channel hides"), json.length);
+            log.info(LogCategory.NETWORKING, tr("Got %d channel hides"), json.length);
             for(let index = 0; index < json.length; index++) {
                 conversations.delete_conversation(parseInt(json[index]["cid"]));
                 let channel = tree.findChannel(json[index]["cid"]);
                 if(!channel) {
-                    console.error(tr("Invalid channel on hide (Unknown channel)"));
+                    log.error(LogCategory.NETWORKING, tr("Invalid channel on hide (Unknown channel)"));
                     continue;
                 }
                 tree.deleteChannel(channel);
@@ -443,7 +466,7 @@ namespace connection {
                 let tree = this.connection.client.channelTree;
                 let client = tree.findClient(entry["clid"]);
                 if(!client) {
-                    console.error(tr("Unknown client left!"));
+                    log.error(LogCategory.NETWORKING, tr("Unknown client left!"));
                     return 0;
                 }
                 if(client == this.connection.client.getClient()) {
@@ -500,7 +523,7 @@ namespace connection {
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_TIMEOUT);
                     } else {
-                        console.error(tr("Unknown client left reason!"));
+                        log.error(LogCategory.NETWORKING, tr("Unknown client left reason!"));
                     }
 
                     if(!channel_to) {
@@ -531,16 +554,16 @@ namespace connection {
             let channel_from = tree.findChannel(json["cfid"]);
 
             if(!client) {
-                console.error(tr("Unknown client move (Client)!"));
+                log.error(LogCategory.NETWORKING, tr("Unknown client move (Client)!"));
                 return 0;
             }
 
             if(!channel_to) {
-                console.error(tr("Unknown client move (Channel to)!"));
+                log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel to)!"));
                 return 0;
             }
             if(!channel_from) //Not critical
-                console.error(tr("Unknown client move (Channel from)!"));
+                log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
 
             let self = client instanceof LocalClientEntry;
             let current_clients: ClientEntry[];
@@ -626,25 +649,23 @@ namespace connection {
 
         handleNotifyChannelMoved(json) {
             json = json[0]; //Only one bulk
-            for(let key in json)
-                console.log("Key: " + key + " Value: " + json[key]);
 
             let tree = this.connection.client.channelTree;
             let channel = tree.findChannel(json["cid"]);
             if(!channel) {
-                console.error(tr("Unknown channel move (Channel)!"));
+                log.error(LogCategory.NETWORKING, tr("Unknown channel move (Channel)!"));
                 return 0;
             }
 
             let prev = tree.findChannel(json["order"]);
             if(!prev && json["order"] != 0) {
-                console.error(tr("Unknown channel move (prev)!"));
+                log.error(LogCategory.NETWORKING, tr("Unknown channel move (prev)!"));
                 return 0;
             }
 
             let parent = tree.findChannel(json["cpid"]);
             if(!parent && json["cpid"] != 0) {
-                console.error(tr("Unknown channel move (parent)!"));
+                log.error(LogCategory.NETWORKING, tr("Unknown channel move (parent)!"));
                 return 0;
             }
 
@@ -657,7 +678,7 @@ namespace connection {
             let tree = this.connection.client.channelTree;
             let channel = tree.findChannel(json["cid"]);
             if(!channel) {
-                console.error(tr("Unknown channel edit (Channel)!"));
+                log.error(LogCategory.NETWORKING, tr("Unknown channel edit (Channel)!"));
                 return 0;
             }
 
@@ -686,7 +707,7 @@ namespace connection {
                 const target_own = target_client_id === this.connection.client.getClientId();
 
                 if(target_own && target_client_id === json["invokerid"]) {
-                    console.error(tr("Received conversation message from invalid client id. Data: %o", json));
+                    log.error(LogCategory.NETWORKING, tr("Received conversation message from invalid client id. Data: %o", json));
                     return;
                 }
 
@@ -700,7 +721,7 @@ namespace connection {
                     attach: target_own
                 });
                 if(!conversation) {
-                    console.error(tr("Received conversation message for unknown conversation! (%s)"), target_own ? tr("Remote message") : tr("Own message"));
+                    log.error(LogCategory.NETWORKING, tr("Received conversation message for unknown conversation! (%s)"), target_own ? tr("Remote message") : tr("Own message"));
                     return;
                 }
 
@@ -764,6 +785,24 @@ namespace connection {
             }
         }
 
+        notifyClientChatComposing(json) {
+            json = json[0];
+
+            const conversation_manager = this.connection_handler.side_bar.private_conversations();
+            const conversation = conversation_manager.find_conversation({
+                client_id: parseInt(json["clid"]),
+                unique_id: json["cluid"],
+                name: undefined
+            }, {
+                create: false,
+                attach: false
+            });
+            if(!conversation)
+                return;
+
+            conversation.trigger_typing();
+        }
+
         handleNotifyClientChatClosed(json) {
             json = json[0]; //Only one bulk
 
@@ -793,7 +832,7 @@ namespace connection {
 
             let client = this.connection.client.channelTree.findClient(json["clid"]);
             if(!client) {
-                console.error(tr("Tried to update an non existing client"));
+                log.error(LogCategory.NETWORKING, tr("Tried to update an non existing client"));
                 return;
             }
 
@@ -806,8 +845,6 @@ namespace connection {
                 updates.push({key: key, value: json[key]});
             }
             client.updateVariables(...updates);
-            if(this.connection.client.select_info.currentSelected == client)
-                this.connection.client.select_info.update();
         }
 
         handleNotifyServerEdited(json) {
@@ -826,8 +863,6 @@ namespace connection {
                 updates.push({key: key, value: json[key]});
             }
             this.connection.client.channelTree.server.updateVariables(false, ...updates);
-            if(this.connection.client.select_info.currentSelected == this.connection.client.channelTree.server)
-                this.connection.client.select_info.update();
         }
 
         handleNotifyServerUpdated(json) {
@@ -846,9 +881,6 @@ namespace connection {
                 updates.push({key: key, value: json[key]});
             }
             this.connection.client.channelTree.server.updateVariables(true, ...updates);
-            let info = this.connection.client.select_info;
-            if(info.currentSelected instanceof ServerEntry)
-                info.update();
         }
 
         handleNotifyMusicPlayerInfo(json) {

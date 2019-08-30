@@ -1,300 +1,362 @@
-$thickness : 5px;
-$duration : 2500;
-$delay : $duration/6;
+$thickness: 5px;
+$duration: 2500;
+$delay: $duration/6;
 $background: #222222;
 
-@mixin polka($size, $dot, $base, $accent){
-  background: $base;
-  background-image: radial-gradient($accent $dot, transparent 0);
-  background-size:$size $size;
-  background-position: 0 -2.5px;
+@mixin polka($size, $dot, $base, $accent) {
+	background: $base;
+	background-image: radial-gradient($accent $dot, transparent 0);
+	background-size: $size $size;
+	background-position: 0 -2.5px;
 }
 
 .loader {
-  margin: 0;
+	margin: 0;
 
-  display: block;
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+	display: block;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
 
-  z-index: 900;
-  text-align: center;
+	z-index: 900;
+	text-align: center;
 }
 
 .loader .half {
-  position: fixed;
-  background: #222222;
-  top: 0;
-  bottom: 0;
-  width: 50%;
-  height: 100%;
+	position: fixed;
+	background: #222222;
+	top: 0;
+	bottom: 0;
+	width: 50%;
+	height: 100%;
 }
 
 .loader .half.right {
-  right: 0;
+	right: 0;
 }
+
 .loader .half.left {
-  left: 0;
+	left: 0;
 }
 
 .bookshelf_wrapper {
-  position: relative;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+	position: relative;
+	top: 40%;
+	left: 50%;
+	transform: translate(-50%, -50%);
 }
 
 .books_list {
-  margin: 0 auto;
-  width: 300px;
-  padding: 0;
+	margin: 0 auto;
+	width: 300px;
+	padding: 0;
 }
 
 .book_item {
-  position: absolute;
-  top: -120px;
-  box-sizing: border-box;
-  list-style: none;
-  width: 40px;
-  height: 120px;
-  opacity: 0;
-  background-color: #1e6cc7;
-  border: $thickness solid white;
-  transform-origin: bottom left;
-  transform: translateX(300px);
-  animation: travel #{$duration}ms linear infinite;
+	position: absolute;
+	top: -120px;
+	box-sizing: border-box;
+	list-style: none;
+	width: 40px;
+	height: 120px;
+	opacity: 0;
+	background-color: #1e6cc7;
+	border: $thickness solid white;
+	transform-origin: bottom left;
+	transform: translateX(300px);
+	animation: travel #{$duration}ms linear infinite;
 
-  &.first {
-    top: -140px;
-    height: 140px;
+	&.first {
+		top: -140px;
+		height: 140px;
 
-    &:before,
-    &:after {
-      content:'';
-      position: absolute;
-      top: 10px;
-      left: 0;
-      width: 100%;
-      height: $thickness;
-      background-color: white;
-    }
+		&:before,
+		&:after {
+			content: '';
+			position: absolute;
+			top: 10px;
+			left: 0;
+			width: 100%;
+			height: $thickness;
+			background-color: white;
+		}
 
-    &:after {
-      top: initial;
-      bottom: 10px;
-    }
-  }
+		&:after {
+			top: initial;
+			bottom: 10px;
+		}
+	}
 
-  &.second,
-  &.fifth {
-    &:before,
-    &:after {
-      box-sizing: border-box;
-      content:'';
-      position: absolute;
-      top: 10px;
-      left: 0;
-      width: 100%;
-      height: $thickness*3.5;
-      border-top: $thickness solid white;
-      border-bottom: $thickness solid white;
-    }
+	&.second,
+	&.fifth {
+		&:before,
+		&:after {
+			box-sizing: border-box;
+			content: '';
+			position: absolute;
+			top: 10px;
+			left: 0;
+			width: 100%;
+			height: $thickness*3.5;
+			border-top: $thickness solid white;
+			border-bottom: $thickness solid white;
+		}
 
-    &:after {
-      top: initial;
-      bottom: 10px;
-    }
-  }
+		&:after {
+			top: initial;
+			bottom: 10px;
+		}
+	}
 
-  &.third {
-    &:before,
-    &:after {
-      box-sizing: border-box;
-      content:'';
-      position: absolute;
-      top: 10px;
-      left: 9px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: $thickness solid white;
-    }
+	&.third {
+		&:before,
+		&:after {
+			box-sizing: border-box;
+			content: '';
+			position: absolute;
+			top: 10px;
+			left: 9px;
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			border: $thickness solid white;
+		}
 
-    &:after {
-      top: initial;
-      bottom: 10px;
-    }
-  }
+		&:after {
+			top: initial;
+			bottom: 10px;
+		}
+	}
 
-  &.fourth {
-    top: -130px;
-    height: 130px;
+	&.fourth {
+		top: -130px;
+		height: 130px;
 
-    &:before {
-      box-sizing: border-box;
-      content:'';
-      position: absolute;
-      top: 46px;
-      left: 0;
-      width: 100%;
-      height: $thickness*3.5;
-      border-top: $thickness solid white;
-      border-bottom: $thickness solid white;
-    }
-  }
+		&:before {
+			box-sizing: border-box;
+			content: '';
+			position: absolute;
+			top: 46px;
+			left: 0;
+			width: 100%;
+			height: $thickness*3.5;
+			border-top: $thickness solid white;
+			border-bottom: $thickness solid white;
+		}
+	}
 
-  &.fifth {
-    top: -100px;
-    height: 100px;
-  }
+	&.fifth {
+		top: -100px;
+		height: 100px;
+	}
 
-  &.sixth {
-    top: -140px;
-    height: 140px;
+	&.sixth {
+		top: -140px;
+		height: 140px;
 
-    &:before {
-      box-sizing: border-box;
-      content:'';
-      position: absolute;
-      bottom: 31px;
-      left: 0px;
-      width: 100%;
-      height: $thickness;
-      background-color: white;
-    }
+		&:before {
+			box-sizing: border-box;
+			content: '';
+			position: absolute;
+			bottom: 31px;
+			left: 0px;
+			width: 100%;
+			height: $thickness;
+			background-color: white;
+		}
 
-    &:after {
-      box-sizing: border-box;
-      content:'';
-      position: absolute;
-      bottom: 10px;
-      left: 9px;
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      border: $thickness solid white;
-    }
-  }
+		&:after {
+			box-sizing: border-box;
+			content: '';
+			position: absolute;
+			bottom: 10px;
+			left: 9px;
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			border: $thickness solid white;
+		}
+	}
 
-  &:nth-child(2) {
-    animation-delay: #{$delay*1}ms;
-  }
+	&:nth-child(2) {
+		animation-delay: #{$delay*1}ms;
+	}
 
-  &:nth-child(3) {
-    animation-delay: #{$delay*2}ms;
-  }
+	&:nth-child(3) {
+		animation-delay: #{$delay*2}ms;
+	}
 
-  &:nth-child(4) {
-    animation-delay: #{$delay*3}ms;
-  }
+	&:nth-child(4) {
+		animation-delay: #{$delay*3}ms;
+	}
 
-  &:nth-child(5) {
-    animation-delay: #{$delay*4}ms;
-  }
+	&:nth-child(5) {
+		animation-delay: #{$delay*4}ms;
+	}
 
-  &:nth-child(6) {
-    animation-delay: #{$delay*5}ms;
-  }
+	&:nth-child(6) {
+		animation-delay: #{$delay*5}ms;
+	}
 
 }
 
 .shelf {
-  width: 300px;
-  height: $thickness;
-  margin: 0 auto;
-  background-color: white;
-  position: relative;
+	width: 300px;
+	height: $thickness;
+	margin: 0 auto;
+	background-color: white;
+	position: relative;
 
-  &:before,
-  &:after {
-    content:'';
-    position : absolute;
-    width: 100%;
-    height: 100%;
-    @include polka(10px, 30%, $background, rgba(255,255,255,0.5));
-    top: 200%;
-    left: 5%;
-    animation: move #{$duration/10}ms linear infinite;
-  }
+	&:before,
+	&:after {
+		content: '';
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		@include polka(10px, 30%, $background, rgba(255, 255, 255, 0.5));
+		top: 200%;
+		left: 5%;
+		animation: move #{$duration/10}ms linear infinite;
+	}
 
-  &:after {
-    top: 400%;
-    left: 7.5%;
-  }
+	&:after {
+		top: 400%;
+		left: 7.5%;
+	}
 
 }
 
 @keyframes move {
 
-  from {
-    background-position-x: 0;
-  }
+	from {
+		background-position-x: 0;
+	}
 
-  to {
-    background-position-x: 10px;
-  }
+	to {
+		background-position-x: 10px;
+	}
 
 }
 
 @keyframes travel {
 
-  0% {
-    opacity: 0;
-    transform: translateX(300px) rotateZ(0deg) scaleY(1);
-  }
+	0% {
+		opacity: 0;
+		transform: translateX(300px) rotateZ(0deg) scaleY(1);
+	}
 
-  6.5% {
-    transform: translateX(279.5px) rotateZ(0deg) scaleY(1.1);
-  }
+	6.5% {
+		transform: translateX(279.5px) rotateZ(0deg) scaleY(1.1);
+	}
 
-  8.8% {
-    transform: translateX(273.6px) rotateZ(0deg) scaleY(1);
-  }
+	8.8% {
+		transform: translateX(273.6px) rotateZ(0deg) scaleY(1);
+	}
 
-  10% {
-    opacity: 1;
-    transform: translateX(270px) rotateZ(0deg);
-  }
+	10% {
+		opacity: 1;
+		transform: translateX(270px) rotateZ(0deg);
+	}
 
-  17.6% {
-    transform: translateX(247.2px) rotateZ(-30deg);
-  }
+	17.6% {
+		transform: translateX(247.2px) rotateZ(-30deg);
+	}
 
-  45% {
-    transform: translateX(165px) rotateZ(-30deg);
-  }
+	45% {
+		transform: translateX(165px) rotateZ(-30deg);
+	}
 
-  49.5% {
-    transform: translateX(151.5px) rotateZ(-45deg);
-  }
+	49.5% {
+		transform: translateX(151.5px) rotateZ(-45deg);
+	}
 
-  61.5% {
-    transform: translateX(115.5px) rotateZ(-45deg);
-  }
+	61.5% {
+		transform: translateX(115.5px) rotateZ(-45deg);
+	}
 
-  67% {
-    transform: translateX(99px) rotateZ(-60deg);
-  }
+	67% {
+		transform: translateX(99px) rotateZ(-60deg);
+	}
 
-  76% {
-    transform: translateX(72px) rotateZ(-60deg);
-  }
+	76% {
+		transform: translateX(72px) rotateZ(-60deg);
+	}
 
-  83.5% {
-    opacity: 1;
-    transform: translateX(49.5px) rotateZ(-90deg);
-  }
+	83.5% {
+		opacity: 1;
+		transform: translateX(49.5px) rotateZ(-90deg);
+	}
 
-  90% {
-    opacity: 0;
-  }
+	90% {
+		opacity: 0;
+	}
 
-  100% {
-    opacity: 0;
-    transform: translateX(0px) rotateZ(-90deg);
-  }
+	100% {
+		opacity: 0;
+		transform: translateX(0px) rotateZ(-90deg);
+	}
 
+}
+
+/* Automated loader timeout */
+$loader_timeout: 2.5s;
+.loader:not(.started) {
+	&, & > .half, & > .bookshelf_wrapper {
+		-moz-animation: _loader_hide 0s ease-in $loader_timeout forwards;
+		-webkit-animation: _loader_hide 0s ease-in $loader_timeout forwards;
+		-o-animation: _loader_hide 0s ease-in $loader_timeout forwards;
+		animation: _loader_hide 0s ease-in $loader_timeout forwards;
+		-webkit-animation-fill-mode: forwards;
+		animation-fill-mode: forwards;
+	}
+}
+
+.loader:not(.started) + #critical-load {
+	display: block !important;
+	opacity: 0;
+
+	-moz-animation: _loader_show 0s ease-in $loader_timeout forwards;
+	-webkit-animation: _loader_show 0s ease-in $loader_timeout forwards;
+	-o-animation: _loader_show 0s ease-in $loader_timeout forwards;
+	animation: _loader_show 0s ease-in $loader_timeout forwards;
+	-webkit-animation-fill-mode: forwards;
+	animation-fill-mode: forwards;
+
+	.error::before {
+		content: 'Failed to startup app loader!';
+	}
+
+	.detail::before {
+		content: 'Lookup the console for more details';
+	}
+}
+
+@keyframes _loader_hide {
+	to {
+		width: 0;
+		height: 0;
+		overflow: hidden;
+	}
+}
+
+@-webkit-keyframes _loader_hide {
+	to {
+		width: 0;
+		height: 0;
+		visibility: hidden;
+	}
+}
+
+@keyframes _loader_show {
+	to {
+		opacity: 1;
+	}
+}
+
+@-webkit-keyframes _loader_show {
+	to {
+		opacity: 1;
+	}
 }

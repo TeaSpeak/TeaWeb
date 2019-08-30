@@ -16,6 +16,7 @@ class ServerProperties {
     virtualserver_queryclientsonline: number = 0;
     virtualserver_channelsonline: number = 0;
     virtualserver_uptime: number = 0;
+    virtualserver_created: number = 0;
     virtualserver_maxclients: number = 0;
     virtualserver_reserved_slots: number = 0;
 
@@ -198,12 +199,17 @@ class ServerEntry {
                 name: tr("Show server info"),
                 callback: () => {
                     trigger_close = false;
-
-                    //TODO
-                    alert("inplement me");
+                    Modals.openServerInfo(this);
                 },
-                icon_class: "client-about",
-                visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
+                icon_class: "client-about"
+            }, {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-invite_buddy",
+                name: tr("Invite buddy"),
+                callback: () => Modals.spawnInviteEditor(this.channelTree.client)
+            }, {
+                type: contextmenu.MenuEntryType.HR,
+                name: ''
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-channel_switch",
@@ -213,10 +219,6 @@ class ServerEntry {
                     this.channelTree.client.side_bar.show_channel_conversations();
                 },
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
-            }, {
-                type: contextmenu.MenuEntryType.HR,
-                visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT),
-                name: ''
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-virtualserver_edit",
@@ -236,6 +238,10 @@ class ServerEntry {
                     });
                 }
             }, {
+                type: contextmenu.MenuEntryType.HR,
+                visible: true,
+                name: ''
+            }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-iconviewer",
                 name: tr("View icons"),
@@ -245,13 +251,8 @@ class ServerEntry {
                 icon_class: 'client-iconsview',
                 name: tr("View avatars"),
                 callback: () => Modals.spawnAvatarList(this.channelTree.client)
-            }, {
-                type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-invite_buddy",
-                name: tr("Invite buddy"),
-                callback: () => Modals.spawnInviteEditor(this.channelTree.client)
             },
-            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : () => {})())
+            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : (() => {}))())
         );
     }
 
@@ -266,7 +267,7 @@ class ServerEntry {
                     value: variable.value,
                     type: typeof (this.properties[variable.key])
                 });
-            log.table("Server update properties", entries);
+            log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Server update properties", entries);
         }
 
         let update_bannner = false, update_button = false;
@@ -366,7 +367,7 @@ class ServerEntry {
         });
 
         this._info_connection_promise_timestamp = Date.now();
-        this.channelTree.client.serverConnection.send_command("serverrequestconnectioninfo").catch(error => _local_reject(error));
+        this.channelTree.client.serverConnection.send_command("serverrequestconnectioninfo", {}, {process_result: false}).catch(error => _local_reject(error));
         return this._info_connection_promise;
     }
 

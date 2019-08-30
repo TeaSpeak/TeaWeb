@@ -20,6 +20,7 @@
   "include": [
     "../types",
     "../declarations/imports_*.d.ts",
+    "../declarations/exports_loader_app.d.ts",
     "../backend",
     "../js/**/*.ts"
   ]

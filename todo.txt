@@ -15,22 +15,63 @@
         - Icon uploiad
     - Avatar list
     - Server group assignments checkbox
+    - Invite buddy
     - Identity improve
     - Identity import
 
 
+- Ban Liste
+    - Übersicht
+        - Suchfunktion
+            - Text
+            - "Hightlisht own bans"
+            - "Show only own bans"
+        Pro Ban:
+            - Globaler ban oder server ban
+            - Name (Nicht immer gegeben)
+            - IP (Nicht immer gegeben)
+            - UID (Nicht immer gegeben)
+            - HWID (Nicht immer gegeben)
+            - Reason
+            - Creator
+            - Created/Expires
+            - "More info" Button (Dort sieht man auch dann die "Enforcements")
 
-- Application Options
-    - Crash
-        - Focus crash window on crash
-        - Add a notification (Like the browser notifications)
+        - Reload button
+    - Hinzufügen
+    - Bearbeiten
+    - Löschen
 
+- Ban "More Info" Dialog
+    Alle daten wie bei der liste, und eine liste mit "trigger" events (enforcements)
+    Pro entry:
+        - Unqiue ID
+        - Hardware ID
+        - Client Name
+        - Connection IP
+        - Timestamp
 
+- Modal Bookmarks
+    - Bookmark list (+ Subdirectories)
+    - Bookmark Settings
+        - Bookmark/Directory name
+        - Only for bookmarks:
+            - Connect profile
+            - Server address
+            - Server port
+            - Server password
+        - Only for directories
+            - Parent directory
+- Modal Bookmark create
+    - Type: Bookmark | Directory
+    - Parent directory
+    - Name
 
 - Client info popup
     - Basic Info
         - Name/Unique ID (Database ID vil auch? Oder als hover irgendwo)
         - TeaForo connected? Ist premium ja nein?
+
         - Country
         - Avatar
         - IP (Wenn permission)
@@ -44,14 +85,29 @@
         - Description
         - Server groups
         - Channel group
-        - Connect count (Wie oft der client schon connectet ist)
-        - Online seit | Idle time
+        - Connect count (Wie oft der client schon connected ist)
+        - Online seid | Idle time
         - Ping
+        - Client version
+        - First connected
 
         Nur TeaClient; Nicht für WebClient clients
         - Bandwidth
         - Packets send/received | Packet Loss
         - Up/Download Quota
+
+- Server
+    - Server region/country
+    - Bandwidths & Transferred data
+
+- Channel
+    - Audio Codec (Opus (4))
+    - Channel type (Wenn TEMP dann delete delay (nur wenn empty))
+    - Channel Topic
+    - Current clients "2/Unlimited"
+    - Description
+    - Password protected
+    - "Texting mode" | Private | "No saving" | "Logged (+ history length)"
 
 
 
@@ -71,6 +127,12 @@
     - File Transfer bytes transferred, month & global (Up + Download)
 
 TODO:
+Server Info (Bandwidth usage)
 Fix these icons: https://img.did.science/Screenshot_20-11-06.png
-Fix auto TS compile for vendor emoji-picker
 Make identity settings a bit smaller (Even scroll on my Laptop)
+
+
+- Application Options
+    - Crash
+        - Focus crash window on crash
+        - Add a notification (Like the browser notifications)

@@ -58,7 +58,7 @@ namespace connection {
 
         destroy() {
             this.disconnect("handle destroyed").catch(error => {
-                console.warn(tr("Failed to disconnect on server connection destroy: %o"), error);
+                log.warn(LogCategory.NETWORKING, tr("Failed to disconnect on server connection destroy: %o"), error);
             }).then(() => {
                 clearInterval(this._ping.thread_id);
                 clearTimeout(this._connect_timeout_timer);
@@ -67,7 +67,7 @@ namespace connection {
                     try {
                         listener.reject("handler destroyed");
                     } catch(error) {
-                        console.warn(tr("Failed to reject command promise: %o"), error);
+                        log.warn(LogCategory.NETWORKING, tr("Failed to reject command promise: %o"), error);
                     }
                 }
                 this._retListener = undefined;
@@ -86,7 +86,7 @@ namespace connection {
         }
 
         on_connect: () => void = () => {
-            console.log(tr("Socket connected"));
+            log.info(LogCategory.NETWORKING, tr("Socket connected"));
             this.client.log.log(log.server.Type.CONNECTION_LOGIN, {});
             this._handshakeHandler.initialize();
             this._handshakeHandler.startHandshake();
@@ -105,7 +105,7 @@ namespace connection {
                 try {
                     await this.disconnect()
                 } catch(error) {
-                    console.error(tr("Failed to close old connection properly. Error: %o"), error);
+                    log.error(LogCategory.NETWORKING, tr("Failed to close old connection properly. Error: %o"), error);
                     throw "failed to cleanup old connection";
                 }
             }
@@ -177,7 +177,7 @@ namespace connection {
                 local_socket.onerror = e => {
                     if(this._socket != local_socket) return; /* this socket isn't from interest anymore */
 
-                    console.log(tr("Received web socket error: (%o)"), e);
+                    log.warn(LogCategory.NETWORKING, tr("Received web socket error: (%o)"), e);
                 };
 
                 local_socket.onmessage = msg => {
@@ -241,12 +241,12 @@ namespace connection {
                 try {
                     json = JSON.parse(data);
                 } catch(e) {
-                    console.error(tr("Could not parse message json!"));
+                    log.warn(LogCategory.NETWORKING, tr("Could not parse message json!"));
                     alert(e); // error in the above string (in this case, yes)!
                     return;
                 }
                 if(json["type"] === undefined) {
-                    console.log(tr("Missing data type!"));
+                    log.warn(LogCategory.NETWORKING, tr("Missing data type in message!"));
                     return;
                 }
                 if(json["type"] === "command") {
@@ -271,7 +271,7 @@ namespace connection {
                     if(this._voice_connection)
                         this._voice_connection.handleControlPacket(json);
                     else
-                        console.log(tr("Dropping WebRTC command packet, because we haven't a bridge."))
+                        log.warn(LogCategory.NETWORKING, tr("Dropping WebRTC command packet, because we haven't a bridge."))
                 } else if(json["type"] === "ping") {
                   this.sendData(JSON.stringify({
                       type: 'pong',
@@ -288,7 +288,7 @@ namespace connection {
                         log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                     }
                 } else {
-                    console.log(tr("Unknown command type %o"), json["type"]);
+                    log.warn(LogCategory.NETWORKING, tr("Unknown command type %o"), json["type"]);
                 }
             } else {
                 log.warn(LogCategory.NETWORKING, tr("Received unknown message of type %s. Dropping message"), typeof(data));
@@ -317,7 +317,7 @@ namespace connection {
 
         send_command(command: string, data?: any | any[], _options?: CommandOptions) : Promise<CommandResult> {
             if(!this._socket || !this.connected()) {
-                console.warn(tr("Tried to send a command without a valid connection."));
+                log.warn(LogCategory.NETWORKING, tr("Tried to send a command without a valid connection."));
                 return Promise.reject(tr("not connected"));
             }
 

@@ -68,20 +68,14 @@ class Hostbanner {
         this.html_tag.attr('title', server ? server.properties.virtualserver_hostbanner_url : undefined);
     }
 
-    private async generate_tag?() : Promise<JQuery | undefined> {
-        if(!this.client.connected)
-            return undefined;
+    public static async generate_tag(banner_url: string | undefined, gfx_interval: number, mode: number) : Promise<JQuery | undefined> {
+        if(!banner_url) return undefined;
 
-        const server = this.client.channelTree.server;
-        if(!server) return undefined;
-        if(!server.properties.virtualserver_hostbanner_gfx_url) return undefined;
-
-        let banner_url = server.properties.virtualserver_hostbanner_gfx_url;
-        if(server.properties.virtualserver_hostbanner_gfx_interval > 0) {
-            const update_interval = Math.max(server.properties.virtualserver_hostbanner_gfx_interval, 60);
+        if(gfx_interval > 0) {
+            const update_interval = Math.max(gfx_interval, 60);
             const update_timestamp = (Math.floor((Date.now() / 1000) / update_interval) * update_interval).toString();
             try {
-                const url = new URL(server.properties.virtualserver_hostbanner_gfx_url);
+                const url = new URL(banner_url);
                 if(url.search.length == 0)
                     banner_url += "?_ts=" + update_timestamp;
                 else
@@ -90,8 +84,6 @@ class Hostbanner {
                 console.warn(tr("Failed to parse banner URL: %o. Using default '&' append."), error);
                 banner_url += "&_ts=" + update_timestamp;
             }
-
-            this.updater = setTimeout(() => this.update(), update_interval * 1000);
         }
 
         /* first now load the image */
@@ -102,11 +94,27 @@ class Hostbanner {
             image_element.src = banner_url;
             image_element.style.display = 'none';
             document.body.append(image_element);
-            console.log("Loading image!");
+            console.log("Loading hostbanner image!");
         });
 
         image_element.parentNode.removeChild(image_element);
         image_element.style.display = 'unset';
-        return $.spawn("div").addClass("hostbanner-image-container hostbanner-mode-" + server.properties.virtualserver_hostbanner_mode).append($(image_element));
+        return $.spawn("div").addClass("hostbanner-image-container hostbanner-mode-" + mode).append($(image_element));
+    }
+
+    private async generate_tag?() : Promise<JQuery | undefined> {
+        if(!this.client.connected)
+            return undefined;
+
+        const server = this.client.channelTree.server;
+        if(!server) return undefined;
+        if(!server.properties.virtualserver_hostbanner_gfx_url) return undefined;
+
+        const timeout = server.properties.virtualserver_hostbanner_gfx_interval;
+        const tag = Hostbanner.generate_tag(server.properties.virtualserver_hostbanner_gfx_url, server.properties.virtualserver_hostbanner_gfx_interval, server.properties.virtualserver_hostbanner_mode);
+        if(timeout > 0)
+            this.updater = setTimeout(() => this.update(), timeout * 1000);
+
+        return tag;
     }
 }

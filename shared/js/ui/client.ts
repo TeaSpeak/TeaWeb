@@ -25,6 +25,8 @@ class ClientProperties {
 
     client_channel_group_id: number = 0;
     client_lastconnected: number = 0;
+    client_created: number = 0;
+    client_totalconnections: number = 0;
 
     client_flag_avatar: string = "";
     client_icon_id: number = 0;
@@ -44,7 +46,66 @@ class ClientProperties {
     client_teaforo_name: string = "";
     client_teaforo_flags: number = 0; /* 0x01 := Banned | 0x02 := Stuff | 0x04 := Premium */
 
+
+    /* not updated in view! */
+    client_month_bytes_uploaded: number = 0;
+    client_month_bytes_downloaded: number = 0;
+    client_total_bytes_uploaded: number = 0;
+    client_total_bytes_downloaded: number = 0;
+
     client_talk_power: number = 0;
+}
+
+class ClientConnectionInfo {
+    connection_bandwidth_received_last_minute_control: number = -1;
+    connection_bandwidth_received_last_minute_keepalive: number = -1;
+    connection_bandwidth_received_last_minute_speech: number = -1;
+    connection_bandwidth_received_last_second_control: number = -1;
+    connection_bandwidth_received_last_second_keepalive: number = -1;
+    connection_bandwidth_received_last_second_speech: number = -1;
+
+    connection_bandwidth_sent_last_minute_control: number = -1;
+    connection_bandwidth_sent_last_minute_keepalive: number = -1;
+    connection_bandwidth_sent_last_minute_speech: number = -1;
+    connection_bandwidth_sent_last_second_control: number = -1;
+    connection_bandwidth_sent_last_second_keepalive: number = -1;
+    connection_bandwidth_sent_last_second_speech: number = -1;
+
+    connection_bytes_received_control: number = -1;
+    connection_bytes_received_keepalive: number = -1;
+    connection_bytes_received_speech: number = -1;
+    connection_bytes_sent_control: number = -1;
+    connection_bytes_sent_keepalive: number = -1;
+    connection_bytes_sent_speech: number = -1;
+
+    connection_packets_received_control: number = -1;
+    connection_packets_received_keepalive: number = -1;
+    connection_packets_received_speech: number = -1;
+
+    connection_packets_sent_control: number = -1;
+    connection_packets_sent_keepalive: number = -1;
+    connection_packets_sent_speech: number = -1;
+
+    connection_ping: number = -1;
+    connection_ping_deviation: number = -1;
+
+    connection_server2client_packetloss_control: number = -1;
+    connection_server2client_packetloss_keepalive: number = -1;
+    connection_server2client_packetloss_speech: number = -1;
+    connection_server2client_packetloss_total: number = -1;
+
+    connection_client2server_packetloss_speech: number = -1;
+    connection_client2server_packetloss_keepalive: number = -1;
+    connection_client2server_packetloss_control: number = -1;
+    connection_client2server_packetloss_total: number = -1;
+
+    connection_filetransfer_bandwidth_sent: number = -1;
+    connection_filetransfer_bandwidth_received: number = -1;
+
+    connection_connected_time: number = -1;
+    connection_idle_time: number = -1;
+    connection_client_ip: string | undefined;
+    connection_client_port: number = -1;
 }
 
 class ClientEntry {
@@ -60,6 +121,14 @@ class ClientEntry {
     protected _audio_handle: connection.voice.VoiceClient;
     protected _audio_volume: number;
     protected _audio_muted: boolean;
+
+    private _info_variables_promise: Promise<void>;
+    private _info_variables_promise_timestamp: number;
+
+    private _info_connection_promise: Promise<ClientConnectionInfo>;
+    private _info_connection_promise_timestamp: number;
+    private _info_connection_promise_resolve: any;
+    private _info_connection_promise_reject: any;
 
     channelTree: ChannelTree;
 
@@ -174,10 +243,6 @@ class ClientEntry {
             if(!this.channelTree.client_mover.is_active()) {
                 this.channelTree.onSelect(this);
             }
-        });
-
-        this.tag.on('click', event => {
-            console.log("I've been clicked!");
         });
 
         if(!(this instanceof LocalClientEntry) && !(this instanceof MusicClientEntry))
@@ -524,8 +589,7 @@ class ClientEntry {
                         this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
                         if(this._audio_handle)
                             this._audio_handle.set_volume(volume);
-                        if(this.channelTree.client.select_info.currentSelected == this)
-                            this.channelTree.client.select_info.update();
+                        //TODO: Update in info
                     });
                 }
             }, {
@@ -710,7 +774,7 @@ class ClientEntry {
                     value: variable.value,
                     type: typeof (this.properties[variable.key])
                 });
-            log.table("Client update properties", entries);
+            log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Client update properties", entries);
         }
 
         for(const variable of variables) {
@@ -848,11 +912,17 @@ class ClientEntry {
         }
     }
 
-    updateClientVariables(){
-        if(this.lastVariableUpdate == 0 || new Date().getTime() - 10 * 60 * 1000 > this.lastVariableUpdate){ //Cache these only 10 min
-            this.lastVariableUpdate = new Date().getTime();
-            this.channelTree.client.serverConnection.send_command("clientgetvariables", {clid: this.clientId()});
-        }
+    updateClientVariables(force_update?: boolean) : Promise<void> {
+        if(Date.now() - 10 * 60 * 1000 < this._info_variables_promise_timestamp && this._info_variables_promise && (typeof(force_update) !== "boolean" || force_update))
+            return this._info_variables_promise;
+
+        this._info_variables_promise_timestamp = Date.now();
+        return (this._info_variables_promise = new Promise<void>((resolve, reject) => {
+            this.channelTree.client.serverConnection.send_command("clientgetvariables", {clid: this.clientId()}).then(() => resolve()).catch(error => {
+                this._info_connection_promise_timestamp = 0; /* not succeeded */
+                reject(error);
+            });
+        }));
     }
 
     updateClientIcon() {
@@ -956,6 +1026,34 @@ class ClientEntry {
             client_name: this.clientNickName(),
             client_id: this._clientId
         }
+    }
+
+    /* max 1s ago, so we could update every second */
+    request_connection_info() : Promise<ClientConnectionInfo> {
+        if(Date.now() - 900 < this._info_connection_promise_timestamp && this._info_connection_promise)
+            return this._info_connection_promise;
+
+        if(this._info_connection_promise_reject)
+            this._info_connection_promise_resolve("timeout");
+
+        let _local_reject; /* to ensure we're using the right resolve! */
+        this._info_connection_promise = new Promise<ClientConnectionInfo>((resolve, reject) => {
+            this._info_connection_promise_resolve = resolve;
+            this._info_connection_promise_reject = reject;
+            _local_reject = reject;
+        });
+
+        this._info_connection_promise_timestamp = Date.now();
+        this.channelTree.client.serverConnection.send_command("getconnectioninfo", {clid: this._clientId}).catch(error => _local_reject(error));
+        return this._info_connection_promise;
+    }
+
+    set_connection_info(info: ClientConnectionInfo) {
+        if(!this._info_connection_promise_resolve)
+            return;
+        this._info_connection_promise_resolve(info);
+        this._info_connection_promise_resolve = undefined;
+        this._info_connection_promise_reject = undefined;
     }
 }
 
@@ -1243,8 +1341,6 @@ class MusicClientEntry extends ClientEntry {
                     Modals.spawnChangeVolume(this._audio_handle.get_volume(), volume => {
                         this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
                         this._audio_handle.set_volume(volume);
-                        if(this.channelTree.client.select_info.currentSelected == this)
-                            (<MusicInfoManager>this.channelTree.client.select_info.current_manager()).update_local_volume(volume);
                     });
                 }
             },
@@ -1265,8 +1361,7 @@ class MusicClientEntry extends ClientEntry {
                             clid: this.clientId(),
                             player_volume: value,
                         }).then(() => {
-                            if(this.channelTree.client.select_info.currentSelected == this)
-                                (<MusicInfoManager>this.channelTree.client.select_info.current_manager()).update_remote_volume(value);
+                            //TODO: Update in info
                         });
                     });
                 }

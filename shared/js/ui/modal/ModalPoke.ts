@@ -79,7 +79,7 @@ namespace Modals {
         }
     }
 
-    type PokeInvoker = {
+    export type PokeInvoker = {
         name: string,
         id: number,
         unique_id: string
