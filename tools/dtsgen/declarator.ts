@@ -119,7 +119,7 @@ class StackParameters implements StackParameter {
 const generators: {[key: number]:((settings: _Settings, stack: StackParameters, node: ts.Node) => ts.Node | undefined) | undefined} = {};
 
 function _generate(settings: _Settings, stack: StackParameters, layer: ts.Node[], node: ts.Node) {
-    console.log(SyntaxKind[node.kind]);
+    //console.log(SyntaxKind[node.kind]);
     if(generators[node.kind]) {
         const result = generators[node.kind](settings, stack, node);
         if(result)
@@ -381,6 +381,8 @@ generators[SyntaxKind.VariableStatement] = (settings, stack, node: ts.VariableSt
 };
 
 generators[SyntaxKind.TypeAliasDeclaration] = (settings, stack, node: ts.TypeAliasDeclaration) => {
+    if(stack.flag_namespace && !has_modifier(node.modifiers, SyntaxKind.ExportKeyword)) return;
+
     let type = node.type;
     if(type.kind == SyntaxKind.UnionType) {
         const union_members = [];
@@ -405,4 +407,13 @@ generators[SyntaxKind.EnumDeclaration] = (settings, stack, node: ts.EnumDeclarat
     for(const member of node.members)
         members.push(generators[SyntaxKind.EnumMember](settings, stack, member));
     return ts.createEnumDeclaration(undefined, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, members);
+};
+
+/* every variable in a block has no global scope! */
+generators[SyntaxKind.Block] = (settings, stack, node: ts.EnumMember) => {
+    return undefined;
+};
+
+generators[SyntaxKind.IfStatement] = (settings, stack, node: ts.EnumMember) => {
+    return undefined;
 };
