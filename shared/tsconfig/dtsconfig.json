@@ -1,9 +1,0 @@
-{
-  "source_files": [
-    "../js/**/*.ts"
-  ],
-  "exclude": [
-    "../js/workers/**/*.ts"
-  ],
-  "target_file": "../declarations/exports.d.ts"
-}

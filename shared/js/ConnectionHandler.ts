@@ -300,7 +300,7 @@ class ConnectionHandler {
 
     private initialize_server_settings() {
         let update_control = false;
-        this.settings.setServer(this.channelTree.server);
+        this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
         {
             const flag_subscribe = this.settings.server(Settings.KEY_CONTROL_CHANNEL_SUBSCRIBE_ALL, true);
             if(this.client_status.channel_subscribe_all != flag_subscribe) {

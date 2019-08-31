@@ -293,9 +293,9 @@ class Settings extends StaticSettings {
         key: "font_size"
     };
 
-    static readonly FN_SERVER_CHANNEL_SUBSCRIBE_MODE: (channel: ChannelEntry) => SettingsKey<ChannelSubscribeMode> = channel => {
+    static readonly FN_SERVER_CHANNEL_SUBSCRIBE_MODE: (channel_id: number) => SettingsKey<number> = channel => {
         return {
-            key: 'channel_subscribe_mode_' + channel.getChannelId()
+            key: 'channel_subscribe_mode_' + channel
         }
     };
 
@@ -319,6 +319,10 @@ class Settings extends StaticSettings {
 
         return result;
     })();
+
+    static initialize() {
+        settings = new Settings();
+    }
 
     private cacheGlobal = {};
     private saveWorker: NodeJS.Timer;
@@ -372,7 +376,7 @@ class Settings extends StaticSettings {
 
 class ServerSettings extends SettingsBase {
     private cacheServer = {};
-    private currentServer: ServerEntry;
+    private _server_unique_id: string;
     private _server_save_worker: NodeJS.Timer;
     private _server_settings_updated: boolean = false;
     private _destroyed = false;
@@ -388,7 +392,7 @@ class ServerSettings extends SettingsBase {
     destroy() {
         this._destroyed = true;
 
-        this.currentServer = undefined;
+        this._server_unique_id = undefined;
         this.cacheServer = undefined;
 
         clearInterval(this._server_save_worker);
@@ -413,18 +417,17 @@ class ServerSettings extends SettingsBase {
             this.save();
     }
 
-    setServer(server: ServerEntry) {
+    setServer(server_unique_id: string) {
         if(this._destroyed) throw "destroyed";
-        if(this.currentServer) {
+        if(this._server_unique_id) {
             this.save();
             this.cacheServer = {};
-            this.currentServer = undefined;
+            this._server_unique_id = undefined;
         }
-        this.currentServer = server;
+        this._server_unique_id = server_unique_id;
 
-        if(this.currentServer) {
-            let serverId = this.currentServer.properties.virtualserver_unique_identifier;
-            this.cacheServer = JSON.parse(localStorage.getItem("settings.server_" + serverId));
+        if(this._server_unique_id) {
+            this.cacheServer = JSON.parse(localStorage.getItem("settings.server_" + server_unique_id));
             if(!this.cacheServer)
                 this.cacheServer = {};
         }
@@ -434,12 +437,13 @@ class ServerSettings extends SettingsBase {
         if(this._destroyed) throw "destroyed";
         this._server_settings_updated = false;
 
-        if(this.currentServer) {
-            let serverId = this.currentServer.properties.virtualserver_unique_identifier;
+        if(this._server_unique_id) {
             let server = JSON.stringify(this.cacheServer);
-            localStorage.setItem("settings.server_" + serverId, server);
+            localStorage.setItem("settings.server_" + this._server_unique_id, server);
             if(localStorage.save)
                 localStorage.save();
         }
     }
 }
+
+let settings: Settings;

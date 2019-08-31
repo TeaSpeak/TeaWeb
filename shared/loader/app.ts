@@ -581,6 +581,58 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     priority: 10
 });
 
+loader.register_task(loader.Stage.SETUP, {
+    name: "page setup",
+    function: async () => {
+        const body = document.body;
+        /* top menu */
+        {
+            const container = document.createElement("div");
+            container.setAttribute('id', "top-menu-bar");
+            body.append(container);
+        }
+        /* template containers */
+        {
+            const container = document.createElement("div");
+            container.setAttribute('id', "templates");
+            body.append(container);
+        }
+        /* sounds container */
+        {
+            const container = document.createElement("div");
+            container.setAttribute('id', "sounds");
+            body.append(container);
+        }
+        /* mouse move container */
+        {
+            const container = document.createElement("div");
+            container.setAttribute('id', "mouse-move");
+
+            const inner_container = document.createElement("div");
+            inner_container.classList.add("container");
+            container.append(inner_container);
+
+            body.append(container);
+        }
+        /* tooltip container */
+        {
+            const container = document.createElement("div");
+            container.setAttribute('id', "global-tooltip");
+
+            container.append(document.createElement("a"));
+
+            body.append(container);
+        }
+    },
+    priority: 10
+});
+
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+    name: "log enabled initialisation",
+    function: async () => log.initialize(app.type === app.Type.CLIENT_DEBUG || app.type === app.Type.WEB_DEBUG ? LogType.TRACE : LogType.INFO),
+    priority: 150
+});
+
 window["Module"] = (window["Module"] || {}) as any;
 /* TeaClient */
 if(window.require) {

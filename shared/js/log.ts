@@ -73,23 +73,17 @@ namespace log {
     }
     const group_mode: GroupMode = GroupMode.PREFIX;
 
-    loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-        name: "log enabled initialisation",
-        function: async () => initialize(),
-        priority: 150
-    });
-
     //Category Example: <url>?log.i18n.enabled=0
     //Level Example A: <url>?log.level.trace.enabled=0
     //Level Example B: <url>?log.level=0
-    export function initialize() {
+    export function initialize(default_level: LogType) {
         for(const category of Object.keys(LogCategory).map(e => parseInt(e))) {
             if(isNaN(category)) continue;
             const category_name = LogCategory[category].toLowerCase();
             enabled_mapping.set(category, settings.static_global<boolean>("log." + category_name.toLowerCase() + ".enabled", enabled_mapping.get(category)));
         }
 
-        const base_level = settings.static_global<number>("log.level", app.type === app.Type.CLIENT_DEBUG || app.type === app.Type.WEB_DEBUG ? LogType.TRACE : LogType.INFO);
+        const base_level = settings.static_global<number>("log.level", default_level);
 
         for(const level of Object.keys(LogType).map(e => parseInt(e))) {
             if(isNaN(level)) continue;

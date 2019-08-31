@@ -4374,143 +4374,167 @@
         </script>
 
         <script class="jsrender-template" id="tmpl_manage_bookmarks" type="text/html">
-            <div class="modal-bookmarks">
-                <div class="group_box gb-list">
-                    <div class="header">{{tr "Bookmarks" /}}</div>
-                    <div class="content bookmark-list">
-                        <div class="list">
-                            <div class="entry bookmark">
-                                <div class="name">TeaSpeak official</div>
-                            </div>
-                        </div>
+            <div>
+                <div class="left">
+                    <div class="title">{{tr "Your bookmarks" /}}</div>
+                    <div class="container-bookmarks">
+                    </div>
+                    <div class="buttons">
+                        <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
+                        <button class="btn btn-purple button-add-folder">{{tr "Add Folder" /}}</button>
+                        <button class="btn btn-success button-add-bookmark">{{tr "Add Bookmark" /}}</button>
                     </div>
                 </div>
-                <div class="buttons">
-                    <button class="button-large btn btn-raised btn-secondary button-create">{{tr "Create new
-                        bookmark/directory" /}}
-                    </button>
-                    <button class="button-large btn btn-danger button-delete">{{tr "Delete selected bookmark/directory"
-                        /}}
-                    </button>
-
-                    <button class="button-small btn btn-raised btn-secondary button-create">{{tr "Create" /}}</button>
-                    <button class="button-small btn btn-danger button-delete">{{tr "Delete" /}}</button>
-                </div>
-                <hr>
-                <div class="group_box gb-settings">
-                    <div class="header">{{tr "Bookmark settings" /}}</div>
-                    <div class="content">
-                        <div class="bookmark-setting bookmark-setting-bookmark">
-                            <div class="form-group">
-                                <label for="input-bookmark-name" class="bmd-label-static">{{tr "Bookmark name:"
-                                    /}}</label>
-                                <input id="input-bookmark-name" class="form-control setting-bookmark-name">
-                            </div>
-                            <div class="form-group">
-                                <label for="input-bookmark-profile" class="bmd-label-static">{{tr "Connect profile:"
-                                    /}}</label>
-                                <select id="input-bookmark-profile"
-                                        class="form-control setting-bookmark-profile"></select>
-                            </div>
-                            <div class="group_box">
-                                <div class="header">{{tr "Server Properties" /}}</div>
-                                <div class="content">
-                                    <div class="form-group">
-                                        <label for="input-bookmark-server-host" class="bmd-label-static">{{tr "Server
-                                            address:" /}}</label>
-                                        <input id="input-bookmark-server-host" class="form-control setting-server-host">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="input-bookmark-server-port" class="bmd-label-static">{{tr "Server
-                                            port:" /}}</label>
-                                        <input type="number" min="1" max="65665" id="input-bookmark-server-port"
-                                               class="form-control setting-server-port">
-                                    </div>
-                                    <div class="form-group">
-                                        <!-- TODO generated id because of password field (id="bookmark_server_password_{{rnd '0~13377331'/}}") -->
-                                        <label for="input-bookmark-server-password" class="bmd-label-floating">{{tr
-                                            "Server password" /}}</label>
-                                        <input id="input-bookmark-server-password"
-                                               class="form-control setting-server-password" autocomplete="nope"
-                                               type="password">
+                <div class="container-seperator vertical" seperator-id="seperator-bookmarks"></div>
+                <div class="right">
+                    <div class="header">
+                        <div class="container-name">{{tr "Your bookmarks" /}}</div>
+                        <div class="container-address"></div>
+                    </div>
+                    <div class="container-settings">
+                        <div class="group">
+                            <div class="row">
+                                <div class="key">{{tr "Bookmark Name" /}}</div>
+                                <div class="value">
+                                    <div class="input-boxed">
+                                        <input class="input-bookmark-name">
+                                        <!--
+                                        <div class="container-tooltip">
+                                            <img src="img/icon_tooltip.svg"/>
+                                            <div class="tooltip">
+                                                <a>{{tr "The displayed name of this bookmark." /}}</a>
+                                            </div>
+                                        </div>
+                                        -->
                                     </div>
                                 </div>
                             </div>
-                            <!--
-                            <div class="group_box">
-                                <div class="header">{{tr "Connect Properties (Not yet supported)" /}}</div>
-                                <div class="content">
-                                    <div class="form-group">
-                                        <label for="input-bookmark-username" class="bmd-label-floating">{{tr "Default Username" /}}</label>
-                                        <input id="input-bookmark-username" class="form-control setting-username" disabled>
-                                    </div>
-                                    <div class="form-row container-default-channel-select">
-                                        <div class="form-group container-default-channel">
-                                            <label for="input-bookmark-channel" class="bmd-label-floating">{{tr "Default Channel" /}}</label>
-                                            <input id="input-bookmark-channel" class="form-control setting-channel" disabled>
+                            <div class="row">
+                                <div class="key">{{tr "Connect Profile" /}}</div>
+                                <div class="value">
+                                    <div class="input-boxed">
+                                        <select class="input-connect-profile">
+                                        </select>
+                                        <!--
+                                        <div class="container-tooltip">
+                                            <img src="img/icon_tooltip.svg"/>
+                                            <div class="tooltip">
+                                                <a>{{tr "The profile which you're connection with when you're using the bookmark." /}}</a>
+                                            </div>
                                         </div>
-                                        <div class="form-group bmd-form-group">
-                                            <button class="btn btn-primary button-set-to-current" disabled>{{tr "Current Channel" /}}</button>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <!- TODO generated id because of password field (id="bookmark_server_password_{{rnd '0~13377331'/}}") ->
-                                        <label for="input-bookmark-channel-password" class="bmd-label-floating">{{tr "Default channel password" /}}</label>
-                                        <input id="input-bookmark-channel-password" class="form-control setting-channel-password" type="password" disabled>
+                                        -->
                                     </div>
                                 </div>
                             </div>
-                            -->
                         </div>
-                        <div class="bookmark-setting bookmark-setting-directory">
-                            <div class="form-group">
-                                <label for="input-bookmark-dirname" class="bmd-label-static">{{tr "Directory name:"
-                                    /}}</label>
-                                <input id="input-bookmark-dirname" class="form-control setting-bookmark-name">
+                        <div class="group">
+                            <div class="row">
+                                <div class="key">{{tr "Server Address" /}}</div>
+                                <div class="value">
+                                    <div class="input-boxed">
+                                        <input class="input-server-address">
+                                        <!--
+                                        <div class="container-tooltip">
+                                            <img src="img/icon_tooltip.svg"/>
+                                            <div class="tooltip">
+                                                <a>{{tr "The server address of the bookmark. The port is separated via a colon" /}}</a>
+                                            </div>
+                                        </div>
+                                        -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="key">{{tr "Server Password" /}}</div>
+                                <div class="value">
+                                    <div class="input-boxed">
+                                        <input type="password" class="input-server-password">
+                                        <!--
+                                        <div class="container-tooltip">
+                                            <img src="img/icon_tooltip.svg"/>
+                                            <div class="tooltip">
+                                                <a>{{tr "The server port of the bookmark" /}}</a>
+                                            </div>
+                                        </div>
+                                        -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="key">{{tr "Default Channel" /}}</div>
+                                <div class="value">
+                                    <div class="input-boxed">
+                                        <input class="input-default-channel" placeholder="{{tr 'Not yet implemented' /}}" disabled>
+                                        <!--
+                                        <div class="container-tooltip">
+                                            <img src="img/icon_tooltip.svg"/>
+                                            <div class="tooltip">
+                                                <a>{{tr "The server port of the bookmark" /}}</a>
+                                            </div>
+                                        </div>
+                                        -->
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="key">{{tr "Channel Password" /}}</div>
+                                <div class="value">
+                                    <div class="input-boxed">
+                                        <input type="password" class="input-default-channel-password" placeholder="{{tr 'Not yet implemented' /}}" disabled>
+                                        <!--
+                                        <div class="container-tooltip">
+                                            <img src="img/icon_tooltip.svg"/>
+                                            <div class="tooltip">
+                                                <a>{{tr "The server port of the bookmark" /}}</a>
+                                            </div>
+                                        </div>
+                                        -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="group info">
+                            <div class="container-image">
+                                <img src="img/serveredit_1.png">
+                            </div>
+                            <div class="container-properties">
+                                <div class="row">
+                                    <a class="key">{{tr "Server name" /}}</a>
+                                    <div class="value server-name">
+                                        error: name
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <a class="key">{{tr "Server region" /}}</a>
+                                    <div class="value server-region">
+                                        error: region
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <a class="key">{{tr "Last ping" /}}</a>
+                                    <div class="value server-ping">
+                                        error: ping
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <a class="key">{{tr "Last client count" /}}</a>
+                                    <div class="value server-client-count">
+                                        error: last client
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <a class="key">{{tr "Your connection" /}}</a>
+                                    <div class="value server-connection-count">
+                                        error: connection count
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_manage_bookmarks-list_entry" type="text/html">
-            {{if type == "bookmark" }}
-            <div class="entry bookmark">
-                <div class="name">{{>name}}</div>
-            </div>
-            {{else type == "directory" }}
-            <div class="entry directory">
-                <div class="name">{{>name}}</div>
-                <div class="members"></div>
-            </div>
-            {{/if}}
-        </script>
-
-
-        <script class="jsrender-template" id="tmpl_manage_bookmarks-create" type="text/html">
-            <div class="modal-bookmark-create">
-                <div class="form-group">
-                    <label class="bmd-label-floating">{{tr "Bookmark type:" /}}</label>
-                    <select class="form-control bookmark-type">
-                        <option value="bookmark">Bookmark</option>
-                        <option value="directory">Directory</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="bmd-label-floating">{{tr "Parent directory:" /}}</label>
-                    <select class="form-control bookmark-parent">
-                        <option bookmark-uuid=""></option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label class="bmd-label-floating">{{tr "Bookmark name" /}}</label>
-                    <input class="form-control bookmark-name">
-                </div>
-                <div class="buttons">
-                    <button class="btn btn-success button-create">Create</button>
+                    <div class="buttons">
+                        <button class="btn btn-success button-connect-tab">{{tr "Connect in a new tab" /}}</button>
+                        <button class="btn btn-success button-connect">{{tr "Connect" /}}</button>
+                    </div>
                 </div>
             </div>
         </script>
@@ -5175,6 +5199,7 @@
                         </div>
                     </div>
                     <div class="container-buttons">
+                        <button class="btn btn-success button-update">{{tr "Refresh" /}}</button>
                         <button class="btn btn-danger button-close">{{tr "Close" /}}</button>
                     </div>
                 </div>

@@ -910,7 +910,7 @@ class ChannelEntry {
     }
 
     get subscribe_mode() : ChannelSubscribeMode {
-        return typeof(this._subscribe_mode) !== 'undefined' ? this._subscribe_mode : (this._subscribe_mode = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), ChannelSubscribeMode.INHERITED));
+        return typeof(this._subscribe_mode) !== 'undefined' ? this._subscribe_mode : (this._subscribe_mode = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), ChannelSubscribeMode.INHERITED));
     }
 
     set subscribe_mode(mode: ChannelSubscribeMode) {
@@ -918,7 +918,7 @@ class ChannelEntry {
             return;
 
         this._subscribe_mode = mode;
-        this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this), mode);
+        this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), mode);
     }
 
     set flag_text_unread(flag: boolean) {

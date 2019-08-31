@@ -214,9 +214,7 @@ namespace loader {
                 }
             }
         }).catch(error => {
-            if(config.error) {
-                console.error("App loading failed: %o", error);
-            }
+            console.error("App loading failed: %o", error);
             loader.critical_error("Failed to execute loader", "Lookup the console for more detail");
         });
     }
@@ -489,6 +487,7 @@ namespace loader {
             return;
         }
 
+        _callback_critical_called = true;
         if(_callback_critical_error) {
             _callback_critical_error(message, detail);
             return;
@@ -507,7 +506,7 @@ namespace loader {
             node_detail.innerHTML = detail;
         }
 
-        tag.style.display = "block";
+        tag.classList.add("shown");
     }
 
     export function critical_error_handler(handler?: ErrorHandler, override?: boolean) : ErrorHandler {
@@ -614,11 +613,20 @@ setTimeout(() => {
         priority: 100,
         function: async () => {
             let loader_type;
+            /*
             location.search.replace(/(?:^\?|&)([a-zA-Z_]+)=([.a-zA-Z0-9]+)(?=$|&)/g, (_, key: string, value: string) => {
                 if(key.toLowerCase() == "loader_target")
                     loader_type = value;
                 return "";
             });
+             */
+            for(const node of document.head.getElementsByTagName("meta")) {
+                if(node.name === "app-loader-target") {
+                    loader_type = node.content;
+                    if(loader_type)
+                        break;
+                }
+            }
             loader_type = loader_type || "app";
             if(loader_type === "app") {
                 try {
@@ -626,6 +634,14 @@ setTimeout(() => {
                 } catch (error) {
                     console.error("Failed to load main app script: %o", error);
                     loader.critical_error("Failed to load main app script", error);
+                    throw "app loader failed";
+                }
+            } else if(loader_type === "certaccept") {
+                try {
+                    await loader.load_scripts(["loader/certaccept.js"]);
+                } catch (error) {
+                    console.error("Failed to load cert accept script: %o", error);
+                    loader.critical_error("Failed to load cert accept script", error);
                     throw "app loader failed";
                 }
             } else {

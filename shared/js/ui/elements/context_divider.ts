@@ -65,6 +65,7 @@ if(!$.fn.dividerfy) {
                 }
 
 
+                //console.log(min + " - " + max + " - " + current);
                 const property = vertical ? "width" : "height";
                 const previous_p = Math.ceil(previous * 100);
                 const next_p = Math.ceil(next * 100);

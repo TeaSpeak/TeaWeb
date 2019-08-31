@@ -1,0 +1,7 @@
+{
+  "source_files": [
+    "../loader/loader.ts",
+    "../loader/certaccept.ts"
+  ],
+  "target_file": "../declarations/exports_loader_certaccept.d.ts"
+}

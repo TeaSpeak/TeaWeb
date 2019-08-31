@@ -316,12 +316,50 @@
 		]
 	];
 
+	$CERTACCEPT_FILE_LIST = [
+		[ /* html files */
+			"type" => "html",
+			"search-pattern" => "/^([a-zA-Z]+)\.(html|php|json)$/",
+			"build-target" => "dev|rel",
+
+			"path" => "./popup/certaccept/",
+			"local-path" => "./shared/popup/certaccept/html/"
+		],
+		[ /* javascript loader (debug) */
+			"type" => "js",
+			"search-pattern" => "/.*\.js$/",
+			"build-target" => "dev",
+
+			"path" => "./popup/certaccept/loader/",
+			"local-path" => "./shared/loader/"
+		],
+		[ /* javascript loader for releases */
+			"type" => "js",
+			"search-pattern" => "/.*loader_certaccept.min.js$/",
+			"build-target" => "rel",
+
+			"path" => "./popup/certaccept/loader/",
+			"local-path" => "./shared/generated/"
+		],
+
+		[ /* javascript for debug */
+			"type" => "js",
+			"search-pattern" => "/^.*\.js$/",
+			"build-target" => "dev",
+
+			"path" => "./popup/certaccept/js/",
+			"local-path" => "./shared/js/"
+		],
+	];
+
 	$APP_FILE_LIST = array_merge(
 		$APP_FILE_LIST_SHARED_SOURCE,
 		$APP_FILE_LIST_SHARED_VENDORS,
 		$APP_FILE_LIST_CLIENT_SOURCE,
 		$APP_FILE_LIST_WEB_SOURCE,
-		$APP_FILE_LIST_WEB_TEASPEAK
+		$APP_FILE_LIST_WEB_TEASPEAK,
+
+		$CERTACCEPT_FILE_LIST
 	);
 
 	function systemify_path($path) {
@@ -472,8 +510,8 @@
 				$file = new AppFile;
 
 				$f_info = pathinfo($f_entry);
-				$file->target_path = systemify_path($entry["path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR;
-				$file->local_path = getcwd() . DIRECTORY_SEPARATOR . systemify_path($entry["local-path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR;
+				$file->target_path = realpath(systemify_path($entry["path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+				$file->local_path = realpath(getcwd() . DIRECTORY_SEPARATOR . systemify_path($entry["local-path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
 
                 $file->name = $f_info["basename"];
 				$file->type = $entry["type"];
@@ -481,7 +519,7 @@
 
 				if(strlen($file->hash) > 0) {
 					foreach ($result as $e)
-						if($e->hash == $file->hash) goto ignore;
+						if($e->hash == $file->hash && $e->target_path == $file->target_path) goto ignore;
 				}
 				array_push($result, $file);
 				ignore:

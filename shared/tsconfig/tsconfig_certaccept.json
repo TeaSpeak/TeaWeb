@@ -1,0 +1,16 @@
+/* general shared project config */
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "plugins": [ ]
+  },
+  "include": [
+    "../types",
+    "../declarations/exports_loader_certaccept.d.ts",
+    "../popup/certaccept/js/**/*.ts",
+    "../js/BrowserIPC.ts"
+  ]
+}

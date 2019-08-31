@@ -9,8 +9,6 @@
 /// <reference path="log.ts" />
 /// <reference path="PPTListener.ts" />
 
-let settings: Settings;
-
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
@@ -117,7 +115,7 @@ function setup_jsrender() : boolean {
 }
 
 async function initialize() {
-    settings = new Settings();
+    Settings.initialize();
 
     try {
         await i18n.initialize();
@@ -425,8 +423,9 @@ function main() {
        // Modals.openServerInfo(connection.channelTree.server);
         //Modals.createServerModal(connection.channelTree.server, properties => Promise.resolve());
     }, 1000);
-    Modals.spawnSettingsModal("identity-profiles");
+    //Modals.spawnSettingsModal("identity-profiles");
     //Modals.spawnKeySelect(console.log);
+    Modals.spawnBookmarkModal();
 }
 
 const task_teaweb_starter: loader.Task = {

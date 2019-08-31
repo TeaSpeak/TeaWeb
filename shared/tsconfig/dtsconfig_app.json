@@ -5,5 +5,5 @@
   "exclude": [
     "../js/workers/**/*.ts"
   ],
-  "target_file": "../declarations/exports_packed.d.ts"
+  "target_file": "../declarations/exports_app.d.ts"
 }

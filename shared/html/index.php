@@ -14,23 +14,31 @@
         <meta charset="UTF-8">
         <!-- App min width: 450px -->
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">
-        <meta name="description" content="TeaSpeak Web Client, connect to any TeaSpeak server without installing anything." />
+        <meta name="description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
         <meta name="keywords" content="TeaSpeak, TeaWeb, TeaSpeak-Web,Web client TeaSpeak, веб клієнт TeaSpeak, TSDNS, багатомовність, мультимовність, теми, функціонал"/>
+
+        <meta name="og:description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
+        <meta name="og:url" content="https://web.teaspeak.de/">
+        <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png">
+
         <!-- TODO Needs some fix -->
         <link rel="manifest" href="manifest.json">
 
-        <?php
+<?php
             if(!$WEB_CLIENT) {
-                echo "<title>TeaClient</title>";
+                echo "\t\t<title>TeaClient</title>" . PHP_EOL;
+				echo "\t\t<meta name='og:title' content='TeaClient'>" . PHP_EOL;
             } else {
-				echo "<title>TeaSpeak-Web</title>";
-				echo '<link rel="icon" href="img/favicon/teacup.png" type="image/x-icon">';
+				echo "\t\t<title>TeaSpeak-Web</title>" . PHP_EOL;
+				echo "\t\t<meta name='og:title' content='TeaSpeak-Web'>" . PHP_EOL;
+				echo "\t\t<link rel='shortcut icon' href='img/favicon/teacup.png' type='image/x-icon'>" . PHP_EOL;
+				//<link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png">
             }
-        ?>
+?>
 
         <!-- PHP generated properties -->
         <x-properties id="properties">
-			<?php
+<?php
 				function spawn_property($name, $value, $element_id = null)
 				{
 				    if(isset($value))
@@ -44,8 +52,11 @@
 				if ($version === false)
 				    $version = "unknown";
 				spawn_property("version", $version, "app_version");
-			?>
+?>
         </x-properties>
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="format-detection" content="telephone=no">
 
         <!-- Global site tag (gtag.js) - Google Analytics -->
         <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
@@ -79,9 +90,29 @@
             .fulloverlay .container {
                 position: relative;
                 display: inline-block;
-                top: 30%;
 
-                max-width: unset!important; /* override bootstrap */
+                top: 20%;
+            }
+
+            #critical-load.shown {
+                display: block;
+            }
+
+            @media (max-height: 750px) {
+                #critical-load .container {
+                    top: unset;
+                }
+
+                #critical-load {
+                    font-size: .8rem;
+
+                    flex-direction: column;
+                    justify-content: center;
+                }
+
+                #critical-load.shown {
+                    display: flex;
+                }
             }
 
             .no-js {
@@ -92,10 +123,12 @@
         <div id="style">
             <link rel="stylesheet" href="css/loader/loader.css">
         </div>
+
+        <meta name="app-loader-target" content="app">
         <div id="scripts">
             <script type="application/javascript" src="loader/loader_app.min.js" defer></script>
             <script type="application/javascript" src="loader/loader_app.js" defer></script>
-            <script type="application/javascript" src="loader/loader.js" defer></script>
+            <script type="application/javascript" src="loader/loader.js?_<?php echo time() ?>" defer></script>
         </div>
     </head>
     <body>
@@ -134,13 +167,13 @@
         <!-- Critical load error -->
         <div class="fulloverlay" id="critical-load">
             <div class="container">
-                <img src="img/loading_error_right.svg" height="192px">
-                <h1 class="error" style="color: red"></h1>
-                <h3 class="detail"></h3>
+                <img src="img/loading_error_right.svg" style="height: 12em">
+                <h1 class="error" style="color: red; margin-bottom: 0"></h1>
+                <h3 class="detail" style="margin-top: .5em"></h3>
             </div>
         </div>
 
-        <?php if($localhost && false) { ?>
+<?php if($localhost && true) { ?>
         <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
             <!-- <img src="https://www.chromatic-solutions.de/teaspeak/window/connect_opened.png"> -->
             <!-- <img src="http://puu.sh/DZDgO/9149c0a1aa.png"> -->
@@ -179,7 +212,7 @@
 
             <!-- <img src="http://puu.sh/E6NXv/eb2f19c7c3.png"> -->
             <!-- <img src="http://puu.sh/E9jT6/302912ae34.png"> -->
-            <img src="http://puu.sh/E9jYi/3003c58a2f.png">
+            <img src="http://puu.sh/Eb5w4/8d38fe5b8f.png">
         </div>
         <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; bottom: 2px;">toggle style</button>
         <script>
@@ -190,19 +223,6 @@
                 });
             }, 2500);
         </script>
-        <?php } ?>
-
-        <div id="music-test"></div>
-        <div id="templates"></div>
-        <div id="sounds"></div>
-        <div id="mouse-move">
-            <div class="container">
-            </div>
-        </div>
-        <div id="global-tooltip">
-            <a></a>
-        </div>
+<?php } ?>
     </body>
-
-    <div id="top-menu-bar"></div>
 </html>

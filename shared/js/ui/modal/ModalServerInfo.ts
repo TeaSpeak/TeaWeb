@@ -9,11 +9,32 @@ namespace Modals {
             body: () => {
                 const template = $("#tmpl_server_info").renderTag();
 
-                apply_hostbanner(server, template.find(".container-top"));
-                apply_category_1(server, template, update_callbacks);
-                apply_category_2(server, template, update_callbacks);
-                apply_category_3(server, template, update_callbacks);
+                const children = template.children();
+                const top = template.find(".container-top");
+                const update_values = () => {
+                    apply_hostbanner(server, top);
+                    apply_category_1(server, children, update_callbacks);
+                    apply_category_2(server, children, update_callbacks);
+                    apply_category_3(server, children, update_callbacks);
+                };
 
+                const button_update = template.find(".button-update");
+                button_update.on('click', event => {
+                    button_update.prop("disabled", true);
+                    server.updateProperties().then(() => {
+                        update_callbacks = [];
+                        update_values();
+                    }).catch(error => {
+                        log.warn(LogCategory.CLIENT, tr("Failed to refresh server properties: %o"), error);
+                        if(error instanceof CommandResult)
+                            error = error.extra_message || error.message;
+                        createErrorModal(tr("Refresh failed"), MessageHelper.formatMessage(tr("Failed to refresh server properties.{:br:}Error: {}"), error)).open();
+                    }).then(() => {
+                        button_update.prop("disabled", false);
+                    });
+                });
+
+                update_values();
                 tooltip(template);
                 return template.children();
             },

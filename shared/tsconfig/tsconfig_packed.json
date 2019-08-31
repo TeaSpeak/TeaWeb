@@ -5,6 +5,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "es6",
     "module": "none",
     "outFile": "../generated/shared.js",
     "plugins": [ /* ttypescript */

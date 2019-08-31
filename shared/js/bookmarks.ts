@@ -54,8 +54,8 @@ namespace bookmarks {
 
     export interface Bookmark {
         type: /* BookmarkType.ENTRY */ BookmarkType;
+        /* readonly */ parent: DirectoryBookmark;
 
-        /* readonly directory: DirectoryBookmark; */
         server_properties: ServerProperties;
         display_name: string;
         unique_id: string;
@@ -72,6 +72,7 @@ namespace bookmarks {
 
     export interface DirectoryBookmark {
         type: /* BookmarkType.DIRECTORY */ BookmarkType;
+        readonly parent: DirectoryBookmark;
 
         readonly content: (Bookmark | DirectoryBookmark)[];
         unique_id: string;
@@ -110,11 +111,25 @@ namespace bookmarks {
 
             save_config();
         }
+
+        const fix_parent = (parent: DirectoryBookmark, entry: Bookmark | DirectoryBookmark) => {
+            entry.parent = parent;
+            if(entry.type === BookmarkType.DIRECTORY)
+                for(const child of (entry as DirectoryBookmark).content)
+                    fix_parent(entry as DirectoryBookmark, child);
+        };
+        for(const entry of _bookmark_config.root_bookmark.content)
+            fix_parent(_bookmark_config.root_bookmark, entry);
+
         return _bookmark_config;
     }
 
     function save_config() {
-        localStorage.setItem("bookmarks", JSON.stringify(bookmark_config()));
+        localStorage.setItem("bookmarks", JSON.stringify(bookmark_config(), (key, value) => {
+            if(key === "parent")
+                return undefined;
+            return value;
+        }));
     }
 
     export function bookmarks() : DirectoryBookmark {
@@ -172,7 +187,8 @@ namespace bookmarks {
             nickname: nickname,
             type: BookmarkType.ENTRY,
             connect_profile: "default",
-            unique_id: guid()
+            unique_id: guid(),
+            parent: directory
         } as Bookmark;
 
         directory.content.push(bookmark);
@@ -185,7 +201,8 @@ namespace bookmarks {
 
             display_name: name,
             content: [],
-            unique_id: guid()
+            unique_id: guid(),
+            parent: parent
         } as DirectoryBookmark;
 
         parent.content.push(bookmark);

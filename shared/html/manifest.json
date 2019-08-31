@@ -1,6 +1,7 @@
 {
   "short_name": "TeaWeb",
   "name": "TeaSpeak Web",
+  "description": "The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak.",
   "icons": [
     {
       "src": "img/favicon/teacup.png",
@@ -8,8 +9,8 @@
       "sizes": "256x256"
     }
   ],
-  "start_url": "/?",
+  "start_url": "./?",
   "background_color": "#18BC9C",
-  "display": "standalone",
+  "display": "fullscreen",
   "theme_color": "#18BC9C"
 }
