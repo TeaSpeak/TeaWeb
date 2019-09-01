@@ -49,6 +49,12 @@ namespace transfer {
 
         request_file() : Promise<Response>;
     }
+    
+    export interface UploadTransfer {
+        put_data(data: BlobPart | File) : Promise<void>;
+
+        get_key(): transfer.UploadKey;
+    }
 
     export type DownloadKey = TransferKey;
     export type UploadKey = TransferKey;
@@ -56,7 +62,7 @@ namespace transfer {
     export function spawn_download_transfer(key: DownloadKey) : DownloadTransfer {
         return new RequestFileDownload(key);
     }
-    export function spawn_upload_transfer(key: UploadKey) : RequestFileUpload {
+    export function spawn_upload_transfer(key: UploadKey) : UploadTransfer {
         return new RequestFileUpload(key);
     }
 }
@@ -96,10 +102,14 @@ class RequestFileDownload implements transfer.DownloadTransfer {
     }
 }
 
-class RequestFileUpload {
+class RequestFileUpload implements transfer.UploadTransfer {
     readonly transfer_key: transfer.UploadKey;
     constructor(key: transfer.DownloadKey) {
         this.transfer_key = key;
+    }
+
+    get_key(): transfer.UploadKey {
+        return this.transfer_key;
     }
 
     async put_data(data: BlobPart | File) : Promise<void> {
