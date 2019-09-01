@@ -1,31 +1,27 @@
 
 function tr(text: string) { return text; }
 
-const task_certificate_callback: loader.Task = {
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "certificate accept tester",
     function: async () => {
-        Settings.initialize();
-
         const certificate_accept = settings.static_global(Settings.KEY_CERTIFICATE_CALLBACK, undefined);
+        const container_success = $("#container-success").hide();
+
         if(!certificate_accept) {
-            loader.critical_error("Missing certificate callback data");
+            loader.critical_error(tr("Missing certificate callback data"), tr("Please reconnect manually."));
             throw "missing data";
         }
 
         log.info(LogCategory.IPC, tr("Using this instance as certificate callback. ID: %s"), certificate_accept);
         try {
-            try {
-                await bipc.get_handler().post_certificate_accpected(certificate_accept);
-            } catch(e) {} //FIXME remove!
+            await bipc.get_handler().post_certificate_accpected(certificate_accept);
             log.info(LogCategory.IPC, tr("Other instance has acknowledged out work. Closing this window."));
-
-            const seconds_tag = $.spawn("a");
 
             let seconds = 5;
             let interval_id;
             interval_id = setInterval(() => {
                 seconds--;
-                seconds_tag.text(seconds.toString());
+                $("#time-left").text(seconds.toString());
 
                 if(seconds <= 0) {
                     clearTimeout(interval_id);
@@ -35,25 +31,11 @@ const task_certificate_callback: loader.Task = {
                 }
             }, 1000);
 
-            const message =
-                "You've successfully accepted the certificate.{:br:}" +
-                "This page will close in {0} seconds.";
-            /*
-            createInfoModal(
-                tr("Certificate acccepted successfully"),
-                MessageHelper.formatMessage(tr(message), seconds_tag),
-                {
-                    closeable: false,
-                    footer: undefined
-                }
-            ).open();
-             */
-            //TODO!
-            return;
+            container_success.show();
         } catch(error) {
             log.warn(LogCategory.IPC, tr("Failed to successfully post certificate accept status: %o"), error);
-            //TODO!
+            loader.critical_error(tr("Failed to emit success!"), tr("Please reconnect manually."));
         }
     },
     priority: 10
-};
+});

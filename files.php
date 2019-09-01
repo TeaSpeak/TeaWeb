@@ -325,15 +325,16 @@
 			"path" => "./popup/certaccept/",
 			"local-path" => "./shared/popup/certaccept/html/"
 		],
+
 		[ /* javascript loader (debug) */
 			"type" => "js",
-			"search-pattern" => "/.*\.js$/",
+			"search-pattern" => "/(loader|certaccept)\.js$/",
 			"build-target" => "dev",
 
 			"path" => "./popup/certaccept/loader/",
 			"local-path" => "./shared/loader/"
 		],
-		[ /* javascript loader for releases */
+		[ /* javascript loader (releases) */
 			"type" => "js",
 			"search-pattern" => "/.*loader_certaccept.min.js$/",
 			"build-target" => "rel",
@@ -342,13 +343,67 @@
 			"local-path" => "./shared/generated/"
 		],
 
+		[ /* javascript imported from shared for debug */
+			"type" => "js",
+			"search-pattern" => "/^(BrowserIPC|log|proto|settings)\.js$/",
+			"build-target" => "dev",
+
+			"path" => "./popup/certaccept/js/",
+			"local-path" => "./shared/js/"
+		],
+
 		[ /* javascript for debug */
+			"type" => "js",
+			"search-pattern" => "/^certaccept\.min\.js$/",
+			"build-target" => "rel",
+
+			"path" => "./popup/certaccept/js/",
+			"local-path" => "./shared/generated/"
+		],
+
+		[ /* javascript for release */
 			"type" => "js",
 			"search-pattern" => "/^.*\.js$/",
 			"build-target" => "dev",
 
 			"path" => "./popup/certaccept/js/",
-			"local-path" => "./shared/js/"
+			"local-path" => "./shared/popup/certaccept/js/"
+		],
+
+		[ /* shared css files */
+			"type" => "css",
+			"search-pattern" => "/.*\.css$/",
+			"build-target" => "rel|dev",
+
+			"path" => "./popup/certaccept/css/loader/",
+			"local-path" => "./shared/css/loader/"
+		],
+
+		[ /* shared css files */
+			"type" => "css",
+			"search-pattern" => "/.*\.css$/",
+			"build-target" => "rel|dev",
+
+			"path" => "./popup/certaccept/css/static/",
+			"local-path" => "./shared/popup/certaccept/css/static/"
+		],
+
+		[ /* img files */
+			"type" => "img",
+			"search-pattern" => "/^(loading_error.*)\.(svg)$/",
+			"build-target" => "dev|rel",
+
+			"path" => "./popup/certaccept/img/",
+			"local-path" => "./shared/img/"
+		],
+
+		[ /* jquery vendor */
+			"type" => "js",
+			"search-pattern" => "/^jquery\/.*\.js$/",
+			"build-target" => "dev|rel",
+
+			"path" => "./popup/certaccept/vendor/",
+			"local-path" => "./vendor/"
 		],
 	];
 
@@ -461,7 +516,7 @@
 		foreach($files as $key => $value){
 			$path = $base_dir.$dir.DIRECTORY_SEPARATOR.$value;
 			if(!is_dir($path)) {
-				if(!$match || preg_match($match, ($dir ? $dir.DIRECTORY_SEPARATOR : "").$value))
+				if(!$match || preg_match($match, ($dir ? $dir . DIRECTORY_SEPARATOR : "") . $value))
 					$results[] = ($dir ? $dir.DIRECTORY_SEPARATOR : "").$value;
 			} else if($value != "." && $value != "..") {
 				list_dir($base_dir, $match, $depth - 1, $results, ($dir ? $dir.DIRECTORY_SEPARATOR : "").$value);
@@ -481,7 +536,25 @@
 		public $hash;
 	}
 
-	function find_files($flag = 0b11, $local_path_prefix = "." . DIRECTORY_SEPARATOR, $type = "dev", $args = []) { //TODO Use cache here!
+	function normalizePath($path) {
+		return array_reduce(explode('/', $path), create_function('$a, $b', '
+			if($a === 0 && $b === ".")
+				return "./";
+			
+			if($a === 0)
+				$a = "/";
+
+			if($b === "" || $b === ".")
+				return $a;
+
+			if($b === "..")
+				return dirname($a);
+
+			return preg_replace("/\/+/", "/", "$a/$b");
+		'), 0);
+	}
+
+	function find_files($flag = 0b11, $local_path_prefix = "." . DIRECTORY_SEPARATOR, $target_path_prefix = "." . DIRECTORY_SEPARATOR, $type = "dev", $args = []) { //TODO Use cache here!
 		global $APP_FILE_LIST;
 		$result = [];
 
@@ -510,8 +583,8 @@
 				$file = new AppFile;
 
 				$f_info = pathinfo($f_entry);
-				$file->target_path = realpath(systemify_path($entry["path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-				$file->local_path = realpath(getcwd() . DIRECTORY_SEPARATOR . systemify_path($entry["local-path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"] . DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+				$file->target_path = normalizePath($target_path_prefix . systemify_path($entry["path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"]) . DIRECTORY_SEPARATOR;
+				$file->local_path = normalizePath(getcwd() . DIRECTORY_SEPARATOR . systemify_path($entry["local-path"]) . DIRECTORY_SEPARATOR . $f_info["dirname"]) . DIRECTORY_SEPARATOR;
 
                 $file->name = $f_info["basename"];
 				$file->type = $entry["type"];
@@ -561,10 +634,10 @@
 			if($_SERVER["argv"][3] == "dev" || $_SERVER["argv"][3] == "development") {
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;
-					$environment = join_path("web", "environment", "development");
+					$environment = "." . DIRECTORY_SEPARATOR . join_path("web", "environment", "development");
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = join_path("client-api", "environment", "ui-files", "raw");
+					$environment = "." . DIRECTORY_SEPARATOR . join_path("client-api", "environment", "ui-files", "raw");
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -573,10 +646,10 @@
 				$type = "rel";
 				if ($_SERVER["argv"][2] == "web") {
 					$flagset = 0b01;
-					$environment = join_path("web", "environment", "release");
+					$environment = "." . DIRECTORY_SEPARATOR . join_path("web", "environment", "release");
 				} else if ($_SERVER["argv"][2] == "client") {
 					$flagset = 0b10;
-					$environment = join_path("client-api", "environment", "ui-files", "raw");
+					$environment = "." . DIRECTORY_SEPARATOR . join_path("client-api", "environment", "ui-files", "raw");
 				} else {
 					error_log("Invalid type!");
 					goto help;
@@ -595,12 +668,7 @@
 					    goto handle_error;
 				}
 
-				$files = find_files($flagset, "." . DIRECTORY_SEPARATOR, $type, array_slice($_SERVER["argv"], 4));
-				$original_path = realpath(".");
-				if(!chdir($environment)) {
-					error_log("Failed to enter directory " . $environment . "!");
-					exit(1);
-				}
+				$files = find_files($flagset, "." . DIRECTORY_SEPARATOR, $environment . DIRECTORY_SEPARATOR, $type, array_slice($_SERVER["argv"], 4));
 
                 /** @var AppFile $file */
                 foreach($files as $file) {
@@ -611,10 +679,6 @@
 
                     if(create_link($output, $file->local_path . $file->name, $file->target_path . $file->name, $dry_run) === false)
                         goto handle_error;
-				}
-				if(!chdir($original_path)) {
-					error_log("Failed to reset directory!");
-					exit(1);
 				}
 				echo "Generated!" . PHP_EOL;
 			}

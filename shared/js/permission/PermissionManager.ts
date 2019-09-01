@@ -1,8 +1,6 @@
 /// <reference path="../ConnectionHandler.ts" />
 /// <reference path="../connection/ConnectionBase.ts" />
 
-import LogType = log.LogType;
-
 enum PermissionType {
     B_SERVERINSTANCE_HELP_VIEW = "b_serverinstance_help_view", /* Permission ID: 1 */
     B_SERVERINSTANCE_VERSION_VIEW = "b_serverinstance_version_view", /* Permission ID: 2 */

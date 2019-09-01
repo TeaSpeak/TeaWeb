@@ -601,6 +601,48 @@ namespace loader {
     }
 }
 
+//FUN: loader_ignore_age=0&loader_default_duration=1500&loader_default_age=5000
+let _fadeout_warned = false;
+function fadeoutLoader(duration = undefined, minAge = undefined, ignoreAge = undefined) {
+    if(typeof($) === "undefined") {
+        if(!_fadeout_warned)
+            console.warn("Could not fadeout loader screen. Missing jquery functions.");
+        _fadeout_warned = true;
+        return;
+    }
+
+    let settingsDefined = typeof(StaticSettings) !== "undefined";
+    if(!duration) {
+        if(settingsDefined)
+            duration = StaticSettings.instance.static("loader_default_duration", 750);
+        else duration = 750;
+    }
+    if(!minAge) {
+        if(settingsDefined)
+            minAge = StaticSettings.instance.static("loader_default_age", 1750);
+        else minAge = 750;
+    }
+    if(!ignoreAge) {
+        if(settingsDefined)
+            ignoreAge = StaticSettings.instance.static("loader_ignore_age", false);
+        else ignoreAge = false;
+    }
+
+    /*
+    let age = Date.now() - app.appLoaded;
+    if(age < minAge && !ignoreAge) {
+        setTimeout(() => fadeoutLoader(duration, 0, true), minAge - age);
+        return;
+    }
+    */
+
+    $(".loader .bookshelf_wrapper").animate({top: 0, opacity: 0}, duration);
+    $(".loader .half").animate({width: 0}, duration, () => {
+        $(".loader").detach();
+    });
+}
+
+
 /* set a timeout here, so if this script is merged with the actual loader (like in rel mode) the actual could load this manually here */
 setTimeout(() => {
     if(loader.running()) {
@@ -654,6 +696,3 @@ setTimeout(() => {
 
     loader.execute_managed();
 }, 0);
-
-
-

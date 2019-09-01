@@ -41,8 +41,12 @@ replace_tribble client/declarations/exports.d.ts
 echo "Generated client declarations"
 
 #Shared
-npm run dtsgen -- --config shared/tsconfig/dtsconfig.json -v
-replace_tribble shared/declarations/exports.d.ts
+./shared/generate_declarations.sh
+[[ $? -ne 0 ]] && {
+    echo "Failed to generate shared"
+}
+
+#replace_tribble shared/declarations/exports.d.ts
 echo "Generated shared declarations"
 
 #Now build the merged declaration for the shared project
@@ -54,14 +58,10 @@ if [[ ! -d shared/declarations ]]; then
         exit 1
     fi
 fi
-#The shared part has no access to the other parts, it just declares a abstract API
-#generate_link client/declarations/exports.d.ts shared/declarations/imports_client.d.ts
-#generate_link web/declarations/exports.d.ts shared/declarations/imports_web.d.ts
-
 
 #Last but not least the client imports
-generate_link shared/declarations/exports.d.ts web/declarations/imports_shared.d.ts
+generate_link shared/declarations/exports_app.d.ts web/declarations/imports_shared.d.ts
 generate_link shared/declarations/exports_loader_app.d.ts web/declarations/imports_shared_loader.d.ts
 
-generate_link shared/declarations/exports.d.ts client/declarations/imports_shared.d.ts
+generate_link shared/declarations/exports_app.d.ts client/declarations/imports_shared.d.ts
 generate_link shared/declarations/exports_loader_app.d.ts client/declarations/imports_shared_loader.d.ts

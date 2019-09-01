@@ -102,7 +102,7 @@ class RequestFileUpload {
         this.transfer_key = key;
     }
 
-    async put_data(data: BlobPart | File) {
+    async put_data(data: BlobPart | File) : Promise<void> {
         const form_data = new FormData();
 
         if(data instanceof File) {
@@ -125,7 +125,7 @@ class RequestFileUpload {
         await this.try_put(form_data, "https://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
     }
 
-    async try_put(data: FormData, url: string) : Promise<void> {
+    private async try_put(data: FormData, url: string) : Promise<void> {
         const response = await fetch(url, {
             method: 'POST',
             cache: "no-cache",

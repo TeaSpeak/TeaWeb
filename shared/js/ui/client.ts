@@ -605,7 +605,7 @@ class ClientEntry {
                 visible: this._audio_muted,
                 callback: () => this.set_muted(false, true)
             },
-            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : (() => {}))())
+            contextmenu.Entry.CLOSE(() => trigger_close ? on_close() : {})
         );
     }
 

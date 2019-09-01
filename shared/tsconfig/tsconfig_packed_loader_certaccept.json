@@ -8,6 +8,11 @@
   "include": [
     "../types",
     "../loader/loader.ts",
-    "../loader/certaccept.ts"
+    "../loader/certaccept.ts",
+    /*
+        Lets include them because we require stuff like the log.
+        More sense would it to make an extra d.ts file for that, but who cares
+     */
+    "../declarations/exports_app.d.ts"
   ]
 }

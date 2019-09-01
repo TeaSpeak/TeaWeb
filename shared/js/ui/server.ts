@@ -252,7 +252,7 @@ class ServerEntry {
                 name: tr("View avatars"),
                 callback: () => Modals.spawnAvatarList(this.channelTree.client)
             },
-            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : (() => {}))())
+            contextmenu.Entry.CLOSE(() => trigger_close ? on_close() : {})
         );
     }
 

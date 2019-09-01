@@ -3,28 +3,7 @@
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR"
 source ../scripts/resolve_commands.sh
-
-#Generate the loader definitions first
-LOADER_FILE="declarations/exports_loader_app.d.ts"
-if [[ -e ${LOADER_FILE} ]]; then
-    rm ${LOADER_FILE}
-    if [[ $? -ne 0 ]]; then
-        echo "Failed to remove loader file!\nThis could be critical later!"
-    fi
-fi
-
-npm run dtsgen -- --config $(pwd)/tsconfig/dtsconfig_loader_app.json -v
-if [[ ! -e ${LOADER_FILE} ]]; then
-    echo "Failed to generate definitions"
-    exit 1
-fi
-
-npm run dtsgen -- --config $(pwd)/tsconfig/dtsconfig_packed.json -v
-if [[ $? -ne 0 ]]; then
-    echo "Failed to generate definitions for the loader"
-    exit 1
-fi
-
+# The app loader
 execute_ttsc -p tsconfig/tsconfig_packed_loader_app.json
 if [[ $? -ne 0 ]]; then
     echo "Failed to generate packed loader file!"
@@ -37,21 +16,37 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+# The popup certaccept loader
+execute_ttsc -p tsconfig/tsconfig_packed_loader_certaccept.json
+if [[ $? -ne 0 ]]; then
+    echo "Failed to generate packed loader file!"
+    exit 1
+fi
 
+npm run minify-web-rel-file `pwd`/generated/loader_certaccept.min.js `pwd`/generated/loader_certaccept.js
+if [[ $? -ne 0 ]]; then
+    echo "Failed to minimize packed loader file!"
+    exit 1
+fi
+
+# The main shared source
 execute_ttsc -p tsconfig/tsconfig_packed.json
 if [[ $? -ne 0 ]]; then
     echo "Failed to generate packed file!"
     exit 1
 fi
 
-#Now link the loader file
-if [[ ! -L generated/load.js ]]; then
-    rm generated/load.js 2>/dev/null
-    ln -rs js/load.js generated/load.js
+# The certaccept source
+execute_ttsc -p tsconfig/tsconfig_packed_certaccept.json
+if [[ $? -ne 0 ]]; then
+    echo "Failed to generate packed certaccept file!"
+    exit 1
 fi
 
-if [[ ! -d generated/static/ ]]; then
-    mkdir -p generated/static/
+npm run minify-web-rel-file `pwd`/generated/certaccept.min.js `pwd`/generated/certaccept.js
+if [[ $? -ne 0 ]]; then
+    echo "Failed to minimize the certaccept file!"
+    exit 1
 fi
 
 # Create packed CSS file

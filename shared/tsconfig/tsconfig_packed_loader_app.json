@@ -8,7 +8,7 @@
   "include": [
     "../types",
     "../declarations/imports_*.d.ts",
-    "../declarations/exports_packed.d.ts",
+    "../declarations/exports_app.d.ts", /* lets include them because we require stuff like the log */
     "../loader/loader.ts",
     "../loader/app.ts",
     "../backend"

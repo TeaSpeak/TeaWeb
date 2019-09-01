@@ -249,12 +249,12 @@ namespace Modals {
                     });
 
                     button_connect_tab.on('click', event => {
-                        bookmarks.boorkmak_connect(selected_bookmark, true);
+                        bookmarks.boorkmak_connect(selected_bookmark as bookmarks.Bookmark, true);
                         modal.close();
                     }).toggle(!settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION));
 
                     button_connect.on('click', event => {
-                        bookmarks.boorkmak_connect(selected_bookmark, false);
+                        bookmarks.boorkmak_connect(selected_bookmark as bookmarks.Bookmark, false);
                         modal.close();
                     });
                 }
@@ -293,7 +293,18 @@ namespace Modals {
                             update_connect_info();
                         }
                     });
+
+                    input_connect_profile.on('change', event => {
+                        const id = input_connect_profile.val() as string;
+                        const profile = profiles.profiles().find(e => e.id === id);
+                        if(profile) {
+                            (selected_bookmark as bookmarks.Bookmark).connect_profile = id;
+                        } else {
+                            log.warn(LogCategory.GENERAL, tr("Failed to change connect profile for profile %s to %s"), selected_bookmark.unique_id, id);
+                        }
+                    })
                 }
+
 
                 update_bookmark_list();
                 update_buttons();

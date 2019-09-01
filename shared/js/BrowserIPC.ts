@@ -1,3 +1,5 @@
+//Used by CertAccept popup
+
 interface Window {
     BroadcastChannel: BroadcastChannel;
 }

@@ -137,8 +137,10 @@ function _generate(settings: _Settings, stack: StackParameters, layer: ts.Node[]
         case SyntaxKind.EndOfFileToken: /* oh no, we're at the end */
             break;
         default:
-            console.log("Unhandled type %s", SyntaxKind[node.kind]);
             //node.forEachChild(n => _generate(settings, stack, layer, n));
+            const sf = node.getSourceFile();
+            let { line, character } = sf ? sf.getLineAndCharacterOfPosition(node.getStart()) : {line: -1, character: -1};
+            console.log(`${(sf || {fileName: "unknown"}).fileName} (${line + 1},${character + 1}): Unhandled type %s`, SyntaxKind[node.kind]);
     }
 }
 
@@ -409,11 +411,24 @@ generators[SyntaxKind.EnumDeclaration] = (settings, stack, node: ts.EnumDeclarat
     return ts.createEnumDeclaration(undefined, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, members);
 };
 
-/* every variable in a block has no global scope! */
-generators[SyntaxKind.Block] = (settings, stack, node: ts.EnumMember) => {
+generators[SyntaxKind.HeritageClause] = (settings, stack, node: ts.HeritageClause) => {
     return undefined;
 };
 
-generators[SyntaxKind.IfStatement] = (settings, stack, node: ts.EnumMember) => {
+/* every variable in a block has no global scope! */
+generators[SyntaxKind.Block] = (settings, stack, node: ts.Block) => {
+    return undefined;
+};
+
+generators[SyntaxKind.IfStatement] = (settings, stack, node: ts.IfStatement) => {
+    return undefined;
+};
+
+/* Example for an ExpressionStatement would be: Modul["text"] = "XXX"; */
+generators[SyntaxKind.ExpressionStatement] = (settings, stack, node: ts.ExpressionStatement) => {
+    return undefined;
+};
+
+generators[SyntaxKind.SemicolonClassElement] = (settings, stack, node: ts.ExpressionStatement) => {
     return undefined;
 };

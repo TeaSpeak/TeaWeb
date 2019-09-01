@@ -1990,14 +1990,14 @@ test
                     else
                         entry.html_element.insertAfter(this._view_older_messages.html_element); /* last element is already the current element */
 
-                    if(_new_message && (typeof(this._scroll_position) === "number" || this.handle.current_channel() !== this.channel_id)) {
+                    if(_new_message && (typeof(this._scroll_position) === "number" || this.handle.current_channel() !== this.channel_id || this.handle.handle.content_type() !== FrameContent.CHANNEL_CHAT)) {
                         if(typeof(this._first_unread_message) === "undefined")
                             this._first_unread_message = entry;
 
                         this._first_unread_message_pointer.html_element.insertBefore(entry.html_element);
                         this._container_messages.trigger('scroll'); /* updates the new message stuff */
                     }
-                    if(update_view)
+                    if(typeof(update_view) !== "boolean" || update_view)
                         this.fix_scroll(true);
                 }
 
@@ -2563,6 +2563,8 @@ test
 
         html_tag() : JQuery { return this._html_tag; }
         info_frame() : InfoFrame { return this._info_frame; }
+
+        content_type() : FrameContent { return this._content_type; }
 
         destroy() {
             this._html_tag && this._html_tag.remove();

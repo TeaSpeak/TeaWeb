@@ -1,3 +1,5 @@
+//Used by CertAccept popup
+
 interface Array<T> {
     remove(elem?: T): boolean;
     last?(): T;

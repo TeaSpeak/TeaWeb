@@ -428,47 +428,6 @@ async function load_templates() {
     }
 }
 
-//FUN: loader_ignore_age=0&loader_default_duration=1500&loader_default_age=5000
-let _fadeout_warned = false;
-function fadeoutLoader(duration = undefined, minAge = undefined, ignoreAge = undefined) {
-    if(typeof($) === "undefined") {
-        if(!_fadeout_warned)
-            console.warn("Could not fadeout loader screen. Missing jquery functions.");
-        _fadeout_warned = true;
-        return;
-    }
-
-    let settingsDefined = typeof(StaticSettings) !== "undefined";
-    if(!duration) {
-        if(settingsDefined)
-            duration = StaticSettings.instance.static("loader_default_duration", 750);
-        else duration = 750;
-    }
-    if(!minAge) {
-        if(settingsDefined)
-            minAge = StaticSettings.instance.static("loader_default_age", 1750);
-        else minAge = 750;
-    }
-    if(!ignoreAge) {
-        if(settingsDefined)
-            ignoreAge = StaticSettings.instance.static("loader_ignore_age", false);
-        else ignoreAge = false;
-    }
-
-    /*
-    let age = Date.now() - app.appLoaded;
-    if(age < minAge && !ignoreAge) {
-        setTimeout(() => fadeoutLoader(duration, 0, true), minAge - age);
-        return;
-    }
-    */
-
-    $(".loader .bookshelf_wrapper").animate({top: 0, opacity: 0}, duration);
-    $(".loader .half").animate({width: 0}, duration, () => {
-        $(".loader").detach();
-    });
-}
-
 /* register tasks */
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "safari fix",
@@ -629,7 +588,7 @@ loader.register_task(loader.Stage.SETUP, {
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "log enabled initialisation",
-    function: async () => log.initialize(app.type === app.Type.CLIENT_DEBUG || app.type === app.Type.WEB_DEBUG ? LogType.TRACE : LogType.INFO),
+    function: async () => log.initialize(app.type === app.Type.CLIENT_DEBUG || app.type === app.Type.WEB_DEBUG ? log.LogType.TRACE : log.LogType.INFO),
     priority: 150
 });
 

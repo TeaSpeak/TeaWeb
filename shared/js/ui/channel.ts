@@ -620,7 +620,7 @@ class ChannelEntry {
                 invalidPermission: !channelCreate,
                 callback: () => this.channelTree.spawnCreateChannel()
             },
-            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : () => {})())
+            contextmenu.Entry.CLOSE(() => trigger_close ? on_close() : {})
         );
     }
 

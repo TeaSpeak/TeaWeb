@@ -37,7 +37,7 @@
 ?>
 
         <!-- PHP generated properties -->
-        <x-properties id="properties">
+        <x-properties id="properties" style="display: none">
 <?php
 				function spawn_property($name, $value, $element_id = null)
 				{
@@ -119,7 +119,8 @@
                 display: block;
             }
         </style>
-
+    </head>
+    <body>
         <div id="style">
             <link rel="stylesheet" href="css/loader/loader.css">
         </div>
@@ -130,8 +131,7 @@
             <script type="application/javascript" src="loader/loader_app.js" defer></script>
             <script type="application/javascript" src="loader/loader.js?_<?php echo time() ?>" defer></script>
         </div>
-    </head>
-    <body>
+
         <!-- No javascript error -->
         <div class="fulloverlay no-js">
             <div class="container">

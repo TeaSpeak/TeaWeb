@@ -72,7 +72,7 @@ namespace bookmarks {
 
     export interface DirectoryBookmark {
         type: /* BookmarkType.DIRECTORY */ BookmarkType;
-        readonly parent: DirectoryBookmark;
+        /* readonly */ parent: DirectoryBookmark;
 
         readonly content: (Bookmark | DirectoryBookmark)[];
         unique_id: string;

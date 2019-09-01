@@ -1,3 +1,5 @@
+//Used by CertAccept popup
+
 enum LogCategory {
     CHANNEL,
     CHANNEL_PROPERTIES, /* separating channel and channel properties because on channel init logging is a big bottleneck */
@@ -239,3 +241,5 @@ namespace log {
         }
     }
 }
+
+import LogType = log.LogType;

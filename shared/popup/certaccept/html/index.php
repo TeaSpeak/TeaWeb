@@ -5,16 +5,7 @@
 
         <title>Certificate callback</title>
 
-        <div id="style">
-            <link rel="stylesheet" href="css/loader/loader.css">
-        </div>
-
         <meta name="app-loader-target" content="certaccept">
-        <div id="scripts">
-            <script type="application/javascript" src="loader/loader_certaccept.min.js" defer></script>
-            <script type="application/javascript" src="loader/loader_certaccept.js" defer></script>
-            <script type="application/javascript" src="loader/loader.js?_<?php echo time() ?>" defer></script>
-        </div>
 
         <!-- required static style for the critical page and the enable javascript page -->
         <style>
@@ -60,8 +51,20 @@
                 }
             }
         </style>
+
+        <x-properties id="properties" style="display: none"> </x-properties>
     </head>
     <body>
+        <div id="style">
+            <link rel="stylesheet" href="css/loader/loader.css">
+        </div>
+
+        <div id="scripts">
+            <script type="application/javascript" src="loader/loader_certaccept.min.js" defer></script>
+            <script type="application/javascript" src="loader/loader_certaccept.js" defer></script>
+            <script type="application/javascript" src="loader/loader.js?_<?php echo time() ?>" defer></script>
+        </div>
+
         <!-- Loading screen -->
         <div class="loader" id="loader-overlay">
             <div class="half right"></div>
@@ -86,6 +89,24 @@
                 <h1 class="error" style="color: red; margin-bottom: 0"></h1>
                 <h3 class="detail" style="margin-top: .5em"></h3>
             </div>
+        </div>
+
+        <!-- success window -->
+        <div id="container-success">
+            <div class="spacer-top"></div>
+            <div class="container">
+                <div class="content">
+                    <h1>Success!</h1>
+                    <p>
+                        <a>You've successfully accepted the certificate.</a>
+                        <a>You will now connecting to the target server in the original tab.</a>
+                    </p>
+                    <p>
+                        <a>This window will close automatically in <span id="time-left">X</span> seconds!</a>
+                    </p>
+                </div>
+            </div>
+            <div class="spacer-bottom"></div>
         </div>
     </body>
 </html>

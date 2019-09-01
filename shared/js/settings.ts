@@ -1,3 +1,5 @@
+//Used by CertAccept popup
+
 if(typeof(customElements) !== "undefined") {
     try {
         class X_Properties extends HTMLElement {}

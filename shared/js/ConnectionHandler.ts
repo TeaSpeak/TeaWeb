@@ -173,7 +173,6 @@ class ConnectionHandler {
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
 
-
         let server_address: ServerAddress = {
             host: "",
             port: -1
@@ -333,13 +332,13 @@ class ConnectionHandler {
             connect_address: this.serverConnection.remote_address().host + (this.serverConnection.remote_address().port !== 9987 ? ":" + this.serverConnection.remote_address().port : "")
         };
 
-        const build_url = props => {
+        const build_url = (base: string, search: string, props: any) => {
             const parameters: string[] = [];
             for(const key of Object.keys(props))
                 parameters.push(key + "=" + encodeURIComponent(props[key]));
 
-            let callback = document.location.origin + document.location.pathname + document.location.search; /* don't use document.URL because it may contains a #! */
-            if(document.location.search.length == 0)
+            let callback = base + search; /* don't use document.URL because it may contains a #! */
+            if(!search)
                 callback += "?" + parameters.join("&");
             else
                 callback += "&" + parameters.join("&");
@@ -378,7 +377,7 @@ class ConnectionHandler {
                     this.startConnection(properties.connect_address, profile, true, cprops);
                 });
 
-                const url = build_url(properties);
+                const url = build_url(document.location.origin + document.location.pathname + "/popup/certaccept/", "", properties);
                 const features_string = [...Object.keys(features)].map(e => e + "=" + features[e]).reduce((a, b) => a + "," + b);
                 popup = window.open(url, "TeaWeb certificate accept", features_string);
                 try {
@@ -393,7 +392,7 @@ class ConnectionHandler {
                 }
             });
         } else {
-            tag.attr('href', build_url(properties));
+            tag.attr('href', build_url(document.location.origin + document.location.pathname, document.location.search, properties));
         }
         return tag;
     }

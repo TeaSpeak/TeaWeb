@@ -50,6 +50,16 @@ files=(
 )
 
 target_file=`pwd`/../generated/static/base.css
+
+if [[ ! -d $(dirname ${target_file}) ]]; then
+    echo "Creating target path ($(dirname ${target_file}))"
+    mkdir -p $(dirname ${target_file})
+    if [[ $? -ne 0 ]]; then
+        echo "Failed to create target path!"
+        exit 1
+    fi
+fi
+
 echo "/* Auto generated merged CSS file */" > ${target_file}
 for file in "${files[@]}"; do
     if [[ ${file} =~ css/* ]]; then
