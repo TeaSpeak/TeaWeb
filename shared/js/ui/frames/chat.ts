@@ -145,11 +145,11 @@ namespace MessageHelper {
             unit?: string,
             exact?: boolean
         }) : string {
-            options = Object.assign(options || {}, {
-                time: undefined,
-                unit: "Bytes",
-                exact: true
-            });
+            options = options || {};
+            if(typeof options.exact !== "boolean")
+                options.exact = true;
+            if(typeof options.unit !== "string")
+                options.unit = "Bytes";
 
             let points = value.toFixed(0).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 
@@ -170,9 +170,22 @@ namespace MessageHelper {
                 unit = "";
                 v = value;
             }
-            if(unit && options.time)
-                unit = unit + "/" + options.time;
-            return (options.exact || !unit ? (points + " " + (options.unit || "")) : "") + (unit ? (" / " + v.toFixed(2) + " " + unit) : "");
+
+            let result = "";
+            if(options.exact || !unit) {
+                result += points;
+                if(options.unit) {
+                    result += " " + options.unit;
+                    if(options.time)
+                        result += "/" + options.time;
+                }
+            }
+            if(unit) {
+                result += (result ? " / " : "") + v.toFixed(2) + " " + unit;
+                if(options.time)
+                    result += "/" + options.time;
+            }
+            return result;
         }
     }
 

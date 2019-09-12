@@ -47,7 +47,8 @@ class Group {
     }
 
     updateProperty(key, value) {
-        JSON.map_field_to(this.properties, value, key);
+        if(!JSON.map_field_to(this.properties, value, key))
+            return; /* no updates */
 
         if(key == "iconid") {
             this.properties.iconid = (new Uint32Array([this.properties.iconid]))[0];

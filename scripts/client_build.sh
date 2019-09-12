@@ -48,7 +48,7 @@ fi
 
 #Now lets build the declarations
 echo "Building declarations"
-./scripts/build_declarations.sh
+./scripts/build_declarations.sh force
 if [[ $? -ne 0 ]]; then
     echo "Failed to generate declarations"
     exit 1
@@ -64,7 +64,7 @@ if [[ "$type" == "release" ]]; then #Compile everything for release mode
     fi
 
     #Now compile the web client itself
-    echo "Building web client"
+    echo "Building client UI"
     ./client/generate_packed.sh
     if [[ $? -ne 0 ]]; then
         echo "Failed to build web client"
@@ -78,7 +78,7 @@ elif [[ "$type" == "development" ]]; then
         exit 1
     fi
 
-    echo "Building client client source"
+    echo "Building client UI source"
     execute_ttsc -p ./client/tsconfig/tsconfig.json
     if [[ $? -ne 0 ]]; then
         echo "Failed to compile web sources"

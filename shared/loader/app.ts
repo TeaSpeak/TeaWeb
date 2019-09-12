@@ -191,6 +191,7 @@ const loader_javascript = {
             "js/ui/elements/tab.js",
             "js/ui/elements/slider.js",
             "js/ui/elements/tooltip.js",
+            "js/ui/elements/net_graph.js",
 
             //Load UI
             "js/ui/modal/ModalAbout.js",
@@ -207,6 +208,7 @@ const loader_javascript = {
             "js/ui/modal/ModalCreateChannel.js",
             "js/ui/modal/ModalServerEdit.js",
             "js/ui/modal/ModalServerInfo.js",
+            "js/ui/modal/ModalServerInfoBandwidth.js",
             "js/ui/modal/ModalChangeVolume.js",
             "js/ui/modal/ModalBanClient.js",
             "js/ui/modal/ModalIconSelect.js",
@@ -372,6 +374,7 @@ const loader_style = {
             "css/static/modal-bancreate.css",
             "css/static/modal-clientinfo.css",
             "css/static/modal-serverinfo.css",
+            "css/static/modal-serverinfobandwidth.css",
             "css/static/modal-identity.css",
             "css/static/modal-settings.css",
             "css/static/modal-poke.css",
@@ -465,7 +468,7 @@ loader.register_task(loader.Stage.INITIALIZING, {
             return {name:M[0], version:M[1]};
         })();
 
-        console.log("Resolved browser specs: %o", navigator.browserSpecs); //Object { name: "Firefox", version: "42" }
+        console.log("Resolved browser manufacturer to \"%s\" version \"%s\"", navigator.browserSpecs.name, navigator.browserSpecs.version);
     },
     priority: 30
 });

@@ -304,6 +304,7 @@ namespace top_menu {
                     handler.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
                     server_connections.active_connection_handler().serverConnection.disconnect();
                     handler.sound.play(Sound.CONNECTION_DISCONNECTED);
+                    this.log.log(log.server.Type.DISCONNECTED, {});
                 }
                 control_bar.update_connection_state();
                 update_state();
@@ -438,7 +439,6 @@ namespace top_menu {
                         createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to view the ban list")).open();
                         scon.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
                     }
-                    Modals.spawnPlaylistManage(scon);
                 } else {
                     createErrorModal(tr("You have to be connected"), tr("You have to be connected to use this function!")).open();
                 }

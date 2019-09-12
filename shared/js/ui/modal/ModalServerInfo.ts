@@ -32,7 +32,7 @@ namespace Modals {
                     }).then(() => {
                         button_update.prop("disabled", false);
                     });
-                });
+                }).trigger('click');
 
                 update_values();
                 tooltip(template);
@@ -49,7 +49,15 @@ namespace Modals {
 
         modal.htmlTag.find(".button-close").on('click', event => modal.close());
         modal.htmlTag.find(".button-show-bandwidth").on('click', event => {
-            //TODO!
+            const intervals = [];
+            const updater = (info) => {
+                intervals.forEach(e => e(info));
+            };
+
+            update_callbacks.push(updater);
+            Modals.openServerInfoBandwidth(server, intervals).close_listener.push(() => {
+                update_callbacks.remove(updater);
+            });
         });
 
         modal.htmlTag.find(".modal-body").addClass("modal-server-info");

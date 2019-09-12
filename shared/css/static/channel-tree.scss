@@ -9,6 +9,8 @@
 
     overflow: hidden;
     overflow-y: auto;
+
+    @include chat-scrollbar-vertical();
 }
 
 /* the channel tree */

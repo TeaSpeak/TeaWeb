@@ -106,7 +106,10 @@ class ChannelTree {
         this._tree_detached = false;
         this._tag_entries.appendTo(this._tag_container);
 
-        this.channels.forEach(e => e.recalculate_repetitive_name());
+        this.channels.forEach(e => {
+            e.recalculate_repetitive_name();
+            e.reorderClients();
+        });
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
@@ -326,12 +329,17 @@ class ChannelTree {
     }
 
     deleteClient(client: ClientEntry, animate_tag?: boolean) {
+        const old_channel = client.currentChannel();
         this.clients.remove(client);
         if(typeof(animate_tag) !== "boolean" || animate_tag)
             this.__deleteAnimation(client);
         else
             client.tag.detach();
         client.onDelete();
+
+        if(old_channel) {
+            this.client.side_bar.info_frame().update_channel_client_count(old_channel);
+        }
 
         const voice_connection = this.client.serverConnection.voice_connection();
         if(client.get_audio_handle()) {
@@ -359,6 +367,9 @@ class ChannelTree {
         client.tree_unregistered();
     }
 
+    private _update_timer: number;
+    private _reorder_channels = new Set<ChannelEntry>();
+
     insertClient(client: ClientEntry, channel: ChannelEntry) : ClientEntry {
         let newClient = this.findClient(client.clientId());
         if(newClient)
@@ -376,10 +387,22 @@ class ChannelTree {
             tag.css("display", "none").fadeIn("slow");
 
         tag.appendTo(channel.clientTag());
-        client.currentChannel().reorderClients();
+        channel.reorderClients();
 
-        channel.updateChannelTypeIcon();
-        client.update_family_index();
+        /* schedule a reorder for this channel. */
+        this._reorder_channels.add(client.currentChannel());
+        if(!this._update_timer) {
+            this._update_timer = setTimeout(() => {
+                this._update_timer = undefined;
+                for(const channel of this._reorder_channels) {
+                    channel.updateChannelTypeIcon();
+                    this.client.side_bar.info_frame().update_channel_client_count(channel);
+                }
+                this._reorder_channels.clear();
+            }, 5) as any;
+        }
+
+        client.update_family_index(); /* why the hell is this here?! */
         return client;
     }
 
@@ -392,10 +415,12 @@ class ChannelTree {
         tag.appendTo(client.currentChannel().clientTag());
         if(oldChannel) {
             oldChannel.updateChannelTypeIcon();
+            this.client.side_bar.info_frame().update_channel_client_count(oldChannel);
         }
-        if(client.currentChannel()) {
-            client.currentChannel().reorderClients();
-            client.currentChannel().updateChannelTypeIcon();
+        if(channel) {
+            channel.reorderClients();
+            channel.updateChannelTypeIcon();
+            this.client.side_bar.info_frame().update_channel_client_count(channel);
         }
         client.updateClientStatusIcons();
         client.update_family_index();

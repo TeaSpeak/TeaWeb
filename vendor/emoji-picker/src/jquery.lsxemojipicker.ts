@@ -752,7 +752,7 @@ if(typeof jQuery !== 'undefined'){
                 const _tab = (name: string, hidden: boolean) => {
                     let tab_html = '<div ' +
                         'class="lsx-emojipicker-emoji lsx-emoji-tab lsx-emoji-' + name + (hidden ? " hidden" : "") + '"' +
-                        'style="width: ' + settings.width + 'px; height: ' + settings.height + 'px;"' +
+                        ' style="width: ' + settings.width + 'px; height: ' + settings.height + 'px;"' +
                     '>';
 
                     if(settings.twemoji) {

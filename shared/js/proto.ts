@@ -8,8 +8,8 @@ interface Array<T> {
 }
 
 interface JSON {
-    map_to<T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number) : T;
-    map_field_to<T>(object: T, value: any, field: string) : T;
+    map_to<T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number) : number;
+    map_field_to<T>(object: T, value: any, field: string) : boolean;
 }
 
 type JQueryScrollType = "height" | "width";
@@ -42,7 +42,7 @@ interface String {
 }
 
 if(!JSON.map_to) {
-    JSON.map_to = function <T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number): T {
+    JSON.map_to = function <T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number): number {
         if (!validator) validator = (a, b) => true;
 
         if (!variables) {
@@ -59,6 +59,7 @@ if(!JSON.map_to) {
             variables = [variables];
         }
 
+        let updates = 0;
         for (let field of variables) {
             if (!json[field]) {
                 console.trace(tr("Json does not contains %s"), field);
@@ -69,24 +70,32 @@ if(!JSON.map_to) {
                 continue;
             }
 
-            JSON.map_field_to(object, json[field], field);
+            if(JSON.map_field_to(object, json[field], field))
+                updates++;
         }
-        return object;
+        return updates;
     }
 }
 
 if(!JSON.map_field_to) {
-    JSON.map_field_to = function<T>(object: T, value: any, field: string) : T {
+    JSON.map_field_to = function<T>(object: T, value: any, field: string) : boolean {
         let field_type = typeof(object[field]);
+        let new_object;
         if(field_type == "string" || field_type == "object" || field_type == "undefined")
-            object[field as string] = value;
+            new_object = value;
         else if(field_type == "number")
-            object[field as string] = parseFloat(value);
+            new_object = parseFloat(value);
         else if(field_type == "boolean")
-            object[field as string] = value == "1" || value == "true";
-        else console.warn(tr("Invalid object type %s for entry %s"), field_type, field);
+            new_object = value == "1" || value == "true";
+        else {
+            console.warn(tr("Invalid object type %s for entry %s"), field_type, field);
+            return false;
+        }
 
-        return object;
+        if(new_object === object[field as string]) return false;
+
+        object[field as string] = new_object;
+        return true;
     }
 }
 

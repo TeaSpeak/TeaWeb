@@ -1393,7 +1393,8 @@ class MusicClientEntry extends ClientEntry {
 
     handlePlayerInfo(json) {
         if(json) {
-            let info = JSON.map_to(new MusicClientPlayerInfo(), json);
+            const info = new MusicClientPlayerInfo();
+           JSON.map_to(info, json);
             if(this._info_promise_resolve)
                 this._info_promise_resolve(info);
             this._info_promise_reject = undefined;

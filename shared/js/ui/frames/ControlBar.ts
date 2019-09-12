@@ -77,9 +77,9 @@ class ControlBar {
                 .attr("title", server.properties.virtualserver_hostbutton_tooltip || server.properties.virtualserver_hostbutton_gfx_url)
                 .attr("href", server.properties.virtualserver_hostbutton_url);
             this._button_hostbanner.find("img").attr("src", server.properties.virtualserver_hostbutton_gfx_url);
-            this._button_hostbanner.show();
+            this._button_hostbanner.each((_, e) => { e.style.display = null; });
         } else {
-            this._button_hostbanner.hide();
+            this._button_hostbanner.each((_, e) => { e.style.display = "none"; });
         }
     }
 
@@ -470,6 +470,7 @@ class ControlBar {
         this.connection_handler.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
         this.update_connection_state();
         this.connection_handler.sound.play(Sound.CONNECTION_DISCONNECTED);
+        this.log.log(log.server.Type.DISCONNECTED, {});
     }
 
     private on_token_use() {

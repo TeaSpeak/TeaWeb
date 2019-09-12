@@ -9,6 +9,7 @@
 	justify-content: stretch;
 
 	width: 1000000em; /* get us some width */
+	min-height: 20em; /* Set it here, so we dont have a inner modal scroll */
 
 	@include user-select(none);
 
@@ -146,6 +147,7 @@
 				flex-grow: 1;
 				flex-shrink: 1;
 
+				min-height: 10em;
 				min-width: 30em;
 
 				.permission-editor {
@@ -162,6 +164,7 @@
 	.container >.left {
 		width: 25%;
 		min-width: 10em;
+		min-height: 10em;
 
 		background-color: #222226;
 
@@ -192,6 +195,9 @@
 			.container {
 				flex-grow: 1;
 				flex-shrink: 1;
+
+				min-height: 15em;
+				overflow-y: auto;
 
 				flex-direction: column;
 			}

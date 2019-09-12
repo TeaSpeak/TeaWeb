@@ -143,7 +143,7 @@ namespace connection {
             this.connection_handler.channelTree.registerClient(this.connection_handler.getClient());
             this.connection.client.side_bar.channel_conversations().reset();
             this.connection.client.clientId = parseInt(json["aclid"]);
-            this.connection.client.getClient().updateVariables({key: "client_nickname", value: json["acn"]});
+            this.connection.client.getClient().updateVariables( {key: "client_nickname", value: json["acn"]});
 
             let updates: {
                 key: string,
@@ -412,6 +412,8 @@ namespace connection {
                     } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
                         if(own_channel == channel)
                             this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
+                    } else if(reason_id == ViewReasonId.VREASON_SYSTEM) {
+
                     } else {
                         console.warn(tr("Unknown reasonid for %o"), reason_id);
                     }
@@ -550,6 +552,8 @@ namespace connection {
             json = json[0]; //Only one bulk
             let tree = this.connection.client.channelTree;
             let client = tree.findClient(json["clid"]);
+            let self = client instanceof LocalClientEntry;
+
             let channel_to = tree.findChannel(json["ctid"]);
             let channel_from = tree.findChannel(json["cfid"]);
 
@@ -562,12 +566,21 @@ namespace connection {
                 log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel to)!"));
                 return 0;
             }
-            if(!channel_from) //Not critical
-                log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
 
-            let self = client instanceof LocalClientEntry;
+            if(!self) {
+                if(!channel_from) {
+                    log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
+                } else if(channel_to !== client.currentChannel()) {
+                    log.error(LogCategory.NETWORKING,
+                        tr("Client move from invalid source channel! Local client registered in channel %d but server send %d."),
+                        client.currentChannel().channelId, channel_from.channelId
+                    );
+                }
+            }
+
             let current_clients: ClientEntry[];
             if(self) {
+                channel_from = client.currentChannel();
                 current_clients = client.channelTree.clientsByChannel(client.currentChannel());
                 this.connection_handler.update_voice_status(channel_to);
             }
@@ -585,9 +598,11 @@ namespace connection {
                 if(conversation_to)
                     conversation_to.update_private_state();
 
-                const conversation_from = side_bar.channel_conversations().conversation(channel_from.channelId, false);
-                if(conversation_from)
-                    conversation_from.update_private_state();
+                if(channel_from) {
+                    const conversation_from = side_bar.channel_conversations().conversation(channel_from.channelId, false);
+                    if(conversation_from)
+                        conversation_from.update_private_state();
+                }
 
                 side_bar.channel_conversations().update_chat_box();
             }
@@ -695,6 +710,11 @@ namespace connection {
                 updates.push({key: key, value: json[key]});
             }
             channel.updateVariables(...updates);
+
+            if(this.connection_handler.getClient().currentChannel() === channel) {
+                //TODO: Playback sound that your channel has been edited
+                this.connection_handler.update_voice_status();
+            }
         }
 
         handleNotifyTextMessage(json) {
@@ -979,7 +999,12 @@ namespace connection {
                     sender_database_id: parseInt(entry["sender_database_id"])
                 }, false);
             }
+
+            /* now update the boxes */
+            /* No update needed because the command which triggers this notify should update the chat box on success
             conversation.fix_scroll(true);
+            conversation.handle.update_chat_box();
+            */
         }
 
         handleNotifyConversationMessageDelete(json: any[]) {

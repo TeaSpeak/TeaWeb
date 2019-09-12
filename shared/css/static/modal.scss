@@ -959,3 +959,12 @@ input[type=number] {
 input.input-boxed {
 	padding: 0.5em;
 }
+textarea.input-boxed {
+	resize: vertical;
+	width: 100%;
+
+	min-height: 2em;
+	padding: .2em .5em;
+
+	@include chat-scrollbar-vertical();
+}

@@ -212,7 +212,9 @@
 
             <!-- <img src="http://puu.sh/E6NXv/eb2f19c7c3.png"> -->
             <!-- <img src="http://puu.sh/E9jT6/302912ae34.png"> -->
-            <img src="http://puu.sh/Eb5w4/8d38fe5b8f.png">
+            <!-- <img src="http://puu.sh/E9jTe/b41f6386de.png"> -->
+            <!-- <img src="img/style/ban-list.png"> -->
+            <img  src="http://puu.sh/E9jTe/b41f6386de.png">
         </div>
         <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; bottom: 2px;">toggle style</button>
         <script>

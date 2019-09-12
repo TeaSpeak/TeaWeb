@@ -41,7 +41,7 @@ class Hostbanner {
 
         const tag = this.generate_tag();
         tag.then(element => {
-            console.log("Regenrated result: %o", element);
+            log.debug(LogCategory.CLIENT, tr("Regenerated hostbanner tag. Replacing it: %o"), element);
             if(!element) {
                 this.html_tag.empty().addClass("disabled");
                 return;
@@ -61,7 +61,7 @@ class Hostbanner {
                 }, 250);
             }
         }).catch(error => {
-            console.warn(tr("Failed to load hostbanner: %o"), error);
+            log.warn(LogCategory.CLIENT, tr("Failed to load the hostbanner: %o"), error);
             this.html_tag.empty().addClass("disabled");
         });
         const server = this.client.channelTree.server;
@@ -94,7 +94,7 @@ class Hostbanner {
             image_element.src = banner_url;
             image_element.style.display = 'none';
             document.body.append(image_element);
-            console.log("Loading hostbanner image!");
+            log.debug(LogCategory.CLIENT, tr("Successfully loaded hostbanner image."));
         });
 
         image_element.parentNode.removeChild(image_element);

@@ -34,7 +34,9 @@ namespace Modals {
                 tooltip(template);
                 return template.children();
             },
-            footer: null
+            footer: null,
+
+            width: '60em'
         });
 
         const updater = setInterval(() => {

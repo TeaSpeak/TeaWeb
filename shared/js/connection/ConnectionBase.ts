@@ -88,6 +88,9 @@ namespace connection {
 
             abstract voice_recorder() : RecorderProfile;
             abstract acquire_voice_recorder(recorder: RecorderProfile | undefined) : Promise<void>;
+
+            abstract get_encoder_codec() : number;
+            abstract set_encoder_codec(codec: number);
         }
     }
 

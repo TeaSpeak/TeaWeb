@@ -51,9 +51,9 @@ namespace transfer {
     }
     
     export interface UploadTransfer {
-        put_data(data: BlobPart | File) : Promise<void>;
+        get_key(): UploadKey;
 
-        get_key(): transfer.UploadKey;
+        put_data(data: BlobPart | File) : Promise<void>;
     }
 
     export type DownloadKey = TransferKey;

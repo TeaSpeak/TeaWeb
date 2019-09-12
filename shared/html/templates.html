@@ -3278,74 +3278,289 @@
 
         <!-- General management templates -->
         <script class="jsrender-template" id="tmpl_ban_list" type="text/html">
-            <div class="banlist">
-                <div class="frame-container">
-                    <div class="top-menu">
-                        <div class="form-group bmd-form-group manage-buttons">
-                            <button class="btn btn-success button-add">{{tr "Add" /}}</button>
-                            <button class="btn btn-primary button-edit">{{tr "Edit" /}}</button>
-                            <button class="btn btn-danger button-remove">{{tr "Remove" /}}</button>
-                        </div>
-                        <div class="search form-group">
-                            <label class="bmd-label-floating">{{tr "filter" /}}</label>
-                            <input type="text" class="form-control entry-filter">
-                        </div>
+        <div> <!-- required for jquery -->
+            <div class="left">
+                <div class="head">
+                    <div class="category category-add">
+                        <a>{{tr "Create" /}}</a>
+                        <div class="background"></div>
                     </div>
-                    <div class="entry-container">
-                        <div class="ban-entry header">
-                            <div class="column column-keys">{{tr "Name/IP/UID/HWID"/}}</div>
-                            <div class="column column-reason">{{tr "Reason"/}}</div>
-                            <div class="column column-creator">{{tr "Creator"/}}</div>
-                            <div class="column column-time">{{tr "Created / Expires"/}}</div>
-                        </div>
-                        <div class="entries"></div>
+                    <div class="category category-edit">
+                        <a>{{tr "Edit" /}}</a>
+                        <div class="background"></div>
                     </div>
-                    <div class="bottom-menu">
-                        <div class="left">
-                            <button class="btn btn-primary button-refresh btn-raised">{{tr "Reload"/}}</button>
-                            <div class="switch">
-                                <label>
-                                    <input type="checkbox" class="filter-flag-force-own">
-                                    {{tr "Show only own bans" /}}
-                                </label>
-                            </div>
-                            <div class="switch">
-                                <label>
-                                    <input type="checkbox" class="filter-flag-highlight-own">
-                                    {{tr "Highlight own bans" /}}
-                                </label>
+                </div>
+                <div class="body">
+                    <div class="container-add">
+                        <div class="container-no-permissions">
+                            <a>{{tr "You dont have permission to create bans" /}}</a>
+                        </div>
+                        <div class="group group-name">
+                            <a>{{tr "Name" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'Username to ban' /}}" />
                             </div>
                         </div>
-                        <div class="right">
-                            <a class="entry-count-info"></a>
-                            <button class="btn btn-secondary btn-raised button-close">{{tr "Close" /}}</button>
+                        <div class="group group-ip">
+                            <a>{{tr "IP" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'IP to ban' /}}" />
+                            </div>
                         </div>
+                        <!-- Currently not supported by TeaSpeak
+                        <div class="group group-interpret">
+                            <a>{{tr "Interpret IP / Name as" /}}</a>
+                            <div class="input-boxed">
+                                <select class="ban-regex-type">
+                                    <option value="wildcard-4">{{tr "Wildcard IPv4" /}}</option>
+                                    <option value="wildcard-6">{{tr "Wildcard IPv6" /}}</option>
+                                    <option value="fixed" selected>{{tr "Fixed string" /}}</option>
+                                    <option value="regex">{{tr "Regular Expression" /}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        -->
+                        <div class="group group-unique-id">
+                            <a>{{tr "Unique ID" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'Client unique id to ban' /}}" />
+                            </div>
+                        </div>
+                        <div class="group group-hwid">
+                            <a>{{tr "Hardware ID" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'No Hardware ID given' /}}" />
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip.svg"/>
+                                    <div class="tooltip">
+                                        <p>
+                                            {{tr "The hardware id has different meanings, depends on the users agent<br>" +
+                                            "TeaClient: The hardware id will be generate out of some unique system id's<br>" +
+                                            "TeaWeb: The TeaSpeak web client hasn't a hardware id, it will be random<br>" +
+                                            "TeamSpeak 3 client: The hardware id will be a result of a random generate string within the system registry" /}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="group group-reason">
+                            <a>{{tr "Reason" /}}</a>
+                            <textarea class="input-boxed" placeholder="{{tr 'No reason given' /}}"></textarea>
+                        </div>
+                        <div class="group group-duration">
+                            <a>{{tr "Duration" /}}</a>
+                            <div class="container-value">
+                                <div class="input-boxed value">
+                                    <input type="number" value="1" min="1" />
+                                    <div class="container-tooltip tooltip-max-time">
+                                        <img src="img/icon_tooltip.svg"/>
+                                        <div class="tooltip">
+                                            <a class="max">error: max duration</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <select class="input-boxed">
+                                    <option value="sec">{{tr "seconds"/}}</option>
+                                    <option value="min">{{tr "minutes"/}}</option>
+                                    <option value="hours">{{tr "hours"/}}</option>
+                                    <option value="days">{{tr "days"/}}</option>
+                                    <option value="perm">{{tr "permanent"/}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <label class="group-global">
+                            <div class="checkbox">
+                                <input type="checkbox">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Use this ban as a global ban" /}}</a>
+                        </label>
+                    </div>
+                    <div class="container-edit">
+                        <div class="group group-name">
+                            <a>{{tr "Name" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'No username given' /}}" />
+                            </div>
+                        </div>
+                        <div class="group group-ip">
+                            <a>{{tr "IP" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'No IP given' /}}" />
+                            </div>
+                        </div>
+                        <!-- Currently not supported by TeaSpeak
+                        <div class="group group-interpret">
+                            <a>{{tr "Interpret IP / Name as" /}}</a>
+                            <div class="input-boxed">
+                                <select class="ban-regex-type">
+                                    <option value="wildcard-4">{{tr "Wildcard IPv4" /}}</option>
+                                    <option value="wildcard-6">{{tr "Wildcard IPv6" /}}</option>
+                                    <option value="fixed">{{tr "Fixed string" /}}</option>
+                                    <option value="regex">{{tr "Regular Expression" /}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        -->
+                        <div class="group group-unique-id">
+                            <a>{{tr "Unique ID" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'No Unique ID given' /}}" />
+                            </div>
+                        </div>
+                        <div class="group group-hwid">
+                            <a>{{tr "Hardware ID" /}}</a>
+                            <div class="input-boxed">
+                                <input placeholder="{{tr 'No Hardware ID given' /}}" />
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip.svg"/>
+                                    <div class="tooltip">
+                                        <p>
+                                            {{tr "The hardware id has different meanings, depends on the users agent<br>" +
+                                            "TeaClient: The hardware id will be generate out of some unique system id's<br>" +
+                                            "TeaWeb: The TeaSpeak web client hasn't a hardware id, it will be random<br>" +
+                                            "TeamSpeak 3 client: The hardware id will be a result of a random generate string within the system registry" /}}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="group group-reason">
+                            <a>{{tr "Reason" /}}</a>
+                            <textarea class="input-boxed" placeholder="{{tr 'No reason given' /}}"></textarea>
+                        </div>
+                        <div class="group group-duration">
+                            <a>{{tr "Duration" /}}</a>
+                            <div class="container-value">
+                                <div class="input-boxed value">
+                                    <input type="number" value="1" min="1" />
+                                    <div class="container-tooltip tooltip-max-time">
+                                        <img src="img/icon_tooltip.svg"/>
+                                        <div class="tooltip">
+                                            <a class="detailed">error: details</a>
+                                            <a class="max">error: max duration</a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <select class="input-boxed">
+                                    <option value="sec">{{tr "seconds"/}}</option>
+                                    <option value="min">{{tr "minutes"/}}</option>
+                                    <option value="hours">{{tr "hours"/}}</option>
+                                    <option value="days">{{tr "days"/}}</option>
+                                    <option value="perm">{{tr "permanent"/}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="group-creator">
+                            <a class="key">{{tr "Creator" /}}</a>
+                            <div class="value">
+                                error: creator value
+                            </div>
+                        </div>
+                        <div class="group-enforcements">
+                            <a class="key">{{tr "Enforcements" /}}</a>
+                            <div class="value">
+                                <a>43</a>
+                                <button class="btn btn-yellow button-enforcement-list">{{tr "Show list" /}}</button>
+                            </div>
+                        </div>
+                        <label class="group-global">
+                            <div class="checkbox disabled">
+                                <input type="checkbox" disabled>
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "This ban is a global ban" /}}</a>
+                        </label>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-success button-apply">error: button apply</button>
+                </div>
+            </div>
+            <div class="container-seperator vertical" seperator-id="seperator-banlist">
+                <div class="top"></div>
+            </div>
+            <div class="right">
+                <div class="container-banlist">
+                    <div class="container-filter">
+                        <div class="form-group">
+                            <label class="bmd-label-floating">{{tr "Filter" /}}</label>
+                            <input class="form-control">
+                        </div>
+                    </div>
+                    <div class="container-list">
+                        <div class="entry header">
+                            <div class="column column-key">{{tr "Name/IP/UID/HWID" /}}</div>
+                            <div class="column column-reason">{{tr "Reason" /}}</div>
+                            <div class="column column-expires">{{tr "Expires" /}}</div>
+                            <div class="column column-delete">&nbsp;</div>
+                        </div>
+                        <div class="body">
+                            <div class="container-empty">
+                                <a>error: empty message</a>
+                            </div>
+                            <div class="container-error">
+                                <a>error: no permissions</a>
+                            </div>
+                            <!-- <div class="entry local"></div> -->
+                        </div>
+                    </div>
+                    <div class="container-options">
+                        <label class="container-option">
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-show-own">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Show only own bans" /}}</a>
+                        </label>
+                        <label class="container-option">
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-highlight-own">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Highlight own bans" /}}</a>
+                        </label>
+                        <button class="btn btn-success button-refresh-banlist">{{tr "Refresh" /}}</button>
+                    </div>
+                </div>
+                <div class="container-triggerlist">
+                    <div class="container-filter">
+                        <div class="form-group">
+                            <label class="bmd-label-floating">{{tr "Filter" /}}</label>
+                            <input class="form-control">
+                        </div>
+                        <div class="container-close">
+                            <!-- TODO -->
+                        </div>
+                    </div>
+                    <div class="container-list">
+                        <div class="entry header">
+                            <div class="column column-properties">{{tr "Properties" /}}</div>
+                            <div class="column column-timestamp">{{tr "Timestamp" /}}</div>
+                        </div>
+                        <div class="body">
+                            <div class="container-empty">
+                                <a>error: empty message</a>
+                            </div>
+                            <div class="container-error">
+                                <a>error: no permissions</a>
+                            </div>
+                            <!-- <div class="entry local"></div> -->
+                        </div>
+                    </div>
+                    <div class="container-options">
+                        <label class="container-option">
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-highlight-cause">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Highlight cause" /}}</a>
+                        </label>
+                        <button class="btn btn-success button-refresh-triggerlist">{{tr "Refresh" /}}</button>
                     </div>
                 </div>
             </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_ban_entry" type="text/html">
-            <div class="ban-entry {{if server_id == 0}}ban-entry-global{{/if}} {{if flag_own}}ban-entry-own{{/if}}"
-                 ban-id={{>banid}} server-id={{>server_id}}>
-                <div class="column column-keys">
-                    {{if name }}<a class="property property-name">name={{>name}}</a>{{/if}}
-                    {{if ip }} <a class="property property-ip">ip={{>ip}}</a>{{/if}}
-                    {{if unique_id }} <a class="property property-unique-id">uid={{>unique_id}}</a>{{/if}}
-                    {{if hardware_id }}<a class="property property-hardware-id">hwid={{>hardware_id}}</a>{{/if}}
-                </div>
-                <div class="column column-reason">{{>reason}}</div>
-                <div class="column column-creator">{{>invoker_name}}</div>
-                <div class="column column-time">
-                    <div class="timestamp-created"><a>{{tr "Created:" /}}</a> {{fmt_date timestamp_created "DD.MM.YYYY
-                        HH:mm" /}}
-                    </div>
-                    <div class="timestamp-expire"><a>{{tr "Expire:" /}}</a> {{if (!timestamp_expire ||
-                        timestamp_expire.getTime() == 0) }}never{{else}}{{fmt_date timestamp_expire "DD.MM.YYYY HH:mm"
-                        /}}{{/if}}
-                    </div>
-                </div>
-            </div>
+        </div>
         </script>
 
         <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
@@ -3408,6 +3623,7 @@
             </div>
         </script>
 
+        <!-- TODO: Delete me! -->
         <script class="jsrender-template" id="tmpl_ban_create" type="text/html">
             <div class="bancreate">
                 <div class="frame-container">
@@ -5201,6 +5417,64 @@
                     <div class="container-buttons">
                         <button class="btn btn-success button-update">{{tr "Refresh" /}}</button>
                         <button class="btn btn-danger button-close">{{tr "Close" /}}</button>
+                    </div>
+                </div>
+            </div>
+        </script>
+        <script class="jsrender-template" id="tmpl_server_info_bandwidth" type="text/html">
+            <div> <!-- required for the renderer -->
+                <div class="top">
+                    <div class="container-image">
+                        <img src="img/serveredit_3.png"> <!-- TODO Get the right image! -->
+                    </div>
+                    <div class="container-stats">
+                        <div class="statistic statistic-packets">
+                            <a>{{tr "Transmitted packets" /}}</a>
+                            <div class="values">
+                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">error: upload</a>
+                                <a class="download" title="{{tr 'Download bandwidth' /}}">error: download</a>
+                            </div>
+                        </div>
+                        <div class="statistic statistic-bytes">
+                            <a>{{tr "Transmitted bytes" /}}</a>
+                            <div class="values">
+                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">error: upload</a>
+                                <a class="download" title="{{tr 'Download bandwidth' /}}">error: download</a>
+                            </div>
+                        </div>
+                        <div class="statistic statistic-ft-bytes">
+                            <a>{{tr "Transferred file transfer bytes" /}}</a>
+                            <div class="values">
+                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">error: upload</a>
+                                <a class="download" title="{{tr 'Download bandwidth' /}}">error: download</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bottom">
+                    <div class="statistic statistic-bandwidth">
+                        <a class="title">{{tr "Current bandwidth" /}}</a>
+                        <div class="body">
+                            <div class="container-canvas">
+                                <canvas></canvas>
+                            </div>
+                            <div class="values">
+                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">N Bytes/s</a>
+                                <a class="download" title="{{tr 'Download bandwidth' /}}">N Bytes/s</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="statistic statistic-ft-bandwidth">
+                        <a class="title">{{tr "Current file transfer bandwidth" /}}</a>
+                        <div class="body">
+                            <div class="container-canvas">
+                                <canvas></canvas>
+                            </div>
+                            <div class="values">
+                                <a class="upload" title="{{tr 'Upload bandwidth' /}}">N Bytes/s</a>
+                                <a class="download" title="{{tr 'Download bandwidth' /}}">N Bytes/s</a>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

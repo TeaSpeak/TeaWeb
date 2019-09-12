@@ -174,8 +174,9 @@ class ServerEntry {
     }
 
     initializeListener(){
-        this._htmlTag.click(() => {
+        this._htmlTag.on('click' ,() => {
             this.channelTree.onSelect(this);
+            this.updateProperties(); /* just prepare to show some server info */
         });
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {

@@ -17,6 +17,7 @@
     - Fixed some general memory leaks
     - Implemented the hostmessage functions
     - Fixed bookmark server password
+    - Improved UI performance
     
     Big UI Improvement:
     - New "dark theme" design

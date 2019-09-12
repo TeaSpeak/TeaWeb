@@ -137,6 +137,8 @@ namespace audio {
             private _audio_source: RecorderProfile;
             private _audio_clients: audio.js.VoiceClientController[] = [];
 
+            private _encoder_codec: number = 5;
+
             constructor(connection: connection.ServerConnection) {
                 super(connection);
                 this.connection = connection;
@@ -162,7 +164,7 @@ namespace audio {
                 });
             }
 
-            native_encoding_supported() : boolean {
+            static native_encoding_supported() : boolean {
                 const context = window.webkitAudioContext || window.AudioContext;
                 if(!context)
                     return false;
@@ -173,7 +175,7 @@ namespace audio {
                 return true;
             }
 
-            javascript_encoding_supported() : boolean {
+            static javascript_encoding_supported() : boolean {
                 if(!window.RTCPeerConnection)
                     return false;
                 if(!RTCPeerConnection.prototype.createDataChannel)
@@ -184,16 +186,16 @@ namespace audio {
             current_encoding_supported() : boolean {
                 switch (this._type) {
                     case VoiceEncodeType.JS_ENCODE:
-                        return this.javascript_encoding_supported();
+                        return audio.js.VoiceConnection.javascript_encoding_supported();
                     case VoiceEncodeType.NATIVE_ENCODE:
-                        return this.native_encoding_supported();
+                        return audio.js.VoiceConnection.native_encoding_supported();
                 }
                 return false;
             }
 
             private setup_native() {
                 log.info(LogCategory.VOICE, tr("Setting up native voice stream!"));
-                if(!this.native_encoding_supported()) {
+                if(!audio.js.VoiceConnection.native_encoding_supported()) {
                     log.warn(LogCategory.VOICE, tr("Native codec isn't supported!"));
                     return;
                 }
@@ -203,7 +205,7 @@ namespace audio {
             }
 
             private setup_js() {
-                if(!this.javascript_encoding_supported()) return;
+                if(!audio.js.VoiceConnection.javascript_encoding_supported()) return;
             }
 
             async acquire_voice_recorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
@@ -216,15 +218,15 @@ namespace audio {
                 if(this._audio_source)
                     await this._audio_source.unmount();
 
-                this.handleVoiceEnded();
+                this.handle_local_voice_ended();
                 this._audio_source = recorder;
 
                 if(recorder) {
                     recorder.current_handler = this.connection.client;
 
-                    recorder.callback_unmount = this.on_recoder_yield.bind(this);
-                    recorder.callback_start = this.handleVoiceStarted.bind(this);
-                    recorder.callback_stop = this.handleVoiceEnded.bind(this);
+                    recorder.callback_unmount = this.on_recorder_yield.bind(this);
+                    recorder.callback_start = this.handle_local_voice_started.bind(this);
+                    recorder.callback_stop = this.handle_local_voice_ended.bind(this);
 
                     if(this._type == VoiceEncodeType.NATIVE_ENCODE) {
                         if(!this.local_audio_stream)
@@ -248,7 +250,7 @@ namespace audio {
                     } else {
                         await recorder.input.set_consumer({
                             type: audio.recorder.InputConsumerType.CALLBACK,
-                            callback_audio: buffer => this.handleVoiceData(buffer, false)
+                            callback_audio: buffer => this.handle_local_voice(buffer, false)
                         } as audio.recorder.CallbackInputConsumer);
                     }
                 }
@@ -273,7 +275,7 @@ namespace audio {
 
             voice_send_support() : boolean {
                 if(this._type == VoiceEncodeType.NATIVE_ENCODE)
-                    return this.native_encoding_supported() && this.rtcPeerConnection.getLocalStreams().length > 0;
+                    return audio.js.VoiceConnection.native_encoding_supported() && this.rtcPeerConnection.getLocalStreams().length > 0;
                 else
                     return this.voice_playback_support();
             }
@@ -503,12 +505,7 @@ namespace audio {
                 }
             }
 
-            private current_channel_codec() : number {
-                const chandler = this.connection.client;
-                return (chandler.getClient().currentChannel() || {properties: { channel_codec: 4}}).properties.channel_codec;
-            }
-
-            private handleVoiceData(data: AudioBuffer, head: boolean) {
+            private handle_local_voice(data: AudioBuffer, head: boolean) {
                 const chandler = this.connection.client;
                 if(!chandler.connected)
                     return false;
@@ -524,13 +521,13 @@ namespace audio {
                     return;
                 }
 
-                const codec = this.current_channel_codec();
+                const codec = this._encoder_codec;
                 VoiceConnection.codec_pool[codec]
                     .ownCodec(chandler.getClientId(), e => this.handleEncodedVoicePacket(e, codec), true)
                     .then(encoder => encoder.encodeSamples(client.get_codec_cache(codec), data));
             }
 
-            private handleVoiceEnded() {
+            private handle_local_voice_ended() {
                 const chandler = this.connection.client;
                 const ch = chandler.getClient();
                 if(ch) ch.speaking = false;
@@ -541,11 +538,11 @@ namespace audio {
                     return false;
                 log.info(LogCategory.VOICE, tr("Local voice ended"));
 
-                if(this.dataChannel)
-                    this.send_voice_packet(new Uint8Array(0), this.current_channel_codec());
+                if(this.dataChannel && this._encoder_codec >= 0)
+                    this.send_voice_packet(new Uint8Array(0), this._encoder_codec);
             }
 
-            private handleVoiceStarted() {
+            private handle_local_voice_started() {
                 const chandler = this.connection.client;
                 log.info(LogCategory.VOICE, tr("Local voice started"));
 
@@ -553,7 +550,7 @@ namespace audio {
                 if(ch) ch.speaking = true;
             }
 
-            private on_recoder_yield() {
+            private on_recorder_yield() {
                 log.info(LogCategory.VOICE, "Lost recorder!");
                 this._audio_source = undefined;
                 this.acquire_voice_recorder(undefined, true); /* we can ignore the promise because we should finish this directly */
@@ -598,6 +595,14 @@ namespace audio {
 
             encoding_supported(codec: number): boolean {
                 return VoiceConnection.codecSupported(codec);
+            }
+
+            get_encoder_codec(): number {
+                return this._encoder_codec;
+            }
+
+            set_encoder_codec(codec: number) {
+                this._encoder_codec = codec;
             }
         }
     }

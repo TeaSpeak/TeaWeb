@@ -109,10 +109,9 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
     }
 
     private on_global_click(event) {
-        let menu = this._context_menu || (this._context_menu = $(".context-menu"));
+        //let menu = this._context_menu || (this._context_menu = $(".context-menu"));
 
-        if(!menu.is(":visible")) return;
-
+        if(!this._visible) return;
         if ($(event.target).parents(".context-menu").length == 0) {
             this.despawn_context_menu();
             event.preventDefault();

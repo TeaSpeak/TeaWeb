@@ -1,23 +1,26 @@
 - Modals
     - Settings (X)
-    - Banlist
-        - Add/Edit
     - Query
         - List
-        - Create
-    - Manage favorites
-        - Create favorite
+            - Username
+            - Unique ID
+            - Bounded server
+        Buttons:
+            - Create
+            - Delete
+            - Rename
+            - Change password
+
+            - Refresh
+    - "Ban Client" dialog
     - Entity info (Popup)
-        - Server
-        - Client
+        - Server (Bandwidth (MH))
         - Channel
     - Icon Select
-        - Icon uploiad
+        - Icon upload
     - Avatar list
     - Server group assignments checkbox
     - Invite buddy
-    - Identity improve
-    - Identity import
 
 
 - Ban Liste
@@ -108,6 +111,8 @@
     - Description
     - Password protected
     - "Texting mode" | Private | "No saving" | "Logged (+ history length)"
+    - Channel creator
+    - Channel crate timestamp
 
 
 
@@ -127,11 +132,7 @@
     - File Transfer bytes transferred, month & global (Up + Download)
 
 TODO:
-Server Info (Bandwidth usage)
 Fix these icons: https://img.did.science/Screenshot_20-11-06.png
-Make identity settings a bit smaller (Even scroll on my Laptop)
-
-
 - Application Options
     - Crash
         - Focus crash window on crash

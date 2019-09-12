@@ -408,8 +408,10 @@ class ConnectionHandler {
             case DisconnectReason.SERVER_HOSTMESSAGE: /* already handled */
                 break;
             case DisconnectReason.HANDLER_DESTROYED:
-                if(data)
+                if(data) {
                     this.sound.play(Sound.CONNECTION_DISCONNECTED);
+                    this.log.log(log.server.Type.DISCONNECTED, {});
+                }
                 break;
             case DisconnectReason.DNS_FAILED:
                 log.error(LogCategory.CLIENT, tr("Failed to resolve hostname: %o"), data);
@@ -621,6 +623,9 @@ class ConnectionHandler {
             client_input_muted: this.client_status.input_muted,
             client_output_muted: this.client_status.output_muted
         };
+
+        if(support_record && basic_voice_support)
+            vconnection.set_encoder_codec(targetChannel.properties.channel_codec);
 
         if(!this.serverConnection.support_voice() || !vconnection.connected()) {
             property_update["client_input_hardware"] = false;

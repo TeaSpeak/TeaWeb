@@ -19,6 +19,9 @@ namespace chat {
         private _value_ping: JQuery;
         private _ping_updater: number;
 
+        private _channel_text: ChannelEntry;
+        private _channel_voice: ChannelEntry;
+
         private _button_conversation: HTMLElement;
 
         constructor(handle: Frame) {
@@ -99,6 +102,7 @@ namespace chat {
         update_channel_talk() {
             const client = this.handle.handle.getClient();
             const channel = client ? client.currentChannel() : undefined;
+            this._channel_voice = channel;
 
             const html_tag =  this._html_tag.find(".value-voice-channel");
             const html_limit_tag = this._html_tag.find(".value-voice-limit");
@@ -111,15 +115,7 @@ namespace chat {
                     client.handle.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(html_tag);
                 $.spawn("div").text(channel.channelName()).appendTo(html_tag);
 
-                //channel.properties.channel_maxclients
-                let channel_limit = tr("Unlimited");
-                if(!channel.properties.channel_flag_maxclients_unlimited)
-                    channel_limit = "" + channel.properties.channel_maxclients;
-                else if(!channel.properties.channel_flag_maxfamilyclients_unlimited) {
-                    if(channel.properties.channel_maxfamilyclients >= 0)
-                        channel_limit = "" + channel.properties.channel_maxfamilyclients;
-                }
-                html_limit_tag.text(channel.clients(false).length + " / " + channel_limit);
+                this.update_channel_limit(channel, html_limit_tag);
             } else {
                 $.spawn("div").text("Not connected").appendTo(html_tag);
             }
@@ -129,6 +125,7 @@ namespace chat {
             const channel_tree = this.handle.handle.connected ? this.handle.handle.channelTree : undefined;
             const current_channel_id = channel_tree ? this.handle.channel_conversations().current_channel() : 0;
             const channel = channel_tree ? channel_tree.findChannel(current_channel_id) : undefined;
+            this._channel_text = channel;
 
             const tag_container = this._html_tag.find(".mode-channel_chat.channel");
             const html_tag_title = tag_container.find(".title");
@@ -146,14 +143,7 @@ namespace chat {
                     this.handle.handle.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(html_tag);
                 $.spawn("div").text(channel.channelName()).appendTo(html_tag);
 
-                let channel_limit = tr("Unlimited");
-                if(!channel.properties.channel_flag_maxclients_unlimited)
-                    channel_limit = "" + channel.properties.channel_maxclients;
-                else if(!channel.properties.channel_flag_maxfamilyclients_unlimited) {
-                    if(channel.properties.channel_maxfamilyclients >= 0)
-                        channel_limit = "" + channel.properties.channel_maxfamilyclients;
-                }
-                html_limit_tag.text(channel.clients(false).length + " / " + channel_limit);
+                this.update_channel_limit(channel, html_limit_tag);
             } else if(channel_tree && current_channel_id > 0) {
                 html_tag.append(MessageHelper.formatMessage(tr("Unknown channel id {}"), current_channel_id));
             } else if(channel_tree && current_channel_id == 0) {
@@ -167,6 +157,24 @@ namespace chat {
             } else {
                 $.spawn("div").text("Not connected").appendTo(html_tag);
             }
+        }
+
+        update_channel_client_count(channel: ChannelEntry) {
+            if(channel === this._channel_text)
+                this.update_channel_limit(channel, this._html_tag.find(".value-text-limit"));
+            if(channel === this._channel_voice)
+                this.update_channel_limit(channel, this._html_tag.find(".value-voice-limit"));
+        }
+
+        private update_channel_limit(channel: ChannelEntry, tag: JQuery) {
+            let channel_limit = tr("Unlimited");
+            if(!channel.properties.channel_flag_maxclients_unlimited)
+                channel_limit = "" + channel.properties.channel_maxclients;
+            else if(!channel.properties.channel_flag_maxfamilyclients_unlimited) {
+                if(channel.properties.channel_maxfamilyclients >= 0)
+                    channel_limit = "" + channel.properties.channel_maxfamilyclients;
+            }
+            tag.text(channel.clients(false).length + " / " + channel_limit);
         }
 
         update_chat_counter() {
@@ -226,11 +234,16 @@ namespace chat {
         private _html_input: JQuery<HTMLDivElement>;
         private _enabled: boolean;
         private __callback_text_changed;
-        private __callback_key_down;
+        private __callback_key_down
+        private __callback_key_up;
         private __callback_paste;
 
         private _typing_timeout: number; /* ID when the next callback_typing will be called */
         private _typing_last_event: number; /* timestamp of the last typing event */
+
+        private _message_history: string[] = [];
+        private _message_history_length = 100;
+        private _message_history_index = 1;
 
         typing_interval: number = 2000; /* update frequency */
         callback_typing: () => any;
@@ -238,6 +251,7 @@ namespace chat {
 
         constructor() {
             this._enabled = true;
+            this.__callback_key_up = this._callback_key_up.bind(this);
             this.__callback_key_down = this._callback_key_down.bind(this);
             this.__callback_text_changed = this._callback_text_changed.bind(this);
             this.__callback_paste = event => this._callback_paste(event);
@@ -269,6 +283,7 @@ namespace chat {
             this._html_input.on("cut paste drop keydown keyup", (event) => this.__callback_text_changed(event));
             this._html_input.on("change", this.__callback_text_changed);
             this._html_input.on("keydown", this.__callback_key_down);
+            this._html_input.on("keyup", this.__callback_key_up);
             this._html_input.on("paste", this.__callback_paste);
         }
 
@@ -380,16 +395,18 @@ namespace chat {
         }
 
         private _callback_key_down(event: KeyboardEvent) {
-            if(event.shiftKey)
-                return;
-
-            if(event.key.toLowerCase() === "enter") {
+            if(event.key.toLowerCase() === "enter" && !event.shiftKey) {
                 event.preventDefault();
 
                 /* deactivate chatbox when no callback? */
                 let text = this._html_input[0].innerText as string;
                 if(!this.test_message(text))
                     return;
+
+                this._message_history.push(text);
+                this._message_history_index = this._message_history.length;
+                if(this._message_history.length > this._message_history_length)
+                    this._message_history = this._message_history.slice(this._message_history.length - this._message_history_length);
 
                 if(this.callback_text) {
                     this.callback_text(helpers.preprocess_chat_message(text));
@@ -403,16 +420,48 @@ namespace chat {
                     this.__callback_text_changed();
                     this._typing_timeout = 0; /* enable text change listener again */
                 });
+            } else if(event.key.toLowerCase() === "arrowdown") {
+                //TODO: Test for at the last line within the box
+                if(this._message_history_index < 0) return;
+                if(this._message_history_index >= this._message_history.length) return; /* OOB, even with the empty message */
+
+                this._message_history_index++;
+                this._html_input[0].innerText = this._message_history[this._message_history_index] || ""; /* OOB just returns "undefined" */
+            } else if(event.key.toLowerCase() === "arrowup") {
+                //TODO: Test for at the first line within the box
+                if(this._message_history_index <= 0) return; /* we cant go "down" */
+                this._message_history_index--;
+                this._html_input[0].innerText = this._message_history[this._message_history_index];
+            } else {
+                if(this._message_history_index >= 0) {
+                    if(this._message_history_index >= this._message_history.length) {
+                        if("" !== this._html_input[0].innerText)
+                            this._message_history_index = -1;
+                    } else if(this._message_history[this._message_history_index] !== this._html_input[0].innerText)
+                        this._message_history_index = -1;
+                }
             }
         }
 
+        private _callback_key_up(event: KeyboardEvent) {
+            if("" === this._html_input[0].innerText)
+                this._message_history_index = this._message_history.length;
+        }
+
+        private _context_task: number;
         set_enabled(flag: boolean) {
             if(this._enabled === flag)
                 return;
 
-            this._enabled = flag;
-            this._html_input.prop("contenteditable", flag);
-            this._html_tag.find('.button-emoji').toggleClass("disabled", !flag);
+            if(!this._context_task) {
+                this._enabled = flag;
+                /* Allow the browser to asynchronously recalculate everything */
+                this._context_task = setTimeout(() => {
+                    this._context_task = undefined;
+                    this._html_input.each((_, e) => { e.contentEditable = this._enabled ? "true" : "false"; });
+                });
+                this._html_tag.find('.button-emoji').toggleClass("disabled", !flag);
+            }
         }
 
         is_enabled() {
@@ -589,10 +638,10 @@ test
                 }
 
                 private render_token(token: RemarkToken, index: number) {
-                    console.log("Render token: %o", token);
+                    log.debug(LogCategory.GENERAL, tr("Render Markdown token: %o"), token);
                     const renderer = Renderer.renderers[token.type];
                     if(typeof(renderer) === "undefined") {
-                        console.warn(tr("Missing markdown to bbcode renderer for token %s: %o"), token.type, token);
+                        log.warn(LogCategory.CHAT, tr("Missing markdown to bbcode renderer for token %s: %o"), token.type, token);
                         return token.content || "";
                     }
 
@@ -936,14 +985,14 @@ test
                 this.fix_scroll(false);
                 this.save_history();
             }).catch(error => {
-                console.warn(tr("Failed to load private conversation history for user %s on server %s: %o"),
+                log.warn(LogCategory.CHAT, tr("Failed to load private conversation history for user %s on server %s: %o"),
                     this.client_unique_id, this.handle.handle.handle.channelTree.server.properties.virtualserver_unique_identifier, error);
             })
         }
 
         private save_history() {
             helpers.history.save_history(this.history_key(), this._message_history).catch(error => {
-                console.warn(tr("Failed to save private conversation history for user %s on server %s: %o"),
+                log.warn(LogCategory.CHAT, tr("Failed to save private conversation history for user %s on server %s: %o"),
                     this.client_unique_id, this.handle.handle.handle.channelTree.server.properties.virtualserver_unique_identifier, error);
             });
         }
@@ -1107,13 +1156,10 @@ test
             let offset;
             if(this._spacer_unread_message) {
                 offset = this._displayed_message_first_tag(this._spacer_unread_message)[0].offsetTop;
-                console.log("Scroll by unread: %o", offset);
             } else if(typeof(this._scroll_position) !== "undefined") {
                 offset = this._scroll_position;
-                console.log("Scroll by scroll: %o", offset);
             } else {
                 offset = this._html_message_container[0].scrollHeight;
-                console.log("Height: %o", offset);
             }
             if(animate) {
                 this._html_message_container.stop(true).animate({
@@ -1446,7 +1492,7 @@ test
             if(this._callback_message)
                 this._callback_message(message);
             else {
-                console.warn(tr("Dropping conversation message for client %o because of no message callback."), {
+                log.warn(LogCategory.CHAT, tr("Dropping conversation message for client %o because of no message callback."), {
                     client_name: this.client_name,
                     client_id: this.client_id,
                     client_unique_id: this.client_unique_id
@@ -1505,7 +1551,7 @@ test
             this.update_typing_state();
             this._chat_box.callback_text = message => {
                 if(!this._current_conversation) {
-                    console.warn(tr("Dropping conversation message because of no active conversation."));
+                    log.warn(LogCategory.CHAT, tr("Dropping conversation message because of no active conversation."));
                     return;
                 }
                 this._current_conversation.call_message(message);
@@ -1513,11 +1559,10 @@ test
 
             this._chat_box.callback_typing = () => {
                 if(!this._current_conversation) {
-                    console.warn(tr("Dropping conversation typing action because of no active conversation."));
+                    log.warn(LogCategory.CHAT, tr("Dropping conversation typing action because of no active conversation."));
                     return;
                 }
 
-                console.log("TYPING!");
                 const connection = this.handle.handle.serverConnection;
                 if(!connection || !connection.connected())
                     return;
@@ -1602,7 +1647,7 @@ test
 
             if(conv) {
                 conv.set_text_callback(message => {
-                    console.log(tr("Sending text message %s to %o"), message, partner);
+                    log.debug(LogCategory.CLIENT, tr("Sending text message %s to %o"), message, partner);
                     this.handle.handle.serverConnection.send_command("sendtextmessage", {"targetmode": 1, "target": partner.client_id, "msg": message}).catch(error => {
                         if(error instanceof CommandResult) {
                             if(error.id == ErrorID.CLIENT_INVALID_ID) {
@@ -1615,7 +1660,7 @@ test
                             }
                         } else {
                             conv.append_error(tr("Failed to send message. Lookup the console for more details"));
-                            console.error(tr("Failed to send conversation message: %o", error));
+                            log.error(LogCategory.CHAT, tr("Failed to send conversation message: %o", error));
                         }
                     });
                 });
@@ -1732,8 +1777,12 @@ test
             private _html_tag: JQuery;
             private _container_messages: JQuery;
             private _container_new_message: JQuery;
+
             private _container_no_permissions: JQuery;
+            private _container_no_permissions_shown: boolean = false
+
             private _container_is_private: JQuery;
+            private _container_is_private_shown: boolean = false;
 
             private _view_max_messages = 40; /* reset to 40 again as soon we tab out :) */
             private _view_older_messages: ViewEntry;
@@ -1904,13 +1953,15 @@ test
                             return;
                         } else if(error.id == ErrorID.PERMISSION_ERROR) {
                             this._container_no_permissions.show();
+                            this._container_no_permissions_shown = true;
                         } else if(error.id == ErrorID.CONVERSATION_IS_PRIVATE) {
                             this.set_flag_private(true);
                         }
                     }
                     //TODO log and handle!
-                    console.error(tr("Failed to fetch conversation history. %o"), error);
+                    log.error(LogCategory.CHAT, tr("Failed to fetch conversation history. %o"), error);
                 }).then(() => {
+                    this.fix_scroll(true);
                     this.handle.update_chat_box();
                 });
             }
@@ -1919,7 +1970,6 @@ test
                 this._view_older_messages.html_element.toggleClass('shown', false);
 
                 const entry = this._view_entries.slice().reverse().find(e => 'timestamp' in e) as any as {timestamp: number};
-                console.log("Last messages: %o", entry);
                 //conversationhistory cid=1 [cpw=xxx] [timestamp_begin] [timestamp_end (0 := no end)] [message_count (default 25| max 100)] [-merge]
                 this.handle.handle.handle.serverConnection.send_command("conversationhistory", {
                     cid: this.channel_id,
@@ -1935,7 +1985,9 @@ test
                         }
                     }
                     //TODO log and handle!
-                    console.error(tr("Failed to fetch conversation history. %o"), error);
+                    log.error(LogCategory.CHAT, tr("Failed to fetch conversation history. %o"), error);
+                }).then(() => {
+                    this.fix_scroll(true);
                 });
             }
 
@@ -2003,26 +2055,40 @@ test
 
                 /* update chat state */
                 this._container_no_permissions.hide();
-                this.handle.update_chat_box();
+                this._container_no_permissions_shown = false;
+                if(update_view) this.handle.update_chat_box();
             }
 
+            /* using a timeout here to not cause a force style recalculation */
+            private _scroll_fix_timer: number;
+            private _scroll_animate: boolean;
+
             fix_scroll(animate: boolean) {
-                let offset;
-                if(this._first_unread_message) {
-                    offset = this._first_unread_message.html_element[0].offsetTop;
-                } else if(typeof(this._scroll_position) !== "undefined") {
-                    offset = this._scroll_position;
-                } else {
-                    offset = this._container_messages[0].scrollHeight;
+                if(this._scroll_fix_timer) {
+                    this._scroll_animate = this._scroll_animate && animate;
+                    return;
                 }
 
-                if(animate) {
-                    this._container_messages.stop(true).animate({
-                        scrollTop: offset
-                    }, 'slow');
-                } else {
-                    this._container_messages.stop(true).scrollTop(offset);
-                }
+                this._scroll_fix_timer = setTimeout(() => {
+                    this._scroll_fix_timer = undefined;
+
+                    let offset;
+                    if(this._first_unread_message) {
+                        offset = this._first_unread_message.html_element[0].offsetTop;
+                    } else if(typeof(this._scroll_position) !== "undefined") {
+                        offset = this._scroll_position;
+                    } else {
+                        offset = this._container_messages[0].scrollHeight;
+                    }
+
+                    if(this._scroll_animate) {
+                        this._container_messages.stop(true).animate({
+                            scrollTop: offset
+                        }, 'slow');
+                    } else {
+                        this._container_messages.stop(true).scrollTop(offset);
+                    }
+                }, 5);
             }
 
             fix_view_size() {
@@ -2046,16 +2112,17 @@ test
             }
 
             chat_available() : boolean {
-                return !this._container_no_permissions.is(':visible') && !this._container_is_private.is(':visible');
+                return !this._container_no_permissions_shown && !this._container_is_private_shown;
             }
 
             text_send_failed(error: CommandResult | any) {
-                console.warn("Failed to send text message! (%o)", error);
+                log.warn(LogCategory.CHAT, "Failed to send text message! (%o)", error);
                 //TODO: Log if message send failed?
                 if(error instanceof CommandResult) {
                     if(error.id == ErrorID.PERMISSION_ERROR) {
                         //TODO: Split up between channel_text_message_send permission and no view permission
                         if(error.json["failed_permid"] == 0) {
+                            this._container_no_permissions_shown = true;
                             this._container_no_permissions.show();
                             this.handle.update_chat_box();
                         }
@@ -2076,12 +2143,16 @@ test
             update_private_state() {
                 if(!this._flag_private) {
                     this._container_is_private.hide();
+                    this._container_is_private_shown = false;
                 } else {
                     const client = this.handle.handle.handle.getClient();
-                    if(client && client.currentChannel() && client.currentChannel().channelId === this.channel_id)
+                    if(client && client.currentChannel() && client.currentChannel().channelId === this.channel_id) {
+                        this._container_is_private_shown = false;
                         this._container_is_private.hide();
-                    else
+                    } else {
                         this._container_is_private.show();
+                        this._container_is_private_shown = true;
+                    }
                 }
             }
 
@@ -2099,12 +2170,12 @@ test
                 }).then(() => {
                     return; /* in general it gets deleted via notify */
                 }).catch(error => {
-                    console.error(tr("Failed to delete conversation message for conversation %o: %o"), this.channel_id, error);
+                    log.error(LogCategory.CHAT, tr("Failed to delete conversation message for conversation %o: %o"), this.channel_id, error);
                     if(error instanceof CommandResult)
                         error = error.extra_message || error.message;
                     createErrorModal(tr("Failed to delete message"), MessageHelper.formatMessage(tr("Failed to delete conversation message{:br:}Error: {}"), error)).open();
                 });
-                console.log(tr("Deleting message: %o"), message);
+                log.debug(LogCategory.CLIENT, tr("Deleting text message %o"), message);
             }
 
             delete_messages(begin: number, end: number, sender: number, limit: number) {

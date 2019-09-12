@@ -307,7 +307,7 @@ function main() {
 
     /* initialize font */
     {
-        const font = settings.static_global(Settings.KEY_FONT_SIZE, parseInt(getComputedStyle(document.body).fontSize));
+        const font = settings.static_global(Settings.KEY_FONT_SIZE, 14); //parseInt(getComputedStyle(document.body).fontSize)
         $(document.body).css("font-size", font + "px");
     }
 
@@ -422,10 +422,46 @@ function main() {
         */
        // Modals.openServerInfo(connection.channelTree.server);
         //Modals.createServerModal(connection.channelTree.server, properties => Promise.resolve());
-    }, 1000);
+
+        //Modals.openClientInfo(connection.getClient());
+        //Modals.openServerInfoBandwidth(connection.channelTree.server);
+
+        Modals.openBanList(connection);
+    }, 4000);
     //Modals.spawnSettingsModal("identity-profiles");
     //Modals.spawnKeySelect(console.log);
-    Modals.spawnBookmarkModal();
+    //Modals.spawnBookmarkModal();
+
+    /*
+    {
+        const modal = createModal({
+            header: tr("Test Net Graph"),
+            body: () => {
+                const canvas = $.spawn("canvas")
+                    .css("position", "absolute")
+                    .css({
+                        top: 0,
+                        bottom: 0,
+                        right: 0,
+                        left: 0
+                    });
+
+                return $.spawn("div")
+                    .css("height", "5em")
+                    .css("width", "30em")
+                    .css("position", "relative")
+                    .append(canvas);
+            },
+            footer: null
+        });
+
+        const graph = new net.graph.Graph(modal.htmlTag.find("canvas")[0] as any);
+        graph.initialize();
+
+        modal.close_listener.push(() => graph.terminate());
+        modal.open();
+    }
+     */
 }
 
 const task_teaweb_starter: loader.Task = {

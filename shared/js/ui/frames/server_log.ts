@@ -9,6 +9,8 @@ namespace log {
             CONNECTION_CONNECTED = "connection_connected",
             CONNECTION_FAILED = "connection_failed",
 
+            DISCONNECTED = "disconnected",
+
             CONNECTION_VOICE_SETUP_FAILED = "connection_voice_setup_failed",
             CONNECTION_COMMAND_ERROR = "connection_command_error",
 
@@ -249,6 +251,8 @@ namespace log {
 
             "channel_create": event.ChannelCreate;
             "channel_delete": event.ChannelDelete;
+
+            "disconnected": any;
         }
 
         export type MessageBuilderOptions = {};
@@ -315,6 +319,8 @@ namespace log {
             this._log = undefined;
         }
 
+        private _scroll_task: number;
+
         private append_log(message: server.LogMessage) {
             let container = $.spawn("div").addClass("log-message");
 
@@ -351,8 +357,15 @@ namespace log {
             const hide_elements = messages.filter(idx => idx < index);
             hide_elements.hide(250, () => hide_elements.remove());
 
-            if(this.auto_follow)
-                this._html_tag.scrollTop(this._html_tag[0].scrollHeight);
+            if(this.auto_follow) {
+                clearTimeout(this._scroll_task);
+
+                /* do not enforce a recalculate style here */
+                this._scroll_task = setTimeout(() => {
+                    this._html_tag.scrollTop(this._html_tag[0].scrollHeight);
+                    this._scroll_task = 0;
+                }, 5) as any;
+            }
         }
     }
 }
@@ -514,7 +527,9 @@ namespace log {
 
             MessageBuilders["global_message"] = (data: event.GlobalMessage, options) => {
                 return []; /* we do not show global messages within log */
-            }
+            };
+
+            MessageBuilders["disconnected"] = () => MessageHelper.formatMessage(tr("Disconnected from server"));
         }
     }
 }
