@@ -1,5 +1,5 @@
 namespace Modals {
-    type InfoUpdateCallback = (info: ServerConnectionInfo | boolean) => any;
+    export type InfoUpdateCallback = (info: ServerConnectionInfo | boolean) => any;
     export function openServerInfoBandwidth(server: ServerEntry, update_callbacks?: InfoUpdateCallback[]) : Modal {
         let modal: Modal;
         let own_callbacks = !update_callbacks;

@@ -470,11 +470,11 @@ class ControlBar {
         this.connection_handler.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
         this.update_connection_state();
         this.connection_handler.sound.play(Sound.CONNECTION_DISCONNECTED);
-        this.log.log(log.server.Type.DISCONNECTED, {});
+        this.connection_handler.log.log(log.server.Type.DISCONNECTED, {});
     }
 
     private on_token_use() {
-        createInputModal(tr("Use token"), tr("Please enter your token/priviledge key"), message => message.length > 0, result => {
+        createInputModal(tr("Use token"), tr("Please enter your token/privilege key"), message => message.length > 0, result => {
             if(!result) return;
             if(this.connection_handler.serverConnection.connected)
                 this.connection_handler.serverConnection.send_command("tokenuse", {

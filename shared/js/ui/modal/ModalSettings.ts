@@ -73,7 +73,7 @@ namespace Modals {
 
             select.on('change', event => {
                 const value = parseInt(select.val() as string);
-                settings.static_global(Settings.KEY_FONT_SIZE, value);
+                settings.changeGlobal(Settings.KEY_FONT_SIZE, value);
                 console.log("Changed font size of %dpx", value);
 
                 $(document.body).css("font-size", value + "px");

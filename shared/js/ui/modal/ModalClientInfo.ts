@@ -317,20 +317,7 @@ namespace Modals {
                 }
             };
 
-            tag.find(".button-group-add").on('click', event => {
-                Modals.createServerGroupAssignmentModal(client, (group, flag) => {
-                    if(flag) {
-                        return client.channelTree.client.serverConnection.send_command("servergroupaddclient", {
-                            sgid: group.id,
-                            cldbid: client.properties.client_database_id
-                        }).then(result => { update_groups(); return true; });
-                    } else
-                        return client.channelTree.client.serverConnection.send_command("servergroupdelclient", {
-                            sgid: group.id,
-                            cldbid: client.properties.client_database_id
-                        }).then(result => { update_groups(); return true; });
-                });
-            });
+            tag.find(".button-group-add").on('click', () => client.open_assignment_modal());
 
             update_groups();
         }

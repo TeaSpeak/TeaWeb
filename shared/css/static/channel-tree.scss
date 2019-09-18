@@ -68,6 +68,8 @@
             flex-direction: row;
             justify-content: stretch;
 
+            position: relative;
+
             cursor: pointer;
             margin-left: 0;
 
@@ -113,39 +115,6 @@
 
                 align-items: center;
                 cursor: pointer;
-
-                .marker-text-unread {
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    bottom: 0;
-
-                    width: 1px;
-                    background-color: #a814147F;
-
-                    opacity: 1;
-
-                    &:before {
-                        content: '';
-                        position: absolute;
-
-                        left: 0;
-                        top: 0;
-                        bottom: 0;
-
-                        width: 24px;
-
-                        background: -moz-linear-gradient(left,  rgba(168,20,20,.18) 0%, rgba(168,20,20,0) 100%); /* FF3.6-15 */
-                        background: -webkit-linear-gradient(left,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* Chrome10-25,Safari5.1-6 */
-                        background: linear-gradient(to right,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-                    }
-
-                    &.hidden {
-                        opacity: 0;
-                    }
-
-                    @include transition(opacity $button_hover_animation_time);
-                }
 
                 .channel-type {
                     flex-grow: 0;
@@ -306,6 +275,41 @@
                         width: 100%;
                     }
                 }
+            }
+        }
+
+        &.channel .container-channel, &.client, &.server {
+            .marker-text-unread {
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+
+                width: 1px;
+                background-color: #a814147F;
+
+                opacity: 1;
+
+                &:before {
+                    content: '';
+                    position: absolute;
+
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+
+                    width: 24px;
+
+                    background: -moz-linear-gradient(left,  rgba(168,20,20,.18) 0%, rgba(168,20,20,0) 100%); /* FF3.6-15 */
+                    background: -webkit-linear-gradient(left,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* Chrome10-25,Safari5.1-6 */
+                    background: linear-gradient(to right,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+                }
+
+                &.hidden {
+                    opacity: 0;
+                }
+
+                @include transition(opacity $button_hover_animation_time);
             }
         }
     }

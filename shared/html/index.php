@@ -19,7 +19,7 @@
 
         <meta name="og:description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
         <meta name="og:url" content="https://web.teaspeak.de/">
-        <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png">
+        <!-- WHAT THE HELL? <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png"> -->
 
         <!-- TODO Needs some fix -->
         <link rel="manifest" href="manifest.json">
@@ -208,22 +208,31 @@
                 serveredit_1.png https://www.hypixel-koo.cf/tsapoijdsadpoijsadsapj.png
                 serveredit_2.png https://www.hypixel-koo.cf/tsandljsandljsamndoj3oiwejlkjmnlksandljsadmnlmsadnlsa.png
                 serveredit_3.png https://www.hypixel-koo.cf/toiuhsadouhgdsapoiugdsapouhdsapouhdsaouhwouhwwouhwwoiuhwoihwwoihwoijhwwoknw.png
+
+                Query accounts: https://puu.sh/EhvkJ/7551f548e3.png
+                Channel info: https://puu.sh/EhuVH/1e21540589.png
             -->
 
             <!-- <img src="http://puu.sh/E6NXv/eb2f19c7c3.png"> -->
             <!-- <img src="http://puu.sh/E9jT6/302912ae34.png"> -->
             <!-- <img src="http://puu.sh/E9jTe/b41f6386de.png"> -->
             <!-- <img src="img/style/ban-list.png"> -->
-            <img  src="http://puu.sh/E9jTe/b41f6386de.png">
+            <!-- <img  src="http://puu.sh/E9jTe/b41f6386de.png"> -->
+            <img src="https://puu.sh/EhuVH/1e21540589.png">
         </div>
         <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; bottom: 2px;">toggle style</button>
         <script>
-            setTimeout(() => {
-                $("#spoiler-style").hide();
-                $(".toggle-spoiler-style").on('click', () => {
-                    $("#spoiler-style").toggle();
+            const init = (jQuery) => {
+                if(typeof jQuery === "undefined") {
+                    setTimeout(() => init($), 1000);
+                    return;
+                }
+                jQuery("#spoiler-style").hide();
+                jQuery(".toggle-spoiler-style").on('click', () => {
+                    jQuery("#spoiler-style").toggle();
                 });
-            }, 2500);
+            };
+            setTimeout(() => init($), 1000);
         </script>
 <?php } ?>
     </body>

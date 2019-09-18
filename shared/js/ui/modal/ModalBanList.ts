@@ -233,7 +233,7 @@ namespace Modals {
     }
 
     //Note: This object must be sorted (from shortest to longest)!
-    const duration_data = {
+    export const duration_data = {
         "sec": {
             "text": tr("Seconds"),
             "1-text": tr("Second"),

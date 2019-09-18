@@ -1,7 +1,6 @@
 /// <reference path="ui/frames/chat.ts" />
 /// <reference path="ui/modal/ModalConnect.ts" />
 /// <reference path="ui/modal/ModalCreateChannel.ts" />
-/// <reference path="ui/modal/ModalBanCreate.ts" />
 /// <reference path="ui/modal/ModalBanClient.ts" />
 /// <reference path="ui/modal/ModalYesNo.ts" />
 /// <reference path="ui/modal/ModalBanList.ts" />
@@ -289,6 +288,37 @@ interface Window {
 }
 */
 
+function execute_default_connect() {
+    if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
+        const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
+        const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
+        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
+        const username = settings.static(Settings.KEY_CONNECT_USERNAME, "Another TeaSpeak user");
+
+        const password = settings.static(Settings.KEY_CONNECT_PASSWORD, "");
+        const password_hashed = settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false);
+
+        if(profile && profile.valid()) {
+            const connection = server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler();
+            connection.startConnection(address, profile, true, {
+                nickname: username,
+                password: password.length > 0 ? {
+                    password: password,
+                    hashed: password_hashed
+                } : undefined
+            });
+        } else {
+            Modals.spawnConnectModal({},{
+                url: address,
+                enforce: true
+            }, {
+                profile: profile,
+                enforce: true
+            });
+        }
+    }
+}
+
 function main() {
     /*
     window.proxy_instance = new TestProxy({
@@ -357,6 +387,9 @@ function main() {
         log.info(LogCategory.STATISTICS, tr("Received user count update: %o"), status);
     });
 
+    server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
+
+
     (<any>window).test_upload = (message?: string) => {
         message = message || "Hello World";
 
@@ -382,37 +415,8 @@ function main() {
         })
     };
 
-    server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
-
-    if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
-        const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
-        const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
-        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
-        const username = settings.static(Settings.KEY_CONNECT_USERNAME, "Another TeaSpeak user");
-
-        const password = settings.static(Settings.KEY_CONNECT_PASSWORD, "");
-        const password_hashed = settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false);
-
-        if(profile && profile.valid()) {
-            const connection = server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler();
-            connection.startConnection(address, profile, true, {
-                nickname: username,
-                password: password.length > 0 ? {
-                    password: password,
-                    hashed: password_hashed
-                } : undefined
-            });
-        } else {
-            Modals.spawnConnectModal({},{
-                url: address,
-                enforce: true
-            }, {
-                profile: profile,
-                enforce: true
-            });
-        }
-    }
-
+    /* schedule it a bit later then the main because the main function is still within the loader */
+    setTimeout(execute_default_connect, 5);
     setTimeout(() => {
         const connection = server_connections.active_connection_handler();
         /*
@@ -426,7 +430,15 @@ function main() {
         //Modals.openClientInfo(connection.getClient());
         //Modals.openServerInfoBandwidth(connection.channelTree.server);
 
-        Modals.openBanList(connection);
+        //Modals.openBanList(connection);
+        /*
+        Modals.spawnBanClient(connection,[
+            {name: "WolverinDEV", unique_id: "XXXX"},
+            {name: "WolverinDEV", unique_id: "XXXX"},
+            {name: "WolverinDEV", unique_id: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"},
+            {name: "WolverinDEV", unique_id: "YYY"}
+        ], () => {});
+        */
     }, 4000);
     //Modals.spawnSettingsModal("identity-profiles");
     //Modals.spawnKeySelect(console.log);

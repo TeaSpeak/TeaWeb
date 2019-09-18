@@ -42,6 +42,7 @@
 			display: flex;
 
 			&.disabled {
+				pointer-events: none;
 				background-color: lightgray;
 				cursor: not-allowed;
 			}

@@ -1,6 +1,6 @@
 namespace Modals {
     let current_modal: Modal;
-    export function createServerGroupAssignmentModal(client: ClientEntry, callback: (group: Group, flag: boolean) => Promise<boolean>) {
+    export function createServerGroupAssignmentModal(client: ClientEntry, callback: (groups: number[], flag: boolean) => Promise<boolean>) {
         if(current_modal)
             current_modal.close();
 
@@ -19,7 +19,6 @@ namespace Modals {
                     let entry = {} as any;
                     entry["id"] = group.id;
                     entry["name"] = group.name;
-                    entry["assigned"] = client.groupAssigned(group);
                     entry["disabled"] = !client.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
                     entry["default"] = client.channelTree.server.properties.virtualserver_default_server_group == group.id;
                     tag["icon_" + group.id] = client.channelTree.client.fileManager.icons.generateTag(group.properties.iconid);
@@ -27,6 +26,12 @@ namespace Modals {
                 }
 
                 let template = $("#tmpl_server_group_assignment").renderTag(tag);
+
+                const update_groups = () => {
+                    for(let group of _groups) {
+                        template.find("input[group-id='" + group.id + "']").prop("checked", client.groupAssigned(group));
+                    }
+                };
 
                 template.find(".group-entry input").each((_idx, _entry) => {
                     let entry = $(_entry);
@@ -40,27 +45,32 @@ namespace Modals {
                         }
 
                         let target = entry.prop("checked");
-                        callback(group, target).then(flag => flag ? Promise.resolve() : Promise.reject()).then(() => {
-                            template.find(".group-entry input[default]").prop("checked", template.find(".group-entry input:checked").length == 0);
-                        }).catch(error => entry.prop("checked", !target));
+                        callback([group.id], target).catch(e => { log.warn(LogCategory.GENERAL, tr("Failed to change group assignment: %o"), e)}).then(update_groups);
                     });
                 });
 
                 template.find(".button-close").on('click', () => current_modal.close());
                 template.find(".button-remove-all").on('click', () => {
+                    const group_ids = [];
+
                     template.find(".group-entry input").each((_idx, _entry) => {
                         let entry = $(_entry);
                         if(entry.attr("default") !== undefined || !entry.prop("checked"))
                             return;
 
-                        entry.prop("checked", false).trigger('change');
+                        group_ids.push(parseInt(entry.attr("group-id")));
                     });
+
+                    callback(group_ids, false).catch(e => { log.warn(LogCategory.GENERAL, tr("Failed to remove all group assignments: %o"), e)}).then(update_groups);
+
                 });
-                template.find(".group-entry input[default]").prop("checked", template.find(".group-entry input:checked").length == 0);
+
+                update_groups();
                 return template;
             },
             footer: null,
-            width: "max-content"
+            min_width: "10em"
+
         });
 
         current_modal.htmlTag.find(".modal-body").addClass("modal-server-group-assignments");

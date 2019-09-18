@@ -384,20 +384,7 @@ class ClientEntry {
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-permission_server_groups",
                     name: "Server groups dialog",
-                    callback: () => {
-                        Modals.createServerGroupAssignmentModal(this, (group, flag) => {
-                            if(flag) {
-                                return this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
-                                    sgid: group.id,
-                                    cldbid: this.properties.client_database_id
-                                }).then(result => true);
-                            } else
-                                return this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
-                                    sgid: group.id,
-                                    cldbid: this.properties.client_database_id
-                                }).then(result => true);
-                        });
-                    }
+                    callback: () => this.open_assignment_modal()
                 },
                 contextmenu.Entry.HR(),
                 ...server_groups
@@ -430,6 +417,33 @@ class ClientEntry {
         }];
     }
 
+    open_assignment_modal() {
+        Modals.createServerGroupAssignmentModal(this, (groups, flag) => {
+            if(groups.length == 0) return Promise.resolve(true);
+
+            if(groups.length == 1) {
+                if(flag) {
+                    return this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
+                        sgid: groups[0],
+                        cldbid: this.properties.client_database_id
+                    }).then(result => true);
+                } else
+                    return this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
+                        sgid: groups[0],
+                        cldbid: this.properties.client_database_id
+                    }).then(result => true);
+            } else {
+                const data = groups.map(e => { return {sgid: e}; });
+                data[0]["cldbid"] = this.properties.client_database_id;
+
+                if(flag) {
+                    return this.channelTree.client.serverConnection.send_command("clientaddservergroup", data, {flagset: ["continueonerror"]}).then(result => true);
+                } else
+                    return this.channelTree.client.serverConnection.send_command("clientdelservergroup", data, {flagset: ["continueonerror"]}).then(result => true);
+            }
+        });
+    }
+
     open_text_chat() {
         const chat = this.channelTree.client.side_bar;
         const conversation = chat.private_conversations().find_conversation({
@@ -441,7 +455,6 @@ class ClientEntry {
             create: true
         });
         chat.private_conversations().set_selected_conversation(conversation);
-        /* TODO: Check if auto switch to private conversations is enabled */
         chat.show_private_conversations();
         chat.private_conversations().try_input_focus();
     }
@@ -458,7 +471,16 @@ class ClientEntry {
                 callback: () => {
                     this.open_text_chat();
                 }
-            }, {
+            },
+            contextmenu.Entry.HR(),
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-about",
+                name: tr("Show client info"),
+                callback: () => Modals.openClientInfo(this)
+            },
+            contextmenu.Entry.HR(),
+            {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-poke",
                 name: tr("Poke client"),
@@ -547,7 +569,10 @@ class ClientEntry {
                 name: tr("Ban client"),
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
-                    Modals.spawnBanClient(this.properties.client_nickname, (data) => {
+                    Modals.spawnBanClient(this.channelTree.client, [{
+                        name: this.properties.client_nickname,
+                        unique_id: this.properties.client_unique_identifier
+                    }], (data) => {
                         this.channelTree.client.serverConnection.send_command("banclient", {
                             uid: this.properties.client_unique_identifier,
                             banreason: data.reason,
@@ -617,6 +642,14 @@ class ClientEntry {
             .attr("client-id", this.clientId());
 
 
+        /* unread marker */
+        {
+            container_client.append(
+                $.spawn("div")
+                    .addClass("marker-text-unread hidden")
+                    .attr("private-conversation", this._clientId)
+            );
+        }
         container_client.append(
             $.spawn("div")
             .addClass("icon_client_state")
@@ -1055,6 +1088,10 @@ class ClientEntry {
         this._info_connection_promise_resolve = undefined;
         this._info_connection_promise_reject = undefined;
     }
+
+    set flag_text_unread(flag: boolean) {
+        this._tag.find(".marker-text-unread").toggleClass("hidden", !flag);
+    }
 }
 
 class LocalClientEntry extends ClientEntry {
@@ -1383,7 +1420,7 @@ class MusicClientEntry extends ClientEntry {
                 },
                 type: contextmenu.MenuEntryType.ENTRY
             },
-            contextmenu.Entry.CLOSE(() => (trigger_close ? on_close : (() => {}))())
+            contextmenu.Entry.CLOSE(() => trigger_close && on_close())
         );
     }
 

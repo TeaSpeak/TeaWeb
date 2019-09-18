@@ -141,6 +141,16 @@ $animation_length: .5s;
 					align-self: center;
 				}
 
+				> span {
+					display: flex;
+					flex-direction: row;
+					justify-content: flex-start;
+
+					> a {
+						margin-right: .5em;
+					}
+				}
+
 				a[href], a[href]:visited {
 					color: #353535!important;
 				}

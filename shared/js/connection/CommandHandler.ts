@@ -437,7 +437,8 @@ namespace connection {
 
                 client.updateVariables(...updates);
 
-                if(!old_channel) {
+                /* if its a new client join, or a system reason (like we joined) */
+                if(!old_channel || reason_id == 2) {
                     /* client new join */
                     const conversation_manager = this.connection_handler.side_bar.private_conversations();
                     const conversation = conversation_manager.find_conversation({
@@ -448,6 +449,8 @@ namespace connection {
                         create: false,
                         attach: true
                     });
+                    if(conversation)
+                        client.flag_text_unread = conversation.is_unread();
                 }
 
                 if(client instanceof LocalClientEntry) {
@@ -754,6 +757,9 @@ namespace connection {
 
                 if(target_own) {
                     this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
+                    const client = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
+                    if(client) /* the client itself might be invisible */
+                        client.flag_text_unread = conversation.is_unread();
                 } else {
                     this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
                 }
@@ -802,6 +808,7 @@ namespace connection {
                     timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
                     message: json["msg"]
                 });
+                this.connection_handler.channelTree.server.flag_text_unread = conversation.is_unread();
             }
         }
 

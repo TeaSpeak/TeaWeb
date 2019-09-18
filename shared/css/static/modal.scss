@@ -745,7 +745,7 @@ label.disabled > .radio-button, .radio-button.disabled, .radio-button:disabled {
 label.disabled > .checkbox, .checkbox:disabled, .checkbox.disabled {
 	&.checkbox, > .checkbox {
 		pointer-events: none!important;
-		background-color: #222227;
+		background-color: #1a1a1e;
 	}
 }
 

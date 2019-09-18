@@ -474,6 +474,10 @@ $client_info_avatar_size: 10em;
 						//padding: .5em 1em;
 						color: #565353;
 
+						&.type-disconnect_self {
+							color: #565353; /* not really critical at all */
+						}
+
 						&.type-new {
 							color: darkred; /* TODO: Evaluate color */
 						}

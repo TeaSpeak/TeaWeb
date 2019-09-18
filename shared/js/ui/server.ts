@@ -140,6 +140,15 @@ class ServerEntry {
 
         let tag = $.spawn("div").addClass("tree-entry server");
 
+        /* unread marker */
+        {
+            tag.append(
+                $.spawn("div")
+                    .addClass("marker-text-unread hidden")
+                    .attr("conversation", 0)
+            );
+        }
+
         tag.append(
             $.spawn("div")
             .addClass("server_type icon client-server_green")
@@ -387,5 +396,9 @@ class ServerEntry {
     calculateUptime() : number {
         if(this.properties.virtualserver_uptime == 0 || this.lastInfoRequest == 0) return this.properties.virtualserver_uptime;
         return this.properties.virtualserver_uptime + (new Date().getTime() - this.lastInfoRequest) / 1000;
+    }
+
+    set flag_text_unread(flag: boolean) {
+        this._htmlTag.find(".marker-text-unread").toggleClass("hidden", !flag);
     }
 }

@@ -107,7 +107,7 @@ namespace Modals {
                 };
 
                 const container_bookmarks = template.find(".container-bookmarks");
-                const update_bookmark_list = () => {
+                const update_bookmark_list = (_current_selected: string) => {
                     container_bookmarks.empty();
                     selected_bookmark = undefined;
                     update_selected();
@@ -155,6 +155,8 @@ namespace Modals {
                             update_buttons();
                             update_selected();
                         });
+                        if(entry.unique_id === _current_selected)
+                            container.trigger('click');
 
                         hide_links.push(sibling_data.last);
                         let cindex = 0;
@@ -197,13 +199,13 @@ namespace Modals {
                                 if(answer) {
                                     bookmarks.delete_bookmark(selected_bookmark);
                                     bookmarks.save_bookmark(selected_bookmark);
-                                    update_bookmark_list();
+                                    update_bookmark_list(undefined);
                                 }
                             });
                         } else {
                             bookmarks.delete_bookmark(selected_bookmark);
                             bookmarks.save_bookmark(selected_bookmark);
-                            update_bookmark_list();
+                            update_bookmark_list(undefined);
                         }
                     });
 
@@ -221,7 +223,7 @@ namespace Modals {
                                     result as string
                                 );
                                 bookmarks.save_bookmark(mark);
-                                update_bookmark_list();
+                                update_bookmark_list(mark.unique_id);
                             }
                         }).open();
                     });
@@ -243,7 +245,7 @@ namespace Modals {
                                         server_password_hash: ""
                                     }, "");
                                 bookmarks.save_bookmark(mark);
-                                update_bookmark_list();
+                                update_bookmark_list(mark.unique_id);
                             }
                         }).open();
                     });
@@ -305,10 +307,49 @@ namespace Modals {
                     })
                 }
 
+                /* Arrow key navigation for the bookmark list */
+                {
+                    let _focused = false;
+                    let _focus_listener;
+                    let _key_listener;
 
-                update_bookmark_list();
+                    _focus_listener = event => {
+                        _focused = false;
+                        let element = event.target as HTMLElement;
+                        while(element) {
+                            if(element === container_bookmarks[0]) {
+                                _focused = true;
+                                break;
+                            }
+                            element = element.parentNode as HTMLElement;
+                        }
+                    };
+
+                    _key_listener = event => {
+                        if(!_focused) return;
+
+                        if(event.key.toLowerCase() === "arrowdown") {
+                            container_bookmarks.find(".selected").next().trigger('click');
+                        } else if(event.key.toLowerCase() === "arrowup") {
+                            container_bookmarks.find(".selected").prev().trigger('click');
+                        }
+                    };
+
+                    document.addEventListener('click', _focus_listener);
+                    document.addEventListener('keydown', _key_listener);
+                    modal.close_listener.push(() => {
+                        document.removeEventListener('click', _focus_listener);
+                        document.removeEventListener('keydown', _key_listener);
+                    })
+                }
+
+
+                update_bookmark_list(undefined);
                 update_buttons();
 
+                template.find(".container-bookmarks").on('keydown', event => {
+                    console.error(event.key);
+                });
                 template.find(".button-close").on('click', event => modal.close());
                 return template.children();
             },
@@ -321,6 +362,7 @@ namespace Modals {
             control_bar.update_bookmarks();
             top_menu.rebuild_bookmarks();
         });
+
         modal.open();
     }
 }

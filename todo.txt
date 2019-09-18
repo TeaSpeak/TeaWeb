@@ -19,9 +19,8 @@
     - Icon Select
         - Icon upload
     - Avatar list
-    - Server group assignments checkbox
     - Invite buddy
-
+    - Change volume
 
 - Ban Liste
     - Übersicht
@@ -132,6 +131,7 @@
     - File Transfer bytes transferred, month & global (Up + Download)
 
 TODO:
+Context menu for clients => Group assignment => Not assignable groups sind assignable
 Fix these icons: https://img.did.science/Screenshot_20-11-06.png
 - Application Options
     - Crash

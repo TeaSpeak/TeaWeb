@@ -3,102 +3,178 @@
 /// <reference path="../../proto.ts" />
 
 namespace Modals {
-    export function spawnBanClient(name: string | string[], callback: (data: {
+    export type BanEntry = {
+        name?: string;
+        unique_id: string;
+    }
+    export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | BanEntry[], callback: (data: {
         length: number,
         reason: string,
         no_name: boolean,
         no_ip: boolean,
         no_hwid: boolean
     }) => void) {
-        const connectModal = createModal({
-            header: function() {
-                return tr("Ban client");
-            },
+        const max_ban_time = client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).value;
+
+        const permission_criteria_hwid = client.permissions.neededPermission(PermissionType.B_CLIENT_BAN_HWID).granted(1);
+        const permission_criteria_ip = client.permissions.neededPermission(PermissionType.B_CLIENT_BAN_IP).granted(1);
+        const permission_criteria_name = client.permissions.neededPermission(PermissionType.B_CLIENT_BAN_NAME).granted(1);
+
+        const modal = createModal({
+            header: Array.isArray(entries) ? tr("Ban clients") : tr("Ban client"),
             body: function () {
-                let tag = $("#tmpl_client_ban").renderTag({
-                    client_name: $.isArray(name) ? '"' + name.join('", "') + '"' : name
-                });
+                let template = $("#tmpl_client_ban").renderTag({entries: entries});
 
-                let maxTime = 0; //globalClient.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).value;
-                let unlimited = maxTime == 0 || maxTime == -1;
-                if(unlimited) maxTime = 0;
+                let update_duration;
+                let update_button_ok;
+                const button_ok = template.find(".button-apply");
+                const button_cancel = template.find(".button-cancel");
 
-                let banTag = tag.find(".ban_duration_type");
-                let durationTag = tag.find(".ban_duration");
-                banTag.find("option[value=\"sec\"]").prop("disabled", !unlimited && 1 > maxTime)
-                    .attr("duration-scale", 1)
-                    .attr("duration-max", maxTime);
-                banTag.find("option[value=\"min\"]").prop("disabled", !unlimited && 60 > maxTime)
-                    .attr("duration-scale", 60)
-                    .attr("duration-max", maxTime  / 60);
-                banTag.find("option[value=\"hours\"]").prop("disabled", !unlimited && 60 * 60 > maxTime)
-                    .attr("duration-scale", 60 * 60)
-                    .attr("duration-max", maxTime / (60 * 60));
-                banTag.find("option[value=\"days\"]").prop("disabled", !unlimited && 60 * 60  * 24 > maxTime)
-                    .attr("duration-scale", 60 * 60 * 24)
-                    .attr("duration-max", maxTime / (60 * 60 * 24));
-                banTag.find("option[value=\"perm\"]").prop("disabled", !unlimited)
-                    .attr("duration-scale", 0);
+                const input_duration_value = template.find(".container-duration input").on('change keyup', () => update_duration());
+                const input_duration_type = template.find(".container-duration select").on('change keyup', () => update_duration());
 
-                durationTag.change(() => banTag.trigger('change'));
+                const container_reason = template.find(".container-reason");
 
-                banTag.change(event => {
-                    let element = $((event.target as HTMLSelectElement).selectedOptions.item(0));
-                    if(element.val() !== "perm") {
-                        durationTag.prop("disabled", false);
+                const criteria_nickname = template.find(".criteria.nickname input")
+                    .prop('checked', permission_criteria_name).prop("disabled", !permission_criteria_name)
+                    .firstParent(".checkbox").toggleClass("disabled", !permission_criteria_name);
 
-                        let current = durationTag.val() as number;
-                        let max = parseInt(element.attr("duration-max"));
-                        if (max > 0 && current > max)
-                            durationTag.val(max);
-                        else if(current <= 0)
-                            durationTag.val(1);
-                        durationTag.attr("max", max);
-                    } else {
-                        durationTag.prop("disabled", true);
-                    }
-                });
+                const criteria_ip_address = template.find(".criteria.ip-address input")
+                    .prop('checked', permission_criteria_ip).prop("disabled", !permission_criteria_ip)
+                    .firstParent(".checkbox").toggleClass("disabled", !permission_criteria_ip);
 
-                return tag;
+                const criteria_hardware_id = template.find(".criteria.hardware-id input")
+                    .prop('checked', permission_criteria_hwid).prop("disabled", !permission_criteria_hwid)
+                    .firstParent(".checkbox").toggleClass("disabled", !permission_criteria_hwid);
+
+                /* duration input handler */
+                {
+                    const tooltip_duration_max = template.find(".tooltip-max-time a.max");
+
+                    update_duration = () => {
+                        const type = input_duration_type.val() as string;
+                        const value = parseInt(input_duration_value.val() as string);
+                        const disabled = input_duration_type.prop("disabled");
+
+                        input_duration_value.prop("disabled", type === "perm" || disabled).firstParent(".input-boxed").toggleClass("disabled", type === "perm" || disabled);
+                        if(type !== "perm") {
+                            if(input_duration_value.attr("x-saved-value")) {
+                                input_duration_value.val(parseInt(input_duration_value.attr("x-saved-value")));
+                                input_duration_value.attr("x-saved-value", null);
+                            }
+
+                            const selected_option = input_duration_type.find("option[value='" + type + "']");
+                            const max = parseInt(selected_option.attr("duration-max"));
+
+                            input_duration_value.attr("max", max);
+                            if((value > max && max != -1) || value < 1) {
+                                input_duration_value.firstParent(".input-boxed").addClass("is-invalid");
+                            } else {
+                                input_duration_value.firstParent(".input-boxed").removeClass("is-invalid");
+                            }
+
+                            if(max != -1)
+                                tooltip_duration_max.html(tr("You're allowed to ban a maximum of ") + "<b>" + max + " " + duration_data[type][max == 1 ? "1-text" : "text"] + "</b>");
+                            else
+                                tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
+                        } else {
+                            if(value && !Number.isNaN(value))
+                                input_duration_value.attr("x-saved-value", value);
+                            input_duration_value.attr("placeholder", tr("for ever")).val(null);
+                            tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
+                        }
+                        update_button_ok && update_button_ok();
+                    };
+
+                    /* initialize ban time */
+                    Promise.resolve(max_ban_time).catch(error => { /* TODO: Error handling? */ return 0; }).then(max_time => {
+                        let unlimited = max_time == 0 || max_time == -1;
+                        if(unlimited || typeof(max_time) === "undefined") max_time = 0;
+
+                        for(const value of Object.keys(duration_data)) {
+                            input_duration_type.find("option[value='" + value + "']")
+                                .prop("disabled", !unlimited && max_time >= duration_data[value].scale)
+                                .attr("duration-scale", duration_data[value].scale)
+                                .attr("duration-max", unlimited ? -1 : Math.floor(max_time  / duration_data[value].scale));
+                        }
+
+                        input_duration_type.find("option[value='perm']")
+                            .prop("disabled", !unlimited)
+                            .attr("duration-scale", 0)
+                            .attr("duration-max", -1);
+                        update_duration();
+                    });
+
+                    update_duration();
+                }
+
+                /* ban reason */
+                {
+                    const input = container_reason.find("textarea");
+
+                    const insert_tag = (open: string, close: string) => {
+                        if(input.prop("disabled"))
+                            return;
+
+                        const node = input[0] as HTMLTextAreaElement;
+                        if (node.selectionStart || node.selectionStart == 0) {
+                            const startPos = node.selectionStart;
+                            const endPos = node.selectionEnd;
+                            node.value = node.value.substring(0, startPos) + open + node.value.substring(startPos, endPos) + close + node.value.substring(endPos);
+                            node.selectionEnd = endPos + open.length;
+                            node.selectionStart = node.selectionEnd;
+                        } else {
+                            node.value += open + close;
+                            node.selectionEnd = node.value.length - close.length;
+                            node.selectionStart = node.selectionEnd;
+                        }
+
+                        input.focus().trigger('change');
+                    };
+
+                    container_reason.find(".button-bold").on('click', () => insert_tag('[b]', '[/b]'));
+                    container_reason.find(".button-italic").on('click', () => insert_tag('[i]', '[/i]'));
+                    container_reason.find(".button-underline").on('click', () => insert_tag('[u]', '[/u]'));
+                    container_reason.find(".button-color input").on('change', event => {
+                        insert_tag('[color=' + (event.target as HTMLInputElement).value + ']', '[/color]')
+                    });
+                }
+
+                /* buttons */
+                {
+                    button_cancel.on('click', event => modal.close());
+                    button_ok.on('click', event => {
+                        const duration = input_duration_type.val() === "perm" ? 0 : (1000 * parseInt(input_duration_type.find("option[value='" +  input_duration_type.val() + "']").attr("duration-scale")) * parseInt(input_duration_value.val() as string));
+
+                        modal.close();
+                        callback({
+                            length: Math.floor(duration / 1000),
+                            reason: container_reason.find("textarea").val() as string,
+
+                            no_hwid: !criteria_hardware_id.find("input").prop("checked"),
+                            no_ip: !criteria_ip_address.find("input").prop("checked"),
+                            no_name: !criteria_nickname.find("input").prop("checked")
+                        });
+                    });
+
+                    const inputs = template.find(".input-boxed");
+                    update_button_ok = () => {
+                        const invalid = [...inputs].find(e => $(e).hasClass("is-invalid"));
+                        button_ok.prop('disabled', !!invalid);
+                    };
+                    update_button_ok();
+                }
+
+                tooltip(template);
+                return template.children();
             },
-            footer: function () {
-                let tag = $.spawn("div");
-                tag.css("text-align", "right");
-                tag.css("margin-top", "3px");
-                tag.css("margin-bottom", "6px");
-                tag.addClass("modal-button-group");
+            footer: null,
 
-                let buttonCancel = $.spawn("button");
-                buttonCancel.text("Cancel");
-                buttonCancel.on("click", () => connectModal.close());
-                tag.append(buttonCancel);
-
-
-                let buttonOk = $.spawn("button");
-                buttonOk.text("OK").addClass("btn_success");
-                tag.append(buttonOk);
-                return tag;
-            },
-
-            width: 450
+            min_width: "10em",
+            width: "30em"
         });
-        connectModal.open();
+        modal.open();
 
-        connectModal.htmlTag.find(".btn_success").on('click', () => {
-            connectModal.close();
-
-            let length = connectModal.htmlTag.find(".ban_duration").val() as number;
-            let duration = connectModal.htmlTag.find(".ban_duration_type option:selected");
-            console.log(duration);
-            console.log(length + "*" + duration.attr("duration-scale"));
-
-            callback({
-                length: length * parseInt(duration.attr("duration-scale")),
-                reason: connectModal.htmlTag.find(".ban_reason").val() as string,
-                no_hwid: !connectModal.htmlTag.find(".ban-type-hardware-id").prop("checked"),
-                no_ip: !connectModal.htmlTag.find(".ban-type-ip").prop("checked"),
-                no_name: !connectModal.htmlTag.find(".ban-type-nickname").prop("checked")
-            });
-        })
+        modal.htmlTag.find(".modal-body").addClass("modal-ban-client");
     }
 }

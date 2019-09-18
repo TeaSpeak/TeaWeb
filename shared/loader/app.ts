@@ -198,6 +198,9 @@ const loader_javascript = {
             "js/ui/modal/ModalAvatar.js",
             "js/ui/modal/ModalAvatarList.js",
             "js/ui/modal/ModalClientInfo.js",
+            "js/ui/modal/ModalChannelInfo.js",
+            "js/ui/modal/ModalServerInfo.js",
+            "js/ui/modal/ModalServerInfoBandwidth.js",
             "js/ui/modal/ModalQuery.js",
             "js/ui/modal/ModalQueryManage.js",
             "js/ui/modal/ModalPlaylistList.js",
@@ -207,14 +210,11 @@ const loader_javascript = {
             "js/ui/modal/ModalSettings.js",
             "js/ui/modal/ModalCreateChannel.js",
             "js/ui/modal/ModalServerEdit.js",
-            "js/ui/modal/ModalServerInfo.js",
-            "js/ui/modal/ModalServerInfoBandwidth.js",
             "js/ui/modal/ModalChangeVolume.js",
             "js/ui/modal/ModalBanClient.js",
             "js/ui/modal/ModalIconSelect.js",
             "js/ui/modal/ModalInvite.js",
             "js/ui/modal/ModalIdentity.js",
-            "js/ui/modal/ModalBanCreate.js",
             "js/ui/modal/ModalBanList.js",
             "js/ui/modal/ModalYesNo.js",
             "js/ui/modal/ModalPoke.js",
@@ -371,7 +371,8 @@ const loader_style = {
             "css/static/modal-invite.css",
             "css/static/modal-playlist.css",
             "css/static/modal-banlist.css",
-            "css/static/modal-bancreate.css",
+            "css/static/modal-banclient.css",
+            "css/static/modal-channelinfo.css",
             "css/static/modal-clientinfo.css",
             "css/static/modal-serverinfo.css",
             "css/static/modal-serverinfobandwidth.css",
@@ -523,7 +524,7 @@ loader.register_task(loader.Stage.LOADED, {
     function: async () => {
         fadeoutLoader();
     },
-    priority: 10
+    priority: 5
 });
 
 loader.register_task(loader.Stage.LOADED, {
@@ -587,6 +588,19 @@ loader.register_task(loader.Stage.SETUP, {
         }
     },
     priority: 10
+});
+
+/* test if we're getting loaded within a TeaClient preview window */
+loader.register_task(loader.Stage.SETUP, {
+    name: "TeaClient tester",
+    function: async () => {
+        //@ts-ignore
+        if(typeof __teaclient_preview_notice !== "undefined" && typeof __teaclient_preview_error !== "undefined") {
+            loader.critical_error("Why you're opening TeaWeb within the TeaSpeak client?!");
+            throw "we're already a TeaClient!";
+        }
+    },
+    priority: 100
 });
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {

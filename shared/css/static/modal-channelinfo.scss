@@ -1,0 +1,161 @@
+@import "mixin";
+@import "properties";
+
+.modal-body.modal-channel-info {
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
+
+	min-width: 30em!important;
+	max-height: calc(100vh - 10em);
+	padding: 0em!important;
+
+	.row {
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		padding-top: 1em;
+		padding-left: .5em;
+		padding-right: .5em;
+
+		.column {
+			flex-grow: 1;
+			flex-shrink: 1;
+
+			min-width: 6em;
+			width: 10em;
+
+			margin-right: .5em;
+			margin-left: .5em;
+
+			.title {
+				text-transform: uppercase;
+				color: #557edc;
+
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.value {
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			&.audio-encrypted {
+				/* looks better */
+				.value {
+					height: 1.6em;
+					overflow: visible;
+				}
+			}
+		}
+	}
+
+	.container-description {
+		flex-grow: 1;
+		flex-shrink: 1;
+
+		min-height: 8em; /* description plus title */
+
+		display: flex;
+		flex-direction: column;
+		justify-content: stretch;
+
+		padding-top: 1em;
+		padding-left: 1em;
+		padding-right: 1em;
+
+		.title {
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-start;
+
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			text-transform: uppercase;
+			color: #557edc;
+
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+
+			.button-copy {
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+
+				margin-top: .1em; /* looks a bit better */
+				margin-left: .5em;
+				border-radius: .2em;
+
+				width: 1.3em;
+				height: 1.3em;
+
+				cursor: pointer;
+
+				div {
+					align-self: center;
+				}
+
+				&:hover {
+					background-color: #313135;
+				}
+
+				@include transition($button_hover_animation_time ease-in-out);
+			}
+		}
+
+		.value {
+			display: block;
+			flex-grow: 1;
+			flex-shrink: 1;
+
+			border-radius: 0.2em;
+			border: 1px solid #212324;
+			background-color: #3a3b3f;
+
+			padding: .5em;
+
+			height: max-content;
+			min-height: 6em;
+			max-height: 40em;
+
+			overflow-y: auto;
+			overflow-x: hidden;
+			@include chat-scrollbar-vertical();
+		}
+
+		.no-value {
+			flex-grow: 0;
+			flex-shrink: 0;
+
+			font-size: 1.25em;
+			height: (6em / 1.25); /* min value height and a bit more */
+
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+
+			text-align: center;
+			color: #666666;
+		}
+	}
+
+	.container-buttons {
+		flex-grow: 0;
+		flex-shrink: 0;
+
+		display: flex;
+		flex-direction: row;
+		justify-content: flex-end;
+
+		padding: 1em;
+	}
+}

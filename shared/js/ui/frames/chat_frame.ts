@@ -908,6 +908,7 @@ test
         OPEN,
         CLOSED,
         DISCONNECTED,
+        DISCONNECTED_SELF,
     }
 
     export type DisplayedMessage = {
@@ -1096,7 +1097,7 @@ test
                     tag_message: basic_view_entry.html_tag,
                     tag_timepointer: undefined,
                     tag_unread: undefined
-                });
+                }, true);
             }
         }
 
@@ -1240,7 +1241,7 @@ test
             return result;
         }
 
-        private _build_spacer(message: string, type: "date" | "new" | "disconnect" | "reconnect" | "closed" | "error") : PrivateConversationViewSpacer {
+        private _build_spacer(message: string, type: "date" | "new" | "disconnect" | "disconnect_self" | "reconnect" | "closed" | "error") : PrivateConversationViewSpacer {
             const tag = $("#tmpl_frame_chat_private_spacer").renderTag({
                 message: message
             }).addClass("type-" + type);
@@ -1249,7 +1250,7 @@ test
             }
         }
 
-        private _register_displayed_message(message: DisplayedMessage) {
+        private _register_displayed_message(message: DisplayedMessage, update_new: boolean) {
             const message_date = new Date(message.timestamp);
 
             /* before := older message; after := newer message */
@@ -1277,7 +1278,7 @@ test
             while(this._displayed_messages.length > this._displayed_messages_length)
                 this._destroy_displayed_message(this._displayed_messages.last(), true);
 
-            const flag_new_message = index == 0 && (message.message_type === "spacer" || (<PrivateConversationViewMessage>message.message).sender === "partner");
+            const flag_new_message = update_new && index == 0 && (message.message_type === "spacer" || (<PrivateConversationViewMessage>message.message).sender === "partner");
 
             /* Timeline for before - now */
             {
@@ -1411,6 +1412,10 @@ test
                         this._spacer_unread_message.tag_unread.html_tag.insertBefore(this._spacer_unread_message.tag_message);
                     }
                 } else {
+                    const ctree = this.handle.handle.handle.channelTree;
+                    if(ctree && ctree.tag_tree() && this.client_id)
+                        ctree.tag_tree().find(".marker-text-unread[private-conversation='" + this.client_id + "']").addClass("hidden");
+
                     if(this._spacer_unread_message) {
                         this._destroy_view_entry(this._spacer_unread_message.tag_unread);
                         this._spacer_unread_message.tag_unread = undefined;
@@ -1427,14 +1432,16 @@ test
 
         is_unread() : boolean { return !!this._spacer_unread_message; }
 
-        private _append_state_change(state: "disconnect" | "reconnect" | "closed") {
+        private _append_state_change(state: "disconnect" | "disconnect_self" | "reconnect" | "closed") {
             let message;
             if(state == "closed")
                 message = tr("Your chat partner has closed the conversation");
             else if(state == "reconnect")
-                message = "Your chat partner has reconnected";
+                message = this._state === PrivateConversationState.DISCONNECTED_SELF ?tr("You've reconnected to the server") :  tr("Your chat partner has reconnected");
+            else if(state === "disconnect")
+                message = tr("Your chat partner has disconnected");
             else
-                message = "Your chat partner has disconnected";
+                message = tr("You've disconnected from the server");
 
             const spacer = this._build_spacer(message, state);
             this._register_displayed_message({
@@ -1444,7 +1451,7 @@ test
                 tag_message: spacer.html_tag,
                 tag_timepointer: undefined,
                 tag_unread: undefined
-            });
+            }, state === "disconnect");
         }
 
         state() : PrivateConversationState {
@@ -1462,6 +1469,8 @@ test
                 this._append_state_change("reconnect");
             else if(state == PrivateConversationState.CLOSED)
                 this._append_state_change("closed");
+            else if(state == PrivateConversationState.DISCONNECTED_SELF)
+                this._append_state_change("disconnect_self");
 
             this._state = state;
         }
@@ -1485,7 +1494,7 @@ test
                 tag_message: spacer.html_tag,
                 tag_timepointer: undefined,
                 tag_unread: undefined
-            });
+            }, true);
         }
 
         call_message(message: string) {
@@ -1574,7 +1583,10 @@ test
         }
 
         clear_client_ids() {
-            this._conversations.forEach(e => e.client_id = 0);
+            this._conversations.forEach(e => {
+                e.client_id = 0;
+                e.set_state(PrivateConversationState.DISCONNECTED_SELF);
+            });
         }
 
         html_tag() : JQuery { return this._html_tag; }

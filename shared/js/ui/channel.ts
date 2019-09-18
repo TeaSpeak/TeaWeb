@@ -51,7 +51,8 @@ class ChannelProperties {
     //Only after request
     channel_description: string = "";
 
-    channel_flag_conversation_private: boolean = false;
+    channel_flag_conversation_private: boolean = true; /* TeamSpeak mode */
+    channel_conversation_history_length: number = -1;
 }
 
 class ChannelEntry {
@@ -460,30 +461,32 @@ class ChannelEntry {
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
-        let channelCreate =
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_TEMPORARY).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_PERMANENT).granted(1);
+        let channelCreate = !![
+            PermissionType.B_CHANNEL_CREATE_TEMPORARY,
+            PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT,
+            PermissionType.B_CHANNEL_CREATE_PERMANENT
+        ].find(e => this.channelTree.client.permissions.neededPermission(e).granted(1));
 
-        let channelModify =
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_DEFAULT).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_SEMI_PERMANENT).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_TEMPORARY).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NAME).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_TOPIC).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_DESCRIPTION).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_PASSWORD).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_CODEC).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_CODEC_QUALITY).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_CODEC_LATENCY_FACTOR).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAXCLIENTS).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAXFAMILYCLIENTS).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_SORTORDER).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_NEEDED_TALK_POWER).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_MAKE_CODEC_ENCRYPTED).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_MODIFY_TEMP_DELETE_DELAY).granted(1) ||
-            this.channelTree.client.permissions.neededPermission(PermissionType.B_ICON_MANAGE).granted(1);
+        let channelModify = !![
+            PermissionType.B_CHANNEL_MODIFY_MAKE_DEFAULT,
+            PermissionType.B_CHANNEL_MODIFY_MAKE_PERMANENT,
+            PermissionType.B_CHANNEL_MODIFY_MAKE_SEMI_PERMANENT,
+            PermissionType.B_CHANNEL_MODIFY_MAKE_TEMPORARY,
+            PermissionType.B_CHANNEL_MODIFY_NAME,
+            PermissionType.B_CHANNEL_MODIFY_TOPIC,
+            PermissionType.B_CHANNEL_MODIFY_DESCRIPTION,
+            PermissionType.B_CHANNEL_MODIFY_PASSWORD,
+            PermissionType.B_CHANNEL_MODIFY_CODEC,
+            PermissionType.B_CHANNEL_MODIFY_CODEC_QUALITY,
+            PermissionType.B_CHANNEL_MODIFY_CODEC_LATENCY_FACTOR,
+            PermissionType.B_CHANNEL_MODIFY_MAXCLIENTS,
+            PermissionType.B_CHANNEL_MODIFY_MAXFAMILYCLIENTS,
+            PermissionType.B_CHANNEL_MODIFY_SORTORDER,
+            PermissionType.B_CHANNEL_MODIFY_NEEDED_TALK_POWER,
+            PermissionType.B_CHANNEL_MODIFY_MAKE_CODEC_ENCRYPTED,
+            PermissionType.B_CHANNEL_MODIFY_TEMP_DELETE_DELAY,
+            PermissionType.B_ICON_MANAGE
+        ].find(e => this.channelTree.client.permissions.neededPermission(e).granted(1));
 
         let flagDelete = true;
         if(this.clients(true).length > 0)
@@ -522,8 +525,7 @@ class ChannelEntry {
                 name: tr("Show channel info"),
                 callback: () => {
                     trigger_close = false;
-
-                    alert('TODO!');
+                    Modals.openChannelInfo(this);
                 },
                 icon_class: "client-about"
             },

@@ -130,11 +130,13 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
             tag.append($.spawn("div").addClass(icon));
             tag.append($.spawn("div").html($.isFunction(entry.name) ? entry.name() : entry.name));
 
-            if(entry.disabled || entry.invalidPermission) tag.addClass("disabled");
+            if(entry.disabled || entry.invalidPermission)
+                tag.addClass("disabled");
             else {
-                tag.click( () => {
+                tag.on('click', () => {
                     if($.isFunction(entry.callback))
                         entry.callback();
+                    entry.callback = undefined; /* for some reason despawn_context_menu() causes a second click event? */
                     this.despawn_context_menu();
                 });
             }
@@ -151,9 +153,10 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
             if(entry.disabled || entry.invalidPermission)
                 tag.addClass("disabled");
             else {
-                tag.click( () => {
+                tag.on('click', () => {
                     if($.isFunction(entry.callback))
                         entry.callback();
+                    entry.callback = undefined; /* for some reason despawn_context_menu() causes a second click event? */
                     this.despawn_context_menu();
                 });
             }

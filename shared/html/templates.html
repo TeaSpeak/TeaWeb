@@ -208,11 +208,14 @@
                         <div class="container-bottom">
                             <div class="container-server-log" id="server-log"></div>
                             <div class="container-footer">
-                                <div class="hide-small">
-                                    Open source on <a href="https://github.com/TeaSpeak/TeaSpeak-Web"
-                                                      style="display: inline-block; position: relative">github.com</a>
-                                </div>
-                                <a>{{tr "Version:" /}} {{>app_version}}</a>
+                                <span>
+                                    <a>{{tr "Version:" /}} {{>app_version}}</a>
+                                    <div class="hide-small">
+                                        (Open source on
+                                        <a target="_blank" href="https://github.com/TeaSpeak/TeaSpeak-Web"
+                                           style="display: inline-block; position: relative">github.com</a>)
+                                    </div>
+                                </span>
                             </div>
                         </div> <!-- Selection info -->
                     </div>
@@ -2302,442 +2305,6 @@
                 </div>
             </div>
         </script>
-        <script class="jsrender-template" id="tmpl_settings_old" type="text/html">
-            <x-tab>
-                <x-entry>
-                    <x-tag>{{tr "General"/}}</x-tag>
-                    <x-content>
-                        <div class="settings-general">
-                            <div class="group_box">
-                                <div class="header">{{tr "TeaSpeak Forum Connection" /}}</div>
-                                <div class="content settings-teaspeak-forum">
-                                    <div class="not-connected">
-                                        <div>{{tr "You're currently not connected with your TeaSpeak Forum account"
-                                            /}}
-                                        </div>
-                                        <button class="btn btn-primary btn-raised button-login">{{tr "login" /}}
-                                        </button>
-                                    </div>
-                                    <!-- TODO new style! -->
-                                    <div class="connected">
-                                        <div class="connected-info">{{tr "You're connected via TeaSpeak forum" /}}</div>
-                                        <div class="container-info-action">
-                                            <div class="container-info">
-                                                <div class="property username">
-                                                    <div class="key">{{tr "Username:" /}}</div>
-                                                    <div class="value">WolverinDEV</div>
-                                                </div>
-                                                <div class="property premium">
-                                                    <div class="key">{{tr "Premium:" /}}</div>
-                                                    <div class="value">YES</div>
-                                                </div>
-                                            </div>
-                                            <div class="divider"></div>
-                                            <div class="container-actions">
-                                                <button class="button-logout">logout</button>
-                                            </div>
-                                        </div>
-                                        <!--
-                                        <div class="property synchronized">
-                                            <div class="key">{{tr "Synchronized:" /}}</div>
-                                            <div class="value">NO <button class="button-enable-disable-sync">{{tr "enable synchronization" /}}</button></div>
-                                        </div>
-                                        -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <x-entry>
-                    <x-tag>{{tr "Audio" /}}</x-tag>
-                    <x-content>
-                        <div class="settings_audio">
-                            <div class="settings-device-error alert alert-warning alert-dismissible fade show"
-                                 role="alert">
-                                <div class="message"></div>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                            </div>
-
-                            <div class="group_box">
-                                <div class="header">{{tr "Microphone" /}}</div>
-                                <div class="content settings-microphone {{if !voice_available}}disabled{{/if}}">
-                                    {{if voice_available}}
-                                    <div class="form-row settings-device settings-device-microphone">
-                                        <div class="form-group settings-device-select">
-                                            <label for="select-settings-microphone-device" class="bmd-label-static">{{tr
-                                                "Device:" /}}</label>
-                                            <select id="select-settings-microphone-device"
-                                                    class="form-control audio-select-microphone"></select>
-                                        </div>
-                                        <div class="form-group bmd-form-group">
-                                            <button class="btn btn-secondary button-device-update">update</button>
-                                        </div>
-                                    </div>
-                                    <div class="settings-vad-container">
-                                        <div class="group_box">
-                                            <div class="header">{{tr "Voice Activity Detection"/}}</div>
-                                            <div class="content">
-                                                <fieldset>
-                                                    <div class="custom-control custom-radio">
-                                                        <input type="radio" id="select-settings-vad-type-1" value="pt"
-                                                               name="vad_type" class="custom-control-input">
-                                                        <label class="custom-control-label"
-                                                               for="select-settings-vad-type-1">{{tr "Always active"
-                                                            /}}</label>
-                                                    </div>
-                                                    <div class="custom-control custom-radio">
-                                                        <input type="radio" id="select-settings-vad-type-2" value="vad"
-                                                               name="vad_type" class="custom-control-input">
-                                                        <label class="custom-control-label"
-                                                               for="select-settings-vad-type-2">{{tr "Voice activity
-                                                            detection"/}}</label>
-                                                    </div>
-                                                    <div class="custom-control custom-radio">
-                                                        <input type="radio" id="select-settings-vad-type-3" value="ppt"
-                                                               name="vad_type" class="custom-control-input">
-                                                        <label class="custom-control-label"
-                                                               for="select-settings-vad-type-3">{{tr "Push to
-                                                            talk"/}}</label>
-                                                    </div>
-                                                </fieldset>
-                                            </div>
-                                        </div>
-                                        <div class="settings-vad-impl">
-                                            <div class="settings-vad-impl-entry setting-vad-pt">
-                                                {{tr "There are no setting entries for an <b>always</b> online voice
-                                                detection."/}}
-                                            </div>
-                                            <div class="settings-vad-impl-entry setting-vad-ppt">
-                                                <div class="property ppt-key">
-                                                    <div class="key">{{tr "Push to talk key:"/}}</div>
-                                                    <div class="value">
-                                                        <button type="button"
-                                                                class="btn btn-raised btn-primary vat_ppt_key">{{tr
-                                                            "Uninitialised"/}}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group ppt-delay">
-                                                    <label for="input-settings-ppt-delay" class="bmd-label-static">{{tr
-                                                        "Key release delay:" /}}</label>
-                                                    <input id="input-settings-ppt-delay" class="form-control value"
-                                                           type="number" min="0" max="5000"/>
-                                                </div>
-                                            </div>
-                                            <div class="settings-vad-impl-entry setting-vad-vad">
-                                                <div>{{tr "Voice activity threshold (<a
-                                                        class='vad_vad_slider_value'>20</a>%)"/}}
-                                                </div>
-                                                <div class="vad_vad_threshold_selector">
-                                                    <div class="vad_vad_bar">
-                                                        <div class="container-hider">
-                                                            <div class="hider vad_vad_bar_filler"></div>
-                                                        </div>
-                                                        <input type="range" min="0" max="100" value="50"
-                                                               class="vad_vad_slider">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {{else}}
-                                    <div>{{tr "Voice had been disabled" /}}</div>
-                                    {{/if}}
-                                </div>
-                            </div>
-                            <div class="group_box">
-                                <div class="header">{{tr "Speaker" /}}</div>
-                                <div class="content settings-speaker">
-                                    <div class="settings-device settings-device-speaker">
-                                        <div class="form-group settings-device-select">
-                                            <label for="select-settings-speaker-device" class="bmd-label-static">{{tr
-                                                "Device:" /}}</label>
-                                            <select id="select-settings-speaker-device"
-                                                    class="form-control audio-select-speaker"></select>
-                                        </div>
-                                        <div class="form-group bmd-form-group">
-                                            <button class="btn btn-secondary button-device-update">update</button>
-                                        </div>
-                                    </div>
-                                    <div class="container-master-volume">
-                                        <div class="key">Master volume:</div>
-                                        <div class="value master-volume">
-                                            <input type="range" min="0" max="100" value="100">
-                                            <a>(66%)</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="group_box sound">
-                                <div class="header">{{tr "Sound Settings" /}}</div>
-                                <div class="content">
-                                    <div class="sound-settings">
-                                        <div class="property">
-                                            <div class="key">Sound Master volume:</div>
-                                            <div class="value sound-master-volume">
-                                                <input type="range" min="0" max="100" value="100">
-                                                <a>(66%)</a>
-                                            </div>
-                                        </div>
-                                        <div class="property">
-                                            <div class="key">
-                                                {{tr "Overlap same sounds:" /}}
-                                            </div>
-                                            <div class="value overlap-sounds">
-                                                <div class="switch">
-                                                    <label>
-                                                        <input type="checkbox" checked>
-                                                        <div class="help-tip-container"> <!-- lets be absolute -->
-                                                            <div class="help-tip tip-right tip-small">
-                                                                <p>
-                                                                    {{tr "This options deferments if a sound overlaps
-                                                                    itself when played twice.<br>" +
-                                                                    "An example would be when you move multiple clients,
-                                                                    you hear that sound n-times.<br>" +
-                                                                    "If this option is disabled, you hear that sound
-                                                                    just once."
-                                                                    /}}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="property">
-                                            <div class="key muted-sounds">
-                                                {{tr "Mute sounds when output is muted:" /}}
-                                            </div>
-                                            <div class="value muted-sounds">
-                                                <div class="switch">
-                                                    <label>
-                                                        <input type="checkbox" checked>
-                                                        <div class="help-tip-container"> <!-- lets be absolute -->
-                                                            <div class="help-tip tip-right tip-small">
-                                                                <p>
-                                                                    {{tr "Mute all system sounds, when you've muted your
-                                                                    output.<br>If this option isn't disabled you'll
-                                                                    still receive system sounds like 'user joined your
-                                                                    channel'."/}}
-                                                                </p>
-                                                            </div>
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="sound-list">
-                                            <div class="sound-list-header">
-                                                <div class="column sound-name">{{tr "Name" /}}</div>
-                                                <div class="column sound-activated">{{tr "Activated" /}}</div>
-                                            </div>
-                                            <div class="sound-list-entries-container">
-                                                <div class="sound-list-entries">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="form-group sound-list-filter">
-                                            <label for="input-settings-sounds-filter" class="bmd-label-floating">{{tr
-                                                "Filter" /}}</label>
-                                            <input id="input-settings-sounds-filter" class="form-control" type="text"/>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <x-entry>
-                    <x-tag>
-                        <div class="container-tabname-translations">{{tr "Translations" /}}
-                            <div class="country flag-en"></div>
-                        </div>
-                    </x-tag>
-                    <x-content>
-                        <div class="settings-translations">
-                            <div class="group_box">
-                                <div class="header">{{tr "Available translations" /}}</div>
-                                <div class="content">
-                                    <div class="setting-list">
-                                        <div class="list">
-                                        </div>
-                                        <div class="management">
-                                            <div class="loading">Loading...</div>
-                                            <div class="space"></div>
-                                            <button class="btn btn-secondary button-add-repository">{{tr "Add
-                                                repository" /}}
-                                            </button>
-                                        </div>
-                                        <div class="restart-note">
-                                            <p>
-                                                {{tr "Attention: These settings get only affected after a restart or
-                                                reload!" /}}
-                                            </p>
-                                            <button class="button-reload">{{tr "reload now" /}}</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-                <x-entry>
-                    <x-tag class="tab-profiles">
-                        {{tr "Profiles" /}}
-                    </x-tag>
-                    <x-content>
-                        <div class="settings-profiles">
-                            <div class="group_box">
-                                <div class="header">{{tr "Available profiles" /}}</div>
-                                <div class="content">
-                                    <div class="profile-list">
-                                        <div class="list">
-                                        </div>
-                                        <div class="management">
-                                            <button class="btn btn-primary button-set-default">{{tr "Set selected as
-                                                default" /}}
-                                            </button>
-                                            <button class="btn btn-danger button-delete">{{tr "Delete selected" /}}
-                                            </button>
-                                            <div class="space"></div>
-                                            <button class="btn btn-success button-add-profile">{{tr "Create profile"
-                                                /}}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="group_box">
-                                <div class="header">{{tr "Profile settings" /}}</div>
-                                <div class="content">
-                                    <div class="profile-settings">
-                                        <div class="general-settings">
-                                            <div class="form-group">
-                                                <label for="input-settings-profile-name" class="bmd-label-static">{{tr
-                                                    "Profile name:" /}}</label>
-                                                <input id="input-settings-profile-name"
-                                                       class="form-control setting-name">
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="input-settings-profile-default-name"
-                                                       class="bmd-label-static">{{tr "Default nickname:" /}}</label>
-                                                <input id="input-settings-profile-default-name"
-                                                       class="form-control setting-default-nickname">
-                                            </div>
-                                            <div class="form-group">
-                                                <!-- TODO use random ids -->
-                                                <label for="input-settings-profile-default-password"
-                                                       class="bmd-label-floating">{{tr "Default server password"
-                                                    /}}</label>
-                                                <input type="password" id="input-settings-profile-default-password"
-                                                       class="form-control setting-default-password">
-                                            </div>
-                                            <div class="form-group select-container">
-                                                <label for="input-settings-profile-identity-type"
-                                                       class="bmd-label-static">{{tr "Identify Type:" /}}</label>
-                                                <select id="input-settings-profile-identity-type" class="form-control">
-                                                    <option name="identity-type" value="teaforo">{{tr "Forum Account"
-                                                        /}}
-                                                    </option>
-                                                    <option name="identity-type" value="teamspeak">{{tr "TeamSpeak"
-                                                        /}}
-                                                    </option>
-                                                    <option name="identity-type" value="nickname">{{tr "Nickname (Debug
-                                                        purposes only!)" /}}
-                                                    </option> <!-- Only available on localhost for debug -->
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <hr>
-                                        <div class="identity-settings identity-settings-teamspeak">
-                                            <!--
-                                            <div class="import">
-                                                {{tr "Please enter your exported TS3 Identity string bellow or select your exported Identity"/}}<br>
-                                                <div style="width: 100%; display: flex; justify-content: stretch; flex-direction: row">
-                                                    <input placeholder="Identity string" style="min-width: 60%; flex-shrink: 1; flex-grow: 2; margin: 5px;" class="identity_string">
-                                                    <div style="max-width: 200px; flex-grow: 1; flex-shrink: 4; margin: 5px"><input style="display: flex; width: 100%;" class="identity_file" type="file"></div>
-                                                </div>
-                                            </div>
-                                            -->
-                                            <div class="identity-info" style="display: none">
-                                                <div class="form-group unique-id">
-                                                    <label>{{tr "UniqueID:" /}}</label>
-                                                    <input class="form-control" type="text"
-                                                           value="xxjnc14LmvTk+Lyrm8OOeo4tOqw=" readonly/>
-                                                </div>
-                                                <div class="form-row level">
-                                                    <div class="form-group container-input">
-                                                        <label>{{tr "Level:" /}}</label>
-                                                        <input class="form-control" type="text" value="39" readonly/>
-                                                    </div>
-                                                    <div class="form-group bmd-form-group">
-                                                        <button class="btn btn-raised button-improve">{{tr "Improve"
-                                                            /}}
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="identity-undefined">
-                                                <div>{{tr "You have'nt generated/imported an identity.<br>Generate a new
-                                                    one or import one." /}}
-                                                </div>
-                                            </div>
-                                            <div class="manage">
-                                                <button class="btn btn-primary button-generate">{{tr "Generate new"
-                                                    /}}
-                                                </button>
-                                                <div class="export-import">
-                                                    <button class="btn btn-secondary button-import">{{tr "Import
-                                                        identity" /}}
-                                                    </button>
-                                                    <button class="btn btn-primary button-export">{{tr "Export identity"
-                                                        /}}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="identity-settings identity-settings-teaforo">
-                                            <div class="connected">
-                                                {{tr "You're using your forum account as verification"/}}
-                                            </div>
-                                            <div class="disconnected">
-                                                <!-- TODO tr -->
-                                                <!-- <a href="#" class="native-teaforo-login">here</a> -->
-                                                <div class="error-forum-not-connected alert alert-warning fade show"
-                                                     role="alert">
-                                                    You cant use your TeaSpeak forum account. You're not connected with
-                                                    your forum Account!<br>
-                                                    Setup your connection <a class="forum-setup" href="#">here</a>.
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="identity-settings identity-settings-nickname">
-                                            <a>
-                                                {{tr "This is just for debug and uses the name as unique identifier" /}}
-                                            </a>
-                                            <div class="form-group">
-                                                <label for="input-settings-profile-name-name"
-                                                       class="bmd-label-floating">{{tr "Username" /}}</label>
-                                                <input id="input-settings-profile-name-name"
-                                                       class="form-control setting-name">
-                                            </div>
-                                        </div>
-                                        <div class="settings-profile-error alert alert-warning fade show" role="alert">
-                                            <div class="message"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </x-content>
-                </x-entry>
-            </x-tab>
-        </script>
 
         <script class="jsrender-template" id="tmpl_settings-sound_entry" type="text/html">
             <div class="entry">
@@ -3140,10 +2707,9 @@
                 <div class="group-list">
                     {{for groups}}
                     <div class="group-entry">
-                        <label class="ccheckbox {{if disabled}}disabled{{/if}}">
-                            <input type="checkbox" group-id="{{:id}}" {{if default}}default disabled="true" {{/if}} {{if
-                            assigned}}checked{{/if}}>
-                            <span class="checkmark"></span>
+                        <label class="checkbox {{if default}}disabled{{/if}}">
+                            <input type="checkbox" group-id="{{:id}}" {{if default}}default disabled="true" {{/if}}>
+                            <div class="mark"></div>
                         </label>
                         <node key="icon_{{>id}}"></node>
                         <a>{{>name}} ({{>id}})</a>
@@ -3564,21 +3130,38 @@
         </script>
 
         <script class="jsrender-template" id="tmpl_client_ban" type="text/html">
-            <div class="align_column">
-                <div class="align_column" style="margin: 5px">
-                    <a>{{tr "Name:" /}}</a>
-                    <input value="{{>client_name}}" readonly>
+            <div> <!-- for the renderer -->
+                <div class="container-info">
+                    <div class="container container-name">
+                        <div class="title">{{tr "Nickname" /}}</div>
+                        <div class="value">
+                            {{for entries}}
+                                {{>name}}<br>
+                            {{/for}}
+                        </div>
+                    </div>
+                    <div class="container container-unique-id">
+                        <div class="title">{{tr "Unique ID" /}}</div>
+                        <div class="value">
+                            {{for entries}}
+                                {{>unique_id}}<br>
+                            {{/for}}
+                        </div>
+                    </div>
                 </div>
-                <div class="align_column" style="margin: 5px">
-                    <a>{{tr "Reason:" /}}</a>
-                    <textarea style="height: 32px; resize: vertical; max-height: 150px; min-height: 32px"
-                              maxlength="512" class="ban_reason"></textarea>
-                </div>
-                <div class="align_row" style="margin: 5px; justify-content: space-between">
-                    <a>{{tr "Duration:" /}}</a>
-                    <div class="align_row">
-                        <input type="number" value="1" class="ban_duration" style="margin-right: 7px" min="1">
-                        <select class="ban_duration_type">
+                <div class="container-duration">
+                    <a>{{tr "Duration" /}}</a>
+                    <div class="container-value">
+                        <div class="input-boxed value">
+                            <input type="number" value="1" min="1" />
+                            <div class="container-tooltip tooltip-max-time">
+                                <img src="img/icon_tooltip.svg"/>
+                                <div class="tooltip">
+                                    <a class="max">error: max duration</a>
+                                </div>
+                            </div>
+                        </div>
+                        <select class="input-boxed">
                             <option value="sec">{{tr "seconds"/}}</option>
                             <option value="min">{{tr "minutes"/}}</option>
                             <option value="hours">{{tr "hours"/}}</option>
@@ -3587,38 +3170,44 @@
                         </select>
                     </div>
                 </div>
-                <div class="group_box container-ban-type">
-                    <div class="header">{{tr "Ban client by"/}}</div>
-                    <div class="content ban-types">
-                        <div>
-                            <input type="checkbox" class="ban-type-nickname">
-                            <a>{{tr "Nickname"/}}</a>
-                            <div class="help-tip tip-right tip-small" checked>
-                                <p>
-                                    {{tr "Bans the client by his current nickname.<br>" +
-                                    "The currently nickname cant be used until the ban expired"/}}
-                                </p>
-                            </div>
-                        </div>
-                        <div>
-                            <input type="checkbox" class="ban-type-hardware-id" checked>
-                            <a>{{tr "Hardware ID" /}}</a>
-                            <div class="help-tip tip-right tip-small">
-                                <p>
-                                    {{tr "Bans the client by his hardware id.<br>" +
-                                    "The hardware id has different meanings, depends on the users agent<br>" +
-                                    "TeaClient: The hardware id will be equal to the mac address<br>" +
-                                    "TeaWeb: The TeaSpeak web client hasn't a hardware id, it will be random<br>" +
-                                    "TeamSpeak 3 client: The hardware id will be a result of some hashes from hardware
-                                    specific properties" /}}
-                                </p>
-                            </div>
-                        </div>
-                        <div>
-                            <input type="checkbox" class="ban-type-ip" checked>
-                            <a>{{tr "IP Address" /}}</a>
-                        </div>
+                <div class="container-reason">
+                    <div class="toolbar">
+                        <div class="button button-bold">B</div>
+                        <div class="button button-italic">I</div>
+                        <div class="button button-underline">U</div>
+                        <label class="button button-color">
+                            <input type="color" value="#FF0000">
+                            <a class="rainbow-letter">C</a>
+                        </label>
                     </div>
+                    <textarea class="input-boxed ban-reason" placeholder="{{tr 'Ban reason' /}}"></textarea>
+                </div>
+                <div class="container-criteria">
+                    <div class="criteria nickname">
+                        <a>{{tr "Nickname and Unique ID" /}}</a>
+                        <label class="checkbox">
+                            <input type="checkbox">
+                            <div class="mark"></div>
+                        </label>
+                    </div>
+                    <div class="criteria ip-address">
+                        <a>{{tr "IP-Address" /}}</a>
+                        <label class="checkbox">
+                            <input type="checkbox">
+                            <div class="mark"></div>
+                        </label>
+                    </div>
+                    <div class="criteria hardware-id">
+                        <a>{{tr "Hardware ID" /}}</a>
+                        <label class="checkbox">
+                            <input type="checkbox">
+                            <div class="mark"></div>
+                        </label>
+                    </div>
+                </div>
+                <div class="container-buttons">
+                    <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
+                    <button class="btn btn-success button-apply">{{tr "Ok" /}}</button>
                 </div>
             </div>
         </script>
@@ -5285,6 +4874,60 @@
             </div>
         </script>
 
+        <script class="jsrender-template" id="tmpl_channel_info" type="text/html">
+            <div> <!-- Important for the renderer -->
+                <div class="row">
+                    <div class="column channel-type">
+                        <a class="title">{{tr "Channel Type" /}}</a>
+                        <div class="value">error: channel type</div>
+                    </div>
+                    <div class="column chat-mode">
+                        <a class="title">{{tr "Chat mode" /}}</a>
+                        <div class="value">error: chat mode</div>
+                    </div>
+                    <div class="column current-clients">
+                        <a class="title">{{tr "Current clients" /}}</a>
+                        <div class="value">error: current clients</div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="column audio-codec">
+                        <a class="title">{{tr "Audio Codec" /}}</a>
+                        <div class="value">error: audio codec</div>
+                    </div>
+                    <div class="column audio-encrypted">
+                        <a class="title">{{tr "Audio encrypted" /}}</a>
+                        <div class="value">error: audio encrypted</div>
+                    </div>
+                    <div class="column flag-password">
+                        <a class="title">{{tr "Password protected" /}}</a>
+                        <div class="value">error: password protected</div>
+                    </div>
+                </div>
+                <div class="row topic"> <!-- only visible if set! -->
+                    <div class="column">
+                        <a class="title">{{tr "Topic" /}}</a>
+                        <div class="value">error: channel topic</div>
+                    </div>
+                </div>
+                <div class="container-description"> <!-- only visible if set -->
+                    <a class="title">
+                        {{tr "Description" /}}
+                        <div class="button-copy">
+                            <div class="icon client-copy"></div>
+                        </div>
+                    </a>
+                    <div class="value">
+                        error: channel description
+                    </div>
+                    <div class="no-value">{{tr "Channel has no description" /}}</div>
+                </div>
+                <div class="container-buttons">
+                    <button class="btn btn-success button-update">{{tr "Refresh" /}}</button>
+                </div>
+            </div>
+        </script>
+
         <script class="jsrender-template" id="tmpl_server_info" type="text/html">
             <div> <!-- required for the renderer -->
                 <div class="container-top hostbanner">
@@ -5395,7 +5038,7 @@
                                 </div>
                             </div>
                             <div class="row">
-                                <a class="key">{{tr "Voice data encoded" /}}</a>
+                                <a class="key">{{tr "Voice data encryption" /}}</a>
                                 <div class="value server-voice-encryption">
                                     error: voice encryption
                                 </div>

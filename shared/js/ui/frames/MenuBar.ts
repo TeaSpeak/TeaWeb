@@ -395,7 +395,7 @@ namespace top_menu {
             item.icon("client-token_use");
             item.click(() => {
                 //TODO: Fixeme use one method for the control bar and here!
-                createInputModal(tr("Use token"), tr("Please enter your token/priviledge key"), message => message.length > 0, result => {
+                createInputModal(tr("Use token"), tr("Please enter your token/privilege key"), message => message.length > 0, result => {
                     if(!result) return;
                     const scon = server_connections.active_connection_handler();
 

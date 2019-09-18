@@ -608,7 +608,12 @@ class ChannelTree {
                     name: tr("Ban clients"),
                     invalidPermission: !this.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                     callback: () => {
-                        Modals.spawnBanClient((clients).map(entry => entry.clientNickName()), (data) => {
+                        Modals.spawnBanClient(this.client, (clients).map(entry => {
+                            return {
+                                name: entry.clientNickName(),
+                                unique_id: entry.properties.client_unique_identifier
+                            }
+                        }), (data) => {
                             for (const client of clients)
                                 this.client.serverConnection.send_command("banclient", {
                                     uid: client.properties.client_unique_identifier,
