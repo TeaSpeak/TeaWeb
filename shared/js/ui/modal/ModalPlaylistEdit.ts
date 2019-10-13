@@ -69,6 +69,11 @@ namespace Modals {
     }
 
     export function spawnPlaylistEdit(client: ConnectionHandler, playlist: Playlist) {
+        {
+            createErrorModal(tr("Not implemented"), tr("Playlist editing hasn't yet been implemented")).open();
+            return;
+        }
+
         let modal: Modal;
         let changed_properties = {};
         let changed_permissions = {};

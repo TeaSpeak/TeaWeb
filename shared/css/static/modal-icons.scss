@@ -1,7 +1,27 @@
+@import "properties";
+@import "mixin";
+
 .modal-icon-select {
+	@include user-select(none);
+
 	display: flex;
 	flex-direction: column;
 	justify-content: stretch;
+
+	width: 50em;
+
+	/*
+	.right, .left {
+		.header {
+			text-transform: uppercase;
+			color: #557edc;
+
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+		}
+	}
+	*/
 
 	.container-icons {
 		flex-grow: 1;
@@ -41,11 +61,16 @@
 				overflow-x: hidden;
 				overflow-y: auto;
 
-				background-color: whitesmoke;
-				-webkit-user-select: none;
-				-moz-user-select: none;
-				-ms-user-select: none;
-				user-select: none;
+				background-color: $color_list_background;
+				border: 1px $color_list_border solid;
+
+				border-radius: $border_radius_large;
+
+				padding: .5em;
+
+				&.container-icons-local {
+					font-size: 16px;
+				}
 
 				.icon-container, .icon {
 					margin-left: 1px;
@@ -57,11 +82,15 @@
 						cursor: pointer;
 
 						&:hover {
+							border-radius: .1em;
+
 							background-color: #00000011;
 							border: 1px solid black;
 						}
 
 						&.selected {
+							border-radius: .1em;
+
 							background-color: #00330011;
 							border: 1px solid red;
 						}
@@ -82,8 +111,11 @@
 				left: 0;
 				right: 0;
 
+				font-size: 1.1em;
+				color: hsla(0, 0%, 40%, 1);
+
 				position: absolute;
-				background-color: grey;
+				background-color: #00000045;
 
 				cursor: not-allowed;
 
@@ -118,16 +150,27 @@
 
 		display: flex;
 		flex-direction: row;
-		justify-content: stretch;
+		justify-content: space-between;
 
 		.spacer {
+			min-width: 0;
+
 			flex-grow: 1;
 			flex-shrink: 1;
 		}
 
-		.btn {
+		button {
 			flex-grow: 0;
-			flex-shrink: 0;
+			flex-shrink: 1;
+
+			width: 8em;
+			min-width: 4em;
+
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+
+			margin-right: 1em;
 		}
 
 		.button-select {
@@ -136,10 +179,24 @@
 			display: flex;
 			align-items: center;
 			flex-direction: row;
+			justify-content: center;
 
-			.selected-item-container {
-				height: 16px;
-				vertical-align: sub;
+			a, div {
+				align-self: center;
+			}
+
+			> div {
+				font-size: 16px;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+
+				margin-left: .5rem;
+
+				> div {
+					display: flex;
+				}
 			}
 		}
 
@@ -150,17 +207,18 @@
 }
 
 .modal-icon-upload {
-	user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-	-webkit-user-select: none;
+	@include user-select(none);
 
+	width: 50em;
 	min-width: 300px;
+
+	padding: 0!important;
 
 	display: flex;
 	flex-direction: column;
 
 	.container-select {
+		padding: 1em;
 		min-height: 130px;
 
 		display: flex;
@@ -176,35 +234,43 @@
 			min-height: 130px;
 			overflow-y: auto;
 
-			margin-right: 5px;
+			margin-right: 1em;
 
-			border: gray solid 1px;
-			border-radius: 2px;
+			background-color: $color_list_background;
+			border: 1px $color_list_border solid;
 
+			border-radius: $border_radius_large;
+
+			padding: .5em;
 			display: block;
 
 			.icon-container {
-				display: inline-block;
-
-				height: 18px;
-				width: 18px;
-
-				image {
-					height: 16px;
-					width: 16px;
-				}
-
-				margin: 1px;
-				padding: 1px;
+				cursor: pointer;
 
 				&:hover {
-					padding: 0;
+					border-radius: .1em;
+
+					background-color: #00000011;
 					border: 1px solid black;
 				}
 
 				&.selected {
-					padding: 0;
+					border-radius: .1em;
+
+					background-color: #00330011;
 					border: 1px solid red;
+				}
+
+				&:hover, &.selected {
+					width: 18px;
+					height: 18px;
+
+					margin: -1px 0px;
+				}
+
+				> img {
+					height: 16px;
+					width: 16px;
 				}
 			}
 		}
@@ -224,36 +290,67 @@
 				display: flex;
 				flex-direction: column;
 				justify-content: flex-start;
+
+				> button:not(:first-of-type) {
+					margin-top: .5em;
+				}
 			}
 		}
 	}
 
 	.container-upload {
+		-webkit-box-shadow: 0px -5px 5px 0px rgba(0,0,0,0.25);
+		-moz-box-shadow: 0px -5px 5px 0px rgba(0,0,0,0.25);
+		box-shadow: 0px -5px 2px 0px rgba(0, 0, 0, 0.25);
+
 		display: flex;
 		flex-direction: column;
 
-		margin-top: 5px;
-		border-top: 1px solid darkgray;
-		padding-top: 5px;
+		padding: .5em 1em 1em;
 
 		.container-error, .container-success {
 			width: 100%;
 			min-height: 60px;
-			display: inline-block;
 
-			.error-message, .message {
+			border: 2px solid;
+			border-radius: $border_radius_middle;
+
+			&.container-error {
+				border-color: #8000007F;
+				background-color: #80000040;
+			}
+
+			&.container-success {
+				margin-top: .5em;
+
+				border-color: #328f3340;
+				background-color: #328f3320;
+			}
+
+			padding: .5em;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: space-between;
+
+			> * {
+				align-self: center;
 				display: inline-block;
 			}
 
 			button {
-				float: right;
-				display: inline-block;
+				width: 6em;
 			}
-		}
 
-		.container-success {
-			margin-top: 5px;
-			min-height: 100px;
+			&.hidden {
+				opacity: 0;
+				height: 0;
+				min-height: 0;
+				padding: 0;
+				margin: 0;
+			}
+
+			@include transition(.25s ease-in-out);
 		}
 
 		.container-info {
@@ -263,13 +360,17 @@
 		}
 
 		.container-process {
+			margin-top: .5em;
+
 			width: 100%;
 			min-height: 100px;
 
 			overflow-y: auto;
 
-			border: gray solid 1px;
-			border-radius: 2px;
+			background-color: $color_list_background;
+			border: 1px $color_list_border solid;
+
+			border-radius: $border_radius_large;
 
 			.upload-entry {
 				display: flex;
@@ -286,11 +387,13 @@
 
 					align-self: center;
 
+					display: flex;
+					flex-direction: column;
+					justify-content: center;
+
 					> img {
 						height: 16px;
 						width: 16px;
-
-						vertical-align: unset;
 					}
 				}
 
@@ -300,19 +403,53 @@
 					flex-grow: 1;
 					flex-shrink: 1;
 
+					display: flex;
+					flex-direction: row;
+					justify-content: flex-start;
+
+					min-width: 2em;
+
 					margin: 2px 5px 2px 3px;
 					height: 16px;
 
+					overflow: hidden;
+					font-size: .75rem;
+
+					background-color: #222222;
+					border: 1px solid hsla(0, 0%, 10%, 1);
+					border-radius: .25rem;
+
 					.progress-bar {
 						height: 100%;
+
+						&.bg-danger {
+							background-color: #8000007F;
+						}
+
+						&.bg-success {
+							background-color: #328f337F;
+						}
+
+						@include transition(width 1s ease-in-out, background-color $button_hover_animation_time ease-in-out);
 					}
 
 					.progress-message {
-						align-self: center;
-						text-align: center;
-
 						position: absolute;
 						width: 100%;
+
+						display: flex;
+						flex-direction: row;
+						justify-content: center;
+
+						flex-grow: 1;
+						flex-shrink: 1;
+
+						min-width: 1em;
+						line-height: normal;
+
+						white-space: nowrap;
+						overflow: hidden;
+						text-overflow: ellipsis;
 					}
 				}
 			}

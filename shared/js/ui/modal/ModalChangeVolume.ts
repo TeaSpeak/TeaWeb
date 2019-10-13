@@ -3,145 +3,75 @@
 /// <reference path="../../proto.ts" />
 
 namespace Modals {
-    export function spawnChangeVolume(current: number, callback: (number) => void) {
-        let updateCallback: (number) => void;
-        const connectModal = createModal({
-            header: function() {
-                let header = $.spawn("div");
-                header.text(tr("Change volume"));
-                return header;
-            },
+    //TODO: Use the max limit!
+
+    let modal: Modal;
+    export function spawnChangeVolume(client: ClientEntry, local: boolean, current: number, max: number | undefined, callback: (number) => void) {
+        if(modal) modal.close();
+
+        let new_value: number;
+        modal = createModal({
+            header: local ? tr("Change local volume") : tr("Change remote volume"),
             body: function () {
                 let tag = $("#tmpl_change_volume").renderTag({
-                    max_volume: 200
+                    client: htmltags.generate_client_object({
+                        add_braces: false,
+                        client_name: client.clientNickName(),
+                        client_unique_id: client.properties.client_unique_identifier,
+                        client_id: client.clientId()
+                    }),
+                    local: local
                 });
-                tag.find(".volume_slider").on("change",_ => updateCallback(tag.find(".volume_slider").val()));
-                tag.find(".volume_slider").on("input",_ => updateCallback(tag.find(".volume_slider").val()));
-                //connect_address
-                return tag;
+
+                const container_value = tag.find(".info .value");
+                const set_value = value => {
+                    const number = value > 100 ? value - 100 : 100 - value;
+                    container_value.html((value == 100 ? "&plusmn;" : value > 100 ? "+" : "-") + number + "%");
+
+                    new_value = value / 100;
+                    if(local) callback(new_value);
+                };
+                set_value(current * 100);
+
+                const slider_tag = tag.find(".container-slider");
+                const slider = sliderfy(slider_tag, {
+                    initial_value: current * 100,
+                    step: 1,
+                    max_value: 200,
+                    min_value: 0,
+
+                    unit: '%'
+                });
+                slider_tag.on('change', event => set_value(parseInt(slider_tag.attr("value"))));
+
+                tag.find(".button-save").on('click', event => {
+                    if(typeof(new_value) !== "undefined") callback(new_value);
+                    modal.close();
+                });
+
+                tag.find(".button-cancel").on('click', event => {
+                    callback(current);
+                    modal.close();
+                });
+
+                tag.find(".button-reset").on('click', event => {
+                    slider.value(100);
+                });
+
+                tag.find(".button-apply").on('click', event => {
+                    callback(new_value);
+                    new_value = undefined;
+                });
+
+                return tag.children();
             },
-            footer: function () {
-                let tag = $.spawn("div");
-                tag.css("text-align", "right");
-                tag.css("margin-top", "3px");
-                tag.css("margin-bottom", "6px");
-                tag.addClass("modal-button-group");
-
-
-                let buttonReset = $.spawn("button");
-                buttonReset.text(tr("Reset"));
-                buttonReset.on("click", function () {
-                    updateCallback(100);
-                });
-                tag.append(buttonReset);
-
-
-                let buttonCancel = $.spawn("button");
-                buttonCancel.text(tr("Cancel"));
-                buttonCancel.on("click", function () {
-                    updateCallback(current * 100);
-                    connectModal.close();
-                });
-                tag.append(buttonCancel);
-
-
-                let buttonOk = $.spawn("button");
-                buttonOk.text(tr("OK"));
-                buttonOk.on("click", function () {
-                    connectModal.close();
-                });
-                tag.append(buttonOk);
-                return tag;
-            },
+            footer: null,
 
             width: 600
         });
-        updateCallback = value => {
-            connectModal.htmlTag.find(".volume_slider").val(value);
-            let display = connectModal.htmlTag.find(".display_volume");
-            let number = (value - 100);
-            display.html((number == 0 ? "&plusmn;" : number > 0 ? "+" : "") + number + " %");
-            callback(value / 100);
-        };
-        connectModal.open();
-        updateCallback(current * 100);
-    }
 
-    /* Units are between 0 and 1 */
-    export function spawnChangeRemoteVolume(current: number, max_value: number, callback: (value: number) => void) {
-        let update_volume: (number) => void;
-        let current_value = current; /* between 0 and 100! */
-
-        const modal = createModal({
-            header: function() {
-                let header = $.spawn("div");
-                header.text(tr("Change volume"));
-                return header;
-            },
-            body: function () {
-                let tag = $("#tmpl_change_volume").renderTag({
-                    max_volume: Math.ceil(max_value * 100)
-                });
-                tag.find(".volume_slider").on("change",_ => update_volume(tag.find(".volume_slider").val()));
-                tag.find(".volume_slider").on("input",_ => update_volume(tag.find(".volume_slider").val()));
-                //connect_address
-                return tag;
-            },
-            footer: function () {
-                let tag = $.spawn("div");
-                tag.css("text-align", "right");
-                tag.css("margin-top", "3px");
-                tag.css("margin-bottom", "6px");
-                tag.addClass("modal-button-group");
-
-                {
-                    let button_apply = $.spawn("button");
-                    button_apply.text(tr("Apply"));
-                    button_apply.on("click", () => {
-                        callback(current_value / 100);
-                    });
-                    tag.append(button_apply);
-                }
-
-                {
-                    let button_reset = $.spawn("button");
-                    button_reset.text(tr("Reset"));
-                    button_reset.on("click", () => update_volume(max_value * 100));
-                    tag.append(button_reset);
-                }
-
-
-                {
-                    let button_cancel = $.spawn("button");
-                    button_cancel.text(tr("Cancel"));
-                    button_cancel.on("click", () => modal.close());
-                    tag.append(button_cancel);
-                }
-
-
-                {
-                    let button_ok = $.spawn("button");
-                    button_ok.text(tr("OK"));
-                    button_ok.on("click", () => {
-                        callback(current_value / 100);
-                        modal.close();
-                    });
-                    tag.append(button_ok);
-                }
-                return tag;
-            },
-
-            width: 600
-        });
-        update_volume = value => {
-            modal.htmlTag.find(".volume_slider").val(value);
-
-            const tag_display = modal.htmlTag.find(".display_volume");
-            tag_display.html(value + " %");
-            current_value = value;
-        };
-
+        modal.close_listener.push(() => modal = undefined);
         modal.open();
-        update_volume(current * 100);
+        modal.htmlTag.find(".modal-body").addClass("modal-volume");
     }
 }

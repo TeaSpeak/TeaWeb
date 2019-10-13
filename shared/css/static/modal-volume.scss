@@ -1,0 +1,49 @@
+@import "mixin";
+
+.modal-body.modal-volume {
+	@include user-select(none);
+
+	.info {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		.htmltag-client {
+			color: #999!important;
+			margin-left: .25em;
+		}
+
+		div {
+			display: flex;
+			flex-direction: row;
+			justify-content: stretch;
+		}
+
+		.value {
+			margin-left: .25em;
+		}
+	}
+
+	.container-slider {
+		margin-top: 1em;
+	}
+
+	.buttons {
+		display: flex;
+		flex-direction: row;
+		justify-content: stretch;
+
+		margin-top: 2em;
+
+		.spacer {
+			flex-grow: 1;
+			flex-shrink: 1;
+
+			min-width: 0;
+		}
+
+		button:not(:last-of-type) {
+			margin-right: 1em;
+		}
+	}
+}

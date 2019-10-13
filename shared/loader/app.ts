@@ -52,7 +52,7 @@ const loader_javascript = {
         } else {
             /* test if js/proto.js is available. If so we're in debug mode */
             const request = new XMLHttpRequest();
-            request.open('GET', 'js/proto.js', true);
+            request.open('GET', "js/proto.js?_ts=" + Date.now(), true);
 
             await new Promise((resolve, reject) => {
                 request.onreadystatechange = () => {
@@ -73,18 +73,6 @@ const loader_javascript = {
         }
     },
     load_scripts: async () => {
-        /*
-      if(window.require !== undefined) {
-          console.log("Loading node specific things");
-          const remote = require('electron').remote;
-          module.paths.push(remote.app.getAppPath() + "/node_modules");
-          module.paths.push(remote.app.getAppPath() + "/app");
-          module.paths.push(remote.getGlobal("browser-root") + "js/");
-          window.$ = require("assets/jquery.min.js");
-          require("native/loader_adapter.js");
-      }
-    */
-
         if(!window.require) {
             await loader.load_script(["vendor/jquery/jquery.min.js"]);
         } else {
@@ -99,20 +87,6 @@ const loader_javascript = {
             */
         }
         await loader.load_script(["vendor/DOMPurify/purify.min.js"]);
-
-        /* bootstrap material design and libs */
-        //await loader.load_script(["vendor/popper/popper.js"]);
-
-        //depends on popper
-        //await loader.load_script(["vendor/bootstrap-material/bootstrap-material-design.js"]);
-
-        /*
-        loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-            name: "materialize body",
-            priority: 10,
-            function: async () => { $(document).ready(function() { $('body').bootstrapMaterialDesign(); }); }
-        });
-        */
 
         await loader.load_script("vendor/jsrender/jsrender.min.js");
         await loader.load_scripts([
@@ -368,6 +342,7 @@ const loader_style = {
             "css/static/modal-connect.css",
             "css/static/modal-channel.css",
             "css/static/modal-query.css",
+            "css/static/modal-volume.css",
             "css/static/modal-invite.css",
             "css/static/modal-playlist.css",
             "css/static/modal-banlist.css",

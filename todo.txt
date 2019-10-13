@@ -1,26 +1,7 @@
 - Modals
     - Settings (X)
-    - Query
-        - List
-            - Username
-            - Unique ID
-            - Bounded server
-        Buttons:
-            - Create
-            - Delete
-            - Rename
-            - Change password
-
-            - Refresh
-    - "Ban Client" dialog
-    - Entity info (Popup)
-        - Server (Bandwidth (MH))
-        - Channel
-    - Icon Select
-        - Icon upload
     - Avatar list
-    - Invite buddy
-    - Change volume
+    - Music System
 
 - Ban Liste
     - Übersicht
@@ -137,3 +118,4 @@ Fix these icons: https://img.did.science/Screenshot_20-11-06.png
     - Crash
         - Focus crash window on crash
         - Add a notification (Like the browser notifications)
+Connection state sometimes does not update

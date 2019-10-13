@@ -122,6 +122,12 @@ namespace audio {
             dataChannel: RTCDataChannel;
 
             private _type: VoiceEncodeType = VoiceEncodeType.NATIVE_ENCODE;
+
+            /*
+             * To ensure we're not sending any audio because the settings activates the input,
+             * we self mute the audio stream
+             */
+            local_audio_mute: GainNode;
             local_audio_stream: MediaStreamAudioDestinationNode;
 
             static codec_pool: codec.CodecPool[];
@@ -149,7 +155,7 @@ namespace audio {
 
             destroy() {
                 clearInterval(this.send_task);
-                this.dropSession();
+                this.drop_rtp_session();
                 this.acquire_voice_recorder(undefined, true).catch(error => {
                     log.warn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
                 }).then(() => {
@@ -200,8 +206,14 @@ namespace audio {
                     return;
                 }
 
-                if(!this.local_audio_stream)
+                if(!this.local_audio_stream) {
                     this.local_audio_stream = audio.player.context().createMediaStreamDestination();
+                }
+                if(!this.local_audio_mute) {
+                    this.local_audio_mute = audio.player.context().createGain();
+                    this.local_audio_mute.connect(this.local_audio_stream);
+                    this.local_audio_mute.gain.value = 1;
+                }
             }
 
             private setup_js() {
@@ -235,16 +247,16 @@ namespace audio {
                         await recorder.input.set_consumer({
                             type: audio.recorder.InputConsumerType.NODE,
                             callback_node: node => {
-                                if(!this.local_audio_stream)
+                                if(!this.local_audio_stream || !this.local_audio_mute)
                                     return;
 
-                                node.connect(this.local_audio_stream);
+                                node.connect(this.local_audio_mute);
                             },
                             callback_disconnect: node => {
-                                if(!this.local_audio_stream)
+                                if(!this.local_audio_mute)
                                     return;
 
-                                node.disconnect(this.local_audio_stream);
+                                node.disconnect(this.local_audio_mute);
                             }
                         } as audio.recorder.NodeInputConsumer);
                     } else {
@@ -266,7 +278,7 @@ namespace audio {
                     this.setup_native();
                 else
                     this.setup_js();
-                this.createSession();
+                this.start_rtc_session();
             }
 
             voice_playback_support() : boolean {
@@ -315,11 +327,14 @@ namespace audio {
                 }
             }
 
-
-            createSession() {
+            private _audio_player_waiting = false;
+            start_rtc_session() {
                 if(!audio.player.initialized()) {
                     log.info(LogCategory.VOICE, tr("Audio player isn't initialized yet. Waiting for gesture."));
-                    audio.player.on_ready(() => this.createSession());
+                    if(!this._audio_player_waiting) {
+                        this._audio_player_waiting = true;
+                        audio.player.on_ready(() => this.start_rtc_session());
+                    }
                     return;
                 }
 
@@ -331,7 +346,7 @@ namespace audio {
                 else
                     this.setup_js();
 
-                this.dropSession();
+                this.drop_rtp_session();
                 this._ice_use_cache = true;
 
 
@@ -354,17 +369,17 @@ namespace audio {
                 this.rtcPeerConnection.onicecandidate = this.on_local_ice_candidate.bind(this);
                 if(this.local_audio_stream) { //May a typecheck?
                     this.rtcPeerConnection.addStream(this.local_audio_stream.stream);
-                    log.info(LogCategory.VOICE, tr("Adding stream (%o)!"), this.local_audio_stream.stream);
+                    log.info(LogCategory.VOICE, tr("Adding native audio stream (%o)!"), this.local_audio_stream.stream);
                 }
 
-                this.rtcPeerConnection.createOffer(sdpConstraints).then(offer => {
-                    this.on_local_offer_created(offer);
-                }).catch(error => {
-                    log.error(LogCategory.VOICE, tr("Could not create ice offer! error: %o"), error);
-                });
+                this.rtcPeerConnection.createOffer(sdpConstraints)
+                    .then(offer => this.on_local_offer_created(offer))
+                    .catch(error => {
+                        log.error(LogCategory.VOICE, tr("Could not create ice offer! error: %o"), error);
+                    });
             }
 
-            dropSession() {
+            drop_rtp_session() {
                 if(this.dataChannel) {
                     this.dataChannel.close();
                     this.dataChannel = undefined;
@@ -418,14 +433,13 @@ namespace audio {
                         });
                         log.error(LogCategory.NETWORKING, tr("Failed to setup voice bridge (%s). Allow reconnect: %s"), json["reason"], json["allow_reconnect"]);
                         if(json["allow_reconnect"] == true) {
-                            this.createSession();
+                            this.start_rtc_session();
                         }
                         //TODO handle fail specially when its not allowed to reconnect
                     }
                 }
             }
 
-            //Listeners
             private on_local_ice_candidate(event: RTCPeerConnectionIceEvent) {
                 if (event) {
                     //if(event.candidate && event.candidate.protocol !== "udp")
@@ -509,6 +523,7 @@ namespace audio {
                 const chandler = this.connection.client;
                 if(!chandler.connected)
                     return false;
+
                 if(chandler.client_status.input_muted)
                     return false;
 
@@ -544,6 +559,15 @@ namespace audio {
 
             private handle_local_voice_started() {
                 const chandler = this.connection.client;
+                if(chandler.client_status.input_muted) {
+                    /* evail hack due to the settings :D */
+                    log.warn(LogCategory.VOICE, tr("Received local voice started event, even thou we're muted! Do not send any voice."));
+                    if(this.local_audio_mute)
+                        this.local_audio_mute.gain.value = 0;
+                    return;
+                }
+                if(this.local_audio_mute)
+                    this.local_audio_mute.gain.value = 1;
                 log.info(LogCategory.VOICE, tr("Local voice started"));
 
                 const ch = chandler.getClient();
@@ -577,7 +601,7 @@ namespace audio {
 
             unregister_client(client: connection.voice.VoiceClient): Promise<void> {
                 if(!(client instanceof audio.js.VoiceClientController))
-                    throw "Invalid client";
+                    throw "Invalid client type";
 
                 this._audio_clients.remove(client);
                 return Promise.resolve();
@@ -634,12 +658,6 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                 new audio.js.codec.CodecPool(5, tr("Opus Music"), CodecType.OPUS_MUSIC)
             ];
 
-            if(native_client) {
-                audio.js.VoiceConnection.codec_pool[0].initialize(2);
-                audio.js.VoiceConnection.codec_pool[1].initialize(2);
-                audio.js.VoiceConnection.codec_pool[2].initialize(2);
-                audio.js.VoiceConnection.codec_pool[3].initialize(2);
-            }
             audio.js.VoiceConnection.codec_pool[4].initialize(2);
             audio.js.VoiceConnection.codec_pool[5].initialize(2);
         });

@@ -615,7 +615,7 @@ class ConnectionHandler {
         targetChannel = targetChannel || this.getClient().currentChannel();
 
         const vconnection = this.serverConnection.voice_connection();
-        const basic_voice_support = this.serverConnection.support_voice() && vconnection.connected();
+        const basic_voice_support = this.serverConnection.support_voice() && vconnection.connected() && targetChannel;
         const support_record = basic_voice_support && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
         const support_playback = basic_voice_support && (!targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec));
 

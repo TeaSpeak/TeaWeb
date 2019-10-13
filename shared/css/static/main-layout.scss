@@ -1,11 +1,14 @@
+@import "mixin";
+
 $separator_thickness: 5px;
 $small_device: 650px;
 $animation_length: .5s;
 
-
 .app {
-	min-width: 350px;
+	min-width: 600px;
 	min-height: 330px;
+
+	padding: 5px;
 
 	.container-app-main {
 		height: 100%;
@@ -66,6 +69,8 @@ $animation_length: .5s;
 
 				> .channel-tree {
 					padding-top: 5px;
+
+					min-height: 5em;
 
 					flex-grow: 1;
 					flex-shrink: 1;
@@ -194,13 +199,7 @@ $animation_length: .5s;
 	top: 0;
 
 	overflow: auto;
-	padding: 5px;
-}
-
-@media only screen and (max-width: 400px), only screen and (max-height: 400px) {
-	.app-container {
-		overflow: auto;
-	}
+	padding: 0;
 }
 
 @media only screen and (max-width: $small_device) {
@@ -220,11 +219,7 @@ $animation_length: .5s;
 
 $animation_seperator_length: .1s;
 .container-seperator {
-	-moz-transition: all $animation_seperator_length ease-in;
-	-o-transition: all $animation_seperator_length ease-in;
-	-webkit-transition: all $animation_seperator_length ease-in;
-	transition: all $animation_seperator_length ease-in;
-
+	@include transition(all $animation_seperator_length ease-in-out);
 	background: #1e1e1e;
 
 	flex-grow: 0;
@@ -245,10 +240,7 @@ $animation_seperator_length: .1s;
 	}
 
 	&.seperator-selected {
-		-moz-transition: all $animation_seperator_length ease-in;
-		-o-transition: all $animation_seperator_length ease-in;
-		-webkit-transition: all $animation_seperator_length ease-in;
-		transition: all $animation_seperator_length ease-in;
+		@include transition(all $animation_seperator_length ease-in-out);
 
 		background-color: #707070;
 	}
@@ -287,24 +279,4 @@ html, body {
 
 body {
 	background: #1e1e1e !important;
-}
-
-footer {
-	position: fixed;
-	width: 100%;
-	bottom: 0px;
-	left: 0px;
-	right: 0px;
-	height: 25px;
-	background-color: lightgray;
-
-	display: flex;
-}
-
-footer .container {
-	width: 100%;
-	display: flex;
-	position: relative;
-	vertical-align: center;
-	justify-content: center;
 }

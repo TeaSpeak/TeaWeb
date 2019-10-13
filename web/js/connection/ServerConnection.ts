@@ -232,7 +232,7 @@ namespace connection {
             this._connected = false;
 
             if(this._voice_connection)
-                this._voice_connection.dropSession();
+                this._voice_connection.drop_rtp_session();
         }
 
         private handle_socket_message(data) {
@@ -264,7 +264,7 @@ namespace connection {
                         this.do_ping();
                         this.updateConnectionState(ConnectionState.CONNECTED);
                         if(this._voice_connection)
-                            this._voice_connection.createSession(); /* FIXME: Move it to a handler boss and not here! */
+                            this._voice_connection.start_rtc_session(); /* FIXME: Move it to a handler boss and not here! */
                     }
                     group.end();
                 } else if(json["type"] === "WebRTC") {

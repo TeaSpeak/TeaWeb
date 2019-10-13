@@ -147,10 +147,12 @@
                                 </div>
                             </div>
                             <div class="divider"></div>
+                            -->
+                            <div class="divider"></div>
+
                             <div class="button button-subscribe-mode">
                                 <div class="icon_em" title="{{tr 'Toggle channel subscribe mode' /}}"></div>
                             </div>
-                            -->
 
                             <!-- the query button -->
                             <div class="button-dropdown btn_query" title="{{tr 'Show/hide server queries' /}}">
@@ -2538,9 +2540,27 @@
         </script>
 
         <script class="jsrender-template" id="tmpl_change_volume" type="text/html">
-            <div style="display: flex; justify-content: center; vertical-align: center">
-                <input type="range" min="0" max="{{>max_volume}}" value="100" class="volume_slider" style="width: 100%">
-                <div class="display_volume" style="width: 60px; align-self: center; text-align: center">&plusmn;0 %
+            <div> <!-- for the renderer -->
+                <div class="info">
+                    <div>{{tr "Change volume for client "/}} <node key="client"></node> :</div>
+                    <a class="value">error: value</a>
+                </div>
+                <div class="container-slider">
+                    <div class="filler" style="width: 30%"></div>
+                    <div class="thumb container-tooltip" style="left: 30%">
+                        <div class="tooltip">
+                            <a>86%</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-blue button-reset">{{tr "Reset" /}}</button>
+                    <div class="spacer"></div>
+                    {{if !local}}
+                    <button class="btn btn-success button-apply">{{tr "Apply" /}}</button>
+                    {{/if}}
+                    <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
+                    <button class="btn btn-success button-save">{{tr "Save" /}}</button>
                 </div>
             </div>
         </script>
@@ -3753,38 +3773,55 @@
             </div>
         </script>
         <script class="jsrender-template" id="tmpl_invite" type="text/html">
-            <div class="modal-invite">
-                <div class="general-properties">
-                    <div class="form-group property-type">
-                        <label>{{tr "Link type:" /}}</label>
-                        <select class="form-control">
-                            <option value="0">{{tr "TeaWeb" /}}</option>
-                            <option value="1" disabled>{{tr "TeaClient (Not supported yet)" /}}</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <div class="switch flag-direct-connect">
-                            <label>
-                                <input type="checkbox">
-                                {{tr "Connect directly" /}}
-                            </label>
-                        </div>
-                        <div class="switch flag-resolved-address">
-                            <label>
-                                <input type="checkbox">
-                                {{tr "Use resolved address" /}}
-                            </label>
-                        </div>
-                    </div>
+            <div class="general-properties">
+                <div class="form-group property-type">
+                    <label>{{tr "Link type:" /}}</label>
+                    <select class="form-control">
+                        <option value="tea-web">{{tr "TeaWeb" /}}</option>
+                        <option value="tea-client">{{tr "TeaClient" /}}</option>
+                        <option value="teamspeak">{{tr "TeamSpeak" /}}</option>
+                    </select>
                 </div>
-                <textarea class="text-output" readonly></textarea>
-                <div class="buttons">
-                    <button class="btn btn-primary button-copy">
-                        <div class="icon client-copy"></div>
-                        {{tr "Copy" /}}
-                    </button>
-                    <button class="btn btn-primary button-close">{{tr "Close" /}}</button>
+                <label class="container-settings">
+                    <label>
+                        <div class="checkbox flag-direct-connect">
+                            <input type="checkbox">
+                            <div class="mark"></div>
+                        </div>
+
+                        <a>{{tr "Connect directly" /}}</a>
+                        <!--
+                          <div class="help-tip tip-center tip-small">
+                                <p>
+                                    {{tr "Lets the user directly connect to the server and not open the connect modal" /}}
+                                </p>
+                            </div>
+                        -->
+                    </label>
+                    <label>
+                        <div class="checkbox flag-resolved-address">
+                            <input type="checkbox">
+                            <div class="mark"></div>
+                        </div>
+
+                        <a>{{tr "Use resolved address" /}}</a>
+                        <!--
+                          <div class="help-tip tip-center tip-small">
+                                <p>
+                                    {{tr "Use the resolved server address (IP) instead of the given address" /}}
+                                </p>
+                            </div>
+                        -->
+                    </label>
                 </div>
+            </div>
+            <textarea class="text-output" readonly></textarea>
+            <div class="buttons">
+                <button class="btn btn-primary button-copy">
+                    <div class="icon client-copy"></div>
+                    {{tr "Copy" /}}
+                </button>
+                <button class="btn btn-primary button-close">{{tr "Close" /}}</button>
             </div>
         </script>
 
@@ -3828,48 +3865,62 @@
         </script>
 
         <script class="jsrender-template" id="tmpl_query_manager" type="text/html">
-            <div class="query-management">
-                <div class="header">
-                    <div class="form-group bmd-form-group buttons">
-                        <button class="btn btn-success button button-query-create">{{tr "Create account" /}}</button>
-                        <button class="btn btn-danger button button-query-delete">{{tr "Delete account" /}}</button>
-                        <button class="btn btn-primary button button-query-rename">{{tr "Rename account" /}}</button>
-                        <button class="btn btn-primary button button-query-change-password">{{tr "Change password" /}}
-                        </button>
+            <div class="container"> <!-- required for the seperator -->
+                <div class="left">
+                    <div class="title">
+                        <a>{{tr "Account list" /}}</a>
+                        <button class="btn btn-success button-create">{{tr "Create account" /}}</button>
                     </div>
-                    <div class="form-group search">
-                        <label class="bmd-label-floating">{{tr "search" /}}</label>
-                        <input class="form-control input input-search" type="text">
-                    </div>
-                </div>
-                <div class="query-list">
-                    <div class="query-list-header">
-                        <div class="column column-username">{{tr "Username" /}}</div>
-                        <div class="column column-unique-id">{{tr "Unique ID" /}}</div>
-                        <div class="column column-bound-server">{{tr "Bounded Server" /}}</div>
-                    </div>
-                    <div class="query-list-entries-container">
-                        <div class="query-list-entries">
+                    <div class="container-list">
+                        <div class="container-entries">
+                            <div class="container-empty">
+                                error: empty
+                            </div>
+                            <div class="container-error">
+                                error: query list
+                            </div>
+                        </div>
+                        <div class="container-search">
+                            <button class="btn btn-blue button-update">{{tr "Refresh" /}}</button>
+                            <div class="form-group">
+                                <label class="bmd-label-floating">{{tr "Search for query" /}}</label>
+                                <input type="text" class="form-control filter-input">
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="footer">
-                    <div class="info">
-                        <a>{{tr "loading..." /}}</a>
+                <div class="container-seperator vertical" seperator-id="seperator-query-manage"></div>
+                <div class="right">
+                    <div class="title">
+                        <a>{{tr "Account details" /}}</a>
+                        <button class="btn btn-danger button-delete">{{tr "Delete account" /}}</button>
                     </div>
-                    <div class="buttons">
-                        <button class="btn btn-primary button-refresh">{{tr "Refresh" /}}</button>
+                    <div class="container-details">
+                        <div class="detail login-name">
+                            <a class="title">{{tr "Login name" /}}</a>
+                            <a class="value">error: login name</a>
+                        </div>
+                        <div class="detail unique-id">
+                            <div class="title">
+                                <a>{{tr "Unique ID" /}}</a>
+                                <div class="button button-copy">
+                                    <div class="icon_em client-copy"></div>
+                                </div>
+                            </div>
+                            <a class="value">error: unique id</a>
+                        </div>
+                        <div class="detail bound-server">
+                            <a class="title">{{tr "Bound server ID" /}}</a>
+                            <a class="value">error: bound server</a>
+                        </div>
+
+                        <div class="spacer"></div>
+                        <div class="buttons">
+                            <button class="btn btn-blue button-change-password">{{tr "Change password" /}}</button>
+                            <button class="btn btn-blue button-rename">{{tr "Rename Account" /}}</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </script>
-
-
-        <script class="jsrender-template" id="tmpl_query_manager-list_entry" type="text/html">
-            <div class="entry">
-                <div class="column column-username">{{>username}}</div>
-                <div class="column column-unique-id">{{>unique_id}}</div>
-                <div class="column column-bound-server">{{>bounded_server}}</div>
             </div>
         </script>
 
@@ -4345,87 +4396,83 @@
         </script>
 
         <script class="jsrender-template" id="tmpl_icon_select" type="text/html">
-            <div class="modal-icon-select">
-                <div class="container-icons">
-                    <div class="group_box">
-                        <div class="header">{{tr "Remote" /}}</div>
-                        <div class="content">
-                            <div class="container-icons-list">
-                                <div class="container-icons-remote {{if enable_select || enable_delete}}icon-select{{/if}}"></div>
-                                <div class="container-loading">
-                                    <a>{{tr "loading..." /}}</a>
-                                </div>
-                                <div class="container-no-permissions">
-                                    <a>{{tr "You dont have permissions the view the icons" /}}</a>
-                                </div>
-                                <div class="container-error">
-                                    <a class="error-message">{{ŧr "An error occured" /}}</a>
-                                </div>
+            <div class="container-icons">
+                <div class="left">
+                    <div class="header">{{tr "Remote" /}}</div>
+                    <div class="content">
+                        <div class="container-icons-list">
+                            <div class="container-icons-remote {{if enable_select || enable_delete}}icon-select{{/if}}"></div>
+                            <div class="container-loading">
+                                <a>{{tr "loading..." /}}</a>
                             </div>
-                            <div class="container-buttons">
-                                {{if enable_upload}}
-                                <button class="btn btn-success button-upload">{{tr "Upload" /}}</button>
-                                {{/if}}
-                                {{if enable_delete}}
-                                <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
-                                {{/if}}
+                            <div class="container-no-permissions">
+                                <a>{{tr "You dont have permissions the view the icons" /}}</a>
+                            </div>
+                            <div class="container-error">
+                                <a class="error-message">{{ŧr "An error occurred" /}}</a>
                             </div>
                         </div>
-                    </div>
-                    <div class="group_box">
-                        <div class="header">{{tr "Local" /}}</div>
-                        <div class="content">
-                            <div class="container-icons-list">
-                                <div class="container-icons-local {{if enable_select}}icon-select{{/if}}"></div>
-                            </div>
+                        <div class="container-buttons">
+                            {{if enable_upload}}
+                            <button class="btn btn-success button-upload">{{tr "Upload" /}}</button>
+                            {{/if}}
+                            {{if enable_delete}}
+                            <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
+                            {{/if}}
                         </div>
                     </div>
                 </div>
-                <div class="container-buttons">
-                    <button class="btn btn-primary btn-raised button-reload">{{tr "Reload" /}}</button>
-                    <div class="spacer"></div>
-                    {{if enable_select}}
-                    <button class="btn btn-success btn-raised button-select-no-icon">{{tr "Remove icon" /}}</button>
-                    <button class="btn btn-success btn-raised button-select"><a>{{tr "Select " /}}</a>
-                        <div class="selected-item-container"></div>
-                    </button>
-                    {{/if}}
+                <div class="right">
+                    <div class="header">{{tr "Local" /}}</div>
+                    <div class="content">
+                        <div class="container-icons-list">
+                            <div class="container-icons-local {{if enable_select}}icon-select{{/if}}"></div>
+                        </div>
+                    </div>
                 </div>
+            </div>
+            <div class="container-buttons">
+                <button class="btn btn-primary btn-raised button-reload">{{tr "Reload" /}}</button>
+                <div class="spacer"></div>
+                {{if enable_select}}
+                <button class="btn btn-success btn-raised button-select-no-icon">{{tr "Remove icon" /}}</button>
+                <button class="btn btn-success btn-raised button-select"><a>{{tr "Select " /}}</a>
+                    <div class="selected-item-container"></div>
+                </button>
+                {{/if}}
             </div>
         </script>
 
         <script class="jsrender-template" id="tmpl_icon_upload" type="text/html">
-            <div class="modal-icon-upload">
-                <div class="container-select">
-                    <div class="container-icons"></div>
-                    <div class="container-buttons">
-                        <div class="buttons-manage">
-                            <button class="btn btn-primary btn-raised button-add">{{tr "Add icon" /}}</button>
-                            <button class="btn btn-danger button-remove">{{tr "Remove selected" /}}</button>
-                        </div>
-                        <button class="btn btn-primary btn-raised button-upload"></button>
+            <div class="container-select">
+                <div class="container-icons"></div>
+                <div class="container-buttons">
+                    <div class="buttons-manage">
+                        <button class="btn btn-primary btn-raised button-add">{{tr "Add icon" /}}</button>
+                        <button class="btn btn-danger button-remove">{{tr "Remove selected" /}}</button>
+                    </div>
+                    <button class="btn btn-primary btn-raised button-upload"></button>
 
-                        <input type="file" class="input-file-upload" multiple/>
-                    </div>
+                    <input type="file" class="input-file-upload" accept="image/*" multiple/>
                 </div>
-                <div class="container-upload">
-                    <div class="container-error alert alert-danger">
-                        <div class="error-message">You're not connected. Failed to upload icons</div>
-                        <button type="button" class="btn btn-danger btn-raised button-upload-abort">{{tr "abort" /}}
-                        </button>
+            </div>
+            <div class="container-upload">
+                <div class="container-error">
+                    <div class="error-message">You're not connected. Failed to upload icons</div>
+                    <button type="button" class="btn btn-danger btn-raised button-upload-abort">{{tr "abort" /}}
+                    </button>
+                </div>
+                <div class="container-process"></div>
+                <div class="container-info">
+                    <div class="container-info-uploaded">{{tr "Uploaded icons (total | successfully | error): "
+                        /}}
                     </div>
-                    <div class="container-process"></div>
-                    <div class="container-info">
-                        <div class="container-info-uploaded">{{tr "Uploaded icons (total | successfully | error): "
-                            /}}
-                        </div>
-                        <div class="uploaded-statistics"></div>
-                    </div>
-                    <div class="container-success alert alert-success">
-                        <div class="message">Uploaded 10 icons successfully</div>
-                        <button type="button" class="btn btn-success btn-raised button-upload-abort">{{tr "okey" /}}
-                        </button>
-                    </div>
+                    <div class="uploaded-statistics"></div>
+                </div>
+                <div class="container-success">
+                    <div class="message">Uploaded 10 icons successfully</div>
+                    <button type="button" class="btn btn-success btn-raised button-upload-abort">{{tr "okey" /}}
+                    </button>
                 </div>
             </div>
         </script>
@@ -4573,18 +4620,19 @@
                 {{/if}}
                 <h2>{{tr "Special thanks" /}}</h2>
                 <p>
-                    "Яedeemer" (Janni K.)
+                    "Яedeemer" (Janni K.)<br>
+                    Chromatic-Solutions (Sofian) for the lovely dark design
                 </p>
                 <h2>{{tr "Contact" /}}</h2>
                 <p>
-                    {{tr "E-Mail:" /}} {{if client}}client{{else}}web{{/if}}@teaspeak.de<br>
-                    {{tr "WWW:" /}} <a href="https://teaspeak.de">https://teaspeak.de</a><br>
-                    {{tr "Community:" /}} <a href="https://teaspeak.de">https://forum.teaspeak.de</a>
+                    {{tr "E-Mail:" /}} <a href="mailto:{{if client}}client{{else}}web{{/if}}.support@teaspeak.de">{{if client}}client{{else}}web{{/if}}.support@teaspeak.de</a><br>
+                    {{tr "WWW:" /}} <a href="https://teaspeak.de" target="_blank">https://teaspeak.de</a><br>
+                    {{tr "Community:" /}} <a href="https://teaspeak.de" target="_blank">https://forum.teaspeak.de</a>
                 </p>
                 <h2>{{tr "License" /}}</h2>
                 <p>
                     The {{if client}}TeaClient{{else}}TeaWeb{{/if}} application is licensed by MPL-2.0<br>
-                    More information here: https://github.com/TeaSpeak/TeaWeb/blob/master/LICENSE.TXT
+                    More information here: <a href="https://github.com/TeaSpeak/TeaWeb/blob/master/LICENSE.TXT" target="_blank">https://github.com/TeaSpeak/TeaWeb/blob/master/LICENSE.TXT</a>
                 </p>
             </div>
         </script>

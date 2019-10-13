@@ -135,6 +135,9 @@
 				max-width: 100%;
 				min-width: 20em; /* may adjust if needed */
 
+				max-height: calc(100vh - 10em);
+				min-height: 5em;
+
 				overflow-y: auto;
 				overflow-x: auto;
 			}
@@ -198,11 +201,12 @@
 			flex-grow: 0;
 
 			&.modal-header-error {
-				background-color: #ce0000;
+				//background-color: #ce0000;
+				background-color: hsla(0, 100%, 25%, 1);
 			}
 
 			&.modal-header-info {
-				background-color: #03a9f4;
+				background-color: hsla(199, 98%, 20%, 1);
 			}
 
 			&.modal-header-warning, &.modal-header-info, &.modal-header-error {
@@ -307,6 +311,10 @@
 			}
 		}
 	}
+
+	.modal-body.modal-info, .modal-body.modal-error {
+		justify-content: center;
+	}
 }
 
 
@@ -345,6 +353,12 @@
 		transition: all .3s ease;
 
 		line-height: 1;
+
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+
+		max-width: 100%;
 
 		&.bmd-label-floating {
 			will-change: left, top, contents;

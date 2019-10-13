@@ -260,6 +260,7 @@ class ServerEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: 'client-iconsview',
                 name: tr("View avatars"),
+                visible: false, //TODO: Enable again as soon the new design is finished
                 callback: () => Modals.spawnAvatarList(this.channelTree.client)
             },
             contextmenu.Entry.CLOSE(() => trigger_close ? on_close() : {})

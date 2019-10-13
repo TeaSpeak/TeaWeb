@@ -62,7 +62,7 @@ class ModalProperties {
         } else this.closeListener = listener;
         return this;
     }
-    width: number | string = "60%";
+    width: number | string;
     min_width?: number | string;
     height: number | string = "auto";
 
@@ -147,9 +147,13 @@ class Modal {
             Object.assign(properties, this.properties.template_properties);
 
         const tag = template.renderTag(properties);
-        if(typeof(this.properties.width) !== "undefined")
+        if(typeof(this.properties.width) !== "undefined" && typeof(this.properties.min_width) !== "undefined")
+            tag.find(".modal-content")
+                .css("min-width", this.properties.min_width)
+                .css("width", this.properties.width);
+        else if(typeof(this.properties.width) !== "undefined") //Legacy support
             tag.find(".modal-content").css("min-width", this.properties.width);
-        if(typeof(this.properties.min_width) !== "undefined")
+        else if(typeof(this.properties.min_width) !== "undefined")
             tag.find(".modal-content").css("min-width", this.properties.min_width);
 
         this.close_elements = tag.find(".button-modal-close");
@@ -292,7 +296,10 @@ function createErrorModal(header: BodyCreator, message: BodyCreator, props: Moda
 
     props.header = header;
     props.body = message;
-    return createModal(props);
+
+    const modal = createModal(props);
+    modal.htmlTag.find(".modal-body").addClass("modal-error");
+    return modal;
 }
 
 function createInfoModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: undefined }) {
@@ -302,7 +309,9 @@ function createInfoModal(header: BodyCreator, message: BodyCreator, props: Modal
     props.header = header;
     props.body = message;
 
-    return createModal(props);
+    const modal = createModal(props);
+    modal.htmlTag.find(".modal-body").addClass("modal-info");
+    return modal;
 }
 
 /* extend jquery */

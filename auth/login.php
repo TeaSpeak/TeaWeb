@@ -1,5 +1,6 @@
 <?php
     include_once('auth.php');
+
     $session = test_session();
     if($session == 0) {
         header('Location: ' . mainPath() . 'index.php');

@@ -11,16 +11,18 @@ namespace Modals {
             header: tr("Icons"),
             footer: undefined,
             body: () => {
-                const template = $("#tmpl_icon_select").renderTag({
+                return $("#tmpl_icon_select").renderTag({
                     enable_select: !!callback_icon,
 
                     enable_upload: allow_manage,
                     enable_delete: allow_manage
                 });
+            },
 
-                return template;
-            }
+            min_width: "20em"
         });
+
+        modal.htmlTag.find(".modal-body").addClass("modal-icon-select");
 
         const button_select = modal.htmlTag.find(".button-select");
         const button_delete = modal.htmlTag.find(".button-delete").prop("disabled", true);
@@ -29,11 +31,15 @@ namespace Modals {
         const container_loading = modal.htmlTag.find(".container-loading").hide();
         const container_no_permissions = modal.htmlTag.find(".container-no-permissions").hide();
         const container_error = modal.htmlTag.find(".container-error").hide();
+
         const selected_container = modal.htmlTag.find(".selected-item-container");
 
+        const container_icons = modal.htmlTag.find(".container-icons");
+        const container_icons_remote = container_icons.find(".container-icons-remote");
+        const container_icons_local = container_icons.find(".container-icons-local");
+
         const update_local_icons = (icons: number[]) => {
-            const container_icons = modal.htmlTag.find(".container-icons .container-icons-local");
-            container_icons.empty();
+            container_icons_local.empty();
 
             for(const icon_id of icons) {
                 const tag = client.fileManager.icons.generateTag(icon_id, {animate: false}).attr('title', "Icon " + icon_id);
@@ -53,7 +59,7 @@ namespace Modals {
                     if(icon_id == selected_icon)
                         tag.trigger('click');
                 }
-                tag.appendTo(container_icons);
+                tag.appendTo(container_icons_local);
             }
         };
 
@@ -71,8 +77,6 @@ namespace Modals {
             };
 
             client.fileManager.requestFileList("/icons").then(icons => {
-                const container_icons = modal.htmlTag.find(".container-icons");
-                const container_icons_remote = container_icons.find(".container-icons-remote");
                 const container_icons_remote_parent = container_icons_remote.parent();
                 container_icons_remote.detach().empty();
 
@@ -90,7 +94,7 @@ namespace Modals {
 
                     for(const icon of chunk) {
                         const icon_id = parseInt(icon.name.substr("icon_".length));
-                        if(icon_id == NaN) {
+                        if(Number.isNaN(icon_id)) {
                             log.warn(LogCategory.GENERAL, tr("Received an unparsable icon within icon list (%o)"), icon);
                             continue;
                         }
@@ -270,13 +274,13 @@ namespace Modals {
                 } catch(error) {
                     console.log("Image failed to load (%o)", error);
                     console.error(tr("Failed to load file %s: Image failed to load"), file.name);
-                    createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Failed to load image", file.name)).open();
+                    createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.{:br:}Failed to load image", file.name)).open();
                     icon.state = "error";
                 }
 
                 const width_error = message => {
                     console.error(tr("Failed to load file %s: Invalid bounds: %s"), file.name, message);
-                    createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Image is too large ({})", file.name, message)).open();
+                    createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.{:br:}Image is too large ({})", file.name, message)).open();
                     icon.state = "error";
                 };
 
@@ -376,6 +380,9 @@ namespace Modals {
 
                     let upload_key: transfer.UploadKey;
                     try {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        throw "test error";;
+
                         upload_key = await client.fileManager.upload_file({
                             channel: undefined,
                             channel_password: undefined,
@@ -431,12 +438,12 @@ namespace Modals {
         const modal = createModal({
             header: tr("Upload Icons"),
             footer: undefined,
-            body: () => {
-                const template = $("#tmpl_icon_upload").renderTag();
-                return template;
-            },
-            closeable: false
+            body: () => $("#tmpl_icon_upload").renderTag(),
+            closeable: false,
+
+            min_width: "20em"
         });
+        modal.htmlTag.find(".modal-body").addClass("modal-icon-upload");
 
         const button_upload = modal.htmlTag.find(".button-upload");
         const button_delete = modal.htmlTag.find(".button-remove").prop("disabled", true);
@@ -548,7 +555,7 @@ namespace Modals {
 
             const show_critical_error = message => {
                 container_error.find(".error-message").text(message);
-                container_error.show();
+                container_error.removeClass("hidden");
             };
 
             const finish_upload = () => {
@@ -563,7 +570,8 @@ namespace Modals {
                 button_upload.prop("disabled", false);
                 button_upload.prop("disabled", false);
                 container_upload.hide();
-                container_error.hide();
+                container_error.addClass("hidden");
+                container_error.addClass("hidden");
                 modal.set_closeable(true);
             };
 
@@ -616,7 +624,8 @@ namespace Modals {
                     "Succeeded icons: " + succeed_count + "<br>" +
                     "Failed icons: " + failed_count
                 );
-                container_success.css({opacity: 0}).show().animate({opacity: 1}, 250, () => container_success.css({opacity: undefined}));
+
+                container_success.removeClass("hidden");
             };
 
             button_upload.on('click', event => {
@@ -631,9 +640,9 @@ namespace Modals {
 
             button_upload_abort.on('click', event => finish_upload());
 
-            container_success.hide();
+            container_error.addClass("hidden");
+            container_success.addClass("hidden");
             container_upload.hide();
-            container_error.hide();
         }
 
         modal.open();

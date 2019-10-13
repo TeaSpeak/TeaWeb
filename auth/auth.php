@@ -1,5 +1,4 @@
 <?php
-
 	$GLOBALS["COOKIE_NAME_USER_DATA"] = "user_data";
 	$GLOBALS["COOKIE_NAME_USER_SIGN"] = "user_sign";
 
@@ -8,20 +7,13 @@
 	if($host == "WolverinDEV")
 		$localhost = true;
 
-
-	/*
-	openssl genrsa -des3 -out forum_private.pem 2048
-	openssl rsa -in forum_private.pem -outform PEM -pubout -out forum_public.pem
-	openssl rsa -in forum_private.pem -out private_unencrypted.pem -outform PEM    #Export the private key as unencripted
-	 */
 	function authPath() {
 		if (file_exists("auth")) {
 			return "auth/";
 		} else return "";
 	}
 
-	function mainPath()
-	{
+	function mainPath() {
 		global $localhost;
 		if ($localhost) {
 			return "../";
@@ -67,40 +59,6 @@
 	}
 
 	/**
-	 * @param $user \XF\Entity\User
-	 * @return array
-	 */
-	function generateUserData($user)
-	{
-		$user_data = array();
-
-		$user_data["user_id"] = $user->user_id;
-		$user_data["user_name"] = $user->username;
-		$user_data["user_group"] = $user->user_group_id;
-		$user_data["user_groups"] = $user->secondary_group_ids;
-
-		$user_data["trophy_points"] = $user->trophy_points;
-		$user_data["register_date"] = $user->register_date;
-		$user_data["is_staff"] = $user->is_staff;
-		$user_data["is_admin"] = $user->is_admin;
-		$user_data["is_super_admin"] = $user->is_super_admin;
-		$user_data["is_banned"] = $user->is_banned;
-
-		$user_data["data_age"] = milliseconds();
-
-		$data = json_encode($user_data);
-
-
-		$file = realpath("./certs/private_unencrypted.pem");
-		$pkeyid = openssl_pkey_get_private("file://" . $file);
-		if (!$pkeyid) die("Could not open private key! Message: " . openssl_error_string() . " (" . $file . ")");
-		if (!openssl_sign($data, $signature, $pkeyid, OPENSSL_ALGO_SHA256)) die("Could not sign user data");
-		openssl_free_key($pkeyid);
-
-		return ["data" => $data, "sign" => base64_encode($signature)];
-	}
-
-	/**
 	 * @param $username
 	 * @param $password
 	 * @return array
@@ -129,7 +87,7 @@
 			$user = $loginService->validate($password, $error);
 			if ($user) {
 				$response["success"] = true;
-				$allowed = true;
+				$allowed = false;
 				foreach ($allowedXFGroups as $id) {
 					foreach ($user->secondary_group_ids as $assigned)
 						if ($assigned == $id) {
@@ -158,12 +116,6 @@
 						$response["sessionName"] = $session->getCookieName();
 						$response["sessionId"] = $session->getSessionId();
 						$response["user_name"] = $user->username;
-
-						$user_data = generateUserData($user);
-						$response["cookie_name_data"] = $GLOBALS["COOKIE_NAME_USER_DATA"];
-						$response["cookie_name_sign"] = $GLOBALS["COOKIE_NAME_USER_SIGN"];
-						$response["user_data"] = $user_data["data"];
-						$response["user_sign"] = $user_data["sign"];
 					} catch (Exception $error) {
 						$response["success"] = false;
 						$response["msg"] = $error->getMessage();
@@ -199,10 +151,10 @@
 	}
 
 	/**
+	 * @param null $sessionId
 	 * @return int 0 = Success | 1 = Invalid coocie | 2 = invalid session
 	 */
-	function test_session($sessionId = null)
-	{
+	function test_session($sessionId = null) {
 		$app = getXF();
 		if(!$app) return -1;
 
@@ -217,8 +169,7 @@
 		return 0;
 	}
 
-	function redirectOnInvalidSession()
-	{
+	function redirectOnInvalidSession() {
 		$app = getXF();
 		if(!$app) return;
 
@@ -246,9 +197,11 @@
 		getXF(); /* Initialize XF */
 	}
 
-	if(!$_INCLIDE_ONLY) {
+	if(!defined("_AUTH_API_ONLY")) {
 		$app = getXF();
-		if(!$app) return;
+		if(!$app) {
+			die("failed to start app");
+		}
 
 		if (isset($_GET["type"])) {
 			error_log("Got authX request!");

@@ -1,3 +1,8 @@
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../i18n/localize.ts" />
+/// <reference path="../../proto.ts" />
+
 namespace Modals {
     export function openBanList(client: ConnectionHandler) {
         let modal: Modal;
@@ -413,7 +418,11 @@ namespace Modals {
                     return false;
                 }
 
-                tag.show().toggleClass("highlight", highlight_own);
+                tag.show().toggleClass(
+                    "highlight",
+                    highlight_own &&
+                    entry.flag_own
+                );
                 return true;
             });
 

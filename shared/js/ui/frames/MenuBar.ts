@@ -467,8 +467,8 @@ namespace top_menu {
             item.click(() => {
                 const scon = server_connections.active_connection_handler();
                 if(scon && scon.connected) {
-                    if(scon.permissions.neededPermission(PermissionType.B_CLIENT_CREATE_MODIFY_SERVERQUERY_LOGIN).granted(1)) {
-                        Modals.spawnQueryManage(scon);
+                    if(scon.permissions.neededPermission(PermissionType.B_CLIENT_CREATE_MODIFY_SERVERQUERY_LOGIN).granted(1) || scon.permissions.neededPermission(PermissionType.B_CLIENT_QUERY_CREATE).granted(1)) {
+                        Modals.spawnQueryCreate(scon);
                     } else {
                         createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to create a server query login")).open();
                         scon.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);

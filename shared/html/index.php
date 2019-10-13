@@ -8,6 +8,20 @@
     if(gethostname() == "WolverinDEV")
         $localhost = true;
 ?>
+<?php
+    if(!$localhost) {
+		/* Web Testing stuff */
+		define("_AUTH_API_ONLY", true);
+		if(file_exists("./auth.php"))
+			include "./auth.php";
+		else if(file_exists("./auth/auth.php"))
+			include "./auth/auth.php";
+		else
+			die("Missing auth handler");
+		redirectOnInvalidSession();
+
+	}
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -59,7 +73,7 @@
         <meta name="format-detection" content="telephone=no">
 
         <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
+        <script defer async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
         <script>
             window.dataLayer = window.dataLayer || [];
 
@@ -121,31 +135,29 @@
         </style>
     </head>
     <body>
+        <!-- No javascript error -->
+        <noscript>
+            <div class="fulloverlay no-js">
+                <div class="container">
+                    <img src="img/script.svg" height="128px">
+                    <h1>Please enable JavaScript</h1>
+                    <h3>TeaSpeak web could not run without it!</h3>
+                    <h3>Its like you, without coffee</h3>
+                </div>
+            </div>
+        </noscript>
+
+        <!-- loader setup -->
         <div id="style">
             <link rel="stylesheet" href="css/loader/loader.css">
         </div>
 
         <meta name="app-loader-target" content="app">
         <div id="scripts">
-            <script type="application/javascript" src="loader/loader_app.min.js" defer></script>
-            <script type="application/javascript" src="loader/loader_app.js" defer></script>
-            <script type="application/javascript" src="loader/loader.js?_<?php echo time() ?>" defer></script>
+            <script type="application/javascript" src="loader/loader_app.min.js" async defer></script>
+            <script type="application/javascript" src="loader/loader_app.js" async defer></script>
+            <script type="application/javascript" src="loader/loader.js?_<?php echo time() ?>" async defer></script>
         </div>
-
-        <!-- No javascript error -->
-        <div class="fulloverlay no-js">
-            <div class="container">
-                <img src="img/script.svg" height="128px">
-                <h1>Please enable JavaScript</h1>
-                <h3>TeaSpeak web could not run without it!</h3>
-                <h3>Its like you, without coffee</h3>
-            </div>
-        </div>
-        <script type="text/javascript" class="no-js">
-            let elements = document.getElementsByClassName("no-js");
-            while (elements.length > 0) //Removing these elements (even self)
-                elements.item(0).remove();
-        </script>
 
         <!-- Loading screen -->
         <div class="loader" id="loader-overlay">
@@ -173,7 +185,8 @@
             </div>
         </div>
 
-<?php if($localhost && true) { ?>
+        <!-- debugging close -->
+<?php if($localhost && false) { ?>
         <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
             <!-- <img src="https://www.chromatic-solutions.de/teaspeak/window/connect_opened.png"> -->
             <!-- <img src="http://puu.sh/DZDgO/9149c0a1aa.png"> -->
@@ -218,7 +231,8 @@
             <!-- <img src="http://puu.sh/E9jTe/b41f6386de.png"> -->
             <!-- <img src="img/style/ban-list.png"> -->
             <!-- <img  src="http://puu.sh/E9jTe/b41f6386de.png"> -->
-            <img src="https://puu.sh/EhuVH/1e21540589.png">
+            <!-- <img src="https://puu.sh/EhuVH/1e21540589.png"> -->
+            <img src="https://puu.sh/EhvkJ/7551f548e3.png">
         </div>
         <button class="toggle-spoiler-style" style="height: 30px; width: 100px; z-index: 100000000; position: absolute; bottom: 2px;">toggle style</button>
         <script>

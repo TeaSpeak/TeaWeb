@@ -295,6 +295,17 @@ class Settings extends StaticSettings {
         key: "font_size"
     };
 
+    static readonly KEY_LAST_INVITE_LINK_TYPE: SettingsKey<string> = {
+        key: "last_invite_link_type",
+        default_value: "tea-web"
+    };
+
+    static readonly FN_INVITE_LINK_SETTING: (name: string) => SettingsKey<string> = name => {
+        return {
+            key: 'invite_link_setting_' + name
+        }
+    };
+
     static readonly FN_SERVER_CHANNEL_SUBSCRIBE_MODE: (channel_id: number) => SettingsKey<number> = channel => {
         return {
             key: 'channel_subscribe_mode_' + channel

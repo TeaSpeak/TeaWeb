@@ -114,7 +114,7 @@ namespace connection {
 
                         for(const entry of json) {
                             const rentry = {} as QueryListEntry;
-                            rentry.bounded_server = entry["client_bounded_server"];
+                            rentry.bounded_server = parseInt(entry["client_bound_server"]);
                             rentry.username = entry["client_login_name"];
                             rentry.unique_id = entry["client_unique_identifier"];
 

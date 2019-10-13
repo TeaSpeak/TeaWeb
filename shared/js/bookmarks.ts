@@ -236,7 +236,9 @@ namespace bookmarks {
     export function add_current_server() {
         const ch = server_connections.active_connection_handler();
         if(ch && ch.connected) {
-            createInputModal(tr("Enter bookmarks name"), tr("Please enter the bookmarks name:<br>"), text => true, result => {
+            const ce = ch.getClient();
+            const name = ce ? ce.clientNickName() : undefined;
+            createInputModal(tr("Enter bookmarks name"), tr("Please enter the bookmarks name:<br>"), text => text.length > 0, result => {
                 if(result) {
                     const bookmark = create_bookmark(result as string, bookmarks(), {
                         server_port: ch.serverConnection.remote_address().port,
@@ -244,11 +246,13 @@ namespace bookmarks {
 
                         server_password: "",
                         server_password_hash: ""
-                    }, this.connection_handler.getClient().clientNickName());
+                    }, name);
                     save_bookmark(bookmark);
 
                     control_bar.update_bookmarks();
                     top_menu.rebuild_bookmarks();
+
+                    createInfoModal(tr("Server added"), tr("Server has been successfully added to your bookmarks.")).open();
                 }
             }).open();
         } else {

@@ -2430,8 +2430,7 @@ test
                 else
                     this.handle.handle.fileManager.avatars.generate_chat_tag(undefined, undefined).appendTo(container_avatar);
 
-                const container_avatar_edit = this._html_tag.find(".container-avatar-edit");
-                container_avatar_edit.toggle(client instanceof LocalClientEntry);
+                container_avatar.toggleClass("editable", client instanceof LocalClientEntry);
             }
             /* updating the info fields */
             {

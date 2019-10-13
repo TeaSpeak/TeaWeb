@@ -1,11 +1,6 @@
 @import "properties";
 @import "mixin";
 
-$color_list_border: #161616;
-$color_list_background: #28292b;
-$color_list_hover: #2c2d2f;
-$color_list_selected: #1a1a1b;
-
 .modal-body.modal-settings {
 	padding: 0!important;
 
@@ -338,6 +333,9 @@ $color_list_selected: #1a1a1b;
 						.header {
 							height: 3em;
 
+							flex-grow: 0;
+							flex-shrink: 0;
+
 							display: flex;
 							flex-direction: row;
 							justify-content: stretch;
@@ -361,6 +359,9 @@ $color_list_selected: #1a1a1b;
 							.btn {
 								flex-shrink: 0;
 								flex-grow: 0;
+
+								height: 2em;
+								align-self: flex-end;
 
 								margin-left: 1em;
 								min-width: 8em;
@@ -465,6 +466,9 @@ $color_list_selected: #1a1a1b;
 
 					.left {
 						margin-right: 1em;
+
+						min-height: 0;
+						max-height: 100%;
 
 						.body {
 							flex-grow: 1;

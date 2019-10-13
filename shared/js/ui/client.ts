@@ -146,7 +146,7 @@ class ClientEntry {
             this._tag = undefined;
         }
         if(this._audio_handle) {
-            console.warn(tr("Destroying client with an active audio handle. This could cause memory leaks!"));
+            log.warn(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
             this._audio_handle.abort_replay();
             this._audio_handle.callback_playback = undefined;
             this._audio_handle.callback_stopped = undefined;
@@ -235,7 +235,7 @@ class ClientEntry {
         }
     }
 
-    protected initializeListener(){
+    protected initializeListener() {
         if(this._listener_initialized) return;
         this._listener_initialized = true;
 
@@ -609,7 +609,7 @@ class ClientEntry {
                 icon_class: "client-volume",
                 name: tr("Change Volume"),
                 callback: () => {
-                    Modals.spawnChangeVolume(this._audio_volume, volume => {
+                    Modals.spawnChangeVolume(this, true, this._audio_volume, undefined, volume => {
                         this._audio_volume = volume;
                         this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
                         if(this._audio_handle)
@@ -1140,12 +1140,14 @@ class LocalClientEntry extends ClientEntry {
     }
 
     initializeListener(): void {
+        if(this._listener_initialized)
+            this.tag.off();
         this._listener_initialized = false; /* could there be a better system */
         super.initializeListener();
         this.tag.find(".client-name").addClass("client-name-own");
 
-        this.tag.dblclick(() => {
-            if($.isArray(this.channelTree.currently_selected)) { //Multiselect
+        this.tag.on('dblclick', () => {
+            if(Array.isArray(this.channelTree.currently_selected)) { //Multiselect
                 return;
             }
             this.openRename();
@@ -1153,8 +1155,6 @@ class LocalClientEntry extends ClientEntry {
     }
 
     openRename() : void {
-        const _self = this;
-
         this.channelTree.client_mover.enabled = false;
 
         const elm = this.tag.find(".client-name");
@@ -1162,30 +1162,30 @@ class LocalClientEntry extends ClientEntry {
         elm.removeClass("client-name-own");
         elm.css("background-color", "white");
         elm.focus();
-        _self.renaming = true;
+        this.renaming = true;
 
-        elm.keypress(function (e) {
-            if(e.keyCode == KeyCode.KEY_RETURN) {
-                $(this).trigger("focusout");
+        elm.on('keypress', event => {
+            if(event.keyCode == KeyCode.KEY_RETURN) {
+                $(event.target).trigger("focusout");
                 return false;
             }
         });
 
-        elm.focusout(e => {
+        elm.on('focusout', event => {
             this.channelTree.client_mover.enabled = true;
 
-            if(!_self.renaming) return;
-            _self.renaming = false;
+            if(!this.renaming) return;
+            this.renaming = false;
 
             elm.css("background-color", "");
             elm.removeAttr("contenteditable");
             elm.addClass("client-name-own");
             let text = elm.text().toString();
-            if(_self.clientNickName() == text) return;
+            if(this.clientNickName() == text) return;
 
-            elm.text(_self.clientNickName());
-            const old_name = _self.clientNickName();
-            _self.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
+            elm.text(this.clientNickName());
+            const old_name = this.clientNickName();
+            this.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
                 settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, text);
                 this.channelTree.client.log.log(log.server.Type.CLIENT_NICKNAME_CHANGED, {
                     client: this.log_data(),
@@ -1197,7 +1197,7 @@ class LocalClientEntry extends ClientEntry {
                 this.channelTree.client.log.log(log.server.Type.CLIENT_NICKNAME_CHANGE_FAILED, {
                     reason: e.extra_message
                 });
-                _self.openRename();
+                this.openRename();
             });
         });
     }
@@ -1257,7 +1257,9 @@ class MusicClientEntry extends ClientEntry {
         let trigger_close = true;
         contextmenu.spawn_context_menu(x, y,
             ...this.contextmenu_info(), {
-                name: tr("<b>Change bot name</b>"),
+                name: (contextmenu.get_provider().html_format_enabled() ? "<b>" : "") +
+                      tr("Change bot name") +
+                      (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 icon_class: "client-change_nickname",
                 disabled: false,
                 callback: () => {
@@ -1269,7 +1271,7 @@ class MusicClientEntry extends ClientEntry {
                             });
 
                         }
-                    }, { width: 400, maxLength: 255 }).open();
+                    }, { width: "40em", min_width: "10em", maxLength: 255 }).open();
                 },
                 type: contextmenu.MenuEntryType.ENTRY
             }, {
@@ -1285,7 +1287,7 @@ class MusicClientEntry extends ClientEntry {
                             });
 
                         }
-                    }, { width: 400, maxLength: 255 }).open();
+                    }, { width: "60em", min_width: "10em", maxLength: 255 }).open();
                 },
                 type: contextmenu.MenuEntryType.ENTRY
             },
@@ -1375,7 +1377,7 @@ class MusicClientEntry extends ClientEntry {
                 icon_class: "client-volume",
                 name: tr("Change local volume"),
                 callback: () => {
-                    Modals.spawnChangeVolume(this._audio_handle.get_volume(), volume => {
+                    Modals.spawnChangeVolume(this, true, this._audio_handle.get_volume(), undefined, volume => {
                         this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
                         this._audio_handle.set_volume(volume);
                     });
@@ -1390,7 +1392,7 @@ class MusicClientEntry extends ClientEntry {
                     if(max_volume < 0)
                         max_volume = 100;
 
-                    Modals.spawnChangeRemoteVolume(this.properties.player_volume, max_volume / 100, value => {
+                    Modals.spawnChangeVolume(this, false, this.properties.player_volume, max_volume / 100, value => {
                         if(typeof(value) !== "number")
                             return;
 
