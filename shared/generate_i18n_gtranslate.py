@@ -4,6 +4,7 @@
 We want python 2.7 again...
 """
 
+import io
 import json
 import sys
 
@@ -112,8 +113,8 @@ def translate_messages(source, destination, target_language):
             "name": "Auto translated messages for language " + target_language
         }
 
-    with open(destination, 'w') as f:
-        f.write(json.dumps(result, indent=2))
+    with io.open(destination, 'w', encoding='utf8') as f:
+        f.write(json.dumps(result, indent=2, ensure_ascii=False))
     print("Done")
 
 
