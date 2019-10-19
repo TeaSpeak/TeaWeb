@@ -213,6 +213,8 @@ $client_info_avatar_size: 10em;
 				overflow-x: hidden;
 				overflow-y: auto;
 
+				@include chat-scrollbar-vertical();
+
 				width: 25%;
 				min-width: 100px;
 
