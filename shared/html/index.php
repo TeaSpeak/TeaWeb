@@ -8,20 +8,6 @@
     if(gethostname() == "WolverinDEV")
         $localhost = true;
 ?>
-<?php
-    if(!$localhost && !$WEB_CLIENT) {
-		/* Web Testing stuff */
-		define("_AUTH_API_ONLY", true);
-		if(file_exists("./auth.php"))
-			include "./auth.php";
-		else if(file_exists("./auth/auth.php"))
-			include "./auth/auth.php";
-		else
-			die("Missing auth handler");
-		redirectOnInvalidSession();
-
-	}
-?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
