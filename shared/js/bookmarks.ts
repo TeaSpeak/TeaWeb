@@ -19,7 +19,7 @@ namespace bookmarks {
                 profile,
                 true,
                 {
-                    nickname: mark.nickname,
+                    nickname: mark.nickname === "Another TeaSpeak user" || !mark.nickname ? profile.connect_username() : mark.nickname,
                     password: mark.server_properties.server_password_hash ? {
                         password: mark.server_properties.server_password_hash,
                         hashed: true
@@ -107,7 +107,7 @@ namespace bookmarks {
             create_bookmark("TeaSpeak official Test-Server", _bookmark_config.root_bookmark, {
                 server_address: "ts.teaspeak.de",
                 server_port: 9987
-            }, "Another TeaSpeak user");
+            }, undefined);
 
             save_config();
         }
