@@ -5,6 +5,7 @@ We want python 2.7 again...
 """
 
 import io
+import re
 import json
 import sys
 
@@ -99,6 +100,13 @@ def translate_messages(source, destination, target_language):
                     "google-translate"
                 ]
             })
+    for translation in translations:
+        translation["translated"] = re.sub(r"% +([OoDdSs])", r" %\1", translation["translated"]) # Fix the broken "% o" or "% s" things
+        translation["translated"] = translation["translated"].replace("%O", "%o")                # Replace all %O to %o
+        translation["translated"] = translation["translated"].replace("%S", "%s")                # Replace all %S to %s
+        translation["translated"] = translation["translated"].replace("%D", "%d")                # Replace all %D to %d
+        translation["translated"] = re.sub(r"  +(%[ods])", r" \1", translation["translated"])    # Fix double spaces between a message and %s
+        translation["translated"] = re.sub(r"\( (%[ods])", r"(\1", translation["translated"])    # Fix the leading space after a brace: ( %s)
 
     print("Writing target file")
     result["translations"] = translations
