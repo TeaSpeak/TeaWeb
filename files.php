@@ -129,22 +129,6 @@
 			"path" => "img/",
 			"local-path" => "./shared/img/"
 		],
-		[ /* generated assembly files */
-			"type" => "wasm",
-			"search-pattern" => "/.*\.(wasm)/",
-			"build-target" => "dev|rel",
-
-			"path" => "wasm/",
-			"local-path" => "./asm/generated/"
-		],
-		[ /* generated assembly javascript files */
-			"type" => "js",
-			"search-pattern" => "/.*\.(js)/",
-			"build-target" => "dev|rel",
-
-			"path" => "wasm/",
-			"local-path" => "./asm/generated/"
-		],
 		[ /* own webassembly files */
 			"type" => "wasm",
 			"search-pattern" => "/.*\.(wasm)/",
@@ -152,15 +136,6 @@
 
 			"path" => "wat/",
 			"local-path" => "./shared/wat/"
-		],
-		[ /* translations */
-			"web-only" => true, /* Only required for the web client */
-			"type" => "i18n",
-			"search-pattern" => "/.*\.(translation|json)/",
-			"build-target" => "dev|rel",
-
-			"path" => "i18n/",
-			"local-path" => "./shared/i18n/"
 		]
 	];
 
@@ -226,7 +201,26 @@
 	];
 
 	$APP_FILE_LIST_WEB_SOURCE = [
+		[ /* generated assembly files */
+			"web-only" => true,
+			"type" => "wasm",
+			"search-pattern" => "/.*\.(wasm)/",
+			"build-target" => "dev|rel",
+
+			"path" => "wasm/",
+			"local-path" => "./asm/generated/"
+		],
+		[ /* generated assembly javascript files */
+			"web-only" => true,
+			"type" => "js",
+			"search-pattern" => "/.*\.(js)/",
+			"build-target" => "dev|rel",
+
+			"path" => "wasm/",
+			"local-path" => "./asm/generated/"
+		],
 		[ /* web generated worker codec */
+			"web-only" => true,
 			"type" => "js",
 			"search-pattern" => "/(WorkerCodec.js)$/",
 			"build-target" => "dev|rel",
@@ -269,6 +263,15 @@
 
 			"path" => "./",
 			"local-path" => "./web/html/"
+		],
+		[ /* translations */
+			"web-only" => true, /* Only required for the web client */
+			"type" => "i18n",
+			"search-pattern" => "/.*\.(translation|json)/",
+			"build-target" => "dev|rel",
+
+			"path" => "i18n/",
+			"local-path" => "./shared/i18n/"
 		]
 	];
 
