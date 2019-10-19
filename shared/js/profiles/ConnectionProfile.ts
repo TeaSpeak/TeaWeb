@@ -14,6 +14,15 @@ namespace profiles {
             this.id = id;
         }
 
+        connect_username() : string {
+            if(this.default_username && this.default_username !== "Another TeaSpeak user")
+                return this.default_username;
+
+            let selected = this.selected_identity();
+            let name = selected ? selected.fallback_name() : undefined;
+            return name || "Another TeaSpeak user";
+        }
+
         selected_identity(current_type?: identities.IdentitifyType) : identities.Identity {
             if(!current_type)
                 current_type = this.selected_type();
@@ -139,7 +148,7 @@ namespace profiles {
             {
                 const profile = create_new_profile("default","default");
                 profile.default_password = "";
-                profile.default_username = "Another TeaSpeak user";
+                profile.default_username = "";
                 profile.profile_name = "Default Profile";
 
                 /* generate default identity */
@@ -160,7 +169,7 @@ namespace profiles {
             { /* forum identity (works only when connected to the forum) */
                 const profile = create_new_profile("TeaSpeak Forum","teaforo");
                 profile.default_password = "";
-                profile.default_username = "Another TeaSpeak user";
+                profile.default_username = "";
                 profile.profile_name = "TeaSpeak Forum profile";
 
                 profile.set_identity(identities.IdentitifyType.TEAFORO, identities.static_forum_identity());
@@ -174,7 +183,7 @@ namespace profiles {
     export function create_new_profile(name: string, id?: string) : ConnectionProfile {
         const profile = new ConnectionProfile(id || guid());
         profile.profile_name = name;
-        profile.default_username = "Another TeaSpeak user";
+        profile.default_username = "";
         available_profiles.push(profile);
         return profile;
     }

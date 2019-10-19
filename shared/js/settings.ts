@@ -295,6 +295,11 @@ class Settings extends StaticSettings {
         key: "font_size"
     };
 
+    static readonly KEY_ICON_SIZE: SettingsKey<number> = {
+        key: "icon_size",
+        default_value: 100
+    };
+
     static readonly KEY_LAST_INVITE_LINK_TYPE: SettingsKey<string> = {
         key: "last_invite_link_type",
         default_value: "tea-web"

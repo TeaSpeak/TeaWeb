@@ -31,7 +31,7 @@ function submitLogin(user: string, pass: string) {
                     return;
                 }
                 if (data["allowed"] == false) {
-                    loginFailed("You're not allowed for the closed alpha!");
+                    loginFailed("You're not allowed for the closed beta!");
                     return;
                 }
                 $("#login").hide(500);

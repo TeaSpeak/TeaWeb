@@ -76,6 +76,7 @@ interface ConnectParameters {
     };
     token?: string;
     password?: {password: string, hashed: boolean};
+    auto_reconnect_attempt?: boolean;
 }
 
 class ConnectionHandler {
@@ -99,8 +100,10 @@ class ConnectionHandler {
 
     private _clientId: number = 0;
     private _local_client: LocalClientEntry;
+
     private _reconnect_timer: NodeJS.Timer;
     private _reconnect_attempt: boolean = false;
+
     private _connect_initialize_id: number = 1;
 
     client_status: VoiceStatus = {
@@ -169,7 +172,7 @@ class ConnectionHandler {
     async startConnection(addr: string, profile: profiles.ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
         this.tab_set_name(tr("Connecting"));
         this.cancel_reconnect(false);
-        this._reconnect_attempt = false;
+        this._reconnect_attempt = parameters.auto_reconnect_attempt || false;
         if(this.serverConnection)
             this.handleDisconnect(DisconnectReason.REQUESTED);
 
@@ -475,10 +478,12 @@ class ConnectionHandler {
                 break;
             case DisconnectReason.CONNECTION_CLOSED:
                 log.error(LogCategory.CLIENT, tr("Lost connection to remote server!"));
-                createErrorModal(
-                    tr("Connection closed"),
-                    tr("The connection was closed by remote host")
-                ).open();
+                if(!this._reconnect_attempt) {
+                    createErrorModal(
+                        tr("Connection closed"),
+                        tr("The connection was closed by remote host")
+                    ).open();
+                }
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
                 auto_reconnect = true;
@@ -494,7 +499,7 @@ class ConnectionHandler {
                 break;
             case DisconnectReason.SERVER_CLOSED:
                 this.log.log(log.server.Type.SERVER_CLOSED, {message: data.reasonmsg});
-                //this.chat.serverChat().appendError(tr("Server closed ({0})"), data.reasonmsg);
+
                 createErrorModal(
                     tr("Server closed"),
                     "The server is closed.<br>" + //TODO tr
@@ -506,7 +511,6 @@ class ConnectionHandler {
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
                 this.log.log(log.server.Type.SERVER_REQUIRES_PASSWORD, {});
-                //this.chat.serverChat().appendError(tr("Server requires password"));
 
                 createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
@@ -526,8 +530,8 @@ class ConnectionHandler {
                 break;
             case DisconnectReason.CLIENT_KICKED:
                 createErrorModal(
-                    tr("You've been banned"),
-                    MessageHelper.formatMessage(tr("You've been banned from this server.{:br:}{0}"), data["extra_message"])
+                    tr("You've been kicked"),
+                    MessageHelper.formatMessage(tr("You've been kicked from this server.{:br:}{0}"), data["extra_message"])
                 ).open();
                 this.sound.play(Sound.SERVER_KICKED);
                 auto_reconnect = false;
@@ -590,8 +594,7 @@ class ConnectionHandler {
                 this.log.log(log.server.Type.RECONNECT_CANCELED, {});
                 log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
 
-                this.startConnection(server_address.host + ":" + server_address.port, profile, false, this.reconnect_properties(profile));
-                this._reconnect_attempt = true;
+                this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
             }, 5000);
         }
     }

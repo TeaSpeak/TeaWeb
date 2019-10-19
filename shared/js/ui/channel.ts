@@ -694,7 +694,7 @@ class ChannelEntry {
         if(this._channel_name_formatted !== undefined) {
             tag_container_name.addClass(this._channel_name_alignment);
 
-            if(this._channel_name_alignment == "align-repetitive") {
+            if(this._channel_name_alignment == "align-repetitive" && text.length > 0) {
                 while(text.length < 1024 * 8)
                     text += text;
             }

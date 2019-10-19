@@ -380,9 +380,6 @@ namespace Modals {
 
                     let upload_key: transfer.UploadKey;
                     try {
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        throw "test error";;
-
                         upload_key = await client.fileManager.upload_file({
                             channel: undefined,
                             channel_password: undefined,

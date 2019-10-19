@@ -126,6 +126,10 @@
 				}
 
 				&.general-application {
+					> div {
+						margin-top: .25em;
+					}
+
 					.container-font-size {
 						display: flex;
 						flex-direction: row;
@@ -309,6 +313,14 @@
 
 							border: none;
 							border-top: 1px solid #161616;
+						}
+					}
+				}
+
+				&.general-chat {
+					.container-icon-size {
+						.value {
+							margin-left: .5em;
 						}
 					}
 				}

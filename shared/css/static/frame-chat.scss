@@ -922,7 +922,7 @@ $client_info_avatar_size: 10em;
 					}
 				}
 
-				.no-permissions, .private-conversation {
+				.no-permissions, .private-conversation, .not-supported {
 					flex-grow: 0;
 					flex-shrink: 0;
 
@@ -1308,13 +1308,13 @@ $client_info_avatar_size: 10em;
 
 		.container-private-conversations, .container-channel-chat {
 			.container-message .emoji {
-				height: 1em;
-				width: 1em;
+				height: 1.1em;
+				width: 1.1em;
 
 				margin-left: .1em;
 				margin-right: .1em;
 
-				vertical-align: text-top;
+				vertical-align: text-bottom;
 			}
 		}
 	}

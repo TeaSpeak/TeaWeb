@@ -9,7 +9,7 @@
         $localhost = true;
 ?>
 <?php
-    if(!$localhost) {
+    if(!$localhost && !$WEB_CLIENT) {
 		/* Web Testing stuff */
 		define("_AUTH_API_ONLY", true);
 		if(file_exists("./auth.php"))

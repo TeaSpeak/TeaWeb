@@ -503,7 +503,7 @@ namespace profiles.identities {
             }
         }
 
-        name(): string {
+        fallback_name(): string | undefined  {
             return this._name;
         }
 
@@ -808,7 +808,7 @@ namespace profiles.identities {
             return "[Identity]\n" +
                     "id=TeaWeb-Exported\n" +
                     "identity=\"" + identity + "\"\n" +
-                    "nickname=\"" + this.name() + "\"\n" +
+                    "nickname=\"" + this.fallback_name() + "\"\n" +
                     "phonetic_nickname=";
         }
 

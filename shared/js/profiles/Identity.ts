@@ -6,7 +6,7 @@ namespace profiles.identities {
     }
 
     export interface Identity {
-        name() : string;
+        fallback_name(): string | undefined ;
         uid() : string;
         type() : IdentitifyType;
 

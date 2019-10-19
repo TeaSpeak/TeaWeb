@@ -383,7 +383,14 @@ class PermissionValue {
     granted(requiredValue: number, required: boolean = true) : boolean {
         let result;
         result = this.value == -1 || this.value >= requiredValue || (this.value == -2 && requiredValue == -2 && !required);
-        log.trace(LogCategory.PERMISSIONS, tr("Test needed required: %o | %i | %o => %o"), this, requiredValue, required, result);
+
+        log.trace(LogCategory.PERMISSIONS,
+            tr("Required permission test resulted for permission %s: %s. Required value: %s, Granted value: %s"),
+            this.type.name,
+            result ? tr("granted") : tr("denied"),
+            requiredValue + (required ? " (" + tr("required") + ")" : ""),
+            this.hasValue() ? this.value : tr("none")
+        );
         return result;
     }
 

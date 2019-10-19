@@ -154,18 +154,16 @@ namespace Modals {
                 }
 
                 console.log("Updating");
-                if(selected_profile)
-                    input_nickname.attr("placeholder", selected_profile.default_username);
-                else
-                    input_nickname.attr("placeholder", "");
-
                 let address = input_address.val().toString();
                 settings.changeGlobal(Settings.KEY_CONNECT_ADDRESS, address);
                 let flag_address = !!address.match(Regex.IP_V4) || !!address.match(Regex.IP_V6) || !!address.match(Regex.DOMAIN);
 
                 let nickname = input_nickname.val().toString();
-                settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, nickname);
-                let flag_nickname = (nickname.length == 0 && selected_profile && selected_profile.default_username.length > 0) || nickname.length >= 3 && nickname.length <= 32;
+                if(nickname)
+                    settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, nickname);
+                else
+                    nickname = input_nickname.attr("placeholder") || "";
+                let flag_nickname = nickname.length >= 3 && nickname.length <= 32;
 
                 input_address.attr('pattern', flag_address ? null : '^[a]{1000}$').toggleClass('is-invalid', !flag_address);
                 input_nickname.attr('pattern', flag_nickname ? null : '^[a]{1000}$').toggleClass('is-invalid', !flag_nickname);
@@ -202,8 +200,10 @@ namespace Modals {
                 input_profile.on('change', event => {
                     selected_profile = profiles.find_profile(input_profile.val() as string);
                     {
-                        settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, selected_profile.default_username);
-                        input_nickname.val(selected_profile.default_username);
+                        settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, undefined);
+                        input_nickname
+                            .attr('placeholder', selected_profile.connect_username() || "Another TeaSpeak user")
+                            .val("");
                     }
                     input_profile.toggleClass("is-invalid", !selected_profile || !selected_profile.valid());
                     updateFields(true);
@@ -233,7 +233,7 @@ namespace Modals {
                         selected_profile,
                         true,
                         {
-                            nickname: input_nickname.val().toString() || selected_profile.default_username,
+                            nickname: input_nickname.val().toString() ||  input_nickname.attr("placeholder"),
                             password: (current_connect_data && current_connect_data.password_hash) ? {password: current_connect_data.password_hash, hashed: true} : {password: input_password.val().toString(), hashed: false}
                         }
                     );
@@ -251,7 +251,7 @@ namespace Modals {
                     selected_profile,
                     true,
                     {
-                        nickname: input_nickname.val().toString() || selected_profile.default_username,
+                        nickname: input_nickname.val().toString() ||  input_nickname.attr("placeholder"),
                         password: (current_connect_data && current_connect_data.password_hash) ? {password: current_connect_data.password_hash, hashed: true} : {password: input_password.val().toString(), hashed: false}
                     }
                 );

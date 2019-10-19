@@ -205,7 +205,7 @@ namespace pe {
                 this._tag_granted_input.on('change', event => {
                     const str_value =  this._tag_granted_input.val() as string;
                     const value = parseInt(str_value);
-                    if(!HTMLPermission.number_filter_re.test(str_value) || value == NaN) {
+                    if(!HTMLPermission.number_filter_re.test(str_value) || Number.isNaN(value)) {
                         console.warn(tr("Failed to parse given permission granted value string: %s"), this._tag_granted_input.val());
                         this._reset_value();
                         return;
@@ -368,6 +368,8 @@ namespace pe {
         is_set() : boolean {
             return (this._mask & 0x03) > 0;
         }
+
+        get_value() { return this._value; }
 
         value(value: number | undefined, skip?: boolean, negate?: boolean) {
             if(typeof value === "undefined") {
@@ -672,6 +674,25 @@ namespace pe {
             }
         }
 
+        private update_icon() {
+            const permission = this.permission_map.find(e => e && e.permission.name === "i_icon_id");
+            const icon_id = permission ? permission.get_value() : 0;
+
+            const icon_node = this.container.find(".container-icon-select .icon-preview");
+            icon_node.children().remove();
+
+            let resolve: Promise<JQuery<HTMLDivElement>>;
+            if(icon_id >= 0 && icon_id <= 1000)
+                resolve = Promise.resolve(IconManager.generate_tag({id: icon_id, url: ""}));
+            else
+                resolve = this.icon_resolver(permission ? permission.get_value() : 0).then(e => $(e));
+
+            resolve.then(tag => tag.appendTo(icon_node))
+                .catch(error => {
+                    log.error(LogCategory.PERMISSIONS, tr("Failed to generate empty icon preview: %o"), error);
+                });
+        }
+
         private build_tag() {
             this.container = $("#tmpl_permission_editor_html").renderTag();
             this.container.find("input").on('change', event => {
@@ -765,6 +786,51 @@ namespace pe {
                     build_group(undefined, group, 0);
             }
 
+            {
+                const container = this.container.find(".container-icon-select");
+                container.find(".button-select-icon").on('click', event => {
+                    const permission = this.permission_map.find(e => e && e.permission.name === "i_icon_id");
+                    this.icon_selector(permission ? permission.get_value() : 0).then(id => {
+                        const permission = this.permission_map.find(e => e && e.permission.name === "i_icon_id");
+                        if(permission) {
+                            this.trigger_change(permission.permission, {
+                                remove: false,
+                                value: id,
+                                flag_skip: false,
+                                flag_negate: false
+                            }, false).then(() => {
+                                log.debug(LogCategory.PERMISSIONS, tr("Selected new icon %s"), id);
+
+                                permission.value(id, false, false);
+                                this.update_icon();
+                            }).catch(error => {
+                                log.warn(LogCategory.PERMISSIONS, tr("Failed to set icon permission within permission editor: %o"), error);
+                            });
+                        } else {
+                            log.warn(LogCategory.PERMISSIONS, tr("Failed to find icon permissions within permission editor"));
+                        }
+                    }).catch(error => {
+                        log.error(LogCategory.PERMISSIONS, tr("Failed to select an icon for the icon permission: %o"), error);
+                    });
+                });
+
+                container.find(".button-icon-remove").on('click', event => {
+                    const permission = this.permission_map.find(e => e && e.permission.name === "i_icon_id");
+                    if(permission) {
+                        this.trigger_change(permission.permission, {
+                            remove: true,
+                        }, false).then(() => {
+                            permission.value(undefined);
+                            this.update_icon();
+                        }).catch(error => {
+                            log.warn(LogCategory.PERMISSIONS, tr("Failed to remove icon permission within permission editor: %o"), error);
+                        });
+                    } else {
+                        log.warn(LogCategory.PERMISSIONS, tr("Failed to find icon permission within permission editor"));
+                    }
+                });
+            }
+
             this.mode_container_permissions.on('contextmenu', event => {
                 if(event.isDefaultPrevented())
                     return;
@@ -812,6 +878,7 @@ namespace pe {
                 permission_handle.granted(new_permission.granted_value);
             }
 
+            this.update_icon();
             this.update_filter();
         }
 
@@ -821,9 +888,17 @@ namespace pe {
             this.mode_container_unset.css('display', mode == Modals.PermissionEditorMode.UNSET ? 'block' : 'none');
         }
 
-        trigger_change(permission: PermissionInfo, value?: Modals.PermissionEditor.PermissionValue) : Promise<void> {
-            if(this._listener_change)
-                return this._listener_change(permission, value);
+        trigger_change(permission: PermissionInfo, value?: Modals.PermissionEditor.PermissionValue, update_icon?: boolean) : Promise<void> {
+            if(this._listener_change) {
+                if((typeof(update_icon) !== "boolean" || update_icon) && permission && permission.name === "i_icon_id")
+                    return this._listener_change(permission, value).then(e => {
+                        setTimeout(() => this.update_icon(), 0); /* we need to fully handle the response and then only we're able to update the icon */
+                        return e;
+                    });
+                else
+                    return this._listener_change(permission, value);
+            }
+
             return Promise.reject();
         }
 

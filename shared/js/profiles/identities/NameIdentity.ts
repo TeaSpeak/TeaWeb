@@ -47,7 +47,9 @@ namespace profiles.identities {
 
         set_name(name: string) { this._name = name; }
 
-        name(): string {
+        name() : string { return this._name; }
+
+        fallback_name(): string | undefined {
             return this._name;
         }
 

@@ -147,7 +147,11 @@ class ClientEntry {
         }
         if(this._audio_handle) {
             log.warn(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
-            this._audio_handle.abort_replay();
+            try {
+                this._audio_handle.abort_replay();
+            } catch(error) {
+                log.warn(LogCategory.AUDIO, tr("Failed to abort replay: %o"), error);
+            }
             this._audio_handle.callback_playback = undefined;
             this._audio_handle.callback_stopped = undefined;
             this._audio_handle = undefined;
@@ -159,7 +163,11 @@ class ClientEntry {
     tree_unregistered() {
         this.channelTree = undefined;
         if(this._audio_handle) {
-            this._audio_handle.abort_replay();
+            try {
+                this._audio_handle.abort_replay();
+            } catch(error) {
+                log.warn(LogCategory.AUDIO, tr("Failed to abort replay: %o"), error);
+            }
             this._audio_handle.callback_playback = undefined;
             this._audio_handle.callback_stopped = undefined;
             this._audio_handle = undefined;

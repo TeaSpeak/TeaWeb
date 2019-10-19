@@ -729,7 +729,7 @@ class IconManager {
         throw "icon not found";
     }
 
-    static generate_tag(icon: Promise<Icon> | Icon, options?: {
+    static generate_tag(icon: Promise<Icon> | Icon | undefined, options?: {
         animate?: boolean
     }) : JQuery<HTMLDivElement> {
         options = options || {};

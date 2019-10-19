@@ -371,6 +371,12 @@
                 <div class="private-conversation">
                     <div>{{tr "Conversation is private. Join the channel to participate!" /}}</div>
                 </div>
+                <div class="not-supported">
+                    <div>
+                        {{tr "The target server does not support channel chats." /}}<br>
+                        {{tr "You're only able to write in your own channel" /}}
+                    </div>
+                </div>
             </div>
         </script>
 
@@ -804,17 +810,14 @@
                                             <fieldset class="container-channel-type">
                                                 <label class="type type-temp">
                                                     <div class="ratio-button">
-                                                        <input type="radio" name="channel_type" value="temp" {{if
-                                                               !channel_flag_semi_permanent &&
-                                                               !channel_flag_permanent}}checked{{/if}}/>
+                                                        <input type="radio" name="channel_type" value="temp"/>
                                                         <div class="mark"></div>
                                                     </div>
                                                     <a>{{tr "Temporary" /}}</a>
                                                 </label>
                                                 <label class="type type-semi">
                                                     <div class="ratio-button">
-                                                        <input type="radio" name="channel_type" value="semi" {{if
-                                                               channel_flag_semi_permanent}}checked{{/if}}/>
+                                                        <input type="radio" name="channel_type" value="semi"/>
                                                         <div class="mark"></div>
                                                     </div>
                                                     <a>{{tr "Semi-Permanent" /}}</a>
@@ -822,8 +825,7 @@
                                                 <div class="container-perm-default">
                                                     <label class="type type-perm">
                                                         <div class="ratio-button">
-                                                            <input type="radio" name="channel_type" value="perm" {{if
-                                                                   channel_flag_permanent}}checked{{/if}}/>
+                                                            <input type="radio" name="channel_type" value="perm"/>
                                                             <div class="mark"></div>
                                                         </div>
                                                         <a>{{tr "Permanent" /}}</a>
@@ -1078,10 +1080,23 @@
                                             </div>
                                         </div>
                                         <div class="container-permission">
-                                            <a class="name">{{tr "Subscribe" /}}</a>
+                                            <a class="name">{{tr "Description view" /}}</a>
                                             <div class="input-boxed">
                                                 <input type="number" min="0" value="0" class="value"
                                                        permission="i_channel_needed_description_view_power">
+                                                <div class="container-tooltip tooltip-permission-view">
+                                                    <img src="img/icon_tooltip.svg"/>
+                                                    <div class="tooltip">
+                                                        <a>{{tr "Required power to see the channel description" /}}</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container-permission">
+                                            <a class="name">{{tr "Subscribe" /}}</a>
+                                            <div class="input-boxed">
+                                                <input type="number" min="0" value="0" class="value"
+                                                       permission="i_channel_needed_subscribe_power">
                                                 <div class="container-tooltip tooltip-permission-subscribe">
                                                     <img src="img/icon_tooltip.svg"/>
                                                     <div class="tooltip">
@@ -1982,6 +1997,17 @@
                             </div>
                             <a>{{tr "Enables markdown input support for chat. " /}}</a>
                         </label>
+                        <div class="container-icon-size">
+                            <div>{{tr "Chat-icon size:" /}}<a class="value">100%</a></div>
+                            <div class="container-slider">
+                                <div class="filler" style="width: 30%"></div>
+                                <div class="thumb container-tooltip" style="left: 30%">
+                                    <div class="tooltip">
+                                        <a>86%</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="container audio-microphone">
@@ -2820,7 +2846,7 @@
                         <input type="text" class="form-control filter-input"/>
                         <!-- <small class="form-text text-muted">{{tr "Filter permissions by permission name" /}}</small> -->
                     </div>
-                    <div class="form-group container-granted-switch">
+                    <div class="container-granted-switch">
                         <label>
                             <div class="switch">
                                 <input type="checkbox" class="filter-granted">
@@ -2831,6 +2857,20 @@
                             <!-- <a>{{tr "Show granted permissions only" /}}</a> -->
                             <a>{{tr "Assigned only" /}}</a>
                         </label>
+                    </div>
+                    <div class="container-icon-select">
+                        <div class="button-select-icon icon-preview">
+                            <div class="icon-container icon_empty"></div>
+                        </div>
+                        <div class="container-dropdown">
+                            <div class="button">
+                                <div class="arrow down"></div>
+                            </div>
+                            <div class="dropdown">
+                                <div class="entry button-select-icon">Edit icon</div>
+                                <div class="entry button-icon-remove">Remove icon</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="container-mode container-mode-permissions">

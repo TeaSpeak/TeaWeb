@@ -84,8 +84,8 @@ namespace profiles.identities {
             return new TeaForumHandshakeHandler(connection, this);
         }
 
-        name(): string {
-            return (this.identity_data ? this.identity_data.name() : "Another TeaSpeak user");
+        fallback_name(): string | undefined {
+            return this.identity_data ? this.identity_data.name() : undefined;
         }
 
         type(): profiles.identities.IdentitifyType {

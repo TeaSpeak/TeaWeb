@@ -16,7 +16,6 @@ namespace Modals {
                         left.find(".selected").removeClass("selected");
 
                         const target = entry.attr("container");
-                        console.log(target);
                         if(!target) return;
 
                         right.find("> .container." + target).removeClass("hidden");
@@ -74,7 +73,7 @@ namespace Modals {
             select.on('change', event => {
                 const value = parseInt(select.val() as string);
                 settings.changeGlobal(Settings.KEY_FONT_SIZE, value);
-                console.log("Changed font size of %dpx", value);
+                console.log("Changed font size to %dpx", value);
 
                 $(document.body).css("font-size", value + "px");
             });
@@ -348,6 +347,28 @@ namespace Modals {
             option.on('change', event => {
                 settings.changeGlobal(Settings.KEY_CHAT_TAG_URLS, option[0].checked);
             }).prop("checked", settings.static_global(Settings.KEY_CHAT_TAG_URLS));
+        }
+        /* Icon size */
+        {
+            const container_slider = container.find(".container-icon-size .container-slider");
+            const container_value = container.find(".container-icon-size .value");
+
+            sliderfy(container_slider, {
+                unit: '%',
+                min_value: 25,
+                max_value: 300,
+                step: 5,
+                initial_value: settings.static_global(Settings.KEY_ICON_SIZE),
+                value_field: container_value
+            });
+
+            container_slider.on('change', event => {
+                const value = parseInt(container_slider.attr("value") as string);
+                settings.changeGlobal(Settings.KEY_ICON_SIZE, value);
+                console.log("Changed icon size to %sem", (value / 100).toFixed(2));
+
+                MessageHelper.set_icon_size((value / 100).toFixed(2) + "em");
+            });
         }
     }
 
@@ -942,7 +963,10 @@ namespace Modals {
                     select_type.parent().toggleClass("is-invalid", true);
                 } else {
                     input_name.val(selected_profile.identity.profile_name).prop("disabled", false);
-                    input_default_name.val(selected_profile.identity.default_username).prop("disabled", false);
+                    input_default_name
+                        .val(selected_profile.identity.default_username)
+                        .attr("placeholder", selected_profile.identity.connect_username() || "Another TeaSpeak user")
+                        .prop("disabled", false);
                     select_type.val(selected_profile.identity.selected_identity_type || "unset").prop("disabled", false);
                 }
 

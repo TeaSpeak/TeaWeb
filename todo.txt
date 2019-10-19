@@ -119,3 +119,5 @@ Fix these icons: https://img.did.science/Screenshot_20-11-06.png
         - Focus crash window on crash
         - Add a notification (Like the browser notifications)
 Connection state sometimes does not update
+The teaforum account does not show the premium status
+Allow channel chatting in the current channel

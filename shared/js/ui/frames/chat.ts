@@ -128,7 +128,35 @@ namespace MessageHelper {
             ]
         });
 
-        container.find("a").attr('target', "_blank");
+        container.find("a")
+            .attr('target', "_blank")
+            .on('contextmenu', event => {
+            if(event.isDefaultPrevented()) return;
+            event.preventDefault();
+
+            const url = $(event.target).attr("href");
+            contextmenu.spawn_context_menu(event.pageX, event.pageY, {
+                callback: () => {
+                    const win = window.open(url, '_blank');
+                    win.focus();
+                },
+                name: tr("Open URL"),
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-browse-addon-online"
+            }, {
+                callback: () => {
+                    //TODO
+                },
+                name: tr("Open URL in Browser"),
+                type: contextmenu.MenuEntryType.ENTRY,
+                visible: !app.is_web() && false // Currently not possible
+            }, contextmenu.Entry.HR(), {
+                callback: () => copy_to_clipboard(url),
+                name: tr("Copy URL to clipboard"),
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-copy"
+            });
+        });
 
         return [container.contents() as JQuery];
         //return result.root_tag.content.map(e => e.build_html()).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 ? "inline" : "") + "block").html(entry == "" && idx != 0 ? "&nbsp;" : entry));
@@ -264,11 +292,24 @@ namespace MessageHelper {
         return result.length > 0 ? result.substring(1) : default_value;
     }
 
+    let _icon_size_style: JQuery<HTMLStyleElement>;
+    export function set_icon_size(size: string) {
+        if(!_icon_size_style)
+            _icon_size_style = $.spawn("style").appendTo($("#style"));
+
+        _icon_size_style.text("\n" +
+            ".message > .emoji {\n" +
+            "  height: " + size + "!important;\n" +
+            "  width: " + size + "!important;\n" +
+            "}\n"
+        );
+    }
+
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         name: "XBBCode code tag init",
         function: async () => {
             /* override default parser */
-            xbbcode.register.register_parser( {
+            xbbcode.register.register_parser({
                 tag: ["code", "icode", "i-code"],
                 content_tags_whitelist: [],
 
@@ -297,5 +338,13 @@ namespace MessageHelper {
             });
         },
         priority: 10
-    })
+    });
+
+    loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+        name: "icon size init",
+        function: async () => {
+            MessageHelper.set_icon_size((settings.static_global(Settings.KEY_ICON_SIZE) / 100).toFixed(2) + "em");
+        },
+        priority: 10
+    });
 }

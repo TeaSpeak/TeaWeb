@@ -227,13 +227,12 @@ namespace Modals {
                 else
                     type = "temp";
 
-                console.log(type);
-                console.log(Object.assign({}, properties));
                 simple.find("option[name='channel-type'][value='" + type + "']").prop("selected", true);
             };
 
             input_advanced_type.on('change', event => {
-                switch(input_advanced_type.val()) {
+                const value = [...input_advanced_type as JQuery<HTMLInputElement>].find(e => e.checked).value;
+                switch(value) {
                     case "semi":
                         properties.channel_flag_permanent = false;
                         properties.channel_flag_semi_permanent = true;
@@ -264,20 +263,8 @@ namespace Modals {
             const select_default = tag.find(".input-flag-default");
 
             {
-
-                if(!channel) {
-                    if(permission_perm)
-                        tag_type_perm.find("input").trigger('click');
-                    else if(permission_semi)
-                        tag_type_semi.find("input").trigger('click');
-                    else
-                        tag_type_temp.find("input").trigger('click');
-                }
-
                 select_default.on('change', event => {
                     const node = select_default[0] as HTMLInputElement;
-                    console.log(node.checked);
-
                     properties.channel_flag_default = node.checked;
 
                     if(node.checked)
@@ -345,6 +332,25 @@ namespace Modals {
                     }
                 });
             }
+
+            /* init */
+            setTimeout(() => {
+                if(!channel) {
+                    if(permission_perm)
+                        tag_type_perm.find("input").trigger('click');
+                    else if(permission_semi)
+                        tag_type_semi.find("input").trigger('click');
+                    else
+                        tag_type_temp.find("input").trigger('click');
+                } else {
+                    if(channel.properties.channel_flag_permanent)
+                        tag_type_perm.find("input").trigger('click');
+                    else if(channel.properties.channel_flag_semi_permanent)
+                        tag_type_semi.find("input").trigger('click');
+                    else
+                        tag_type_temp.find("input").trigger('click');
+                }
+            }, 0);
         }
 
         /* Talk power */
@@ -481,7 +487,8 @@ namespace Modals {
 
     function applyPermissionListener(connection: ConnectionHandler, properties: ChannelProperties, tag: JQuery, button: JQuery, permissions: PermissionManager, channel?: ChannelEntry) {
         let apply_permissions = (channel_permissions: PermissionValue[]) => {
-            console.log(tr("Got permissions: %o"), channel_permissions);
+            log.trace(LogCategory.CHANNEL, tr("Received channel permissions: %o"), channel_permissions);
+
             let required_power = -2;
             for(let cperm of channel_permissions)
                 if(cperm.type.name == PermissionType.I_CHANNEL_NEEDED_MODIFY_POWER) {
@@ -509,7 +516,7 @@ namespace Modals {
                     }
             });
 
-            const permission = permissions.neededPermission(PermissionType.I_CHANNEL_MODIFY_POWER).granted(required_power, false);
+            const permission = permissions.neededPermission(PermissionType.I_CHANNEL_PERMISSION_MODIFY_POWER).granted(required_power, false);
             tag.find("input[permission]").prop("disabled", !permission).parent(".input-boxed").toggleClass("disabled", !permission); //No permissions
         };
 

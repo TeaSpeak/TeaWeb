@@ -557,8 +557,8 @@ namespace connection {
             let client = tree.findClient(json["clid"]);
             let self = client instanceof LocalClientEntry;
 
-            let channel_to = tree.findChannel(json["ctid"]);
-            let channel_from = tree.findChannel(json["cfid"]);
+            let channel_to = tree.findChannel(parseInt(json["ctid"]));
+            let channel_from = tree.findChannel(parseInt(json["cfid"]));
 
             if(!client) {
                 log.error(LogCategory.NETWORKING, tr("Unknown client move (Client)!"));
@@ -573,6 +573,7 @@ namespace connection {
             if(!self) {
                 if(!channel_from) {
                     log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
+                    channel_from = client.currentChannel();
                 } else if(channel_to !== client.currentChannel()) {
                     log.error(LogCategory.NETWORKING,
                         tr("Client move from invalid source channel! Local client registered in channel %d but server send %d."),

@@ -477,6 +477,13 @@
 
 	.container-filter {
 		justify-content: stretch;
+		height: 4em;
+
+		.form-group {
+			height: 3.5em;
+			padding-top: 1.25em;
+			margin-bottom: 0!important;
+		}
 
 		.button-toggle-clients {
 			flex-grow: 0;
@@ -498,6 +505,8 @@
 
 		.container-granted-switch {
 			margin-left: 1em;
+			margin-bottom: 1em;
+
 			position: relative;
 
 			display: flex;
@@ -511,6 +520,8 @@
 			min-width: 8em;
 
 			> label {
+				font-size: .75em;
+
 				display: flex;
 				flex-direction: row;
 				justify-content: flex-start;
@@ -528,9 +539,121 @@
 
 				a {
 					padding-left: .25em;
-					font-size: 1.45em;
+					font-size: 1.1em;
 				}
 			}
+		}
+
+		.container-icon-select {
+			position: relative;
+
+			height: 2.5em;
+
+			border-radius: .2em;
+			margin-left: 1em;
+			margin-bottom: 1em;
+
+			display: flex;
+			flex-direction: row;
+			justify-content: flex-end;
+			align-self: flex-end;
+
+			cursor: pointer;
+			background-color: #121213;
+			border: 1px solid #0d0d0d;
+
+			.icon-preview {
+				height: 100%;
+				width: 3em;
+
+				border: none;
+				border-right: 1px solid #0d0d0d;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: space-around;
+
+				> div {
+					align-self: center;
+				}
+
+				> img {
+					align-self: center;
+
+					width: 1em;
+					height: 1em;
+				}
+
+				@include transition(border-color $button_hover_animation_time ease-in-out);
+			}
+
+			.container-dropdown {
+				position: relative;
+				cursor: pointer;
+
+				display: flex;
+				flex-direction: column;
+				justify-content: space-around;
+
+				height: 100%;
+				width: 1.5em;
+
+				.button {
+					text-align: center;
+
+					.arrow {
+						border-color: #999999;
+					}
+				}
+
+				.dropdown {
+					display: none;
+					position: absolute;
+					width: max-content;
+
+					top: calc(2.5em - 1px);
+
+					flex-direction: column;
+					justify-content: flex-start;
+
+					background-color: #121213;
+					border: 1px solid #0d0d0d;
+					border-radius: .2em 0 .2em .2em;
+
+					right: -1px;
+
+					.entry {
+						padding: .5em;
+
+						&:not(:last-of-type) {
+							border: none;
+							border-bottom: 1px solid #0d0d0d;
+						}
+
+						&:hover {
+							background-color: #17171a;
+						}
+					}
+				}
+
+				&:hover {
+					border-bottom-right-radius: 0;
+					.dropdown {
+						display: flex;
+					}
+				}
+			}
+
+			&:hover {
+				background-color: #17171a;
+				border-color: hsla(0, 0%, 20%, 1);
+
+				.icon-preview {
+					border-color: hsla(0, 0%, 20%, 1);
+				}
+			}
+
+			@include transition(border-color $button_hover_animation_time ease-in-out);
 		}
 	}
 

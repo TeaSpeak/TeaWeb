@@ -1791,10 +1791,13 @@ test
             private _container_new_message: JQuery;
 
             private _container_no_permissions: JQuery;
-            private _container_no_permissions_shown: boolean = false
+            private _container_no_permissions_shown: boolean = false;
 
             private _container_is_private: JQuery;
             private _container_is_private_shown: boolean = false;
+
+            private _container_no_support: JQuery;
+            private _container_no_support_shown: boolean = false;
 
             private _view_max_messages = 40; /* reset to 40 again as soon we tab out :) */
             private _view_older_messages: ViewEntry;
@@ -1837,6 +1840,7 @@ test
                 this._container_new_message = this._html_tag.find(".new-message");
                 this._container_no_permissions = this._html_tag.find(".no-permissions").hide();
                 this._container_is_private = this._html_tag.find(".private-conversation").hide();
+                this._container_no_support = this._html_tag.find(".not-supported").hide();
 
                 this._container_messages = this._html_tag.find(".container-messages");
                 this._container_messages.on('scroll', event => {
@@ -1969,6 +1973,12 @@ test
                         } else if(error.id == ErrorID.CONVERSATION_IS_PRIVATE) {
                             this.set_flag_private(true);
                         }
+                        /*
+                        else if(error.id == ErrorID.NOT_IMPLEMENTED || error.id == ErrorID.COMMAND_NOT_FOUND) {
+                            this._container_no_support.show();
+                            this._container_no_support_shown = true;
+                        }
+                        */
                     }
                     //TODO log and handle!
                     log.error(LogCategory.CHAT, tr("Failed to fetch conversation history. %o"), error);
@@ -2124,7 +2134,7 @@ test
             }
 
             chat_available() : boolean {
-                return !this._container_no_permissions_shown && !this._container_is_private_shown;
+                return !this._container_no_permissions_shown && !this._container_is_private_shown && !this._container_no_support_shown;
             }
 
             text_send_failed(error: CommandResult | any) {
