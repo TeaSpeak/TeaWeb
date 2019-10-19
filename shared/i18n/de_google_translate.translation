@@ -159,7 +159,7 @@
       }
     }, 
     {
-      "translated": "Std", 
+      "translated": "Stunden",
       "flags": [
         "google-translate"
       ], 
@@ -168,7 +168,7 @@
       }
     }, 
     {
-      "translated": "Protokoll", 
+      "translated": "Minuten",
       "flags": [
         "google-translate"
       ], 
