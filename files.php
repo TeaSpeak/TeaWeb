@@ -154,6 +154,7 @@
 			"local-path" => "./shared/wat/"
 		],
 		[ /* translations */
+			"web-only" => true, /* Only required for the web client */
 			"type" => "i18n",
 			"search-pattern" => "/.*\.(translation|json)/",
 			"build-target" => "dev|rel",
