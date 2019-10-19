@@ -1,27 +1,14 @@
 {
-    /* --------------- legacy! --------------- */
-    "info": {
-        "contributors": [
-            /* add yourself if you have done anything :) */
-            {
-                "name": "Markus Hadenfeldt", /* this field is required */
-                "email": "i18n.client@teaspeak.de" /* this field is required */
-            }
-        ],
-        "name": "A template translation file" /* this field is required */
-    },
-    /* --------------- legacy  --------------- */
-
     "translations": [ /* Array with all translation objects */
         { /* translation object */
             "key": { /* the key */
-                "message": "Show permission description", /* necessary to identify the message */
-                "line": 374, /* optional, only for specify the translation for a specific case (Not supported yet!) */
-                "character": 30, /* optional, only for specify the translation for a specific case (Not supported yet!) */
-                "filename": "/home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/shared/js/ui/modal/ModalPermissionEdit.ts" /* optional, only for specify the translation for a specific case (Not supported yet!) */
+                "message": "Show permission description", /* [required] identify the message */
+                "line": 374, /* [optional] only for specify the translation for a specific case (Not supported yet!) */
+                "character": 30, /* [optional] only for specify the translation for a specific case (Not supported yet!) */
+                "filename": "/home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/shared/js/ui/modal/ModalPermissionEdit.ts" /* [optional] only for specify the translation for a specific case (Not supported yet!) */
             },
-            "translated": "Berechtigungsbeschreibung anzeigen", /* The actual translation */
-            "flags": [ /* some flags for this translation */
+            "translated": "Berechtigungsbeschreibung anzeigen", /* [required] The actual translation */
+            "flags": [ /* [optional] some flags for this translation */
                 "google-translate", /* this translation has been made with google translator */
                 "verified" /* this translation has been verified by a native speaker */
             ]
