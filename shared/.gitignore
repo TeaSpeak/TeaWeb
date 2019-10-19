@@ -8,4 +8,16 @@ css/static/**/*.css.map
 js/**/*.js
 js/**/*.js.map
 
+loader/**/*.css
+loader/**/*.css.map
+
+loader/**/*.js
+loader/**/*.js.map
+
+popup/**/*.css
+popup/**/*.css.map
+
+popup/**/*.js
+popup/**/*.js.map
+
 generated/*
