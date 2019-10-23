@@ -79,7 +79,6 @@ class ServerConnectionManager {
         this._container_log_server.children().detach();
         this._container_hostbanner.children().detach();
 
-        control_bar.set_connection_handler(handler);
         if(handler) {
             handler.tag_connection_handler.addClass("active");
 
@@ -91,8 +90,9 @@ class ServerConnectionManager {
             if(handler.invoke_resized_on_activate)
                 handler.resize_elements();
         }
-        top_menu.update_state();
         this.active_handler = handler;
+        control_bar.set_connection_handler(handler);
+        top_menu.update_state();
     }
 
     active_connection_handler() : ConnectionHandler | undefined {

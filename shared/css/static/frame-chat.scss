@@ -43,6 +43,12 @@ $client_info_avatar_size: 10em;
 			flex-direction: row;
 			justify-content: stretch;
 
+			.block, .button {
+				white-space: nowrap;
+				text-overflow: ellipsis;
+				overflow: hidden;
+			}
+
 			.block {
 				flex-shrink: 1;
 				flex-grow: 1;
@@ -59,6 +65,7 @@ $client_info_avatar_size: 10em;
 				}
 
 				&.left {
+					margin-right: .5em;
 					text-align: left;
 					padding-right: 10px;
 
@@ -315,6 +322,14 @@ $client_info_avatar_size: 10em;
 							font-weight: bold;
 
 							margin-bottom: -.4em;
+						}
+
+						.client-version {
+							max-width: 100%;
+
+							text-overflow: ellipsis;
+							overflow: hidden;
+							white-space: nowrap;
 						}
 
 						.last-message {
