@@ -121,3 +121,6 @@ Fix these icons: https://img.did.science/Screenshot_20-11-06.png
 Connection state sometimes does not update
 The teaforum account does not show the premium status
 Allow channel chatting in the current channel
+Generate a default identity in JS when no POW worker is avaliable!
+Top menu double click does not work (not open again)
+Test the site without initializing the contgext seperators!

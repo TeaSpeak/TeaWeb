@@ -180,8 +180,8 @@ namespace i18n {
             current_repository_url?: string;
             current_language?: string;
 
-            current_translation_url: string;
-            current_translation_path: string;
+            current_translation_url?: string;
+            current_translation_path?: string;
         }
 
         export interface RepositoryConfig {
@@ -198,7 +198,12 @@ namespace i18n {
                 return _cached_repository_config;
 
             const config_string = localStorage.getItem(repository_config_key);
-            const config: RepositoryConfig = config_string ? JSON.parse(config_string) : {};
+            let config: RepositoryConfig;
+            try {
+                config = config_string ? JSON.parse(config_string) : {};
+            } catch(error) {
+                log.error(LogCategory.I18N, tr("Failed to parse repository config: %o"), error);
+            }
             config.repositories = config.repositories || [];
             for(const repo of config.repositories)
                 (repo.repository || {load_timestamp: 0}).load_timestamp = 0;
@@ -228,7 +233,12 @@ namespace i18n {
                 return _cached_translation_config;
 
             const config_string = localStorage.getItem(translation_config_key);
-            _cached_translation_config = config_string ? JSON.parse(config_string) : {};
+            try {
+                _cached_translation_config = config_string ? JSON.parse(config_string) : {};
+            } catch(error) {
+                log.error(LogCategory.I18N, tr("Failed to initialize translation config. Using default one. Error: %o"), error);
+                _cached_translation_config = {} as any;
+            }
             return _cached_translation_config;
         }
 
@@ -291,6 +301,7 @@ namespace i18n {
         config.save_translation_config();
     }
 
+    /* ATTENTION: This method is called before most other library inizialisations! */
     export async function initialize() {
         const rcfg = config.repository_config(); /* initialize */
         const cfg = config.translation_config();
@@ -300,7 +311,17 @@ namespace i18n {
                 await load_file(cfg.current_translation_url, cfg.current_translation_path);
             } catch (error) {
                 console.error(tr("Failed to initialize selected translation: %o"), error);
-                createErrorModal(tr("Translation System"), tr("Failed to load current selected translation file.") + "<br>File: " + cfg.current_translation_url + "<br>Error: " + error + "<br>" + tr("Using default fallback translations.")).open();
+                const show_error = () => {
+                    createErrorModal(tr("Translation System"), tra("Failed to load current selected translation file.{:br:}File: {0}{:br:}Error: {1}{:br:}{:br:}Using default fallback translations.", cfg.current_translation_url, error)).open()
+                };
+                if(loader.running())
+                    loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+                        priority: 10,
+                        function: async () => show_error(),
+                        name: "I18N error display"
+                    });
+                else
+                    show_error();
             }
         }
         // await load_file("http://localhost/home/TeaSpeak/TeaSpeak/Web-Client/web/environment/development/i18n/de_DE.translation");
