@@ -56,6 +56,25 @@ namespace connection {
             this["notifyconversationmessagedelete"] = this.handleNotifyConversationMessageDelete;
         }
 
+        private loggable_invoker(unique_id, client_id, name) : log.server.base.Client | undefined {
+            const id = parseInt(client_id);
+            if(typeof(client_id) === "undefined" || Number.isNaN(id))
+                return undefined;
+
+            if(id == 0)
+                return {
+                    client_id: 0,
+                    client_unique_id: this.connection_handler.channelTree.server.properties.virtualserver_unique_identifier,
+                    client_name: this.connection_handler.channelTree.server.properties.virtualserver_name,
+                };
+
+            return {
+                client_unique_id: unique_id,
+                client_name: name,
+                client_id: client_id
+            };
+        }
+
         proxy_command_promise(promise: Promise<CommandResult>, options: connection.CommandOptions) {
             if(!options.process_result)
                 return promise;
@@ -390,11 +409,7 @@ namespace connection {
                         channel_from: old_channel ? old_channel.log_data() : undefined,
                         channel_to: channel ? channel.log_data() : undefined,
                         client: client.log_data(),
-                        invoker: invokeruid ? {
-                            client_id: invokerid,
-                            client_name: invokername,
-                            client_unique_id: invokeruid
-                        } : undefined,
+                        invoker: this.loggable_invoker(invokeruid, invokerid, invokername),
                         message:reason_msg,
                         reason: parseInt(reason_id),
                         own_channel: channel == own_channel
@@ -499,11 +514,7 @@ namespace connection {
                         channel_from: channel_from ? channel_from.log_data() : undefined,
                         channel_to: channel_to ? channel_to.log_data() : undefined,
                         client: client.log_data(),
-                        invoker: entry["invokeruid"] ? {
-                            client_id: entry["invokerid"],
-                            client_name: entry["invokername"],
-                            client_unique_id: entry["invokeruid"]
-                        } : undefined,
+                        invoker: this.loggable_invoker(entry["invokeruid"], entry["invokerid"], entry["invokername"]),
                         message: entry["reasonmsg"],
                         reason: parseInt(entry["reasonid"]),
                         ban_time: parseInt(entry["bantime"]),
@@ -632,11 +643,7 @@ namespace connection {
                 },
                 client_own: self,
 
-                invoker: json["invokeruid"] ? {
-                    client_id: parseInt(json["invokerid"]),
-                    client_name: json["invokername"],
-                    client_unique_id: json["invokeruid"]
-                } : undefined,
+                invoker: this.loggable_invoker(json["invokeruid"], json["invokerid"], json["invokername"]),
 
                 message: json["reasonmsg"],
                 reason: parseInt(json["reasonid"]),
