@@ -386,7 +386,7 @@ class PermissionValue {
 
         log.trace(LogCategory.PERMISSIONS,
             tr("Required permission test resulted for permission %s: %s. Required value: %s, Granted value: %s"),
-            this.type.name,
+            this.type ? this.type.name : "unknown",
             result ? tr("granted") : tr("denied"),
             requiredValue + (required ? " (" + tr("required") + ")" : ""),
             this.hasValue() ? this.value : tr("none")
