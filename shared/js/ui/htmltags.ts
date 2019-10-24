@@ -140,8 +140,16 @@ namespace htmltags {
                 }
                 if(!client && client_unique_id)
                     client = current_connection.channelTree.find_client_by_unique_id(client_unique_id);
+
+                if(!client) {
+                    if(current_connection.channelTree.server.properties.virtualserver_unique_identifier === client_unique_id) {
+                        current_connection.channelTree.server.spawnContextMenu(mouse_coordinates.x, mouse_coordinates.y);
+                        return;
+                    }
+                }
             }
             if(!client) {
+
                 /* we may should open a "offline" menu? */
                 log.debug(LogCategory.GENERAL, "Failed to resolve client from html tag. Client id: %o, Client unique id: %o, Client name: %o",
                     client_id,
