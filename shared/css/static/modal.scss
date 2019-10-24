@@ -462,6 +462,19 @@
 	}
 }
 
+.modal-body.modal-disconnect-kick {
+	display: block;
+
+	a {
+		display: inline-block;
+	}
+
+	.htmltag-client {
+		display: inline-block;
+		color: unset!important;
+	}
+}
+
 /* button look */
 .btn {
 	cursor: pointer;

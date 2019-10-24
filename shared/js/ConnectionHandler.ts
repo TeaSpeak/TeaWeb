@@ -529,19 +529,20 @@ class ConnectionHandler {
                 }).open();
                 break;
             case DisconnectReason.CLIENT_KICKED:
-                createErrorModal(
+                const have_invoker = typeof(data["invokerid"]) !== "undefined" && parseInt(data["invokerid"]) !== 0;
+                const modal = createErrorModal(
                     tr("You've been kicked"),
                     MessageHelper.formatMessage(
-                        tr("You've been kicked from this server{0}.{:br:}{1}"),
-                        typeof(data["invokerid"]) !== "undefined" ?
-                            htmltags.generate_client_object(parseInt(data["invokerid"]) === 0 ?
-                                { client_id: 0, client_unique_id: this.channelTree.server.properties.virtualserver_unique_identifier, client_name: this.channelTree.server.properties.virtualserver_name} :
-                                { client_id: parseInt(data["invokerid"]), client_unique_id: data["invokeruid"], client_name: data["invokername"]}
-                            ) :
+                        have_invoker ? tr("You've been kicked from the server by {0}:{:br:}{1}") : tr("You've been kicked from the server:{:br:}{1}"),
+                        have_invoker ?
+                            htmltags.generate_client_object({ client_id: parseInt(data["invokerid"]), client_unique_id: data["invokeruid"], client_name: data["invokername"]}) :
                             "",
-                        data["extra_message"] || data["reasonmsg"]
+                        data["extra_message"] || data["reasonmsg"] || ""
                     )
-                ).open();
+                );
+
+                modal.htmlTag.find(".modal-body").addClass("modal-disconnect-kick");
+                modal.open();
                 this.sound.play(Sound.SERVER_KICKED);
                 auto_reconnect = false;
                 break;

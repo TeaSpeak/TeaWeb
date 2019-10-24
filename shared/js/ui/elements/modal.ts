@@ -13,14 +13,20 @@ const ModalFunctions = {
         return val;
     },
 
-    jqueriefy: function(val: BodyCreator, type?: ElementType) : JQuery {
-        if($.isFunction(val)) val = val();
-        if($.isArray(val)) {
-            let result = $.spawn("div");
-            for(let element of val)
-                this.jqueriefy(element, type).appendTo(result);
-            return result;
+    jqueriefy: function(val: BodyCreator, type?: ElementType) : JQuery[] | JQuery | undefined {
+        if(typeof(val) === "function")
+            val = val();
+
+        if(val instanceof jQuery)
+            return val as JQuery;
+
+        if(Array.isArray(val)) {
+            if(val.length == 0)
+                return undefined;
+
+            return val.map(e => this.jqueriefy(e));
         }
+
         switch (typeof val){
             case "string":
                 if(type == ElementType.HEADER)
