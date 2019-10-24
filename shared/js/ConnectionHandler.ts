@@ -531,7 +531,16 @@ class ConnectionHandler {
             case DisconnectReason.CLIENT_KICKED:
                 createErrorModal(
                     tr("You've been kicked"),
-                    MessageHelper.formatMessage(tr("You've been kicked from this server.{:br:}{0}"), data["extra_message"])
+                    MessageHelper.formatMessage(
+                        tr("You've been kicked from this server{0}.{:br:}{1}"),
+                        typeof(data["invokerid"]) !== "undefined" ?
+                            htmltags.generate_client_object(parseInt(data["invokerid"]) === 0 ?
+                                { client_id: 0, client_unique_id: this.channelTree.server.properties.virtualserver_unique_identifier, client_name: this.channelTree.server.properties.virtualserver_name} :
+                                { client_id: parseInt(data["invokerid"]), client_unique_id: data["invokeruid"], client_name: data["invokername"]}
+                            ) :
+                            "",
+                        data["extra_message"] || data["reasonmsg"]
+                    )
                 ).open();
                 this.sound.play(Sound.SERVER_KICKED);
                 auto_reconnect = false;
