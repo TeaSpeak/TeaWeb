@@ -225,12 +225,12 @@ class ConnectionHandler {
             const id = ++this._connect_initialize_id;
             this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVE, {});
             try {
-                const resolved = await dns.resolve_address(server_address.host, { timeout: 5000 }) || {} as any;
+                const resolved = await dns.resolve_address(server_address, { timeout: 5000 }) || {} as any;
                 if(id != this._connect_initialize_id)
                     return; /* we're old */
 
-                server_address.port = resolved.target_port || server_address.port;
-                server_address.host = resolved.target_ip || server_address.host;
+                server_address.host = typeof(resolved.target_ip) === "string" ? resolved.target_ip : server_address.host;
+                server_address.port = typeof(resolved.target_port) === "number" ? resolved.target_port : server_address.port;
                 this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVED, {
                     address: {
                         server_port: server_address.port,
