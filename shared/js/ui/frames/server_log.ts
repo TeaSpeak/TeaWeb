@@ -505,8 +505,11 @@ namespace log {
                     );
                 } else if(data.reason == ViewReasonId.VREASON_TIMEOUT) {
                     return MessageHelper.formatMessage(tr("{0} timed out{1}"), client_tag(data.client), data.message ? (" (" + data.message + ")") : "");
+                } else if(data.reason == ViewReasonId.VREASON_MOVED) {
+                    return MessageHelper.formatMessage(data.own_channel ? tr("{0} disappeared from your channel {1} to {2}, moved by {3}") : tr("{0} disappeared from {1} to {2}, moved by {3}"), client_tag(data.client), channel_tag(data.channel_from), channel_tag(data.channel_to), client_tag(data.invoker));
                 }
-                return [$.spawn("div").addClass("log-error").text("Invalid view leave reason id (" + data.message + ")")];
+
+                return [$.spawn("div").addClass("log-error").text("Invalid view leave reason id (" + data.reason + ")")];
             };
 
             MessageBuilders["server_welcome_message"] = (data: event.WelcomeMessage, options) => {

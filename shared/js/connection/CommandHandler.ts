@@ -498,8 +498,9 @@ namespace connection {
                         this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, entry);
                     } else if(reason_id == ViewReasonId.VREASON_SERVER_STOPPED) {
                         this.connection.client.handleDisconnect(DisconnectReason.SERVER_CLOSED, entry);
-                    } else
+                    } else {
                         this.connection.client.handleDisconnect(DisconnectReason.UNKNOWN, entry);
+                    }
                     this.connection_handler.side_bar.info_frame().update_channel_talk();
                     return;
                 }
@@ -510,6 +511,7 @@ namespace connection {
                     let channel_from = tree.findChannel(entry["cfid"]);
                     let channel_to = tree.findChannel(entry["ctid"]);
 
+                    const is_own_channel = channel_from == own_channel;
                     this.connection_handler.log.log(log.server.Type.CLIENT_VIEW_LEAVE, {
                         channel_from: channel_from ? channel_from.log_data() : undefined,
                         channel_to: channel_to ? channel_to.log_data() : undefined,
@@ -518,28 +520,27 @@ namespace connection {
                         message: entry["reasonmsg"],
                         reason: parseInt(entry["reasonid"]),
                         ban_time: parseInt(entry["bantime"]),
-                        own_channel: channel_from == own_channel
+                        own_channel: is_own_channel
                     });
-                    if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
-                        if(channel_from == own_channel)
+
+                    if(is_own_channel) {
+                        if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
                             this.connection_handler.sound.play(Sound.USER_LEFT);
-                    } else if(reason_id == ViewReasonId.VREASON_SERVER_LEFT) {
-                        if(channel_from == own_channel)
+                        } else if(reason_id == ViewReasonId.VREASON_SERVER_LEFT) {
                             this.connection_handler.sound.play(Sound.USER_LEFT_DISCONNECT);
-                    } else if(reason_id == ViewReasonId.VREASON_SERVER_KICK) {
-                        if(channel_from == own_channel)
+                        } else if(reason_id == ViewReasonId.VREASON_SERVER_KICK) {
                             this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_SERVER);
-                    } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
-                        if(channel_from == own_channel)
+                        } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
                             this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
-                    } else if(reason_id == ViewReasonId.VREASON_BAN) {
-                        if(channel_from == own_channel)
+                        } else if(reason_id == ViewReasonId.VREASON_BAN) {
                             this.connection_handler.sound.play(Sound.USER_LEFT_BANNED);
-                    } else if(reason_id == ViewReasonId.VREASON_TIMEOUT) {
-                        if(channel_from == own_channel)
+                        } else if(reason_id == ViewReasonId.VREASON_TIMEOUT) {
                             this.connection_handler.sound.play(Sound.USER_LEFT_TIMEOUT);
-                    } else {
-                        log.error(LogCategory.NETWORKING, tr("Unknown client left reason!"));
+                        } else if(reason_id == ViewReasonId.VREASON_MOVED) {
+                            this.connection_handler.sound.play(Sound.USER_LEFT_MOVED);
+                        } else {
+                            log.error(LogCategory.NETWORKING, tr("Unknown client left reason %d!"), reason_id);
+                        }
                     }
 
                     if(!channel_to) {
@@ -553,8 +554,9 @@ namespace connection {
                             create: false,
                             attach: false
                         });
-                        if(conversation)
+                        if(conversation) {
                             conversation.set_state(chat.PrivateConversationState.DISCONNECTED);
+                        }
                     }
                 }
 
