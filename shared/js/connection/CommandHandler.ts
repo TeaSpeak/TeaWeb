@@ -464,7 +464,7 @@ namespace connection {
         }
 
         handleCommandClientLeftView(json) {
-            let reason_id;
+            let reason_id = -1;
 
             for(const entry of json) {
                 reason_id = entry["reasonid"] || reason_id;
@@ -515,7 +515,7 @@ namespace connection {
                     } else if(reason_id == ViewReasonId.VREASON_SERVER_LEFT) {
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_DISCONNECT);
-                    } else if(json["reasonid"] == ViewReasonId.VREASON_SERVER_KICK) {
+                    } else if(reason_id == ViewReasonId.VREASON_SERVER_KICK) {
                         if(channel_from == own_channel)
                             this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_SERVER);
                     } else if(reason_id == ViewReasonId.VREASON_CHANNEL_KICK) {
