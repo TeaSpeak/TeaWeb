@@ -322,8 +322,10 @@ namespace Modals {
                         html_tag: html.append(indicator).append(message),
                         set_value: set_value,
                         set_message: msg => message.text(msg),
-                        set_error: msg => {
-                            message.text(tr("error: ") + msg);
+                        set_error: (msg: string) => {
+                            let index = msg.lastIndexOf(':');
+                            message.text(index == -1 ? msg : msg.substring(index + 1));
+                            message.attr('title', msg);
                             set_value(100);
                             indicator.removeClass("bg-success").addClass("bg-danger");
                         }
@@ -412,6 +414,8 @@ namespace Modals {
                         console.error(tr("Icon upload failed for icon %s: %o"), icon.file.name, error);
                         if(typeof(error) === "string")
                             bar.set_error(tr("upload failed: ") + error);
+                        else if(typeof(error.message) === "string")
+                            bar.set_error(tr("upload failed: ") + error.message);
                         else
                             bar.set_error(tr("upload failed"));
                         icon.upload_state = "error";
