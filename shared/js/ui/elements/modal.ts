@@ -342,7 +342,7 @@ $.fn.modalize = function (this: JQuery, entry_callback?: (header: JQuery, body: 
     let tag_body = tag_modal ? tag_modal.find("modal-body") : this;
     let tag_footer = tag_modal ? tag_modal.find("modal-footer") : ModalFunctions.jqueriefy(properties.footer);
 
-    const result = entry_callback(tag_head, tag_body, tag_footer) || {};
+    const result = entry_callback(tag_head as any, tag_body, tag_footer as any) || {};
     properties.header = result.header || tag_head;
     properties.body = result.body || tag_body;
     properties.footer = result.footer || tag_footer;
