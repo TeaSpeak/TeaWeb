@@ -84,7 +84,8 @@ namespace top_menu {
                         this._callback_click();
                     }
                     event.preventDefault();
-                    if(disabled) event.stopPropagation();
+                    if(disabled)
+                        event.stopPropagation();
                 });
 
                 this._submenu_tag = $.spawn("div").addClass("sub-menu");
@@ -177,14 +178,19 @@ namespace top_menu {
                 this._items.push(item);
 
                 this.html_tag.append(item.html_tag);
-                item._label_tag.on('click', event => {
-                    event.preventDefault();
+                item._label_tag.on('click', enable_event => {
+                    enable_event.preventDefault();
 
                     this.html_tag.find(".active").removeClass("active");
                     item.html_tag.addClass("active");
 
                     setTimeout(() => {
-                        $(document).one('click focusout', event => item.html_tag.removeClass("active"));
+                        $(document).one('click focusout', event => {
+                            if(event.isDefaultPrevented()) return;
+                            event.preventDefault();
+
+                            item.html_tag.removeClass("active");
+                        });
                     }, 0);
                 });
                 return item;
@@ -346,7 +352,7 @@ namespace top_menu {
         }
 
         {
-            const menu = driver.append_item("Rights");
+            const menu = driver.append_item(tr("Permissions"));
 
             item = menu.append_item(tr("Server Groups"));
             item.icon("client-permission_server_groups");
@@ -414,7 +420,7 @@ namespace top_menu {
         }
 
         {
-            const menu = driver.append_item("Tools");
+            const menu = driver.append_item(tr("Tools"));
 
             item = menu.append_item(tr("Manage Playlists"));
             item.icon('client-music');
@@ -486,7 +492,7 @@ namespace top_menu {
         }
 
         {
-            const menu = driver.append_item("Help");
+            const menu = driver.append_item(tr("Help"));
 
             if(!app.is_web()) {
                 item = menu.append_item(tr("Check for updates"));
