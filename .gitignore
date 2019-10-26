@@ -7,6 +7,9 @@ package-lock.json
 .sass-cache/
 .idea/
 
+vendor/emoji-picker/**/*.js
+vendor/emoji-picker/**/*.js.map
+
 .package-lock.json
 
 TeaSpeakUI.tar.gz
