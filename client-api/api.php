@@ -44,6 +44,7 @@
 			global $CLIENT;
 			$CLIENT = true;
 
+			chdir(dirname($name));
 			include $name;
 			return;
 		}
