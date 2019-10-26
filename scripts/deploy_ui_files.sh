@@ -50,6 +50,8 @@ cp -rL raw ${TMP_DIR_NAME}
 
 for file in $(find ${TMP_DIR_NAME} -name '*.php'); do
     echo "Evaluating php file $file"
+    __cur_dir=$(pwd)
+    cd $(dirname ${file})
     RESULT=$(php "${file}" 2> /dev/null)
     CODE=$?
     if [[ ${CODE} -ne 0 ]]; then
@@ -58,6 +60,7 @@ for file in $(find ${TMP_DIR_NAME} -name '*.php'); do
         exit 1
     fi
 
+    cd ${__cur_dir}
     echo "${RESULT}" > "${file::-4}.html"
 done
 
