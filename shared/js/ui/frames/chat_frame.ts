@@ -350,7 +350,7 @@ namespace chat {
 
             if(element.nodeType == Node.TEXT_NODE)
                 return element.textContent;
-            return element.innerText + "-";
+            return typeof(element.innerText) === "string" ? element.innerText : "";
         }
 
         private htmlEscape(message: string) : string {
