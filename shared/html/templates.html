@@ -4632,7 +4632,7 @@
                 <div class="versions">
                     {{if client}}
                     <div class="version version-native">
-                        <a>TeaClient:</a><a class="value">{{>version_client}}</a>
+                        <a>TeaClient:</a><a class="value version-client">{{>version_client}}</a>
                     </div>
                     <div class="version version-web">
                         <a>UI:</a><a class="value">{{>version_ui}}</a>
@@ -4646,7 +4646,7 @@
             </div>
             <div class="container-right">
                 {{if client}}
-                <h1>TeaSpeak-Client build {{>version_client}} ({{>version_timestamp}})</h1>
+                <h1>TeaSpeak-Client build <span class="version-client">{{>version_client}}</span><!-- ({{>version_timestamp}}) --></h1>
                 {{else}}
                 <h1>TeaSpeak-Web build {{>version_client}} <!-- ({{>version_timestamp}}) --></h1>
                 <!-- We currently dont have a timestamp for the web client -->

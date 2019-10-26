@@ -3,7 +3,7 @@
 	ini_set('display_startup_errors', 1);
 	error_reporting(E_ALL);
 
-	$WEB_CLIENT = http_response_code() !== false;
+	$WEB_CLIENT = (!isset($CLIENT) || !$CLIENT) && http_response_code() !== false;
     $localhost = false;
     if(gethostname() == "WolverinDEV")
         $localhost = true;

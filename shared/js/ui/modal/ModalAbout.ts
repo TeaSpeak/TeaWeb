@@ -27,9 +27,9 @@ namespace Modals {
             header: tr("About"),
             body: () => {
                 let tag = $("#tmpl_about").renderTag({
-                    client: false,
+                    client: !app.is_web(),
 
-                    version_client: app_version || "in-dev",
+                    version_client: app.is_web() ? app_version || "in-dev" : "loading...",
                     version_ui: app_version || "in-dev",
 
                     version_timestamp: !!app_version ? format_date(Date.now()) : "--"
@@ -42,5 +42,12 @@ namespace Modals {
         });
         connectModal.htmlTag.find(".modal-body").addClass("modal-about");
         connectModal.open();
+
+        (window as any).native.client_version().then(version => {
+            connectModal.htmlTag.find(".version-client").text(version);
+        }).catch(error => {
+            log.error(LogCategory.GENERAL, tr("Failed to load client version: %o"), error);
+            connectModal.htmlTag.find(".version-client").text("unknown");
+        });
     }
 }
