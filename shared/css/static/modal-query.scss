@@ -2,8 +2,8 @@
 @import "mixin";
 
 .query-create {
-	display: flex;
-	flex-direction: column;
+	display: flex!important;
+	flex-direction: column!important;
 
 	.row-name {
 		width: 100%;
@@ -26,8 +26,8 @@
 }
 
 .query-created {
-	display: flex;
-	flex-direction: column;
+	display: flex!important;
+	flex-direction: column!important;
 
 	.buttons {
 		text-align: right;
@@ -55,9 +55,9 @@
 }
 
 .modal-body.modal-query-manage {
-	display: flex;
+	display: flex!important;
 	flex-direction: row!important;
-	justify-content: stretch;
+	justify-content: stretch!important;
 
 	padding: 1em!important;
 

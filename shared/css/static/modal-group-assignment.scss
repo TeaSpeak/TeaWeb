@@ -4,15 +4,15 @@
 .modal-server-group-assignments {
 	@include user-select(none);
 
-	min-width: 25em;
-	max-height: calc(100vh - 10rem);
-	min-height: 10em;
+	min-width: 25em!important;
+	max-height: calc(100vh - 10rem)!important;
+	min-height: 10em!important;
 
-	width: 30em;
+	width: 30em!important;
 
-	display: flex;
-	flex-direction: column;
-	justify-content: stretch;
+	display: flex!important;
+	flex-direction: column!important;
+	justify-content: stretch!important;
 
 	background-color: #2f2f35;
 	padding: .5em!important;

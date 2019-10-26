@@ -4,9 +4,9 @@
 .modal-body.modal-permission-editor {
 	padding: 0!important;
 
-	display: flex;
-	flex-direction: row;
-	justify-content: stretch;
+	display: flex!important;;
+	flex-direction: row!important;;
+	justify-content: stretch!important;;
 
 	width: 1000000em; /* get us some width */
 	min-height: 20em; /* Set it here, so we dont have a inner modal scroll */

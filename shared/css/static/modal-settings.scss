@@ -4,9 +4,9 @@
 .modal-body.modal-settings {
 	padding: 0!important;
 
-	display: flex;
-	flex-direction: column;
-	justify-content: stretch;
+	display: flex!important;
+	flex-direction: column!important;
+	justify-content: stretch!important;
 
 	@include user-select(none);
 	width: 10000em; /* allocate some space */

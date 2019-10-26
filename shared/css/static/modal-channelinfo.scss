@@ -2,12 +2,12 @@
 @import "properties";
 
 .modal-body.modal-channel-info {
-	display: flex;
-	flex-direction: column;
-	justify-content: stretch;
+	display: flex!important;
+	flex-direction: column!important;
+	justify-content: stretch!important;
 
 	min-width: 30em!important;
-	max-height: calc(100vh - 10em);
+	max-height: calc(100vh - 10em)!important;
 	padding: 0 !important;
 
 	.row {

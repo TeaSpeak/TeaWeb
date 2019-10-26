@@ -1,8 +1,8 @@
 
 .playlist-management {
 	height: 100%;
-	display: flex;
-	flex-direction: column;
+	display: flex!important;;
+	flex-direction: column!important;;
 
 	.header, .footer {
 		flex-grow: 0;

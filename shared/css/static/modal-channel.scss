@@ -4,11 +4,11 @@ $required_notab_height: 800px;
 @import "properties";
 
 .modal-body.modal-channel {
-	display: flex;
-	flex-direction: column;
-	justify-content: stretch;
+	display: flex!important;
+	flex-direction: column!important;
+	justify-content: stretch!important;
 
-	max-height: calc(100vh - 10em);
+	max-height: calc(100vh - 10em)!important;
 	padding: 1em!important;
 
 	input, textarea, select {

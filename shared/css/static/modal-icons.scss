@@ -4,11 +4,11 @@
 .modal-icon-select {
 	@include user-select(none);
 
-	display: flex;
-	flex-direction: column;
-	justify-content: stretch;
+	display: flex!important;
+	flex-direction: column!important;
+	justify-content: stretch!important;
 
-	width: 50em;
+	width: 50em!important;
 
 	/*
 	.right, .left {

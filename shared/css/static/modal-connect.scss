@@ -7,9 +7,9 @@
 	max-width: 100000px; /* max 100000px width, else we shrink the modal */
 	padding: 0!important; /* override the default padding */
 
-	display: flex;
-	flex-direction: column;
-	justify-content: stretch;
+	display: flex!important;
+	flex-direction: column!important;
+	justify-content: stretch!important;
 
 	.container-connect-input {
 		flex-grow: 0;
