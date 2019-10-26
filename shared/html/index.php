@@ -12,6 +12,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
+
         <!-- App min width: 450px -->
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">
         <meta name="description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />

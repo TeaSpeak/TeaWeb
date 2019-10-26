@@ -52,7 +52,7 @@ for file in $(find ${TMP_DIR_NAME} -name '*.php'); do
     echo "Evaluating php file $file"
     __cur_dir=$(pwd)
     cd $(dirname ${file})
-    RESULT=$(php "${file}" 2> /dev/null)
+    RESULT=$(php "$(basename ${file})" 2> /dev/null)
     CODE=$?
     if [[ ${CODE} -ne 0 ]]; then
         echo "Failed to evaluate php file $file!"
