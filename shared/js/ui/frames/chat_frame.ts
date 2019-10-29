@@ -2472,8 +2472,11 @@ test
                 const version = this._html_tag.find(".client-version");
                 version.children().detach();
                 if(client) {
+                    let platform = client.properties.client_platform;
+                    if(platform.indexOf("Win32") != 0 && (client.properties.client_version.indexOf("Win64") != -1 || client.properties.client_version.indexOf("WOW64") != -1))
+                        platform = platform.replace("Win32", "Win64");
                     $.spawn("a").attr("title", client.properties.client_version).text(
-                        client.properties.client_version.split(" ")[0] + " on " + client.properties.client_platform
+                        client.properties.client_version.split(" ")[0] + " on " + platform
                     ).appendTo(version);
                 }
 
