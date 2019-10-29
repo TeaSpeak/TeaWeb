@@ -663,11 +663,11 @@ function php_exe() : string {
     return "/bin/php";
 }
 
-async function main_serve(mode: "rel" | "dev", port: number) {
+async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: number) {
     const files = await generator.search_files(APP_FILE_LIST, {
         source_path: __dirname,
         parameter: [],
-        target: "web",
+        target: target,
         mode: mode
     });
 
@@ -684,8 +684,24 @@ async function main_serve(mode: "rel" | "dev", port: number) {
 async function main(args: string[]) {
     if(args.length >= 2) {
         if(args[0].toLowerCase() === "serve") {
-            let mode;
+            let target;
             switch (args[1].toLowerCase()) {
+                case "c":
+                case "client":
+                    target = "client";
+                    break;
+                case "w":
+                case "web":
+                    target = "web";
+                    break;
+
+                default:
+                    console.error("Unknown serve target %s.", args[1]);
+                    return;
+            }
+
+            let mode;
+            switch (args[2].toLowerCase()) {
                 case "dev":
                 case "devel":
                 case "development":
@@ -697,20 +713,20 @@ async function main(args: string[]) {
                     break;
 
                 default:
-                    console.error("Unknown serve mode %s.", args[1]);
+                    console.error("Unknown serve mode %s.", args[2]);
                     return;
             }
 
             let port = 8081;
-            if(args.length >= 3) {
-                port = parseInt(args[2]);
+            if(args.length >= 4) {
+                port = parseInt(args[3]);
                 if(Number.isNaN(port) || port <= 0 || port > 65665) {
-                    console.log("Invalid HTTP server port: %s", args[2]);
+                    console.log("Invalid HTTP server port: %s", args[3]);
                     return;
                 }
             }
 
-            await main_serve(mode, port);
+            await main_serve(target, mode, port);
             return;
         }
     }
@@ -726,7 +742,7 @@ async function main(args: string[]) {
 
     console.log("Invalid arguments!");
     console.log("Usage: node files.js <mode> [args...]");
-    console.log("       node files.js serve <dev|rel> [port]                      | Start a HTTP server which serves the web client");
+    console.log("       node files.js serve <client|web> <dev|rel> [port]         | Start a HTTP server which serves the web client");
     console.log("       node files.js generate <client|web> <dev|rel> [flags...]  | Generate the final environment ready to be packed and deployed");
     console.log("       node files.js list <client|web> <dev|rel>                 | List all project files");
     console.log("");
