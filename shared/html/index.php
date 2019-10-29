@@ -3,7 +3,7 @@
 	ini_set('display_startup_errors', 1);
 	error_reporting(E_ALL);
 
-	$WEB_CLIENT = (!isset($CLIENT) || !$CLIENT) && http_response_code() !== false || (defined("WEB_CLIENT") && WEB_CLIENT);
+	$WEB_CLIENT = (!isset($CLIENT) || !$CLIENT) && http_response_code() !== false || WEB_CLIENT;
     $localhost = false;
     if(gethostname() == "WolverinDEV")
         $localhost = true;
@@ -49,8 +49,8 @@
 				spawn_property('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
 				spawn_property('localhost_debug', $localhost ? "true" : "false");
 
-				if(defined("WEB_CLIENT") && WEB_CLIENT) {
-                    $version = "000000";
+				if(WEB_CLIENT) {
+                    $version = "0000000";
                 } else {
                     $version = file_get_contents("./version");
                     if ($version === false)
