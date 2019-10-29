@@ -17,6 +17,7 @@ type ProjectResource = {
 
     "web-only"?: boolean;
     "client-only"?: boolean;
+    "serve-only"?: boolean;
 
     "search-pattern": RegExp;
     "search-exclude"?: RegExp;
@@ -223,7 +224,7 @@ const APP_FILE_LIST_CLIENT_SOURCE: ProjectResource[] = [
 
         "path": "js/",
         "local-path": "./shared/generated/"
-    }
+    },
 ];
 
 const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
@@ -451,6 +452,8 @@ namespace generator {
         target: "client" | "web";
         mode: "rel" | "dev";
 
+        serving: boolean;
+
         source_path: string;
         parameter: string[];
     };
@@ -510,6 +513,8 @@ namespace generator {
                 continue;
             if(typeof file["client-only"] === "boolean" && file["client-only"] && options.target !== "client")
                 continue;
+            if(typeof file["serve-only"] === "boolean" && file["serve-only"] && !options.serving)
+                continue;
             if(!file["build-target"].split("|").find(e => e === options.mode))
                 continue;
             if(Array.isArray(file["req-parm"]) && file["req-parm"].find(e => !options.parameter.find(p => p.toLowerCase() === e.toLowerCase())))
@@ -550,6 +555,7 @@ namespace server {
 
     const exists = util.promisify(fs.exists);
     const stat = util.promisify(fs.stat);
+    const unlink = util.promisify(fs.unlink);
     const exec: (command: string) => Promise<{ stdout: string, stderr: string }> = util.promisify(cp.exec);
 
     let files: (generator.Entry & { http_path: string; })[] = [];
@@ -586,6 +592,7 @@ namespace server {
                 http_path: "/" + e.target_path.replace(/\\/g, "/")
             }
         });
+        console.log(files.filter(e => e.target_path.endsWith(".php")));
     }
 
     export async function shutdown() {
@@ -593,6 +600,99 @@ namespace server {
             await new Promise((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
             server = undefined;
         }
+    }
+
+    function serve_php(file: string, query: any, response: http.ServerResponse) {
+        if(!fs.existsSync("tmp"))
+            fs.mkdirSync("tmp");
+        let tmp_script_name = path.join("tmp", Math.random().toFixed(32).substr(2));
+        let script = "<?php\n";
+        script += "$params = json_decode(urldecode(\"" + encodeURIComponent(JSON.stringify(query)) + "\")); \n";
+        script += "foreach($params as $key => $value) $_GET[$key] = $value;\n";
+        script += "chdir(urldecode(\"" + encodeURIComponent(path.dirname(file)) + "\"));";
+        script += "?>";
+        fs.writeFileSync(tmp_script_name, script, {flag: 'w'});
+        exec(php + " -d auto_prepend_file=" + tmp_script_name + " " + file).then(result => {
+            if(result.stderr) {
+                response.writeHead(500);
+                response.write("Encountered error while interpreting PHP script:\n");
+                response.write(result.stderr);
+                response.end();
+                return;
+            }
+
+            response.writeHead(200, "success", {
+                "Content-Type": "text/html; charset=utf-8"
+            });
+            response.write(result.stdout);
+            response.end();
+        }).catch(error => {
+            response.writeHead(500);
+            response.write("Received an exception while interpreting PHP script:\n");
+            response.write(error.toString());
+            response.end();
+        }).then(() => unlink(tmp_script_name)).catch(error => {
+            console.error("[SERVER] Failed to delete tmp PHP prepend file: %o", error);
+        });
+    }
+
+    function serve_file(pathname: string, query: any, response: http.ServerResponse) {
+        const file = files.find(e => e.http_path === pathname);
+        if(!file) {
+            console.log("[SERVER] Client requested unknown file %s", pathname);
+            response.writeHead(404);
+            response.write("Missing file: " + pathname);
+            response.end();
+            return;
+        }
+
+        let type = mt.lookup(path.extname(file.local_path)) || "text/html";
+        console.log("[SERVER] Serving file %s (%s) (%s)", file.target_path, type, file.local_path);
+        if(path.extname(file.local_path) === ".php") {
+            serve_php(file.local_path, query, response);
+            return;
+        }
+        const fis = fs.createReadStream(file.local_path);
+
+        response.writeHead(200, "success", {
+            "Content-Type": type + "; charset=utf-8"
+        });
+
+        fis.on("end", () => response.end());
+        fis.on("error", () => {
+            response.write("Ah error happend!");
+        });
+        fis.on("data", data => response.write(data));
+    }
+
+    function handle_api_request(request: http.IncomingMessage, response: http.ServerResponse, url: url_utils.UrlWithParsedQuery) {
+        if(url.query["type"] === "files") {
+            response.writeHead(200, { "info-version": 1 });
+            response.write("type\thash\tpath\tname\n");
+            for(const file of files)
+                if(file.http_path.endsWith(".php"))
+                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.http_path) + "\t" + path.basename(file.http_path, ".php") + ".html" + "\n");
+                else
+                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.http_path) + "\t" + path.basename(file.http_path) + "\n");
+            response.end();
+            return;
+        } else if(url.query["type"] === "file") {
+            let p = path.join(url.query["path"] as string, url.query["name"] as string).replace(/\\/g, "/");
+            if(p.endsWith(".html")) {
+                const np = p.substr(0, p.length - 5) + ".php";
+                if(files.find(e => e.http_path == np) && !files.find(e => e.http_path == p))
+                    p = np;
+            }
+            serve_file(p, url.query, response);
+            return;
+        }
+
+        response.writeHead(404);
+        response.write(JSON.stringify({
+            success: 0,
+            message: "Unknown command"
+        }));
+        response.end();
     }
 
     function handle_request(request: http.IncomingMessage, response: http.ServerResponse) {
@@ -607,51 +707,12 @@ namespace server {
             return;
         }
 
-        const file = files.find(e => e.http_path === url.pathname);
-        if(!file) {
-            console.log("[SERVER] Client requested unknown file %s (%s)", url.pathname, request.url);
-            response.writeHead(404);
-            response.write("Missing file: " + url.path);
-            response.end();
+        if(url.pathname === "/api.php") {
+            //Client API
+            handle_api_request(request, response, url);
             return;
         }
-
-        let type = mt.lookup(path.extname(file.local_path)) || "text/html";
-        console.log("[SERVER] Serving file %s (%s) (%s)", file.target_path, type, file.local_path);
-        if(path.extname(file.local_path) === ".php") {
-            exec(php + " -d WEB_CLIENT=1 " + file.local_path).then(result => {
-                if(result.stderr) {
-                    response.writeHead(500);
-                    response.write("Encountered error while interpreting PHP script:\n");
-                    response.write(result.stderr);
-                    response.end();
-                    return;
-                }
-
-                response.writeHead(200, "success", {
-                    "Content-Type": "text/html; charset=utf-8"
-                });
-                response.write(result.stdout);
-                response.end();
-            }).catch(error => {
-                response.writeHead(500);
-                response.write("Received an exception while interpreting PHP script:\n");
-                response.write(error.toString());
-                response.end();
-            });
-            return;
-        }
-        const fis = fs.createReadStream(file.local_path);
-
-        response.writeHead(200, "success", {
-            "Content-Type": type + "; charset=utf-8"
-        });
-
-        fis.on("end", () => response.end());
-        fis.on("error", () => {
-            response.write("Ah error happend!");
-        });
-        fis.on("data", data => response.write(data));
+        serve_file(url.pathname, url.query, response);
     }
 }
 
@@ -668,7 +729,8 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
         source_path: __dirname,
         parameter: [],
         target: target,
-        mode: mode
+        mode: mode,
+        serving: true
     });
 
     await server.launch(files, {
@@ -752,6 +814,7 @@ async function main(args: string[]) {
     console.log("             |    Windows: C:\\php\\php.exe");
     console.log("             |    Linux:   /bin/php");
 }
+
 main(process.argv.slice(2)).then(ignore_exit => {
     if(typeof(ignore_exit) === "boolean" && !<any>ignore_exit) return;
     process.exit();

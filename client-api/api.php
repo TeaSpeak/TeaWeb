@@ -6,14 +6,9 @@
 	 * Time: 16:42
 	 */
 
-	$UI_BASE_PATH = "ui-files/";
-	$UI_RAW_BASE_PATH = "ui-files/raw/";
-	$CLIENT_BASE_PATH = "files/";
-
-	if(!isset($_SERVER['REQUEST_METHOD'])) {
-		error_log("This is a web only script!");
-		exit(1);
-	}
+    $UI_BASE_PATH = "ui-files/";
+    $UI_RAW_BASE_PATH = "ui-files/raw/";
+    $CLIENT_BASE_PATH = "files/";
 
 	function list_dir($base_dir, &$results = array(), $dir = "") {
 		$files = scandir($base_dir . $dir);
