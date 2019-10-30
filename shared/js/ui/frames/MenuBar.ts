@@ -510,7 +510,7 @@ namespace top_menu {
             item = menu.append_item(tr("Visit TeaSpeak forum"));
             item.click(() => window.open('https://forum.teaspeak.de/', '_blank'));
 
-            if(!app.is_web() && typeof(native_actions.show_dev_tools) && native_actions.show_dev_tools()) {
+            if(!app.is_web() && typeof(native_actions.show_dev_tools) === "function" && native_actions.show_dev_tools()) {
                 menu.append_hr();
                 item = menu.append_item(tr("Open developer tools"));
                 item.click(() => native_actions.open_dev_tools());
