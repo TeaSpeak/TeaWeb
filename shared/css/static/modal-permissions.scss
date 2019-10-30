@@ -706,6 +706,16 @@
 
 							border: none;
 							border-right: 1px solid #1e2025;
+
+							overflow: hidden;
+
+							a {
+								max-width: 100%;
+
+								overflow: hidden;
+								white-space: nowrap;
+								text-overflow: ellipsis;
+							}
 						}
 					}
 
