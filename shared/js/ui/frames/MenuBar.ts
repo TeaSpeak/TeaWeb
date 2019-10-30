@@ -300,7 +300,7 @@ namespace top_menu {
         let item: MenuItem;
         {
             const menu = driver.append_item(tr("Connection"));
-            item = menu.append_item("Connect to a server");
+            item = menu.append_item(tr("Connect to a server"));
             item.icon('client-connect');
             item.click(() => Modals.spawnConnectModal({}));
 
@@ -315,7 +315,7 @@ namespace top_menu {
                 control_bar.update_connection_state();
                 update_state();
             };
-            item = menu.append_item("Disconnect from current server");
+            item = menu.append_item(tr("Disconnect from current server"));
             item.icon('client-disconnect');
             item.disabled(true);
             item.click(() => {
@@ -324,7 +324,7 @@ namespace top_menu {
             });
             _state_updater["connection.dc"] = { item: item, conditions: [() => condition_connected()]};
 
-            item = menu.append_item("Disconnect from all servers");
+            item = menu.append_item(tr("Disconnect from all servers"));
             item.icon('client-disconnect');
             item.click(() => {
                 do_disconnect(server_connections.server_connection_handlers());
@@ -347,7 +347,7 @@ namespace top_menu {
         }
 
         if(false) {
-            const menu = driver.append_item("Self");
+            const menu = driver.append_item(tr("Self"));
             /* Microphone | Sound | Away */
         }
 
