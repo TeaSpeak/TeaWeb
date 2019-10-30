@@ -35,7 +35,8 @@
     "terser": "^4.2.1",
     "ttypescript": "^1.5.7",
     "typescript": "^3.5.3",
-    "wat2wasm": "^1.0.2"
+    "wat2wasm": "^1.0.2",
+    "fs-extra": "latest"
   },
   "repository": {
     "type": "git",
@@ -44,5 +45,8 @@
   "bugs": {
     "url": "https://github.com/TeaSpeak/TeaWeb/issues"
   },
-  "homepage": "https://www.teaspeak.de"
+  "homepage": "https://www.teaspeak.de",
+  "dependencies": {
+    "@types/fs-extra": "^8.0.1"
+  }
 }

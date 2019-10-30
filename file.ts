@@ -1,5 +1,5 @@
 import * as path from "path";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as util from "util";
 import * as crypto from "crypto";
 import * as http from "http";
@@ -7,6 +7,7 @@ import * as url_utils from "url";
 import * as cp from "child_process";
 import * as mt from "mime-types";
 import * as os from "os";
+import {PathLike} from "fs";
 
 /* All project files */
 
@@ -446,6 +447,10 @@ const APP_FILE_LIST = [
         ...CERTACCEPT_FILE_LIST,
 ];
 
+declare module "fs-extra" {
+    export function exists(path: PathLike): Promise<boolean>;
+}
+
 /* the generator */
 namespace generator {
     export type SearchOptions = {
@@ -484,16 +489,14 @@ namespace generator {
     export async function search_files(files: ProjectResource[], options: SearchOptions) : Promise<Entry[]> {
         const result: Entry[] = [];
 
-        const readdir = util.promisify(fs.readdir);
-        const stat = util.promisify(fs.stat);
         const rreaddir = async p => {
             const result = [];
             try {
-                const files = await readdir(p);
+                const files = await fs.readdir(p);
                 for(const file of files) {
                     const file_path = path.join(p, file);
 
-                    const info = await stat(file_path);
+                    const info = await fs.stat(file_path);
                     if(info.isDirectory()) {
                         result.push(...await rreaddir(file_path));
                     } else {
@@ -553,17 +556,15 @@ namespace server {
         php: string;
     }
 
-    const exists = util.promisify(fs.exists);
-    const stat = util.promisify(fs.stat);
-    const unlink = util.promisify(fs.unlink);
     const exec: (command: string) => Promise<{ stdout: string, stderr: string }> = util.promisify(cp.exec);
 
     let files: (generator.Entry & { http_path: string; })[] = [];
     let server: http.Server;
     let php: string;
     export async function launch(_files: generator.Entry[], options: Options) {
-        if(!await exists(options.php) || !(await stat(options.php)).isFile())
-            throw "invalid php interpreter (not found)";
+        //Don't use this check anymore, because we're searching within the PATH variable
+        //if(!await fs.exists(options.php) || !(await fs.stat(options.php)).isFile())
+        //    throw "invalid php interpreter (not found)";
 
         try {
             const info = await exec(options.php + " --version");
@@ -573,7 +574,7 @@ namespace server {
             if(!info.stdout.startsWith("PHP 7."))
                 throw "invalid php interpreter version (Require at least 7)";
 
-            console.debug("Found PHP interpreter at %s:\n%s", options.php, info.stdout);
+            console.debug("Found PHP interpreter:\n%s", info.stdout);
             php = options.php;
         } catch(error) {
             console.error("failed to validate php interpreter: %o", error);
@@ -592,7 +593,6 @@ namespace server {
                 http_path: "/" + e.target_path.replace(/\\/g, "/")
             }
         });
-        console.log(files.filter(e => e.target_path.endsWith(".php")));
     }
 
     export async function shutdown() {
@@ -631,7 +631,7 @@ namespace server {
             response.write("Received an exception while interpreting PHP script:\n");
             response.write(error.toString());
             response.end();
-        }).then(() => unlink(tmp_script_name)).catch(error => {
+        }).then(() => fs.unlink(tmp_script_name)).catch(error => {
             console.error("[SERVER] Failed to delete tmp PHP prepend file: %o", error);
         });
     }
@@ -720,8 +720,8 @@ function php_exe() : string {
     if(process.env["PHP_EXE"])
         return process.env["PHP_EXE"];
     if(os.platform() === "win32")
-        return "C:\\php\\php.exe";
-    return "/bin/php";
+        return "php.exe";
+    return "php";
 }
 
 async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: number) {
@@ -741,6 +741,44 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
     console.log("Server started on %d", port);
     console.log("To stop the server press ^K^C.");
     await new Promise(resolve => {});
+}
+
+async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest_path: string, args: any[]) {
+    const begin = Date.now();
+    const files = await generator.search_files(APP_FILE_LIST, {
+        source_path: __dirname,
+        parameter: args,
+        target: target,
+        mode: mode,
+        serving: true
+    });
+
+    if(await fs.exists(dest_path))
+        await fs.remove(dest_path);
+    await fs.mkdirp(dest_path);
+
+    let linker: (source: string, target: string) => Promise<void>;
+    if(os.platform() === "win32") {
+        /* we're not able to create any links so we're copying the file */
+        linker = (source, target) => fs.copyFile(source, target);
+    } else {
+        const exec = util.promisify(cp.exec);
+        linker = async (source, target) => {
+            const command = "ln -s " + source + " " + target;
+            const { stdout, stderr } = await exec(command);
+            if(stderr)
+                throw "failed to create link: " + stderr;
+        }
+    }
+
+    for(const file of files) {
+        const target_path = path.join(dest_path, file.target_path);
+        await fs.mkdirp(path.dirname(target_path));
+
+        console.debug("Linking %s to %s", target_path, file.local_path);
+        await linker(file.local_path, target_path);
+    }
+    console.log("Done in %dms", Date.now() - begin);
 }
 
 async function main(args: string[]) {
@@ -794,7 +832,47 @@ async function main(args: string[]) {
     }
     if(args.length >= 3) {
         if(args[0].toLowerCase() === "generate" || args[0].toLowerCase() === "gen") {
-            console.error("Currently not yet supported");
+            let target;
+            let dest_dir;
+            switch (args[1].toLowerCase()) {
+                case "c":
+                case "client":
+                    target = "client";
+                    break;
+                case "w":
+                case "web":
+                    target = "web";
+                    break;
+
+                default:
+                    console.error("Unknown serve target %s.", args[1]);
+                    return;
+            }
+
+            let mode;
+            switch (args[2].toLowerCase()) {
+                case "dev":
+                case "devel":
+                case "development":
+                    mode = "dev";
+                    dest_dir = target === "client" ?
+                        path.join(__dirname, "client-api", "environment", "ui-files", "raw") :
+                        path.join(__dirname, "web", "environment", "development");
+                    break;
+                case "rel":
+                case "release":
+                    mode = "rel";
+                    dest_dir = target === "client" ?
+                        path.join(__dirname, "client-api", "environment", "ui-files", "raw") :
+                        path.join(__dirname, "web", "environment", "release");
+                    break;
+
+                default:
+                    console.error("Unknown serve mode %s.", args[2]);
+                    return;
+            }
+
+            await main_generate(target, mode, args.length >= 4 && args[3] !== "unset" ? args[3] : dest_dir, args.length >= 5 ? args.slice(4) : []);
             return;
         } else if(args[0].toLowerCase() === "list") {
             console.error("Currently not yet supported");
@@ -804,15 +882,12 @@ async function main(args: string[]) {
 
     console.log("Invalid arguments!");
     console.log("Usage: node files.js <mode> [args...]");
-    console.log("       node files.js serve <client|web> <dev|rel> [port]         | Start a HTTP server which serves the web client");
-    console.log("       node files.js generate <client|web> <dev|rel> [flags...]  | Generate the final environment ready to be packed and deployed");
-    console.log("       node files.js list <client|web> <dev|rel>                 | List all project files");
+    console.log("       node files.js serve <client|web> <dev|rel> [port]                       | Start a HTTP server which serves the web client");
+    console.log("       node files.js generate <client|web> <dev|rel> [dest dir] [flags...]     | Generate the final environment ready to be packed and deployed");
+    console.log("       node files.js list <client|web> <dev|rel>                               | List all project files");
     console.log("");
     console.log("Influential environment variables:")
     console.log("   PHP_EXE   |  Path to the PHP CLI interpreter");
-    console.log("             |  Default:");
-    console.log("             |    Windows: C:\\php\\php.exe");
-    console.log("             |    Linux:   /bin/php");
 }
 
 main(process.argv.slice(2)).then(ignore_exit => {
