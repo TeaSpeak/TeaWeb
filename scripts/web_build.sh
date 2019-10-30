@@ -95,7 +95,7 @@ elif [[ "$type" == "development" ]]; then
 fi
 
 echo "Generating environment"
-node files.js generate web ${type}
+node file.js generate web ${type}
 if [[ $? -ne 0 ]]; then
     echo "Failed to generate environment"
     exit 1
