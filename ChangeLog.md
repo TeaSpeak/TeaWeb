@@ -1,6 +1,12 @@
 # Changelog:
+* **30.10.19**
+    - Removed old `files.php` script and replaced it with a more modern `file.ts` script to generate the environment
+    - Some small UI fixed
+    - Added support for the client to use his mouse keys (TeaClient for Windows only)
+    - Made the top menu bar fully translateable
+    - Fixed an UI overflow within the permission editor when using another language
     
-* **XX.XX.XX**
+* **Client update 1.4.0**
     - Removed icon size restriction for SVGs
     - Fixed permission editor icon select for not granted icon permissions
     - Fixed "disconnect" button not showing up after beeing connected
@@ -23,6 +29,7 @@
     - New "dark theme" design
     - All elements are responsive to the font-size (Supporting now large & small screens (No mobile support yet))
     - Implemented an active ping calculation
+    - And a lot more....
     
 * **22.06.19**
     - Fixed channel create not working issue
