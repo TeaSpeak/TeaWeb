@@ -755,7 +755,7 @@ async function git_tag() {
 
     let { stdout, stderr } = await exec("git rev-parse --short HEAD");
     if(stderr) throw stderr;
-    return stdout;
+    return stdout.substr(0, 7);
 }
 
 async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest_path: string, args: any[]) {
