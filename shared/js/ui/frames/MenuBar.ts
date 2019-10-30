@@ -41,6 +41,8 @@ namespace top_menu {
         open_change_log();
 
         quit();
+
+        show_dev_tools(): boolean;
     }
     export let native_actions: NativeActions;
 
@@ -503,12 +505,19 @@ namespace top_menu {
             }
 
             item = menu.append_item(tr("Visit TeaSpeak.de"));
-            //TODO: Client direct browser?
             item.click(() => window.open('https://teaspeak.de/', '_blank'));
 
             item = menu.append_item(tr("Visit TeaSpeak forum"));
-            //TODO: Client direct browser?
             item.click(() => window.open('https://forum.teaspeak.de/', '_blank'));
+
+            if(!app.is_web() && typeof(native_actions.show_dev_tools) && native_actions.show_dev_tools()) {
+                menu.append_hr();
+                item = menu.append_item(tr("Open developer tools"));
+                item.click(() => native_actions.open_dev_tools());
+
+                item = menu.append_item(tr("Reload UI"));
+                item.click(() => native_actions.reload_page());
+            }
 
             menu.append_hr();
             item = menu.append_item(app.is_web() ? tr("About TeaWeb") : tr("About TeaClient"));
