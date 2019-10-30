@@ -87,7 +87,7 @@ elif [[ "$type" == "development" ]]; then
 fi
 
 echo "Generating environment"
-php files.php generate client ${type}
+node files.js generate client ${type}
 if [[ $? -ne 0 ]]; then
     echo "Failed to generate environment"
     exit 1
