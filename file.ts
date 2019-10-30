@@ -743,6 +743,21 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
     await new Promise(resolve => {});
 }
 
+async function git_tag() {
+    const exec = util.promisify(cp.exec);
+
+    /* check if we've any uncommited changes */
+    {
+        let { stdout, stderr } = await exec("git diff-index HEAD -- . ':!asm/libraries/' ':!package-lock.json' ':!vendor/'");
+        if(stderr) throw stderr;
+        if(stdout) return "0000000";
+    }
+
+    let { stdout, stderr } = await exec("git rev-parse --short HEAD");
+    if(stderr) throw stderr;
+    return stdout;
+}
+
 async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest_path: string, args: any[]) {
     const begin = Date.now();
     const files = await generator.search_files(APP_FILE_LIST, {
@@ -778,7 +793,12 @@ async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest
         console.debug("Linking %s to %s", target_path, file.local_path);
         await linker(file.local_path, target_path);
     }
-    console.log("Done in %dms", Date.now() - begin);
+
+    //Write the version file (Attention git-bash needs to be within the normal PATH!)
+    const version = await git_tag();
+    await fs.writeFile(path.join(dest_path, "version"), version);
+
+    console.log("Done in %dms (Version: %s)", Date.now() - begin, version);
 }
 
 async function main(args: string[]) {
