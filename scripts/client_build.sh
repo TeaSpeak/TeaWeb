@@ -19,6 +19,13 @@ else
     exit 1
 fi
 
+echo "Generating file helper script"
+npm run compile-file-helper
+if [[ $? -ne 0 ]]; then
+    echo "Failed to generate file helper"
+    exit 1
+fi
+
 echo "Generating style files"
 npm run compile-sass
 if [[ $? -ne 0 ]]; then
