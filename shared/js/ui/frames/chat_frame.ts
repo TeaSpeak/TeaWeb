@@ -2458,7 +2458,13 @@ test
                             this._online_time_updater = undefined;
                             return;
                         }
-                        online_time.text(format.time.format_online_time(client.calculateOnlineTime()));
+
+                        if(client.currentChannel()) /* If he has no channel then he might be disconnected */
+                            online_time.text(format.time.format_online_time(client.calculateOnlineTime()));
+                        else {
+                            online_time.text(online_time.text() + tr(" (left view)"));
+                            clearInterval(this._online_time_updater);
+                        }
                     }, 1000);
                 }
 
