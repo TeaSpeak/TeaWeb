@@ -669,7 +669,6 @@ if(typeof jQuery !== 'undefined'){
             setup_options = options;
 
             window.addEventListener('click', event => {
-                console.error("%o - %o", event.target);
                 const close_tags = open_pickers.filter(e => !e.tag[0].contains(event.target as Node));
                 for(const c of close_tags) {
                     c.close();
