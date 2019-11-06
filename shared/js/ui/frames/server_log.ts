@@ -98,9 +98,6 @@ namespace log {
                 message: string;
             }
 
-            //tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}")
-            //tr("You switched from channel {1} to {2}") : tr("{0} switched from channel {1} to {2}")
-            //tr("You got kicked out of the channel {1} to channel {2} by {3}{4}") : tr("{0} got kicked from channel {1} to {2} by {3}{4}")
             export type ClientMove = {
                 channel_from?: base.Channel;
                 channel_from_own: boolean;
@@ -533,6 +530,14 @@ namespace log {
             };
 
             MessageBuilders["disconnected"] = () => MessageHelper.formatMessage(tr("Disconnected from server"));
+
+            MessageBuilders["reconnect_scheduled"] = (data: event.ReconnectScheduled, options) => {
+                return tra("Reconnecting in {0}.", MessageHelper.format_time(data.timeout, tr("now")))
+            };
+
+            MessageBuilders["reconnect_canceled"] = (data: event.ReconnectCanceled, options) => {
+                return tra("Canceled reconnect.")
+            };
         }
     }
 }
