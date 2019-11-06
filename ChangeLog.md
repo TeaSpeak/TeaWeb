@@ -1,6 +1,7 @@
 # Changelog:
 * **06.10.19**
     - Added the possibility to connect within an already running TeaWeb instance
+    - Closing the emoji picker as soon the client clicks into the void
     
 * **30.10.19**
     - Removed old `files.php` script and replaced it with a more modern `file.ts` script to generate the environment

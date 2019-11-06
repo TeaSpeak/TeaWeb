@@ -14,7 +14,9 @@ if(typeof jQuery !== 'undefined'){
         'use strict';
 
         let setup_options: JSXEmojiPickerSetupOptions;
-        var emoji = {
+        let open_pickers: { tag: JQuery, close: () => any}[] = [];
+
+        const emoji = {
             'people': [
                 {'name': 'smile', 'value': '&#x1f604'},
                 {'name': 'smiley', 'value': '&#x1f603'},
@@ -666,6 +668,16 @@ if(typeof jQuery !== 'undefined'){
         window.setup_lsx_emoji_picker = options => {
             setup_options = options;
 
+            window.addEventListener('click', event => {
+                console.error("%o - %o", event.target);
+                const close_tags = open_pickers.filter(e => !e.tag[0].contains(event.target as Node));
+                for(const c of close_tags) {
+                    c.close();
+                    const idx = open_pickers.indexOf(c);
+                    idx >= 0 && open_pickers.splice(idx, 1);
+                }
+            });
+
             if(options.twemoji) {
                 const generator = function*() {
                     for(const category_name of Object.keys(emoji)) {
@@ -696,7 +708,7 @@ if(typeof jQuery !== 'undefined'){
             return Promise.resolve();
         };
 
-        $.fn.lsxEmojiPicker = function (options) {
+        (<any>$.fn).lsxEmojiPicker = function (options) {
             if(typeof(setup_options) === "undefined")
                 throw "lsx emoji picker hasn't been initialized";
             // Overriding default options
@@ -790,6 +802,14 @@ if(typeof jQuery !== 'undefined'){
             })();
             this.append(appender);
 
+            const picker = {
+                tag: this,
+                close: () => {
+                    container.hide();
+                    const idx = open_pickers.indexOf(picker);
+                    idx >= 0 && open_pickers.splice(idx, 1);
+                }
+            };
             this.click(e => {
                 if(this.hasClass("disabled"))
                     return;
@@ -801,8 +821,9 @@ if(typeof jQuery !== 'undefined'){
                     && !$(e.target).parent().hasClass('lsx-emoji-tab')
                     && !$(e.target).parent().parent().hasClass('lsx-emoji-tab')){
                     if(container.is(':visible')){
-                        container.hide();
+                        picker.close();
                     } else {
+                        open_pickers.push(picker);
                         container.fadeIn();
                     }
                 }
