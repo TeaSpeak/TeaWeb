@@ -597,7 +597,7 @@ class ConnectionHandler {
                 log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
             }
-            this.log.log(log.server.Type.RECONNECT_SCHEDULED, {timeout: 50000});
+            this.log.log(log.server.Type.RECONNECT_SCHEDULED, {timeout: 5000});
 
             log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
@@ -605,7 +605,7 @@ class ConnectionHandler {
 
             this._reconnect_timer = setTimeout(() => {
                 this._reconnect_timer = undefined;
-                this.log.log(log.server.Type.RECONNECT_CANCELED, {});
+                this.log.log(log.server.Type.RECONNECT_EXECUTE, {});
                 log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
 
                 this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));

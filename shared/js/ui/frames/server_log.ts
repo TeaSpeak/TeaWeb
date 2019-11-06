@@ -538,6 +538,10 @@ namespace log {
             MessageBuilders["reconnect_canceled"] = (data: event.ReconnectCanceled, options) => {
                 return tra("Canceled reconnect.")
             };
+
+            MessageBuilders["reconnect_execute"] = (data: event.ReconnectExecute, options) => {
+                return tra("Reconnecting...")
+            };
         }
     }
 }
