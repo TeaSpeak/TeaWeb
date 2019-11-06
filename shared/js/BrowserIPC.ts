@@ -1,5 +1,3 @@
-//Used by CertAccept popup
-
 interface Window {
     BroadcastChannel: BroadcastChannel;
 }
@@ -258,6 +256,17 @@ namespace bipc {
     }
 
     export namespace connect {
+        export type ConnectRequestData = {
+            address: string;
+
+            profile?: string;
+            username?: string;
+            password?: {
+                value: string;
+                hashed: boolean;
+            };
+        }
+
         export interface ConnectOffer {
             request_id: string;
             data: ConnectRequestData;

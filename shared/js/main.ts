@@ -290,17 +290,7 @@ interface Window {
 }
 */
 
-type ConnectRequestData = {
-    address: string;
-
-    profile?: string;
-    username?: string;
-    password?: {
-        value: string;
-        hashed: boolean;
-    };
-}
-function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
+function handle_connect_request(properties: bipc.connect.ConnectRequestData, connection: ConnectionHandler) {
     const profile_uuid = properties.profile || (profiles.default_profile() || {id: 'default'}).id;
     const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
     const username = properties.username || profile.connect_username();

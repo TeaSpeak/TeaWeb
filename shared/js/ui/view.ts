@@ -2,7 +2,11 @@
 /// <reference path="../proto.ts" />
 /// <reference path="channel.ts" />
 /// <reference path="client.ts" />
+/// <reference path="server.ts" />
+/// <reference path="../bookmarks.ts" />
+/// <reference path="elements/context_menu.ts" />
 /// <reference path="modal/ModalCreateChannel.ts" />
+/// <reference path="../../backend/ppt.d.ts" />
 
 
 class ChannelTree {
