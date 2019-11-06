@@ -777,7 +777,7 @@ namespace connection {
                 const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
                 const own_channel_id = this.connection.client.getClient().currentChannel().channelId;
                 const channel_id = typeof(json["cid"]) !== "undefined" ? parseInt(json["cid"]) : own_channel_id;
-                const channel = this.connection_handler.channelTree.findChannel(channel_id);
+                const channel = this.connection_handler.channelTree.findChannel(channel_id) || this.connection_handler.getClient().currentChannel();
 
                 if(json["invokerid"] == this.connection.client.clientId)
                     this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
@@ -795,7 +795,7 @@ namespace connection {
                     timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
                     message: json["msg"]
                 });
-                if(conversation.is_unread())
+                if(conversation.is_unread() && channel)
                     channel.flag_text_unread = true;
             } else if(mode == 3) {
                 this.connection_handler.log.log(log.server.Type.GLOBAL_MESSAGE, {
