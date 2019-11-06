@@ -613,7 +613,7 @@ namespace server {
         script += "?>";
         fs.writeFileSync(tmp_script_name, script, {flag: 'w'});
         exec(php + " -d auto_prepend_file=" + tmp_script_name + " " + file).then(result => {
-            if(result.stderr) {
+            if(result.stderr && !result.stdout) {
                 response.writeHead(500);
                 response.write("Encountered error while interpreting PHP script:\n");
                 response.write(result.stderr);

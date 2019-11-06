@@ -352,6 +352,10 @@ class ConnectionHandler {
         /* generate the tag */
         const tag = $.spawn("a").text(tr("here"));
 
+        let pathname = document.location.pathname;
+        if(pathname.endsWith(".php"))
+            pathname = pathname.substring(0, pathname.lastIndexOf("/"));
+
         if(bipc.supported()) {
             tag.attr('href', "#");
             let popup: Window;
@@ -380,7 +384,7 @@ class ConnectionHandler {
                     this.startConnection(properties.connect_address, profile, true, cprops);
                 });
 
-                const url = build_url(document.location.origin + document.location.pathname + "/popup/certaccept/", "", properties);
+                const url = build_url(document.location.origin + pathname + "/popup/certaccept/", "", properties);
                 const features_string = [...Object.keys(features)].map(e => e + "=" + features[e]).reduce((a, b) => a + "," + b);
                 popup = window.open(url, "TeaWeb certificate accept", features_string);
                 try {
@@ -395,7 +399,7 @@ class ConnectionHandler {
                 }
             });
         } else {
-            tag.attr('href', build_url(document.location.origin + document.location.pathname, document.location.search, properties));
+            tag.attr('href', build_url(document.location.origin + pathname, document.location.search, properties));
         }
         return tag;
     }
