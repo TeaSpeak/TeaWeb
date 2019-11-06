@@ -3,7 +3,9 @@
 namespace Modals {
     export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_: boolean) => any, properties?: {
         text_yes?: string,
-        text_no?: string
+        text_no?: string,
+
+        closeable?: boolean;
     }) {
         properties = properties || {};
 
@@ -16,6 +18,7 @@ namespace Modals {
         props.header = header;
         props.template_properties.question = ModalFunctions.jqueriefy(body);
 
+        props.closeable = typeof(properties.closeable) !== "boolean" || properties.closeable;
         const modal = createModal(props);
         let submited = false;
         const button_yes = modal.htmlTag.find(".button-yes");

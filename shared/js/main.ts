@@ -8,6 +8,8 @@
 /// <reference path="log.ts" />
 /// <reference path="PPTListener.ts" />
 
+import spawnYesNo = Modals.spawnYesNo;
+
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
@@ -288,34 +290,41 @@ interface Window {
 }
 */
 
-function execute_default_connect() {
-    if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && settings.static(Settings.KEY_CONNECT_ADDRESS, "")) {
-        const profile_uuid = settings.static(Settings.KEY_CONNECT_PROFILE, (profiles.default_profile() || {id: 'default'}).id);
-        const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
-        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
-        const username = settings.static(Settings.KEY_CONNECT_USERNAME, "Another TeaSpeak user");
+type ConnectRequestData = {
+    address: string;
 
-        const password = settings.static(Settings.KEY_CONNECT_PASSWORD, "");
-        const password_hashed = settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false);
+    profile?: string;
+    username?: string;
+    password?: {
+        value: string;
+        hashed: boolean;
+    };
+}
+function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
+    const profile_uuid = properties.profile || (profiles.default_profile() || {id: 'default'}).id;
+    const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
+    const username = properties.username || profile.connect_username();
 
-        if(profile && profile.valid()) {
-            const connection = server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler();
-            connection.startConnection(address, profile, true, {
-                nickname: username,
-                password: password.length > 0 ? {
-                    password: password,
-                    hashed: password_hashed
-                } : undefined
-            });
-        } else {
-            Modals.spawnConnectModal({},{
-                url: address,
-                enforce: true
-            }, {
-                profile: profile,
-                enforce: true
-            });
-        }
+    const password = properties.password ? properties.password.value : "";
+    const password_hashed = properties.password ? properties.password.hashed : false;
+
+    if(profile && profile.valid()) {
+        connection.startConnection(properties.address, profile, true, {
+            nickname: username,
+            password: password.length > 0 ? {
+                password: password,
+                hashed: password_hashed
+            } : undefined
+        });
+        server_connections.set_active_connection_handler(connection);
+    } else {
+        Modals.spawnConnectModal({},{
+            url: properties.address,
+            enforce: true
+        }, {
+            profile: profile,
+            enforce: true
+        });
     }
 }
 
@@ -416,7 +425,6 @@ function main() {
     };
 
     /* schedule it a bit later then the main because the main function is still within the loader */
-    setTimeout(execute_default_connect, 5);
     setTimeout(() => {
         const connection = server_connections.active_connection_handler();
         /*
@@ -499,6 +507,74 @@ const task_teaweb_starter: loader.Task = {
     priority: 10
 };
 
+const task_connect_handler: loader.Task = {
+    name: "Connect handler",
+    function: async () => {
+        const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
+        const chandler = bipc.get_connect_handler();
+        if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && address) {
+            const connect_data = {
+                address: address,
+
+                profile: settings.static(Settings.KEY_CONNECT_PROFILE, ""),
+                username: settings.static(Settings.KEY_CONNECT_USERNAME, ""),
+
+                password: {
+                    value: settings.static(Settings.KEY_CONNECT_PASSWORD, ""),
+                    hashed: settings.static(Settings.KEY_FLAG_CONNECT_PASSWORD, false)
+                }
+            };
+
+            if(chandler) {
+                try {
+                    await chandler.post_connect_request(connect_data, () => new Promise<boolean>((resolve, reject) => {
+                        spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.{:br:}Would you like to connect there?"), response => {
+                            resolve(response);
+                        }, {
+                            closeable: false
+                        }).open();
+                    }));
+                    log.info(LogCategory.CLIENT, tr("Executed connect successfully in another browser window. Closing this window"));
+
+                    const message =
+                        "You're connecting to {0} within the other TeaWeb instance.{:br:}" +
+                        "You could now close this page.";
+                    createInfoModal(
+                        tr("Connecting successfully within other instance"),
+                        MessageHelper.formatMessage(tr(message), connect_data.address),
+                        {
+                            closeable: false,
+                            footer: undefined
+                        }
+                    ).open();
+                    return;
+                } catch(error) {
+                    log.info(LogCategory.CLIENT, tr("Failed to execute connect within other TeaWeb instance. Using this one. Error: %o"), error);
+                }
+            }
+
+            loader.register_task(loader.Stage.LOADED, {
+                priority: 0,
+                function: async () => handle_connect_request(connect_data, server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler()),
+                name: tr("default url connect")
+            });
+        }
+        if(chandler) {
+            /* no instance avail, so lets make us avail */
+            chandler.callback_available = data => {
+                return !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION);
+            };
+
+            chandler.callback_execute = data => {
+                handle_connect_request(data, server_connections.spawn_server_connection_handler());
+                return true;
+            }
+        }
+        loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
+    },
+    priority: 10
+};
+
 const task_certificate_callback: loader.Task = {
     name: "certificate accept tester",
     function: async () => {
@@ -546,7 +622,7 @@ const task_certificate_callback: loader.Task = {
             log.info(LogCategory.IPC, tr("We're not used to accept certificated. Booting app."));
         }
 
-        loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
+        loader.register_task(loader.Stage.LOADED, task_connect_handler);
     },
     priority: 10
 };
@@ -574,8 +650,9 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 
             if(app.is_web()) {
                 loader.register_task(loader.Stage.LOADED, task_certificate_callback);
-            } else
+            } else {
                 loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
+            }
         } catch (ex) {
             if(ex instanceof Error || typeof(ex.stack) !== "undefined")
                 console.error((tr || (msg => msg))("Critical error stack trace: %o"), ex.stack);
