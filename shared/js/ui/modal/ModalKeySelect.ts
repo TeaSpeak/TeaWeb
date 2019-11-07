@@ -30,9 +30,12 @@ namespace Modals {
 
 
         button_save.on('click', () => {
-            /* Because pressing the close button is also a mouse action */
-            if(current_key_age + 100 > Date.now())
-                current_key = last_key;
+            if(!app.is_web()) {
+                /* Because pressing the close button is also a mouse action */
+                if(current_key_age + 1000 > Date.now() && current_key == "MOUSE2")
+                    current_key = last_key;
+            }
+
             callback(current_key);
             modal.close();
         }).prop("disabled", true);
