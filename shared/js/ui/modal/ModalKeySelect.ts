@@ -14,8 +14,8 @@ namespace Modals {
         const button_cancel = modal.htmlTag.find(".button-cancel");
 
         let current_key_age: number;
-        let last_key;
-        let current_key;
+        let last_key: ppt.KeyEvent;
+        let current_key: ppt.KeyEvent;
         const listener = (event: ppt.KeyEvent) => {
             if(event.type === ppt.EventType.KEY_PRESS) {
                 //console.log(tr("Key select got key press for %o"), event);
@@ -32,7 +32,7 @@ namespace Modals {
         button_save.on('click', () => {
             if(!app.is_web()) {
                 /* Because pressing the close button is also a mouse action */
-                if(current_key_age + 1000 > Date.now() && current_key == "MOUSE2")
+                if(current_key_age + 1000 > Date.now() && current_key.key_code == "MOUSE2")
                     current_key = last_key;
             }
 
