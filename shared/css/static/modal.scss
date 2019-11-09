@@ -256,6 +256,10 @@
 	.modal-body.modal-green {
 		border-left: 2px solid #00d400;
 	}
+	.modal-body.modal-red {
+		border: none;
+		border-left: 2px solid #d50000;
+	}
 
 	.modal-body.modal-body-input {
 		color: #999999;

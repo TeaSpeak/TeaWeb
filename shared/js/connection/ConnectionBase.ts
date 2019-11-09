@@ -55,6 +55,11 @@ namespace connection {
             STOPPED
         }
 
+        export type LatencySettings = {
+            min_buffer: number; /* milliseconds */
+            max_buffer: number; /* milliseconds */
+        }
+
         export interface VoiceClient {
             client_id: number;
 
@@ -69,6 +74,11 @@ namespace connection {
             set_volume(volume: number) : void;
 
             abort_replay();
+
+            support_latency_settings() : boolean;
+
+            reset_latency_settings();
+            latency_settings(settings?: LatencySettings) : LatencySettings;
         }
 
         export abstract class AbstractVoiceConnection {

@@ -211,6 +211,18 @@ namespace audio {
             abort_replay() {
                 this.stopAudio(true);
             }
+
+            latency_settings(settings?: connection.voice.LatencySettings): connection.voice.LatencySettings {
+                throw "not supported";
+            }
+
+            reset_latency_settings() {
+                throw "not supported";
+            }
+
+            support_latency_settings(): boolean {
+                return false;
+            }
         }
     }
 }

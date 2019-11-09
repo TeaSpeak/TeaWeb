@@ -625,6 +625,17 @@ class ClientEntry {
                         //TODO: Update in info
                     });
                 }
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                name: tr("Change playback latency"),
+                callback: () => {
+                    Modals.spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
+                        this._audio_handle.reset_latency_settings();
+                        return this._audio_handle.latency_settings();
+                    }, settings => this._audio_handle.latency_settings(settings));
+                },
+                visible: this._audio_handle && this._audio_handle.support_latency_settings()
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-input_muted_local",
@@ -1412,6 +1423,17 @@ class MusicClientEntry extends ClientEntry {
                         });
                     });
                 }
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                name: tr("Change playback latency"),
+                callback: () => {
+                    Modals.spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
+                        this._audio_handle.reset_latency_settings();
+                        return this._audio_handle.latency_settings();
+                    }, settings => this._audio_handle.latency_settings(settings));
+                },
+                visible: this._audio_handle && this._audio_handle.support_latency_settings()
             },
             contextmenu.Entry.HR(),
             {

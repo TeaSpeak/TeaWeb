@@ -2586,6 +2586,48 @@
             </div>
         </script>
 
+        <script class="jsrender-template" id="tmpl_change_latency" type="text/html">
+            <div> <!-- for the renderer -->
+                <div class="info">
+                    <div>{{tr "Change latency for client "/}} <node key="client"></node></div>
+                </div>
+                <div class="container-min">
+                    <div class="container-value">
+                        {{tr "Min buffer: "/}}
+                        <a class="value">20ms</a>
+                    </div>
+                    <div class="container-slider">
+                        <div class="filler" style="width: 30%"></div>
+                        <div class="thumb container-tooltip" style="left: 30%">
+                            <div class="tooltip">
+                                <a>86%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-max">
+                    <div class="container-value">
+                        {{tr "Max buffer: "/}}
+                        <a class="value">20ms</a>
+                    </div>
+                    <div class="container-slider">
+                        <div class="filler" style="width: 30%"></div>
+                        <div class="thumb container-tooltip" style="left: 30%">
+                            <div class="tooltip">
+                                <a>86%</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="buttons">
+                    <button class="btn btn-blue button-reset">{{tr "Reset" /}}</button>
+                    <div class="spacer"></div>
+                    <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
+                    <button class="btn btn-success button-close">{{tr "Close" /}}</button>
+                </div>
+            </div>
+        </script>
+
         <!-- Permission overview -->
         <script class="jsrender-template" id="tmpl_server_permissions" type="text/html">
             <div class="container">
