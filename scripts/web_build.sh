@@ -27,6 +27,19 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+echo "Compile vendor XBBCode"
+execute_ttsc -p ./vendor/xbbcode/tsconfig.json
+if [[ $? -ne 0 ]]; then
+    echo "Failed to build the XBBCode vendor"
+    exit 1
+fi
+
+execute_ttsc ./vendor/emoji-picker/src/jquery.lsxemojipicker.ts
+if [[ $? -ne 0 ]]; then
+    echo "Failed to build the lsxemojipicker vendor"
+    exit 1
+fi
+
 echo "Generating style files"
 npm run compile-sass
 if [[ $? -ne 0 ]]; then
