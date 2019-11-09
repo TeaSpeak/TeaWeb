@@ -1,3 +1,4 @@
+/// <reference path="ui/elements/modal.ts" />
 //Used by CertAccept popup
 
 if(typeof(customElements) !== "undefined") {

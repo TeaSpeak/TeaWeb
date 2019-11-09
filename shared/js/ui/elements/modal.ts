@@ -1,4 +1,4 @@
-import MouseDownEvent = JQuery.MouseDownEvent;
+/// <reference path="../../PPTListener.ts" />
 
 enum ElementType {
     HEADER,
@@ -87,7 +87,7 @@ class ModalProperties {
     full_size?: boolean = false;
 }
 
-$(document).on('mousedown', (event: MouseDownEvent) => {
+$(document).on('mousedown', (event: JQuery.MouseDownEvent) => {
     /* pageX or pageY are undefined if this is an event executed via .trigger('click'); */
     if(_global_modal_count == 0 || typeof(event.pageX) === "undefined" || typeof(event.pageY) === "undefined")
         return;
