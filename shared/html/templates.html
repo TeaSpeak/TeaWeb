@@ -2621,6 +2621,9 @@
                 </div>
                 <div class="buttons">
                     <button class="btn btn-blue button-reset">{{tr "Reset" /}}</button>
+                    {{if have_flush}}
+                    <button class="btn btn-blue button-flush">{{tr "Flush buffer" /}}</button>
+                    {{/if}}
                     <div class="spacer"></div>
                     <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
                     <button class="btn btn-success button-close">{{tr "Close" /}}</button>

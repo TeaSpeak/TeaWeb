@@ -633,7 +633,9 @@ class ClientEntry {
                     Modals.spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
                         this._audio_handle.reset_latency_settings();
                         return this._audio_handle.latency_settings();
-                    }, settings => this._audio_handle.latency_settings(settings));
+                    }, settings => this._audio_handle.latency_settings(settings), this._audio_handle.support_flush ? () => {
+                        this._audio_handle.flush();
+                    } : undefined);
                 },
                 visible: this._audio_handle && this._audio_handle.support_latency_settings()
             }, {
@@ -1431,7 +1433,9 @@ class MusicClientEntry extends ClientEntry {
                     Modals.spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
                         this._audio_handle.reset_latency_settings();
                         return this._audio_handle.latency_settings();
-                    }, settings => this._audio_handle.latency_settings(settings));
+                    }, settings => this._audio_handle.latency_settings(settings), this._audio_handle.support_flush ? () => {
+                        this._audio_handle.flush();
+                    } : undefined);
                 },
                 visible: this._audio_handle && this._audio_handle.support_latency_settings()
             },

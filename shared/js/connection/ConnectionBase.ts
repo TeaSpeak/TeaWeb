@@ -79,6 +79,9 @@ namespace connection {
 
             reset_latency_settings();
             latency_settings(settings?: LatencySettings) : LatencySettings;
+
+            support_flush() : boolean;
+            flush();
         }
 
         export abstract class AbstractVoiceConnection {

@@ -223,6 +223,14 @@ namespace audio {
             support_latency_settings(): boolean {
                 return false;
             }
+
+            support_flush(): boolean {
+                return false;
+            }
+
+            flush() {
+                throw "not supported";
+            }
         }
     }
 }

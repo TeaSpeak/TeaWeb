@@ -4,7 +4,7 @@
 
 namespace Modals {
     let modal: Modal;
-    export function spawnChangeLatency(client: ClientEntry, current: connection.voice.LatencySettings, reset: () => connection.voice.LatencySettings, apply: (settings: connection.voice.LatencySettings) => any) {
+    export function spawnChangeLatency(client: ClientEntry, current: connection.voice.LatencySettings, reset: () => connection.voice.LatencySettings, apply: (settings: connection.voice.LatencySettings) => any, callback_flush?: () => any) {
         if(modal) modal.close();
 
         const begin = Object.assign({}, current);
@@ -19,7 +19,9 @@ namespace Modals {
                         client_name: client.clientNickName(),
                         client_unique_id: client.properties.client_unique_identifier,
                         client_id: client.clientId()
-                    })
+                    }),
+
+                    have_flush: (typeof(callback_flush) === "function")
                 });
 
                 const update_value = () => {
@@ -95,6 +97,8 @@ namespace Modals {
                     slider_max.value(current.max_buffer);
                     slider_min.value(current.min_buffer);
                 });
+
+                tag.find(".button-flush").on('click', event => callback_flush());
 
                 return tag.children();
             },
