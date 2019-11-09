@@ -348,7 +348,25 @@ class Settings extends StaticSettings {
 
     constructor() {
         super();
-        this.cacheGlobal = JSON.parse(localStorage.getItem("settings.global"));
+
+        const json = localStorage.getItem("settings.global");
+        try {
+            this.cacheGlobal = JSON.parse(json);
+        } catch(error) {
+            log.error(LogCategory.GENERAL, tr("Failed to load global settings!\nJson: %s\nError: %o"), json, error);
+
+            const show_popup = () => {
+                createErrorModal(tr("Failed to load global settings"), tr("Failed to load global client settings!\nLookup console for more information.")).open();
+            };
+            if(!loader.finished())
+                loader.register_task(loader.Stage.LOADED, {
+                    priority: 0,
+                    name: "Settings error",
+                    function: async () => show_popup()
+                });
+            else
+                show_popup();
+        }
         if(!this.cacheGlobal) this.cacheGlobal = {};
         this.saveWorker = setInterval(() => {
             if(this.updated)
@@ -445,7 +463,13 @@ class ServerSettings extends SettingsBase {
         this._server_unique_id = server_unique_id;
 
         if(this._server_unique_id) {
-            this.cacheServer = JSON.parse(localStorage.getItem("settings.server_" + server_unique_id));
+
+            const json = localStorage.getItem("settings.server_" + server_unique_id);
+            try {
+                this.cacheServer = JSON.parse(json);
+            } catch(error) {
+                log.error(LogCategory.GENERAL, tr("Failed to load server settings for server %s!\nJson: %s\nError: %o"), server_unique_id, json, error);
+            }
             if(!this.cacheServer)
                 this.cacheServer = {};
         }
