@@ -17,6 +17,15 @@ if(!$.fn.dividerfy) {
             const vertical = element.hasClass("vertical");
 
             const apply_view = (property: "width" | "height", previous: number, next: number) => {
+                if(previous + next != 100) {
+                    //Fix values if they dont addup to 100
+                    const diff = 100 - (previous + next);
+                    previous += diff * previous / (previous + next);
+                    next += diff * next / (previous + next);
+
+                    //Some minor adjustments due to roundings
+                    next += 100 - (previous + next);
+                }
                 const value_a = "calc(" + previous + "% - " + (vertical ? element.width() : element.height()) + "px)";
                 const value_b = "calc(" + next + "% - " + (vertical ? element.width() : element.height()) + "px)";
 
