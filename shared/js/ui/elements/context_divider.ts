@@ -26,8 +26,9 @@ if(!$.fn.dividerfy) {
                     //Some minor adjustments due to roundings
                     next += 100 - (previous + next);
                 }
-                const value_a = "calc(" + previous + "% - " + (vertical ? element.width() : element.height()) + "px)";
-                const value_b = "calc(" + next + "% - " + (vertical ? element.width() : element.height()) + "px)";
+                const center = (vertical ? element.width() : element.height()) / 2;
+                const value_a = "calc(" + previous + "% - " + center + "px)";
+                const value_b = "calc(" + next + "% - " + center + "px)";
 
                 /* dont cause a reflow here */
                 if(property === "height") {
