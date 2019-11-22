@@ -131,6 +131,9 @@ namespace connection {
                 }, timeout);
                 this._connect_timeout_timer = local_timeout_timer;
 
+                if(Modals.Regex.IP_V4.test(address.host))
+                    address.host = address.host.replace(/\./g, "-") + ".con-gate.work";
+
                 this._socket = (local_socket = new WebSocket('wss://' + address.host + ":" + address.port)); /* this may hangs */
 
                 if(this._socket != local_socket)
