@@ -433,7 +433,10 @@ class ConnectionHandler {
                     this.log.log(log.server.Type.CONNECTION_FAILED, {});
                     break;
                 }
-                log.error(LogCategory.CLIENT, tr("Could not connect to remote host! Error: %o"), data);
+                if(data)
+                    log.error(LogCategory.CLIENT, tr("Could not connect to remote host! Extra data: %o"), data);
+                else
+                    log.error(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
 
                 if(native_client) {
                     createErrorModal(
