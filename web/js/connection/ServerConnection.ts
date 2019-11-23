@@ -8,7 +8,6 @@ class ReturnListener<T> {
 
 namespace connection {
     export class ServerConnection extends AbstractServerConnection {
-        _socket: WebSocket;
         _connectionState: ConnectionState = ConnectionState.UNCONNECTED;
 
         private _remote_address: ServerAddress;
@@ -17,7 +16,11 @@ namespace connection {
         private _command_boss: ServerConnectionCommandBoss;
         private _command_handler_default: ConnectionCommandHandler;
 
+        private _socket_connected: WebSocket;
+
         private _connect_timeout_timer: NodeJS.Timer = undefined;
+
+
         private _connected: boolean = false;
         private _retCodeIdx: number;
         private _retListener: ReturnListener<CommandResult>[];
@@ -42,7 +45,6 @@ namespace connection {
         constructor(client : ConnectionHandler) {
             super(client);
 
-            this._socket = null;
             this._retCodeIdx = 0;
             this._retListener = [];
 
@@ -85,13 +87,6 @@ namespace connection {
             });
         }
 
-        on_connect: () => void = () => {
-            log.info(LogCategory.NETWORKING, tr("Socket connected"));
-            this.client.log.log(log.server.Type.CONNECTION_LOGIN, {});
-            this._handshakeHandler.initialize();
-            this._handshakeHandler.startHandshake();
-        };
-
         private generateReturnCode() : string {
             return (this._retCodeIdx++).toString();
         }
@@ -99,76 +94,144 @@ namespace connection {
         async connect(address : ServerAddress, handshake: HandshakeHandler, timeout?: number) : Promise<void> {
             timeout = typeof(timeout) === "number" ? timeout : 5000;
 
-            if(this._connect_timeout_timer) {
-                clearTimeout(this._connect_timeout_timer);
-                this._connect_timeout_timer = null;
-                try {
-                    await this.disconnect()
-                } catch(error) {
-                    log.error(LogCategory.NETWORKING, tr("Failed to close old connection properly. Error: %o"), error);
-                    throw "failed to cleanup old connection";
-                }
+            try {
+                await this.disconnect()
+            } catch(error) {
+                log.error(LogCategory.NETWORKING, tr("Failed to close old connection properly. Error: %o"), error);
+                throw "failed to cleanup old connection";
             }
+
             this.updateConnectionState(ConnectionState.CONNECTING);
             this._remote_address = address;
+
             this._handshakeHandler = handshake;
             this._handshakeHandler.setConnection(this);
-            this._connected = false;
 
-            const self = this;
-            let local_socket: WebSocket;
+            /* The direct one connect directly to the target address. The other via the .con-gate.work */
+            let local_direct_socket: WebSocket;
+            let local_proxy_socket: WebSocket;
+            let connected_socket: WebSocket;
             let local_timeout_timer: NodeJS.Timer;
-            try {
 
-                local_timeout_timer = setTimeout(async () => {
-                    log.error(LogCategory.NETWORKING, tr("Connect timeout triggered!"));
-                    try {
-                        await this.disconnect();
-                    } catch(error) {
-                        log.warn(LogCategory.NETWORKING, tr("Failed to close connection after timeout had been triggered! (%o)"), error);
-                    }
-                    this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
-                }, timeout);
-                this._connect_timeout_timer = local_timeout_timer;
-
-                if(Modals.Regex.IP_V4.test(address.host))
-                    address.host = address.host.replace(/\./g, "-") + ".con-gate.work";
-
-                this._socket = (local_socket = new WebSocket('wss://' + address.host + ":" + address.port)); /* this may hangs */
-
-                if(this._socket != local_socket)
-                    return; /* something had changed and we dont use this connection anymore! */
-
+            /* setting up an timeout */
+            local_timeout_timer = setTimeout(async () => {
+                log.error(LogCategory.NETWORKING, tr("Connect timeout triggered. Aborting connect attempt!"));
                 try {
-                    await new Promise((resolve, reject) => {
-                        local_socket.onopen = resolve;
-                        local_socket.onerror = event => reject(event);
-                        local_socket.onclose = event => reject(event);
-                        if(local_socket.readyState == WebSocket.OPEN)
-                            resolve();
-                    });
+                    await this.disconnect();
                 } catch(error) {
-                    log.error(LogCategory.NETWORKING, tr("Failed to wait for connected (%o)"), error);
-                    try {
-                        await this.disconnect();
-                    } catch(error) {
-                        log.warn(LogCategory.NETWORKING, tr("Failed to close connection after timeout had been triggered! (%o)"), error);
+                    log.warn(LogCategory.NETWORKING, tr("Failed to close connection after timeout had been triggered! (%o)"), error);
+                }
+
+                error_cleanup();
+                this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
+            }, timeout);
+            this._connect_timeout_timer = local_timeout_timer;
+
+            const error_cleanup = () => {
+                try { local_direct_socket.close(); } catch(ex) {}
+                try { local_proxy_socket.close(); } catch(ex) {}
+                clearTimeout(local_timeout_timer);
+            };
+
+            try {
+                let proxy_host;
+                if(Modals.Regex.IP_V4.test(address.host))
+                    proxy_host = address.host.replace(/\./g, "-") + ".con-gate.work";
+                else if(Modals.Regex.IP_V6.test(address.host))
+                    proxy_host = address.host.replace(/\[(.*)]/, "$1").replace(/:/g, "_") + ".con-gate.work";
+
+                if(proxy_host)
+                    local_proxy_socket = new WebSocket('wss://' + proxy_host + ":" + address.port);
+                local_direct_socket = new WebSocket('wss://' + address.host + ":" + address.port);
+
+                connected_socket = await new Promise<WebSocket>(resolve => {
+                    let pending = 0, succeed = false;
+                    if(local_proxy_socket) {
+                        pending++;
+
+                        local_proxy_socket.onerror = event => {
+                            --pending;
+                            if(this._connect_timeout_timer != local_timeout_timer)
+                                log.trace(LogCategory.NETWORKING, tr("Proxy socket send an error while connecting. Pending sockets: %d. Any succeed: %s"), pending, succeed ? tr("yes") : tr("no"));
+                            if(!succeed && pending == 0)
+                                resolve(undefined);
+                        };
+
+                        local_proxy_socket.onopen = event => {
+                            --pending;
+                            if(this._connect_timeout_timer != local_timeout_timer)
+                                log.trace(LogCategory.NETWORKING, tr("Proxy socket connected. Pending sockets: %d. Any succeed before: %s"), pending, succeed ? tr("yes") : tr("no"));
+                            if(!succeed) {
+                                succeed = true;
+                                resolve(local_proxy_socket);
+                            }
+                        };
                     }
-                    this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
+
+                    if(local_direct_socket) {
+                        pending++;
+
+                        local_direct_socket.onerror = event => {
+                            --pending;
+                            if(this._connect_timeout_timer != local_timeout_timer)
+                                log.trace(LogCategory.NETWORKING, tr("Direct socket send an error while connecting. Pending sockets: %d. Any succeed: %s"), pending, succeed ? tr("yes") : tr("no"));
+                            if(!succeed && pending == 0)
+                                resolve(undefined);
+                        };
+
+                        local_direct_socket.onopen = event => {
+                            --pending;
+                            if(this._connect_timeout_timer != local_timeout_timer)
+                                log.trace(LogCategory.NETWORKING, tr("Direct socket connected. Pending sockets: %d. Any succeed before: %s"), pending, succeed ? tr("yes") : tr("no"));
+                            if(!succeed) {
+                                succeed = true;
+                                resolve(local_direct_socket);
+                            }
+                        };
+                    }
+
+                    if(local_proxy_socket && local_proxy_socket.readyState == WebSocket.OPEN)
+                        local_proxy_socket.onopen(undefined);
+
+                    if(local_direct_socket && local_direct_socket.readyState == WebSocket.OPEN)
+                        local_direct_socket.onopen(undefined);
+                });
+
+                if(!connected_socket) {
+                    //We failed to connect. Lets test if we're still relevant
+                    if(this._connect_timeout_timer != local_timeout_timer) {
+                        log.trace(LogCategory.NETWORKING, tr("Failed to connect to %s, but we're already obsolete."), address.host + ":" + address.port);
+                        error_cleanup();
+                    } else {
+                        try {
+                            await this.disconnect();
+                        } catch(error) {
+                            log.warn(LogCategory.NETWORKING, tr("Failed to cleanup connection after unsuccessful connect attempt: %o"), error);
+                        }
+                        error_cleanup();
+                        this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
+                    }
                     return;
                 }
+
+                if(this._connect_timeout_timer != local_timeout_timer) {
+                    log.trace(LogCategory.NETWORKING, tr("Successfully connected to %s, but we're already obsolete. Closing connections"), address.host + ":" + address.port);
+                    error_cleanup();
+                    return;
+                }
+
                 clearTimeout(local_timeout_timer);
-                if(this._connect_timeout_timer == local_timeout_timer)
-                    this._connect_timeout_timer = undefined;
+                this._connect_timeout_timer = undefined;
 
-                if(this._socket != local_socket)
-                    return; /* this socket isn't from interest anymore */
+                if(connected_socket == local_proxy_socket) {
+                    log.debug(LogCategory.NETWORKING, tr("Established a TCP connection to %s via proxy to %s"), address.host + ":" + address.port, proxy_host);
+                } else {
+                    log.debug(LogCategory.NETWORKING, tr("Established a TCP connection to %s directly"), address.host + ":" + address.port);
+                }
 
-                this._connected = true;
-                this.on_connect();
-
-                local_socket.onclose = event => {
-                    if(this._socket != local_socket) return; /* this socket isn't from interest anymore */
+                this._socket_connected = connected_socket;
+                this._socket_connected.onclose = event => {
+                    if(this._socket_connected != connected_socket) return; /* this socket isn't from interest anymore */
 
                     this.client.handleDisconnect(this._connected ? DisconnectReason.CONNECTION_CLOSED : DisconnectReason.CONNECT_FAILURE, {
                         code: event.code,
@@ -177,28 +240,40 @@ namespace connection {
                     });
                 };
 
-                local_socket.onerror = e => {
-                    if(this._socket != local_socket) return; /* this socket isn't from interest anymore */
+                this._socket_connected.onerror = e => {
+                    if(this._socket_connected != connected_socket) return; /* this socket isn't from interest anymore */
 
                     log.warn(LogCategory.NETWORKING, tr("Received web socket error: (%o)"), e);
                 };
 
-                local_socket.onmessage = msg => {
-                    if(this._socket != local_socket) return; /* this socket isn't from interest anymore */
+                this._socket_connected.onmessage = msg => {
+                    if(this._socket_connected != connected_socket) return; /* this socket isn't from interest anymore */
 
-                    self.handle_socket_message(msg.data);
+                    this.handle_socket_message(msg.data);
                 };
 
-                this.updateConnectionState(ConnectionState.INITIALISING);
-            } catch (e) {
-                clearTimeout(local_timeout_timer);
+                this._connected = true;
+                this.start_handshake();
+            } catch (error) {
+                error_cleanup();
+                if(this._socket_connected != connected_socket && this._connect_timeout_timer != local_timeout_timer)
+                    return; /* we're not from interest anymore */
+
+                log.warn(LogCategory.NETWORKING, tr("Received unexpected error while connecting: %o"), error);
                 try {
                     await this.disconnect();
                 } catch(error) {
-                    log.warn(LogCategory.NETWORKING, tr("Failed to close connection after connect attempt failed (%o)"), error);
+                    log.warn(LogCategory.NETWORKING, tr("Failed to cleanup connection after unsuccessful connect attempt: %o"), error);
                 }
-                this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE, e);
+                this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE, error);
             }
+        }
+
+        private start_handshake() {
+            this.updateConnectionState(ConnectionState.INITIALISING);
+            this.client.log.log(log.server.Type.CONNECTION_LOGIN, {});
+            this._handshakeHandler.initialize();
+            this._handshakeHandler.startHandshake();
         }
 
         updateConnectionState(state: ConnectionState) {
@@ -220,22 +295,25 @@ namespace connection {
             }
 
 
-            if(this._connectionState == ConnectionState.UNCONNECTED)
-                return;
-
-            this.updateConnectionState(ConnectionState.UNCONNECTED);
-
-            if(this._socket)
-                this._socket.close(3000 + 0xFF, tr("request disconnect"));
-            this._socket = null;
-            for(let future of this._retListener)
-                future.reject(tr("Connection closed"));
-            this._retListener = [];
-            this._retCodeIdx = 0;
-            this._connected = false;
+            if(this._connectionState != ConnectionState.UNCONNECTED)
+                this.updateConnectionState(ConnectionState.UNCONNECTED);
 
             if(this._voice_connection)
                 this._voice_connection.drop_rtp_session();
+
+
+            if(this._socket_connected) {
+                this._socket_connected.close(3000 + 0xFF, tr("request disconnect"));
+                this._socket_connected = undefined;
+            }
+
+
+            for(let future of this._retListener)
+                future.reject(tr("Connection closed"));
+            this._retListener = [];
+
+            this._connected = false;
+            this._retCodeIdx = 0;
         }
 
         private handle_socket_message(data) {
@@ -299,11 +377,11 @@ namespace connection {
         }
 
         sendData(data: any) {
-            if(!this._socket || this._socket.readyState != 1) {
-                log.warn(LogCategory.NETWORKING, tr("Tried to send on a invalid socket (%s)"), this._socket ? "invalid state (" + this._socket.readyState + ")" : "invalid socket");
+            if(!this._socket_connected || this._socket_connected.readyState != 1) {
+                log.warn(LogCategory.NETWORKING, tr("Tried to send on a invalid socket (%s)"), this._socket_connected ? "invalid state (" + this._socket_connected.readyState + ")" : "invalid socket");
                 return;
             }
-            this._socket.send(data);
+            this._socket_connected.send(data);
         }
 
         private commandiefy(input: any) : string {
@@ -319,7 +397,7 @@ namespace connection {
         }
 
         send_command(command: string, data?: any | any[], _options?: CommandOptions) : Promise<CommandResult> {
-            if(!this._socket || !this.connected()) {
+            if(!this._socket_connected || !this.connected()) {
                 log.warn(LogCategory.NETWORKING, tr("Tried to send a command without a valid connection."));
                 return Promise.reject(tr("not connected"));
             }
@@ -348,7 +426,7 @@ namespace connection {
                 }, 1500);
                 this._retListener.push(listener);
 
-                this._socket.send(this.commandiefy({
+                this._socket_connected.send(this.commandiefy({
                     "type": "command",
                     "command": command,
                     "data": _data,
@@ -360,7 +438,7 @@ namespace connection {
         }
 
         connected() : boolean {
-            return !!this._socket && this._socket.readyState == WebSocket.OPEN;
+            return !!this._socket_connected && this._socket_connected.readyState == WebSocket.OPEN;
         }
 
         support_voice(): boolean {
