@@ -587,7 +587,7 @@ namespace connection {
                 if(!channel_from) {
                     log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
                     channel_from = client.currentChannel();
-                } else if(channel_to !== client.currentChannel()) {
+                } else if(channel_from != client.currentChannel()) {
                     log.error(LogCategory.NETWORKING,
                         tr("Client move from invalid source channel! Local client registered in channel %d but server send %d."),
                         client.currentChannel().channelId, channel_from.channelId
