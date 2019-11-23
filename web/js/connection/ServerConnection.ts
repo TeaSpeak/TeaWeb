@@ -225,6 +225,7 @@ namespace connection {
 
                 if(connected_socket == local_proxy_socket) {
                     log.debug(LogCategory.NETWORKING, tr("Established a TCP connection to %s via proxy to %s"), address.host + ":" + address.port, proxy_host);
+                    this._remote_address.host = proxy_host;
                 } else {
                     log.debug(LogCategory.NETWORKING, tr("Established a TCP connection to %s directly"), address.host + ":" + address.port);
                 }
