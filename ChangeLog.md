@@ -1,4 +1,8 @@
 # Changelog:
+* **24.11.19**
+    - Fixed several bugs within the permission editor
+    - Hide senseless permissions (disableable via options)
+    
 * **06.10.19**
     - Added the possibility to connect within an already running TeaWeb instance
     - Closing the emoji picker as soon the client clicks into the void

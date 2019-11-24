@@ -191,9 +191,9 @@ namespace sound {
                     speech_volume[Sound[sound_key]] = data[Sound[sound_key]];
             }
 
-            master_volume = data.master || 1;
-            overlap_sounds = data.overlap || true;
-            ignore_muted = data.ignore_muted || true;
+            master_volume = typeof(data.master) === "number" ? data.master : 1;
+            overlap_sounds = typeof(data.overlap) === "boolean" ? data.overlap : true;
+            ignore_muted = typeof(data.ignore_muted) === "boolean" ? data.ignore_muted : false;
         }
 
         register_sound("message.received", "effects/message_received.wav");
