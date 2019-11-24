@@ -75,7 +75,7 @@ onmessage = function(e: MessageEvent) {
             memory_u8[0x0A0 + key_offset + hash_offset++] = char.charCodeAt(0);
         }
 
-        let level = wasm_object.instance.exports.mine(key_offset, hash_offset, iterations, target > 1 ? target - 1 : target);
+        let level = (<any>wasm_object).instance.exports.mine(key_offset, hash_offset, iterations, target > 1 ? target - 1 : target);
         hash = "";
 
         hash_offset = 0;
