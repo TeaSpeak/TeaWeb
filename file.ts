@@ -11,7 +11,6 @@ import {PathLike} from "fs";
 import {ChildProcess} from "child_process";
 
 /* All project files */
-
 type ProjectResourceType = "html" | "js" | "css" | "wasm" | "wav" | "json" | "img" | "i18n" | "pem";
 type ProjectResource = {
     "type": ProjectResourceType;
@@ -858,7 +857,7 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
     await new Promise(resolve => {});
 }
 
-async function main_develop(target: "client" | "web", port: number) {
+async function main_develop(node: boolean, target: "client" | "web", port: number) {
     const files = await generator.search_files(APP_FILE_LIST, {
         source_path: __dirname,
         parameter: [],
@@ -975,6 +974,35 @@ async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest
 }
 
 async function main(args: string[]) {
+    if(args.length >= 1) {
+        if((args[0].toLowerCase() === "develop" && args.length >= 2) || args[0].toLowerCase() === "ndevelop") {
+            const is_node = args[0].toLowerCase() === "ndevelop";
+            if(is_node && args.length < 2) {
+                console.error("Please specify on which module you want to work.");
+                console.error("For developing on the web client run: npm start web");
+                return;
+            }
+
+            let target;
+            switch (args[1].toLowerCase()) {
+                case "c":
+                case "client":
+                    target = "client";
+                    break;
+                case "w":
+                case "web":
+                    target = "web";
+                    break;
+
+                default:
+                    console.error("Unknown serve target %s.", args[1]);
+                    return;
+            }
+
+            await main_develop(is_node, target, args.length > 2 ? parseInt(args[2]) : 8081);
+            return;
+        }
+    }
     if(args.length >= 2) {
         if(args[0].toLowerCase() === "serve") {
             let target;
@@ -1020,25 +1048,6 @@ async function main(args: string[]) {
             }
 
             await main_serve(target, mode, port);
-            return;
-        } else if(args[0].toLowerCase() === "develop" || args[0].toLowerCase() === "devel") {
-            let target;
-            switch (args[1].toLowerCase()) {
-                case "c":
-                case "client":
-                    target = "client";
-                    break;
-                case "w":
-                case "web":
-                    target = "web";
-                    break;
-
-                default:
-                    console.error("Unknown serve target %s.", args[1]);
-                    return;
-            }
-
-            await main_develop(target, args.length > 2 ? parseInt(args[2]) : 8081);
             return;
         }
     }
@@ -1100,12 +1109,12 @@ async function main(args: string[]) {
     console.log("       node files.js develop <client|web> [port]                               | Start a developer session. All typescript an SASS files will generated automatically");
     console.log("                                                                               | You could access your current build via http://localhost:8081");
     console.log("");
-    console.log("Influential environment variables:")
+    console.log("Influential environment variables:");
     console.log("   PHP_EXE   |  Path to the PHP CLI interpreter");
 }
 
 /* proxy log for better format */
-const wrap_log = (original, prefix: string) => (message, ...args) => original(prefix + message, ...args);
+const wrap_log = (original, prefix: string) => (message, ...args) => original(prefix + message.replace(/\n/g, "\n" + prefix), ...args.map(e => typeof(e) === "string" ? e.replace(/\n/g, "\n" + prefix) : e));
 console.log = wrap_log(console.log, "[INFO ] ");
 console.debug = wrap_log(console.debug, "[DEBUG] ");
 console.warn = wrap_log(console.warn, "[WARNING] ");
