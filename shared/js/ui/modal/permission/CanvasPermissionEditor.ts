@@ -1618,5 +1618,9 @@ namespace pe {
         set_toggle_button(callback: () => string, initial: string) {
             throw "not implemented";
         }
+
+        set_hidden_permissions(permissions: PermissionType[]) {
+            //TODO: Stuff here
+        }
     }
 }
