@@ -8,6 +8,7 @@ import * as cp from "child_process";
 import * as mt from "mime-types";
 import * as os from "os";
 import {PathLike} from "fs";
+import {ChildProcess} from "child_process";
 
 /* All project files */
 
@@ -581,7 +582,13 @@ namespace server {
             throw "invalid php interpreter";
         }
         server = http.createServer(handle_request);
-        server.listen(options.port);
+        await new Promise((resolve, reject) => {
+            server.on('error', reject);
+            server.listen(options.port, () => {
+                server.off("error", reject);
+                resolve();
+            });
+        });
 
         files = _files.map(e =>{
             return {
@@ -716,6 +723,114 @@ namespace server {
     }
 }
 
+namespace watcher {
+    export class TSCWatcher {
+        private _process: ChildProcess;
+        constructor() { }
+
+        async start() {
+            if(this._process) throw "watcher already started";
+
+            this._process = cp.spawn("npm", ["run", "ttsc", "--", "-w"], {
+                cwd: __dirname,
+                stdio: "pipe",
+            });
+
+            this._process.unref();
+            this._process.stdout.on("readable", this.handle_stdout_readable.bind(this));
+            this._process.stderr.on("readable", this.handle_stderr_readable.bind(this));
+            this._process.addListener("exit", this.handle_exit.bind(this));
+            this._process.addListener("error", this.handle_error.bind(this));
+
+            console.log("TSC Watcher started.");
+        }
+
+        async stop() {
+            if(!this._process) return;
+
+            console.log("TSC Watcher stopped.");
+            this._process.kill("SIGTERM")
+            this._process = undefined;
+        }
+
+        private handle_exit(code: number | null, signal: string | null) {
+            console.log("TSC Watcher exited with code %d (%s)", code, signal);
+        }
+
+        private handle_stdout_readable() {
+            const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
+            if(!buffer) return;
+
+            //console.log("TSCWatcher read %d bytes", buffer.length);
+        }
+
+        private handle_stderr_readable() {
+            const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
+            if(!buffer) return;
+
+            console.log("TSC Watcher read %d error bytes:", buffer.length);
+            console.log(buffer.toString());
+        }
+
+        private handle_error(err: Error) {
+            console.log("TSC Watcher received error: %o", err);
+        }
+    }
+
+
+    export class SASSWatcher {
+        private _process: ChildProcess;
+        constructor() { }
+
+        async start() {
+            if(this._process) throw "watcher already started";
+
+            this._process = cp.spawn("npm", ["run", "sass", "--", "--watch"], {
+                cwd: __dirname,
+                stdio: "pipe",
+            });
+
+            this._process.unref();
+            this._process.stdout.on("readable", this.handle_stdout_readable.bind(this));
+            this._process.stderr.on("readable", this.handle_stderr_readable.bind(this));
+            this._process.addListener("exit", this.handle_exit.bind(this));
+            this._process.addListener("error", this.handle_error.bind(this));
+
+            console.log("SASS Watcher started.");
+        }
+
+        async stop() {
+            if(!this._process) return;
+
+            console.log("SASS Watcher stopped.");
+            this._process.kill("SIGTERM")
+        }
+
+        private handle_exit(code: number | null, signal: string | null) {
+            console.log("SASS Watcher exited with code %d (%s)", code, signal);
+        }
+
+        private handle_stdout_readable() {
+            const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
+            if(!buffer) return;
+
+            //console.log("TSCWatcher read %d bytes", buffer.length);
+        }
+
+        private handle_stderr_readable() {
+            const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
+            if(!buffer) return;
+
+            console.log("SASS Watcher read %d error bytes:", buffer.length);
+            console.log(buffer.toString());
+        }
+
+        private handle_error(err: Error) {
+            console.log("SASS Watcher received error: %o", err);
+        }
+    }
+}
+
 function php_exe() : string {
     if(process.env["PHP_EXE"])
         return process.env["PHP_EXE"];
@@ -741,6 +856,64 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
     console.log("Server started on %d", port);
     console.log("To stop the server press ^K^C.");
     await new Promise(resolve => {});
+}
+
+async function main_develop(target: "client" | "web", port: number) {
+    const files = await generator.search_files(APP_FILE_LIST, {
+        source_path: __dirname,
+        parameter: [],
+        target: target,
+        mode: "dev",
+        serving: true
+    });
+
+    const tscwatcher = new watcher.TSCWatcher();
+    try {
+        await tscwatcher.start();
+
+        const sasswatcher = new watcher.SASSWatcher();
+        try {
+            await sasswatcher.start();
+
+            try {
+                await server.launch(files, {
+                    port: port,
+                    php: php_exe(),
+                });
+            } catch(error) {
+                console.error("Failed to start server: %o", error instanceof Error ? error.message : error);
+                return;
+            }
+
+            console.log("Server started on %d", port);
+            console.log("To stop the session press ^K^C.");
+
+            await new Promise(resolve => process.once('SIGINT', resolve));
+            console.log("Stopping session.");
+
+            try {
+                await server.shutdown();
+            } catch(error) {
+                console.warn("Failed to stop web server: %o", error instanceof Error ? error.message : error);
+            }
+        } catch(error) {
+            console.error("Failed to start SASS watcher: %o", error instanceof Error ? error.message : error);
+        } finally {
+            try {
+                await sasswatcher.stop();
+            } catch(error) {
+                console.warn("Failed to stop SASS watcher: %o", error instanceof Error ? error.message : error);
+            }
+        }
+    } catch(error) {
+        console.error("Failed to start TSC watcher: %o", error instanceof Error ? error.message : error);
+    } finally {
+        try {
+            await tscwatcher.stop();
+        } catch(error) {
+            console.warn("Failed to stop TSC watcher: %o", error instanceof Error ? error.message : error);
+        }
+    }
 }
 
 async function git_tag() {
@@ -848,6 +1021,25 @@ async function main(args: string[]) {
 
             await main_serve(target, mode, port);
             return;
+        } else if(args[0].toLowerCase() === "develop" || args[0].toLowerCase() === "devel") {
+            let target;
+            switch (args[1].toLowerCase()) {
+                case "c":
+                case "client":
+                    target = "client";
+                    break;
+                case "w":
+                case "web":
+                    target = "web";
+                    break;
+
+                default:
+                    console.error("Unknown serve target %s.", args[1]);
+                    return;
+            }
+
+            await main_develop(target, args.length > 2 ? parseInt(args[2]) : 8081);
+            return;
         }
     }
     if(args.length >= 3) {
@@ -905,10 +1097,19 @@ async function main(args: string[]) {
     console.log("       node files.js serve <client|web> <dev|rel> [port]                       | Start a HTTP server which serves the web client");
     console.log("       node files.js generate <client|web> <dev|rel> [dest dir] [flags...]     | Generate the final environment ready to be packed and deployed");
     console.log("       node files.js list <client|web> <dev|rel>                               | List all project files");
+    console.log("       node files.js develop <client|web> [port]                               | Start a developer session. All typescript an SASS files will generated automatically");
+    console.log("                                                                               | You could access your current build via http://localhost:8081");
     console.log("");
     console.log("Influential environment variables:")
     console.log("   PHP_EXE   |  Path to the PHP CLI interpreter");
 }
+
+/* proxy log for better format */
+const wrap_log = (original, prefix: string) => (message, ...args) => original(prefix + message, ...args);
+console.log = wrap_log(console.log, "[INFO ] ");
+console.debug = wrap_log(console.debug, "[DEBUG] ");
+console.warn = wrap_log(console.warn, "[WARNING] ");
+console.error = wrap_log(console.error, "[ERROR] ");
 
 main(process.argv.slice(2)).then(ignore_exit => {
     if(typeof(ignore_exit) === "boolean" && !<any>ignore_exit) return;
