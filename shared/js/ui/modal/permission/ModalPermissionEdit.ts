@@ -570,6 +570,7 @@ namespace Modals {
                     if(!current_channel) return;
 
                     connection.permissions.requestChannelPermissions(current_channel.channelId).then(result => editor.set_permissions(result)).catch(error => {
+                        editor.set_permissions([]);
                         console.log(error); //TODO handling?
                     });
                 });

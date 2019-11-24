@@ -200,6 +200,12 @@ class GroupManager extends connection.AbstractCommandHandler {
                 req.promise.resolved([]);
             else
                 req.promise.rejected(error);
+        }).then(() => {
+            //No notify handler
+            setTimeout(() => {
+                if(this.requests_group_permissions.remove(req))
+                    req.promise.rejected(tr("no response"));
+            }, 1000);
         });
         return req.promise;
     }

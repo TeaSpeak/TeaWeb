@@ -620,6 +620,8 @@ namespace pe {
         private mode_container_error_permission: JQuery;
         private mode_container_unset: JQuery;
 
+        private icon_shown: boolean;
+
         private filter_input: JQuery;
         private filter_grant: JQuery;
 
@@ -684,7 +686,7 @@ namespace pe {
         }
 
         private update_icon() {
-            const permission = this.permission_map.find(e => e && e.permission.name === "i_icon_id");
+            const permission = this.icon_shown ? this.permission_map.find(e => e && e.permission.name === "i_icon_id") : undefined;
             const icon_id = permission ? permission.get_value() : 0;
 
             const icon_node = this.container.find(".container-icon-select .icon-preview");
@@ -895,6 +897,10 @@ namespace pe {
             this.mode_container_permissions.css('display', mode == Modals.PermissionEditorMode.VISIBLE ? 'flex' : 'none');
             this.mode_container_error_permission.css('display', mode == Modals.PermissionEditorMode.NO_PERMISSION ? 'flex' : 'none');
             this.mode_container_unset.css('display', mode == Modals.PermissionEditorMode.UNSET ? 'block' : 'none');
+            if(this.icon_shown != (mode == Modals.PermissionEditorMode.VISIBLE)) {
+                this.icon_shown = mode == Modals.PermissionEditorMode.VISIBLE;
+                this.update_icon();
+            }
         }
 
         trigger_change(permission: PermissionInfo, value?: Modals.PermissionEditor.PermissionValue, update_icon?: boolean) : Promise<void> {

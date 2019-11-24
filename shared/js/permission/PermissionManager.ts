@@ -562,6 +562,9 @@ class PermissionManager extends connection.AbstractCommandHandler {
             case "notifyclientpermlist":
                 this.onClientPermList(command.arguments);
                 return true;
+            case "notifyclientchannelpermlist":
+                this.onChannelClientPermList(command.arguments);
+                return true;
             case "notifyplaylistpermlist":
                 this.onPlaylistPermList(command.arguments);
                 return true;
@@ -698,22 +701,6 @@ class PermissionManager extends connection.AbstractCommandHandler {
         this.needed_permission_change_listener[key] = array.length > 0 ? array : undefined;
     }
 
-    private onChannelPermList(json) {
-       let channelId: number = parseInt(json[0]["cid"]);
-
-       let permissions = PermissionManager.parse_permission_bulk(json, this.handle.permissions);
-       log.debug(LogCategory.PERMISSIONS, tr("Got channel permissions for channel %o"), channelId);
-       for(let element of this.requests_channel_permissions) {
-           if(element.channel_id == channelId) {
-               for(let l of element.callback_success)
-                   l(permissions);
-               this.requests_channel_permissions.remove(element);
-               return;
-           }
-       }
-        log.debug(LogCategory.PERMISSIONS, tr("Missing channel permission handle for requested channel id %o"), channelId);
-    }
-
     resolveInfo?(key: number | string | PermissionType) : PermissionInfo {
         for(let perm of this.permissionList)
             if(perm.id == key || perm.name == key)
@@ -723,22 +710,83 @@ class PermissionManager extends connection.AbstractCommandHandler {
 
     requestChannelPermissions(channelId: number) : Promise<PermissionValue[]> {
         return new Promise<PermissionValue[]>((resolve, reject) => {
-             let request: ChannelPermissionRequest;
-             for(let element of this.requests_channel_permissions)
-                 if(element.requested + 1000 < Date.now() && element.channel_id == channelId) {
+            let request: ChannelPermissionRequest;
+            for(let element of this.requests_channel_permissions)
+                if(element.requested + 1000 < Date.now() && element.channel_id == channelId) {
                     request = element;
                     break;
-                 }
-             if(!request) {
-                 request = new ChannelPermissionRequest();
-                 request.requested = Date.now();
-                 request.channel_id = channelId;
-                 this.handle.serverConnection.send_command("channelpermlist", {"cid": channelId});
-                 this.requests_channel_permissions.push(request);
-             }
-             request.callback_error.push(reject);
-             request.callback_success.push(resolve);
+                }
+            if(!request) {
+                request = new ChannelPermissionRequest();
+                request.requested = Date.now();
+                request.channel_id = channelId;
+                this.handle.serverConnection.send_command("channelpermlist", {"cid": channelId}).catch(error => {
+                    this.requests_channel_permissions.remove(request);
+
+                    if(error instanceof CommandResult) {
+                        if(error.id == ErrorID.EMPTY_RESULT) {
+                            request.callback_success.forEach(e => e([]));
+                            return;
+                        }
+                    }
+                    request.callback_error.forEach(e => e(error));
+                }).then(() => {
+                    //Error handler if we've not received an notify
+                    setTimeout(() => {
+                        if(this.requests_channel_permissions.remove(request)) {
+                            request.callback_error.forEach(e => e(tr("missing notify")));
+                        }
+                    }, 1000);
+                });
+                this.requests_channel_permissions.push(request);
+            }
+            request.callback_error.push(reject);
+            request.callback_success.push(resolve);
         });
+    }
+
+    private onChannelPermList(json) {
+        let channelId: number = parseInt(json[0]["cid"]);
+
+        let permissions = PermissionManager.parse_permission_bulk(json, this.handle.permissions);
+        log.debug(LogCategory.PERMISSIONS, tr("Got channel permissions for channel %o"), channelId);
+        for(let element of this.requests_channel_permissions) {
+            if(element.channel_id == channelId) {
+                for(let l of element.callback_success)
+                    l(permissions);
+                this.requests_channel_permissions.remove(element);
+                return;
+            }
+        }
+        log.debug(LogCategory.PERMISSIONS, tr("Missing channel permission handle for requested channel id %o"), channelId);
+    }
+
+    requestClientPermissions(client_id: number) : Promise<PermissionValue[]> {
+        for(let request of this.requests_client_permissions)
+            if(request.client_id == client_id && request.promise.time() + 1000 > Date.now())
+                return request.promise;
+
+        let request: TeaPermissionRequest = {} as any;
+        request.client_id = client_id;
+        request.promise = new LaterPromise<PermissionValue[]>();
+
+        this.handle.serverConnection.send_command("clientpermlist", {cldbid: client_id}).catch(error => {
+            this.requests_client_permissions.remove(request);
+            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                request.promise.resolved([]);
+            else
+                request.promise.rejected(error);
+        }).then(() => {
+            //Error handler if we've not received an notify
+            setTimeout(() => {
+                if(this.requests_client_permissions.remove(request)) {
+                    request.promise.rejected(tr("missing notify"));
+                }
+            }, 1000);
+        });
+
+        this.requests_client_permissions.push(request);
+        return request.promise;
     }
 
     private onClientPermList(json: any[]) {
@@ -752,26 +800,6 @@ class PermissionManager extends connection.AbstractCommandHandler {
         }
     }
 
-    requestClientPermissions(client_id: number) : Promise<PermissionValue[]> {
-        for(let request of this.requests_client_permissions)
-            if(request.client_id == client_id && request.promise.time() + 1000 > Date.now())
-                return request.promise;
-
-        let request: TeaPermissionRequest = {} as any;
-        request.client_id = client_id;
-        request.promise = new LaterPromise<PermissionValue[]>();
-
-        this.handle.serverConnection.send_command("clientpermlist", {cldbid: client_id}).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
-                request.promise.resolved([]);
-            else
-                request.promise.rejected(error);
-        });
-
-        this.requests_client_permissions.push(request);
-        return request.promise;
-    }
-
     requestClientChannelPermissions(client_id: number, channel_id: number) : Promise<PermissionValue[]> {
         for(let request of this.requests_client_channel_permissions)
             if(request.client_id == client_id && request.channel_id == channel_id && request.promise.time() + 1000 > Date.now())
@@ -783,14 +811,35 @@ class PermissionManager extends connection.AbstractCommandHandler {
         request.promise = new LaterPromise<PermissionValue[]>();
 
         this.handle.serverConnection.send_command("channelclientpermlist", {cldbid: client_id, cid: channel_id}).catch(error => {
+            this.requests_client_channel_permissions.remove(request);
             if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
                 request.promise.resolved([]);
             else
                 request.promise.rejected(error);
+        }).then(() => {
+            //Error handler if we've not received an notify
+            setTimeout(() => {
+                if(this.requests_client_channel_permissions.remove(request)) {
+                    request.promise.rejected(tr("missing notify"));
+                }
+            }, 1000);
         });
 
         this.requests_client_channel_permissions.push(request);
         return request.promise;
+    }
+
+    private onChannelClientPermList(json: any[]) {
+        let client_id = parseInt(json[0]["cldbid"]);
+        let channel_id = parseInt(json[0]["cid"]);
+
+        let permissions = PermissionManager.parse_permission_bulk(json, this);
+        for(let req of this.requests_client_channel_permissions.slice(0)) {
+            if(req.client_id == client_id && req.channel_id == channel_id) {
+                this.requests_client_channel_permissions.remove(req);
+                req.promise.resolved(permissions);
+            }
+        }
     }
 
 
@@ -816,6 +865,7 @@ class PermissionManager extends connection.AbstractCommandHandler {
         request.promise = new LaterPromise<PermissionValue[]>();
 
         this.handle.serverConnection.send_command("playlistpermlist", {playlist_id: playlist_id}).catch(error => {
+            this.requests_playlist_permissions.remove(request);
             if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
                 request.promise.resolved([]);
             else
