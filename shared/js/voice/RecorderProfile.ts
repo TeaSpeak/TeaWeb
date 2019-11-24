@@ -25,7 +25,7 @@ interface RecorderProfileConfig {
     }
 }
 
-let default_recorder: RecorderProfile /* needs initialize */
+let default_recorder: RecorderProfile; /* needs initialize */
 class RecorderProfile {
     readonly name;
     readonly volatile; /* not saving profile */
