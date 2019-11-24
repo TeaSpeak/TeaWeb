@@ -447,6 +447,7 @@ const APP_FILE_LIST = [
         ...CERTACCEPT_FILE_LIST,
 ];
 
+//@ts-ignore
 declare module "fs-extra" {
     export function exists(path: PathLike): Promise<boolean>;
 }
