@@ -145,7 +145,7 @@ namespace ppt {
 
     export function key_pressed(code: string | SpecialKey) : boolean {
         if(typeof(code) === 'string')
-            return current_state.code == code;
+            return typeof current_state[code] !== "undefined";
         return current_state.special[code];
     }
 }
