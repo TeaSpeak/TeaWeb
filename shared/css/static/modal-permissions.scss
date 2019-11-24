@@ -475,14 +475,13 @@
 		flex-direction: row;
 	}
 
+	//TODO: Remove the 1em margin everywhere here
 	.container-filter {
 		justify-content: stretch;
-		height: 4em;
+		height: 3em;
 
-		.form-group {
-			height: 3.5em;
-			padding-top: 1.25em;
-			margin-bottom: 0!important;
+		> * {
+			align-self: center;
 		}
 
 		.button-toggle-clients {
@@ -493,31 +492,46 @@
 			height: 2.5em;
 
 			margin-right: 1em;
-
-			align-self: flex-end;
-			margin-bottom: 1rem;
 		}
 
 		.container-input {
 			flex-grow: 5;
 			flex-shrink: 1;
+
+			padding-top: 0!important;
+			margin-bottom: 0!important;
+
+			height: 2.5em;
+
+			.bmd-label-floating {
+				top: .5em;
+			}
+
+			&.is-filled, &:focus-within {
+				.bmd-label-floating {
+					top: -.4em;
+				}
+			}
 		}
 
-		.container-granted-switch {
+		.container-switchs {
+			height: 2.5em;
+
 			margin-left: 1em;
-			margin-bottom: 1em;
 
 			position: relative;
 
 			display: flex;
-			flex-direction: row;
-			justify-content: flex-start;
+			flex-direction: column;
+			justify-content: center;
 
-			flex-shrink: 1;
+
 			flex-grow: 1;
+			flex-shrink: 1;
+			max-width: 10em;
+			min-width: 5em;
 
 			color: #999999;
-			min-width: 8em;
 
 			> label {
 				font-size: .75em;
@@ -526,20 +540,20 @@
 				flex-direction: row;
 				justify-content: flex-start;
 
-				position: absolute;
-				bottom: 0;
-				left: 0;
-
 				pointer-events: all;
 				cursor: pointer;
 
-				> * {
-					align-self: flex-end;
+				.switch {
+					align-self: center;
 				}
 
 				a {
 					padding-left: .25em;
 					font-size: 1.1em;
+
+					white-space: nowrap;
+					overflow: hidden;
+					text-overflow: ellipsis;
 				}
 			}
 		}
@@ -551,12 +565,10 @@
 
 			border-radius: .2em;
 			margin-left: 1em;
-			margin-bottom: 1em;
 
 			display: flex;
 			flex-direction: row;
 			justify-content: flex-end;
-			align-self: flex-end;
 
 			cursor: pointer;
 			background-color: #121213;

@@ -2899,16 +2899,24 @@
                         <input type="text" class="form-control filter-input"/>
                         <!-- <small class="form-text text-muted">{{tr "Filter permissions by permission name" /}}</small> -->
                     </div>
-                    <div class="container-granted-switch">
-                        <label>
+                    <div class="container-switchs">
+                        <label class="container-granted-switch" title="{{tr 'Show only permission which are assigned' /}}">
                             <div class="switch">
                                 <input type="checkbox" class="filter-granted">
                                 <span class="slider">
                                     <span class="dot"></span>
                                 </span>
                             </div>
-                            <!-- <a>{{tr "Show granted permissions only" /}}</a> -->
                             <a>{{tr "Assigned only" /}}</a>
+                        </label>
+                        <label class="container-editable-switch" title="{{tr 'Show only permissions which are editable by yourself' /}}">
+                            <div class="switch">
+                                <input type="checkbox" class="filter-granted">
+                                <span class="slider">
+                                    <span class="dot"></span>
+                                </span>
+                            </div>
+                            <a>{{tr "Editable only" /}}</a>
                         </label>
                     </div>
                     <div class="container-icon-select">
