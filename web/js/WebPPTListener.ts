@@ -129,7 +129,6 @@ namespace ppt {
                     log.trace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
                 }
             } else {
-                console.log("No match: %o - %o", hook.key_code, event.key_code);
                 new_hooks.push(hook);
             }
         }
