@@ -2,6 +2,8 @@
 * **24.11.19**
     - Fixed several bugs within the permission editor
     - Hide senseless permissions (disableable via options)
+    - Mute system sounds by default if the output has been muted
+    - Improved PPT handler for the web client [#73](https://github.com/TeaSpeak/TeaWeb/issues/73)
     
 * **06.10.19**
     - Added the possibility to connect within an already running TeaWeb instance

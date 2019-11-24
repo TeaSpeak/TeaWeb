@@ -7,7 +7,7 @@ namespace ppt {
     }
 
     let key_listener: ((_: KeyEvent) => any)[] = [];
-
+    
     function listener_key(type: EventType, event: KeyboardEvent) {
         const key_event = {
             type: type,
@@ -66,9 +66,7 @@ namespace ppt {
     let key_hooks: KeyHook[] = [];
 
     interface CurrentState {
-        event: KeyEvent;
-        code: string;
-
+        keys: {[code: string]:KeyEvent};
         special: { [key:number]:boolean };
     }
     let current_state: CurrentState = {
@@ -83,8 +81,8 @@ namespace ppt {
         current_state.special[SpecialKey.SHIFT] = false;
         current_state.special[SpecialKey.WINDOWS] = false;
 
-        current_state.code = undefined;
-        current_state.event = undefined;
+        for(const code of Object.keys(current_state.keys))
+            delete current_state[code];
 
         for(const hook of key_hooks_active)
             hook.callback_release();
@@ -103,15 +101,12 @@ namespace ppt {
         current_state.special[SpecialKey.SHIFT] = event.key_shift;
         current_state.special[SpecialKey.WINDOWS] = event.key_windows;
 
-        current_state.code = undefined;
-        current_state.event = undefined;
-
+        current_state[event.key_code] = undefined;
         if(event.type == EventType.KEY_PRESS) {
-            current_state.event = event;
-            current_state.code = event.key_code;
+            current_state[event.key_code] = event;
 
             for(const hook of key_hooks) {
-                if(hook.key_code && hook.key_code != event.key_code) continue;
+                if(hook.key_code !== event.key_code) continue;
                 if(hook.key_alt != event.key_alt) continue;
                 if(hook.key_ctrl != event.key_ctrl) continue;
                 if(hook.key_shift != event.key_shift) continue;
@@ -126,11 +121,18 @@ namespace ppt {
         }
 
         //We have a new situation
-        for(const hook of old_hooks)
-            if(hook.callback_release) {
-                hook.callback_release();
-                log.trace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
+        for(const hook of old_hooks) {
+            //Do not test for meta key states because they could differ in a key release event
+            if(hook.key_code === event.key_code) {
+                if(hook.callback_release) {
+                    hook.callback_release();
+                    log.trace(LogCategory.GENERAL, tr("Trigger key release for %o!"), hook);
+                }
+            } else {
+                console.log("No match: %o - %o", hook.key_code, event.key_code);
+                new_hooks.push(hook);
             }
+        }
         key_hooks_active = new_hooks;
     }
 
