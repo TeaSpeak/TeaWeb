@@ -167,6 +167,10 @@ const loader_javascript = {
             "js/ui/elements/tooltip.js",
             "js/ui/elements/net_graph.js",
 
+            //Load permissions
+            "js/permission/PermissionManager.js",
+            "js/permission/GroupManager.js",
+
             //Load UI
             "js/ui/modal/ModalAbout.js",
             "js/ui/modal/ModalAvatar.js",
@@ -196,6 +200,7 @@ const loader_javascript = {
             "js/ui/modal/ModalKeySelect.js",
             "js/ui/modal/ModalGroupAssignment.js",
             "js/ui/modal/permission/ModalPermissionEdit.js",
+            {url: "js/ui/modal/permission/SenselessPermissions.js", depends: ["js/permission/PermissionManager.js"]},
             {url: "js/ui/modal/permission/CanvasPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
             {url: "js/ui/modal/permission/HTMLPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
 
@@ -213,10 +218,6 @@ const loader_javascript = {
             "js/ui/frames/server_log.js",
             "js/ui/frames/hostbanner.js",
             "js/ui/frames/MenuBar.js",
-
-            //Load permissions
-            "js/permission/PermissionManager.js",
-            "js/permission/GroupManager.js",
 
             //Load audio
             "js/voice/RecorderBase.js",

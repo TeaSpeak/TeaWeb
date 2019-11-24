@@ -43,6 +43,7 @@ namespace Modals {
 
         export type change_listener_t = (permission: PermissionInfo, value?: PermissionEditor.PermissionValue) => Promise<void>;
     }
+
     export enum PermissionEditorMode {
         VISIBLE,
         NO_PERMISSION,
@@ -65,6 +66,7 @@ namespace Modals {
         abstract initialize(permissions: GroupedPermissions[]);
         abstract html_tag() : JQuery;
         abstract set_permissions(permissions?: PermissionValue[]);
+        abstract set_hidden_permissions(permissions: PermissionType[]);
 
         set_listener(listener?: PermissionEditor.change_listener_t) {
             this._listener_change = listener || (() => Promise.resolve());
@@ -133,7 +135,7 @@ namespace Modals {
                 const container_tab_list = tag.find(".right > .header");
                 {
                     const label_current = tag.find(".left .container-selected");
-                    const create_tab = (tab_entry: JQuery, container_name: string) => {
+                    const create_tab = (tab_entry: JQuery, container_name: string, hidden_permissions: PermissionType[]) => {
                         const target_container = tag.find(".body .container." + container_name);
 
                         tab_entry.on('click', () => {
@@ -147,6 +149,7 @@ namespace Modals {
                                 for(const element of tag.find(".body .container"))
                                     (<HTMLElement>element).style.display = "none";
 
+                                permission_editor.set_hidden_permissions(settings.static_global(Settings.KEY_PERMISSIONS_SHOW_ALL) ? undefined : hidden_permissions);
                                 permission_editor.html_tag()[0].remove();
                                 target_container.find(".permission-editor").trigger('show');
                                 target_container.find(".permission-editor").append(permission_editor.html_tag());
@@ -157,11 +160,11 @@ namespace Modals {
                         });
                     };
 
-                    create_tab(container_tab_list.find(".sg"), "container-view-server-groups");
-                    create_tab(container_tab_list.find(".cg"), "container-view-channel-groups");
-                    create_tab(container_tab_list.find(".chp"), "container-view-channel-permissions");
-                    create_tab(container_tab_list.find(".clp"), "container-view-client-permissions");
-                    create_tab(container_tab_list.find(".clchp"), "container-view-client-channel-permissions");
+                    create_tab(container_tab_list.find(".sg"), "container-view-server-groups", permissions.senseless_server_group_permissions);
+                    create_tab(container_tab_list.find(".cg"), "container-view-channel-groups", permissions.senseless_channel_group_permissions);
+                    create_tab(container_tab_list.find(".chp"), "container-view-channel-permissions", permissions.senseless_channel_permissions);
+                    create_tab(container_tab_list.find(".clp"), "container-view-client-permissions", permissions.senseless_client_permissions);
+                    create_tab(container_tab_list.find(".clchp"), "container-view-client-channel-permissions", permissions.senseless_client_channel_permissions);
                 }
 
                 apply_server_groups(connection, permission_editor, tag.find(".left .container-view-server-groups"), tag.find(".right .container-view-server-groups"));

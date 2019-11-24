@@ -292,6 +292,12 @@ class Settings extends StaticSettings {
         description: 'Edit channels in advanced mode with a lot more settings'
     };
 
+    static readonly KEY_PERMISSIONS_SHOW_ALL: SettingsKey<boolean> = {
+        key: 'permissions_show_all',
+        default_value: false,
+        description: 'Show all permissions even thou they dont make sense for the server/channel group'
+    };
+
     static readonly KEY_TEAFORO_URL: SettingsKey<string> = {
         key: "teaforo_url",
         default_value: "https://forum.teaspeak.de/"

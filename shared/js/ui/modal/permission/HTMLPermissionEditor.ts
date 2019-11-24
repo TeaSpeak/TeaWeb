@@ -623,6 +623,8 @@ namespace pe {
         private filter_input: JQuery;
         private filter_grant: JQuery;
 
+        private hidden_permissions: PermissionType[];
+
         private button_toggle: JQuery;
 
         private even_list: ({ visible() : boolean; set_even(flag: boolean); })[];
@@ -638,6 +640,11 @@ namespace pe {
             this.build_tag();
         }
 
+        set_hidden_permissions(permissions: PermissionType[]) {
+            this.hidden_permissions = permissions;
+            this.update_filter();
+        }
+
         private update_filter() {
             const value = (this.filter_input.val() as string).toLowerCase();
             const grant = !!this.filter_grant.prop('checked');
@@ -645,6 +652,8 @@ namespace pe {
             const _filter = (permission: HTMLPermission) => {
                 if(value && permission.permission.name.indexOf(value) == -1) return false;
                 if(grant && !permission.is_set()) return false;
+                if(this.hidden_permissions && this.hidden_permissions.find(e => e && e.toLocaleLowerCase() == permission.permission.name.toLowerCase()))
+                    return false;
 
                 return true;
             };

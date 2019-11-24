@@ -78,6 +78,14 @@ namespace Modals {
                 $(document.body).css("font-size", value + "px");
             });
         }
+
+        /* all permissions */
+        {
+            const option = container.find(".option-all-permissions") as JQuery<HTMLInputElement>;
+            option.on('change', event => {
+                settings.changeGlobal(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
+            }).prop("checked", settings.global(Settings.KEY_PERMISSIONS_SHOW_ALL));
+        }
     }
 
     function settings_general_language(container: JQuery, modal: Modal) {

@@ -130,6 +130,10 @@
 						margin-top: .25em;
 					}
 
+					> label:not(:first-child) {
+						margin-top: 0.25em;
+					}
+
 					.container-font-size {
 						display: flex;
 						flex-direction: row;
