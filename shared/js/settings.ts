@@ -212,6 +212,11 @@ class Settings extends StaticSettings {
         key: 'connect_history'
     };
 
+    static readonly KEY_CONNECT_NO_DNSPROXY: SettingsKey<boolean> = {
+        key: 'connect_no_dnsproxy',
+        default_value: false
+    };
+
     static readonly KEY_CERTIFICATE_CALLBACK: SettingsKey<string> = {
         key: 'certificate_callback'
     };

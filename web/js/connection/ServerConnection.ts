@@ -140,7 +140,7 @@ namespace connection {
                 else if(Modals.Regex.IP_V6.test(address.host))
                     proxy_host = address.host.replace(/\[(.*)]/, "$1").replace(/:/g, "_") + ".con-gate.work";
 
-                if(proxy_host)
+                if(proxy_host && !settings.static_global(Settings.KEY_CONNECT_NO_DNSPROXY))
                     local_proxy_socket = new WebSocket('wss://' + proxy_host + ":" + address.port);
                 local_direct_socket = new WebSocket('wss://' + address.host + ":" + address.port);
 
