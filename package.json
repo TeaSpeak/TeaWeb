@@ -17,7 +17,6 @@
     "csso": "csso",
     "rebuild-structure-web-dev": "php files.php generate web dev",
     "minify-web-rel-file": "terser --compress --mangle --ecma 6 --keep_classnames --keep_fnames --output",
-
     "start": "node file.js ndevelop"
   },
   "author": "TeaSpeak (WolverinDEV)",
@@ -38,7 +37,7 @@
     "sha256": "^0.2.0",
     "terser": "^4.2.1",
     "ttypescript": "^1.5.7",
-    "typescript": "^3.5.3",
+    "typescript": "3.5.3",
     "wat2wasm": "^1.0.2",
     "fs-extra": "latest"
   },
