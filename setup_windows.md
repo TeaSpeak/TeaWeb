@@ -2,34 +2,75 @@
 ## 1.0 Requirements
 The following tools or applications are required to develop the web client:
 - [1.1 IDE](#11-ide)
-- [1.2 XAMPP (apache & php)](#12-xampp-with-a-web-server-and-php)
-- [1.3 NPM](#13-npm)
+- [1.2 PHP](#12-php)
+- [1.3 NodeJS](#13-nodejs)
+- [1.3.2 NPM](#132-npm)
 - [1.4 Git bash](#14-git-bash)
 
 ### 1.1 IDE
-For developing TeaWeb you require and IDE.  
-Preferable is PHPStorm from Jetbrains because the've already build in compiling on changes.  
-Else you've to run the compiler to compile the TS or SCSS files to js e.g. css files.
+It does not matter which IDE you use,  
+you could even use a command line text editor for developing.
 
-### 1.2 XAMPP with a web server and PHP
-You require PHP (grater than 5) to setup and manage the project files.  
-PHP is required for the index page as well.
-The web server is required for browsing your final environment and watch your result.  
-The final environment will be found at `web/environemnt/development/`. More information about  
-the file structure could be found [here (TODO: link me!)]().
+### 1.2 PHP
+For having a test environment you require an installation of PHP 5 or grater.  
+You could just download PHP from [here](https://windows.php.net/downloads/releases/).  
+Note:  
+`php.exe` must be accessible via the command line.  
+This means you'll have to add the `bin` folder to your `PATH` variable.  
 
-### 1.3 NPM 
+### 1.3 NodeJS  
+For building and serving you require `nodejs` grater than 8.  
+Nodejs is easily downloadable from [here]().  
+Ensure you've added `node.exe` to the environment path!  
+
+### 1.3.2 NPM 
+Normally NPM already comes with the NodeJS installer.  
+So you don't really have to worry about it.  
 NPM min 6.X is required to develop this project.  
 With NPM you could easily download all required dependencies by just typing `npm install`.  
 IMPORTANT: NPM must be available within the PATH environment variable!  
 
 ### 1.4 Git bash
 For using the `.sh` build scripts you require Git Bash.  
-A minimum of 4.2 is recommend, but in general every version should work.  
+A minimum of 4.2 is recommend, but in general every modern version should work.  
 
-## 2.0 Development environment setup
-### 2.1 Native code (codecs) (Not required)
-If you dont want to develop the codec part or something related to the native
-webassembly part of TeaWeb you could skip this step and follow the steps in [2.1-b](#21-b-skip-native-code-setup)
+## 2.0 Project initialization
 
-### 2.1-b Skip native code setup
+### 2.1 Cloning the WebClient
+To clone the WebClient simply use:  
+```shell script
+git clone https://github.com/TeaSpeak/TeaWeb.git
+```
+After closing the project you've to update the submodules.  
+Simply execute:  
+```shell script
+git submodule update --init
+```
+
+### 2.2 Setting up native scripts  
+TeaWeb uses the Opus audio codec. Because almost no browser supports it out of the box  
+we've to implement our own de/encoder. For this we're using `emscripten` to compile the codec.  
+Because this is a quite time consuming task we already offer prebuild javascript and wasm files.
+So we just need to download them. Just execute the `download_compiled_files.sh` shell script within the `asm` folder.  
+```shell script
+./asm/download_compiled_files.sh
+```
+
+### 2.3 Initial client compilation
+Before you could start ahead with developing you've to compile everything.  
+Just execute the `web_build.sh` script:
+```shell script
+./scripts/web_build.sh develop
+```
+
+### 2.4 Starting the development environment
+To start the development environment which automatically compiles all your changed  
+scripts and style sheets you simply have to execute:
+```shell script
+node file.js serve web dev
+```
+This will also spin up a temporary web server where you could testout your newest changes.  
+The server will by default listen on `http://localhost:8081`  
+
+### 2.5 You're ready
+Now you're ready to start ahead and implement your own great ideas.  
