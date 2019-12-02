@@ -56,14 +56,20 @@ So we just need to download them. Just execute the `download_compiled_files.sh` 
 ./asm/download_compiled_files.sh
 ```
 
-### 2.3 Initial client compilation
+### 2.3 Initializing NPM
+To download all required packages simply type:  
+```shell script
+npm install
+```
+
+### 2.4 Initial client compilation
 Before you could start ahead with developing you've to compile everything.  
 Just execute the `web_build.sh` script:
 ```shell script
 ./scripts/web_build.sh develop
 ```
 
-### 2.4 Starting the development environment
+### 2.5 Starting the development environment
 To start the development environment which automatically compiles all your changed  
 scripts and style sheets you simply have to execute:
 ```shell script
@@ -72,5 +78,5 @@ node file.js serve web dev
 This will also spin up a temporary web server where you could testout your newest changes.  
 The server will by default listen on `http://localhost:8081`  
 
-### 2.5 You're ready
+### 2.6 You're ready
 Now you're ready to start ahead and implement your own great ideas.  
