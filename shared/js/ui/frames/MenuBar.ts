@@ -85,9 +85,12 @@ namespace top_menu {
                     if(this._callback_click && !disabled) {
                         this._callback_click();
                     }
+
                     event.preventDefault();
                     if(disabled)
                         event.stopPropagation();
+                    else
+                        HTMLMenuBarDriver.instance().close();
                 });
 
                 this._submenu_tag = $.spawn("div").addClass("sub-menu");
@@ -183,7 +186,7 @@ namespace top_menu {
                 item._label_tag.on('click', enable_event => {
                     enable_event.preventDefault();
 
-                    this.html_tag.find(".active").removeClass("active");
+                    this.close();
                     item.html_tag.addClass("active");
 
                     setTimeout(() => {
@@ -196,6 +199,10 @@ namespace top_menu {
                     }, 0);
                 });
                 return item;
+            }
+
+            close() {
+                this.html_tag.find(".active").removeClass("active");
             }
 
             delete_item(item: MenuItem) {
