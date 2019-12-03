@@ -13,7 +13,7 @@ you could even use a command line text editor for developing.
 
 ### 1.2 PHP
 For having a test environment you require an installation of PHP 5 or grater.  
-You could just download PHP from [here](https://windows.php.net/downloads/releases/).  
+You could just download PHP from [here](https://windows.php.net/download#php-7.4).  
 Note:  
 `php.exe` must be accessible via the command line.  
 This means you'll have to add the `bin` folder to your `PATH` variable.  
@@ -73,7 +73,7 @@ Just execute the `web_build.sh` script:
 To start the development environment which automatically compiles all your changed  
 scripts and style sheets you simply have to execute:
 ```shell script
-node file.js serve web dev
+npm start web
 ```
 This will also spin up a temporary web server where you could testout your newest changes.  
 The server will by default listen on `http://localhost:8081`  
