@@ -75,7 +75,7 @@ scripts and style sheets you simply have to execute:
 ```shell script
 npm start web
 ```
-This will also spin up a temporary web server where you could testout your newest changes.  
+This will also spin up a temporary web server where you could test out your newest changes.  
 The server will by default listen on `http://localhost:8081`  
 
 ### 2.6 You're ready
