@@ -724,43 +724,87 @@ namespace server {
 }
 
 namespace watcher {
-    export class TSCWatcher {
+    function execute(cmd: string, args: string[]) : ChildProcess {
+        if(os.platform() === "win32")
+            return cp.spawn(process.env.comspec, ["/C", cmd, ...args], {
+                stdio: "pipe",
+                cwd: __dirname,
+                env: process.env
+            });
+        else
+            this._process = cp.spawn(cmd, args, {
+                cwd: __dirname,
+                stdio: "pipe",
+                detached: true
+            });
+    }
+
+    export abstract class Watcher {
+        readonly name: string;
+
         private _process: ChildProcess;
-        constructor() { }
+        private _callback_init: () => any;
+        private _callback_init_fail: (msg: string) => any;
+
+        protected constructor(name: string) {
+            this.name = name;
+        }
 
         async start() {
             if(this._process) throw "watcher already started";
 
-            this._process = cp.spawn("npm", ["run", "ttsc", "--", "-w"], {
-                cwd: __dirname,
-                stdio: "pipe",
-            });
-
+            const command = this.start_command();
+            this._process = execute(command[0], command.slice(1));
             this._process.unref();
             this._process.stdout.on("readable", this.handle_stdout_readable.bind(this));
             this._process.stderr.on("readable", this.handle_stderr_readable.bind(this));
             this._process.addListener("exit", this.handle_exit.bind(this));
             this._process.addListener("error", this.handle_error.bind(this));
 
-            console.log("TSC Watcher started.");
+            try {
+                await new Promise((resolve, reject) => {
+                    const id = setTimeout(reject, 5000, "timeout");
+                    this._callback_init = () => {
+                        clearTimeout(id);
+                        resolve();
+                    };
+                    this._callback_init_fail = err => {
+                        clearTimeout(id);
+                        reject(err);
+                    };
+                });
+            } catch(e) {
+                try { this.stop(); } catch (_) { }
+                throw e;
+            } finally {
+                this._callback_init_fail = undefined;
+                this._callback_init = undefined;
+            }
+            console.log("%s started.", this.name);
         }
+
+        protected abstract start_command() : string[];
 
         async stop() {
             if(!this._process) return;
 
-            console.log("TSC Watcher stopped.");
-            this._process.kill("SIGTERM")
+            console.log("%s stopped.", this.name);
+            this._process.kill("SIGTERM");
             this._process = undefined;
         }
 
         private handle_exit(code: number | null, signal: string | null) {
-            console.log("TSC Watcher exited with code %d (%s)", code, signal);
+            console.log("%s exited with code %d (%s)", this.name, code, signal);
+            if(this._callback_init_fail)
+                this._callback_init_fail("unexpected exit with code " + code);
         }
 
         private handle_stdout_readable() {
             const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
             if(!buffer) return;
 
+            if(this._callback_init)
+                this._callback_init();
             //console.log("TSCWatcher read %d bytes", buffer.length);
         }
 
@@ -768,65 +812,37 @@ namespace watcher {
             const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
             if(!buffer) return;
 
-            console.log("TSC Watcher read %d error bytes:", buffer.length);
+            console.log("%s read %d error bytes:", this.name, buffer.length);
             console.log(buffer.toString());
         }
 
         private handle_error(err: Error) {
-            console.log("TSC Watcher received error: %o", err);
+            if(this._callback_init_fail) {
+                console.debug("%s received startup error: %o", this.name, err);
+                this._callback_init_fail("received error: " + err.message);
+            } else {
+                console.log("%s received error: %o", this.name, err);
+            }
         }
     }
 
-
-    export class SASSWatcher {
-        private _process: ChildProcess;
-        constructor() { }
-
-        async start() {
-            if(this._process) throw "watcher already started";
-
-            this._process = cp.spawn("npm", ["run", "sass", "--", "--watch"], {
-                cwd: __dirname,
-                stdio: "pipe",
-            });
-
-            this._process.unref();
-            this._process.stdout.on("readable", this.handle_stdout_readable.bind(this));
-            this._process.stderr.on("readable", this.handle_stderr_readable.bind(this));
-            this._process.addListener("exit", this.handle_exit.bind(this));
-            this._process.addListener("error", this.handle_error.bind(this));
-
-            console.log("SASS Watcher started.");
+    export class TSCWatcher extends Watcher {
+        constructor() {
+            super("TSC Watcher");
         }
 
-        async stop() {
-            if(!this._process) return;
+        protected start_command(): string[] {
+            return ["npm", "run", "ttsc", "--", "-w"];
+        }
+    }
 
-            console.log("SASS Watcher stopped.");
-            this._process.kill("SIGTERM")
+    export class SASSWatcher extends Watcher {
+        constructor() {
+            super("SASS Watcher");
         }
 
-        private handle_exit(code: number | null, signal: string | null) {
-            console.log("SASS Watcher exited with code %d (%s)", code, signal);
-        }
-
-        private handle_stdout_readable() {
-            const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
-            if(!buffer) return;
-
-            //console.log("TSCWatcher read %d bytes", buffer.length);
-        }
-
-        private handle_stderr_readable() {
-            const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
-            if(!buffer) return;
-
-            console.log("SASS Watcher read %d error bytes:", buffer.length);
-            console.log(buffer.toString());
-        }
-
-        private handle_error(err: Error) {
-            console.log("SASS Watcher received error: %o", err);
+        protected start_command(): string[] {
+            return ["npm", "run", "sass", "--", "--watch"];
         }
     }
 }
