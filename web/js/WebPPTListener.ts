@@ -82,7 +82,8 @@ namespace ppt {
         current_state.special[SpecialKey.WINDOWS] = false;
 
         for(const code of Object.keys(current_state))
-            delete current_state[code];
+            if(code !== "special")
+                delete current_state[code];
 
         for(const hook of key_hooks_active)
             hook.callback_release();
