@@ -61,7 +61,7 @@
       "country_code": "ru",
       "path": "ru_translate_vafin.translation",
 
-      "name": "Russion translation by Vafin, baste on google translate",
+      "name": "Русский",
       "contributors": [
         {
           "name": "Google Translate, via script by Markus Hadenfeldt",
