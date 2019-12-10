@@ -152,6 +152,8 @@ namespace chat {
                     this.handle.handle.fileManager.icons.generateTag(server.properties.virtualserver_icon_id).appendTo(html_tag);
                 $.spawn("div").text(server.properties.virtualserver_name).appendTo(html_tag);
                 html_tag_title.text(tr("You're chatting in Server"));
+
+                this.update_server_limit(server, html_limit_tag);
             } else if(this.handle.handle.connected) {
                 $.spawn("div").text("No channel selected").appendTo(html_tag);
             } else {
@@ -175,6 +177,18 @@ namespace chat {
                     channel_limit = "" + channel.properties.channel_maxfamilyclients;
             }
             tag.text(channel.clients(false).length + " / " + channel_limit);
+        }
+
+        private update_server_limit(server: ServerEntry, tag: JQuery) {
+            const fn = () => {
+                let text = server.properties.virtualserver_clientsonline + " / " + server.properties.virtualserver_maxclients;
+                if(server.properties.virtualserver_reserved_slots)
+                    text += " (" + server.properties.virtualserver_reserved_slots + " " + tr("Reserved") + ")";
+                tag.text(text);
+            };
+
+            server.updateProperties().then(fn).catch(error => tag.text(tr("Failed to update info")));
+            fn();
         }
 
         update_chat_counter() {

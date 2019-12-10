@@ -1,4 +1,7 @@
 # Changelog:
+* **10.12.19**
+    - Show the server online count along the server chat
+    
 * **24.11.19**
     - Fixed several bugs within the permission editor
     - Hide senseless permissions (disableable via options)
