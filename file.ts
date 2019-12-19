@@ -732,7 +732,7 @@ namespace watcher {
                 env: process.env
             });
         else
-            this._process = cp.spawn(cmd, args, {
+            return cp.spawn(cmd, args, {
                 cwd: __dirname,
                 stdio: "pipe",
                 detached: true
