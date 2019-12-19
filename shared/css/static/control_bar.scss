@@ -131,8 +131,7 @@ $border_color_activated: rgba(255, 255, 255, .75);
 				}
 
 				.button  {
-					padding-right: 1px;
-					border-right: 0;
+					border-right-color: transparent;
 
 					border-bottom-right-radius: 0;
 					border-top-right-radius: 0;
@@ -205,8 +204,7 @@ $border_color_activated: rgba(255, 255, 255, .75);
 			}
 
 			.button {
-				padding-right: 1px;
-				border-right: 0;
+				border-right-color: transparent;
 
 				border-bottom-right-radius: 0;
 				border-top-right-radius: 0;
