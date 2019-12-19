@@ -805,7 +805,12 @@ namespace watcher {
 
             if(this._callback_init)
                 this._callback_init();
-            //console.log("TSCWatcher read %d bytes", buffer.length);
+
+            const data = buffer.toString();
+            if(false) {
+                for(const line of data.split("\n"))
+                    console.log("%s: %s", this.name, line);
+            }
         }
 
         private handle_stderr_readable() {
@@ -842,7 +847,7 @@ namespace watcher {
         }
 
         protected start_command(): string[] {
-            return ["npm", "run", "sass", "--", "--watch"];
+            return ["npm", "run", "sass", "--", "--watch", ".:."];
         }
     }
 }
