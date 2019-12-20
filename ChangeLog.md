@@ -1,4 +1,12 @@
 # Changelog:
+* **20.12.19**
+    - Fixing chat URL escaping
+    - Fixed issue [#77](https://github.com/TeaSpeak/TeaWeb/issues/77)
+    - Implemented issue [#75](https://github.com/TeaSpeak/TeaWeb/issues/75) (Close Modals With ESC)
+    - Improved the server info modal experience (Correctly showing no permissions)
+    - Improved "About" modal overflow behaviour
+    - Allow the client to use the scroll bar without closing the modal within modals
+    
 * **10.12.19**
     - Show the server online count along the server chat
     
