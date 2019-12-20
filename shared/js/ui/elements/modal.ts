@@ -9,7 +9,8 @@ enum ElementType {
 type BodyCreator = (() => JQuery | JQuery[] | string) | string | JQuery | JQuery[];
 const ModalFunctions = {
     divify: function (val: JQuery) {
-        if(val.length > 1) return $.spawn("div").append(val);
+        if(val.length > 1)
+            return $.spawn("div").append(val);
         return val;
     },
 
@@ -42,8 +43,9 @@ const ModalFunctions = {
     },
 
     warpProperties(data: ModalProperties | any) : ModalProperties {
-        if(data instanceof ModalProperties) return data;
-        else {
+        if(data instanceof ModalProperties) {
+            return data;
+        } else {
             const props = new ModalProperties();
             for(const key of Object.keys(data))
                 props[key] = data[key];
@@ -94,6 +96,32 @@ $(document).on('mousedown', (event: JQuery.MouseDownEvent) => {
 
 
     let element = event.target as HTMLElement;
+    do {
+        if(element.classList.contains('modal-content'))
+            break;
+
+        if(!element.classList.contains('modal'))
+            continue;
+
+        if(element == _global_modal_last && _global_modal_last_time + 100 > Date.now())
+            break;
+
+        $(element).find("> .modal-dialog > .modal-content > .modal-header .button-modal-close").trigger('click');
+        break;
+    } while((element = element.parentElement));
+});
+
+$(document).on('keyup', (event: JQuery.KeyUpEvent) => {
+    if(_global_modal_count == 0 || typeof(event.target) === "undefined")
+        return;
+
+    if(event.key !== "Escape")
+        return;
+
+    let element = event.target as HTMLElement;
+    if(element.nodeName == "HTMLInputElement" || element.nodeName == "HTMLSelectElement" || element.nodeName == "HTMLTextAreaElement")
+        return;
+
     do {
         if(element.classList.contains('modal-content'))
             break;
