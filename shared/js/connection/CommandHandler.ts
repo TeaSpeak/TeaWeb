@@ -593,21 +593,22 @@ namespace connection {
                         client.currentChannel().channelId, channel_from.channelId
                     );
                 }
-            }
-
-            let current_clients: ClientEntry[];
-            if(self) {
+            } else {
                 channel_from = client.currentChannel();
-                current_clients = client.channelTree.clientsByChannel(client.currentChannel());
-                this.connection_handler.update_voice_status(channel_to);
             }
 
             tree.moveClient(client, channel_to);
-            for(const entry of current_clients || [])
-                if(entry !== client && entry.get_audio_handle())
-                    entry.get_audio_handle().abort_replay();
 
             if(self) {
+                this.connection_handler.update_voice_status(channel_to);
+
+                for(const entry of client.channelTree.clientsByChannel(channel_from)) {
+                    if(entry !== client && entry.get_audio_handle()) {
+                        entry.get_audio_handle().abort_replay();
+                        entry.speaking = false;
+                    }
+                }
+
                 const side_bar = this.connection_handler.side_bar;
                 side_bar.info_frame().update_channel_talk();
 
