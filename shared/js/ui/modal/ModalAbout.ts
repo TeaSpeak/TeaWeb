@@ -38,16 +38,18 @@ namespace Modals {
             },
             footer: null,
 
-            width: 600
+            width: "60em"
         });
         connectModal.htmlTag.find(".modal-body").addClass("modal-about");
         connectModal.open();
 
-        (window as any).native.client_version().then(version => {
-            connectModal.htmlTag.find(".version-client").text(version);
-        }).catch(error => {
-            log.error(LogCategory.GENERAL, tr("Failed to load client version: %o"), error);
-            connectModal.htmlTag.find(".version-client").text("unknown");
-        });
+        if(!app.is_web()) {
+            (window as any).native.client_version().then(version => {
+                connectModal.htmlTag.find(".version-client").text(version);
+            }).catch(error => {
+                log.error(LogCategory.GENERAL, tr("Failed to load client version: %o"), error);
+                connectModal.htmlTag.find(".version-client").text("unknown");
+            });
+        }
     }
 }

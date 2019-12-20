@@ -89,53 +89,96 @@ class ModalProperties {
     full_size?: boolean = false;
 }
 
-$(document).on('mousedown', (event: JQuery.MouseDownEvent) => {
-    /* pageX or pageY are undefined if this is an event executed via .trigger('click'); */
-    if(_global_modal_count == 0 || typeof(event.pageX) === "undefined" || typeof(event.pageY) === "undefined")
-        return;
+namespace modal {
+    export function initialize_modals() {
+        register_global_events();
+    }
+
+    const scrollSize = 18;
+    function scroll_bar_clicked(event){
+        const x = event.pageX,
+            y = event.pageY,
+            e = $(event.target);
+
+        if(e.hasScrollBar("height")){
+            const top = e.offset().top;
+            const right = e.offset().left + e.width();
+            const bottom = top +e.height();
+            const left = right - scrollSize;
+
+            if((y >= top && y <= bottom) && (x >= left && x <= right))
+                return true;
+        }
+
+        if(e.hasScrollBar("width")){
+            const bottom = e.offset().top + e.height();
+            const top = bottom - scrollSize;
+            const left = e.offset().left;
+            const right = left + e.width();
+
+            if((y >= top && y <= bottom) && (x >= left && x <= right))
+                return true;
+        }
+
+        return false;
+    }
+
+    function register_global_events() {
+        $(document).on('mousedown', (event: JQuery.MouseDownEvent) => {
+            /* pageX or pageY are undefined if this is an event executed via .trigger('click'); */
+            if(_global_modal_count == 0 || typeof(event.pageX) === "undefined" || typeof(event.pageY) === "undefined")
+                return;
 
 
-    let element = event.target as HTMLElement;
-    do {
-        if(element.classList.contains('modal-content'))
-            break;
+            let element = event.target as HTMLElement;
+            const original = element;
+            do {
+                if(element.classList.contains('modal-content'))
+                    break;
 
-        if(!element.classList.contains('modal'))
-            continue;
+                if(!element.classList.contains('modal'))
+                    continue;
 
-        if(element == _global_modal_last && _global_modal_last_time + 100 > Date.now())
-            break;
+                if(element == _global_modal_last && _global_modal_last_time + 100 > Date.now())
+                    break;
 
-        $(element).find("> .modal-dialog > .modal-content > .modal-header .button-modal-close").trigger('click');
-        break;
-    } while((element = element.parentElement));
-});
+                if(element === original && scroll_bar_clicked(event)) {
+                    _global_modal_last_time = Date.now();
+                    break;
+                }
+                $(element).find("> .modal-dialog > .modal-content > .modal-header .button-modal-close").trigger('click');
+                break;
+            } while((element = element.parentElement));
+        });
 
-$(document).on('keyup', (event: JQuery.KeyUpEvent) => {
-    if(_global_modal_count == 0 || typeof(event.target) === "undefined")
-        return;
+        $(document).on('keyup', (event: JQuery.KeyUpEvent) => {
+            if(_global_modal_count == 0 || typeof(event.target) === "undefined")
+                return;
 
-    if(event.key !== "Escape")
-        return;
+            if(event.key !== "Escape")
+                return;
 
-    let element = event.target as HTMLElement;
-    if(element.nodeName == "HTMLInputElement" || element.nodeName == "HTMLSelectElement" || element.nodeName == "HTMLTextAreaElement")
-        return;
+            let element = event.target as HTMLElement;
+            if(element.nodeName == "HTMLInputElement" || element.nodeName == "HTMLSelectElement" || element.nodeName == "HTMLTextAreaElement")
+                return;
 
-    do {
-        if(element.classList.contains('modal-content'))
-            break;
+            do {
+                if(element.classList.contains('modal-content'))
+                    break;
 
-        if(!element.classList.contains('modal'))
-            continue;
+                if(!element.classList.contains('modal'))
+                    continue;
 
-        if(element == _global_modal_last && _global_modal_last_time + 100 > Date.now())
-            break;
+                if(element == _global_modal_last && _global_modal_last_time + 100 > Date.now())
+                    break;
 
-        $(element).find("> .modal-dialog > .modal-content > .modal-header .button-modal-close").trigger('click');
-        break;
-    } while((element = element.parentElement));
-});
+                $(element).find("> .modal-dialog > .modal-content > .modal-header .button-modal-close").trigger('click');
+                break;
+            } while((element = element.parentElement));
+        });
+    }
+}
+modal.initialize_modals();
 
 let _global_modal_count = 0;
 let _global_modal_last: HTMLElement;
@@ -230,6 +273,9 @@ class Modal {
         if(!this.shown) return;
 
         _global_modal_count--;
+        if(_global_modal_last === this.htmlTag[0])
+            _global_modal_last = undefined;
+
         this.shown = false;
         this.htmlTag.removeClass('shown');
         setTimeout(() => {
