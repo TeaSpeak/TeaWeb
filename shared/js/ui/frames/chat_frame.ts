@@ -503,18 +503,20 @@ namespace chat {
                         log.debug(LogCategory.GENERAL, tr("Chat message contains URL: %o"), url);
                         if(url.protocol !== 'http:' && url.protocol !== 'https:')
                             break _try;
-                        if(flag_escaped)
+                        if(flag_escaped) {
+                            message = undefined;
                             words[index] = unescaped;
-                        else {
+                        } else {
                             message = undefined;
                             words[index] = "[url=" + url.toString() + "]" + url.toString() + "[/url]";
                         }
                     } catch(e) { /* word isn't an url */ }
 
                 if(unescaped.match(URL_REGEX)) {
-                    if(flag_escaped)
+                    if(flag_escaped) {
+                        message = undefined;
                         words[index] = unescaped;
-                    else {
+                    } else {
                         message = undefined;
                         words[index] = "[url=" + unescaped + "]" + unescaped + "[/url]";
                     }
