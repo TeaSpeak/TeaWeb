@@ -742,6 +742,8 @@ namespace watcher {
     export abstract class Watcher {
         readonly name: string;
 
+        protected verbose: boolean = false;
+
         private _process: ChildProcess;
         private _callback_init: () => any;
         private _callback_init_fail: (msg: string) => any;
@@ -807,7 +809,7 @@ namespace watcher {
                 this._callback_init();
 
             const data = buffer.toString();
-            if(false) {
+            if(this.verbose) {
                 for(const line of data.split("\n"))
                     console.log("%s: %s", this.name, line);
             }
@@ -834,6 +836,7 @@ namespace watcher {
     export class TSCWatcher extends Watcher {
         constructor() {
             super("TSC Watcher");
+            //this.verbose = true;
         }
 
         protected start_command(): string[] {
@@ -844,6 +847,7 @@ namespace watcher {
     export class SASSWatcher extends Watcher {
         constructor() {
             super("SASS Watcher");
+            this.verbose = true;
         }
 
         protected start_command(): string[] {
@@ -879,7 +883,7 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
     await new Promise(resolve => {});
 }
 
-async function main_develop(node: boolean, target: "client" | "web", port: number) {
+async function main_develop(node: boolean, target: "client" | "web", port: number, flags: string[]) {
     const files = await generator.search_files(APP_FILE_LIST, {
         source_path: __dirname,
         parameter: [],
@@ -890,11 +894,13 @@ async function main_develop(node: boolean, target: "client" | "web", port: numbe
 
     const tscwatcher = new watcher.TSCWatcher();
     try {
-        await tscwatcher.start();
+        if(flags.indexOf("--no-tsc") == -1)
+            await tscwatcher.start();
 
         const sasswatcher = new watcher.SASSWatcher();
         try {
-            await sasswatcher.start();
+            if(flags.indexOf("--no-sass") == -1)
+                await sasswatcher.start();
 
             try {
                 await server.launch(files, {
@@ -1020,8 +1026,10 @@ async function main(args: string[]) {
                     console.error("Unknown serve target %s.", args[1]);
                     return;
             }
+            const switches = [];
+            const pargs = args.slice(1).filter(e => e.startsWith("--") ? (switches.push(e), false) : true);
 
-            await main_develop(is_node, target, args.length > 2 ? parseInt(args[2]) : 8081);
+            await main_develop(is_node, target, pargs.length > 2 ? parseInt(pargs[2]) : 8081, switches);
             return;
         }
     }
