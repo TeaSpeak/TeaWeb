@@ -1,6 +1,11 @@
 namespace Modals {
-    export type InfoUpdateCallback = (info: ServerConnectionInfo | boolean) => any;
-    export function openServerInfoBandwidth(server: ServerEntry, update_callbacks?: InfoUpdateCallback[]) : Modal {
+    export enum RequestInfoStatus {
+        SUCCESS,
+        UNKNOWN,
+        NO_PERMISSION
+    }
+    export type ServerBandwidthInfoUpdateCallback = (status: RequestInfoStatus, info?: ServerConnectionInfo) => any;
+    export function openServerInfoBandwidth(server: ServerEntry, update_callbacks?: ServerBandwidthInfoUpdateCallback[]) : Modal {
         let modal: Modal;
         let own_callbacks = !update_callbacks;
         update_callbacks = update_callbacks || [];
@@ -24,7 +29,13 @@ namespace Modals {
 
         if(own_callbacks) {
             const updater = setInterval(() => {
-                server.request_connection_info().then(info => update_callbacks.forEach(e => e(info))).catch(error => update_callbacks.forEach(e => e(false)));
+                server.request_connection_info().then(info => update_callbacks.forEach(e => e(RequestInfoStatus.SUCCESS, info))).catch(error => {
+                    if(error instanceof CommandResult && error.id == ErrorID.PERMISSION_ERROR) {
+                        update_callbacks.forEach(e => e(RequestInfoStatus.NO_PERMISSION));
+                        return;
+                    }
+                    update_callbacks.forEach(e => e(RequestInfoStatus.UNKNOWN));
+                });
             }, 1000);
             modal.close_listener.push(() => clearInterval(updater));
         }
@@ -36,38 +47,41 @@ namespace Modals {
         return modal;
     }
 
-    function initialize_graph(modal: Modal, tag: JQuery, callbacks: InfoUpdateCallback[], fields: {uplaod: string, download: string}) {
+    function initialize_graph(modal: Modal, tag: JQuery, callbacks: ServerBandwidthInfoUpdateCallback[], fields: {uplaod: string, download: string}) {
         const canvas = tag.find("canvas")[0] as HTMLCanvasElement;
         const label_upload = tag.find(".upload");
         const label_download = tag.find(".download");
-        let last_info: ServerConnectionInfo | false = false;
+        let last_info: { status: RequestInfoStatus, info: ServerConnectionInfo };
         let custom_info = false;
 
         const show_info = (upload: number | undefined, download: number | undefined) => {
+            let fallback_text = last_info && last_info.status === RequestInfoStatus.NO_PERMISSION ? tr("No permission") : tr("receiving...");
+
             if(typeof upload !== "number")
                 upload = last_info ? last_info[fields.uplaod] : undefined;
+
             if(typeof download !== "number")
                 download = last_info ? last_info[fields.download] : undefined;
 
             if(typeof upload !== "number")
-                label_upload.text(tr("receiving..."));
+                label_upload.text(fallback_text);
             else
                 label_upload.text(MessageHelper.network.format_bytes(upload, {unit: "Bytes", time: "s", exact: false}));
 
             if(typeof download !== "number")
-                label_download.text(tr("receiving..."));
+                label_download.text(fallback_text);
             else
                 label_download.text(MessageHelper.network.format_bytes(download, {unit: "Bytes", time: "s", exact: false}));
         };
         show_info(undefined, undefined);
 
         const graph = new net.graph.Graph(canvas);
-        graph.insert_entry({ timestamp: Date.now(), upload: 0, download: 0});
-        callbacks.push((values: ServerConnectionInfo | false) => {
-            last_info = values;
+        graph.insert_entry({ timestamp: Date.now(), upload: undefined, download: undefined});
+        callbacks.push((status, values) => {
+            last_info = {status: status, info: values};
 
             if(!values) {
-                graph.insert_entry({ timestamp: Date.now(), upload: 0, download: 0});
+                graph.insert_entry({ timestamp: Date.now(), upload: undefined, download: undefined});
             } else {
                 graph.insert_entry({
                     timestamp: Date.now(),
@@ -110,21 +124,21 @@ namespace Modals {
         tag.addClass("window-resize-listener").on('resize', event => graph.resize());
     }
 
-    function initialize_current_bandwidth(modal: Modal, tag: JQuery, callbacks: InfoUpdateCallback[]) {
+    function initialize_current_bandwidth(modal: Modal, tag: JQuery, callbacks: ServerBandwidthInfoUpdateCallback[]) {
         initialize_graph(modal, tag, callbacks, {
             uplaod: "connection_bandwidth_sent_last_second_total",
             download: "connection_bandwidth_received_last_second_total"
         });
     }
 
-    function initialize_ft_bandwidth(modal: Modal, tag: JQuery, callbacks: InfoUpdateCallback[]) {
+    function initialize_ft_bandwidth(modal: Modal, tag: JQuery, callbacks: ServerBandwidthInfoUpdateCallback[]) {
         initialize_graph(modal, tag, callbacks, {
             uplaod: "connection_filetransfer_bandwidth_sent",
             download: "connection_filetransfer_bandwidth_received"
         });
     }
 
-    function initialize_general(tag: JQuery, callbacks: InfoUpdateCallback[]) {
+    function initialize_general(tag: JQuery, callbacks: ServerBandwidthInfoUpdateCallback[]) {
         const tag_packets_upload = tag.find(".statistic-packets .upload");
         const tag_packets_download = tag.find(".statistic-packets .download");
 
@@ -134,24 +148,37 @@ namespace Modals {
         const tag_ft_bytes_upload = tag.find(".statistic-ft-bytes .upload");
         const tag_ft_bytes_download = tag.find(".statistic-ft-bytes .download");
 
-        const update = (tag, value) => {
+        const update = (tag, value: undefined | null | number) => {
             if(typeof value === "undefined")
                 tag.text(tr("receiving..."));
+            else if(value === null)
+                tag.text(tr("no permissions"));
             else
                 tag.text(MessageHelper.network.format_bytes(value, {unit: "Bytes", exact: false}));
         };
 
-        callbacks.push((info: ServerConnectionInfo) => {
-            info = info ? info : {} as ServerConnectionInfo;
+        const props = [
+            {tag: tag_packets_download, property: "connection_packets_received_total"},
+            {tag: tag_packets_upload, property: "connection_packets_sent_total"},
 
-            update(tag_packets_download, info.connection_packets_received_total);
-            update(tag_packets_upload, info.connection_packets_sent_total);
+            {tag: tag_bytes_download, property: "connection_bytes_received_total"},
+            {tag: tag_bytes_upload, property: "connection_bytes_sent_total"},
 
-            update(tag_bytes_download, info.connection_bytes_received_total);
-            update(tag_bytes_upload, info.connection_bytes_sent_total);
+            {tag: tag_ft_bytes_upload, property: "connection_filetransfer_bytes_received_total"},
+            {tag: tag_ft_bytes_download, property: "connection_filetransfer_bytes_sent_total"},
+        ];
 
-            update(tag_ft_bytes_upload, info.connection_filetransfer_bytes_received_total);
-            update(tag_ft_bytes_download, info.connection_filetransfer_bytes_sent_total);
+        callbacks.push((status, info) => {
+            if(status === RequestInfoStatus.SUCCESS) {
+                for(const entry of props)
+                    update(entry.tag, info[entry.property]);
+            } else if(status === RequestInfoStatus.NO_PERMISSION) {
+                for(const entry of props)
+                    update(entry.tag, null);
+            } else {
+                for(const entry of props)
+                    update(entry.tag, undefined);
+            }
         });
     }
 }

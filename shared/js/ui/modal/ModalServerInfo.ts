@@ -1,8 +1,7 @@
 namespace Modals {
-    type InfoUpdateCallback = (info: ServerConnectionInfo | boolean) => any;
     export function openServerInfo(server: ServerEntry) {
         let modal: Modal;
-        let update_callbacks: InfoUpdateCallback[] = [];
+        let update_callbacks: ServerBandwidthInfoUpdateCallback[] = [];
 
         modal = createModal({
             header: tr("Server Information: ") + server.properties.virtualserver_name,
@@ -43,20 +42,24 @@ namespace Modals {
         });
 
         const updater = setInterval(() => {
-            server.request_connection_info().then(info => update_callbacks.forEach(e => e(info))).catch(error => update_callbacks.forEach(e => e(false)));
+            server.request_connection_info().then(info => update_callbacks.forEach(e => e(RequestInfoStatus.SUCCESS, info))).catch(error => {
+                if(error instanceof CommandResult && error.id == ErrorID.PERMISSION_ERROR) {
+                    update_callbacks.forEach(e => e(RequestInfoStatus.NO_PERMISSION));
+                    return;
+                }
+                update_callbacks.forEach(e => e(RequestInfoStatus.UNKNOWN));
+            });
         }, 1000);
 
 
         modal.htmlTag.find(".button-close").on('click', event => modal.close());
         modal.htmlTag.find(".button-show-bandwidth").on('click', event => {
-            const intervals = [];
-            const updater = (info) => {
-                intervals.forEach(e => e(info));
-            };
+            const custom_callbacks = [];
+            const custom_callback_caller = (status, info) => { custom_callbacks.forEach(e => e(status, info)); };
 
-            update_callbacks.push(updater);
-            Modals.openServerInfoBandwidth(server, intervals).close_listener.push(() => {
-                update_callbacks.remove(updater);
+            update_callbacks.push(custom_callback_caller);
+            Modals.openServerInfoBandwidth(server, custom_callbacks).close_listener.push(() => {
+                update_callbacks.remove(custom_callback_caller);
             });
         });
 
@@ -80,7 +83,7 @@ namespace Modals {
         });
     }
 
-    function apply_category_1(server: ServerEntry, tag: JQuery, update_callbacks: InfoUpdateCallback[]) {
+    function apply_category_1(server: ServerEntry, tag: JQuery, update_callbacks: ServerBandwidthInfoUpdateCallback[]) {
         /* server name */
         {
             const container = tag.find(".server-name");
@@ -131,7 +134,7 @@ namespace Modals {
         }
     }
 
-    function apply_category_2(server: ServerEntry, tag: JQuery, update_callbacks: InfoUpdateCallback[]) {
+    function apply_category_2(server: ServerEntry, tag: JQuery, update_callbacks: ServerBandwidthInfoUpdateCallback[]) {
         /* ip */
         {
             const container = tag.find(".server-ip");
@@ -164,28 +167,32 @@ namespace Modals {
         {
             const container = tag.find(".server-ping");
             container.text(tr("calculating..."));
-            update_callbacks.push(data => {
-                if(typeof(data) === "boolean")
+            update_callbacks.push((status, data) => {
+                if(status === RequestInfoStatus.SUCCESS)
+                    container.text(data.connection_ping.toFixed(0) + " " + "ms");
+                else if(status === RequestInfoStatus.NO_PERMISSION)
                     container.text(tr("No Permissions"));
                 else
-                    container.text(data.connection_ping.toFixed(0) + " " + "ms");
+                    container.text(tr("receiving..."));
             });
         }
 
         /* packet loss */
         {
             const container = tag.find(".server-packet-loss");
-            container.text(tr("calculating..."));
-            update_callbacks.push(data => {
-                if(typeof(data) === "boolean")
+            container.text(tr("receiving..."));
+            update_callbacks.push((status, data) => {
+                if(status === RequestInfoStatus.SUCCESS)
+                    container.text(data.connection_packetloss_total.toFixed(2) + "%");
+                else if(status === RequestInfoStatus.NO_PERMISSION)
                     container.text(tr("No Permissions"));
                 else
-                    container.text(data.connection_packetloss_total.toFixed(2) + "%");
+                    container.text(tr("receiving..."));
             });
         }
     }
 
-    function apply_category_3(server: ServerEntry, tag: JQuery, update_callbacks: InfoUpdateCallback[]) {
+    function apply_category_3(server: ServerEntry, tag: JQuery, update_callbacks: ServerBandwidthInfoUpdateCallback[]) {
         /* unique id */
         {
             const container = tag.find(".server-unique-id");

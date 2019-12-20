@@ -2,8 +2,8 @@ namespace net.graph {
     export type Entry = {
         timestamp: number;
 
-        upload: number;
-        download: number;
+        upload?: number;
+        download?: number;
 
         highlight?: boolean;
     }
@@ -163,8 +163,11 @@ namespace net.graph {
             }
 
             for(const entry of this._entries) {
-                this._entry_max.upload = Math.max(this._entry_max.upload, entry.upload);
-                this._entry_max.download = Math.max(this._entry_max.download, entry.download);
+                if(typeof(entry.upload) === "number")
+                    this._entry_max.upload = Math.max(this._entry_max.upload, entry.upload);
+
+                if(typeof(entry.download) === "number")
+                    this._entry_max.download = Math.max(this._entry_max.download, entry.download);
             }
 
             this._entry_max.upload *= this._max_space;
@@ -177,8 +180,11 @@ namespace net.graph {
 
             this._entries.push(entry);
 
-            this._entry_max.upload = Math.max(this._entry_max.upload, entry.upload * this._max_space);
-            this._entry_max.download = Math.max(this._entry_max.download, entry.download * this._max_space);
+            if(typeof(entry.upload) === "number")
+                this._entry_max.upload = Math.max(this._entry_max.upload, entry.upload * this._max_space);
+
+            if(typeof(entry.download) === "number")
+                this._entry_max.download = Math.max(this._entry_max.download, entry.download * this._max_space);
         }
 
         insert_entries(entries: Entry[]) {
@@ -310,7 +316,10 @@ namespace net.graph {
                     const floor = a => a; //Math.floor;
                     for(const entry of this._entries) {
                         x = floor((entry.timestamp - tb) * dtw);
-                        y = floor(hy - direction * Math.max(hy * (entry[type] / max), this.style[type].strike_width));
+                        if(typeof entry[type] === "number")
+                            y = floor(hy - direction * Math.max(hy * (entry[type] / max), this.style[type].strike_width));
+                        else
+                            y = hy - direction * this.style[type].strike_width;
 
                         if(entry.timestamp < tb) {
                             lx = x;
