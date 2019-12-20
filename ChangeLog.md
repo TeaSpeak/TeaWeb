@@ -6,6 +6,7 @@
     - Improved the server info modal experience (Correctly showing no permissions)
     - Improved "About" modal overflow behaviour
     - Allow the client to use the scroll bar without closing the modal within modals
+    - Improved bookmarks modal for smaller devices
     
 * **10.12.19**
     - Show the server online count along the server chat
