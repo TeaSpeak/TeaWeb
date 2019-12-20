@@ -143,3 +143,9 @@
 		background-color: #555;
 	}
 }
+
+@mixin text-dotdotdot() {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

@@ -141,7 +141,7 @@ namespace Modals {
                         }
 
                         container.append(
-                            $.spawn("div").addClass("name").text(entry.display_name)
+                            $.spawn("div").addClass("name").attr("title", entry.display_name).text(entry.display_name)
                         );
 
                         container.appendTo(container_bookmarks);
@@ -354,7 +354,7 @@ namespace Modals {
                 return template.children();
             },
             footer: undefined,
-            width: 750
+            width: "40em"
         });
 
         modal.htmlTag.dividerfy().find(".modal-body").addClass("modal-bookmarks");

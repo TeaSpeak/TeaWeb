@@ -44,6 +44,8 @@
 	height: 45em;
 	width: 80em;
 
+	@include user-select(none);
+
 	.container-tooltip {
 		flex-shrink: 0;
 		flex-grow: 0;
@@ -97,6 +99,8 @@
 			font-size: 1.5em;
 			color: #557edc;
 			text-transform: uppercase;
+
+			@include text-dotdotdot();
 		}
 
 		.container-bookmarks {
@@ -140,6 +144,8 @@
 
 					min-width: 5em;
 					align-self: center;
+
+					@include text-dotdotdot();
 				}
 
 				&:hover {
@@ -251,11 +257,15 @@
 			.container-name {
 				font-size: 2em;
 				color: #fcfcfc;
+
+				@include text-dotdotdot();
 			}
 
 			.container-address {
 				font-size: 1.5em;
 				color: #fcfcfc;
+
+				@include text-dotdotdot();
 			}
 		}
 
@@ -269,6 +279,9 @@
 			display: flex;
 			flex-direction: column;
 			justify-content: flex-start;
+
+			overflow-y: auto;
+			@include chat-scrollbar-vertical();
 
 			.group {
 				padding: .5em;
@@ -330,8 +343,8 @@
 				}
 
 				.container-image {
-					flex-grow: 0;
-					flex-shrink: 100;
+					flex-grow: 1;
+					flex-shrink: 1;
 
 					max-width: 15em;
 					max-height: 9em; /* minus one padding */
@@ -394,7 +407,7 @@
 							overflow: hidden;
 							text-overflow: ellipsis;
 
-							.server-region {
+							&.server-region {
 								> div {
 									display: inline-block;
 								}
@@ -433,9 +446,7 @@
 
 								max-width: 100%;
 
-								white-space: nowrap;
-								overflow: hidden;
-								text-overflow: ellipsis;
+								@include text-dotdotdot();
 							}
 						}
 
@@ -462,6 +473,16 @@
 					margin-left: .5em;
 				}
 			}
+		}
+	}
+}
+
+
+@media all and (max-width: 50em) {
+	.modal-body.modal-bookmarks {
+		.container-image {
+			margin: 0!important;
+			max-width: 0!important;
 		}
 	}
 }
