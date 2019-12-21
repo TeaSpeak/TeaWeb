@@ -248,7 +248,7 @@ namespace chat {
         private _html_input: JQuery<HTMLDivElement>;
         private _enabled: boolean;
         private __callback_text_changed;
-        private __callback_key_down
+        private __callback_key_down;
         private __callback_key_up;
         private __callback_paste;
 
@@ -557,7 +557,7 @@ namespace chat {
                     "softbreak": () => "\n",
 
                     "paragraph_open": () => "",
-                    "paragraph_close": () => "\n",
+                    "paragraph_close": () => "",
 
                     "strong_open": (renderer: Renderer, token: RemarkToken) => "[b]",
                     "strong_close": (renderer: Renderer, token: RemarkToken) => "[/b]",
