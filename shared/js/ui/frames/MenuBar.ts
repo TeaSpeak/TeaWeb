@@ -319,7 +319,7 @@ namespace top_menu {
                     handler.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
                     server_connections.active_connection_handler().serverConnection.disconnect();
                     handler.sound.play(Sound.CONNECTION_DISCONNECTED);
-                    this.log.log(log.server.Type.DISCONNECTED, {});
+                    handler.log.log(log.server.Type.DISCONNECTED, {});
                 }
                 control_bar.update_connection_state();
                 update_state();
