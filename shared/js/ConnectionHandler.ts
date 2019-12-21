@@ -554,17 +554,8 @@ class ConnectionHandler {
                 auto_reconnect = false;
                 break;
             case DisconnectReason.HANDSHAKE_BANNED:
-                this.log.log(log.server.Type.SERVER_BANNED, {
-                    invoker: {
-                        client_name: data["invokername"],
-                        client_id: parseInt(data["invokerid"]),
-                        client_unique_id: data["invokeruid"]
-                    },
-
-                    message: data["reasonmsg"],
-                    time: parseInt(data["time"])
-                });
-                this.sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
+                //Reason message already printed because of the command error handling
+                this.sound.play(Sound.CONNECTION_BANNED);
                 break;
             case DisconnectReason.CLIENT_BANNED:
                 this.log.log(log.server.Type.SERVER_BANNED, {
@@ -577,7 +568,7 @@ class ConnectionHandler {
                     message: data["reasonmsg"],
                     time: parseInt(data["time"])
                 });
-                this.sound.play(Sound.CONNECTION_BANNED); //TODO findout if it was a disconnect or a connect refuse
+                this.sound.play(Sound.CONNECTION_BANNED);
                 break;
             default:
                 log.error(LogCategory.CLIENT, tr("Got uncaught disconnect!"));

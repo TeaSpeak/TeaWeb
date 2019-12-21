@@ -131,7 +131,7 @@ namespace connection {
                     if(error.id == 1028) {
                         this.connection.client.handleDisconnect(DisconnectReason.SERVER_REQUIRES_PASSWORD);
                     } else if(error.id == 783 || error.id == 519) {
-                        error.extra_message = parseInt(error.extra_message) == NaN ? "8" : error.extra_message;
+                        error.extra_message = isNaN(parseInt(error.extra_message)) ? "8" : error.extra_message;
                         this.connection.client.handleDisconnect(DisconnectReason.IDENTITY_TOO_LOW, error);
                     } else if(error.id == 3329) {
                         this.connection.client.handleDisconnect(DisconnectReason.HANDSHAKE_BANNED, error);
