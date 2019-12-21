@@ -639,7 +639,7 @@ class ConnectionHandler {
         if(support_record && basic_voice_support)
             vconnection.set_encoder_codec(targetChannel.properties.channel_codec);
 
-        if(!this.serverConnection.support_voice() || !vconnection.connected()) {
+        if(!this.serverConnection.support_voice() || !this.serverConnection.connected() || !vconnection.connected()) {
             property_update["client_input_hardware"] = false;
             property_update["client_output_hardware"] = false;
             this.client_status.input_hardware = true; /* IDK if we have input hardware or not, but it dosn't matter at all so */
