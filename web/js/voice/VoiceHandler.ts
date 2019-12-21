@@ -150,7 +150,6 @@ namespace audio {
                 this.connection = connection;
 
                 this._type = settings.static_global("voice_connection_type", this._type);
-                this.send_task = setInterval(this.send_next_voice_packet.bind(this), 20); /* send all 20ms out voice packets */
             }
 
             destroy() {
@@ -218,6 +217,8 @@ namespace audio {
 
             private setup_js() {
                 if(!audio.js.VoiceConnection.javascript_encoding_supported()) return;
+                if(!this.send_task)
+                    this.send_task = setInterval(this.send_next_voice_packet.bind(this), 20); /* send all 20ms out voice packets */
             }
 
             async acquire_voice_recorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
