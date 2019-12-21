@@ -1166,25 +1166,14 @@ test
                 this.save_history();
         }
 
-        fix_scroll(animate: boolean) {
-            if(!this._html_message_container)
-                return;
+        unread_message_scroll_offset() : number | undefined {
+            if(!this._spacer_unread_message) return undefined;
+            return this._displayed_message_first_tag(this._spacer_unread_message)[0].offsetTop
+        }
 
-            let offset;
-            if(this._spacer_unread_message) {
-                offset = this._displayed_message_first_tag(this._spacer_unread_message)[0].offsetTop;
-            } else if(typeof(this._scroll_position) !== "undefined") {
-                offset = this._scroll_position;
-            } else {
-                offset = this._html_message_container[0].scrollHeight;
-            }
-            if(animate) {
-                this._html_message_container.stop(true).animate({
-                    scrollTop: offset
-                }, 'slow');
-            } else {
-                this._html_message_container.stop(true).scrollTop(offset);
-            }
+        fix_scroll(animate: boolean) {
+            if(this.handle.current_conversation() === this)
+                this.handle.fix_scroll(animate);
         }
 
         private _update_message_timestamp() {
@@ -1567,6 +1556,8 @@ test
         private _current_conversation: PrivateConveration = undefined;
         private _select_read_timer: number;
 
+        private _scrollbar: SimpleBar;
+
         constructor(handle: Frame) {
             this.handle = handle;
             this._chat_box = new ChatBox();
@@ -1609,6 +1600,7 @@ test
         destroy() {
             this._chat_box && this._chat_box.destroy();
             this._chat_box = undefined;
+            this._scrollbar = undefined;
 
             for(const conversation of this._conversations)
                 conversation.destroy();
@@ -1730,7 +1722,7 @@ test
                     this._current_conversation.set_unread_flag(false, true);
                 }, 20 * 1000); /* Lets guess you've read the new messages within 5 seconds */
             }
-            this._current_conversation.fix_scroll(false);
+            this.fix_scroll(false);
             this._current_conversation.entry_tag().addClass("selected");
             this.update_chatbox_state();
         }
@@ -1753,16 +1745,21 @@ test
                     this._current_conversation.set_unread_flag(false, true); /* only updates everything if the state changes */
             });
 
-            this._container_conversation_messages = this._container_conversation.find(".messages");
-            this._container_conversation_messages.on('scroll', event => {
+            this._container_conversation_messages = this._container_conversation.find(".container-messages");
+            if('SimpleBar' in window) {
+                this._scrollbar = new SimpleBar(this._container_conversation_messages[0]);
+                this._container_conversation_messages = $(this._scrollbar.getContentElement());
+            }
+            (this._scrollbar ? $(this._scrollbar.getScrollElement()) : this._container_conversation_messages).on('scroll', event => {
                 if(!this._current_conversation)
                     return;
 
-                const current_view = this._container_conversation_messages[0].scrollTop + this._container_conversation_messages[0].clientHeight + this._container_conversation_messages[0].clientHeight * .125;
-                if(current_view > this._container_conversation_messages[0].scrollHeight)
+                const scroll_element = this._scrollbar ? this._scrollbar.getScrollElement() : this._container_conversation_messages[0];
+                const current_view = scroll_element.scrollTop + scroll_element.clientHeight + scroll_element.clientHeight * .125;
+                if(current_view > scroll_element.scrollHeight)
                     this._current_conversation._scroll_position = undefined;
                 else
-                    this._current_conversation._scroll_position = this._container_conversation_messages[0].scrollTop;
+                    this._current_conversation._scroll_position = scroll_element.scrollTop;
             });
 
             this._container_conversation_list = this._html_tag.find(".conversation-list");
@@ -1776,8 +1773,9 @@ test
         }
 
         on_show() {
-            if(this._current_conversation)
-                this._current_conversation.fix_scroll(false);
+            if(this._scrollbar)
+                this._scrollbar.init();
+            this.fix_scroll(false);
         }
 
         update_input_format_helper() {
@@ -1786,6 +1784,30 @@ test
                 tag.removeClass("hidden").text(tr("*italic*, **bold**, ~~strikethrough~~, `code`, and more..."));
             } else {
                 tag.addClass("hidden");
+            }
+        }
+
+        fix_scroll(animate: boolean) {
+            if(!this._current_conversation) return;
+
+            if(this._scrollbar)
+                this._scrollbar.recalculate();
+
+            const scroll_element = this._scrollbar ? $(this._scrollbar.getScrollElement()) : this._container_conversation_messages;
+            let offset = this._current_conversation.unread_message_scroll_offset();
+            if(typeof(offset) === "undefined") {
+                if(typeof(this._current_conversation._scroll_position) !== "undefined") {
+                    offset = this._current_conversation._scroll_position;
+                } else {
+                    offset = scroll_element[0].scrollHeight;
+                }
+            }
+            if(animate) {
+                scroll_element.stop(true).animate({
+                    scrollTop: offset
+                }, 'slow');
+            } else {
+                scroll_element.stop(true).scrollTop(offset);
             }
         }
     }
@@ -1836,6 +1858,8 @@ test
             private _first_unread_message: Message;
             private _first_unread_message_pointer: ViewEntry;
 
+            private _scrollbar: SimpleBar;
+
             private _scroll_position: number | undefined; /* undefined to follow bottom | position for special stuff */
 
             constructor(handle: ConversationManager, channel_id: number) {
@@ -1847,16 +1871,20 @@ test
 
             html_tag() : JQuery { return this._html_tag; }
             destroy() {
-                this._first_unread_message_pointer.html_element.detach();
+                this._first_unread_message_pointer.html_element.remove();
                 this._first_unread_message_pointer = undefined;
 
-                this._view_older_messages.html_element.detach();
+                this._view_older_messages.html_element.remove();
                 this._view_older_messages = undefined;
 
+                this._scrollbar = undefined;
+
                 for(const view_entry of this._view_entries) {
-                    view_entry.html_element.detach();
+                    view_entry.html_element.remove();
                     clearTimeout(view_entry.update_timer);
                 }
+
+                this._html_tag.remove();
                 this._view_entries = [];
             }
 
@@ -1869,13 +1897,17 @@ test
                 this._container_no_support = this._html_tag.find(".not-supported").hide();
 
                 this._container_messages = this._html_tag.find(".container-messages");
-                this._container_messages.on('scroll', event => {
-                    const exact_position = this._container_messages[0].scrollTop + this._container_messages[0].clientHeight;
-                    const current_view = exact_position + this._container_messages[0].clientHeight * .125;
-                    if(current_view > this._container_messages[0].scrollHeight) {
+                if('SimpleBar' in window)
+                    this._scrollbar = new SimpleBar(this._container_messages[0]);
+
+                (this._scrollbar ? $(this._scrollbar.getScrollElement()) : this._container_messages).on('scroll', event => {
+                    const message_scroller = this._scrollbar ? this._scrollbar.getScrollElement() : this._container_messages[0];
+                    const exact_position = message_scroller.scrollTop + message_scroller.clientHeight;
+                    const current_view = exact_position + message_scroller.clientHeight * .125;
+                    if(current_view > message_scroller.scrollHeight) {
                         this._scroll_position = undefined;
                     } else {
-                        this._scroll_position = this._container_messages[0].scrollTop;
+                        this._scroll_position = message_scroller.scrollTop;
                     }
 
                     const will_visible = !!this._first_unread_message && this._first_unread_message_pointer.html_element[0].offsetTop > exact_position;
@@ -1892,7 +1924,7 @@ test
 
                 this._view_older_messages = this._generate_view_spacer(tr("Load older messages"), "old");
                 this._first_unread_message_pointer = this._generate_view_spacer(tr("Unread messages"), "new");
-                this._view_older_messages.html_element.appendTo(this._container_messages).on('click', event => {
+                this._view_older_messages.html_element.appendTo(this._scrollbar ? this._scrollbar.getContentElement() : this._container_messages).on('click', event => {
                     this.fetch_older_messages();
                 });
 
@@ -2095,7 +2127,7 @@ test
                             this._first_unread_message = entry;
 
                         this._first_unread_message_pointer.html_element.insertBefore(entry.html_element);
-                        this._container_messages.trigger('scroll'); /* updates the new message stuff */
+                        (this._scrollbar ? $(this._scrollbar.getScrollElement()) : this._container_messages).trigger('scroll'); /* updates the new message stuff */
                     }
                     if(typeof(update_view) !== "boolean" || update_view)
                         this.fix_scroll(true);
@@ -2111,6 +2143,11 @@ test
             private _scroll_fix_timer: number;
             private _scroll_animate: boolean;
 
+            on_show() {
+                if(this._scrollbar)
+                    this._scrollbar.init();
+            }
+
             fix_scroll(animate: boolean) {
                 if(this._scroll_fix_timer) {
                     this._scroll_animate = this._scroll_animate && animate;
@@ -2120,21 +2157,23 @@ test
                 this._scroll_fix_timer = setTimeout(() => {
                     this._scroll_fix_timer = undefined;
 
+                    if(this._scrollbar) this._scrollbar.recalculate();
+                    const scroll_element = this._scrollbar ? $(this._scrollbar.getScrollElement()) : this._container_messages;
                     let offset;
                     if(this._first_unread_message) {
                         offset = this._first_unread_message.html_element[0].offsetTop;
                     } else if(typeof(this._scroll_position) !== "undefined") {
                         offset = this._scroll_position;
                     } else {
-                        offset = this._container_messages[0].scrollHeight;
+                        offset = scroll_element[0].scrollHeight;
                     }
 
                     if(this._scroll_animate) {
-                        this._container_messages.stop(true).animate({
+                        scroll_element.stop(true).animate({
                             scrollTop: offset
                         }, 'slow');
                     } else {
-                        this._container_messages.stop(true).scrollTop(offset);
+                        scroll_element.stop(true).scrollTop(offset);
                     }
                 }, 5);
             }
@@ -2246,6 +2285,7 @@ test
                         return;
                 }
 
+                if(this._scrollbar) this._scrollbar.recalculate();
                 //TODO remove in cache? (_last_messages)
             }
 
@@ -2348,6 +2388,7 @@ test
                 if(this._current_conversation) {
                     this._container_conversation.children().detach();
                     this._container_conversation.append(conversation.html_tag());
+                    this._current_conversation.on_show();
                     this._current_conversation.fix_view_size();
                     this._current_conversation.fix_scroll(false);
                     this.update_chat_box();
@@ -2386,8 +2427,10 @@ test
             }
 
             on_show() {
-                if(this._current_conversation)
+                if(this._current_conversation) {
+                    this._current_conversation.on_show();
                     this._current_conversation.fix_scroll(false);
+                }
             }
 
             update_input_format_helper() {

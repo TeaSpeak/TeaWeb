@@ -131,6 +131,10 @@ const loader_javascript = {
             });
         }
 
+        await loader.load_scripts([
+            ["https://unpkg.com/simplebar@latest/dist/simplebar.min.js"]
+        ]);
+
         /* load some extends classes */
         await loader.load_scripts([
             ["js/connection/ConnectionBase.js"]
@@ -323,6 +327,9 @@ const loader_style = {
     },
 
     load_style_debug: async () => {
+        await loader.load_styles([
+            "https://unpkg.com/simplebar@latest/dist/simplebar.css"
+        ]);
         await loader.load_styles([
             "css/static/main.css",
             "css/static/main-layout.css",

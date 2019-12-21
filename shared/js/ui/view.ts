@@ -7,7 +7,14 @@
 /// <reference path="elements/context_menu.ts" />
 /// <reference path="modal/ModalCreateChannel.ts" />
 /// <reference path="../../backend/ppt.d.ts" />
+declare class SimpleBar {
+    constructor(element: HTMLElement);
 
+    init();
+    recalculate();
+    getContentElement() : HTMLElement;
+    getScrollElement() : HTMLElement;
+}
 
 class ChannelTree {
     client: ConnectionHandler;
@@ -32,11 +39,15 @@ class ChannelTree {
     private _listener_document_click;
     private _listener_document_key;
 
+    private _scroll_bar: SimpleBar;
+
     constructor(client) {
         this.client = client;
 
         this._tag_container = $.spawn("div").addClass("channel-tree-container");
         this._tag_entries = $.spawn("div").addClass("channel-tree");
+        if('SimpleBar' in window) /* for MSEdge, and may consider Firefox? */
+            this._scroll_bar = new SimpleBar(this._tag_container[0]);
 
         this.client_mover = new ClientMover(this);
         this.reset();
@@ -108,12 +119,16 @@ class ChannelTree {
 
     show_channel_tree() {
         this._tree_detached = false;
-        this._tag_entries.appendTo(this._tag_container);
+        if(this._scroll_bar)
+            this._tag_entries.appendTo(this._scroll_bar.getContentElement());
+        else
+            this._tag_entries.appendTo(this._tag_container);
 
         this.channels.forEach(e => {
             e.recalculate_repetitive_name();
             e.reorderClients();
         });
+        this._scroll_bar.recalculate();
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
@@ -187,6 +202,8 @@ class ChannelTree {
 
         if(channel == this.channel_last)
             this.channel_last = channel.channel_previous;
+
+        if(this._scroll_bar) this._scroll_bar.recalculate();
     }
 
     insertChannel(channel: ChannelEntry) {
@@ -244,6 +261,7 @@ class ChannelTree {
 
         channel.initializeListener();
         channel.update_family_index();
+        if(this._scroll_bar) this._scroll_bar.recalculate();
     }
 
     findChannel(channelId: number) : ChannelEntry | undefined {
@@ -354,6 +372,7 @@ class ChannelTree {
             }
         }
         client.set_audio_handle(undefined);
+        if(this._scroll_bar) this._scroll_bar.recalculate();
     }
 
     registerClient(client: ClientEntry) {
@@ -368,7 +387,6 @@ class ChannelTree {
     unregisterClient(client: ClientEntry) {
         if(!this.clients.remove(client))
             return;
-        client.tree_unregistered();
     }
 
     private _update_timer: number;
@@ -407,6 +425,7 @@ class ChannelTree {
         }
 
         client.update_family_index(); /* why the hell is this here?! */
+        if(this._scroll_bar) this._scroll_bar.recalculate();
         return client;
     }
 

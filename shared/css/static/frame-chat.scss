@@ -401,10 +401,14 @@ $client_info_avatar_size: 10em;
 					flex-shrink: 1;
 				}
 
-				.messages {
+				.container-messages {
 					@include user-select(none);
 
 					display: block;
+					&[data-simplebar] {
+						display: flex;
+					}
+
 					position: relative;
 
 					flex-grow: 0;
@@ -566,6 +570,7 @@ $client_info_avatar_size: 10em;
 			flex-grow: 1;
 			flex-shrink: 0;
 			min-height: calc(1.5em + 10px);
+			height: auto; /* fallback */
 			height: min-content;
 
 			display: flex;
@@ -733,6 +738,7 @@ $client_info_avatar_size: 10em;
 				justify-content: stretch;
 
 				position: relative;
+				overflow: hidden;
 
 				flex-grow: 1;
 				flex-shrink: 1;
@@ -756,11 +762,15 @@ $client_info_avatar_size: 10em;
 					flex-shrink: 1;
 
 					display: block;
+					&[data-simplebar] {
+						display: flex;
+					}
 
 					position: relative;
 
 					overflow-y: auto;
 					overflow-x: hidden;
+					@include chat-scrollbar();
 
 					min-height: 2em;
 
@@ -906,7 +916,6 @@ $client_info_avatar_size: 10em;
 						}
 					}
 
-					@include chat-scrollbar();
 				}
 
 				.new-message {

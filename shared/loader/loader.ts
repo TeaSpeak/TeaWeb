@@ -407,8 +407,10 @@ namespace loader {
                 };
                 tag.onload = () => {
                     cleanup();
-                    {
+
+                    try {
                         const css: CSSStyleSheet = tag.sheet as CSSStyleSheet;
+
                         const rules = css.cssRules;
                         const rules_remove: number[] = [];
                         const rules_add: string[] = [];
@@ -431,11 +433,14 @@ namespace loader {
                         }
                         for(const rule of rules_add)
                             css.insertRule(rule, rules_remove[0]);
+                    } catch(ex) {
+                        if(!(ex instanceof DOMException && ex.message.indexOf("Cannot access rules") != 0))
+                            console.error("Failed to postprocess style sheet: %o", ex);
                     }
 
                     if(config.verbose) console.debug("Style sheet %o loaded", path);
-                    setTimeout(resolve, 100);
-                };
+                    setTimeout(resolve, 0);
+                }
 
                 document.getElementById("style").appendChild(tag);
                 tag.href = path + (cache_tag || "");

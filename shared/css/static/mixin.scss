@@ -67,32 +67,15 @@
 }
 
 @mixin chat-scrollbar() {
-	& {
-		/* for moz */
-		scrollbar-color: #353535 #555;
-	}
-
-	&::-webkit-scrollbar-track {
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-		border-radius: .25em;
-		background-color: transparent;
-	}
-
-	&::-webkit-scrollbar {
-		width: .5em;
-		background-color: transparent;
-	}
-
-	&::-webkit-scrollbar-thumb {
-		border-radius: .25em;
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-		background-color: #555;
-	}
+	//We've currently no difference
+	@include chat-scrollbar-vertical();
+	//@include chat-scrollbar-horizontal();
 }
 
 @mixin chat-scrollbar-vertical() {
+	/*
 	& {
-		/* for moz */
+		// for moz
 		scrollbar-color: #353535 #555;
 		scrollbarWidth: .5em;
 	}
@@ -115,11 +98,28 @@
 		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
 		background-color: #555;
 	}
+	 */
+
+	& > .simplebar-track {
+		.simplebar-scrollbar {
+			&:before {
+				background: #555;
+				width: .5em;
+				left: unset;
+				right: unset;
+				border-radius: .25em;
+			}
+			&.simplebar-visible:before {
+				opacity: 1;
+			}
+		}
+	}
 }
 
 @mixin chat-scrollbar-horizontal() {
+	/*
 	& {
-		/* for moz */
+		// MOZ
 		scrollbar-color: #353535 #555;
 		scrollbarWidth: .5em;
 	}
@@ -142,6 +142,7 @@
 		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
 		background-color: #555;
 	}
+	 */
 }
 
 @mixin text-dotdotdot() {
