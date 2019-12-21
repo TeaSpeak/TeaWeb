@@ -2,6 +2,11 @@
 * **21.12.19**
     - Improved background performance when the microphone has been muted
     - Added support for `[ul]` and `[ol]` tags within the chat
+    - Disabled BBCode format by default (enableable via the settings)
+    - Added a hint under the chat box for the text formatting
+    - Added Headings to the chat
+    - Added `[hr]` or `___` to the chat
+    - Added support for tables within the chat
     
 * **20.12.19**
     - Fixing chat URL escaping
