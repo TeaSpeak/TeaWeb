@@ -280,7 +280,7 @@
                 bottom: 0;
 
                 width: 1px;
-                background-color: #a814147F;
+                @include background-color(#a814147F);
 
                 opacity: 1;
 

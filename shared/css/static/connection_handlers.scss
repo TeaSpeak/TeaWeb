@@ -102,10 +102,6 @@
 			&.active {
 				background-color: #2d2f32;
 				border-bottom: 1px solid #0d9cfd;
-
-				//-webkit-box-shadow: inset 4px -17px 50px -30px #0d9cfd99;
-				//-moz-box-shadow: inset 4px -17px 50px -30px #0d9cfd99;
-				//box-shadow: inset 4px -17px 50px -30px #0d9cfd99;
 			}
 		}
 
@@ -137,7 +133,9 @@
 			justify-content: center;
 
 
-			border: 1px #2222223b solid;
+			border: 1px solid;
+			@include hex-rgba(border-color, #2222223b);
+
 			border-radius: 2px;
 			background: #e7e7e7;
 			padding-left: 2px;

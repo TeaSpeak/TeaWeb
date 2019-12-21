@@ -54,11 +54,11 @@
 		}
 
 		&:hover:not(.disabled) {
-			background-color: #00000044;
+			background-color: rgba(0, 0, 0, 0.27);
 		}
 
 		&.disabled {
-			background-color: #00000022;
+			background-color: rgba(0, 0, 0, 0.13);
 		}
 
 		.sub-menu {
@@ -102,7 +102,7 @@
 		}
 
 		&.active {
-			background-color: #00000044;
+			background-color: rgba(0, 0, 0, 0.27);
 
 			> .sub-menu {
 				display: block;

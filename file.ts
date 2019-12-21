@@ -1029,7 +1029,7 @@ async function main(args: string[]) {
             const switches = [];
             const pargs = args.slice(1).filter(e => e.startsWith("--") ? (switches.push(e), false) : true);
 
-            await main_develop(is_node, target, pargs.length > 2 ? parseInt(pargs[2]) : 8081, switches);
+            await main_develop(is_node, target, pargs.length > 1 ? parseInt(pargs[1]) : 8081, switches);
             return;
         }
     }

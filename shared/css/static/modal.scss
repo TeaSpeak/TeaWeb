@@ -487,7 +487,7 @@
 .btn {
 	cursor: pointer;
 
-	background-color: #0000007F;
+	background-color: rgba(0, 0, 0, 0.5);
 
 	border-width: 0;
 	border-radius: $border_radius_middle;
@@ -505,10 +505,10 @@
 
 	&:disabled {
 		box-shadow: none;
-		background-color: #00000045;
+		background-color: rgba(0, 0, 0, 0.27);
 
 		&:hover {
-			background-color: #00000045;
+			background-color: rgba(0, 0, 0, 0.27);
 		}
 	}
 
@@ -611,7 +611,7 @@
 			@include transition(.4s);
 			border-radius: 50%;
 
-			box-shadow: 0 0 .2em 1px #00000044;
+			box-shadow: 0 0 .2em 1px rgba(0, 0, 0, 0.27);
 		}
 
 		.dot {
@@ -624,7 +624,7 @@
 			bottom: $slider_height / 2 - $ball_inner_width / 2;
 
 			background-color: #a5a5a5;
-			box-shadow: 0 0 1em 1px #a5a5a566;
+			box-shadow: 0 0 1em 1px rgba(165, 165, 165, 0.4);
 			border-radius: 50%;
 
 			@include transition(.4s);
@@ -684,7 +684,7 @@
 		left: ($button_size - $mark_size) / 2;
 
 		background-color: #46c0ec;
-		box-shadow: 0 0 .5em 1px #46c0ec66;
+		box-shadow: 0 0 .5em 1px rgba(70, 192, 236, 0.4);
 		border-radius: 50%;
 
 		@include transition(.4s);

@@ -149,3 +149,12 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+@mixin hex-rgba($property, $color) {
+	#{$property}: rgba(red($color), green($color), blue($color), alpha($color))
+}
+
+@mixin background-color($color) {
+	@include hex-rgba(background-color, $color);
+}
+

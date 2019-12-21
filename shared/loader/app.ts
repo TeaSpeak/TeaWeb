@@ -330,7 +330,6 @@ const loader_style = {
             "css/static/scroll.css",
             "css/static/channel-tree.css",
             "css/static/ts/tab.css",
-            "css/static/ts/chat.css",
             "css/static/ts/icons.css",
             "css/static/ts/icons_em.css",
             "css/static/ts/country.css",

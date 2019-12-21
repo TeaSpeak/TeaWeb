@@ -84,14 +84,14 @@
 						&:hover {
 							border-radius: .1em;
 
-							background-color: #00000011;
+							background-color: rgba(0, 0, 0, 0.07);
 							border: 1px solid black;
 						}
 
 						&.selected {
 							border-radius: .1em;
 
-							background-color: #00330011;
+							background-color: rgba(0, 51, 0, 0.07);
 							border: 1px solid red;
 						}
 
@@ -115,7 +115,7 @@
 				color: hsla(0, 0%, 40%, 1);
 
 				position: absolute;
-				background-color: #00000045;
+				background-color: rgba(0, 0, 0, 0.27);
 
 				cursor: not-allowed;
 
@@ -250,14 +250,14 @@
 				&:hover {
 					border-radius: .1em;
 
-					background-color: #00000011;
+					background-color: rgba(0, 0, 0, 0.07);
 					border: 1px solid black;
 				}
 
 				&.selected {
 					border-radius: .1em;
 
-					background-color: #00330011;
+					background-color: rgba(0, 51, 0, 0.07);
 					border: 1px solid red;
 				}
 
@@ -316,15 +316,15 @@
 			border-radius: $border_radius_middle;
 
 			&.container-error {
-				border-color: #8000007F;
-				background-color: #80000040;
+				border-color: rgba(128, 0, 0, 0.5);
+				background-color: rgba(128, 0, 0, 0.25);
 			}
 
 			&.container-success {
 				margin-top: .5em;
 
-				border-color: #328f3340;
-				background-color: #328f3320;
+				border-color: rgba(50, 143, 51, 0.25);
+				background-color: rgba(50, 143, 51, 0.13);
 			}
 
 			padding: .5em;
@@ -423,11 +423,11 @@
 						height: 100%;
 
 						&.bg-danger {
-							background-color: #8000007F;
+							background-color: rgba(128, 0, 0, 0.5);
 						}
 
 						&.bg-success {
-							background-color: #328f337F;
+							background-color: rgba(50, 143, 51, 0.5);
 						}
 
 						@include transition(width 1s ease-in-out, background-color $button_hover_animation_time ease-in-out);
