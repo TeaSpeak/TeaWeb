@@ -118,9 +118,9 @@ namespace Modals {
 
         modal.htmlTag.find(".modal-body").addClass("modal-connect");
 
-        const container_last_servers = modal.htmlTag.find(".container-last-servers");
         /* server list toggle */
         {
+            const container_last_servers = modal.htmlTag.find(".container-last-servers");
             const button = modal.htmlTag.find(".button-toggle-last-servers");
             const set_show = shown => {
                 container_last_servers.toggleClass('shown', shown);
@@ -134,8 +134,8 @@ namespace Modals {
         }
 
         const apply = (header, body, footer) => {
-            const container = modal.htmlTag.find(".container-last-servers .table .body");
-            const container_empty = container.find(".body-empty");
+            const container_last_server_body = modal.htmlTag.find(".container-last-servers .table .body");
+            const container_empty = container_last_server_body.find(".body-empty");
             let current_connect_data: connection_log.ConnectionEntry;
 
             const button_connect = footer.find(".button-connect");
@@ -150,10 +150,9 @@ namespace Modals {
             let updateFields = (reset_current_data: boolean) => {
                 if(reset_current_data) {
                     current_connect_data = undefined;
-                    container.find(".selected").removeClass("selected");
+                    container_last_server_body.find(".selected").removeClass("selected");
                 }
 
-                console.log("Updating");
                 let address = input_address.val().toString();
                 settings.changeGlobal(Settings.KEY_CONNECT_ADDRESS, address);
                 let flag_address = !!address.match(Regex.IP_V4) || !!address.match(Regex.IP_V6) || !!address.match(Regex.DOMAIN);
@@ -180,7 +179,6 @@ namespace Modals {
                     if(event.keyCode == KeyCode.KEY_ENTER && !event.shiftKey)
                         button_connect.trigger('click');
                 });
-
             button_manage.on('click', event => {
                 const modal = Modals.spawnSettingsModal("identity-profiles");
                 modal.close_listener.push(() => {
@@ -189,7 +187,7 @@ namespace Modals {
                 return true;
             });
 
-            const last_nickname = settings.static_global(Settings.KEY_CONNECT_USERNAME, undefined);
+            /* Connect Profiles */
             {
                 for(const profile of profiles.profiles()) {
                     input_profile.append(
@@ -198,18 +196,25 @@ namespace Modals {
                 }
 
                 input_profile.on('change', event => {
-                    selected_profile = profiles.find_profile(input_profile.val() as string);
+                    selected_profile = profiles.find_profile(input_profile.val() as string) || profiles.default_profile();
                     {
                         settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, undefined);
                         input_nickname
                             .attr('placeholder', selected_profile.connect_username() || "Another TeaSpeak user")
                             .val("");
                     }
+
+                    settings.changeGlobal(Settings.KEY_CONNECT_PROFILE, selected_profile.id);
                     input_profile.toggleClass("is-invalid", !selected_profile || !selected_profile.valid());
                     updateFields(true);
                 });
-                input_profile.val(connect_profile && connect_profile.enforce ? connect_profile.profile.id : connect_profile && connect_profile.profile ? connect_profile.profile.id : 'default').trigger('change');
+                input_profile.val(connect_profile && connect_profile.profile ?
+                    connect_profile.profile.id :
+                    settings.static_global(Settings.KEY_CONNECT_PROFILE, "default")
+                ).trigger('change');
             }
+
+            const last_nickname = settings.static_global(Settings.KEY_CONNECT_USERNAME, undefined);
             if(last_nickname) /* restore */
                 settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, last_nickname);
 
@@ -258,7 +263,7 @@ namespace Modals {
             });
 
 
-            /* server list show */
+            /* connect history show */
             {
                 for(const entry of connection_log.history().slice(0, 10)) {
                     $.spawn("div").addClass("row").append(
@@ -270,7 +275,7 @@ namespace Modals {
                                 row.detach();
                             });
                             connection_log.delete_entry(entry.address);
-                            container_empty.toggle(container.children().length > 1);
+                            container_empty.toggle(container_last_server_body.children().length > 1);
                         })
                     ).append(
                         $.spawn("div").addClass("column name").append([
@@ -296,18 +301,17 @@ namespace Modals {
 
                         event.preventDefault();
                         current_connect_data = entry;
-                        container.find(".selected").removeClass("selected");
+                        container_last_server_body.find(".selected").removeClass("selected");
                         $(event.target).parent('.row').addClass('selected');
 
                         input_address.val(entry.address.hostname + (entry.address.port != 9987 ? (":" + entry.address.port) : ""));
-                        input_password.val(entry.password_hash ? "WolverinDEV Yeahr!" : "").trigger('change');
+                        input_password.val(entry.flag_password && entry.password_hash ? "WolverinDEV Yeahr!" : "").trigger('change');
                     }).on('dblclick', event => {
                         current_connect_data = entry;
                         button_connect.trigger('click');
-                    }).appendTo(container);
+                    }).appendTo(container_last_server_body);
                     container_empty.toggle(false);
                 }
-
             }
         };
         apply(modal.htmlTag, modal.htmlTag, modal.htmlTag);

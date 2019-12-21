@@ -292,6 +292,7 @@ class ConnectionHandler {
         this.channelTree.toggle_server_queries(this.client_status.queries_visible);
 
         this.sync_status_with_server();
+        this.channelTree.server.updateProperties();
         /*
         No need to update the voice stuff because as soon we see ourself we're doing it
         this.update_voice_status();

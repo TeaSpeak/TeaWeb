@@ -197,7 +197,8 @@ class Settings extends StaticSettings {
         key: 'connect_address'
     };
     static readonly KEY_CONNECT_PROFILE: SettingsKey<string> = {
-        key: 'connect_profile'
+        key: 'connect_profile',
+        default_value: 'default'
     };
     static readonly KEY_CONNECT_USERNAME: SettingsKey<string> = {
         key: 'connect_username'

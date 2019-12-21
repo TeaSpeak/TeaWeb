@@ -1230,6 +1230,9 @@ namespace Modals {
                 profiles.set_default_profile(selected_profile.identity);
                 profiles.mark_need_save();
                 update_profiles(selected_profile.identity.id);
+
+                /* set the connect profile to the just set once */
+                settings.changeGlobal(Settings.KEY_CONNECT_PROFILE, "default");
             });
 
             selected_profile_changed.push(() => {

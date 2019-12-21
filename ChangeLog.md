@@ -7,6 +7,9 @@
     - Added Headings to the chat
     - Added `[hr]` or `___` to the chat
     - Added support for tables within the chat
+    - Fixed "undefined" history when pressing `arrowup` within the chat box
+    - Correctly logging ban messages within the server log
+    - Capturing last used profile for connect
     
 * **20.12.19**
     - Fixing chat URL escaping
