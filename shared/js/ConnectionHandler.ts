@@ -651,6 +651,8 @@ class ConnectionHandler {
             property_update["client_input_hardware"] = false;
             property_update["client_output_hardware"] = false;
             this.client_status.input_hardware = true; /* IDK if we have input hardware or not, but it dosn't matter at all so */
+
+            /* no icons are shown so no update at all */
         } else {
             const audio_source = vconnection.voice_recorder();
             const recording_supported = typeof(audio_source) !== "undefined" && audio_source.record_supported && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
@@ -659,9 +661,8 @@ class ConnectionHandler {
             property_update["client_input_hardware"] = recording_supported;
             property_update["client_output_hardware"] = playback_supported;
             this.client_status.input_hardware = recording_supported;
-        }
 
-        if(this.serverConnection && this.serverConnection.connected()) {
+            /* update icons */
             const client_properties = this.getClient().properties;
             for(const key of Object.keys(property_update)) {
                 if(client_properties[key] === property_update[key])
@@ -680,10 +681,10 @@ class ConnectionHandler {
                     this.getClient().updateVariables(...updates);
                 });
             }
-        } else { /* no icons are shown so no update at all */ }
+        }
 
 
-        if(targetChannel && (!vconnection || vconnection.connected())) {
+        if(targetChannel && basic_voice_support) {
             const encoding_supported = vconnection && vconnection.encoding_supported(targetChannel.properties.channel_codec);
             const decoding_supported = vconnection && vconnection.decoding_supported(targetChannel.properties.channel_codec);
 

@@ -89,8 +89,13 @@ namespace audio {
                 active: boolean = false; /* if true the filter filters! */
                 callback_active_change: (new_state: boolean) => any;
 
+                paused: boolean = true;
+
                 abstract initialize(context: AudioContext, source_node: AudioNode);
                 abstract finalize();
+
+                /* whatever the input has been paused and we don't expect any input */
+                abstract set_pause(flag: boolean);
 
                 is_enabled(): boolean {
                     return this.enabled;
@@ -117,8 +122,7 @@ namespace audio {
                 private _smooth_attack = 0;
 
                 finalize() {
-                    clearInterval(this._update_task);
-                    this._update_task = 0;
+                    this.set_pause(true);
 
                     if(this.source_node) {
                         try { this.source_node.disconnect(this._analyser) } catch (error) {}
@@ -147,10 +151,12 @@ namespace audio {
 
                     this.active = false;
                     this.audio_node.gain.value = 1;
-                    this._update_task = setInterval(() => this._analyse(), JThresholdFilter.update_task_interval);
 
                     this.source_node.connect(this.audio_node);
                     this.source_node.connect(this._analyser);
+
+                    /* force update paused state */
+                    this.set_pause(!(this.paused = !this.paused));
                 }
 
                 get_margin_frames(): number { return this._margin_frames; }
@@ -173,8 +179,6 @@ namespace audio {
                 set_release_smooth(value: number) {
                     this._smooth_release = value;
                 }
-
-
 
                 get_threshold(): number {
                     return this._threshold;
@@ -222,7 +226,7 @@ namespace audio {
                 }
 
                 private _update_gain_node() {
-                    let state = false;
+                    let state;
                     if(this._current_level > this._threshold) {
                         this._silence_count = 0;
                         state = true;
@@ -241,6 +245,24 @@ namespace audio {
                             this.active = true;
                             this.callback_active_change(true);
                         }
+                    }
+                }
+
+                set_pause(flag: boolean) {
+                    if(flag === this.paused) return;
+                    this.paused = flag;
+
+                    if(this.paused) {
+                        clearInterval(this._update_task);
+                        this._update_task = undefined;
+
+                        if(this.active) {
+                            this.active = false;
+                            this.callback_active_change(false);
+                        }
+                    } else {
+                        if(!this._update_task && this._analyser)
+                            this._update_task = setInterval(() => this._analyse(), JThresholdFilter.update_task_interval);
                     }
                 }
             }
@@ -282,6 +304,10 @@ namespace audio {
                     this.callback_active_change(state);
                     return Promise.resolve();
                 }
+
+                set_pause(flag: boolean) {
+                    this.paused = flag;
+                }
             }
         }
 
@@ -296,6 +322,7 @@ namespace audio {
             private _audio_context: AudioContext;
             private _source_node: AudioNode; /* last node which could be connected to the target; target might be the _consumer_node */
             private _consumer_callback_node: ScriptProcessorNode;
+            private readonly _consumer_audio_callback;
             private _volume_node: GainNode;
             private _mute_node: GainNode;
 
@@ -309,6 +336,7 @@ namespace audio {
 
             constructor() {
                 player.on_ready(() => this._audio_initialized());
+                this._consumer_audio_callback = this._audio_callback.bind(this);
             }
 
             private _audio_initialized() {
@@ -321,12 +349,12 @@ namespace audio {
                 this._mute_node.connect(this._audio_context.destination);
 
                 this._consumer_callback_node = this._audio_context.createScriptProcessor(1024 * 4);
-                this._consumer_callback_node.addEventListener('audioprocess', event => this._audio_callback(event));
                 this._consumer_callback_node.connect(this._mute_node);
 
                 this._volume_node = this._audio_context.createGain();
                 this._volume_node.gain.value = this._volume;
 
+                this._initialize_filters();
                 if(this._state === InputState.INITIALIZING)
                     this.start();
             }
@@ -453,6 +481,11 @@ namespace audio {
                     }
                     this._current_stream = _result;
 
+                    for(const f of this._filters)
+                        if(f.is_enabled() && f instanceof filter.JAbstractFilter)
+                            f.set_pause(false);
+                    this._consumer_callback_node.addEventListener('audioprocess', this._consumer_audio_callback);
+
                     this._current_audio_stream = this._audio_context.createMediaStreamSource(this._current_stream);
                     this._current_audio_stream.connect(this._volume_node);
                     this._state = InputState.RECORDING;
@@ -489,6 +522,11 @@ namespace audio {
 
                 this._current_stream = undefined;
                 this._current_audio_stream = undefined;
+                for(const f of this._filters)
+                    if(f.is_enabled() && f instanceof filter.JAbstractFilter)
+                        f.set_pause(true);
+                if(this._consumer_callback_node)
+                    this._consumer_callback_node.removeEventListener('audioprocess', this._consumer_audio_callback);
                 return undefined;
             }
 
@@ -573,6 +611,7 @@ namespace audio {
                 for(const _filter of this._filters) {
                     if(!_filter.is_enabled())
                         continue;
+
                     const c_filter = _filter as any as filter.JAbstractFilter<AudioNode>;
                     c_filter.finalize();
                     c_filter.enabled = false;
@@ -591,6 +630,7 @@ namespace audio {
                     return;
 
                 filter.enabled = false;
+                filter.set_pause(true);
                 filter.finalize();
                 this._initialize_filters();
                 this._recalculate_filter_status();
@@ -602,6 +642,7 @@ namespace audio {
                     return;
 
                 filter.enabled = true;
+                filter.set_pause(typeof this._current_audio_stream !== "object");
                 this._initialize_filters();
                 this._recalculate_filter_status();
             }
