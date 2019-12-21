@@ -288,6 +288,7 @@
                     <div class="chatbox">
                         <div class="container-typing">{{tr "Partner is typing..." /}}</div>
                         <node key="chatbox"></node>
+                        <div class="container-format-helper"></div>
                     </div>
                 </div>
             </div>
@@ -356,6 +357,7 @@
             <div class="container-channel-chat">
                 <div class="container-chat"></div>
                 <node key="chatbox"></node>
+                <div class="container-format-helper"></div>
             </div>
         </script>
 
@@ -2000,6 +2002,13 @@
                                 <div class="mark"></div>
                             </div>
                             <a>{{tr "Enables markdown input support for chat. " /}}</a>
+                        </label>
+                        <label>
+                            <div class="checkbox">
+                                <input type="checkbox" class="option-support-bbcode">
+                                <div class="mark"></div>
+                            </div>
+                            <a>{{tr "Enable the BBCode syntax for your chat." /}}</a>
                         </label>
                         <div class="container-icon-size">
                             <div>{{tr "Chat-icon size:" /}}<a class="value">100%</a></div>

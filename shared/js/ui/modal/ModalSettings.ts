@@ -344,11 +344,23 @@ namespace Modals {
             }).prop("checked", settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES));
         }
 
+        const update_format_helper = () => server_connections.server_connection_handlers().map(e => e.side_bar).forEach(e => {
+            e.private_conversations().update_input_format_helper();
+            e.channel_conversations().update_input_format_helper();
+        });
         {
             const option = container.find(".option-support-markdown") as JQuery<HTMLInputElement>;
             option.on('change', event => {
                 settings.changeGlobal(Settings.KEY_CHAT_ENABLE_MARKDOWN, option[0].checked);
+                update_format_helper();
             }).prop("checked", settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
+        }
+        {
+            const option = container.find(".option-support-bbcode") as JQuery<HTMLInputElement>;
+            option.on('change', event => {
+                settings.changeGlobal(Settings.KEY_CHAT_ENABLE_BBCODE, option[0].checked);
+                update_format_helper();
+            }).prop("checked", settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE));
         }
         {
             const option = container.find(".option-url-tagging") as JQuery<HTMLInputElement>;

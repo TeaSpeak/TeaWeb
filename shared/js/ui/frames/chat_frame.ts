@@ -1768,6 +1768,7 @@ test
             this._container_conversation_list = this._html_tag.find(".conversation-list");
             this._html_no_chats = this._container_conversation_list.find(".no-chats");
             this._container_typing = this._html_tag.find(".container-typing");
+            this.update_input_format_helper();
         }
 
         try_input_focus() {
@@ -1777,6 +1778,15 @@ test
         on_show() {
             if(this._current_conversation)
                 this._current_conversation.fix_scroll(false);
+        }
+
+        update_input_format_helper() {
+            const tag = this._html_tag.find(".container-format-helper");
+            if(settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN)) {
+                tag.removeClass("hidden").text(tr("*italic*, **bold**, ~~strikethrough~~, `code`, and more..."));
+            } else {
+                tag.addClass("hidden");
+            }
         }
     }
 
@@ -2325,6 +2335,7 @@ test
                     if(this._current_conversation)
                         this._current_conversation.mark_read();
                 });
+                this.update_input_format_helper();
             }
 
             set_current_channel(channel_id: number, update_info_frame?: boolean) {
@@ -2377,6 +2388,15 @@ test
             on_show() {
                 if(this._current_conversation)
                     this._current_conversation.fix_scroll(false);
+            }
+
+            update_input_format_helper() {
+                const tag = this._html_tag.find(".container-format-helper");
+                if(settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN)) {
+                    tag.removeClass("hidden").text(tr("*italic*, **bold**, ~~strikethrough~~, `code`, and more..."));
+                } else {
+                    tag.addClass("hidden");
+                }
             }
         }
     }

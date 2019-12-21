@@ -1334,5 +1334,26 @@ $client_info_avatar_size: 10em;
 				vertical-align: text-bottom;
 			}
 		}
+
+		.container-format-helper {
+			flex-shrink: 0;
+			flex-grow: 0;
+
+			min-height: unset;
+			height: initial;
+
+			color: #555555;
+			font-size: .8em;
+			text-align: right;
+			margin: -3px 2px 2px 2.5em;
+
+			@include text-dotdotdot();
+			@include transition($button_hover_animation_time ease-in-out);
+
+			max-height: 2em; /* for a smooth transition */
+			&.hidden {
+				max-height: 0;
+			}
+		}
 	}
 }

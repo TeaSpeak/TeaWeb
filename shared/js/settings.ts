@@ -264,7 +264,7 @@ class Settings extends StaticSettings {
 
     static readonly KEY_CHAT_ENABLE_BBCODE: SettingsKey<boolean> = {
         key: 'chat_enable_bbcode',
-        default_value: true,
+        default_value: false,
         description: 'Enabled bbcode support in chat.'
     };
 

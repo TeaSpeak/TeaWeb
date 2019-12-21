@@ -1,4 +1,8 @@
 # Changelog:
+* **21.12.19**
+    - Improved background performance when the microphone has been muted
+    - Added support for `[ul]` and `[ol]` tags within the chat
+    
 * **20.12.19**
     - Fixing chat URL escaping
     - Fixed issue [#77](https://github.com/TeaSpeak/TeaWeb/issues/77)
