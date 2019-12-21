@@ -1355,5 +1355,30 @@ $client_info_avatar_size: 10em;
 				max-height: 0;
 			}
 		}
+
+		/* special xbbcode formats */
+		.container-message .message {
+			hr {
+				border: none;
+				border-top: .125em solid #555;
+
+				margin-top: .1em;
+				margin-bottom: .1em;
+			}
+
+			table {
+				th, td {
+					border-color: #1e2025;
+				}
+
+				tr {
+					background-color: #303036;
+				}
+
+				tr:nth-child(2n) {
+					background-color: #25252a;
+				}
+			}
+		}
 	}
 }

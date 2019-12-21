@@ -624,8 +624,8 @@ test
                     "code": (renderer: Renderer, token: RemarkToken) => "[i-code]" + xbbcode.escape(token.content) + "[/i-code]",
                     "fence": (renderer: Renderer, token: RemarkToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + xbbcode.escape(token.content) + "[/code]",
 
-                    "heading_open": (renderer: Renderer, token: RemarkToken) => "[h" + Math.min(3, token.hLevel) + "]",
-                    "heading_close": (renderer: Renderer, token: RemarkToken) => "[/h" + Math.min(3, token.hLevel) + "]",
+                    "heading_open": (renderer: Renderer, token: RemarkToken) => "[size=" + (9 - Math.min(4, token.hLevel)) + "]",
+                    "heading_close": (renderer: Renderer, token: RemarkToken) => "[/size][hr]",
 
                     "hr": () => "[hr]",
 

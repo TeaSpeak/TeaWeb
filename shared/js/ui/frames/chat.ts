@@ -101,13 +101,16 @@ namespace MessageHelper {
                 "color",
                 "url",
                 "code",
-                "icode",
-                "i-code",
+                "i-code", "icode",
                 "sub", "sup",
-                "h1", "h2", "h3",
+                "size",
+                "hr",
 
                 "ul", "ol", "list",
                 "li",
+
+                "table",
+                "tr", "td", "th",
                 /* "img" */
             ] //[img]https://i.ytimg.com/vi/kgeSTkZssPg/maxresdefault.jpg[/img]
         });
