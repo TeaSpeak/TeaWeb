@@ -257,7 +257,7 @@ namespace chat {
 
         private _message_history: string[] = [];
         private _message_history_length = 100;
-        private _message_history_index = 1;
+        private _message_history_index = 0;
 
         typing_interval: number = 2000; /* update frequency */
         callback_typing: () => any;

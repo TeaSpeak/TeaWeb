@@ -542,6 +542,25 @@ namespace log {
             MessageBuilders["reconnect_execute"] = (data: event.ReconnectExecute, options) => {
                 return tra("Reconnecting...")
             };
+
+            MessageBuilders["server_banned"] = (data: event.ServerBanned, options) => {
+                let result: JQuery[];
+
+                const time = data.time == 0 ? tr("ever") : MessageHelper.format_time(data.time * 1000, tr("one second"));
+                if(data.invoker.client_id > 0) {
+                    if(data.message)
+                        result = tra("You've been banned from the server by {0} for {1}. Reason: {2}", client_tag(data.invoker), time, data.message);
+                    else
+                        result = tra("You've been banned from the server by {0} for {1}.", client_tag(data.invoker), time);
+                } else {
+                    if(data.message)
+                        result = tra("You've been banned from the server for {0}. Reason: {1}", time, data.message);
+                    else
+                        result = tra("You've been banned from the server for {0}.", time);
+                }
+
+                return result.map(e => e.addClass("log-error"));
+            };
         }
     }
 }
