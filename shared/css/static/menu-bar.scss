@@ -50,6 +50,10 @@
 			.container-label {
 				display: inline-block;
 				align-self: center;
+
+				a {
+					white-space: nowrap;
+				}
 			}
 		}
 

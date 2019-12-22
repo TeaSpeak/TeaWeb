@@ -798,6 +798,10 @@ namespace Modals {
         /* initialize sound list */
         {
             const container_sounds = contianer.find(".container-sounds");
+            let scrollbar: SimpleBar;
+            if("SimpleBar" in window)
+                scrollbar = new SimpleBar(container_sounds[0]);
+
 
             const generate_sound = (_sound: Sound) => {
                 let tag_play_pause: JQuery, tag_play: JQuery, tag_pause: JQuery, tag_input_muted: JQuery;
@@ -854,7 +858,7 @@ namespace Modals {
 
             //container-sounds
             for(const sound_key in Sound)
-                generate_sound(Sound[sound_key as any] as any).appendTo(container_sounds);
+                generate_sound(Sound[sound_key as any] as any).appendTo(scrollbar ? scrollbar.getContentElement() : container_sounds);
 
             /* the filter */
             const input_filter = contianer.find(".input-sounds-filter");
