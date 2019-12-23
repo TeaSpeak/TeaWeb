@@ -105,6 +105,7 @@ namespace MessageHelper {
                 "sub", "sup",
                 "size",
                 "hr",
+                "left", "l", "center", "c", "right", "r",
 
                 "ul", "ol", "list",
                 "li",
