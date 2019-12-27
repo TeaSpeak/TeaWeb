@@ -228,7 +228,7 @@ namespace connection {
                         }).catch(error => {
                             createErrorModal(tr("Use privilege key"), MessageHelper.formatMessage(tr("Failed to use privilege key: {}"), error instanceof CommandResult ? error.message : error)).open();
                         });
-                }, { field_placeholder: 'Enter Privilege Key' }).open();
+                }, { field_placeholder: tr("Enter Privilege Key") }).open();
             }
 
             this.connection_handler.log.log(log.server.Type.CONNECTION_CONNECTED, {
