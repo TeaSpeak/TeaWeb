@@ -1,4 +1,11 @@
 # Changelog:
+* **30.01.20**
+    - Improved chat message parsing
+        - Fixed copy & paste error
+        - Better handling for spaces & tab indention
+    - Fixed internal audio codec error
+    - Fixed modal spam on microphone start fail
+        
 * **21.12.19**
     - Improved background performance when the microphone has been muted
     - Added support for `[ul]` and `[ol]` tags within the chat
@@ -19,6 +26,7 @@
     - Improved "About" modal overflow behaviour
     - Allow the client to use the scroll bar without closing the modal within modals
     - Improved bookmarks modal for smaller devices
+    - Fixed invalid white space representation
     
 * **10.12.19**
     - Show the server online count along the server chat

@@ -254,6 +254,12 @@
                 <div class="block left mode-based mode-private_chat">
                     <div class="button button-switch-chat-channel">{{tr "Switch to channel chat" /}}</div>
                 </div>
+
+                <div class="block left mode-based mode-music_bot">
+                    <div class="title">&nbsp;</div>
+                    <div class="value button bot-manage">{{tr "Manage Bot" /}}</div>
+                </div>
+
                 <div class="block left mode-based mode-client_info">
                     <div class="spacer-client-info"></div>
                 </div>
@@ -270,6 +276,11 @@
                 <div class="block right mode-based mode-client_info">
                     <div class="title">&nbsp;</div>
                     <div class="value button open-conversation">error: open conversation</div>
+                </div>
+
+                <div class="block right mode-based mode-music_bot">
+                    <div class="title">&nbsp;</div>
+                    <div class="value button bot-add-song">{{tr "Add song" /}}</div>
                 </div>
             </div>
         </script>
@@ -491,6 +502,23 @@
                 </div>
                 <div class="button-close"></div>
                 <div class="button-more">{{tr "Full Info" /}}</div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_frame_chat_music_info" type="text/html">
+            <div class="container-music-info">
+                <div class="player">
+                    <div class="container-thumbnail">
+                        <div class="thumbnail">
+                            <img src="img/music/no-thumbnail.png" style="height: 100%; width: 100%">
+                        </div>
+                    </div>
+                    <a class="client-name"></a>
+                    <div class="container-description">
+                        <a class="client-description">error: description</a>
+                    </div>
+                </div>
+                <div class="button-close"></div>
             </div>
         </script>
 

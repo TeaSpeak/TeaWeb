@@ -211,6 +211,14 @@ const loader_javascript = {
             "js/ui/client_move.js",
             "js/ui/htmltags.js",
 
+
+            "js/ui/frames/side/chat_helper.js",
+            "js/ui/frames/side/chat_box.js",
+            "js/ui/frames/side/client_info.js",
+            "js/ui/frames/side/music_info.js",
+            "js/ui/frames/side/conversations.js",
+            "js/ui/frames/side/private_conversations.js",
+
             "js/ui/frames/ControlBar.js",
             "js/ui/frames/chat.js",
             "js/ui/frames/chat_frame.js",

@@ -104,7 +104,7 @@ namespace MessageHelper {
                 "i-code", "icode",
                 "sub", "sup",
                 "size",
-                "hr",
+                "hr", "br",
 
                 "ul", "ol", "list",
                 "li",

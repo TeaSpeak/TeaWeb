@@ -621,6 +621,7 @@ class ConnectionHandler {
             control_bar.update_connection_state();
     }
 
+    private _last_record_error_popup: number;
     update_voice_status(targetChannel?: ChannelEntry) {
         if(!this._local_client) return; /* we've been destroyed */
 
@@ -706,13 +707,14 @@ class ConnectionHandler {
             if(active && this.serverConnection.connected()) {
                 if(vconnection.voice_recorder().input.current_state() === audio.recorder.InputState.PAUSED) {
                     vconnection.voice_recorder().input.start().then(result => {
-                        if(result != audio.recorder.InputStartResult.EOK) {
-                            log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), result);
-                            createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), result)).open();
-                        }
+                        if(result != audio.recorder.InputStartResult.EOK)
+                            throw result;
                     }).catch(error => {
                         log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
-                        createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
+                        if(Date.now() - (this._last_record_error_popup || 0) > 10 * 1000) {
+                            this._last_record_error_popup = Date.now();
+                            createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
+                        }
                     });
                 }
             } else {

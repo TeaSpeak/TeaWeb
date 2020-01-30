@@ -106,11 +106,11 @@ class OpusWorker implements CodecWorker {
     }
 
     initialise?() : string {
-        this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "number", ["number", "number"]);
-        this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["number", "number", "number", "number"]);
+        this.fn_newHandle = cwrap("codec_opus_createNativeHandle", "number", ["number", "number"]);
+        this.fn_decode = cwrap("codec_opus_decode", "number", ["number", "number", "number", "number"]);
         /* codec_opus_decode(handle, buffer, length, maxlength) */
-        this.fn_encode = Module.cwrap("codec_opus_encode", "number", ["number", "number", "number", "number"]);
-        this.fn_reset = Module.cwrap("codec_opus_reset", "number", ["number"]);
+        this.fn_encode = cwrap("codec_opus_encode", "number", ["number", "number", "number", "number"]);
+        this.fn_reset = cwrap("codec_opus_reset", "number", ["number"]);
 
         this.nativeHandle = this.fn_newHandle(this.channelCount, this.type);
 

@@ -133,7 +133,7 @@ namespace audio {
             static codec_pool: codec.CodecPool[];
 
             static codecSupported(type: number) : boolean {
-                return this.codec_pool.length > type && this.codec_pool[type].supported();
+                return this.codec_pool && this.codec_pool.length > type && this.codec_pool[type].supported();
             }
 
             private voice_packet_id: number = 0;
