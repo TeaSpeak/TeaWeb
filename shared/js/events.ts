@@ -34,9 +34,9 @@ namespace events {
             }
         }
 
-        off(handler: (event?: Event<T>) => void);
-        off(event: keyof Events, handler: (event?: Event<T> & EventConvert<Events>) => void);
-        off(event: (keyof Events)[], handler: (event?: Event<T> & EventConvert<Events>) => void);
+        off<T extends keyof Events>(handler: (event?: Event<T>) => void);
+        off<T extends keyof Events>(event: T, handler: (event?: Event<T> & EventConvert<Events>) => void);
+        off(event: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
         off(handler_or_events, handler?) {
             if(typeof handler_or_events === "function") {
                 for(const key of Object.keys(this.handler))
