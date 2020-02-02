@@ -2,6 +2,7 @@
 
 namespace connection {
     import Conversation = chat.channel.Conversation;
+    import MusicInfo = chat.MusicInfo;
 
     export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
         constructor(connection: AbstractServerConnection) {
@@ -54,6 +55,14 @@ namespace connection {
 
             this["notifyconversationhistory"] = this.handleNotifyConversationHistory;
             this["notifyconversationmessagedelete"] = this.handleNotifyConversationMessageDelete;
+
+            this["notifymusicstatusupdate"] = this.handleNotifyMusicStatusUpdate;
+            this["notifymusicplayersongchange"] = this.handleMusicPlayerSongChange;
+
+            this["notifyplaylistsongadd"] = this.handleNotifyPlaylistSongAdd;
+            this["notifyplaylistsongremove"] = this.handleNotifyPlaylistSongRemove;
+            this["notifyplaylistsongreorder"] = this.handleNotifyPlaylistSongReorder;
+            this["notifyplaylistsongloaded"] = this.handleNotifyPlaylistSongLoaded;
         }
 
         private loggable_invoker(unique_id, client_id, name) : log.server.base.Client | undefined {
@@ -1036,6 +1045,116 @@ namespace connection {
 
                 conversation.delete_messages(parseInt(entry["timestamp_begin"]), parseInt(entry["timestamp_end"]), parseInt(entry["cldbid"]), parseInt(entry["limit"]));
             }
+        }
+
+        handleNotifyMusicStatusUpdate(json: any[]) {
+            json = json[0];
+
+            const bot_id = parseInt(json["bot_id"]);
+            const client = this.connection.client.channelTree.find_client_by_dbid(bot_id);
+            if(!client) {
+                log.warn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
+                return;
+            }
+
+            client.events.fire("music_status_update", {
+                player_replay_index: parseInt(json["player_replay_index"]),
+                player_buffered_index: parseInt(json["player_buffered_index"])
+            });
+        }
+
+        handleMusicPlayerSongChange(json: any[]) {
+            json = json[0];
+
+            const bot_id = parseInt(json["bot_id"]);
+            const client = this.connection.client.channelTree.find_client_by_dbid(bot_id);
+            if(!client) {
+                log.warn(LogCategory.CLIENT, tr("Received music bot status update for unknown bot (%d)"), bot_id);
+                return;
+            }
+
+            const song_id = parseInt(json["song_id"]);
+            let song: SongInfo;
+            if(song_id) {
+                song = new SongInfo();
+                JSON.map_to(song, json);
+            }
+
+            client.events.fire("music_song_change", {
+                song: song
+            });
+        }
+
+        handleNotifyPlaylistSongAdd(json: any[]) {
+            json = json[0];
+
+            const playlist_id = parseInt(json["playlist_id"]);
+            const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
+            if(!client) {
+                log.warn(LogCategory.CLIENT, tr("Received playlist song add event, but we've no music bot for the playlist (%d)"), playlist_id);
+                return;
+            }
+
+            client.events.fire("playlist_song_add", {
+                song: {
+                    song_id: parseInt(json["song_id"]),
+                    song_invoker: json["song_invoker"],
+                    song_previous_song_id: parseInt(json["song_previous_song_id"]),
+                    song_url: json["song_url"],
+                    song_url_loader: json["song_url_loader"],
+
+                    song_loaded: json["song_loaded"] == true || json["song_loaded"] == "1",
+                    song_metadata: json["song_metadata"]
+                }
+            });
+        }
+
+        handleNotifyPlaylistSongRemove(json: any[]) {
+            json = json[0];
+
+            const playlist_id = parseInt(json["playlist_id"]);
+            const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
+            if(!client) {
+                log.warn(LogCategory.CLIENT, tr("Received playlist song remove event, but we've no music bot for the playlist (%d)"), playlist_id);
+                return;
+            }
+
+            const song_id = parseInt(json["song_id"]);
+            client.events.fire("playlist_song_remove", { song_id: song_id });
+        }
+
+        handleNotifyPlaylistSongReorder(json: any[]) {
+            json = json[0];
+
+            const playlist_id = parseInt(json["playlist_id"]);
+            const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
+            if(!client) {
+                log.warn(LogCategory.CLIENT, tr("Received playlist song reorder event, but we've no music bot for the playlist (%d)"), playlist_id);
+                return;
+            }
+
+            const song_id = parseInt(json["song_id"]);
+            const previous_song_id = parseInt(json["song_previous_song_id"]);
+            client.events.fire("playlist_song_reorder", { song_id: song_id, previous_song_id: previous_song_id });
+        }
+
+        handleNotifyPlaylistSongLoaded(json: any[]) {
+            json = json[0];
+
+            const playlist_id = parseInt(json["playlist_id"]);
+            const client = this.connection.client.channelTree.clients.find(e => e instanceof MusicClientEntry && e.properties.client_playlist_id === playlist_id);
+            if(!client) {
+                log.warn(LogCategory.CLIENT, tr("Received playlist song loaded event, but we've no music bot for the playlist (%d)"), playlist_id);
+                return;
+            }
+
+            const song_id = parseInt(json["song_id"]);
+            client.events.fire("playlist_song_loaded", {
+                song_id: song_id,
+                success: json["success"] == 1,
+                error_msg: json["load_error_msg"],
+                metadata: json["song_metadata"]
+            });
         }
     }
 }

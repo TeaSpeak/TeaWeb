@@ -65,10 +65,9 @@ namespace chat {
                 this.handle.show_private_conversations();
             })[0];
 
-            this._button_bot_manage = this._html_tag.find(".button-bot-manage");
-            this._button_song_add = this._html_tag.find(".button-bot-manage").find(".bot-song-add").on('click', event => {
-                //TODO!
-                console.log("Add a song");
+            this._button_bot_manage = this._html_tag.find(".bot-manage");
+            this._button_song_add = this._html_tag.find(".bot-add-song").on('click', event => {
+                this.handle.music_info().events.fire("action_song_add");
             });
         }
 
@@ -224,11 +223,9 @@ namespace chat {
         }
 
         set_mode(mode: InfoFrameMode) {
-            if(this._mode !== mode) {
-                this._mode = mode;
-                this._html_tag.find(".mode-based").hide();
-                this._html_tag.find(".mode-" + mode).show();
-            }
+            for(const mode in InfoFrameMode)
+                this._html_tag.removeClass("mode-" + InfoFrameMode[mode]);
+            this._html_tag.addClass("mode-" + mode);
 
             if(mode === InfoFrameMode.CLIENT_INFO && this._button_conversation) {
                 //Will be called every time a client is shown
@@ -385,9 +382,6 @@ namespace chat {
         }
 
         show_music_player(client: MusicClientEntry) {
-            this.show_client_info(client);
-            return;
-
             this._music_info.set_current_bot(client);
 
             if(this._content_type === FrameContent.MUSIC_BOT)

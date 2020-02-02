@@ -109,6 +109,8 @@ class ClientConnectionInfo {
 }
 
 class ClientEntry {
+    readonly events: events.Registry<events.channel_tree.client>;
+
     protected _clientId: number;
     protected _channel: ChannelEntry;
     protected _tag: JQuery<HTMLElement>;
@@ -133,6 +135,8 @@ class ClientEntry {
     channelTree: ChannelTree;
 
     constructor(clientId: number, clientName, properties: ClientProperties = new ClientProperties()) {
+        this.events = new events.Registry<events.channel_tree.client>();
+
         this._properties = properties;
         this._properties.client_nickname = clientName;
         this._clientId = clientId;
@@ -651,7 +655,7 @@ class ClientEntry {
                 visible: this._audio_muted,
                 callback: () => this.set_muted(false, true)
             },
-            contextmenu.Entry.CLOSE(() => trigger_close ? on_close() : {})
+            contextmenu.Entry.CLOSE(() => trigger_close && on_close ? on_close() : {})
         );
     }
 
@@ -929,6 +933,9 @@ class ClientEntry {
         }
 
         group.end();
+        this.events.fire("property_update", {
+            properties: variables.map(e => e.key)
+        });
     }
 
     update_displayed_client_groups() {
@@ -1232,7 +1239,40 @@ class MusicClientProperties extends ClientProperties {
     client_disabled: boolean = false;
 }
 
-class MusicClientPlayerInfo {
+/*
+ *     command[index]["song_id"] = element ? element->getSongId() : 0;
+ command[index]["song_url"] = element ? element->getUrl() : "";
+ command[index]["song_invoker"] = element ? element->getInvoker() : 0;
+ command[index]["song_loaded"] = false;
+
+ auto entry = dynamic_pointer_cast<ts::music::PlayableSong>(element);
+ if(entry) {
+        auto data = entry->song_loaded_data();
+        command[index]["song_loaded"] = entry->song_loaded() && data;
+
+        if(entry->song_loaded() && data) {
+            command[index]["song_title"] = data->title;
+            command[index]["song_description"] = data->description;
+            command[index]["song_thumbnail"] = data->thumbnail;
+            command[index]["song_length"] = data->length.count();
+        }
+    }
+ */
+
+class SongInfo {
+    song_id: number = 0;
+    song_url: string = "";
+    song_invoker: number = 0;
+    song_loaded: boolean = false;
+
+    /* only if song_loaded = true */
+    song_title: string = "";
+    song_description: string = "";
+    song_thumbnail: string = "";
+    song_length: number = 0;
+}
+
+class MusicClientPlayerInfo extends SongInfo {
     bot_id: number = 0;
     player_state: number = 0;
 
@@ -1243,14 +1283,6 @@ class MusicClientPlayerInfo {
 
     player_title: string = "";
     player_description: string = "";
-
-    song_id: number = 0;
-    song_url: string = "";
-    song_invoker: number = 0;
-    song_loaded: boolean = false;
-    song_title: string = "";
-    song_thumbnail: string = "";
-    song_length: number = 0;
 }
 
 class MusicClientEntry extends ClientEntry {
@@ -1456,7 +1488,7 @@ class MusicClientEntry extends ClientEntry {
                 },
                 type: contextmenu.MenuEntryType.ENTRY
             },
-            contextmenu.Entry.CLOSE(() => trigger_close && on_close())
+            contextmenu.Entry.CLOSE(() => trigger_close && on_close ? on_close() : {})
         );
     }
 
@@ -1471,19 +1503,12 @@ class MusicClientEntry extends ClientEntry {
             if(this._info_promise_resolve)
                 this._info_promise_resolve(info);
             this._info_promise_reject = undefined;
-        }
-        if(this._info_promise) {
-            if(this._info_promise_reject)
-                this._info_promise_reject("timeout");
-            this._info_promise = undefined;
-            this._info_promise_age = undefined;
-            this._info_promise_reject = undefined;
             this._info_promise_resolve = undefined;
         }
     }
 
     requestPlayerInfo(max_age: number = 1000) : Promise<MusicClientPlayerInfo> {
-        if(this._info_promise && this._info_promise_age && Date.now() - max_age <= this._info_promise_age) return this._info_promise;
+        if(this._info_promise !== undefined && this._info_promise_age > 0 && Date.now() - max_age <= this._info_promise_age) return this._info_promise;
         this._info_promise_age = Date.now();
         this._info_promise = new Promise<MusicClientPlayerInfo>((resolve, reject) => {
             this._info_promise_reject = reject;

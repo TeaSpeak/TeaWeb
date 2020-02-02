@@ -143,6 +143,7 @@ const loader_javascript = {
             "js/i18n/localize.js",
             "js/i18n/country.js",
             "js/log.js",
+            "js/events.js",
 
             "js/sound/Sounds.js",
 

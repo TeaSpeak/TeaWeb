@@ -61,7 +61,7 @@ if(!JSON.map_to) {
 
         let updates = 0;
         for (let field of variables) {
-            if (!json[field]) {
+            if (typeof json[field] === "undefined") {
                 console.trace(tr("Json does not contains %s"), field);
                 continue;
             }

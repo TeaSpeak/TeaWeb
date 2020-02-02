@@ -515,7 +515,7 @@ class ChannelTree {
         if(!$.isArray(this.currently_selected)) {
             if(this.currently_selected instanceof ClientEntry && settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
                 if(this.currently_selected instanceof MusicClientEntry)
-                    this.client.side_bar.show_music_player(this.currently_selected);
+                    this.client.side_bar.show_music_player(this.currently_selected as MusicClientEntry);
                 else
                     this.client.side_bar.show_client_info(this.currently_selected);
             } else if(this.currently_selected instanceof ChannelEntry && settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {

@@ -1,4 +1,7 @@
 # Changelog:
+* **02.02.20**
+    - Added a music bot GUI
+    
 * **30.01.20**
     - Improved chat message parsing
         - Fixed copy & paste error
