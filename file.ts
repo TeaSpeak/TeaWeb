@@ -438,13 +438,18 @@ const CERTACCEPT_FILE_LIST: ProjectResource[] = [
     },
 ];
 
-const APP_FILE_LIST = [
+const CLIENT_APP_FILE_LIST = [
         ...APP_FILE_LIST_SHARED_SOURCE,
         ...APP_FILE_LIST_SHARED_VENDORS,
-        ...APP_FILE_LIST_CLIENT_SOURCE,
-        ...APP_FILE_LIST_WEB_SOURCE,
-        ...APP_FILE_LIST_WEB_TEASPEAK,
-        ...CERTACCEPT_FILE_LIST,
+        ...APP_FILE_LIST_CLIENT_SOURCE
+];
+
+const WEB_APP_FILE_LIST = [
+    ...APP_FILE_LIST_SHARED_SOURCE,
+    ...APP_FILE_LIST_SHARED_VENDORS,
+    ...APP_FILE_LIST_WEB_SOURCE,
+    ...APP_FILE_LIST_WEB_TEASPEAK,
+    ...CERTACCEPT_FILE_LIST,
 ];
 
 //@ts-ignore
@@ -865,7 +870,7 @@ function php_exe() : string {
 }
 
 async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: number) {
-    const files = await generator.search_files(APP_FILE_LIST, {
+    const files = await generator.search_files(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
         source_path: __dirname,
         parameter: [],
         target: target,
@@ -884,7 +889,7 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
 }
 
 async function main_develop(node: boolean, target: "client" | "web", port: number, flags: string[]) {
-    const files = await generator.search_files(APP_FILE_LIST, {
+    const files = await generator.search_files(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
         source_path: __dirname,
         parameter: [],
         target: target,
@@ -960,7 +965,7 @@ async function git_tag() {
 
 async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest_path: string, args: any[]) {
     const begin = Date.now();
-    const files = await generator.search_files(APP_FILE_LIST, {
+    const files = await generator.search_files(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
         source_path: __dirname,
         parameter: args,
         target: target,
