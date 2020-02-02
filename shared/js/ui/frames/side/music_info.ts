@@ -351,10 +351,11 @@ namespace chat {
                         log.warn(LogCategory.GENERAL, tr("Invalid music bot action event detected: %s. This should not happen!"), event.type);
                         return;
                     }
-                    const data = Object.assign({
+                    const data = {
                         bot_id: this._current_bot.properties.client_database_id,
-                        action: action_id
-                    }, event);
+                        action: action_id,
+                        units: event.units
+                    };
                     this.handle.handle.serverConnection.send_command("musicbotplayeraction", data).catch(error => {
                         if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) return;
 
