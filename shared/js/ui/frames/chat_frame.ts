@@ -120,7 +120,7 @@ namespace chat {
             if(channel) {
                 if(channel.properties.channel_icon_id != 0)
                     client.handle.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(html_tag);
-                $.spawn("div").text(channel.channelName()).appendTo(html_tag);
+                $.spawn("div").text(channel.formattedChannelName()).appendTo(html_tag);
 
                 this.update_channel_limit(channel, html_limit_tag);
             } else {
@@ -148,7 +148,7 @@ namespace chat {
             if(channel) {
                 if(channel.properties.channel_icon_id != 0)
                     this.handle.handle.fileManager.icons.generateTag(channel.properties.channel_icon_id).appendTo(html_tag);
-                $.spawn("div").text(channel.channelName()).appendTo(html_tag);
+                $.spawn("div").text(channel.formattedChannelName()).appendTo(html_tag);
 
                 this.update_channel_limit(channel, html_limit_tag);
             } else if(channel_tree && current_channel_id > 0) {
