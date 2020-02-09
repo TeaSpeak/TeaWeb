@@ -147,15 +147,20 @@ async function initialize_app() {
 
     if(!audio.player.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
-    if(audio.player.set_master_volume)
-        audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100);
-    else
-        log.warn(LogCategory.GENERAL, tr("Client does not support audio.player.set_master_volume()... May client is too old?"));
-    if(audio.recorder.device_refresh_available())
-        await audio.recorder.refresh_devices();
+
+    audio.player.on_ready(() => {
+        if(audio.player.set_master_volume)
+            audio.player.on_ready(() => audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100));
+        else
+            log.warn(LogCategory.GENERAL, tr("Client does not support audio.player.set_master_volume()... May client is too old?"));
+        if(audio.recorder.device_refresh_available())
+            audio.recorder.refresh_devices();
+    });
 
     default_recorder = new RecorderProfile("default");
-    await default_recorder.initialize();
+    default_recorder.initialize().catch(error => {
+        log.error(LogCategory.AUDIO, tr("Failed to initialize default recorder: %o"), error);
+    });
 
     sound.initialize().then(() => {
         log.info(LogCategory.AUDIO, tr("Sounds initialized"));

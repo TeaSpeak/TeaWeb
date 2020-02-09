@@ -51,8 +51,6 @@ class RecorderProfile {
         this.name = name;
         this.volatile = typeof(volatile) === "boolean" ? volatile : false;
 
-        this.initialize_input();
-
         this._ppt_hook = {
             callback_release: () => {
                 if(this._ppt_timeout)
@@ -80,18 +78,11 @@ class RecorderProfile {
     }
 
     async initialize() : Promise<void> {
-        await this.load();
-        await this.reinitialize_filter();
-        //Why we started directly after initialize?
-        //After we connect to a server the ConnectionHandler will automatically
-        //start the VoiceRecorder as soon we've a voice bridge.
-        /*
-        try {
-            await this.input.start();
-        } catch(error) {
-            console.warn(tr("Failed to start recorder after initialize (%o)"), error);
-        }
-        */
+        audio.player.on_ready(async () => {
+            this.initialize_input();
+            await this.load();
+            await this.reinitialize_filter();
+        });
     }
 
     private initialize_input() {
@@ -107,19 +98,6 @@ class RecorderProfile {
             if(this.callback_stop)
                 this.callback_stop();
         };
-
-        /*
-        this.input.callback_state_change = () => {
-            const new_state = this.input.current_state() === audio.recorder.InputState.RECORDING || this.input.current_state() === audio.recorder.InputState.DRY;
-
-            if(new_state === this.record_supported)
-                return;
-
-            this.record_supported = new_state;
-            if(this.callback_support_change)
-                this.callback_support_change();
-        }
-        */
     }
 
     private async load() {
@@ -163,12 +141,13 @@ class RecorderProfile {
     }
 
     private save(enforce?: boolean) {
-        if(enforce || !this.volatile) {
+        if(enforce || !this.volatile)
             settings.changeGlobal(Settings.FN_PROFILE_RECORD(this.name), this.config);
-        }
     }
 
     private async reinitialize_filter() {
+        if(!this.input) return;
+
         this.input.clear_filter();
         if(this._ppt_hook_registered) {
             ppt.unregister_key_hook(this._ppt_hook);

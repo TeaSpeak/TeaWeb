@@ -40,7 +40,7 @@ namespace events {
         off(handler_or_events, handler?) {
             if(typeof handler_or_events === "function") {
                 for(const key of Object.keys(this.handler))
-                    this.handler[key].remove(handler);
+                    this.handler[key].remove(handler_or_events);
             } else {
                 if(!Array.isArray(handler_or_events))
                     handler_or_events = [handler_or_events];
