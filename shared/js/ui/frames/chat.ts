@@ -111,6 +111,8 @@ namespace MessageHelper {
 
                 "table",
                 "tr", "td", "th",
+
+                "yt", "youtube",
                 /* "img" */
             ] //[img]https://i.ytimg.com/vi/kgeSTkZssPg/maxresdefault.jpg[/img]
         });
