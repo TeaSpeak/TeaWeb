@@ -5,7 +5,7 @@
 namespace Modals {
     export function openModalNewcomer() {
         let modal = createModal({
-            header: tr("Select a key"),
+            header: tra("Welcome to the {}", app.is_web() ? "TeaWeb-Client" : "TeaSpeak-Client"),
             body:  () => $("#tmpl_newcomer").renderTag().children(),
             footer: null,
 
@@ -13,7 +13,7 @@ namespace Modals {
             closeable: false
         });
 
-
+        //TODO!
 
         modal.open();
 

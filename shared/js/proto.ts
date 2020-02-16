@@ -291,6 +291,7 @@ interface HighlightJSResult {
 interface DOMPurify {
     sanitize(html: string, config?: {
         ADD_ATTR?: string[]
+        ADD_TAGS?: string[];
     }) : string;
 }
 declare let DOMPurify: DOMPurify;

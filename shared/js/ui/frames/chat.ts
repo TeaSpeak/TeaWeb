@@ -90,6 +90,7 @@ namespace MessageHelper {
         return result;
     }
 
+    const yt_embed_regex = /\[-- yt: ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}) --]/;
     export function bbcode_chat(message: string) : JQuery[] {
         const result = xbbcode.parse(message, {
             /* TODO make this configurable and allow IMG */
@@ -116,25 +117,29 @@ namespace MessageHelper {
                 /* "img" */
             ] //[img]https://i.ytimg.com/vi/kgeSTkZssPg/maxresdefault.jpg[/img]
         });
-        /*
-        if(result.error) {
-            log.error(LogCategory.GENERAL, tr("BBCode parse error: %o"), result.errorQueue);
-            return formatElement(message);
-        }
-        */
-
         let html = result.build_html();
-
         if(typeof(window.twemoji) !== "undefined" && settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES))
             html = twemoji.parse(html);
 
         const container = $.spawn("div");
-        container[0].innerHTML = DOMPurify.sanitize(html, {
+        let sanitized = DOMPurify.sanitize(html, {
             ADD_ATTR: [
                 "x-highlight-type",
                 "x-code-type"
             ]
         });
+
+        sanitized = sanitized.replace(yt_embed_regex, data => {
+            const uid = data.match(yt_embed_regex)[1];
+            const url = yt_url_map[uid];
+            if(!url) return data;
+            delete yt_url_map[uid];
+
+            return "<iframe class=\"xbbcode-tag xbbcode-tag-video\" src=\"" + url + "\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>";
+        });
+
+        container[0].innerHTML = sanitized;
+
 
         container.find("a")
             .attr('target', "_blank")
@@ -313,6 +318,7 @@ namespace MessageHelper {
         );
     }
 
+    const yt_url_map: {[key: string]: string} = {};
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         name: "XBBCode code tag init",
         function: async () => {
@@ -344,6 +350,23 @@ namespace MessageHelper {
                     return html + "</code></pre>";
                 }
             });
+
+            /* override the yt parser */
+            const original_parser = xbbcode.register.find_parser("yt");
+            if(original_parser)
+                xbbcode.register.register_parser({
+                    tag: ["yt", "youtube"],
+                    build_html(layer): string {
+                        const result = original_parser.build_html(layer);
+                        if(!result.startsWith("<iframe")) return result;
+
+                        const url = result.match(/src="(\S+)" /)[1];
+                        const uid = guid();
+
+                        yt_url_map[uid] = url;
+                        return "[-- yt: " + uid + " --]";
+                    }
+                });
         },
         priority: 10
     });

@@ -6,6 +6,7 @@
     - Fixed automatically added new lines for inserted text
     - Improved button icon visibility within the permission editor
     - Fixed missing "private chats" button
+    - Allowing YT videos within the chat and channel descriptions
     
 * **02.02.20**
     - Added a music bot GUI

@@ -2,16 +2,6 @@
 /// <reference path="../../../ConnectionHandler.ts" />
 /// <reference path="../../../proto.ts" />
 
-/*
-    TODO: Check needed permissions and may not even try to request, because we dont have the permission. Permissions:
-        b_virtualserver_servergroup_permission_list
-        b_virtualserver_channel_permission_list
-        b_virtualserver_client_permission_list
-        b_virtualserver_channelgroup_permission_list
-        b_virtualserver_channelclient_permission_list
-        b_virtualserver_playlist_permission_list
- */
-
 interface JQuery<TElement = HTMLElement> {
     dropdown: any;
 }
