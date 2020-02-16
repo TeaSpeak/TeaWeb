@@ -723,6 +723,8 @@ namespace server {
             //Client API
             handle_api_request(request, response, url);
             return;
+        } else if(url.pathname === "/") {
+            url.pathname = "/index.php";
         }
         serve_file(url.pathname, url.query, response);
     }

@@ -238,7 +238,7 @@ const loader_javascript = {
             "js/FileManager.js",
             "js/ConnectionHandler.js",
             "js/BrowserIPC.js",
-            "js/dns.js",
+            "js/dns_impl.js",
 
             //Connection
             "js/connection/CommandHandler.js",

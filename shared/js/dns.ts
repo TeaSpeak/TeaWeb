@@ -21,11 +21,4 @@ namespace dns {
         allow_cache: true,
         max_depth: 5
     };
-
-    export function supported() { return false; }
-    export function resolve_address(address: ServerAddress, options?: ResolveOptions) : Promise<AddressTarget> {
-        return Promise.reject("not supported");
-    }
-
-    //TODO: Implement a remote server DNS request API
 }

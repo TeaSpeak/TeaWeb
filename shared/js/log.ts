@@ -15,7 +15,8 @@ enum LogCategory {
     I18N,
     IPC,
     IDENTITIES,
-    STATISTICS
+    STATISTICS,
+    DNS
 }
 
 namespace log {
@@ -42,7 +43,8 @@ namespace log {
         [LogCategory.I18N,                      "I18N       "],
         [LogCategory.IDENTITIES,                "Identities "],
         [LogCategory.IPC,                       "IPC        "],
-        [LogCategory.STATISTICS,                "Statistics "]
+        [LogCategory.STATISTICS,                "Statistics "],
+        [LogCategory.DNS,                       "DNS        "]
     ]);
 
     export let enabled_mapping = new Map<number, boolean>([
@@ -60,7 +62,8 @@ namespace log {
         [LogCategory.I18N,                  false],
         [LogCategory.IDENTITIES,            true],
         [LogCategory.IPC,                   true],
-        [LogCategory.STATISTICS,            true]
+        [LogCategory.STATISTICS,            true],
+        [LogCategory.DNS,                   true]
     ]);
 
     //Values will be overridden by initialize()
