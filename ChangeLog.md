@@ -3,6 +3,7 @@
     - Updated the `setup_windows.md` tutorial
     - Correct redirecting to `index.php` when using the serve mode
     - Added correct hostname resolving for the web client.
+    - Fixed automatically added new lines for inserted text
     
 * **02.02.20**
     - Added a music bot GUI

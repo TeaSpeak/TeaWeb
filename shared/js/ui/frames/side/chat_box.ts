@@ -133,7 +133,6 @@ namespace chat {
             return message.replace(/ /g, '&nbsp;');
         }
         private _callback_paste(event: ClipboardEvent) {
-
             const _event = (<any>event).originalEvent as ClipboardEvent || event;
             const clipboard = _event.clipboardData || (<any>window).clipboardData;
             if(!clipboard) return;
@@ -151,7 +150,27 @@ namespace chat {
             const parser = new DOMParser();
             const nodes = parser.parseFromString(html_xml, "text/html");
 
-            const data = this._text(nodes.body);
+            let data = this._text(nodes.body);
+
+            /* fix prefix & suffix new lines */
+            {
+                let prefix_length = 0, suffix_length = 0;
+                {
+                    for(let i = 0; i < raw_text.length; i++)
+                        if(raw_text.charAt(i) === '\n')
+                            prefix_length++;
+                        else if(raw_text.charAt(i) !== '\r')
+                            break;
+                    for(let i = raw_text.length - 1; i >= 0; i++)
+                        if(raw_text.charAt(i) === '\n')
+                            suffix_length++;
+                        else if(raw_text.charAt(i) !== '\r')
+                            break;
+                }
+
+                data = data.replace(/^[\n\r]+|[\n\r]+$/g, '');
+                data = "\n".repeat(prefix_length) + data + "\n".repeat(suffix_length);
+            }
             event.preventDefault();
 
             selection.deleteFromDocument();
