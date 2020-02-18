@@ -10,8 +10,6 @@ package-lock.json
 vendor/emoji-picker/**/*.js
 vendor/emoji-picker/**/*.js.map
 
-.package-lock.json
-
 TeaSpeakUI.tar.gz
 TeaWeb-*.zip
 
