@@ -42,6 +42,7 @@ files=(
     "css/static/modal-poke.css"
     "css/static/modal-query.css"
     "css/static/modal-server.css"
+    "css/static/modal-musicmanage.css"
     "css/static/modal-serverinfobandwidth.css"
     "css/static/modal-serverinfo.css"
     "css/static/modal-settings.css"
