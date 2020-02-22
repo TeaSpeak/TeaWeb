@@ -113,7 +113,9 @@ namespace Modals {
                             channel_commander: bot.properties.client_is_channel_commander,
                             volume: bot.properties.player_volume,
                             description: bot.properties.client_description,
-                            default_country_code: bot.channelTree?.server?.properties?.virtualserver_country_code || "DE",
+                            default_country_code: (
+                                !bot.channelTree ? undefined :
+                                !bot.channelTree.server ? undefined : bot.channelTree.server.properties.virtualserver_country_code) || "DE",
                             country_code: bot.properties.client_country,
                             name: bot.properties.client_nickname,
                             priority_speaker: bot.properties.client_is_priority_speaker,

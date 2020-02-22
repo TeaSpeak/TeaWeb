@@ -36,8 +36,8 @@
     "sass": "1.22.10",
     "sha256": "^0.2.0",
     "terser": "^4.2.1",
-    "ttypescript": "^1.5.7",
-    "typescript": "3.6.4",
+    "ttypescript": "^1.5.10",
+    "typescript": "3.6.5",
     "wat2wasm": "^1.0.2",
     "fs-extra": "latest"
   },
