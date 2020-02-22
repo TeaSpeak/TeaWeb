@@ -1,5 +1,6 @@
 /// <reference path="../ConnectionHandler.ts" />
 /// <reference path="../connection/ConnectionBase.ts" />
+/// <reference path="../i18n/localize.ts" />
 
 enum PermissionType {
     B_SERVERINSTANCE_HELP_VIEW = "b_serverinstance_help_view",
