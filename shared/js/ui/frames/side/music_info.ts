@@ -656,6 +656,10 @@ namespace chat {
             });
         }
 
+        current_bot() : MusicClientEntry | undefined {
+            return this._current_bot;
+        }
+
         private sort_songs(data: PlaylistSong[]) {
             const result = [];
 

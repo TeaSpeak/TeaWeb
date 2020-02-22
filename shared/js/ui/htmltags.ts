@@ -13,7 +13,8 @@ namespace htmltags {
         client_id: number,
         client_unique_id: string,
         client_name: string,
-        add_braces?: boolean
+        add_braces?: boolean,
+        client_database_id?: number; /* not yet used */
     }
 
     export interface ChannelProperties {

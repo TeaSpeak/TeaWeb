@@ -65,7 +65,12 @@ namespace chat {
                 this.handle.show_private_conversations();
             })[0];
 
-            this._button_bot_manage = this._html_tag.find(".bot-manage");
+            this._button_bot_manage = this._html_tag.find(".bot-manage").on('click', event => {
+                const bot = this.handle.music_info().current_bot();
+                if(!bot) return;
+
+                Modals.openMusicManage(this.handle.handle, bot);
+            });
             this._button_song_add = this._html_tag.find(".bot-add-song").on('click', event => {
                 this.handle.music_info().events.fire("action_song_add");
             });

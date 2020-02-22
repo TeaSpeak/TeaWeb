@@ -196,6 +196,7 @@ const loader_javascript = {
             "js/ui/modal/ModalInvite.js",
             "js/ui/modal/ModalIdentity.js",
             "js/ui/modal/ModalBanList.js",
+            "js/ui/modal/ModalMusicManage.js",
             "js/ui/modal/ModalYesNo.js",
             "js/ui/modal/ModalPoke.js",
             "js/ui/modal/ModalKeySelect.js",
@@ -362,6 +363,7 @@ const loader_style = {
             "css/static/modal-channelinfo.css",
             "css/static/modal-clientinfo.css",
             "css/static/modal-serverinfo.css",
+            "css/static/modal-musicmanage.css",
             "css/static/modal-serverinfobandwidth.css",
             "css/static/modal-identity.css",
             "css/static/modal-settings.css",
@@ -390,34 +392,6 @@ const loader_style = {
         ]);
     }
 };
-
-async function load_templates() {
-    try {
-        const response = await $.ajax("templates.html" + loader.get_cache_version());
-
-        let node = document.createElement("html");
-        node.innerHTML = response;
-        let tags: HTMLCollection;
-        if(node.getElementsByTagName("body").length > 0)
-            tags = node.getElementsByTagName("body")[0].children;
-        else
-            tags = node.children;
-
-        let root = document.getElementById("templates");
-        if(!root) {
-            loader.critical_error("Failed to find template tag!");
-            return;
-        }
-        while(tags.length > 0){
-            let tag = tags.item(0);
-            root.appendChild(tag);
-
-        }
-    } catch(error) {
-        loader.critical_error("Failed to find template tag!");
-        throw "template error";
-    }
-}
 
 /* register tasks */
 loader.register_task(loader.Stage.INITIALIZING, {
@@ -502,7 +476,12 @@ loader.register_task(loader.Stage.STYLE, {
 
 loader.register_task(loader.Stage.TEMPLATES, {
     name: "templates",
-    function: load_templates,
+    function: async () => {
+        await loader.load_templates([
+            "templates.html",
+            "templates/music/manage.html"
+        ]);
+    },
     priority: 10
 });
 

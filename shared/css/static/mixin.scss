@@ -149,3 +149,32 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
+
+@mixin tooltip($base_with, $icon_size) {
+	.container-tooltip {
+		flex-shrink: 0;
+		flex-grow: 0;
+
+		position: relative;
+		width: $base_with;
+		margin-left: .5em;
+		margin-right: .5em;
+		font-size: .9em;
+
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+
+		img, .icon_em {
+			height: $icon_size;
+			width: $icon_size;
+
+			align-self: center;
+			font-size: 1.2em;
+		}
+
+		.tooltip {
+			display: none;
+		}
+	}
+}

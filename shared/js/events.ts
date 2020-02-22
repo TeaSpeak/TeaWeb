@@ -160,6 +160,160 @@ namespace events {
         }
     }
 
+    export namespace modal {
+        export type BotStatusType = "name" | "description" | "volume" | "country_code" | "channel_commander" | "priority_speaker";
+        export type PlaylistStatusType = "replay_mode" | "finished" | "delete_played" | "max_size" | "notify_song_change";
+        export interface music_manage {
+            show_container: { container: "settings" | "permissions"; };
+
+            /* setting relevant */
+            query_bot_status: {},
+            bot_status: {
+                status: "success" | "error";
+                error_msg?: string;
+                data?: {
+                    name: string,
+                    description: string,
+                    volume: number,
+
+                    country_code: string,
+                    default_country_code: string,
+
+                    channel_commander: boolean,
+                    priority_speaker: boolean,
+
+                    client_version: string,
+                    client_platform: string,
+
+                    uptime_mode: number,
+                    bot_type: number
+                }
+            },
+            set_bot_status: {
+                key: BotStatusType,
+                value: any
+            },
+            set_bot_status_result: {
+                key: BotStatusType,
+                status: "success" | "error" | "timeout",
+                error_msg?: string,
+                value?: any
+            }
+
+            query_playlist_status: {},
+            playlist_status: {
+                status: "success" | "error",
+                error_msg?: string,
+                data?: {
+                    replay_mode: number,
+                    finished: boolean,
+                    delete_played: boolean,
+                    max_size: number,
+                    notify_song_change: boolean
+                }
+            },
+            set_playlist_status: {
+                key: PlaylistStatusType,
+                value: any
+            },
+            set_playlist_status_result: {
+                key: PlaylistStatusType,
+                status: "success" | "error" | "timeout",
+                error_msg?: string,
+                value?: any
+            }
+
+            /* permission relevant */
+            show_client_list: {},
+            hide_client_list: {},
+
+            filter_client_list: { filter: string | undefined },
+
+            "refresh_permissions": {},
+
+            query_special_clients: {},
+            special_client_list: {
+                status: "success" | "error" | "error-permission",
+                error_msg?: string,
+                clients?: {
+                    name: string,
+                    unique_id: string,
+                    database_id: number
+                }[]
+            },
+
+            search_client: { text: string },
+            search_client_result: {
+                status: "error" | "timeout" | "empty" | "success",
+                error_msg?: string,
+                client?: {
+                    name: string,
+                    unique_id: string,
+                    database_id: number
+                }
+            },
+
+            /* sets a client to set the permission for */
+            special_client_set: {
+                client?: {
+                    name: string,
+                    unique_id: string,
+                    database_id: number
+                }
+            },
+
+            "query_general_permissions": {},
+            "general_permissions": {
+                status: "error" | "timeout" | "success",
+                error_msg?: string,
+                permissions?: {[key: string]:number}
+            },
+            "set_general_permission_result": {
+                status: "error" | "success",
+                key: string,
+                value?: number,
+                error_msg?: string
+            },
+            "set_general_permission": { /* try to change a permission for the server */
+                key: string,
+                value: number
+            },
+
+
+            "query_client_permissions": { client_database_id: number },
+            "client_permissions": {
+                status: "error" | "timeout" | "success",
+                client_database_id: number,
+                error_msg?: string,
+                permissions?: {[key: string]:number}
+            },
+            "set_client_permission_result": {
+                status: "error" | "success",
+                client_database_id: number,
+                key: string,
+                value?: number,
+                error_msg?: string
+            },
+            "set_client_permission": { /* try to change a permission for the server */
+                client_database_id: number,
+                key: string,
+                value: number
+            },
+
+            "query_group_permissions": { permission_name: string },
+            "group_permissions": {
+                permission_name: string;
+                status: "error" | "timeout" | "success"
+                groups?: {
+                    name: string,
+                    value: number,
+                    id: number
+                }[],
+                error_msg?: string
+            }
+        }
+    }
+
 }
 
 const eclient = new events.Registry<events.channel_tree.client>();

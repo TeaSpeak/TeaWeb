@@ -10,7 +10,12 @@ namespace tooltip {
         hide();
         update();
     }
-    export function initialize(entry: JQuery) : Handle {
+    export function initialize(entry: JQuery, callbacks?: {
+        on_show?(tag: JQuery),
+        on_hide?(tag: JQuery)
+    }) : Handle {
+        if(!callbacks) callbacks = {};
+
         let _show;
         let _hide;
         let _shown;
@@ -34,12 +39,14 @@ namespace tooltip {
                 _global_tooltip[0].classList.add("shown");
 
                 _global_tooltip[0].innerHTML = node_content[0].innerHTML;
+                callbacks.on_show && callbacks.on_show(_global_tooltip);
                 _flag_shown = _flag_shown || !!event; /* if event is undefined then it has been triggered by hand */
             };
 
             const mouseexit = () => {
                 if(_global_tooltip) {
                     if(!_force_show) {
+                        callbacks.on_hide && callbacks.on_hide(_global_tooltip);
                         _global_tooltip[0].classList.remove("shown");
                     }
                     _flag_shown = false;

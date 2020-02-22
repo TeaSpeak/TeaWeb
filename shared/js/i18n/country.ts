@@ -1492,7 +1492,7 @@ namespace i18n {
             alpha_3: "ZWE",
             un_code: 716
         });
-    }
+    };
 
     export function country_name(alpha_code: string, fallback?: string) {
         return (alpha_2_map[alpha_code.toUpperCase()] || {name: fallback || tr("unknown country")}).name;

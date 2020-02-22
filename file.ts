@@ -31,7 +31,7 @@ type ProjectResource = {
 const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
     { /* shared html and php files */
         "type": "html",
-        "search-pattern": /^([a-zA-Z]+)\.(html|php|json)$/,
+        "search-pattern": /^.*([a-zA-Z]+)\.(html|php|json)$/,
         "build-target": "dev|rel",
 
         "path": "./",
@@ -1151,7 +1151,7 @@ async function main(args: string[]) {
 }
 
 /* proxy log for better format */
-const wrap_log = (original, prefix: string) => (message, ...args) => original(prefix + message.replace(/\n/g, "\n" + prefix), ...args.map(e => typeof(e) === "string" ? e.replace(/\n/g, "\n" + prefix) : e));
+const wrap_log = (original, prefix: string) => (message, ...args) => original(prefix + (message ? message + "" : "").replace(/\n/g, "\n" + prefix), ...args.map(e => typeof(e) === "string" ? e.replace(/\n/g, "\n" + prefix) : e));
 console.log = wrap_log(console.log, "[INFO ] ");
 console.debug = wrap_log(console.debug, "[DEBUG] ");
 console.warn = wrap_log(console.warn, "[WARNING] ");

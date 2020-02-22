@@ -2,6 +2,7 @@ namespace connection {
     export class CommandHelper extends AbstractCommandHandler {
         private _who_am_i: any;
         private _awaiters_unique_ids: {[unique_id: string]:((resolved: ClientNameInfo) => any)[]} = {};
+        private _awaiters_unique_dbid: {[database_id: number]:((resolved: ClientNameInfo) => any)[]} = {};
 
         constructor(connection) {
             super(connection);
@@ -25,6 +26,8 @@ namespace connection {
         handle_command(command: connection.ServerCommand): boolean {
             if(command.command == "notifyclientnamefromuid")
                 this.handle_notifyclientnamefromuid(command.arguments);
+            if(command.command == "notifyclientgetnamefromdbid")
+                this.handle_notifyclientgetnamefromdbid(command.arguments);
             else
                 return false;
             return true;
@@ -57,6 +60,8 @@ namespace connection {
             const response: ClientNameInfo[] = [];
             const request = [];
             const unique_ids = new Set(_unique_ids);
+            if(!unique_ids.size) return [];
+
             const unique_id_resolvers: {[unique_id: string]: (resolved: ClientNameInfo) => any} = {};
 
 
@@ -78,6 +83,54 @@ namespace connection {
                 /* cleanup */
                 for(const unique_id of Object.keys(unique_id_resolvers))
                     (this._awaiters_unique_ids[unique_id] || []).remove(unique_id_resolvers[unique_id]);
+            }
+
+            return response;
+        }
+
+        private handle_notifyclientgetnamefromdbid(json: any[]) {
+            for(const entry of json) {
+                const info: ClientNameInfo = {
+                    client_unique_id: entry["cluid"],
+                    client_nickname: entry["clname"],
+                    client_database_id: parseInt(entry["cldbid"])
+                };
+
+                const functions = this._awaiters_unique_dbid[info.client_database_id] || [];
+                delete this._awaiters_unique_dbid[info.client_database_id];
+
+                for(const fn of functions)
+                    fn(info);
+            }
+        }
+
+        async info_from_cldbid(..._cldbid: number[]) : Promise<ClientNameInfo[]> {
+            const response: ClientNameInfo[] = [];
+            const request = [];
+            const unique_cldbid = new Set(_cldbid);
+            if(!unique_cldbid.size) return [];
+
+            const unique_cldbid_resolvers: {[dbid: number]: (resolved: ClientNameInfo) => any} = {};
+
+
+            for(const cldbid of unique_cldbid) {
+                request.push({'cldbid': cldbid});
+                (this._awaiters_unique_dbid[cldbid] || (this._awaiters_unique_dbid[cldbid] = []))
+                    .push(unique_cldbid_resolvers[cldbid] = info => response.push(info));
+            }
+
+            try {
+                await this.connection.send_command("clientgetnamefromdbid", request);
+            } catch(error) {
+                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                    /* nothing */
+                } else {
+                    throw error;
+                }
+            } finally {
+                /* cleanup */
+                for(const cldbid of Object.keys(unique_cldbid_resolvers))
+                    (this._awaiters_unique_dbid[cldbid] || []).remove(unique_cldbid_resolvers[cldbid]);
             }
 
             return response;
@@ -245,6 +298,40 @@ namespace connection {
             });
         }
 
+        request_playlist_client_list(playlist_id: number) : Promise<number[]> {
+            return new Promise((resolve, reject) => {
+                const single_handler: SingleCommandHandler = {
+                    command: "notifyplaylistclientlist",
+                    function: command => {
+                        const json = command.arguments;
+
+                        if(json[0]["playlist_id"] != playlist_id) {
+                            log.error(LogCategory.NETWORKING, tr("Received invalid notification for playlist clients"));
+                            return false;
+                        }
+
+                        const result: number[] = [];
+
+                        for(const entry of json)
+                            result.push(parseInt(entry["cldbid"]));
+
+                        resolve(result.filter(e => !isNaN(e)));
+                        return true;
+                    }
+                };
+                this.handler_boss.register_single_handler(single_handler);
+
+                this.connection.send_command("playlistclientlist", {playlist_id: playlist_id}).catch(error => {
+                    this.handler_boss.remove_single_handler(single_handler);
+                    if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                        resolve([]);
+                        return;
+                    }
+                    reject(error);
+                })
+            });
+        }
+
         async request_clients_by_server_group(group_id: number) : Promise<ServerGroupClient[]> {
             //servergroupclientlist sgid=2
             //notifyservergroupclientlist sgid=6 cldbid=2 client_nickname=WolverinDEV client_unique_identifier=xxjnc14LmvTk+Lyrm8OOeo4tOqw=
@@ -309,6 +396,8 @@ namespace connection {
                                 playlist_flag_finished: json["playlist_flag_finished"] == true || json["playlist_flag_finished"] == "1",
                                 playlist_replay_mode: parseInt(json["playlist_replay_mode"]),
                                 playlist_current_song_id: parseInt(json["playlist_current_song_id"]),
+
+                                playlist_max_songs: parseInt(json["playlist_max_songs"])
                             });
                         } catch (error) {
                             log.error(LogCategory.NETWORKING, tr("Failed to parse playlist info: %o"), error);

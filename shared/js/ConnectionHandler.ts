@@ -704,21 +704,25 @@ class ConnectionHandler {
         if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().record_supported) {
             const active = !this.client_status.input_muted && !this.client_status.output_muted;
             /* No need to start the microphone when we're not even connected */
-            if(active && this.serverConnection.connected()) {
-                if(vconnection.voice_recorder().input.current_state() === audio.recorder.InputState.PAUSED) {
-                    vconnection.voice_recorder().input.start().then(result => {
-                        if(result != audio.recorder.InputStartResult.EOK)
-                            throw result;
-                    }).catch(error => {
-                        log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
-                        if(Date.now() - (this._last_record_error_popup || 0) > 10 * 1000) {
-                            this._last_record_error_popup = Date.now();
-                            createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
-                        }
-                    });
+
+            const input = vconnection.voice_recorder().input;
+            if(input) {
+                if(active && this.serverConnection.connected()) {
+                    if(input.current_state() === audio.recorder.InputState.PAUSED) {
+                        input.start().then(result => {
+                            if(result != audio.recorder.InputStartResult.EOK)
+                                throw result;
+                        }).catch(error => {
+                            log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
+                            if(Date.now() - (this._last_record_error_popup || 0) > 10 * 1000) {
+                                this._last_record_error_popup = Date.now();
+                                createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
+                            }
+                        });
+                    }
+                } else {
+                    input.stop();
                 }
-            } else {
-                vconnection.voice_recorder().input.stop();
             }
         }
 

@@ -96,6 +96,8 @@ interface PlaylistInfo {
     playlist_flag_finished: boolean,
     playlist_replay_mode: number,
     playlist_current_song_id: number,
+
+    playlist_max_songs: number
 }
 
 interface PlaylistSong {

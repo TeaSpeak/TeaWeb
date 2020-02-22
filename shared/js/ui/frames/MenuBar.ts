@@ -431,6 +431,7 @@ namespace top_menu {
         {
             const menu = driver.append_item(tr("Tools"));
 
+            /*
             item = menu.append_item(tr("Manage Playlists"));
             item.icon('client-music');
             item.click(() => {
@@ -442,6 +443,7 @@ namespace top_menu {
                 }
             });
             _state_updater["tools.pl"] = { item: item, conditions: [condition_connected]};
+            */
 
             item = menu.append_item(tr("Ban List"));
             item.icon('client-ban_list');

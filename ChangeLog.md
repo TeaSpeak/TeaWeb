@@ -1,4 +1,7 @@
 # Changelog:
+* **22.02.20**
+    - Added a music bot control panel
+    
 * **16.02.20**
     - Updated the `setup_windows.md` tutorial
     - Correct redirecting to `index.php` when using the serve mode

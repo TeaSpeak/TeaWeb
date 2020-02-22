@@ -54,6 +54,7 @@ class ClientProperties {
     client_total_bytes_downloaded: number = 0;
 
     client_talk_power: number = 0;
+    client_is_priority_speaker: boolean = false;
 }
 
 class ClientConnectionInfo {
@@ -1237,6 +1238,10 @@ class MusicClientProperties extends ClientProperties {
 
     client_playlist_id: number = 0;
     client_disabled: boolean = false;
+
+    client_flag_notify_song_change: boolean = false;
+    client_bot_type: number = 0;
+    client_uptime_mode: number = 0;
 }
 
 /*

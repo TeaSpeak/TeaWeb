@@ -416,20 +416,68 @@ class NeededPermissionValue extends PermissionValue {
     }
 }
 
-class ChannelPermissionRequest {
-    requested: number;
-    channel_id: number;
-    callback_success: ((_: PermissionValue[]) => any)[] = [];
-    callback_error: ((_: any) => any)[] = [];
+namespace permissions {
+    export type PermissionRequestKeys = {
+        client_id?: number;
+        channel_id?: number;
+        playlist_id?: number;
+    }
+
+    export type PermissionRequest = PermissionRequestKeys & {
+        timeout_id: any;
+        promise: LaterPromise<PermissionValue[]>;
+    };
+
+    export namespace find {
+        export type Entry = {
+            type: "server" | "channel" | "client" | "client_channel" | "channel_group" | "server_group";
+            value: number;
+            id: number;
+        }
+
+        export type Client = Entry & {
+            type: "client",
+
+            client_id: number;
+        }
+
+        export type Channel = Entry & {
+            type: "channel",
+
+            channel_id: number;
+        }
+
+        export type Server = Entry & {
+            type: "server"
+        }
+
+        export type ClientChannel = Entry & {
+            type: "client_channel",
+
+            client_id: number;
+            channel_id: number;
+        }
+
+        export type ChannelGroup = Entry & {
+            type: "channel_group",
+
+            group_id: number;
+        }
+
+        export type ServerGroup = Entry & {
+            type: "server_group",
+
+            group_id: number;
+        }
+    }
 }
 
-class TeaPermissionRequest {
-    client_id?: number;
-    channel_id?: number;
-    playlist_id?: number;
-    promise: LaterPromise<PermissionValue[]>;
-}
-
+type RequestLists =
+    "requests_channel_permissions" |
+    "requests_client_permissions" |
+    "requests_client_channel_permissions" |
+    "requests_playlist_permissions" |
+    "requests_playlist_client_permissions";
 class PermissionManager extends connection.AbstractCommandHandler {
     readonly handle: ConnectionHandler;
 
@@ -439,44 +487,50 @@ class PermissionManager extends connection.AbstractCommandHandler {
 
     needed_permission_change_listener: {[permission: string]:(() => any)[]} = {};
 
-    requests_channel_permissions: ChannelPermissionRequest[] = [];
-    requests_client_permissions: TeaPermissionRequest[] = [];
-    requests_client_channel_permissions: TeaPermissionRequest[] = [];
-    requests_playlist_permissions: TeaPermissionRequest[] = [];
+    requests_channel_permissions: permissions.PermissionRequest[] = [];
+    requests_client_permissions: permissions.PermissionRequest[] = [];
+    requests_client_channel_permissions: permissions.PermissionRequest[] = [];
+    requests_playlist_permissions: permissions.PermissionRequest[] = [];
+    requests_playlist_client_permissions: permissions.PermissionRequest[] = [];
+
+    requests_permfind: {
+        timeout_id: number,
+        permission: string,
+        callback: (status: "success" | "error", data: any) => void
+    }[] = [];
 
     initializedListener: ((initialized: boolean) => void)[] = [];
     private _cacheNeededPermissions: any;
 
     /* Static info mapping until TeaSpeak implements a detailed info */
-    //TODO tr
     static readonly group_mapping: {name: string, deep: number}[] = [
-        {name: "Global", deep: 0},
-            {name: "Information", deep: 1},
-            {name: "Virtual server management", deep: 1},
-            {name: "Administration", deep: 1},
-            {name: "Settings", deep: 1},
-        {name: "Virtual Server", deep: 0},
-            {name: "Information", deep: 1},
-            {name: "Administration", deep: 1},
-            {name: "Settings", deep: 1},
-        {name: "Channel", deep: 0},
-            {name: "Information", deep: 1},
-            {name: "Create", deep: 1},
-            {name: "Modify", deep: 1},
-            {name: "Delete", deep: 1},
-            {name: "Access", deep: 1},
-        {name: "Group", deep: 0},
-            {name: "Information", deep: 1},
-            {name: "Create", deep: 1},
-            {name: "Modify", deep: 1},
-            {name: "Delete", deep: 1},
-        {name: "Client", deep: 0},
-            {name: "Information", deep: 1},
-            {name: "Admin", deep: 1},
-            {name: "Basics", deep: 1},
-            {name: "Modify", deep: 1},
+        {name: tr("Global"), deep: 0},
+            {name: tr("Information"), deep: 1},
+            {name: tr("Virtual server management"), deep: 1},
+            {name: tr("Administration"), deep: 1},
+            {name: tr("Settings"), deep: 1},
+        {name: tr("Virtual Server"), deep: 0},
+            {name: tr("Information"), deep: 1},
+            {name: tr("Administration"), deep: 1},
+            {name: tr("Settings"), deep: 1},
+        {name: tr("Channel"), deep: 0},
+            {name: tr("Information"), deep: 1},
+            {name: tr("Create"), deep: 1},
+            {name: tr("Modify"), deep: 1},
+            {name: tr("Delete"), deep: 1},
+            {name: tr("Access"), deep: 1},
+        {name: tr("Group"), deep: 0},
+            {name: tr("Information"), deep: 1},
+            {name: tr("Create"), deep: 1},
+            {name: tr("Modify"), deep: 1},
+            {name: tr("Delete"), deep: 1},
+        {name: tr("Client"), deep: 0},
+            {name: tr("Information"), deep: 1},
+            {name: tr("Admin"), deep: 1},
+            {name: tr("Basics"), deep: 1},
+            {name: tr("Modify"), deep: 1},
         //TODO Music bot
-        {name: "File Transfer", deep: 0},
+        {name: tr("File Transfer"), deep: 0},
     ];
     private _group_mapping;
 
@@ -539,10 +593,10 @@ class PermissionManager extends connection.AbstractCommandHandler {
 
         this.neededPermissions = undefined;
 
-        this.requests_channel_permissions = undefined;
-        this.requests_client_permissions = undefined;
-        this.requests_client_channel_permissions = undefined;
-        this.requests_playlist_permissions = undefined;
+        /* delete all requests */
+        for(const key of Object.keys(this))
+            if(key.startsWith("requests"))
+                delete this[key];
 
         this.initializedListener = undefined;
         this._cacheNeededPermissions = undefined;
@@ -567,6 +621,9 @@ class PermissionManager extends connection.AbstractCommandHandler {
                 return true;
             case "notifyplaylistpermlist":
                 this.onPlaylistPermList(command.arguments);
+                return true;
+            case "notifyplaylistclientpermlist":
+                this.onPlaylistClientPermList(command.arguments);
                 return true;
         }
         return false;
@@ -708,172 +765,252 @@ class PermissionManager extends connection.AbstractCommandHandler {
         return undefined;
     }
 
-    requestChannelPermissions(channelId: number) : Promise<PermissionValue[]> {
-        return new Promise<PermissionValue[]>((resolve, reject) => {
-            let request: ChannelPermissionRequest;
-            for(let element of this.requests_channel_permissions)
-                if(element.requested + 1000 < Date.now() && element.channel_id == channelId) {
-                    request = element;
-                    break;
-                }
-            if(!request) {
-                request = new ChannelPermissionRequest();
-                request.requested = Date.now();
-                request.channel_id = channelId;
-                this.handle.serverConnection.send_command("channelpermlist", {"cid": channelId}).catch(error => {
-                    this.requests_channel_permissions.remove(request);
-
-                    if(error instanceof CommandResult) {
-                        if(error.id == ErrorID.EMPTY_RESULT) {
-                            request.callback_success.forEach(e => e([]));
-                            return;
-                        }
-                    }
-                    request.callback_error.forEach(e => e(error));
-                }).then(() => {
-                    //Error handler if we've not received an notify
-                    setTimeout(() => {
-                        if(this.requests_channel_permissions.remove(request)) {
-                            request.callback_error.forEach(e => e(tr("missing notify")));
-                        }
-                    }, 1000);
-                });
-                this.requests_channel_permissions.push(request);
-            }
-            request.callback_error.push(reject);
-            request.callback_success.push(resolve);
-        });
-    }
-
+    /* channel permission request */
     private onChannelPermList(json) {
         let channelId: number = parseInt(json[0]["cid"]);
 
-        let permissions = PermissionManager.parse_permission_bulk(json, this.handle.permissions);
-        log.debug(LogCategory.PERMISSIONS, tr("Got channel permissions for channel %o"), channelId);
-        for(let element of this.requests_channel_permissions) {
-            if(element.channel_id == channelId) {
-                for(let l of element.callback_success)
-                    l(permissions);
-                this.requests_channel_permissions.remove(element);
-                return;
-            }
-        }
-        log.debug(LogCategory.PERMISSIONS, tr("Missing channel permission handle for requested channel id %o"), channelId);
+        this.fullfill_permission_request("requests_channel_permissions", {
+            channel_id: channelId
+        }, "success", PermissionManager.parse_permission_bulk(json, this.handle.permissions));
+    }
+
+    private execute_channel_permission_request(request: permissions.PermissionRequestKeys) {
+        this.handle.serverConnection.send_command("channelpermlist", {"cid": request.channel_id}).catch(error => {
+            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                this.fullfill_permission_request("requests_channel_permissions", request, "success", []);
+            else
+                this.fullfill_permission_request("requests_channel_permissions", request, "error", error);
+        });
+    }
+
+    requestChannelPermissions(channelId: number) : Promise<PermissionValue[]> {
+        const keys: permissions.PermissionRequestKeys = {
+            channel_id: channelId
+        };
+        return this.execute_permission_request("requests_channel_permissions", keys, this.execute_channel_permission_request.bind(this));
+    }
+
+    /* client permission request */
+    private onClientPermList(json: any[]) {
+        let client = parseInt(json[0]["cldbid"]);
+        this.fullfill_permission_request("requests_client_permissions", {
+            client_id: client
+        }, "success", PermissionManager.parse_permission_bulk(json, this.handle.permissions));
+    }
+
+    private execute_client_permission_request(request: permissions.PermissionRequestKeys) {
+        this.handle.serverConnection.send_command("clientpermlist", {cldbid: request.client_id}).catch(error => {
+            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                this.fullfill_permission_request("requests_client_permissions", request, "success", []);
+            else
+                this.fullfill_permission_request("requests_client_permissions", request, "error", error);
+        });
     }
 
     requestClientPermissions(client_id: number) : Promise<PermissionValue[]> {
-        for(let request of this.requests_client_permissions)
-            if(request.client_id == client_id && request.promise.time() + 1000 > Date.now())
-                return request.promise;
-
-        let request: TeaPermissionRequest = {} as any;
-        request.client_id = client_id;
-        request.promise = new LaterPromise<PermissionValue[]>();
-
-        this.handle.serverConnection.send_command("clientpermlist", {cldbid: client_id}).catch(error => {
-            this.requests_client_permissions.remove(request);
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
-                request.promise.resolved([]);
-            else
-                request.promise.rejected(error);
-        }).then(() => {
-            //Error handler if we've not received an notify
-            setTimeout(() => {
-                if(this.requests_client_permissions.remove(request)) {
-                    request.promise.rejected(tr("missing notify"));
-                }
-            }, 1000);
-        });
-
-        this.requests_client_permissions.push(request);
-        return request.promise;
+        const keys: permissions.PermissionRequestKeys = {
+            client_id: client_id
+        };
+        return this.execute_permission_request("requests_client_permissions", keys, this.execute_client_permission_request.bind(this));
     }
 
-    private onClientPermList(json: any[]) {
-        let client = parseInt(json[0]["cldbid"]);
-        let permissions = PermissionManager.parse_permission_bulk(json, this);
-        for(let req of this.requests_client_permissions.slice(0)) {
-            if(req.client_id == client) {
-                this.requests_client_permissions.remove(req);
-                req.promise.resolved(permissions);
-            }
-        }
-    }
-
-    requestClientChannelPermissions(client_id: number, channel_id: number) : Promise<PermissionValue[]> {
-        for(let request of this.requests_client_channel_permissions)
-            if(request.client_id == client_id && request.channel_id == channel_id && request.promise.time() + 1000 > Date.now())
-                return request.promise;
-
-        let request: TeaPermissionRequest = {} as any;
-        request.client_id = client_id;
-        request.channel_id = channel_id;
-        request.promise = new LaterPromise<PermissionValue[]>();
-
-        this.handle.serverConnection.send_command("channelclientpermlist", {cldbid: client_id, cid: channel_id}).catch(error => {
-            this.requests_client_channel_permissions.remove(request);
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
-                request.promise.resolved([]);
-            else
-                request.promise.rejected(error);
-        }).then(() => {
-            //Error handler if we've not received an notify
-            setTimeout(() => {
-                if(this.requests_client_channel_permissions.remove(request)) {
-                    request.promise.rejected(tr("missing notify"));
-                }
-            }, 1000);
-        });
-
-        this.requests_client_channel_permissions.push(request);
-        return request.promise;
-    }
-
+    /* client channel permission request */
     private onChannelClientPermList(json: any[]) {
         let client_id = parseInt(json[0]["cldbid"]);
         let channel_id = parseInt(json[0]["cid"]);
 
-        let permissions = PermissionManager.parse_permission_bulk(json, this);
-        for(let req of this.requests_client_channel_permissions.slice(0)) {
-            if(req.client_id == client_id && req.channel_id == channel_id) {
-                this.requests_client_channel_permissions.remove(req);
-                req.promise.resolved(permissions);
-            }
-        }
+        this.fullfill_permission_request("requests_client_channel_permissions", {
+            client_id: client_id,
+            channel_id: channel_id
+        }, "success", PermissionManager.parse_permission_bulk(json, this.handle.permissions));
     }
 
+    private execute_client_channel_permission_request(request: permissions.PermissionRequestKeys) {
+        this.handle.serverConnection.send_command("channelclientpermlist", {cldbid: request.client_id, cid: request.channel_id})
+        .catch(error => {
+            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                this.fullfill_permission_request("requests_client_channel_permissions", request, "success", []);
+            else
+                this.fullfill_permission_request("requests_client_channel_permissions", request, "error", error);
+        });
+    }
 
+    requestClientChannelPermissions(client_id: number, channel_id: number) : Promise<PermissionValue[]> {
+        const keys: permissions.PermissionRequestKeys = {
+            client_id: client_id
+        };
+        return this.execute_permission_request("requests_client_channel_permissions", keys, this.execute_client_channel_permission_request.bind(this));
+    }
 
+    /* playlist permissions */
     private onPlaylistPermList(json: any[]) {
         let playlist_id = parseInt(json[0]["playlist_id"]);
-        let permissions = PermissionManager.parse_permission_bulk(json, this);
-        for(let req of this.requests_playlist_permissions.slice(0)) {
-            if(req.playlist_id == playlist_id) {
-                this.requests_playlist_permissions.remove(req);
-                req.promise.resolved(permissions);
-            }
-        }
+
+        this.fullfill_permission_request("requests_playlist_permissions", {
+            playlist_id: playlist_id
+        }, "success", PermissionManager.parse_permission_bulk(json, this.handle.permissions));
+    }
+
+    private execute_playlist_permission_request(request: permissions.PermissionRequestKeys) {
+        this.handle.serverConnection.send_command("playlistpermlist", {playlist_id: request.playlist_id})
+            .catch(error => {
+                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                    this.fullfill_permission_request("requests_playlist_permissions", request, "success", []);
+                else
+                    this.fullfill_permission_request("requests_playlist_permissions", request, "error", error);
+            });
     }
 
     requestPlaylistPermissions(playlist_id: number) : Promise<PermissionValue[]> {
-        for(let request of this.requests_playlist_permissions)
-            if(request.playlist_id == playlist_id && request.promise.time() + 1000 > Date.now())
+        const keys: permissions.PermissionRequestKeys = {
+            playlist_id: playlist_id
+        };
+        return this.execute_permission_request("requests_playlist_permissions", keys, this.execute_playlist_permission_request.bind(this));
+    }
+
+    /* playlist client permissions */
+    private onPlaylistClientPermList(json: any[]) {
+        let playlist_id = parseInt(json[0]["playlist_id"]);
+        let client_id = parseInt(json[0]["cldbid"]);
+
+        this.fullfill_permission_request("requests_playlist_client_permissions", {
+            playlist_id: playlist_id,
+            client_id: client_id
+        }, "success", PermissionManager.parse_permission_bulk(json, this.handle.permissions));
+    }
+
+    private execute_playlist_client_permission_request(request: permissions.PermissionRequestKeys) {
+        this.handle.serverConnection.send_command("playlistclientpermlist", {playlist_id: request.playlist_id, cldbid: request.client_id})
+            .catch(error => {
+                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                    this.fullfill_permission_request("requests_playlist_client_permissions", request, "success", []);
+                else
+                    this.fullfill_permission_request("requests_playlist_client_permissions", request, "error", error);
+            });
+    }
+
+    requestPlaylistClientPermissions(playlist_id: number, client_database_id: number) : Promise<PermissionValue[]> {
+        const keys: permissions.PermissionRequestKeys = {
+            playlist_id: playlist_id,
+            client_id: client_database_id
+        };
+        return this.execute_permission_request("requests_playlist_client_permissions", keys, this.execute_playlist_client_permission_request.bind(this));
+    }
+
+    private readonly criteria_equal = (a, b) => {
+        for(const criteria of ["client_id", "channel_id", "playlist_id"]) {
+            if((typeof a[criteria] === "undefined") !== (typeof b[criteria] === "undefined")) return false;
+            if(a[criteria] != b[criteria]) return false;
+        }
+        return true;
+    };
+
+    private execute_permission_request(list: RequestLists,
+                                       criteria: permissions.PermissionRequestKeys,
+                                       execute: (criteria: permissions.PermissionRequestKeys) => any) : Promise<PermissionValue[]> {
+        for(const request of this[list])
+            if(this.criteria_equal(request, criteria) && request.promise.time() + 1000 < Date.now())
                 return request.promise;
 
-        let request: TeaPermissionRequest = {} as any;
-        request.playlist_id = playlist_id;
-        request.promise = new LaterPromise<PermissionValue[]>();
+        const result = Object.assign({
+            timeout_id: setTimeout(() => this.fullfill_permission_request(list, criteria, "error", tr("timeout")), 5000),
+            promise: new LaterPromise<PermissionValue[]>()
+        }, criteria);
+        this[list].push(result);
+        execute(criteria);
+        return result.promise;
+    };
 
-        this.handle.serverConnection.send_command("playlistpermlist", {playlist_id: playlist_id}).catch(error => {
-            this.requests_playlist_permissions.remove(request);
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
-                request.promise.resolved([]);
-            else
-                request.promise.rejected(error);
+    private fullfill_permission_request(list: RequestLists, criteria: permissions.PermissionRequestKeys, status: "success" | "error", result: any) {
+        for(const request of this[list]) {
+            if(this.criteria_equal(request, criteria)) {
+                this[list].remove(request);
+                clearTimeout(request.timeout_id);
+                status === "error" ? request.promise.rejected(result) : request.promise.resolved(result);
+            }
+        }
+    }
+
+    find_permission(...permissions: string[]) : Promise<permissions.find.Entry[]> {
+        const permission_ids = [];
+        for(const permission of permissions) {
+            const info = this.resolveInfo(permission);
+            if(!info) continue;
+
+            permission_ids.push(info.id);
+        }
+        if(!permission_ids.length) return Promise.resolve([]);
+
+        return new Promise<permissions.find.Entry[]>((resolve, reject) => {
+            const single_handler = {
+                command: "notifypermfind",
+                function: command => {
+                    const result: permissions.find.Entry[] = [];
+                    for(const entry of command.arguments) {
+                        const perm_id = parseInt(entry["p"]);
+                        if(permission_ids.indexOf(perm_id) === -1) return; /* not our permfind result */
+
+                        const value = parseInt(entry["v"]);
+                        const type = parseInt(entry["t"]);
+
+                        let data;
+                        switch (type) {
+                            case 0:
+                                data = {
+                                    type: "server_group",
+                                    group_id: parseInt(entry["id1"]),
+                                } as permissions.find.ServerGroup;
+                                break;
+                            case 1:
+                                data = {
+                                    type: "client",
+                                    client_id: parseInt(entry["id2"]),
+                                } as permissions.find.Client;
+                                break;
+                            case 2:
+                                data = {
+                                    type: "channel",
+                                    channel_id: parseInt(entry["id2"]),
+                                } as permissions.find.Channel;
+                                break;
+                            case 3:
+                                data = {
+                                    type: "channel_group",
+                                    group_id: parseInt(entry["id1"]),
+                                } as permissions.find.ChannelGroup;
+                                break;
+                            case 4:
+                                data = {
+                                    type: "client_channel",
+                                    client_id: parseInt(entry["id1"]),
+                                    channel_id: parseInt(entry["id1"]),
+                                } as permissions.find.ClientChannel;
+                                break;
+                            default:
+                                continue;
+                        }
+
+                        data.id = perm_id;
+                        data.value = value;
+                        result.push(data);
+                    }
+
+                    resolve(result);
+                    return true;
+                }
+            };
+            this.handler_boss.register_single_handler(single_handler);
+
+            this.connection.send_command("permfind", permission_ids.map(e => { return {permid: e }})).catch(error => {
+                this.handler_boss.remove_single_handler(single_handler);
+
+                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                    resolve([]);
+                    return;
+                }
+                reject(error);
+            });
         });
-
-        this.requests_playlist_permissions.push(request);
-        return request.promise;
     }
 
     neededPermission(key: number | string | PermissionType | PermissionInfo) : NeededPermissionValue {

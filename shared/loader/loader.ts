@@ -473,6 +473,70 @@ namespace loader {
         }
     }
 
+    export async function load_template(path: SourcePath) : Promise<void> {
+        try {
+            const response = await $.ajax(path + (cache_tag || ""));
+
+            let node = document.createElement("html");
+            node.innerHTML = response;
+            let tags: HTMLCollection;
+            if(node.getElementsByTagName("body").length > 0)
+                tags = node.getElementsByTagName("body")[0].children;
+            else
+                tags = node.children;
+
+            let root = document.getElementById("templates");
+            if(!root) {
+                loader.critical_error("Failed to find template tag!");
+                throw "Failed to find template tag";
+            }
+            while(tags.length > 0){
+                let tag = tags.item(0);
+                root.appendChild(tag);
+
+            }
+        } catch(error) {
+            let msg;
+            if('responseText' in error)
+                msg = error.responseText;
+            else if(error instanceof Error)
+                msg = error.message;
+
+            loader.critical_error("failed to load template " + script_name(path), msg);
+            throw "template error";
+        }
+    }
+
+    export async function load_templates(paths: SourcePath[]) : Promise<void> {
+        const promises: Promise<void>[] = [];
+        const errors: {
+            template: SourcePath,
+            error: any
+        }[] = [];
+
+        for(const template of paths)
+            promises.push(load_template(template).catch(error => {
+                errors.push({
+                    template: template,
+                    error: error
+                });
+                return Promise.resolve();
+            }));
+
+        await Promise.all([...promises]);
+
+        if(errors.length > 0) {
+            if (loader.config.error) {
+                console.error("Failed to load the following templates:");
+                for (const sheet of errors)
+                    console.log(" - %o: %o", sheet.template, sheet.error);
+            }
+
+            loader.critical_error("Failed to load template " + script_name(errors[0].template) + " <br>" + "View the browser console for more information!");
+            throw "failed to load template " + script_name(errors[0].template);
+        }
+    }
+
 
     export type ErrorHandler = (message: string, detail: string) => void;
 
@@ -578,7 +642,7 @@ namespace loader {
             const display_detect = /./;
             display_detect.toString = function() { print_security(); return ""; };
 
-            clog("%cLovely to see you using and debugging the TeaSpeak Web client.", css);
+            clog("%cLovely to see you using and debugging the TeaSpeak-Web client.", css);
             clog("%cIf you have some good ideas or already done some incredible changes,", css);
             clog("%cyou'll be may interested to share them here: %chttps://github.com/TeaSpeak/TeaWeb", css, css_2);
             clog("%c ", display_detect);
