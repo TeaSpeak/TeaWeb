@@ -30,11 +30,6 @@ declare namespace audio {
     }
 
     export namespace sounds {
-        export interface SoundFile {
-            path: string;
-            volume?: number;
-        }
-
-        export function play_sound(file: SoundFile) : Promise<void>;
+        export function play_sound(file: sound.SoundFile) : Promise<void>;
     }
 }

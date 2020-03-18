@@ -67,6 +67,11 @@ namespace sound {
         filename: string;
     }
 
+    export interface SoundFile {
+        path: string;
+        volume?: number;
+    }
+
     let speech_mapping: {[key: string]:SoundHandle} = {};
 
     let volume_require_save = false;
@@ -274,7 +279,7 @@ namespace sound {
                     if(options.callback)
                         options.callback(true);
                 }).catch(error => {
-                    log.warn(LogCategory.AUDIO, tr("Failed to replay sound %o: %o"), sound, error);
+                    log.warn(LogCategory.AUDIO, tr("Failed to replay sound %s: %o"), handle.filename, error);
                     if(options.callback)
                         options.callback(false);
                 }).then(() => {
