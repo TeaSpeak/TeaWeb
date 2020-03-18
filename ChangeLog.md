@@ -1,4 +1,7 @@
 # Changelog:
+* **18.03.20**
+    - Updated the sound playback mechanism and allowing the native backend to playback sounds via the native interface.
+    
 * **22.02.20**
     - Added a music bot control panel
     

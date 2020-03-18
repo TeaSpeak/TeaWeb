@@ -28,4 +28,13 @@ declare namespace audio {
         export function create_input() : AbstractInput;
         export function create_levelmeter(device: InputDevice) : Promise<LevelMeter>;
     }
+
+    export namespace sounds {
+        export interface SoundFile {
+            path: string;
+            volume?: number;
+        }
+
+        export function play_sound(file: SoundFile) : Promise<void>;
+    }
 }

@@ -259,9 +259,10 @@ const loader_javascript = {
     },
     load_scripts_debug_web: async () => {
         await loader.load_scripts([
-            ["js/audio/AudioPlayer.js"],
-            ["js/audio/WebCodec.js"],
-            ["js/WebPPTListener.js"],
+            "js/audio/AudioPlayer.js",
+            "js/audio/sounds.js",
+            "js/audio/WebCodec.js",
+            "js/WebPPTListener.js",
 
             "js/voice/AudioResampler.js",
             "js/voice/JavascriptRecorder.js",
