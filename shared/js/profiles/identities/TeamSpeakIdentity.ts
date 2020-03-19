@@ -464,7 +464,6 @@ namespace profiles.identities {
                 identity = identity.match(/([0-9]+V[0-9a-zA-Z]+[=]+)/)[1];
                 if(!identity) throw "invalid identity key value";
 
-                debugger;
                 const result = parse_string(identity);
                 result.name = name || result.name;
                 return result;
