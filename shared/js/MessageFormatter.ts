@@ -133,7 +133,7 @@ namespace messages.formatter {
 
         export function load_image(entry: HTMLImageElement) {
             const url = decodeURIComponent(entry.getAttribute("x-image-url") || "");
-            const proxy_url = "//images.weserv.nl/?url=" + encodeURIComponent(url);
+            const proxy_url = "https://images.weserv.nl/?url=" + encodeURIComponent(url);
 
             entry.onload = undefined;
             entry.src = proxy_url;
