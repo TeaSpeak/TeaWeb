@@ -5,6 +5,7 @@
     - Added image preview within the chat
     - Added an image preview to the music bot thumbnails
     - Added an image preview to client avatars
+    - Fixed the translations system default repository
     
 * **18.03.20**
     - Updated the sound playback mechanism and allowing the native backend to playback sounds via the native interface.

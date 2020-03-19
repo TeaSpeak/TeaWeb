@@ -9,7 +9,7 @@ namespace audio.sounds {
     const file_cache: {[key: string]: Promise<SoundEntry> & { timestamp: number }} = {};
     let warned = false;
 
-    function get_song_entry(file: SoundFile) : Promise<SoundEntry> {
+    function get_song_entry(file: sound.SoundFile) : Promise<SoundEntry> {
         if(typeof file_cache[file.path] === "object") {
             return new Promise<SoundEntry>((resolve, reject) => {
                 if(file_cache[file.path].timestamp + 60 * 1000 > Date.now()) {
@@ -74,7 +74,7 @@ namespace audio.sounds {
         })(), { timestamp: Date.now() }));
     }
 
-    export async function play_sound(file: SoundFile) : Promise<void> {
+    export async function play_sound(file: sound.SoundFile) : Promise<void> {
         const entry = get_song_entry(file);
         if(!entry) {
             log.warn(LogCategory.AUDIO, tr("Failed to replay sound %s because it could not be resolved."), file.path);
