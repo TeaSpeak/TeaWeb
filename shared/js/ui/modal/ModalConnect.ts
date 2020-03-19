@@ -113,7 +113,7 @@ namespace Modals {
                 default_connect_new_tab: typeof(options.default_connect_new_tab) === "boolean" && options.default_connect_new_tab
             }),
             footer: () => undefined,
-            min_width: "25em"
+            min_width: "28em"
         });
 
         modal.htmlTag.find(".modal-body").addClass("modal-connect");
