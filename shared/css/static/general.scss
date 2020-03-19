@@ -108,6 +108,14 @@ button, input, optgroup, select, textarea {
 	line-height: inherit;
 }
 
+select {
+	-webkit-border-radius: 1px!important;
+
+	option {
+		color: black;
+	}
+}
+
 
 fieldset {
 	border: unset;
