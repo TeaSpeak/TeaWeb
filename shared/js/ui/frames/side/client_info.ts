@@ -70,14 +70,21 @@ namespace chat {
                 const client_description = this._html_tag.find(".client-description");
                 client_description.text(client ? client.properties.client_description : "").toggle(!!client.properties.client_description);
 
+                const is_local_entry = client instanceof LocalClientEntry;
                 const container_avatar = this._html_tag.find(".container-avatar");
                 container_avatar.find(".avatar").remove();
-                if(client)
-                    this.handle.handle.fileManager.avatars.generate_chat_tag({id: client.clientId()}, client.clientUid()).appendTo(container_avatar);
-                else
+                if(client) {
+                    const avatar = this.handle.handle.fileManager.avatars.generate_chat_tag({id: client.clientId()}, client.clientUid());
+                    if(!is_local_entry) {
+                        avatar.css("cursor", "pointer").on('click', event => {
+                            image_preview.preview_image_tag(this.handle.handle.fileManager.avatars.generate_chat_tag({id: client.clientId()}, client.clientUid()));
+                        });
+                    }
+                    avatar.appendTo(container_avatar);
+                } else
                     this.handle.handle.fileManager.avatars.generate_chat_tag(undefined, undefined).appendTo(container_avatar);
 
-                container_avatar.toggleClass("editable", client instanceof LocalClientEntry);
+                container_avatar.toggleClass("editable", is_local_entry);
             }
             /* updating the info fields */
             {

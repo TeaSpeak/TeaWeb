@@ -99,6 +99,13 @@ namespace chat {
 
             this._html_tag.find(".button-reload-playlist").on('click', () => this.events.fire("action_playlist_reload"));
             this._html_tag.find(".button-song-add").on('click', () => this.events.fire("action_song_add"));
+            this._html_tag.find(".thumbnail").on('click', event => {
+                const image = this._html_tag.find(".thumbnail img");
+                const url = image.attr("x-thumbnail-url");
+                if(!url) return;
+
+                image_preview.preview_image(decodeURIComponent(url), decodeURIComponent(url));
+            });
 
             {
                 const button_play = this._html_tag.find(".control-buttons .button-play");
@@ -288,7 +295,11 @@ namespace chat {
             const container_thumbnail = this._html_tag.find(".player .container-thumbnail");
             const container_info = this._html_tag.find(".player .container-song-info");
 
-            container_thumbnail.find("img").attr("src", song.song_thumbnail || "img/music/no-thumbnail.png");
+            container_thumbnail.find("img")
+                .attr("src", song.song_thumbnail || "img/music/no-thumbnail.png")
+                .attr("x-thumbnail-url", encodeURIComponent(song.song_thumbnail))
+                .css("cursor", song.song_thumbnail ? "pointer" : null);
+
             if(song.song_id)
                 container_info.find(".song-name").text(song.song_title || song.song_url).attr("title", song.song_title || song.song_url);
             else
@@ -522,8 +533,10 @@ namespace chat {
                     name.text(meta.title);
                     description.text(meta.description);
                     length.text(this.format_time(meta.length || 0));
-                    if(meta.thumbnail)
-                        thumbnail.attr("src", meta.thumbnail);
+                    if(meta.thumbnail) {
+                        thumbnail.attr("src", meta.thumbnail)
+                            .attr("x-thumbnail-url", encodeURIComponent(meta.thumbnail));
+                    }
                 } else {
                     name.text(tr("failed to load ") + entry.attr("song-url")).attr("title", tr("failed to load ") + entry.attr("song-url"));
                     description.text(event.error_msg || tr("unknown error")).attr("title", event.error_msg || tr("unknown error"));
@@ -770,6 +783,13 @@ namespace chat {
             const length = tag.find(".length");
 
             tag.find(".button-delete").on('click', () => this.events.fire("action_song_delete", { song_id: data.song_id }));
+            tag.find(".container-thumbnail").on('click', event => {
+                const target = tag.find(".container-thumbnail img");
+                const url = target.attr("x-thumbnail-url");
+                if(!url) return;
+
+                image_preview.preview_image(decodeURIComponent(url), decodeURIComponent(url));
+            });
             tag.on('dblclick', event => this.events.fire("action_song_set", { song_id: data.song_id }));
             name.text(tr("loading..."));
             description.text(data.song_url);

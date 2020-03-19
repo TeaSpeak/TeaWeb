@@ -14,6 +14,7 @@ function remove_if_exists() {
 function cleanup_declarations() {
     remove_if_exists shared/declarations/
     remove_if_exists web/declarations/
+    remove_if_exists client/declarations/
 }
 
 function cleanup_generated_files() {

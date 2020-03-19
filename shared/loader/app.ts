@@ -228,6 +228,7 @@ const loader_javascript = {
             "js/ui/frames/server_log.js",
             "js/ui/frames/hostbanner.js",
             "js/ui/frames/MenuBar.js",
+            "js/ui/frames/image_preview.js",
 
             //Load audio
             "js/voice/RecorderBase.js",
@@ -239,6 +240,7 @@ const loader_javascript = {
             "js/FileManager.js",
             "js/ConnectionHandler.js",
             "js/BrowserIPC.js",
+            "js/MessageFormatter.js",
 
             //Connection
             "js/connection/CommandHandler.js",
@@ -373,6 +375,7 @@ const loader_style = {
             "css/static/modal-keyselect.css",
             "css/static/modal-permissions.css",
             "css/static/modal-group-assignment.css",
+            "css/static/overlay-image-preview.css",
             "css/static/music/info_plate.css",
             "css/static/frame/SelectInfo.css",
             "css/static/control_bar.css",

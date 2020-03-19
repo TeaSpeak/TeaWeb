@@ -90,89 +90,11 @@ namespace MessageHelper {
         return result;
     }
 
-    const yt_embed_regex = /\[-- yt: ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}) --]/;
+    //TODO: Remove this (only legacy)
     export function bbcode_chat(message: string) : JQuery[] {
-        const result = xbbcode.parse(message, {
-            /* TODO make this configurable and allow IMG */
-            tag_whitelist: [
-                "b", "big",
-                "i", "italic",
-                "u", "underlined",
-                "s", "strikethrough",
-                "color",
-                "url",
-                "code",
-                "i-code", "icode",
-                "sub", "sup",
-                "size",
-                "hr", "br",
-
-                "ul", "ol", "list",
-                "li",
-
-                "table",
-                "tr", "td", "th",
-
-                "yt", "youtube",
-                /* "img" */
-            ] //[img]https://i.ytimg.com/vi/kgeSTkZssPg/maxresdefault.jpg[/img]
+        return messages.formatter.bbcode.format(message, {
+            is_chat_message: true
         });
-        let html = result.build_html();
-        if(typeof(window.twemoji) !== "undefined" && settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES))
-            html = twemoji.parse(html);
-
-        const container = $.spawn("div");
-        let sanitized = DOMPurify.sanitize(html, {
-            ADD_ATTR: [
-                "x-highlight-type",
-                "x-code-type"
-            ]
-        });
-
-        sanitized = sanitized.replace(yt_embed_regex, data => {
-            const uid = data.match(yt_embed_regex)[1];
-            const url = yt_url_map[uid];
-            if(!url) return data;
-            delete yt_url_map[uid];
-
-            return "<iframe class=\"xbbcode-tag xbbcode-tag-video\" src=\"" + url + "\" frameborder=\"0\" allow=\"autoplay; encrypted-media\" allowfullscreen></iframe>";
-        });
-
-        container[0].innerHTML = sanitized;
-
-
-        container.find("a")
-            .attr('target', "_blank")
-            .on('contextmenu', event => {
-            if(event.isDefaultPrevented()) return;
-            event.preventDefault();
-
-            const url = $(event.target).attr("href");
-            contextmenu.spawn_context_menu(event.pageX, event.pageY, {
-                callback: () => {
-                    const win = window.open(url, '_blank');
-                    win.focus();
-                },
-                name: tr("Open URL"),
-                type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-browse-addon-online"
-            }, {
-                callback: () => {
-                    //TODO
-                },
-                name: tr("Open URL in Browser"),
-                type: contextmenu.MenuEntryType.ENTRY,
-                visible: !app.is_web() && false // Currently not possible
-            }, contextmenu.Entry.HR(), {
-                callback: () => copy_to_clipboard(url),
-                name: tr("Copy URL to clipboard"),
-                type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-copy"
-            });
-        });
-
-        return [container.contents() as JQuery];
-        //return result.root_tag.content.map(e => e.build_html()).map((entry, idx, array) => $.spawn("a").css("display", (idx == 0 ? "inline" : "") + "block").html(entry == "" && idx != 0 ? "&nbsp;" : entry));
     }
 
     export namespace network {
@@ -317,59 +239,6 @@ namespace MessageHelper {
             "}\n"
         );
     }
-
-    const yt_url_map: {[key: string]: string} = {};
-    loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-        name: "XBBCode code tag init",
-        function: async () => {
-            /* override default parser */
-            xbbcode.register.register_parser({
-                tag: ["code", "icode", "i-code"],
-                content_tags_whitelist: [],
-
-                build_html(layer) : string {
-                    const klass = layer.tag_normalized != 'code' ? "tag-hljs-inline-code" : "tag-hljs-code";
-                    const language = (layer.options || "").replace("\"", "'").toLowerCase();
-
-                    /* remove heading empty lines */
-                    let text = layer.content.map(e => e.build_text())
-                        .reduce((a, b) => a.length == 0 && b.replace(/[ \n\r\t]+/g, "").length == 0 ? "" : a + b, "")
-                        .replace(/^([ \n\r\t]*)(?=\n)+/g, "");
-                    if(text.startsWith("\r") || text.startsWith("\n"))
-                        text = text.substr(1);
-
-                    let result: HighlightJSResult;
-                    if(window.hljs.getLanguage(language))
-                        result = window.hljs.highlight(language, text, true);
-                    else
-                        result = window.hljs.highlightAuto(text);
-
-                    let html = '<pre class="' + klass + '">';
-                    html += '<code class="hljs" x-code-type="' + language + '" x-highlight-type="' + result.language + '">';
-                    html += result.value;
-                    return html + "</code></pre>";
-                }
-            });
-
-            /* override the yt parser */
-            const original_parser = xbbcode.register.find_parser("yt");
-            if(original_parser)
-                xbbcode.register.register_parser({
-                    tag: ["yt", "youtube"],
-                    build_html(layer): string {
-                        const result = original_parser.build_html(layer);
-                        if(!result.startsWith("<iframe")) return result;
-
-                        const url = result.match(/src="(\S+)" /)[1];
-                        const uid = guid();
-
-                        yt_url_map[uid] = url;
-                        return "[-- yt: " + uid + " --]";
-                    }
-                });
-        },
-        priority: 10
-    });
 
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         name: "icon size init",

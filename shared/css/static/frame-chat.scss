@@ -1431,6 +1431,20 @@ $bot_thumbnail_height: 9em;
 					background-color: #25252a;
 				}
 			}
+
+			.xbbcode-tag-img {
+				padding: .25em;
+				border-radius: .25em;
+
+				overflow: hidden;
+				max-width: 20em;
+				max-height: 20em;
+
+				img {
+					width: 100%;
+					height: 100%;
+				}
+			}
 		}
 
 		.container-music-info {

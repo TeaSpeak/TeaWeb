@@ -269,6 +269,11 @@ class Settings extends StaticSettings {
         description: 'Enabled bbcode support in chat.'
     };
 
+    static readonly KEY_CHAT_IMAGE_WHITELIST_REGEX: SettingsKey<string> = {
+        key: 'chat_image_whitelist_regex',
+        default_value: JSON.stringify([])
+    };
+
     static readonly KEY_SWITCH_INSTANT_CHAT: SettingsKey<boolean> = {
         key: 'switch_instant_chat',
         default_value: true,
