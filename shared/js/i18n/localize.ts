@@ -1,16 +1,3 @@
-/*
-"key": {
-    "message": "Show permission description",
-    "line": 374,
-    "character": 30,
-    "filename": "/home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/shared/js/ui/modal/ModalPermissionEdit.ts"
-},
-"translated": "Berechtigungsbeschreibung anzeigen",
-"flags": [
-    "google-translate",
-    "verified"
-]
- */
 function guid() {
     function s4() {
         return Math.floor((1 + Math.random()) * 0x10000)
@@ -210,7 +197,7 @@ namespace i18n {
 
             if(config.repositories.length == 0) {
                 //Add the default TeaSpeak repository
-                load_repository(StaticSettings.instance.static("i18n.default_repository", "i18n/")).then(repo => {
+                load_repository(StaticSettings.instance.static("i18n.default_repository", "https://web.teaspeak.de/i18n/")).then(repo => {
                     log.info(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
                     register_repository(repo);
                 }).catch(error => {
