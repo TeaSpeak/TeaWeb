@@ -461,7 +461,7 @@ namespace profiles.identities {
                 }
 
                 if(!identity) throw "missing identity keyword";
-                identity = identity.match(/([0-9]+V[0-9a-zA-Z]+[=]+)/)[1];
+                identity = identity.match(/^"?([0-9]+V[0-9a-zA-Z+\/]+[=]+)"?$/)[1];
                 if(!identity) throw "invalid identity key value";
 
                 const result = parse_string(identity);
@@ -471,6 +471,13 @@ namespace profiles.identities {
 
             if(!ts_string.match(/[0-9]+/g)) throw "invalid hash!";
 
+            let buffer;
+            try {
+                buffer = new Uint8Array(arrayBufferBase64(data));
+            } catch(error) {
+                log.error(LogCategory.IDENTITIES, tr("Failed to decode given base64 data (%s)"), data);
+                throw "failed to base data (base64 decode failed)";
+            }
             const key64 = await CryptoHelper.decrypt_ts_identity(new Uint8Array(arrayBufferBase64(data)));
 
             const identity = new TeaSpeakIdentity(key64, hash, name, false);
