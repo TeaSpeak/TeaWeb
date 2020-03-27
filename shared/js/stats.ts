@@ -1,4 +1,6 @@
-namespace stats {
+import {log, LogCategory} from "./log";
+
+export namespace stats {
     const LOG_PREFIX = "[Statistics] ";
 
     export enum CloseCodes {

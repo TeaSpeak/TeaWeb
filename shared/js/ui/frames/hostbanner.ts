@@ -1,4 +1,8 @@
-class Hostbanner {
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {Settings, settings} from "../../settings";
+import {log, LogCategory} from "../../log";
+
+export class Hostbanner {
     readonly html_tag: JQuery<HTMLElement>;
     readonly client: ConnectionHandler;
 

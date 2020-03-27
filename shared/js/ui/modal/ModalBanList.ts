@@ -1,9 +1,4 @@
-/// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../../ui/elements/modal.ts" />
-/// <reference path="../../i18n/localize.ts" />
-/// <reference path="../../proto.ts" />
-
-namespace Modals {
+export namespace Modals {
     export function openBanList(client: ConnectionHandler) {
         let modal: Modal;
 

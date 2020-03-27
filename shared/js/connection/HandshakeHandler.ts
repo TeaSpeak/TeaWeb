@@ -1,4 +1,15 @@
-namespace connection {
+import {AbstractServerConnection} from "./ConnectionBase";
+import {ConnectParameters, DisconnectReason} from "../ConnectionHandler";
+import {profiles} from "../profiles/ConnectionProfile";
+import {profiles as iprofiles} from "../profiles/Identity";
+import {profiles as tiprofiles} from "../profiles/identities/TeamSpeakIdentity";
+import {native_client} from "../main";
+import {settings} from "../settings";
+import {CommandResult} from "./ServerConnectionDeclaration";
+
+export namespace connection {
+    import identities = iprofiles.identities;
+
     export interface HandshakeIdentityHandler {
         connection: AbstractServerConnection;
 
@@ -48,7 +59,7 @@ namespace connection {
 
         on_teamspeak() {
             const type = this.profile.selected_type();
-            if(type == profiles.identities.IdentitifyType.TEAMSPEAK)
+            if(type == identities.IdentitifyType.TEAMSPEAK)
                 this.handshake_finished();
             else {
 
@@ -122,8 +133,8 @@ namespace connection {
             }
 
             /* required to keep compatibility */
-            if(this.profile.selected_type() === profiles.identities.IdentitifyType.TEAMSPEAK) {
-                data["client_key_offset"] = (this.profile.selected_identity() as profiles.identities.TeaSpeakIdentity).hash_number;
+            if(this.profile.selected_type() === identities.IdentitifyType.TEAMSPEAK) {
+                data["client_key_offset"] = (this.profile.selected_identity() as tiprofiles.identities.TeaSpeakIdentity).hash_number;
             }
 
             this.connection.send_command("clientinit", data).catch(error => {

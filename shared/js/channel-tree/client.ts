@@ -1,8 +1,11 @@
 /// <reference path="channel.ts" />
-/// <reference path="modal/ModalChangeVolume.ts" />
-/// <reference path="client_move.ts" />
+/// <reference path="../ui/modal/ModalChangeVolume.ts" />
+/// <reference path="../ui/client_move.ts" />
 
-enum ClientType {
+import {ChannelEntry} from "./channel";
+import {ChannelTree} from "./view";
+
+export enum ClientType {
     CLIENT_VOICE,
     CLIENT_QUERY,
     CLIENT_INTERNAL,
@@ -11,7 +14,7 @@ enum ClientType {
     CLIENT_UNDEFINED
 }
 
-class ClientProperties {
+export class ClientProperties {
     client_type: ClientType = ClientType.CLIENT_VOICE; //TeamSpeaks type
     client_type_exact: ClientType = ClientType.CLIENT_VOICE;
 
@@ -57,7 +60,7 @@ class ClientProperties {
     client_is_priority_speaker: boolean = false;
 }
 
-class ClientConnectionInfo {
+export class ClientConnectionInfo {
     connection_bandwidth_received_last_minute_control: number = -1;
     connection_bandwidth_received_last_minute_keepalive: number = -1;
     connection_bandwidth_received_last_minute_speech: number = -1;
@@ -109,7 +112,7 @@ class ClientConnectionInfo {
     connection_client_port: number = -1;
 }
 
-class ClientEntry {
+export class ClientEntry {
     readonly events: events.Registry<events.channel_tree.client>;
 
     protected _clientId: number;
@@ -1123,7 +1126,7 @@ class ClientEntry {
     }
 }
 
-class LocalClientEntry extends ClientEntry {
+export class LocalClientEntry extends ClientEntry {
     handle: ConnectionHandler;
 
     private renaming: boolean;
@@ -1232,7 +1235,7 @@ class LocalClientEntry extends ClientEntry {
     }
 }
 
-class MusicClientProperties extends ClientProperties {
+export class MusicClientProperties extends ClientProperties {
     player_state: number = 0;
     player_volume: number = 0;
 
@@ -1264,7 +1267,7 @@ class MusicClientProperties extends ClientProperties {
     }
  */
 
-class SongInfo {
+export class SongInfo {
     song_id: number = 0;
     song_url: string = "";
     song_invoker: number = 0;
@@ -1277,7 +1280,7 @@ class SongInfo {
     song_length: number = 0;
 }
 
-class MusicClientPlayerInfo extends SongInfo {
+export class MusicClientPlayerInfo extends SongInfo {
     bot_id: number = 0;
     player_state: number = 0;
 
@@ -1290,7 +1293,7 @@ class MusicClientPlayerInfo extends SongInfo {
     player_description: string = "";
 }
 
-class MusicClientEntry extends ClientEntry {
+export class MusicClientEntry extends ClientEntry {
     private _info_promise: Promise<MusicClientPlayerInfo>;
     private _info_promise_age: number = 0;
     private _info_promise_resolve: any;

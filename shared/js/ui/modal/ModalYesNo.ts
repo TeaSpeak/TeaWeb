@@ -1,6 +1,6 @@
-/// <reference path="../../ui/elements/modal.ts" />
+import {BodyCreator, ModalFunctions} from "../elements/modal";
 
-namespace Modals {
+export namespace Modals {
     export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_: boolean) => any, properties?: {
         text_yes?: string,
         text_no?: string,

@@ -1,4 +1,4 @@
-namespace Modals {
+export namespace Modals {
     export function spawnTeamSpeakIdentityImprove(identity: profiles.identities.TeaSpeakIdentity, name: string): Modal {
         let modal: Modal;
         let elapsed_timer: NodeJS.Timer;

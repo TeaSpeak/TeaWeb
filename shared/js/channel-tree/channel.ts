@@ -1,12 +1,15 @@
 /// <reference path="view.ts" />
 /// <reference path="../utils/helpers.ts" />
 
-enum ChannelType {
+import {ChannelTree} from "./view";
+import {ClientEntry} from "./client";
+
+export enum ChannelType {
     PERMANENT,
     SEMI_PERMANENT,
     TEMPORARY
 }
-namespace ChannelType {
+export namespace ChannelType {
     export function normalize(mode: ChannelType) {
         let value: string = ChannelType[mode];
         value = value.toLowerCase();
@@ -14,13 +17,13 @@ namespace ChannelType {
     }
 }
 
-enum ChannelSubscribeMode {
+export enum ChannelSubscribeMode {
     SUBSCRIBED,
     UNSUBSCRIBED,
     INHERITED
 }
 
-class ChannelProperties {
+export class ChannelProperties {
     channel_order: number = 0;
     channel_name: string = "";
     channel_name_phonetic: string = "";
@@ -55,7 +58,7 @@ class ChannelProperties {
     channel_conversation_history_length: number = -1;
 }
 
-class ChannelEntry {
+export class ChannelEntry {
     channelTree: ChannelTree;
     channelId: number;
     parent?: ChannelEntry;

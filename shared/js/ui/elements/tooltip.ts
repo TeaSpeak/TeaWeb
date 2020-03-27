@@ -1,8 +1,8 @@
-function tooltip(entry: JQuery) {
+export function tooltip(entry: JQuery) {
     return tooltip.initialize(entry);
 }
 
-namespace tooltip {
+export namespace tooltip {
     let _global_tooltip: JQuery;
     export type Handle = {
         show();

@@ -1,4 +1,4 @@
-namespace Modals {
+export namespace Modals {
     export function openServerInfo(server: ServerEntry) {
         let modal: Modal;
         let update_callbacks: ServerBandwidthInfoUpdateCallback[] = [];

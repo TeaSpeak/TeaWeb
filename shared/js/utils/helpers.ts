@@ -1,6 +1,6 @@
-/// <reference path="../crypto/sha.ts" />
+import {sha} from "../crypto/sha";
 
-namespace helpers {
+export namespace helpers {
     export function hashPassword(password: string) : Promise<string> {
         return new Promise<string>((resolve, reject) => {
             sha.sha1(password).then(result => {
@@ -10,7 +10,7 @@ namespace helpers {
     }
 }
 
-class LaterPromise<T> extends Promise<T> {
+export class LaterPromise<T> extends Promise<T> {
     private _handle: Promise<T>;
     private _resolve: ($: T) => any;
     private _reject: ($: any) => any;

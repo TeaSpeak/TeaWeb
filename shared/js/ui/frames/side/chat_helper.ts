@@ -1,4 +1,4 @@
-namespace chat {
+export namespace chat {
     export namespace helpers {
         //https://regex101.com/r/YQbfcX/2
         //static readonly URL_REGEX = /^(?<hostname>([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/(?<path>(?:[^\s?]+)?)(?:\?(?<query>\S+))?)?$/gm;

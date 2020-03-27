@@ -1,8 +1,8 @@
-interface Window {
+export interface Window {
     BroadcastChannel: BroadcastChannel;
 }
 
-namespace bipc {
+export namespace bipc {
     export interface BroadcastMessage {
         timestamp: number;
         receiver: string;

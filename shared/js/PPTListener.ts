@@ -1,4 +1,4 @@
-enum KeyCode {
+export enum KeyCode {
     KEY_CANCEL = 3,
     KEY_HELP = 6,
     KEY_BACK_SPACE = 8,
@@ -118,7 +118,7 @@ enum KeyCode {
     KEY_META = 224
 }
 
-namespace ppt {
+export namespace ppt {
     export enum EventType {
         KEY_PRESS,
         KEY_RELEASE,

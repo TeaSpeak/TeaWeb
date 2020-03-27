@@ -1,21 +1,26 @@
-/// <reference path="connection/CommandHandler.ts" />
-/// <reference path="connection/ConnectionBase.ts" />
+import {ChannelEntry} from "./channel-tree/channel";
+import {AbstractCommandHandler, ServerCommand} from "./connection/ConnectionBase";
+import {ConnectionHandler} from "./ConnectionHandler";
+import {CommandResult} from "./connection/ServerConnectionDeclaration";
+import {log, LogCategory} from "./log";
+import {ClientEntry} from "./channel-tree/client";
+import {hex} from "./crypto/hex";
 
-class FileEntry {
+export class FileEntry {
     name: string;
     datetime: number;
     type: number;
     size: number;
 }
 
-class FileListRequest {
+export class FileListRequest {
     path: string;
     entries: FileEntry[];
 
     callback: (entries: FileEntry[]) => void;
 }
 
-namespace transfer {
+export namespace transfer {
     export interface TransferKey {
         client_transfer_id: number;
         server_transfer_id: number;
@@ -152,7 +157,7 @@ class RequestFileUpload implements transfer.UploadTransfer {
     }
 }
 
-class FileManager extends connection.AbstractCommandHandler {
+class FileManager extends AbstractCommandHandler {
     handle: ConnectionHandler;
     icons: IconManager;
     avatars: AvatarManager;
@@ -191,7 +196,7 @@ class FileManager extends connection.AbstractCommandHandler {
         this.avatars = undefined;
     }
 
-    handle_command(command: connection.ServerCommand): boolean {
+    handle_command(command: ServerCommand): boolean {
         switch (command.command) {
             case "notifyfilelist":
                 this.notifyFileList(command.arguments);

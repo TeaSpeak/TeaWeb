@@ -1,4 +1,8 @@
-enum Sound {
+import {settings} from "../settings";
+import {log, LogCategory} from "../log";
+import {ConnectionHandler} from "../ConnectionHandler";
+
+export enum Sound {
     SOUND_TEST = "sound.test",
     SOUND_EGG = "sound.egg",
 
@@ -61,7 +65,7 @@ enum Sound {
     GROUP_CHANNEL_CHANGED_SELF = "group.channel.changed.self"
 }
 
-namespace sound {
+export namespace sound {
     export interface SoundHandle {
         key: string;
         filename: string;

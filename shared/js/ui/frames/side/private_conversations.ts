@@ -1,5 +1,9 @@
 /* the bar on the right with the chats (Channel & Client) */
-namespace chat {
+import {log, LogCategory} from "../../../log";
+import {htmltags} from "../../htmltags";
+import {MessageHelper} from "../chat";
+
+export namespace chat {
     declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
     declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 

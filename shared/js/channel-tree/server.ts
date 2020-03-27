@@ -1,7 +1,9 @@
 /// <reference path="channel.ts" />
-/// <reference path="modal/ModalServerEdit.ts" />
+/// <reference path="../ui/modal/ModalServerEdit.ts" />
 
-class ServerProperties {
+import {ChannelTree} from "./view";
+
+export class ServerProperties {
     virtualserver_host: string = "";
     virtualserver_port: number = 0;
 
@@ -78,7 +80,7 @@ class ServerProperties {
     virtualserver_total_bytes_uploaded: number = 0;
 }
 
-interface ServerConnectionInfo {
+export interface ServerConnectionInfo {
     connection_filetransfer_bandwidth_sent: number;
     connection_filetransfer_bandwidth_received: number;
 
@@ -103,12 +105,12 @@ interface ServerConnectionInfo {
     connection_ping: number;
 }
 
-interface ServerAddress {
+export interface ServerAddress {
     host: string;
     port: number;
 }
 
-class ServerEntry {
+export class ServerEntry {
     remote_address: ServerAddress;
     channelTree: ChannelTree;
     properties: ServerProperties;

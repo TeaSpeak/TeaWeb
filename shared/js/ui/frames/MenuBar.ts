@@ -1,4 +1,12 @@
-namespace top_menu {
+import {bookmarks} from "../../bookmarks";
+import {Modals} from "../modal/ModalBookmarks";
+import {DisconnectReason} from "../../ConnectionHandler";
+import {control_bar} from "./ControlBar";
+import {createErrorModal} from "../elements/modal";
+import {PermissionType} from "../../permission/PermissionManager";
+import {Sound} from "../../sound/Sounds";
+
+export namespace top_menu {
     export interface HRItem { }
 
     export interface MenuItem {

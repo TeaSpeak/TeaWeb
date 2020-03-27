@@ -1,4 +1,4 @@
-namespace Modals {
+export namespace Modals {
     export function spawnSettingsModal(default_page?: string) : Modal {
         let modal: Modal;
         modal = createModal({

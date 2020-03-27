@@ -1,6 +1,9 @@
 /// <reference path="ui/elements/modal.ts" />
 //Used by CertAccept popup
 
+import {log, LogCategory} from "./log";
+import {createErrorModal} from "./ui/elements/modal";
+
 if(typeof(customElements) !== "undefined") {
     try {
         class X_Properties extends HTMLElement {}
@@ -14,7 +17,7 @@ if(typeof(customElements) !== "undefined") {
 }
 
 /* T = value type */
-interface SettingsKey<T> {
+export interface SettingsKey<T> {
     key: string;
 
     fallback_keys?: string | string[];
@@ -25,7 +28,7 @@ interface SettingsKey<T> {
     require_restart?: boolean;
 }
 
-class SettingsBase {
+export class SettingsBase {
     protected static readonly UPDATE_DIRECT: boolean = true;
 
     protected static transformStO?<T>(input?: string, _default?: T, default_type?: string) : T {
@@ -77,7 +80,7 @@ class SettingsBase {
     }
 }
 
-class StaticSettings extends SettingsBase {
+export class StaticSettings extends SettingsBase {
     private static _instance: StaticSettings;
     static get instance() : StaticSettings {
         if(!this._instance)
@@ -139,7 +142,7 @@ class StaticSettings extends SettingsBase {
     }
 }
 
-class Settings extends StaticSettings {
+export class Settings extends StaticSettings {
     static readonly KEY_USER_IS_NEW: SettingsKey<boolean> = {
         key: 'user_is_new_user',
         default_value: true
@@ -433,7 +436,7 @@ class Settings extends StaticSettings {
     }
 }
 
-class ServerSettings extends SettingsBase {
+export class ServerSettings extends SettingsBase {
     private cacheServer = {};
     private _server_unique_id: string;
     private _server_save_worker: NodeJS.Timer;
@@ -511,4 +514,4 @@ class ServerSettings extends SettingsBase {
     }
 }
 
-let settings: Settings;
+export let settings: Settings;

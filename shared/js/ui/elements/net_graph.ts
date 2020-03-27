@@ -1,4 +1,4 @@
-namespace net.graph {
+export namespace net.graph {
     export type Entry = {
         timestamp: number;
 

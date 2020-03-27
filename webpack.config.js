@@ -3,7 +3,7 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 module.exports = {
-    entry: './src/index.tsx',
+    entry: './shared/js/main.ts',
     devtool: 'inline-source-map',
     mode: "development",
     plugins: [
@@ -36,8 +36,16 @@ module.exports = {
             },
             {
                 test: /\.tsx?$/,
-                use: 'ts-loader',
                 exclude: /node_modules/,
+
+                loader: [
+                    {
+                        loader: 'ts-loader',
+                        options: {
+                            //transpileOnly: true
+                        }
+                    }
+                ]
             },
         ],
     },

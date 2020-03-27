@@ -1,4 +1,4 @@
-namespace Modals {
+export namespace Modals {
     let current_modal: Modal;
     export function createServerGroupAssignmentModal(client: ClientEntry, callback: (groups: number[], flag: boolean) => Promise<boolean>) {
         if(current_modal)

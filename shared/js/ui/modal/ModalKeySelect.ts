@@ -1,4 +1,4 @@
-namespace Modals {
+export namespace Modals {
     export function spawnKeySelect(callback: (key?: ppt.KeyEvent) => void) {
         let modal = createModal({
             header: tr("Select a key"),

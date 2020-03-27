@@ -1,10 +1,14 @@
+import {settings} from "../../settings";
+import {log, LogCategory} from "../../log";
+
+declare const $: any;
 interface JQuery<TElement = HTMLElement> {
     dividerfy() : this;
 }
 
 if(!$.fn.dividerfy) {
     $.fn.dividerfy = function<T extends HTMLElement>(this: JQuery<T>) : JQuery<T> {
-        this.find(".container-seperator").each(function (this: T) {
+        (this as any).find(".container-seperator").each(function (this: T) {
             if(!this.previousElementSibling) return;
             if(!this.nextElementSibling) return;
 

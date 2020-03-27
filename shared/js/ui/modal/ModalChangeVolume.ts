@@ -1,8 +1,4 @@
-/// <reference path="../../ui/elements/modal.ts" />
-/// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../../proto.ts" />
-
-namespace Modals {
+export namespace Modals {
     //TODO: Use the max limit!
 
     let modal: Modal;

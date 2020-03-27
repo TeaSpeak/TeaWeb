@@ -1,8 +1,11 @@
-interface Window {
+import {Settings, settings} from "../../settings";
+import {update_forum} from "./TeaForumIdentity";
+
+declare interface Window {
     grecaptcha: GReCaptcha;
 }
 
-interface GReCaptcha {
+export interface GReCaptcha {
     render(container: string | HTMLElement, parameters: {
         sitekey: string;
         theme?: "dark" | "light";
@@ -18,10 +21,10 @@ interface GReCaptcha {
     reset(widget_id?: string);
 }
 
-namespace forum {
+export namespace forum {
     export namespace gcaptcha {
         export async function initialize() {
-            if(typeof(window.grecaptcha) === "undefined") {
+            if(typeof((window as any).grecaptcha) === "undefined") {
                 let script = document.createElement("script");
                 script.async = true;
 
@@ -50,7 +53,7 @@ namespace forum {
                 }
             }
 
-            if(typeof(window.grecaptcha) === "undefined")
+            if(typeof((window as any).grecaptcha) === "undefined")
                 throw tr("failed to load recaptcha");
         }
 
@@ -62,9 +65,9 @@ namespace forum {
                 throw tr("initialisation failed");
             }
             if(container.attr("captcha-uuid"))
-                window.grecaptcha.reset(container.attr("captcha-uuid"));
+                (window as any).grecaptcha.reset(container.attr("captcha-uuid"));
             else {
-                container.attr("captcha-uuid", window.grecaptcha.render(container[0], {
+                container.attr("captcha-uuid", (window as any).grecaptcha.render(container[0], {
                     "sitekey": key,
                     callback: callback_data
                 }));
@@ -206,7 +209,7 @@ namespace forum {
             localStorage.setItem("teaspeak-forum-data", response["data"]);
             localStorage.setItem("teaspeak-forum-sign", response["sign"]);
             localStorage.setItem("teaspeak-forum-auth", response["auth-key"]);
-            profiles.identities.update_forum();
+            update_forum();
         } catch(error) {
             console.error(tr("Failed to parse forum given data: %o"), error);
             return {
@@ -266,7 +269,7 @@ namespace forum {
             _data = new Data(_data.auth_key, response["data"], response["sign"]);
             localStorage.setItem("teaspeak-forum-data", response["data"]);
             localStorage.setItem("teaspeak-forum-sign", response["sign"]);
-            profiles.identities.update_forum();
+            update_forum();
         } catch(error) {
             console.error(tr("Failed to parse forum given data: %o"), error);
             throw tr("failed to parse data");
@@ -320,7 +323,7 @@ namespace forum {
         localStorage.removeItem("teaspeak-forum-data");
         localStorage.removeItem("teaspeak-forum-sign");
         localStorage.removeItem("teaspeak-forum-auth");
-        profiles.identities.update_forum();
+        update_forum();
     }
 
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {

@@ -1,0 +1,38 @@
+/* Some general browser helpers */
+.tree-container .tree .entry .depth-filler {
+  font-size: 16px;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+.tree-container .marker-text-unread {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-color: #a814147F;
+  opacity: 1;
+  -moz-transition: opacity 0.25s;
+  -o-transition: opacity 0.25s;
+  -webkit-transition: opacity 0.25s;
+  transition: opacity 0.25s;
+}
+.tree-container .marker-text-unread:before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background: -moz-linear-gradient(left, rgba(168, 20, 20, 0.18) 0%, rgba(168, 20, 20, 0) 100%);
+  /* FF3.6-15 */
+  background: -webkit-linear-gradient(left, rgba(168, 20, 20, 0.18) 0%, rgba(168, 20, 20, 0) 100%);
+  /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to right, rgba(168, 20, 20, 0.18) 0%, rgba(168, 20, 20, 0) 100%);
+  /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+}
+.tree-container .marker-text-unread.hidden {
+  opacity: 0;
+}
+
+/*# sourceMappingURL=tree.css.map */

@@ -1,0 +1,106 @@
+@import "colors";
+
+.channel-container {
+    display: flex;
+    flex-direction: column;
+
+    .container-channel {
+        position: relative;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        width: 100%;
+        min-height: 16px;
+
+        align-items: center;
+        cursor: pointer;
+
+        .channel-type {
+            flex-grow: 0;
+            flex-shrink: 0;
+
+            margin-right: 2px;
+        }
+
+        .container-channel-name {
+            display: flex;
+            flex-direction: row;
+
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            justify-content: left;
+
+            max-width: 100%; /* important for the repetitive channel name! */
+            overflow-x: hidden;
+            height: 16px;
+
+            &.align-right {
+                justify-content: right;
+            }
+
+            &.align-center, &.align-repetitive {
+                justify-content: center;
+            }
+
+            .channel-name {
+                align-self: center;
+                color: $channel-tree-entry-color;
+
+                min-width: 0;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            &.align-repetitive {
+                .channel-name {
+                    text-overflow: clip;
+                }
+            }
+        }
+
+        .icons {
+            display: flex;
+            flex-direction: row;
+
+            flex-grow: 0;
+            flex-shrink: 0;
+        }
+
+        &.move-selected {
+            border-bottom: 1px solid black;
+        }
+
+        .show-channel-normal-only {
+            display: none;
+
+            &.channel-normal {
+                display: block;
+            }
+        }
+
+        .icon_no_sound {
+            position: relative;
+            display: flex;
+
+            .background {
+                width: 10px;
+                height: 14px;
+
+                background: red;
+                position: absolute;
+                top: 1px;
+                left: 3px;
+                z-index: -1;
+            }
+        }
+    }
+
+    .container-clients {
+        display: flex;
+        flex-direction: column;
+    }
+}

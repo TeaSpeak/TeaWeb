@@ -5,7 +5,8 @@
     "module": "commonjs",
     "sourceMap": true,
     "lib": ["es6", "dom", "dom.iterable"],
-    "removeComments": true /* we dont really need them within the target files */
+    "removeComments": true, /* we dont really need them within the target files */
+    "jsx": "react"
   },
   "exclude": [
     "node_modules",

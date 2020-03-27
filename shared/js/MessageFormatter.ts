@@ -1,4 +1,10 @@
-namespace messages.formatter {
+import {Settings, settings} from "./settings";
+import {contextmenu} from "./ui/elements/context_menu";
+import {image_preview} from "./ui/frames/image_preview";
+import {guid} from "./crypto/uid";
+
+declare const xbbcode;
+export namespace messages.formatter {
     export namespace bbcode {
         const sanitizer_escaped = (key: string) => "[-- sescaped: " + key + " --]";
         const sanitizer_escaped_regex = /\[-- sescaped: ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}) --]/;

@@ -1,7 +1,5 @@
-/// <reference path="./ModalPermissionEdit.ts" /> /* first needs the AbstractPermissionEdit */
-
 /* Canvas Permission Editor */
-namespace pe {
+export namespace pe {
     namespace ui {
         export namespace scheme {
             export interface CheckBox {

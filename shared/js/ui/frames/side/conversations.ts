@@ -1,4 +1,10 @@
-namespace chat {
+import {htmltags} from "../../htmltags";
+import {MessageHelper} from "../chat";
+import {CommandResult, ErrorID} from "../../../connection/ServerConnectionDeclaration";
+import {log, LogCategory} from "../../../log";
+import {createErrorModal} from "../../elements/modal";
+
+export namespace chat {
     declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
     declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 

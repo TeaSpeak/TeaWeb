@@ -1,4 +1,4 @@
-interface SliderOptions {
+export interface SliderOptions {
     min_value?: number;
     max_value?: number;
     initial_value?: number;
@@ -8,11 +8,11 @@ interface SliderOptions {
     value_field?: JQuery | JQuery[];
 }
 
-interface Slider {
+export interface Slider {
     value(value?: number) : number;
 }
 
-function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
+export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
     options = Object.assign( {
         initial_value: 0,
         min_value: 0,

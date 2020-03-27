@@ -1,8 +1,4 @@
-/// <reference path="../../ui/elements/modal.ts" />
-/// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../../proto.ts" />
-
-namespace Modals {
+export namespace Modals {
     /*
     export function spawnQueryManage(client: ConnectionHandler) {
         let modal: Modal;

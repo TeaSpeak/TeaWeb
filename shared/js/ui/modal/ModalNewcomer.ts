@@ -1,8 +1,4 @@
-/// <reference path="../../ui/elements/modal.ts" />
-/// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../../proto.ts" />
-
-namespace Modals {
+export namespace Modals {
     const next_step: {[key: string]:string} = {
         "welcome": "microphone",
         //"microphone": app.is_web() ? "identity" : "speaker", /* speaker setup only for the native client! */

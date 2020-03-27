@@ -1,14 +1,6 @@
-namespace bookmarks {
-    function guid() {
-        function s4() {
-            return Math
-                .floor((1 + Math.random()) * 0x10000)
-                .toString(16)
-                .substring(1);
-        }
-        return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-    }
+import {profiles} from "./profiles/ConnectionProfile";
 
+export namespace bookmarks {
     export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
         const profile = profiles.find_profile(mark.connect_profile) || profiles.default_profile();
         if(profile.valid()) {

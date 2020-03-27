@@ -1,5 +1,4 @@
-
-namespace i18n {
+export namespace i18n {
     interface CountryInfo {
         name: string;
         alpha_2: string;

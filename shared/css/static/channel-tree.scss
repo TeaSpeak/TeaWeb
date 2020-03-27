@@ -94,96 +94,7 @@
         }
 
         &.channel {
-            display: flex;
-            flex-direction: column;
 
-            .container-channel {
-                position: relative;
-
-                display: flex;
-                flex-direction: row;
-                justify-content: stretch;
-
-                width: 100%;
-                min-height: 16px;
-
-                align-items: center;
-                cursor: pointer;
-
-                .channel-type {
-                    flex-grow: 0;
-                    flex-shrink: 0;
-
-                    margin-right: 2px;
-                }
-
-                .container-channel-name {
-                    display: flex;
-                    flex-direction: row;
-
-                    flex-grow: 1;
-                    flex-shrink: 1;
-
-                    justify-content: left;
-
-					max-width: 100%; /* important for the repetitive channel name! */
-                    overflow-x: hidden;
-                    height: 16px;
-
-                    &.align-right {
-                        justify-content: right;
-                    }
-
-                    &.align-center, &.align-repetitive {
-                        justify-content: center;
-                    }
-
-                    .channel-name {
-                        align-self: center;
-                        color: $channel_tree_entry_text_color;
-
-                        min-width: 0;
-                        white-space: nowrap;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                    }
-
-                    &.align-repetitive {
-                        .channel-name {
-                            text-overflow: clip;
-                        }
-                    }
-                }
-
-                .icons {
-                    display: flex;
-                    flex-direction: row;
-
-                    flex-grow: 0;
-                    flex-shrink: 0;
-                }
-
-                &.move-selected {
-                    border-bottom: 1px solid black;
-                }
-
-                .show-channel-normal-only {
-                    display: none;
-
-                    &.channel-normal {
-                        display: block;
-                    }
-                }
-
-                .icon_no_sound {
-                    display: flex;
-                }
-            }
-
-            .container-clients {
-                display: flex;
-                flex-direction: column;
-            }
         }
 
         &.client {
@@ -272,40 +183,6 @@
             }
         }
 
-        &.channel .container-channel, &.client, &.server {
-            .marker-text-unread {
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-
-                width: 1px;
-                background-color: #a814147F;
-
-                opacity: 1;
-
-                &:before {
-                    content: '';
-                    position: absolute;
-
-                    left: 0;
-                    top: 0;
-                    bottom: 0;
-
-                    width: 24px;
-
-                    background: -moz-linear-gradient(left,  rgba(168,20,20,.18) 0%, rgba(168,20,20,0) 100%); /* FF3.6-15 */
-                    background: -webkit-linear-gradient(left,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* Chrome10-25,Safari5.1-6 */
-                    background: linear-gradient(to right,  rgba(168,20,20,.18) 0%,rgba(168,20,20,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-                }
-
-                &.hidden {
-                    opacity: 0;
-                }
-
-                @include transition(opacity $button_hover_animation_time);
-            }
-        }
     }
 }
 

@@ -1,4 +1,4 @@
-namespace Modals {
+export namespace Modals {
     export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => Promise<void>) {
         const properties = Object.assign({}, server.properties);
 

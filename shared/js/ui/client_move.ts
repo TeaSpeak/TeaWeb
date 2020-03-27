@@ -1,6 +1,4 @@
-/// <reference path="client.ts" />
-
-class ClientMover {
+export class ClientMover {
     static readonly listener_root = $(document);
     static readonly move_element = $("#mouse-move");
     readonly channel_tree: ChannelTree;

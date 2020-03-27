@@ -1,13 +1,10 @@
-function guid() {
-    function s4() {
-        return Math.floor((1 + Math.random()) * 0x10000)
-            .toString(16)
-            .substring(1);
-    }
-    return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4();
-}
+import {guid} from "../crypto/uid";
+import {log, LogCategory} from "../log";
+import {MessageHelper} from "../ui/frames/chat";
+import {StaticSettings} from "../settings";
+import {createErrorModal} from "../ui/elements/modal";
 
-namespace i18n {
+export namespace i18n {
     export interface TranslationKey {
         message: string;
         line?: number;

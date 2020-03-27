@@ -1,7 +1,5 @@
-/// <reference path="../../ui/elements/modal.ts" />
-
 //FIXME: Move this shit out of this file!
-namespace connection_log {
+export namespace connection_log {
     //TODO: Save password data
     export type ConnectionData = {
         name: string;
@@ -91,7 +89,7 @@ namespace connection_log {
     });
 }
 
-namespace Modals {
+export namespace Modals {
     export function spawnConnectModal(options: {
         default_connect_new_tab?: boolean /* default false */
     }, defaultHost: { url: string, enforce: boolean} = { url: "ts.TeaSpeak.de", enforce: false}, connect_profile?: { profile: profiles.ConnectionProfile, enforce: boolean}) {

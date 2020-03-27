@@ -1,4 +1,4 @@
-namespace Modals {
+export namespace Modals {
     export function openChannelInfo(channel: ChannelEntry) {
         let modal: Modal;
 

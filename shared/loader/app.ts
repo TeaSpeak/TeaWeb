@@ -207,10 +207,10 @@ const loader_javascript = {
             {url: "js/ui/modal/permission/CanvasPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
             {url: "js/ui/modal/permission/HTMLPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
 
-            "js/ui/channel.js",
-            "js/ui/client.js",
-            "js/ui/server.js",
-            "js/ui/view.js",
+            "js/channel-tree/channel.js",
+            "js/channel-tree/client.js",
+            "js/channel-tree/server.js",
+            "js/channel-tree/view.js",
             "js/ui/client_move.js",
             "js/ui/htmltags.js",
 
