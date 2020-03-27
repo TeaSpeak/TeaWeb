@@ -107,6 +107,8 @@ namespace profiles.identities {
     export function update_forum() {
         if(forum.logged_in() && (!static_identity || static_identity.data() !== forum.data())) {
             static_identity = new TeaForumIdentity(forum.data());
+        } else {
+            static_identity = undefined;
         }
     }
 

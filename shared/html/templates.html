@@ -2237,102 +2237,7 @@
                     </div>
 
                     <div class="container audio-microphone">
-                        <div class="left">
-                            <div class="header">
-                                <a>{{tr "Select your Microphone Device" /}}</a>
-                                <button class="btn btn-info button-update">{{tr "Update" /}}</button>
-                            </div>
-                            <div class="body container-devices">
-                            </div>
-                        </div>
-                        <div class="right">
-                            <div class="header">
-                                <a>{{tr "Microphone Settings" /}}</a>
-                            </div>
-                            <div class="body">
-                                <div class="container-volume">
-                                    <a>{{tr "Volume" /}}</a>
-                                    <div class="container-slider">
-                                        <div class="filler" style="width: 30%"></div>
-                                        <div class="thumb container-tooltip" style="left: 30%">
-                                            <div class="tooltip">
-                                                <a>86%</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="container-select-vad">
-                                    <div class="fieldset">
-                                        <div class="container container-ppt">
-                                            <label class="container-ppt">
-                                                <div class="ratio-button">
-                                                    <input type="radio" name="vad-type" value="push_to_talk">
-                                                    <div class="mark"></div>
-                                                </div>
-                                                <a>{{tr "Push to Talk" /}}</a>
-                                            </label>
-                                            <div class="container-button">
-                                                <button class="btn">{{tr "T" /}}</button>
-                                            </div>
-                                        </div>
-                                        <div class="container container-vad">
-                                            <label>
-                                                <div class="ratio-button">
-                                                    <input type="radio" name="vad-type" value="threshold">
-                                                    <div class="mark"></div>
-                                                </div>
-                                                <a>{{tr "Voice activity detection" /}}</a>
-                                            </label>
-                                        </div>
-                                        <div class="container container-always-active">
-                                            <label>
-                                                <div class="ratio-button">
-                                                    <input type="radio" name="vad-type" value="active">
-                                                    <div class="mark"></div>
-                                                </div>
-                                                <a>{{tr "Always active" /}}</a>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="header">
-                                <a>{{tr "Sensitivity Settings" /}}</a>
-                            </div>
-                            <div class="body">
-                                <div class="container-sensitivity">
-                                    <div class="container-activity-bar">
-                                        <div class="bar-hider" style="width: 80%;"></div>
-                                        <div class="bar-error"></div>
-                                        <div class="thumb container-tooltip" style="left: 20%">
-                                            <div class="tooltip">
-                                                <a>20%</a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="header">
-                                <a>{{tr "Advanced Settings" /}}</a>
-                            </div>
-                            <div class="body">
-                                <div class="container-advanced">
-                                    <div class="container-ppt-delay">
-                                        <label>
-                                            <div class="checkbox">
-                                                <input type="checkbox" class="delay-enabled">
-                                                <div class="mark"></div>
-                                            </div>
-                                            <a>{{tr "Delay on Push to Talk" /}}</a>
-                                        </label>
-                                        <div class="container-input">
-                                            <input type="number" class="delay-time" min="0" max="4" step="0.1">
-                                            <label>{{tr "Sec" /}}</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {{include tmpl="#tmpl_settings-microphone" /}}
                     </div>
                     <div class="container audio-speaker">
                         <div class="left">
@@ -2421,103 +2326,7 @@
                     </div>
 
                     <div class="container identity-profiles">
-                        <div class="left">
-                            <div class="header">
-                                <a>{{tr "Your Profiles" /}}</a>
-                                <button class="btn btn-info button-create">{{tr "Create new" /}}</button>
-                            </div>
-                            <div class="body">
-                                <div class="container-profiles">
-                                </div>
-                                <div class="buttons">
-                                    <button class="btn btn-danger button-delete">{{tr "Delete selected" /}}</button>
-                                    <div class="spacer"></div>
-                                    <button class="btn btn-success button-set-default">{{tr "Select as Default" /}}
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="right">
-                            <div class="header">
-                                <a>{{tr "Profile Settings" /}}</a>
-                                <div class="spacer"></div>
-                                <div class="container-avatar"></div>
-                                <button class="btn btn-info button-change-avatar">{{tr "Change Avatar" /}}</button>
-                                <!-- AVATAR -->
-                            </div>
-                            <div class="body">
-                                <div class="container-general">
-                                    <div class="form-group">
-                                        <label>{{tr "Profile Name" /}}</label>
-                                        <input class="form-control profile-name">
-                                        <div class="invalid-feedback">{{tr "Profile name is invalid" /}}</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label>{{tr "Default Nickname" /}}</label>
-                                        <input class="form-control profile-default-name"
-                                               placeholder="Another TeaSpeak user">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>{{tr "Identity Type" /}}</label>
-                                        <select class="form-control profile-identity-type">
-                                            <option value="unset" style="display: none">{{tr "Unset" /}}</option>
-                                            <option value="teaforo">{{tr "Forum Account" /}}</option>
-                                            <option value="teamspeak">{{tr "TeamSpeak Identity" /}}</option>
-                                            <option value="nickname">{{tr "Nickname (Debug only!)" /}}</option>
-                                        </select>
-                                        <div class="invalid-feedback">{{tr "Invalid identity type" /}}</div>
-                                    </div>
-                                </div>
-                                <div class="container-teamspeak">
-                                    <div class="container-valid">
-                                        <div class="form-group">
-                                            <label>{{tr "Unique-ID" /}}</label>
-                                            <input class="form-control unique-id" readonly>
-                                        </div>
-                                        <div class="container-level">
-                                            <div class="form-group">
-                                                <label>{{tr "Level" /}}</label>
-                                                <input class="form-control current-level" readonly>
-                                            </div>
-                                            <button class="btn button-improve">{{tr "Improve" /}}</button>
-                                        </div>
-                                    </div>
-                                    <div class="container-invalid">
-                                        {{tr "You have'nt generated/imported an identity." /}}<br>
-                                        {{tr "Generate a new one or import one." /}}
-                                    </div>
-                                    <div class="buttons">
-                                        <button class="btn btn-danger button-new">{{tr "Generate new" /}}</button>
-
-                                        <div>
-                                            <button class="btn btn-danger button-import">{{tr "Import identity" /}}
-                                            </button>
-                                            <button class="btn btn-success button-export">{{tr "Export identity" /}}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="container-teaforo">
-                                    <div class="container-valid">
-                                        {{tr "You're using your forum account as identification" /}}
-                                    </div>
-                                    <div class="container-invalid">
-                                        <a>{{tr "You cant use your TeaSpeak forum account. You're not connected with your forum Account!" /}}</a>
-                                        <button class="btn btn-success button-setup">{{tr "Setup your connection" /}}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="container-nickname">
-                                    <div class="form-group">
-                                        <label>{{tr "Nickname" /}}</label>
-                                        <input class="form-control nickname">
-                                        <div class="invalid-feedback">{{tr "Invalid nickname. Name must be at least 5 characters" /}}
-                                        </div>
-                                    </div>
-                                    <div class="invalid-feedback"></div>
-                                </div>
-                            </div>
-                        </div>
+                        {{include tmpl="#tmpl_settings-profiles" /}}
                     </div>
                     <div class="container identity-forum">
                         <div class="fill">
@@ -2554,6 +2363,238 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+        </script>
+
+
+        <script class="jsrender-template" id="tmpl_settings-microphone" type="text/html">
+            <div class="container-settings-audio-microphone">
+                <div class="left highlightable highlight-microphone-list">
+                    <div class="header">
+                        <a>{{tr "Select your Microphone Device" /}}</a>
+                        <button class="btn btn-info button-update">{{tr "Update" /}}</button>
+                    </div>
+                    <div class="body container-devices">
+                        <div class="overlay overlay-error">
+                            <a class="error-text"></a>
+                        </div>
+                        <div class="overlay overlay-loading"></div>
+                    </div>
+                </div>
+                <div class="right highlightable highlight-microphone-settings">
+                    <div class="header">
+                        <a>{{tr "Microphone Settings" /}}</a>
+                    </div>
+                    <div class="body">
+                        <div class="container-volume">
+                            <a>{{tr "Volume" /}}</a>
+                            <div class="container-slider">
+                                <div class="filler" style="width: 30%"></div>
+                                <div class="thumb container-tooltip" style="left: 30%">
+                                    <div class="tooltip">
+                                        <a>86%</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container-select-vad">
+                            <div class="fieldset">
+                                <div class="container container-ppt">
+                                    <label class="container-ppt">
+                                        <div class="ratio-button">
+                                            <input type="radio" name="vad-type" value="push_to_talk">
+                                            <div class="mark"></div>
+                                        </div>
+                                        <a>{{tr "Push to Talk" /}}</a>
+                                    </label>
+                                    <div class="container-button">
+                                        <button class="btn">{{tr "T" /}}</button>
+                                    </div>
+                                </div>
+                                <div class="container container-vad">
+                                    <label>
+                                        <div class="ratio-button">
+                                            <input type="radio" name="vad-type" value="threshold">
+                                            <div class="mark"></div>
+                                        </div>
+                                        <a>{{tr "Voice activity detection" /}}</a>
+                                    </label>
+                                </div>
+                                <div class="container container-always-active">
+                                    <label>
+                                        <div class="ratio-button">
+                                            <input type="radio" name="vad-type" value="active">
+                                            <div class="mark"></div>
+                                        </div>
+                                        <a>{{tr "Always active" /}}</a>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header">
+                        <a>{{tr "Sensitivity Settings" /}}</a>
+                    </div>
+                    <div class="body">
+                        <div class="container-sensitivity">
+                            <div class="container-activity-bar">
+                                <div class="bar-hider" style="width: 80%;"></div>
+                                <div class="bar-error"></div>
+                                <div class="thumb container-tooltip" style="left: 20%">
+                                    <div class="tooltip">
+                                        <a>20%</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header">
+                        <a>{{tr "Advanced Settings" /}}</a>
+                    </div>
+                    <div class="body">
+                        <div class="container-advanced">
+                            <div class="container-ppt-delay">
+                                <label>
+                                    <div class="checkbox">
+                                        <input type="checkbox" class="delay-enabled">
+                                        <div class="mark"></div>
+                                    </div>
+                                    <a>{{tr "Delay on Push to Talk" /}}</a>
+                                </label>
+                                <div class="container-input">
+                                    <input type="number" class="delay-time" min="0" max="4" step="0.1">
+                                    <label>{{tr "Sec" /}}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="help-background"></div>
+                <div class="container-help-text window-resize-listener">
+                    <a class="help-text">Hello nice to see you. This is even working with new lines etc....</a>
+                </div>
+            </div>
+        </script>
+
+        <script class="jsrender-template" id="tmpl_settings-profiles" type="text/html">
+            <div class="container-settings-identity-profile">
+                <div class="left highlight-profile-list highlightable">
+                    <div class="header">
+                        <a>{{tr "Your Profiles" /}}</a>
+                        <button class="btn btn-info button-create">{{tr "Create new" /}}</button>
+                    </div>
+                    <div class="body">
+                        <div class="container-profiles">
+                            <div class="overlay overlay-error"><a class="error">error: error</a></div>
+                            <div class="overlay overlay-timeout">
+                                <a>{{tr "Timeout while loading" /}}</a><br>
+                                <button class="btn btn-blue button-reload-list">{{tr "Reload" /}}</button>
+                            </div>
+                            <div class="overlay overlay-empty">
+                                <a>{{tr "You've not profiles yet" /}}</a>
+                            </div>
+                        </div>
+                        <div class="buttons">
+                            <button class="btn btn-danger button-delete">{{tr "Delete selected" /}}</button>
+                            <div class="spacer"></div>
+                            <button class="btn btn-success button-set-default">{{tr "Select as Default" /}}
+                            </button>
+                        </div>
+                        <div class="buttons-small">
+                            <button class="btn btn-danger button-delete">{{tr "Delete" /}}</button>
+                            <div class="spacer"></div>
+                            <button class="btn btn-success button-set-default">{{tr "Default" /}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="header">
+                        <a>{{tr "Profile Settings" /}}</a>
+                        <div class="spacer"></div>
+                        <div class="container-avatar"></div>
+                        <button class="btn btn-info button-change-avatar">{{tr "Change Avatar" /}}</button>
+                        <!-- AVATAR -->
+                    </div>
+                    <div class="body">
+                        <div class="container-general highlight-profile-settings highlightable">
+                            <div class="form-group">
+                                <label>{{tr "Profile Name" /}}</label>
+                                <input class="form-control profile-name">
+                                <div class="invalid-feedback">{{tr "Profile name is invalid" /}}</div>
+                            </div>
+                            <div class="form-group">
+                                <label>{{tr "Default Nickname" /}}</label>
+                                <input class="form-control profile-default-name"
+                                       placeholder="Another TeaSpeak user">
+                            </div>
+                            <div class="form-group">
+                                <label>{{tr "Identity Type" /}}</label>
+                                <select class="form-control profile-identity-type">
+                                    <option value="error" style="display: none">error: error</option>
+                                    <option value="unset" style="display: none">{{tr "Unset" /}}</option>
+                                    <option value="teaforo">{{tr "Forum Account" /}}</option>
+                                    <option value="teamspeak">{{tr "TeamSpeak Identity" /}}</option>
+                                    <option value="nickname">{{tr "Nickname (Debug only!)" /}}</option>
+                                </select>
+                                <div class="invalid-feedback">{{tr "Invalid identity type" /}}</div>
+                            </div>
+                        </div>
+                        <div class="container-teamspeak">
+                            <div class="container-valid">
+                                <div class="form-group">
+                                    <label>{{tr "Unique-ID" /}}</label>
+                                    <input class="form-control unique-id" readonly>
+                                </div>
+                                <div class="container-level">
+                                    <div class="form-group">
+                                        <label>{{tr "Level" /}}</label>
+                                        <input class="form-control current-level" readonly>
+                                    </div>
+                                    <button class="btn button-improve">{{tr "Improve" /}}</button>
+                                </div>
+                            </div>
+                            <div class="container-invalid">
+                                {{tr "You have'nt generated/imported an identity." /}}<br>
+                                {{tr "Generate a new one or import one." /}}
+                            </div>
+                            <div class="buttons">
+                                <button class="btn btn-danger button-new">{{tr "Generate new" /}}</button>
+
+                                <div>
+                                    <button class="btn btn-danger button-import">{{tr "Import identity" /}}
+                                    </button>
+                                    <button class="btn btn-success button-export">{{tr "Export identity" /}}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="container-teaforo">
+                            <div class="container-valid">
+                                {{tr "You're using your forum account as identification" /}}
+                            </div>
+                            <div class="container-invalid">
+                                <a>{{tr "You cant use your TeaSpeak forum account. You're not connected with your forum Account!" /}}</a>
+                                <button class="btn btn-success button-setup">{{tr "Setup your connection" /}}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="container-nickname">
+                            <div class="form-group">
+                                <label>{{tr "Nickname" /}}</label>
+                                <input class="form-control nickname">
+                                <div class="invalid-feedback">{{tr "Invalid nickname. Name must be at least 5 characters" /}}
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="container-highlight-dummy highlight-identity-settings highlightable"></div>
+                    </div>
+                </div>
+                <div class="help-background"></div>
+                <div class="container-help-text window-resize-listener">
+                    <a class="help-text">Hello nice to see you. This is even working with new lines etc....</a>
                 </div>
             </div>
         </script>
@@ -2857,12 +2898,6 @@
                     <button class="btn btn-danger button-cancel">{{tr "Cancel" /}}</button>
                     <button class="btn btn-success button-close">{{tr "Close" /}}</button>
                 </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_newcomer" type="text/html">
-            <div> <!-- required for the renderer -->
-
             </div>
         </script>
 

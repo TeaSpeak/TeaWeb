@@ -187,6 +187,7 @@ const loader_javascript = {
             "js/ui/modal/ModalBookmarks.js",
             "js/ui/modal/ModalConnect.js",
             "js/ui/modal/ModalSettings.js",
+            "js/ui/modal/ModalNewcomer.js",
             "js/ui/modal/ModalCreateChannel.js",
             "js/ui/modal/ModalServerEdit.js",
             "js/ui/modal/ModalChangeVolume.js",
@@ -369,6 +370,7 @@ const loader_style = {
             "css/static/modal-musicmanage.css",
             "css/static/modal-serverinfobandwidth.css",
             "css/static/modal-identity.css",
+            "css/static/modal-newcomer.css",
             "css/static/modal-settings.css",
             "css/static/modal-poke.css",
             "css/static/modal-server.css",
@@ -483,7 +485,8 @@ loader.register_task(loader.Stage.TEMPLATES, {
     function: async () => {
         await loader.load_templates([
             "templates.html",
-            "templates/music/manage.html"
+            "templates/modal/musicmanage.html",
+            "templates/modal/newcomer.html",
         ]);
     },
     priority: 10

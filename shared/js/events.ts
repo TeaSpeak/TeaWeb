@@ -15,9 +15,16 @@ namespace events {
     }
 
     export class Registry<Events> {
-        private handler: {[key: string]:((event) => void)[]} = {};
+        private readonly registry_uuid;
+
+        private handler: {[key: string]: ((event) => void)[]} = {};
         private connections: {[key: string]:Registry<string>[]} = {};
         private debug_prefix = undefined;
+
+        constructor() {
+            this.registry_uuid = "evreg_data_" + guid();
+        }
+
 
         enable_debug(prefix: string) { this.debug_prefix = prefix || "---"; }
         disable_debug() { this.debug_prefix = undefined; }
@@ -28,8 +35,26 @@ namespace events {
             if(!Array.isArray(events))
                 events = [events];
 
+            handler[this.registry_uuid] = {
+                singleshot: false
+            };
             for(const event of events) {
                 const handlers = this.handler[event] || (this.handler[event] = []);
+                handlers.push(handler);
+            }
+        }
+
+        /* one */
+        one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<T> & EventConvert<Events>) => void);
+        one(events: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
+        one(events, handler) {
+            if(!Array.isArray(events))
+                events = [events];
+
+            for(const event of events) {
+                const handlers = this.handler[event] || (this.handler[event] = []);
+
+                handler[this.registry_uuid] = { singleshot: true };
                 handlers.push(handler);
             }
         }
@@ -73,10 +98,20 @@ namespace events {
                 as: function () { return this; }
             });
 
-            for(const handler of (this.handler[event_type as string] || []))
+            for(const handler of (this.handler[event_type as string] || [])) {
                 handler(event);
+
+                const reg_data = handler[this.registry_uuid];
+                if(typeof reg_data === "object" && reg_data.singleshot)
+                    this.handler[event_type as string].remove(handler);
+            }
+
             for(const evhandler of (this.connections[event_type as string] || []))
                 evhandler.fire(event_type as any, event as any);
+        }
+
+        fire_async<T extends keyof Events>(event_type: T, data?: Events[T]) {
+            setTimeout(() => this.fire(event_type, data));
         }
 
         destory() {
@@ -310,6 +345,252 @@ namespace events {
                     id: number
                 }[],
                 error_msg?: string
+            }
+        }
+
+        export interface newcomer {
+            "show_step": {
+                "step": "welcome" | "microphone" | "identity" | "finish"
+            },
+            "exit_guide": {
+                ask_yesno: boolean
+            },
+
+            "modal-shown": {},
+
+
+            "step-status": {
+                next_button: boolean,
+                previous_button: boolean
+            }
+        }
+
+        export namespace settings {
+            export type ProfileInfo = {
+                id: string,
+                name: string,
+                nickname: string,
+                identity_type: "teaforo" | "teamspeak" | "nickname",
+
+                identity_forum?: {
+                    valid: boolean,
+                    fallback_name: string
+                },
+                identity_nickname?: {
+                    name: string,
+                    fallback_name: string
+                },
+                identity_teamspeak?: {
+                    unique_id: string,
+                    fallback_name: string
+                }
+            }
+
+            export interface profiles {
+                "reload-profile": { profile_id?: string },
+                "select-profile": { profile_id: string },
+
+                "query-profile-list": { },
+                "query-profile-list-result": {
+                    status: "error" | "success" | "timeout",
+
+                    error?: string;
+                    profiles?: ProfileInfo[]
+                }
+
+                "query-profile": { profile_id: string },
+                "query-profile-result": {
+                    status: "error" | "success" | "timeout",
+                    profile_id: string,
+
+                    error?: string;
+                    info?: ProfileInfo
+                },
+
+                "select-identity-type": {
+                    profile_id: string,
+                    identity_type: "teamspeak" | "teaforo" | "nickname" | "unset"
+                },
+
+                "query-profile-validity": { profile_id: string },
+                "query-profile-validity-result": {
+                    profile_id: string,
+                    status: "error" | "success" | "timeout",
+
+                    error?: string,
+                    valid?: boolean
+                }
+
+                "create-profile": { name: string },
+                "create-profile-result": {
+                    status: "error" | "success" | "timeout",
+                    name: string;
+
+                    profile_id?: string;
+                    error?: string;
+                },
+
+                "delete-profile": { profile_id: string },
+                "delete-profile-result": {
+                    status: "error" | "success" | "timeout",
+                    profile_id: string,
+                    error?: string
+                }
+
+                "set-default-profile": { profile_id: string },
+                "set-default-profile-result": {
+                    status: "error" | "success" | "timeout",
+
+                    /* the profile which now has the id "default" */
+                    old_profile_id: string,
+
+                    /* the "default" profile which now has a new id */
+                    new_profile_id?: string
+
+                    error?: string;
+                }
+
+                /* profile name events */
+                "set-profile-name": {
+                    profile_id: string,
+                    name: string
+                },
+                "set-profile-name-result": {
+                    status: "error" | "success" | "timeout",
+                    profile_id: string,
+                    name?: string
+                },
+
+                /* profile nickname events */
+                "set-default-name": {
+                    profile_id: string,
+                    name: string | null
+                },
+                "set-default-name-result": {
+                    status: "error" | "success" | "timeout",
+                    profile_id: string,
+                    name?: string | null
+                },
+
+                "query-identity-teamspeak": { profile_id: string },
+                "query-identity-teamspeak-result": {
+                    status: "error" | "success" | "timeout",
+                    profile_id: string,
+
+                    error?: string,
+                    level?: number
+                }
+
+                "set-identity-name-name": { profile_id: string, name: string },
+                "set-identity-name-name-result": {
+                    status: "error" | "success" | "timeout",
+                    profile_id: string,
+
+                    error?: string,
+                    name?: string
+                },
+
+                "generate-identity-teamspeak": { profile_id: string },
+                "generate-identity-teamspeak-result": {
+                    profile_id: string,
+                    status: "error" | "success" | "timeout",
+
+                    error?: string,
+
+                    level?: number
+                    unique_id?: string
+                },
+
+                "improve-identity-teamspeak-level": { profile_id: string },
+                "improve-identity-teamspeak-level-update": {
+                    profile_id: string,
+                    new_level: number
+                },
+
+                "import-identity-teamspeak": { profile_id: string },
+                "import-identity-teamspeak-result": {
+                    profile_id: string,
+
+                    level?: number
+                    unique_id?: string
+                }
+
+                "export-identity-teamspeak": {
+                    profile_id: string,
+                    filename: string
+                },
+
+
+                "setup-forum-connection": {}
+            }
+
+            export type MicrophoneSettings = "volume" | "vad-type" | "ppt-key" | "ppt-release-delay" | "ppt-release-delay-active" | "threshold-threshold";
+            export interface microphone {
+                "query-devices": { refresh_list: boolean },
+                "query-device-result": {
+                    status: "success" | "error" | "timeout",
+
+                    error?: string,
+                    devices?: {
+                        id: string,
+                        name: string,
+                        driver: string
+                    }[]
+                    active_device?: string;
+                },
+
+                "query-settings": {},
+                "query-settings-result": {
+                    status: "success" | "error" | "timeout",
+
+                    error?: string,
+                    info?: {
+                        volume: number,
+                        vad_type: string,
+
+                        vad_ppt: {
+                            key: ppt.KeyDescriptor,
+                            release_delay: number,
+                            release_delay_active: boolean
+                        },
+                        vad_threshold: {
+                            threshold: number
+                        }
+                    }
+                },
+
+                "set-device": { device_id: string },
+                "set-device-result": {
+                    device_id: string,
+                    status: "success" | "error" | "timeout",
+
+                    error?: string
+                },
+
+                "set-setting": {
+                    setting: MicrophoneSettings;
+                    value: any;
+                },
+                "set-setting-result": {
+                    setting: MicrophoneSettings,
+                    status: "success" | "error" | "timeout",
+
+                    error?: string,
+                    value?: any
+                },
+
+                "update-device-level": {
+                    devices: {
+                        device_id: string,
+                        status: "success" | "error",
+
+                        level?: number,
+                        error?: string
+                    }[]
+                },
+
+                "audio-initialized": {},
+                "deinitialize": {}
             }
         }
     }

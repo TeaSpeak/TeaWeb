@@ -477,6 +477,13 @@ function main() {
         modal.open();
     }
      */
+
+
+    /* for testing */
+    if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
+        const modal = Modals.openModalNewcomer();
+        modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
+    }
 }
 
 const task_teaweb_starter: loader.Task = {

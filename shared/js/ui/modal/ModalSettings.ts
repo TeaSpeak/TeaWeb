@@ -45,6 +45,11 @@ namespace Modals {
         const update_profiles = settings_identity_profiles(modal.htmlTag.find(".right .container.identity-profiles"), modal);
         settings_identity_forum(modal.htmlTag.find(".right .container.identity-forum"), modal, update_profiles as any);
 
+        modal.close_listener.push(() => {
+            if(profiles.requires_save())
+                profiles.save();
+        });
+
         modal.open();
         return modal;
     }
@@ -161,7 +166,7 @@ namespace Modals {
         };
 
         const update_current_selected = () => {
-            const container_current = container.find(".selected-language");
+            const container_current = container.find(".selected-language6");
             container_current.empty().text(tr("Loading"));
 
             let current_translation: i18n.RepositoryTranslation;
@@ -393,278 +398,27 @@ namespace Modals {
     }
 
     function settings_audio_microphone(container: JQuery, modal: Modal) {
-        let _callbacks_filter_change: (() => any)[] = [];
+        const registry = new events.Registry<events.modal.settings.microphone>();
+        registry.enable_debug("settings-microphone");
+        modal_settings.initialize_audio_microphone_controller(registry);
+        modal_settings.initialize_audio_microphone_view(container, registry);
 
-        /* devices */
-        {
-            const container_devices = container.find(".container-devices");
+        modal.close_listener.push(() => registry.fire_async("deinitialize"));
+        return;
+    }
 
-            let level_meters: audio.recorder.LevelMeter[] = [];
-            modal.close_listener.push(() => {
-                for(const meter of level_meters)
-                    meter.destory();
-                level_meters = [];
-            });
-            const update_devices = () => {
-                container_devices.children().remove();
-                for(const meter of level_meters)
-                    meter.destory();
-                level_meters = [];
+    function settings_identity_profiles(container: JQuery, modal: Modal) {
+        const registry = new events.Registry<events.modal.settings.profiles>();
+        //registry.enable_debug("settings-identity");
+        modal_settings.initialize_identity_profiles_controller(registry);
+        modal_settings.initialize_identity_profiles_view(container, registry, {
+            forum_setuppable: true
+        });
 
-                const current_selected = default_recorder.current_device();
-                const generate_device = (device: audio.recorder.InputDevice | undefined) => {
-                    const selected = device === current_selected || (typeof(current_selected) !== "undefined" && typeof(device) !== "undefined" && current_selected.unique_id == device.unique_id);
-
-                    let tag_volume: JQuery, tag_volume_error: JQuery;
-                    const tag = $.spawn("div").addClass("device").toggleClass("selected", selected).append(
-                        $.spawn("div").addClass("container-selected").append(
-                            $.spawn("div").addClass("icon_em client-apply")
-                        ),
-                        $.spawn("div").addClass("container-name").append(
-                            $.spawn("div").addClass("device-driver").text(
-                                device ? (device.driver || "Unknown driver") : "No device"
-                            ),
-                            $.spawn("div").addClass("device-name").text(
-                                device ? (device.name || "Unknown name") : "No device"
-                            ),
-                        ),
-                        $.spawn("div").addClass("container-activity").append(
-                            $.spawn("div").addClass("container-activity-bar").append(
-                                tag_volume = $.spawn("div").addClass("bar-hider"),
-                                tag_volume_error = $.spawn("div").addClass("bar-error")
-                            )
-                        )
-                    );
-
-                    tag.on('click', event => {
-                        if(tag.hasClass("selected"))
-                            return;
-
-                        const _old = container_devices.find(".selected");
-                        _old.removeClass("selected");
-                        tag.addClass("selected");
-
-                        default_recorder.set_device(device).then(() => {
-                            console.debug(tr("Changed default microphone device"));
-                            for(const cb of _callbacks_filter_change)
-                                cb();
-                        }).catch((error) => {
-                            _old.addClass("selected");
-                            tag.removeClass("selected");
-
-                            console.error(tr("Failed to change microphone to device %o: %o"), device, error);
-                            createErrorModal(tr("Failed to change microphone"), MessageHelper.formatMessage(tr("Failed to change the microphone to the target microphone{:br:}{}"), error)).open();
-                        });
-                    });
-
-                    tag_volume.css('width', '100%');
-                    if(device) {
-                        audio.recorder.create_levelmeter(device).then(meter => {
-                            level_meters.push(meter);
-                            meter.set_observer(value => {
-                                tag_volume.css('width', (100 - value) + '%');
-                            });
-                        }).catch(error => {
-                            console.warn(tr("Failed to generate levelmeter for device %o: %o"), device, error);
-                            tag_volume_error.attr('title', error).text(error);
-                        });
-                    }
-
-                    return tag;
-                };
-
-                generate_device(undefined).appendTo(container_devices);
-                audio.recorder.devices().forEach(e => generate_device(e).appendTo(container_devices));
-            };
-            update_devices();
-
-            const button_update = container.find(".button-update");
-            button_update.on('click', async event => {
-                button_update.prop("disabled", true);
-                if(audio.recorder.device_refresh_available()) {
-                    try {
-                        await audio.recorder.refresh_devices();
-                    } catch(error) {
-                        console.warn(tr("Failed to refresh input devices: %o"), error);
-                    }
-                }
-                try {
-                    update_devices();
-                } catch(error) {
-                    console.error(tr("Failed to build new device list: %o"), error);
-                }
-                button_update.prop("disabled", false);
-            });
-        }
-
-        /* settings */
-        {
-            /* volume */
-            {
-                const container_volume = container.find(".container-volume");
-                const slider = container_volume.find(".container-slider");
-                sliderfy(slider, {
-                    min_value: 0,
-                    max_value: 100,
-                    step: 1,
-                    initial_value: default_recorder.get_volume()
-                });
-                slider.on('change', event => {
-                    const value = parseInt(slider.attr("value"));
-                    default_recorder.set_volume(value);
-                });
-            }
-
-            /* vad select */
-            {
-                const container_select = container.find(".container-select-vad");
-                container_select.find("input").on('change', event => {
-                    if(!(<HTMLInputElement>event.target).checked)
-                        return;
-
-                    const mode = (<HTMLInputElement>event.target).value;
-                    if(mode == "active")
-                        default_recorder.set_vad_type("active");
-                    else if(mode == "threshold")
-                        default_recorder.set_vad_type("threshold");
-                    else
-                        default_recorder.set_vad_type("push_to_talk");
-
-                    for(const cb of _callbacks_filter_change)
-                        cb();
-                });
-
-                let elements = container_select.find('input[value="' + default_recorder.get_vad_type() + '"]');
-                if(elements.length < 1)
-                    elements = container_select.find('input[value]');
-                elements.first().trigger('click');
-            }
-
-            /* Sensitivity */
-            {
-                const container_sensitivity = container.find(".container-sensitivity");
-
-                const container_bar = container_sensitivity.find(".container-activity-bar");
-                const bar_hider = container_bar.find(".bar-hider");
-
-                sliderfy(container_bar, {
-                    min_value: 0,
-                    max_value: 100,
-                    step: 1,
-                    initial_value: default_recorder.get_vad_threshold()
-                });
-                container_bar.on('change', event => {
-                    const threshold = parseInt(container_bar.attr("value"));
-                    default_recorder.set_vad_threshold(threshold);
-                });
-
-                const _set_level = level => {
-                    bar_hider.css("width", (100 - level) + "%");
-                };
-
-                let _last_filter: audio.recorder.filter.ThresholdFilter;
-                modal.close_listener.push(() => {
-                    if(_last_filter) {
-                        _last_filter.callback_level = undefined;
-                        _last_filter = undefined;
-                    }
-                });
-                _callbacks_filter_change.push(() => {
-                    container_sensitivity.toggleClass("disabled", default_recorder.get_vad_type() !== "threshold");
-
-                    if(_last_filter) {
-                        _last_filter.callback_level = undefined;
-                        _last_filter = undefined;
-                    }
-
-                    if(default_recorder.get_vad_type() !== "threshold") {
-                        container_sensitivity.addClass("disabled");
-                        return;
-                    }
-                    container_sensitivity.removeClass("disabled");
-
-                    _set_level(0);
-                    if(!default_recorder.input)
-                        return;
-
-                    if(default_recorder.input.current_state() === audio.recorder.InputState.PAUSED)
-                        default_recorder.input.start().then(result => {
-                            if(result === audio.recorder.InputStartResult.EOK) {
-                                for(const cb of _callbacks_filter_change)
-                                    cb();
-                            }
-                        }); /* for us to show the VAD */
-
-                    const filter = default_recorder.input.get_filter(audio.recorder.filter.Type.THRESHOLD) as audio.recorder.filter.ThresholdFilter;
-                    if(!filter)
-                        return;
-
-                    _last_filter = filter;
-                    filter.callback_level = _set_level;
-                });
-            }
-
-            /* push to talk */
-            {
-                /* PPT Key */
-                {
-                    const button_key = container.find(".container-ppt button");
-                    _callbacks_filter_change.push(() => {
-                        button_key.prop('disabled', default_recorder.get_vad_type() !== "push_to_talk");
-                    });
-
-                    button_key.on('click', event => {
-                        Modals.spawnKeySelect(key => {
-                            if(!key)
-                                return;
-                            default_recorder.set_vad_ppt_key(key);
-                            button_key.text(ppt.key_description(key));
-                        });
-                    });
-
-                    button_key.text(ppt.key_description(default_recorder.get_vad_ppt_key()));
-                }
-
-                /* Delay */
-                {
-                    const container_delay = container.find(".container-ppt-delay");
-                    const input_time = container_delay.find("input.delay-time");
-                    const input_enabled = container_delay.find("input.delay-enabled");
-
-                    input_enabled.on('change', event => {
-                        const enabled = input_enabled.prop("checked");
-                        if(enabled) {
-                            if(default_recorder.get_vad_type() === "push_to_talk")
-                                input_time.prop("disabled", false).parent().removeClass("disabled");
-                            default_recorder.set_vad_ppt_delay(Math.abs(default_recorder.get_vad_ppt_delay()));
-                        } else {
-                            input_time.prop("disabled", true).parent().addClass("disabled");
-                            default_recorder.set_vad_ppt_delay(-Math.abs(default_recorder.get_vad_ppt_delay()));
-                        }
-                    });
-
-                    input_time.on('change', event => {
-                        const value = parseFloat(input_time.val() as any);
-                        default_recorder.set_vad_ppt_delay(value * 1000);
-                    }).val(Math.abs(default_recorder.get_vad_ppt_delay() / 1000).toFixed(2));
-
-                    input_enabled.prop("checked", default_recorder.get_vad_ppt_delay() >= 0);
-
-                    _callbacks_filter_change.push(() => {
-                        let enabled = default_recorder.get_vad_type() === "push_to_talk";
-                        input_enabled.prop("disabled", !enabled).parent().toggleClass("disabled", !enabled);
-
-                        enabled = enabled && input_enabled.prop("checked");
-                        input_time.prop("disabled", !enabled).parent().toggleClass("disabled", !enabled);
-                    });
-                }
-
-                //delay-time
-            }
-        }
-
-        for(const cb of _callbacks_filter_change)
-            cb();
+        registry.on("setup-forum-connection", event => {
+            modal.htmlTag.find('.entry[container="identity-forum"]').trigger('click');
+        });
+        return () => registry.fire("reload-profile");
     }
 
     function settings_audio_speaker(container: JQuery, modal: Modal) {
@@ -883,391 +637,1709 @@ namespace Modals {
         modal.close_listener.push(sound.save);
     }
 
-    type SelectedIdentity = {
-        identity: profiles.ConnectionProfile;
-
-        update_name(text?: string);
-        update_valid_flag();
-        update_type();
-
-        update_avatar();
-    }
-    function settings_identity_profiles(container: JQuery, modal: Modal) {
-        let selected_profile: SelectedIdentity;
-        let selected_profile_changed: (() => void)[] = [];
-        let profile_identity_changed: (() => void)[] = [];
-
-        let update_profiles: (selected_id: string) => void;
-
-        /* profile list */
-        {
-            const container_profiles = container.find(".container-profiles");
-
-            const build_profile = (profile: profiles.ConnectionProfile, selected: boolean) => {
-                let tag_name: JQuery, tag_default: JQuery, tag_valid: JQuery, tag_type: JQuery, tag_avatar: JQuery;
-                let tag = $.spawn("div").addClass("profile").append(
-                    tag_avatar = $.spawn("div").addClass("container-avatar"),
-                    $.spawn("div").addClass("container-info").append(
-                        $.spawn("div").addClass("container-type").append(
-                            tag_type = $.spawn("div").text(profile.selected_identity_type || tr("Type unset")),
-                            tag_default = $.spawn("div").addClass("tag-default").text(tr("(Default)")),
-                            tag_valid = $.spawn("div").addClass("icon_em icon-status")
-                                .toggleClass("client-apply", profile.valid())
-                                .toggleClass("client-delete", !profile.valid())
-                        ),
-                        tag_name = $.spawn("div").addClass("profile-name").text(profile.profile_name || tr("Unnamed"))
-                    )
-                );
-                tag_avatar.hide(); /* no avatars yet */
-
-                tag_default.toggle(profile.id === "default");
-                tag.on('click', event => {
-                    if(tag.hasClass('selected'))
-                        return;
-                    container_profiles.find(".selected").removeClass("selected");
-                    tag.addClass("selected");
-
-                    /* reset profile name if may in change */
-                    if(selected_profile)
-                        selected_profile.update_name();
-
-                    selected_profile = {
-                        identity: profile,
-                        update_name(text) {
-                            tag_name.text(typeof(text) === "string" ? text : (profile.profile_name || tr("Unnamed")))
-                        },
-                        update_type() {
-                            tag_type.text(profile.selected_identity_type || tr("Type unset"));
-                        },
-                        update_valid_flag() {
-                            tag_valid
-                                .toggleClass("client-apply", profile.valid())
-                                .toggleClass("client-delete", !profile.valid())
-                        },
-                        update_avatar() {
-                            //TODO HERE!
-                        }
-                    };
-
-                    for(const listener of selected_profile_changed)
-                        listener();
-                });
-
-                if(selected)
-                    tag.trigger('click');
-
-                return tag;
-            };
-
-            update_profiles = (selected_id) => {
-                selected_id = selected_id || "default";
-                container_profiles.children().remove();
-                profiles.profiles().forEach(e => build_profile(e, e.id == selected_id).appendTo(container_profiles));
-
-            };
-
+    export namespace modal_settings {
+        export interface ProfileViewSettings {
+            forum_setuppable: boolean
         }
+        export function initialize_identity_profiles_controller(event_registry: events.Registry<events.modal.settings.profiles>) {
+            const send_error = (event, profile, text) => event_registry.fire_async(event, { status: "error", profile_id: profile, error: text });
+            event_registry.on("create-profile", event => {
+                const profile = profiles.create_new_profile(event.name);
+                profiles.mark_need_save();
+                event_registry.fire_async("create-profile-result", {
+                    status: "success",
+                    name: event.name,
+                    profile_id: profile.id
+                });
+            });
 
-        /* profile general info */
-        {
-            const input_name = container.find(".right input.profile-name");
-            const input_default_name = container.find(".right input.profile-default-name");
-            const select_type = container.find(".right select.profile-identity-type");
-
-            selected_profile_changed.push(() => {
-                //profile-identity-type
-                if(!selected_profile.identity) {
-                    input_name.val(tr("No profile selected")).prop("disabled", true);
-                    input_default_name.val("").prop("disabled", true);
-                    select_type.val("unset").prop("disabled", true);
-                    select_type.parent().toggleClass("is-invalid", true);
-                } else {
-                    input_name.val(selected_profile.identity.profile_name).prop("disabled", false);
-                    input_default_name
-                        .val(selected_profile.identity.default_username)
-                        .attr("placeholder", selected_profile.identity.connect_username() || "Another TeaSpeak user")
-                        .prop("disabled", false);
-                    select_type.val(selected_profile.identity.selected_identity_type || "unset").prop("disabled", false);
+            event_registry.on("delete-profile", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("delete-profile-result", event.profile_id, tr("Unknown profile"));
+                    return;
                 }
 
-                for(const listener of profile_identity_changed)
-                    listener();
+                profiles.delete_profile(profile);
+                event_registry.fire_async("delete-profile-result", { status: "success", profile_id: event.profile_id });
             });
 
-            input_name.on('keyup', event => {
-                const text = input_name.val() as string;
-                const profile = profiles.find_profile_by_name(text);
-                input_name.parent().toggleClass("is-invalid", text.length < 3 || (profile && profile != selected_profile.identity));
-                selected_profile.update_name(text);
-            }).on('change', event => {
-                const text = input_name.val() as string;
-                const profile = profiles.find_profile_by_name(text);
-                if(text.length < 3 || (profile && profile != selected_profile.identity)) return;
-                selected_profile.identity.profile_name = text;
-                profiles.mark_need_save();
-            });
+            const build_profile_info = (profile: profiles.ConnectionProfile) => {
+                const forum_data = profile.selected_identity(profiles.identities.IdentitifyType.TEAFORO) as profiles.identities.TeaForumIdentity;
+                const teamspeak_data = profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                const nickname_data = profile.selected_identity(profiles.identities.IdentitifyType.NICKNAME) as profiles.identities.NameIdentity;
 
-            input_default_name.on('change', event => {
-                selected_profile.identity.default_username = input_default_name.val() as string;
-                profiles.mark_need_save();
-            });
-
-            select_type.on('change', event => {
-                selected_profile.identity.selected_identity_type = (select_type.val() as string).toLowerCase();
-                profiles.mark_need_save();
-
-                selected_profile.update_type();
-                for(const listener of profile_identity_changed)
-                    listener();
-                selected_profile.update_valid_flag();
-            });
-
-            profile_identity_changed.push(() => {
-                select_type.parent()
-                    .toggleClass("is-invalid", typeof(profiles.identities.IdentitifyType[selected_profile.identity.selected_identity_type.toUpperCase()]) === "undefined");
-            });
-        }
-
-        /* profile special info */
-        {
-            /* teamspeak */
-            {
-                const container_settings = container.find(".container-teamspeak");
-                const container_valid = container_settings.find(".container-valid");
-                const container_invalid = container_settings.find(".container-invalid");
-
-                const input_current_level = container_settings.find(".current-level");
-                const input_unique_id = container_settings.find(".unique-id");
-
-                const button_new = container_settings.find(".button-new");
-                const button_improve = container_settings.find(".button-improve");
-
-                const button_import = container_settings.find(".button-import");
-                const button_export = container_settings.find(".button-export");
-
-                button_improve.on('click', event => {
-                    const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
-                    if (!profile) return;
-
-                    Modals.spawnTeamSpeakIdentityImprove(profile, selected_profile.identity.profile_name).close_listener.push(() => {
-                        profiles.mark_need_save();
-                        for(const listener of profile_identity_changed)
-                            listener();
-                    });
-                });
-
-                button_new.on('click', event => {
-                    const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
-                    const generate_identity = () => {
-                        profiles.identities.TeaSpeakIdentity.generate_new().then(identity => {
-                            selected_profile.identity.set_identity(profiles.identities.IdentitifyType.TEAMSPEAK, identity);
-                            createInfoModal(tr("Identity generated"), tr("A new identity had been successfully generated")).open();
-
-                            profiles.mark_need_save();
-                            for(const listener of profile_identity_changed)
-                                listener();
-                        }).catch(error => {
-                            console.error(tr("Failed to generate a new identity. Error object: %o"), error);
-                            createErrorModal(tr("Failed to generate identity"), tr("Failed to generate a new identity.<br>Error:") + error).open();
-                        });
-                    };
-
-                    if (profile && profile.valid()) {
-                        spawnYesNo(tr("Are you sure"), tr("Do you really want to generate a new identity and override the old identity?"), result => {
-                            if (result)
-                                generate_identity();
-                        });
-                    } else
-                        generate_identity();
-                });
-
-                button_import.on('click', event => {
-                    const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
-
-                    const set_identity = (identity: profiles.identities.TeaSpeakIdentity) => {
-                        selected_profile.identity.set_identity(profiles.identities.IdentitifyType.TEAMSPEAK, identity);
-                        createInfoModal(tr("Identity imported"), tr("Your identity has been successfully imported!")).open();
-
-                        profiles.mark_need_save();
-                        for(const listener of profile_identity_changed)
-                            listener();
-                    };
-
-                    if (profile && profile.valid()) {
-                        spawnYesNo(tr("Are you sure"), tr("Do you really want to import a new identity and override the old identity?"), result => {
-                            if (result)
-                                spawnTeamSpeakIdentityImport(set_identity);
-                        });
-                    } else {
-                        spawnTeamSpeakIdentityImport(set_identity);
+                return {
+                    id: profile.id,
+                    name: profile.profile_name,
+                    nickname: profile.default_username,
+                    identity_type: profile.selected_identity_type as any,
+                    identity_forum: !forum_data ? undefined : {
+                        valid: forum_data.valid(),
+                        fallback_name: forum_data.fallback_name()
+                    },
+                    identity_nickname: !nickname_data ? undefined : {
+                        name: nickname_data.name(),
+                        fallback_name: nickname_data.fallback_name()
+                    },
+                    identity_teamspeak: !teamspeak_data ? undefined : {
+                        unique_id: teamspeak_data.uid(),
+                        fallback_name: teamspeak_data.fallback_name()
                     }
-                });
+                }
+            };
+            event_registry.on("query-profile-list", event => {
+                event_registry.fire_async("query-profile-list-result", { status: "success", profiles: profiles.profiles().map(e => build_profile_info(e)) });
+            });
 
-                button_export.on('click', event => {
-                    const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
-                    if(!profile) return;
+            event_registry.on("query-profile", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("query-profile-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
 
-                    createInputModal(tr("File name"), tr("Please enter the file name"), text => !!text, name => {
-                        if (name) {
-                            profile.export_ts(true).then(data => {
-                                const element = $.spawn("a")
-                                    .text("donwload")
-                                    .attr("href", "data:test/plain;charset=utf-8," + encodeURIComponent(data))
-                                    .attr("download", name + ".ini")
-                                    .css("display", "none")
-                                    .appendTo($("body"));
-                                element[0].click();
-                                element.remove();
-                            }).catch(error => {
-                                console.error(error);
-                                createErrorModal(tr("Failed to export identity"), tr("Failed to export and save identity.<br>Error: ") + error).open();
-                            });
-                        }
-                    }).open();
-                });
+                event_registry.fire_async("query-profile-result", { status: "success", profile_id: event.profile_id, info: build_profile_info(profile)});
+            });
 
-                profile_identity_changed.push(() => {
-                    const enabled = selected_profile && selected_profile.identity.selected_identity_type === "teamspeak";
-                    container_settings.toggle(enabled);
-                    if(!enabled) return;
+            event_registry.on("set-default-profile", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("set-default-profile-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
 
-                    const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
-                    button_improve.prop("disabled", !profile);
-                    button_export.toggle(!!profile);
+                const old = profiles.set_default_profile(profile);
+                event_registry.fire_async("set-default-profile-result", { status: "success", old_profile_id: event.profile_id, new_profile_id: old.id });
+            });
 
-                    button_import.toggleClass("btn-danger", !!profile).toggleClass("btn-success", !profile);
-                    button_new.toggleClass("btn-danger", !!profile).toggleClass("btn-success", !profile);
+            event_registry.on("set-profile-name", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("set-profile-name-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
 
-                    container_invalid.toggle(!profile);
-                    container_valid.toggle(!!profile);
-                    if (!profile) {
-                        input_current_level.val("no profile");
-                        input_unique_id.val("no profile");
-                    } else {
-                        input_current_level.val("loading....");
-                        profile.level().then(level => input_current_level.val(level + ""));
-                        input_unique_id.val(profile.uid());
-                    }
+                profile.profile_name = event.name;
+                profiles.mark_need_save();
+                event_registry.fire_async("set-profile-name-result", { name: event.name, profile_id: event.profile_id, status: "success" });
+            });
 
-                    selected_profile.update_valid_flag();
-                });
-            }
+            event_registry.on("set-default-name", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("set-default-name-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
 
-            /* teaspeak forum */
-            {
-                const container_settings = container.find(".container-teaforo");
-                const continer_valid = container_settings.find(".container-valid");
-                const continer_invalid = container_settings.find(".container-invalid");
+                profile.default_username = event.name;
+                profiles.mark_need_save();
+                event_registry.fire_async("set-default-name-result", { name: event.name, profile_id: event.profile_id, status: "success" });
+            });
 
-                const button_setup = container_settings.find(".button-setup");
+            event_registry.on("set-identity-name-name", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("set-identity-name-name-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
 
-                profile_identity_changed.push(() => {
-                    container_settings.toggle(selected_profile && selected_profile.identity.selected_identity_type === "teaforo");
-                    const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.TEAFORO) as profiles.identities.TeaForumIdentity;
-                    const valid = profile && profile.valid();
+                let identity = profile.selected_identity(profiles.identities.IdentitifyType.NICKNAME) as profiles.identities.NameIdentity;
+                if(!identity)
+                    profile.set_identity(profiles.identities.IdentitifyType.NICKNAME, identity = new profiles.identities.NameIdentity());
+                identity.set_name(event.name);
+                profiles.mark_need_save();
 
-                    continer_valid.toggle(valid);
-                    continer_invalid.toggle(!valid);
-                });
+                event_registry.fire_async("set-identity-name-name-result", { name: event.name, profile_id: event.profile_id, status: "success" });
+            });
 
-                button_setup.on('click', event => {
-                    modal.htmlTag.find('.entry[container="identity-forum"]').trigger('click');
-                });
-            }
+            event_registry.on("query-profile-validity", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("query-profile-validity-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
 
-            /* nickname */
-            {
-                const container_settings = container.find(".container-nickname");
-                const input_nickname = container_settings.find(".nickname");
+                event_registry.fire_async("query-profile-validity-result", { status: "success", profile_id: event.profile_id, valid: profile.valid() });
+            });
 
-                profile_identity_changed.push(() => {
-                    const active = selected_profile && selected_profile.identity.selected_identity_type === "nickname";
-                    container_settings.toggle(active);
-                    if(!active) return;
+            event_registry.on("query-identity-teamspeak", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("query-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
 
-                    let profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.NICKNAME) as profiles.identities.NameIdentity;
-                    if(!profile)
-                        selected_profile.identity.set_identity(profiles.identities.IdentitifyType.NICKNAME, profile = new profiles.identities.NameIdentity());
-                    input_nickname.val(profile.name()).trigger('change');
-                });
+                const ts = profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                if(!ts) {
+                    event_registry.fire_async("query-identity-teamspeak-result", { status: "error", profile_id: event.profile_id, error: tr("Missing identity") });
+                    return;
+                }
 
-                input_nickname.on('keydown', event => {
-                    const profile = selected_profile.identity.selected_identity(profiles.identities.IdentitifyType.NICKNAME) as profiles.identities.NameIdentity;
-                    if(!profile)
-                        return;
+                ts.level().then(level => {
+                    event_registry.fire_async("query-identity-teamspeak-result", { status: "success", level: level, profile_id: event.profile_id });
+                }).catch(error => {
+                    send_error("query-identity-teamspeak-result", event.profile_id, tr("failed to calculate level"));
+                })
+            });
 
-                    profile.set_name(input_nickname.val() as string);
+            event_registry.on("select-identity-type", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    return;
+                }
+
+                profile.selected_identity_type = event.identity_type;
+                profiles.mark_need_save();
+            });
+
+            event_registry.on("generate-identity-teamspeak", event =>  {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    send_error("generate-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
+                    return;
+                }
+
+                profiles.identities.TeaSpeakIdentity.generate_new().then(identity => {
+                    profile.set_identity(profiles.identities.IdentitifyType.TEAMSPEAK, identity);
                     profiles.mark_need_save();
 
-                    selected_profile.update_valid_flag();
-                    input_nickname.parent().toggleClass('is-invalid', !profile.valid());
+                    identity.level().then(level => {
+                        event_registry.fire_async("generate-identity-teamspeak-result", {
+                            status: "success",
+                            profile_id: event.profile_id,
+                            unique_id: identity.uid(),
+                            level: level
+                        });
+                    }).catch(error => {
+                        console.error(tr("Failed to calculate level for a new identity. Error object: %o"), error);
+                        send_error("generate-identity-teamspeak-result", event.profile_id, tr("failed to calculate level: ") + error);
+                    })
+                }).catch(error => {
+                    console.error(tr("Failed to generate a new identity. Error object: %o"), error);
+                    send_error("generate-identity-teamspeak-result", event.profile_id, tr("failed to generate identity: ") + error);
+                });
+            });
+
+            event_registry.on("import-identity-teamspeak", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    return;
+                }
+
+                spawnTeamSpeakIdentityImport(identity => {
+                    profile.set_identity(profiles.identities.IdentitifyType.TEAMSPEAK, identity);
+                    profiles.mark_need_save();
+
+                    identity.level().catch(error => {
+                        console.error(tr("Failed to calculate level for a new imported identity. Error object: %o"), error);
+                        return Promise.resolve(undefined);
+                    }).then(level => {
+                        event_registry.fire_async("import-identity-teamspeak-result", {
+                            profile_id: event.profile_id,
+                            unique_id: identity.uid(),
+                            level: level
+                        });
+                    });
+                });
+            });
+
+            event_registry.on("improve-identity-teamspeak-level", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    return;
+                }
+
+                const identity = profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                if (!identity) return;
+
+                Modals.spawnTeamSpeakIdentityImprove(identity, profile.profile_name).close_listener.push(() => {
+                    profiles.mark_need_save();
+
+                    identity.level().then(level => {
+                        event_registry.fire_async("improve-identity-teamspeak-level-update", { profile_id: event.profile_id, new_level: level });
+                    }).catch(error => {
+                        log.error(LogCategory.CLIENT, tr("Failed to calculate identity level after improvement (%o)"), error);
+                    });
+                });
+            });
+
+            event_registry.on("export-identity-teamspeak", event => {
+                const profile = profiles.find_profile(event.profile_id);
+                if(!profile) {
+                    log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
+                    return;
+                }
+
+                const identity = profile.selected_identity(profiles.identities.IdentitifyType.TEAMSPEAK) as profiles.identities.TeaSpeakIdentity;
+                if (!identity) return;
+
+                identity.export_ts(true).then(data => {
+                    const element = $.spawn("a")
+                        .text("donwload")
+                        .attr("href", "data:test/plain;charset=utf-8," + encodeURIComponent(data))
+                        .attr("download", name + ".ini")
+                        .css("display", "none")
+                        .appendTo($("body"));
+                    element[0].click();
+                    element.remove();
+                }).catch(error => {
+                    console.error(error);
+                    createErrorModal(tr("Failed to export identity"), tr("Failed to export and save identity.<br>Error: ") + error).open();
+                });
+            });
+        }
+        export function initialize_identity_profiles_view(container: JQuery, event_registry: events.Registry<events.modal.settings.profiles>, settings: ProfileViewSettings) {
+            /* profile list */
+            {
+                const container_profiles = container.find(".container-profiles");
+                let selected_profile;
+
+                const overlay_error = container_profiles.find(".overlay-error");
+                const overlay_timeout = container_profiles.find(".overlay-timeout");
+                const overlay_empty = container_profiles.find(".overlay-empty");
+
+                const build_profile = (profile: events.modal.settings.ProfileInfo, selected: boolean) => {
+                    let tag_avatar: JQuery, tag_default: JQuery;
+                    let tag = $.spawn("div").addClass("profile").attr("profile-id", profile.id).append(
+                        tag_avatar = $.spawn("div").addClass("container-avatar"),
+                        $.spawn("div").addClass("container-info").append(
+                            $.spawn("div").addClass("container-type").append(
+                                $.spawn("div").addClass("identity-type").text(profile.identity_type || tr("Type unset")),
+                                tag_default = $.spawn("div").addClass("tag-default").text(tr("(Default)")),
+                                $.spawn("div").addClass("icon_em icon-status").hide()
+                            ),
+                            $.spawn("div").addClass("profile-name").text(profile.name || tr("Unnamed"))
+                        )
+                    );
+                    tag_avatar.hide(); /* no avatars yet */
+
+                    tag.on('click', event => event_registry.fire("select-profile", { profile_id: profile.id }));
+                    tag.toggleClass("selected", selected);
+                    tag_default.toggle(profile.id === "default");
+
+                    event_registry.fire("query-profile-validity", { profile_id: profile.id });
+                    return tag;
+                };
+
+                event_registry.on("select-profile", event => {
+                    container_profiles.find(".profile").removeClass("selected");
+                    container_profiles.find(".profile[profile-id='" + event.profile_id + "']").addClass("selected");
+                    selected_profile = event.profile_id;
+                });
+
+
+                event_registry.on("query-profile-list", event => {
+                    container_profiles.find(".profile").remove();
+                });
+
+                event_registry.on("query-profile-list-result", event => {
+                    container_profiles.find(".overlay").hide();
+                    if(event.status === "error") {
+                        overlay_error.show().find(".error").text(event.error || tr("unknown error"));
+                        return;
+                    } else if(event.status === "timeout") {
+                        overlay_timeout.show();
+                        return;
+                    }
+                    if(!event.profiles.length) {
+                        overlay_empty.show();
+                        return;
+                    }
+
+                    container_profiles.find(".overlay").hide();
+                    container_profiles.find(".profile").remove();
+                    event.profiles.forEach(e => build_profile(e, e.id == selected_profile).appendTo(container_profiles));
+                });
+
+                event_registry.on("delete-profile-result", event => {
+                    if(event.status !== "success") return;
+
+                    //TODO: Animate removal?
+                    container_profiles.find(".profile[profile-id='" + event.profile_id + "']").remove();
+                });
+
+                event_registry.on('create-profile-result', event => {
+                    if(event.status !== "success") return;
+
+                    event_registry.fire("query-profile-list");
+                    event_registry.one("query-profile-list-result", e => event_registry.fire("select-profile", { profile_id: event.profile_id }));
+                });
+
+                event_registry.on("set-profile-name-result", event => {
+                    if(event.status !== "success") return;
+
+                    const profile = container_profiles.find(".profile[profile-id='" + event.profile_id + "']");
+                    profile.find(".profile-name").text(event.name || tr("Unnamed"));
+                });
+
+                event_registry.on("set-default-profile-result", event => {
+                    if(event.status !== "success") return;
+
+                    const old_profile = container_profiles.find(".profile[profile-id='default']");
+                    const new_profile = container_profiles.find(".profile[profile-id='" + event.old_profile_id + "']");
+                    old_profile.attr("profile-id", event.new_profile_id).find(".tag-default").hide();
+                    new_profile.attr("profile-id", "default").find(".tag-default").show();
+                });
+
+                event_registry.on("select-identity-type", event => {
+                    if(!event.identity_type) return;
+
+                    const profile = container_profiles.find(".profile[profile-id='" + event.profile_id + "']");
+                    profile.find(".identity-type").text(event.identity_type.toUpperCase() || tr("Type unset"));
+                });
+
+                event_registry.on("query-profile-validity-result", event => {
+                    const profile = container_profiles.find(".profile[profile-id='" + event.profile_id + "']");
+                    profile.find(".icon-status")
+                        .show()
+                        .toggleClass("client-apply", event.status === "success" && event.valid)
+                        .toggleClass("client-delete", event.status !== "success" || !event.valid)
+                        .attr("title", event.status === "success" ? event.valid ? tr("Profile is valid") : tr("Provile is invalid") : event.error || tr("failed to query status"));
+                });
+
+                /* status indicator updaters */
+                event_registry.on("select-identity-type", event => {
+                    if(!event.profile_id) return;
+
+                    /* we need a short delay so everything could apply*/
+                    setTimeout(() => {
+                        event_registry.fire("query-profile-validity", { profile_id: event.profile_id });
+                    }, 100);
+                });
+                event_registry.on(["set-default-name-result", "set-profile-name-result", "set-identity-name-name-result", "generate-identity-teamspeak-result"], event => {
+                    if(!('status' in event) ||!('profile_id' in event)) {
+                        log.warn(LogCategory.CLIENT, tr("Profile status watcher encountered an unuseal event!"));
+                        return;
+                    }
+                    if((event as any).status !== "success") return;
+                    event_registry.fire("query-profile-validity", { profile_id: (event as any).profile_id });
+                })
+            }
+
+            /* list buttons */
+            {
+                /* reload */
+                {
+                    const button = container.find(".button-reload-list");
+
+                    button.on('click', event => event_registry.fire("query-profile-list"));
+
+                    event_registry.on("query-profile-list", event => button.prop("disabled", true));
+                    event_registry.on("query-profile-list-result", event => button.prop("disabled", false));
+                }
+
+                /* set default */
+                {
+                    const button = container.find(".button-set-default");
+                    let current_profile;
+
+                    button.on('click', event => event_registry.fire("set-default-profile", { profile_id: current_profile }));
+                    event_registry.on("select-profile", event => {
+                        current_profile = event.profile_id;
+                        button.prop("disabled", !event.profile_id || event.profile_id === "default");
+                    });
+
+                    event_registry.on("set-default-profile-result", event => {
+                        if(event.status === "success") return;
+
+                        createErrorModal(tr("Failed to set default profile"), tr("Failed to set default profile:") + "<br>" + (event.status === "timeout" ? tr("request timeout") : (event.error || tr("unknown error")))).open();
+                    });
+                    button.prop("disabled", true);
+                }
+
+                /* delete button */
+                {
+                    const button = container.find(".button-delete");
+                    let current_profile;
+
+                    button.on('click', event => {
+                        if(!current_profile || current_profile === "default") return;
+
+                        spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this profile?"), result => {
+                            if (result)
+                                event_registry.fire("delete-profile", { profile_id: current_profile });
+                        });
+                    });
+
+                    event_registry.on("delete-profile-result", event => {
+                        if(event.status === "success") return;
+
+                        createErrorModal(tr("Failed to delete profile"), tr("Failed to delete profile:") + "<br>" + (event.status === "timeout" ? tr("request timeout") : (event.error || tr("unknown error")))).open();
+                    });
+
+                    event_registry.on("select-profile", event => {
+                        current_profile = event.profile_id;
+
+                        button.prop("disabled", !event.profile_id || event.profile_id === "default");
+                    });
+                }
+
+                /* create button */
+                {
+                    const button = container.find(".button-create");
+                    button.on('click', event => {
+                        createInputModal(tr("Please enter a name"), tr("Please enter a name for the new profile:"), text => text.length >= 3 && !profiles.find_profile_by_name(text), value => {
+                            if (value)
+                                event_registry.fire("create-profile", { name: value as string });
+                        }).open();
+                    });
+
+                    event_registry.on('create-profile', event => button.prop("disabled", true));
+                    event_registry.on("create-profile-result", event => {
+                        button.prop("disabled", false);
+                        if(event.status === "success") {
+                            event_registry.fire("select-profile", { profile_id: event.profile_id });
+                            return;
+                        }
+
+                        createErrorModal(tr("Failed to create profile"), tr("Failed to create new profile:") + "<br>" + (event.status === "timeout" ? tr("request timeout") : (event.error || tr("unknown error")))).open();
+                    })
+                }
+            }
+
+
+            /* profile info */
+            {
+                let current_profile;
+                const error_text = event => event.status === "timeout" ? tr("request timeout") : (event.error || tr("unknown error"));
+
+                /* general info */
+                {
+                    /* profile name */
+                    {
+                        const input = container.find(".profile-name");
+                        let last_name;
+
+                        const update_name = () => input.prop("disabled", false)
+                                                    .val(last_name)
+                                                    .attr("placeholder", tr("Profile name"))
+                                                    .parent().removeClass("is-invalid");
+
+                        const info_name = text => input.prop("disabled", true)
+                                                    .val(null)
+                                                    .attr("placeholder", text)
+                                                    .parent().removeClass("is-invalid");
+
+                        event_registry.on("query-profile", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            info_name(tr("loading"));
+                        });
+
+                        event_registry.on("query-profile-result", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            if(event.status === "success") {
+                                last_name = event.info.name;
+                                update_name();
+                            } else {
+                                info_name(error_text(event));
+                            }
+                        });
+
+                        event_registry.on("set-profile-name", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            info_name(tr("saving"));
+                        });
+
+                        event_registry.on("set-profile-name-result", event => {
+                            if(event.status !== "success") {
+                                createErrorModal(tr("Failed to change profile name"), tr("Failed to create apply new name:") + "<br>" + error_text(event)).open();
+                            } else {
+                                last_name = event.name;
+                            }
+                            update_name();
+                        });
+
+                        input.on('keyup', event => {
+                            const text = input.val() as string;
+                            const profile = profiles.find_profile_by_name(text);
+                            input.parent().toggleClass("is-invalid", text.length < 3 || (profile && profile.id != current_profile));
+                        }).on('change', event => {
+                            const text = input.val() as string;
+                            const profile = profiles.find_profile_by_name(text);
+                            if(text.length < 3 || (profile && profile.id != current_profile)) return;
+
+                            event_registry.fire("set-profile-name", { profile_id: current_profile, name: text });
+                        });
+                    }
+
+                    /* nickname name */
+                    {
+                        const input = container.find(".profile-default-name");
+                        let last_name = null, fallback_names = {}, current_identity_type = "";
+
+                        const update_name = () => input.prop("disabled", false)
+                                                    .val(last_name)
+                                                    .attr("placeholder", fallback_names[current_identity_type] || tr("Another TeaSpeak user"))
+                                                    .parent().removeClass("is-invalid");
+
+                        const info_name = text => input.prop("disabled", true)
+                                                    .val(null)
+                                                    .attr("placeholder", text)
+                                                    .parent().removeClass("is-invalid");
+
+                        event_registry.on("query-profile", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            input.prop("disabled", true).val(null).attr("placeholder", tr("loading"));
+                        });
+
+                        event_registry.on("query-profile-result", event => {
+                            if(event.profile_id !== current_profile) return;
+                            if(event.status === "success") {
+                                current_identity_type = event.info.identity_type;
+                                fallback_names["nickname"] = event.info.identity_nickname ? event.info.identity_nickname.fallback_name : undefined;
+                                fallback_names["teaforo"] = event.info.identity_forum ? event.info.identity_forum.fallback_name : undefined;
+                                fallback_names["teamspeak"] = event.info.identity_teamspeak ? event.info.identity_teamspeak.fallback_name : undefined;
+
+                                last_name = event.info.nickname;
+                                update_name();
+                            } else {
+                                info_name(error_text(event));
+                            }
+                        });
+
+                        event_registry.on("select-identity-type", event => {
+                            if (current_identity_type === event.identity_type) return;
+
+                            current_identity_type = event.identity_type;
+                            update_name();
+                        });
+
+                        event_registry.on("set-default-name", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            info_name(tr("saving"));
+                        });
+
+                        event_registry.on("set-default-name-result", event => {
+                            if(event.status !== "success") {
+                                createErrorModal(tr("Failed to change nickname"), tr("Failed to create apply new nickname:") + "<br>" + error_text(event)).open();
+                            } else {
+                                last_name = event.name;
+                            }
+                            update_name();
+                        });
+
+                        input.on('keyup', event => {
+                            const text = input.val() as string;
+                            input.parent().toggleClass("is-invalid", text.length != 0 && text.length < 3);
+                        }).on('change', event => {
+                            const text = input.val() as string;
+                            if(text.length != 0 && text.length < 3) return;
+
+                            event_registry.fire("set-default-name", { profile_id: current_profile, name: text });
+                        });
+                    }
+
+                    /* identity type */
+                    {
+                        const select_identity_type = container.find(".profile-identity-type");
+
+                        const show_message = (text, is_invalid) => select_identity_type
+                                                        .toggleClass("is-invalid", is_invalid)
+                                                        .prop("disabled", true)
+                                                        .find("option[value=error]")
+                                                        .text(text)
+                                                        .prop("selected", true);
+
+                        const set_type = type => select_identity_type
+                                                    .toggleClass("is-invalid", type === "unset")
+                                                    .prop("disabled", false)
+                                                    .find("option[value=" + type + "]")
+                                                    .prop("selected", true);
+
+                        event_registry.on("query-profile", event => show_message(tr("loading"), false));
+
+                        event_registry.on("select-identity-type", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            set_type(event.identity_type || "unset");
+                        });
+
+                        event_registry.on("query-profile-result", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            if(event.status === "success")
+                                event_registry.fire("select-identity-type", { profile_id: event.profile_id, identity_type: event.info.identity_type });
+                            else
+                                show_message(error_text(event), false);
+                        });
+
+                        select_identity_type.on('change', event => {
+                            const type = (select_identity_type.val() as string).toLowerCase();
+                            if(type === "error" || type == "unset") return;
+
+                            event_registry.fire("select-identity-type", { profile_id: current_profile, identity_type: type as any });
+                        });
+                    }
+
+                    /* avatar */
+                    {
+                        container.find(".button-change-avatar").hide();
+                    }
+                }
+
+                /* special info TeamSpeak */
+                {
+                    const container_settings = container.find(".container-teamspeak");
+                    const container_valid = container_settings.find(".container-valid");
+                    const container_invalid = container_settings.find(".container-invalid");
+
+                    const input_current_level = container_settings.find(".current-level");
+                    const input_unique_id = container_settings.find(".unique-id");
+
+                    const button_new = container_settings.find(".button-new");
+                    const button_improve = container_settings.find(".button-improve");
+
+                    const button_import = container_settings.find(".button-import");
+                    const button_export = container_settings.find(".button-export");
+
+                    let is_profile_generated = false;
+
+                    event_registry.on("select-identity-type", event => {
+                        if(event.profile_id !== current_profile) return;
+
+                        container_settings.toggle(event.identity_type === "teamspeak");
+                    });
+
+                    event_registry.on("query-profile", event => {
+                        input_unique_id.val(null).attr("placeholder", tr("loading"));
+                        input_current_level.val(null).attr("placeholder", tr("loading"));
+
+                        button_new.prop("disabled", true);
+                        button_improve.prop("disabled", true);
+                        button_import.prop("disabled", true);
+                        button_export.prop("disabled", true);
+                    });
+
+                    const update_identity = (state: "not-created" | "created", unique_id?: string, level?: number) => {
+                        if(state === "not-created") {
+                            container_invalid.show();
+                            container_valid.hide();
+
+                            button_improve.prop("disabled", true);
+                            button_export.prop("disabled", true);
+                        } else {
+                            container_invalid.hide();
+                            container_valid.show();
+
+                            input_unique_id.val(unique_id).attr("placeholder", null);
+                            if(typeof level !== "number")
+                                event_registry.fire("query-identity-teamspeak", { profile_id: current_profile });
+                            else
+                                input_current_level.val(level).attr("placeholder", null);
+
+                            button_improve.prop("disabled", false);
+                            button_export.prop("disabled", false);
+                        }
+
+                        is_profile_generated = state === "created";
+                        button_new.toggleClass("btn-blue", !is_profile_generated).toggleClass("btn-red", is_profile_generated);
+                        button_import.toggleClass("btn-blue", !is_profile_generated).toggleClass("btn-red", is_profile_generated);
+
+                        button_new.prop("disabled", false);
+                        button_import.prop("disabled", false);
+                    };
+
+                    event_registry.on("query-profile-result", event => {
+                        if(event.profile_id !== current_profile) return;
+
+                        if(event.status !== "success") {
+                            input_unique_id.val(null).attr("placeholder", error_text(event));
+                            return;
+                        }
+
+                        if(!event.info.identity_teamspeak)
+                            update_identity("not-created");
+                        else
+                            update_identity("created", event.info.identity_teamspeak.unique_id);
+                    });
+
+                    event_registry.on("query-identity-teamspeak-result", event => {
+                        if(event.profile_id !== current_profile) return;
+
+                        if(event.status === "success") {
+                            input_current_level.val(event.level).attr("placeholder", null);
+                        } else {
+                            input_current_level.val(null).attr("placeholder", error_text(event));
+                        }
+                    });
+
+                    /* the new button */
+                    {
+                        button_new.on('click', event => {
+                            if(is_profile_generated) {
+                                spawnYesNo(tr("Are you sure"), tr("Do you really want to generate a new identity and override the old identity?"), result => {
+                                    if (result) event_registry.fire("generate-identity-teamspeak", { profile_id: current_profile });
+                                });
+                            } else {
+                                event_registry.fire("generate-identity-teamspeak", { profile_id: current_profile });
+                            }
+                        });
+
+                        event_registry.on("generate-identity-teamspeak-result", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            if(event.status !== "success") {
+                                createErrorModal(tr("Failed to generate a new identity"), tr("Failed to create a new identity:") + "<br>" + error_text(event)).open();
+                                return;
+                            }
+
+                            update_identity("created", event.unique_id, event.level);
+                            createInfoModal(tr("Identity generated"), tr("A new identity had been successfully generated")).open();
+                        });
+                    }
+
+                    /* the import identity */
+                    {
+                        button_import.on('click', event => {
+                            if(is_profile_generated) {
+                                spawnYesNo(tr("Are you sure"), tr("Do you really want to import a new identity and override the old identity?"), result => {
+                                    if (result) event_registry.fire("import-identity-teamspeak", { profile_id: current_profile });
+                                });
+                            } else {
+                                event_registry.fire("import-identity-teamspeak", { profile_id: current_profile });
+                            }
+                        });
+
+                        event_registry.on("improve-identity-teamspeak-level-update", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            input_current_level.val(event.new_level).attr("placeholder", null);
+                        });
+
+                        event_registry.on("import-identity-teamspeak-result", event => {
+                            if(event.profile_id !== current_profile) return;
+
+                            event_registry.fire_async("query-profile", { profile_id: event.profile_id }); /* we do it like this so the default nickname changes as well */
+                            createInfoModal(tr("Identity imported"), tr("Your identity had been successfully imported generated")).open();
+                        });
+                    }
+
+                    /* identity export */
+                    {
+                        button_export.on('click', event => {
+                            createInputModal(tr("File name"), tr("Please enter the file name"), text => !!text, name => {
+                                if (name)
+                                    event_registry.fire("export-identity-teamspeak", { profile_id: current_profile, filename: name as string });
+                            }).open();
+                        });
+                    }
+
+                    /* the improve button */
+                    button_improve.on('click', event =>  event_registry.fire("improve-identity-teamspeak-level", { profile_id: current_profile }));
+                }
+
+                /* special info TeaSpeak - Forum */
+                {
+                    const container_settings = container.find(".container-teaforo");
+                    const container_valid = container_settings.find(".container-valid");
+                    const container_invalid = container_settings.find(".container-invalid");
+
+                    const button_setup = container_settings.find(".button-setup");
+
+                    event_registry.on("select-identity-type", event => {
+                        if(event.profile_id !== current_profile) return;
+
+                        container_settings.toggle(event.identity_type === "teaforo");
+                    });
+
+                    event_registry.on("query-profile", event => {
+                        container_valid.toggle(false);
+                        container_invalid.toggle(false);
+                    });
+
+                    event_registry.on("query-profile-result", event => {
+                        if(event.profile_id !== current_profile) return;
+
+                        const valid = event.status === "success" && event.info.identity_forum && event.info.identity_forum.valid;
+                        container_valid.toggle(!!valid);
+                        container_invalid.toggle(!valid);
+                    });
+
+                    button_setup.on('click', event => event_registry.fire_async("setup-forum-connection"));
+                    button_setup.toggle(settings.forum_setuppable);
+                }
+
+                /* special info nickname */
+                {
+                    const container_settings = container.find(".container-nickname");
+                    const input_nickname = container_settings.find(".nickname");
+                    let last_name;
+
+                    const update_name = () => input_nickname.prop("disabled", false)
+                        .val(last_name)
+                        .attr("placeholder", tr("Identity base name"))
+                        .parent().removeClass("is-invalid");
+
+                    const show_info = text => input_nickname.prop("disabled", true)
+                        .val(null)
+                        .attr("placeholder", text)
+                        .parent().removeClass("is-invalid");
+
+                    event_registry.on("select-identity-type", event => event.profile_id === current_profile && container_settings.toggle(event.identity_type === "nickname"));
+
+                    event_registry.on("query-profile", event => {
+                        if(event.profile_id !== current_profile) return;
+
+                        show_info(tr("loading"));
+                    });
+
+                    event_registry.on("query-profile-result", event => {
+                        if(event.profile_id !== current_profile) return;
+
+                        if(event.status === "success") {
+                            last_name = event.info.identity_nickname ? event.info.identity_nickname.name : null;
+                            update_name();
+                        } else {
+                            show_info(error_text(event));
+                        }
+                    });
+
+                    event_registry.on("set-identity-name-name", event => {
+                        if(event.profile_id !== current_profile) return;
+                        show_info(tr("saving"));
+                    });
+
+                    event_registry.on("set-identity-name-name-result", event => {
+                        if(event.status !== "success") {
+                            createErrorModal(tr("Failed to change name"), tr("Failed to create new name:") + "<br>" + error_text(event)).open();
+                        } else {
+                            last_name = event.name;
+                        }
+                        update_name();
+                    });
+
+                    input_nickname.on('keyup', event => {
+                        const text = input_nickname.val() as string;
+                        const profile = profiles.find_profile_by_name(text);
+                        input_nickname.parent().toggleClass("is-invalid", text.length < 3 || (profile && profile.id != current_profile));
+                    }).on('change', event => {
+                        const text = input_nickname.val() as string;
+                        const profile = profiles.find_profile_by_name(text);
+                        if(text.length < 3 || (profile && profile.id != current_profile)) return;
+
+                        event_registry.fire("set-identity-name-name", { profile_id: current_profile, name: text });
+                    });
+                }
+                event_registry.on("select-profile", e => current_profile = e.profile_id);
+            }
+
+            /* timeouts */
+            {
+                /* profile list */
+                {
+                    let timeout;
+                    event_registry.on("query-profile-list", event => timeout = setTimeout(() => event_registry.fire("query-profile-list-result", { status: "timeout" }), 5000));
+                    event_registry.on("query-profile-list-result", event => {
+                        clearTimeout(timeout);
+                        timeout = undefined;
+                    });
+                }
+
+                /* profile create */
+                {
+                    const timeouts = {};
+                    event_registry.on("create-profile", event => {
+                        clearTimeout(timeouts[event.name]);
+                        timeouts[event.name] = setTimeout(() => {
+                            event_registry.fire("create-profile-result", { name: event.name, status: "timeout" });
+                        }, 5000);
+                    });
+
+                    event_registry.on("create-profile-result", event => {
+                        clearTimeout(timeouts[event.name]);
+                        delete timeouts[event.name];
+                    });
+                }
+
+                /* profile set default create */
+                {
+                    const timeouts = {};
+                    event_registry.on("set-default-profile", event => {
+                        clearTimeout(timeouts[event.profile_id]);
+                        timeouts[event.profile_id] = setTimeout(() => {
+                            event_registry.fire("set-default-profile-result", { old_profile_id: event.profile_id, status: "timeout" });
+                        }, 5000);
+                    });
+
+                    event_registry.on("set-default-profile-result", event => {
+                        clearTimeout(timeouts[event.old_profile_id]);
+                        delete timeouts[event.old_profile_id];
+                    });
+                }
+
+                const create_standard_timeout = (event: keyof events.modal.settings.profiles, response_event: keyof events.modal.settings.profiles, key: string) => {
+                    const timeouts = {};
+                    event_registry.on(event, event => {
+                        clearTimeout(timeouts[event[key]]);
+                        timeouts[event[key]] = setTimeout(() => {
+                            const timeout_event = { status: "timeout" };
+                            timeout_event[key] = event[key];
+                            event_registry.fire(response_event, timeout_event as any);
+                        }, 5000);
+                    });
+
+                    event_registry.on(response_event, event => {
+                        clearTimeout(timeouts[event[key]]);
+                        delete timeouts[event[key]];
+                    });
+                };
+
+                create_standard_timeout("query-profile", "query-profile-result", "profile_id");
+                create_standard_timeout("query-identity-teamspeak", "query-identity-teamspeak-result", "profile_id");
+                create_standard_timeout("delete-profile", "delete-profile-result", "profile_id");
+                create_standard_timeout("set-profile-name", "set-profile-name-result", "profile_id");
+                create_standard_timeout("set-default-name", "set-default-name-result", "profile_id");
+                create_standard_timeout("query-profile-validity", "query-profile-validity-result", "profile_id");
+                create_standard_timeout("set-identity-name-name", "set-identity-name-name-result", "profile_id");
+                create_standard_timeout("generate-identity-teamspeak", "generate-identity-teamspeak-result", "profile_id");
+            }
+
+            /* some view semantics */
+            {
+                let selected_profile;
+                event_registry.on("delete-profile-result", event => {
+                    if(event.status !== "success") return;
+                    if(event.profile_id !== selected_profile) return;
+
+                    /* the selected profile has been deleted, so we need to select another one */
+                    event_registry.fire("select-profile", { profile_id: "default" });
+                });
+
+                /* reselect the default profile or the new default profile */
+                event_registry.on("set-default-profile-result", event => {
+                    if(event.status !== "success") return;
+                    if(selected_profile === "default")
+                        event_registry.fire("select-profile", { profile_id: event.new_profile_id });
+                    else if(selected_profile === event.old_profile_id)
+                        event_registry.fire("select-profile", { profile_id: "default" });
+                });
+
+                event_registry.on("select-profile", event => {
+                    selected_profile = event.profile_id;
+                    event_registry.fire("query-profile", { profile_id: event.profile_id });
+                });
+
+                event_registry.on("reload-profile", event => {
+                    event_registry.fire("query-profile-list");
+                    event_registry.fire("select-profile", event.profile_id || selected_profile);
                 });
             }
-        }
 
-        /* change avatar button */
-        {
-            container.find(".button-change-avatar").hide();
+            event_registry.fire("query-profile-list");
+            event_registry.fire("select-profile", { profile_id: "default" });
+            event_registry.fire("select-identity-type", { profile_id: "default", identity_type: undefined });
         }
+        
+        export function initialize_audio_microphone_controller(event_registry: events.Registry<events.modal.settings.microphone>) {
+            /* level meters */
+            {
+                const level_meters: {[key: string]:Promise<audio.recorder.LevelMeter>} = {};
+                const level_info: {[key: string]:any} = {};
+                let level_update_task;
 
-        /* create new button */
-        {
-            container.find(".button-create").on('click', event => {
-                createInputModal(tr("Please enter a name"), tr("Please enter a name for the new profile:"), text => text.length >= 3 && !profiles.find_profile_by_name(text), value => {
-                    if (value) {
-                        const profile = profiles.create_new_profile(value as string);
-                        update_profiles(profile.id);
-                        profiles.mark_need_save();
+                const destroy_meters = () => {
+                    Object.keys(level_meters).forEach(e => {
+                        const meter = level_meters[e];
+                        delete level_meters[e];
+
+                        meter.then(e => e.destory());
+                    });
+                    Object.keys(level_info).forEach(e => delete level_info[e]);
+                };
+
+                const update_level_meter = () => {
+                    destroy_meters();
+
+                    for(const device of audio.recorder.devices()) {
+                        let promise = audio.recorder.create_levelmeter(device).then(meter => {
+                            meter.set_observer(level => {
+                                if(level_meters[device.unique_id] !== promise) return; /* old level meter */
+
+                                level_info[device.unique_id] = {
+                                    device_id: device.unique_id,
+                                    status: "success",
+                                    level: level
+                                };
+                            });
+                            return Promise.resolve(meter);
+                        }).catch(error => {
+                            if(level_meters[device.unique_id] !== promise) return; /* old level meter */
+                            level_info[device.unique_id] = {
+                                device_id: device.unique_id,
+                                status: "error",
+
+                                error: error
+                            };
+
+                            log.warn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.unique_id, device.driver + ":" + device.name, error);
+                            return Promise.reject(error);
+                        });
+                        level_meters[device.unique_id] = promise;
                     }
-                }).open();
-            });
+                };
+
+                level_update_task = setInterval(() => {
+                    event_registry.fire("update-device-level", {
+                        devices: Object.keys(level_info).map(e => level_info[e])
+                    });
+                }, 50);
+
+                event_registry.on("query-device-result", event => {
+                    if(event.status !== "success") return;
+
+                    update_level_meter();
+                });
+
+                event_registry.on("deinitialize", event => {
+                    destroy_meters();
+                    clearInterval(level_update_task);
+                });
+            }
+
+            /* device list */
+            {
+                event_registry.on("query-devices", event => {
+                    Promise.resolve().then(() => {
+                        return audio.recorder.device_refresh_available() && event.refresh_list ? audio.recorder.refresh_devices() : Promise.resolve();
+                    }).catch(error => {
+                        log.warn(LogCategory.AUDIO, tr("Failed to refresh device list: %o"), error);
+                        return Promise.resolve();
+                    }).then(() => {
+                        const devices = audio.recorder.devices();
+
+                        event_registry.fire_async("query-device-result", {
+                            status: "success",
+                            active_device: default_recorder.current_device() ? default_recorder.current_device().unique_id : "none",
+                            devices: devices.map(e => { return { id: e.unique_id, name: e.name, driver: e.driver }})
+                        });
+                    });
+                });
+
+                event_registry.on("set-device", event => {
+                    const device = audio.recorder.devices().find(e => e.unique_id === event.device_id);
+                    if(!device && event.device_id !== "none") {
+                        event_registry.fire_async("set-device-result", { status: "error", error: tr("Invalid device id"), device_id: event.device_id });
+                        return;
+                    }
+
+                    default_recorder.set_device(device).then(() => {
+                        console.debug(tr("Changed default microphone device"));
+                        event_registry.fire_async("set-device-result", { status: "success", device_id: event.device_id });
+                    }).catch((error) => {
+                        log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.unique_id : "none", error)
+                        event_registry.fire_async("set-device-result", { status: "success", device_id: event.device_id });
+                    });
+                });
+            }
+
+            /* settings */
+            {
+                event_registry.on("query-settings", event => {
+                    event_registry.fire_async("query-settings-result", {
+                        status: "success",
+                        info: {
+                            volume: default_recorder.get_volume(),
+                            vad_type: default_recorder.get_vad_type(),
+                            vad_ppt: {
+                                key: default_recorder.get_vad_ppt_key(),
+                                release_delay: Math.abs(default_recorder.get_vad_ppt_delay()),
+                                release_delay_active: default_recorder.get_vad_ppt_delay() >= 0
+                            },
+                            vad_threshold: {
+                                threshold: default_recorder.get_vad_threshold()
+                            }
+                        }
+                    });
+                });
+
+                event_registry.on("set-setting", event => {
+                    const ensure_type = (type: "object" | "string" | "boolean" | "number" | "undefined") => {
+                        if(typeof event.value !== type) {
+                            event_registry.fire_async("set-setting-result", { status: "error", error: tr("Invalid value type for key") + " (expected: " + type + ", received: " + typeof event.value + ")", setting: event.setting });
+                            return false;
+                        }
+                        return true;
+                    };
+
+                    switch (event.setting) {
+                        case "volume":
+                            if(!ensure_type("number")) return;
+                            default_recorder.set_volume(event.value);
+                            break;
+
+                        case "threshold-threshold":
+                            if(!ensure_type("number")) return;
+                            default_recorder.set_vad_threshold(event.value);
+                            break;
+
+                        case "vad-type":
+                            if(!ensure_type("string")) return;
+                            if(!default_recorder.set_vad_type(event.value)) {
+                                event_registry.fire_async("set-setting-result", { status: "error", error: tr("Unknown VAD type"), setting: event.setting });
+                                return;
+                            }
+                            break;
+
+                        case "ppt-key":
+                            if(!ensure_type("object")) return;
+                            default_recorder.set_vad_ppt_key(event.value);
+                            break;
+
+                        case "ppt-release-delay":
+                            if(!ensure_type("number")) return;
+                            const sign = default_recorder.get_vad_ppt_delay() >= 0 ? 1 : -1;
+                            default_recorder.set_vad_ppt_delay(sign * event.value);
+                            break;
+
+                        case "ppt-release-delay-active":
+                            if(!ensure_type("boolean")) return;
+                            default_recorder.set_vad_ppt_delay(Math.abs(default_recorder.get_vad_ppt_delay()) * (event.value ? 1 : -1));
+                            break;
+
+                        default:
+                            event_registry.fire_async("set-setting-result", { status: "error", error: tr("Invalid setting key"), setting: event.setting });
+                            return;
+                    }
+                    event_registry.fire_async("set-setting-result", { status: "success", setting: event.setting, value: event.value });
+                });
+            }
+
+            audio.player.on_ready(() => event_registry.fire_async("audio-initialized", {}));
         }
+        export function initialize_audio_microphone_view(container: JQuery, event_registry: events.Registry<events.modal.settings.microphone>) {
+            /* device list */
+            {
+                /* actual list */
+                {
+                    const container_devices = container.find(".container-devices");
+                    const volume_bar_tags: {[key: string]:{ volume: JQuery, error: JQuery }} = {};
+                    let pending_changes = 0;
+                    let default_device_id;
 
-        /* set as default button */
-        {
-            const button = container.find(".button-set-default");
-            button.on('click', event => {
-                profiles.set_default_profile(selected_profile.identity);
-                profiles.mark_need_save();
-                update_profiles(selected_profile.identity.id);
+                    const build_device = (device: { id: string, name: string, driver: string }, selected: boolean) => {
+                        let tag_volume: JQuery, tag_volume_error: JQuery;
+                        const tag = $.spawn("div").attr("device-id", device ? device.id : "none").addClass("device").toggleClass("selected", selected).append(
+                            $.spawn("div").addClass("container-selected").append(
+                                $.spawn("div").addClass("icon_em client-apply"),
+                                $.spawn("div").addClass("icon-loading").append(
+                                    $.spawn("img").attr("src", "img/icon_settings_loading.svg")
+                                )
+                            ),
+                            $.spawn("div").addClass("container-name").append(
+                                $.spawn("div").addClass("device-driver").text(
+                                    device ? (device.driver || "Unknown driver") : "No device"
+                                ),
+                                $.spawn("div").addClass("device-name").text(
+                                    device ? (device.name || "Unknown name") : "No device"
+                                ),
+                            ),
+                            $.spawn("div").addClass("container-activity").append(
+                                $.spawn("div").addClass("container-activity-bar").append(
+                                    tag_volume = $.spawn("div").addClass("bar-hider"),
+                                    tag_volume_error = $.spawn("div").addClass("bar-error")
+                                )
+                            )
+                        );
+                        tag_volume.css('width', '100%'); /* initially hide the bar */
+                        if(device)
+                            volume_bar_tags[device.id] = { volume: tag_volume, error: tag_volume_error };
 
-                /* set the connect profile to the just set once */
-                settings.changeGlobal(Settings.KEY_CONNECT_PROFILE, "default");
-            });
+                        tag.on('click', event => {
+                            if(tag.hasClass("selected") || pending_changes > 0) return;
 
-            selected_profile_changed.push(() => {
-                button.prop("disabled", !selected_profile || selected_profile.identity.id === "default");
-            });
-        }
+                            event_registry.fire("set-device", { device_id: device ? device.id : "none" });
+                        });
 
-        /* delete button */
-        {
-            const button = container.find(".button-delete");
-            button.on('click', event => {
-                if (selected_profile && selected_profile.identity.id != 'default') {
-                    spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this profile?"), result => {
-                        if (result) {
-                            profiles.delete_profile(selected_profile.identity);
-                            profiles.mark_need_save();
-                            update_profiles(undefined);
+                        return tag;
+                    };
+
+                    event_registry.on("set-device", event => {
+                        pending_changes++;
+
+                        const default_device = container_devices.find(".selected");
+                        default_device_id = default_device.attr("device-id");
+                        default_device.removeClass("selected");
+
+                        const new_device = container_devices.find(".device[device-id='" + event.device_id + "']");
+                        new_device.addClass("loading");
+                    });
+                    event_registry.on("set-device-result", event => {
+                        pending_changes--;
+                        container_devices.find(".loading").removeClass("loading");
+
+                        if(event.status !== "success") {
+                            createErrorModal(tr("Failed to change microphone"), MessageHelper.formatMessage(tr("Failed to change the microphone to the target microphone{:br:}{}"), event.status === "timeout" ? tr("Timeout") : event.error || tr("Unknown error"))).open();
+                        } else {
+                            default_device_id = event.device_id;
+                        }
+
+                        container_devices.find(".device[device-id='" + default_device_id + "']").addClass("selected");
+                    });
+
+                    event_registry.on('query-devices', event => {
+                        Object.keys(volume_bar_tags).forEach(e => delete volume_bar_tags[e]);
+                        container_devices.find(".device").remove();
+                        container_devices.find(".overlay").hide();
+                        container_devices.find(".overlay.overlay-loading").show();
+                    });
+
+                    event_registry.on("query-device-result", event => {
+                        container_devices.find(".device").remove();
+                        container_devices.find(".overlay").hide();
+
+                        if(event.status !== "success") {
+                            const container_text = container_devices.find(".overlay.overlay-error").show().find(".error-text");
+                            container_text.text(event.status === "timeout" ? tr("Timeout while loading") : event.error || tr("An unknown error happened"));
+                            return;
+                        }
+
+                        build_device(undefined, event.active_device === "none").appendTo(container_devices);
+                        for(const device of event.devices)
+                            build_device(device, event.active_device === device.id).appendTo(container_devices);
+                    });
+
+                    event_registry.on("update-device-level", event => {
+                        for(const device of event.devices) {
+                            const tags = volume_bar_tags[device.device_id];
+                            if(!tags) continue;
+
+                            let level = typeof device.level === "number" ? device.level : 100;
+                            if(level > 100) level = 100;
+                            else if(level < 0) level = 0;
+                            tags.error.attr('title', device.error || null).text(device.error || null);
+                            tags.volume.css('width', (100 - level) + '%');
                         }
                     });
                 }
-            });
 
-            selected_profile_changed.push(() => {
-                button.prop("disabled", !selected_profile || selected_profile.identity.id === "default");
+                /* device list update button */
+                {
+
+                    const button_update = container.find(".button-update");
+                    event_registry.on(["query-devices", "set-device"], event => button_update.prop("disabled", true));
+                    event_registry.on(["query-device-result", "set-device-result"], event => button_update.prop("disabled", false));
+
+                    button_update.on("click", event => event_registry.fire("query-devices", { refresh_list: true }));
+                }
+            }
+
+            /* settings */
+            {
+                /* TODO: Query settings error handling */
+
+                /* volume */
+                {
+                    const container_volume = container.find(".container-volume");
+                    const slider_tag = container_volume.find(".container-slider");
+                    let triggered_events = 0;
+                    let last_value = -1;
+
+                    const slider = sliderfy(slider_tag, {
+                        min_value: 0,
+                        max_value: 100,
+                        step: 1,
+                        initial_value: 0
+                    });
+
+                    slider_tag.on('change', event => {
+                        const value = parseInt(slider_tag.attr("value"));
+                        if(last_value === value) return;
+
+                        triggered_events++;
+                        event_registry.fire("set-setting", { setting: "volume", value: value });
+                    });
+
+                    event_registry.on("query-settings-result", event => {
+                        if(event.status !== "success") return;
+
+                        last_value = event.info.volume;
+                        slider.value(event.info.volume);
+                    });
+
+                    event_registry.on("set-setting-result", event => {
+                        if(event.setting !== "volume") return;
+                        if(triggered_events > 0) {
+                            triggered_events--;
+                            return;
+                        }
+                        if(event.status !== "success") return;
+
+                        last_value = event.value;
+                        slider.value(event.value);
+                    });
+                }
+
+                /* vad type */
+                {
+                    const container_select = container.find(".container-select-vad");
+                    let last_value;
+
+                    container_select.find("input").on('change', event => {
+                        if(!(<HTMLInputElement>event.target).checked)
+                            return;
+
+                        const mode = (<HTMLInputElement>event.target).value;
+                        if(mode === last_value) return;
+
+                        event_registry.fire("set-setting", { setting: "vad-type", value: mode });
+                    });
+
+                    const select_vad_type = type => {
+                        let elements = container_select.find('input[value="' + type + '"]');
+                        if(elements.length < 1)
+                            elements = container_select.find('input[value]');
+                        elements.first().trigger('click');
+                    };
+
+                    event_registry.on("query-settings-result", event => {
+                        if(event.status !== "success") return;
+
+                        last_value = event.info.vad_type;
+                        select_vad_type(event.info.vad_type);
+                    });
+
+                    event_registry.on("set-setting-result", event => {
+                        if(event.setting !== "vad-type") return;
+                        if(event.status !== "success") {
+                            createErrorModal(tr("Failed to change setting"), MessageHelper.formatMessage(tr("Failed to change vad type{:br:}{}"), event.status === "timeout" ? tr("Timeout") : event.error || tr("Unknown error"))).open();
+                        } else {
+                            last_value = event.value;
+                        }
+
+                        select_vad_type(last_value);
+                    });
+                }
+
+                /* Sensitivity */
+                {
+                    const container_sensitivity = container.find(".container-sensitivity");
+
+                    const container_bar = container_sensitivity.find(".container-activity-bar");
+                    const bar_hider = container_bar.find(".bar-hider");
+
+                    let last_value;
+                    let triggered_events = 0;
+                    let enabled;
+
+                    const slider = sliderfy(container_bar, {
+                        min_value: 0,
+                        max_value: 100,
+                        step: 1,
+                        initial_value: 0
+                    });
+
+                    const set_enabled = value => {
+                        if(enabled === value) return;
+
+                        enabled = value;
+                        container_sensitivity.toggleClass("disabled", !value);
+                    };
+
+                    container_bar.on('change', event => {
+                        const value = parseInt(container_bar.attr("value"));
+                        if(last_value === value) return;
+
+                        triggered_events++;
+                        event_registry.fire("set-setting", { setting: "threshold-threshold", value: value });
+                    });
+
+                    event_registry.on("query-settings", event => set_enabled(false));
+                    event_registry.on("query-settings-result", event => {
+                        if(event.status !== "success") return;
+
+                        last_value = event.info.vad_threshold.threshold;
+                        slider.value(event.info.vad_threshold.threshold);
+                        set_enabled(event.info.vad_type === "threshold");
+                    });
+
+                    event_registry.on("set-setting-result", event => {
+                        if(event.setting === "threshold-threshold") {
+                            if(event.status !== "success") return;
+
+                            if(triggered_events > 0) {
+                                triggered_events--;
+                                return;
+                            }
+
+                            last_value = event.value;
+                            slider.value(event.value);
+                        } else if(event.setting === "vad-type") {
+                            if(event.status !== "success") return;
+
+                            set_enabled(event.value === "threshold");
+                        }
+                    });
+
+                    let selected_device;
+                    event_registry.on("query-device-result", event => {
+                        if(event.status !== "success") return;
+
+                        selected_device = event.active_device;
+                    });
+                    event_registry.on("set-device-result", event => {
+                        if(event.status !== "success") return;
+
+                        selected_device = event.device_id;
+                    });
+
+
+                    bar_hider.css("width", "100%");
+                    event_registry.on("update-device-level", event => {
+                        if(!enabled) return;
+
+                        const data = event.devices.find(e => e.device_id === selected_device);
+                        let level = data && typeof data.level === "number" ? data.level : 0;
+                        if(level > 100) level = 100;
+                        else if(level < 0) level = 0;
+
+                        bar_hider.css("width", (100 - level) + "%");
+                    });
+
+                    set_enabled(false);
+                }
+
+                /* ppt settings */
+                {
+                    /* PPT Key */
+                    {
+                        const button_key = container.find(".container-ppt button");
+                        event_registry.on("query-settings", event => button_key.prop("disabled", true).text(tr("loading")));
+                        let last_value;
+
+                        event_registry.on("query-settings-result", event => {
+                            if(event.status !== "success") return;
+
+                            button_key.prop('disabled', event.info.vad_type !== "push_to_talk");
+                            button_key.text(last_value = ppt.key_description(event.info.vad_ppt.key));
+                        });
+
+
+                        event_registry.on("set-setting", event => {
+                            if(event.setting !== "ppt-key") return;
+
+                            button_key.prop("enabled", false);
+                            button_key.text(tr("applying"));
+                        });
+
+                        event_registry.on("set-setting-result", event => {
+                            if(event.setting === "vad-type") {
+                                if(event.status !== "success") return;
+
+                                button_key.prop('disabled', event.value !== "push_to_talk");
+                            } else if(event.setting === "ppt-key") {
+                                if(event.status !== "success") {
+                                    createErrorModal(tr("Failed to change PPT key"), MessageHelper.formatMessage(tr("Failed to change PPT key:{:br:}{}"), event.status === "timeout" ? tr("Timeout") : event.error || tr("Unknown error"))).open();
+                                } else {
+                                    last_value = ppt.key_description(event.value);
+                                }
+                                button_key.text(last_value);
+                            }
+                        });
+
+                        button_key.on('click', event => {
+                            Modals.spawnKeySelect(key => {
+                                if(!key) return;
+
+                                event_registry.fire("set-setting", { setting: "ppt-key", value: key });
+                            });
+                        });
+                    }
+
+                    /* delay */
+                    {
+                        const container_delay = container.find(".container-ppt-delay");
+
+                        /* toggle button */
+                        {
+                            const input_enabled = container_delay.find("input.delay-enabled");
+                            const update_enabled_state = () => {
+                                const value = !loading && !applying && ppt_selected;
+                                input_enabled.prop("disabled", !value).parent().toggleClass("disabled", !value);
+                            };
+
+                            let last_state;
+                            let loading = true, applying = false, ppt_selected = false;
+
+                            event_registry.on("query-settings", event => { loading = true; update_enabled_state(); });
+                            event_registry.on("query-settings-result", event => {
+                                if(event.status !== "success") return;
+
+                                loading = false;
+                                ppt_selected = event.info.vad_type === "push_to_talk";
+                                update_enabled_state();
+                                input_enabled.prop("checked", last_state = event.info.vad_ppt.release_delay_active);
+                            });
+
+                            event_registry.on("set-setting", event => {
+                                if(event.setting !== "ppt-release-delay-active") return;
+
+                                applying = true;
+                                update_enabled_state();
+                            });
+
+                            event_registry.on("set-setting-result", event => {
+                                if(event.setting === "vad-type") {
+                                    if(event.status !== "success") return;
+
+                                    ppt_selected = event.value === "push_to_talk";
+                                    update_enabled_state();
+                                } else if(event.setting === "ppt-release-delay-active") {
+                                    applying = false;
+                                    update_enabled_state();
+
+                                    if(event.status !== "success") {
+                                        createErrorModal(tr("Failed to change PPT delay state"), MessageHelper.formatMessage(tr("Failed to change PPT delay state:{:br:}{}"), event.status === "timeout" ? tr("Timeout") : event.error || tr("Unknown error"))).open();
+                                    } else {
+                                        last_state = event.value;
+                                    }
+                                    input_enabled.prop("checked", last_state);
+                                }
+                            });
+
+                            input_enabled.on('change', event => {
+                                event_registry.fire("set-setting", { setting: "ppt-release-delay-active", value: input_enabled.prop("checked") });
+                            });
+                        }
+
+                        /* delay input */
+                        {
+                            const input_time = container_delay.find("input.delay-time");
+                            const update_enabled_state = () => {
+                                const value = !loading && !applying && ppt_selected && delay_active;
+                                input_time.prop("disabled", !value).parent().toggleClass("disabled", !value);
+                            };
+
+                            let last_state;
+                            let loading = true, applying = false, ppt_selected = false, delay_active = false;
+
+                            event_registry.on("query-settings", event => { loading = true; update_enabled_state(); });
+                            event_registry.on("query-settings-result", event => {
+                                if(event.status !== "success") return;
+
+                                loading = false;
+                                ppt_selected = event.info.vad_type === "push_to_talk";
+                                delay_active = event.info.vad_ppt.release_delay_active;
+                                update_enabled_state();
+                                input_time.val(last_state = event.info.vad_ppt.release_delay);
+                            });
+
+                            event_registry.on("set-setting", event => {
+                                if(event.setting !== "ppt-release-delay") return;
+
+                                applying = true;
+                                update_enabled_state();
+                            });
+
+                            event_registry.on("set-setting-result", event => {
+                                if(event.setting === "vad-type") {
+                                    if(event.status !== "success") return;
+
+                                    ppt_selected = event.value === "push_to_talk";
+                                    update_enabled_state();
+                                } else if(event.setting === "ppt-release-delay-active") {
+                                    if(event.status !== "success") return;
+
+                                    delay_active = event.value;
+                                    update_enabled_state();
+                                } else if(event.setting === "ppt-release-delay") {
+                                    applying = false;
+                                    update_enabled_state();
+
+                                    if(event.status !== "success") {
+                                        createErrorModal(tr("Failed to change PPT delay"), MessageHelper.formatMessage(tr("Failed to change PPT delay:{:br:}{}"), event.status === "timeout" ? tr("Timeout") : event.error || tr("Unknown error"))).open();
+                                    } else {
+                                        last_state = event.value;
+                                    }
+                                    input_time.val(last_state);
+                                }
+                            });
+
+                            input_time.on('change', event => {
+                                event_registry.fire("set-setting", { setting: "ppt-release-delay", value: parseInt(input_time.val() as any) });
+                            });
+                        }
+                    }
+                }
+            }
+
+            /* timeouts */
+            {
+                /* device query */
+                {
+                    let timeout;
+                    event_registry.on('query-devices', event => {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            event_registry.fire("query-device-result", { status: "timeout" });
+                        }, 5000);
+                    });
+
+                    event_registry.on("query-device-result", event => clearTimeout(timeout));
+                }
+
+                /* device set */
+                {
+                    let timeouts = {};
+                    event_registry.on('set-device', event => {
+                        clearTimeout(timeouts[event.device_id]);
+                        timeouts[event.device_id] = setTimeout(() => {
+                            event_registry.fire("set-device-result", { status: "timeout", device_id: event.device_id });
+                        }, 5000);
+                    });
+
+                    event_registry.on("set-device-result", event => clearTimeout(timeouts[event.device_id]));
+                }
+
+                /* settings query */
+                {
+                    let timeout;
+                    event_registry.on('query-settings', event => {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            event_registry.fire("query-settings-result", { status: "timeout" });
+                        }, 5000);
+                    });
+
+                    event_registry.on("query-settings-result", event => clearTimeout(timeout));
+                }
+
+                /* settings change */
+                {
+                    let timeouts = {};
+                    event_registry.on('set-setting', event => {
+                        clearTimeout(timeouts[event.setting]);
+                        timeouts[event.setting] = setTimeout(() => {
+                            event_registry.fire("set-setting-result", { status: "timeout", setting: event.setting });
+                        }, 5000);
+                    });
+
+                    event_registry.on("set-setting-result", event => clearTimeout(timeouts[event.setting]));
+                }
+            }
+
+            event_registry.on("audio-initialized", () => {
+                event_registry.fire("query-settings");
+                event_registry.fire("query-devices", { refresh_list: false });
             });
         }
-
-        update_profiles(undefined);
-
-        modal.close_listener.push(() => {
-            if(profiles.requires_save())
-                profiles.save();
-        });
-
-        return update_profiles;
     }
 
     function settings_identity_forum(container: JQuery, modal: Modal, update_profiles: () => any) {

@@ -140,6 +140,11 @@ class StaticSettings extends SettingsBase {
 }
 
 class Settings extends StaticSettings {
+    static readonly KEY_USER_IS_NEW: SettingsKey<boolean> = {
+        key: 'user_is_new_user',
+        default_value: true
+    };
+
     static readonly KEY_DISABLE_COSMETIC_SLOWDOWN: SettingsKey<boolean> = {
         key: 'disable_cosmetic_slowdown',
         description: 'Disable the cosmetic slowdows in some processes, like icon upload.'

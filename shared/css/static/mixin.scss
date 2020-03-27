@@ -70,6 +70,7 @@
 	& {
 		/* for moz */
 		scrollbar-color: #353535 #555;
+		scrollbarWidth: .5em;
 	}
 
 	&::-webkit-scrollbar-track {

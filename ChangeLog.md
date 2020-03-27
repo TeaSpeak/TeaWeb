@@ -1,4 +1,7 @@
 # Changelog:
+* **21.03.20**
+    - Fixed identity import throwing an "btoa" error
+    
 * **19.03.20**
     - Using proper icons for the client info
     - Added an image preview overlay

@@ -14,7 +14,7 @@ namespace permissions {
         PermissionType.B_SERVERQUERY_LOGIN,
 
         //Not sensefull to assign virtual server permission to channel groups
-        ...Object.keys(PermissionType).filter(e => e.toLowerCase().startsWith("b_virtualserver")).map(e => PermissionType[e]),
+        ...Object.keys(PermissionType).filter(e => e.toLowerCase().startsWith("b_virtualserver") && e.toLowerCase() === "b_virtualserver_channel_permission_list").map(e => PermissionType[e]),
 
         //Not sensefull to require some playlist permissions
         ...Object.keys(PermissionType).filter(e => e.toLowerCase().startsWith("i_playlist")).map(e => PermissionType[e]),

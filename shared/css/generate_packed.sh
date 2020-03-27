@@ -35,6 +35,7 @@ files=(
     "css/static/modal-group-assignment.css"
     "css/static/modal-icons.css"
     "css/static/modal-identity.css"
+    "css/static/modal-newcomer.css"
     "css/static/modal-invite.css"
     "css/static/modal-keyselect.css"
     "css/static/modal-permissions.css"

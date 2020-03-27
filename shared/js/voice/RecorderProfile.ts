@@ -197,13 +197,16 @@ class RecorderProfile {
     }
 
     get_vad_type() { return this.config.vad_type; }
-    set_vad_type(type: VadType) {
+    set_vad_type(type: VadType) : boolean {
         if(this.config.vad_type === type)
-            return;
+            return true;
+        if(["push_to_talk", "threshold", "active"].findIndex(e => e === type) == -1)
+            return false;
 
         this.config.vad_type = type;
         this.reinitialize_filter();
         this.save();
+        return true;
     }
 
     get_vad_threshold() { return parseInt(this.config.vad_threshold.threshold as any); } /* for some reason it might be a string... */
