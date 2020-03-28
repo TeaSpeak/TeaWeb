@@ -1,3 +1,5 @@
+import {log, LogCategory} from "shared-app/log";
+
 namespace audio.player {
     let _globalContext: AudioContext;
     let _global_destination: GainNode;

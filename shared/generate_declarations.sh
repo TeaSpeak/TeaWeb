@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
 BASEDIR=$(dirname "$0")
-cd "$BASEDIR"
+cd "$BASEDIR" || { echo "Failed to enter script base dir"; exit 1; }
 source ../scripts/resolve_commands.sh
 
 function generate_declaration() {
     echo "Generating declarations for project $1 ($2)"
 
-    if [[ -e ${2} ]]; then
-        rm ${2}
-        if [[ $? -ne 0 ]]; then
-            echo "Failed to remove old declaration file ($2)!"
+    if [[ -e "${2}" ]]; then
+        rm "${2}"; _exit_code=$?
+        if [[ $_exit_code -ne 0 ]]; then
+            echo "Failed to remove old declaration file ($2): $_exit_code!"
             echo "This could be critical later!"
         fi
     fi
 
-    npm run dtsgen -- --config $(pwd)/tsconfig/$1 -v
+    npm run dtsgen -- --config "$(pwd)/tsconfig/$1" -v
     if [[ ! -e $2 ]]; then
         echo "Failed to generate definitions"
         exit 1

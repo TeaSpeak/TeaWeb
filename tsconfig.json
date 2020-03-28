@@ -6,7 +6,11 @@
     "sourceMap": true,
     "lib": ["es6", "dom", "dom.iterable"],
     "removeComments": true, /* we dont really need them within the target files */
-    "jsx": "react"
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["shared/declarations/*"]
+    }
   },
   "exclude": [
     "node_modules",
