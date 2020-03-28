@@ -24,6 +24,20 @@ function has_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersArra
 function append_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersArray | undefined, target: T) : ts.ModifiersArray {
     if(has_modifier(modifiers, target)) return modifiers;
 
+    const sort_oder: {[key: number]:number} = {};
+    sort_oder[SyntaxKind.AbstractKeyword]   = 20;
+    sort_oder[SyntaxKind.AsyncKeyword]      = 20;
+    sort_oder[SyntaxKind.ConstKeyword]      = 20;
+    sort_oder[SyntaxKind.DeclareKeyword]    = 20;
+    sort_oder[SyntaxKind.DefaultKeyword]    = 20;
+    sort_oder[SyntaxKind.ExportKeyword]     = 10;
+    sort_oder[SyntaxKind.PublicKeyword]     = 30;
+    sort_oder[SyntaxKind.PrivateKeyword]    = 30;
+    sort_oder[SyntaxKind.ProtectedKeyword]  = 30;
+    sort_oder[SyntaxKind.ReadonlyKeyword]   = 30;
+    sort_oder[SyntaxKind.StaticKeyword]     = 30;
+
+    const comparator = (a: ts.Modifier, b: ts.Modifier) => sort_oder[a.kind] - sort_oder[b.kind];
     return ts.createNodeArray(
         [ts.createModifier(target as number), ...(modifiers || [])].map((e, index, array) => {
             const range = ts.getCommentRange(e);
@@ -37,7 +51,7 @@ function append_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersA
             else
                 console.warn("Dropping comment on node because first node already has a comment");
             return e;
-        }),
+        }).sort(comparator),
         (modifiers || {hasTrailingComma: false}).hasTrailingComma
     );
 }
