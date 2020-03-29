@@ -1,8 +1,6 @@
 //Used by CertAccept popup
 
-import {settings} from "./settings";
-
-export enum LogCategory {
+enum LogCategory {
     CHANNEL,
     CHANNEL_PROPERTIES, /* separating channel and channel properties because on channel init logging is a big bottleneck */
     CLIENT,
@@ -21,7 +19,7 @@ export enum LogCategory {
     DNS
 }
 
-export namespace log {
+namespace log {
     export enum LogType {
         TRACE,
         DEBUG,

@@ -1,8 +1,4 @@
-import {guid} from "./crypto/uid";
-import {PlaylistSong} from "./connection/ServerConnectionDeclaration";
-import {MusicClientEntry, SongInfo} from "./channel-tree/client";
-
-export namespace events {
+namespace events {
     export interface EventConvert<All> {
         as<T extends keyof All>() : All[T];
     }

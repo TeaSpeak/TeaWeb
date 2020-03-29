@@ -1,4 +1,4 @@
-export namespace audio {
+namespace audio {
     export namespace recorder {
         export interface InputDevice {
             unique_id: string;

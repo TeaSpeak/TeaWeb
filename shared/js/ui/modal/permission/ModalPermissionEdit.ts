@@ -1,8 +1,12 @@
+/// <reference path="../../../ui/elements/modal.ts" />
+/// <reference path="../../../ConnectionHandler.ts" />
+/// <reference path="../../../proto.ts" />
+
 interface JQuery<TElement = HTMLElement> {
     dropdown: any;
 }
 
-export namespace Modals {
+namespace Modals {
     export namespace PermissionEditor {
         export interface PermissionEntry {
             tag: JQuery;

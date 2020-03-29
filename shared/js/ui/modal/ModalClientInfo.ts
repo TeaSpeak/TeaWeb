@@ -1,4 +1,4 @@
-export namespace Modals {
+namespace Modals {
     type InfoUpdateCallback = (info: ClientConnectionInfo) => any;
     export function openClientInfo(client: ClientEntry) {
         let modal: Modal;

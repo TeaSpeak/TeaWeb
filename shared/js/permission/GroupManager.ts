@@ -1,24 +1,17 @@
 /// <reference path="../connection/ConnectionBase.ts" />
 
-import {LaterPromise} from "../utils/helpers";
-import {PermissionManager, PermissionValue} from "./PermissionManager";
-import {AbstractCommandHandler, ServerCommand} from "../connection/ConnectionBase";
-import {ConnectionHandler} from "../ConnectionHandler";
-import {log, LogCategory} from "../log";
-import {CommandResult} from "../connection/ServerConnectionDeclaration";
-
-export enum GroupType {
+enum GroupType {
     QUERY,
     TEMPLATE,
     NORMAL
 }
 
-export enum GroupTarget {
+enum GroupTarget {
     SERVER,
     CHANNEL
 }
 
-export class GroupProperties {
+class GroupProperties {
     iconid: number = 0;
 
     sortid: number = 0;
@@ -26,12 +19,12 @@ export class GroupProperties {
     namemode: number = 0;
 }
 
-export class GroupPermissionRequest {
+class GroupPermissionRequest {
     group_id: number;
     promise: LaterPromise<PermissionValue[]>;
 }
 
-export class Group {
+class Group {
     properties: GroupProperties = new GroupProperties();
 
     readonly handle: GroupManager;
@@ -70,7 +63,7 @@ export class Group {
     }
 }
 
-export class GroupManager extends AbstractCommandHandler {
+class GroupManager extends connection.AbstractCommandHandler {
     readonly handle: ConnectionHandler;
 
     serverGroups: Group[] = [];
@@ -90,7 +83,7 @@ export class GroupManager extends AbstractCommandHandler {
         this.channelGroups = undefined;
     }
 
-    handle_command(command: ServerCommand): boolean {
+    handle_command(command: connection.ServerCommand): boolean {
         switch (command.command) {
             case "notifyservergrouplist":
             case "notifychannelgrouplist":

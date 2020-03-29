@@ -1,4 +1,6 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+
+namespace Modals {
     export function createChannelModal(connection: ConnectionHandler, channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (properties?: ChannelProperties, permissions?: PermissionValue[]) => any) {
         let properties: ChannelProperties = { } as ChannelProperties; //The changes properties
         const modal = createModal({

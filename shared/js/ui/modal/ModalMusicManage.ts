@@ -1,4 +1,8 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../proto.ts" />
+
+namespace Modals {
     export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry) {
         const ev_registry = new events.Registry<events.modal.music_manage>();
         ev_registry.enable_debug("music-manage");

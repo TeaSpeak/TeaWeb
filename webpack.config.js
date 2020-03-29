@@ -51,6 +51,10 @@ module.exports = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', ".scss"],
+        alias: {
+            "tc-shared": path.resolve(__dirname, "shared/js"),
+            "tc-backend": path.resolve(__dirname, "web/js")
+        }
     },
     output: {
         filename: 'bundle.js',

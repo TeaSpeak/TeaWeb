@@ -1,11 +1,8 @@
 /// <reference path="channel.ts" />
-/// <reference path="../ui/modal/ModalChangeVolume.ts" />
-/// <reference path="../ui/client_move.ts" />
+/// <reference path="modal/ModalChangeVolume.ts" />
+/// <reference path="client_move.ts" />
 
-import {ChannelEntry} from "./channel";
-import {ChannelTree} from "./view";
-
-export enum ClientType {
+enum ClientType {
     CLIENT_VOICE,
     CLIENT_QUERY,
     CLIENT_INTERNAL,
@@ -14,7 +11,7 @@ export enum ClientType {
     CLIENT_UNDEFINED
 }
 
-export class ClientProperties {
+class ClientProperties {
     client_type: ClientType = ClientType.CLIENT_VOICE; //TeamSpeaks type
     client_type_exact: ClientType = ClientType.CLIENT_VOICE;
 
@@ -60,7 +57,7 @@ export class ClientProperties {
     client_is_priority_speaker: boolean = false;
 }
 
-export class ClientConnectionInfo {
+class ClientConnectionInfo {
     connection_bandwidth_received_last_minute_control: number = -1;
     connection_bandwidth_received_last_minute_keepalive: number = -1;
     connection_bandwidth_received_last_minute_speech: number = -1;
@@ -112,7 +109,7 @@ export class ClientConnectionInfo {
     connection_client_port: number = -1;
 }
 
-export class ClientEntry {
+class ClientEntry {
     readonly events: events.Registry<events.channel_tree.client>;
 
     protected _clientId: number;
@@ -1126,7 +1123,7 @@ export class ClientEntry {
     }
 }
 
-export class LocalClientEntry extends ClientEntry {
+class LocalClientEntry extends ClientEntry {
     handle: ConnectionHandler;
 
     private renaming: boolean;
@@ -1235,7 +1232,7 @@ export class LocalClientEntry extends ClientEntry {
     }
 }
 
-export class MusicClientProperties extends ClientProperties {
+class MusicClientProperties extends ClientProperties {
     player_state: number = 0;
     player_volume: number = 0;
 
@@ -1267,7 +1264,7 @@ export class MusicClientProperties extends ClientProperties {
     }
  */
 
-export class SongInfo {
+class SongInfo {
     song_id: number = 0;
     song_url: string = "";
     song_invoker: number = 0;
@@ -1280,7 +1277,7 @@ export class SongInfo {
     song_length: number = 0;
 }
 
-export class MusicClientPlayerInfo extends SongInfo {
+class MusicClientPlayerInfo extends SongInfo {
     bot_id: number = 0;
     player_state: number = 0;
 
@@ -1293,7 +1290,7 @@ export class MusicClientPlayerInfo extends SongInfo {
     player_description: string = "";
 }
 
-export class MusicClientEntry extends ClientEntry {
+class MusicClientEntry extends ClientEntry {
     private _info_promise: Promise<MusicClientPlayerInfo>;
     private _info_promise_age: number = 0;
     private _info_promise_resolve: any;

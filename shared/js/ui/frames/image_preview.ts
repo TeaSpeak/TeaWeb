@@ -1,4 +1,4 @@
-export namespace image_preview {
+namespace image_preview {
     let preview_overlay: JQuery<HTMLDivElement>;
     let container_image: JQuery<HTMLDivElement>;
     let button_open_in_browser: JQuery;

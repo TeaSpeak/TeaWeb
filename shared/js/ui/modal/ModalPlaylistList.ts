@@ -1,4 +1,9 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../i18n/localize.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../proto.ts" />
+
+namespace Modals {
     export function spawnPlaylistManage(client: ConnectionHandler) {
         {
             createErrorModal(tr("Not implemented"), tr("Playlist management hasn't yet been implemented")).open();

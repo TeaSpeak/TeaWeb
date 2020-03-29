@@ -1,4 +1,8 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../proto.ts" />
+
+namespace Modals {
     let global_modal: PokeModal;
 
     interface ServerEntry {

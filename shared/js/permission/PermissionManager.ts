@@ -2,14 +2,7 @@
 /// <reference path="../connection/ConnectionBase.ts" />
 /// <reference path="../i18n/localize.ts" />
 
-import {ConnectionHandler} from "../ConnectionHandler";
-import {log, LogCategory} from "../log";
-import {LaterPromise} from "../utils/helpers";
-import {AbstractCommandHandler, ServerCommand} from "../connection/ConnectionBase";
-import LogType = log.LogType;
-import {CommandResult, ErrorID} from "../connection/ServerConnectionDeclaration";
-
-export enum PermissionType {
+enum PermissionType {
     B_SERVERINSTANCE_HELP_VIEW = "b_serverinstance_help_view",
     B_SERVERINSTANCE_VERSION_VIEW = "b_serverinstance_version_view",
     B_SERVERINSTANCE_INFO_VIEW = "b_serverinstance_info_view",
@@ -359,7 +352,7 @@ export enum PermissionType {
     I_FT_QUOTA_MB_UPLOAD_PER_CLIENT = "i_ft_quota_mb_upload_per_client"
 }
 
-export class PermissionInfo {
+class PermissionInfo {
     name: string;
     id: number;
     description: string;
@@ -370,21 +363,21 @@ export class PermissionInfo {
     }
 }
 
-export class PermissionGroup {
+class PermissionGroup {
     begin: number;
     end: number;
     deep: number;
     name: string;
 }
 
-export class GroupedPermissions {
+class GroupedPermissions {
     group: PermissionGroup;
     permissions: PermissionInfo[];
     children: GroupedPermissions[];
     parent: GroupedPermissions;
 }
 
-export class PermissionValue {
+class PermissionValue {
     readonly type: PermissionInfo;
     value: number;
     flag_skip: boolean;
@@ -418,13 +411,13 @@ export class PermissionValue {
     }
 }
 
-export class NeededPermissionValue extends PermissionValue {
+class NeededPermissionValue extends PermissionValue {
     constructor(type, value) {
         super(type, value);
     }
 }
 
-export namespace permissions {
+namespace permissions {
     export type PermissionRequestKeys = {
         client_id?: number;
         channel_id?: number;
@@ -480,13 +473,13 @@ export namespace permissions {
     }
 }
 
-export type RequestLists =
+type RequestLists =
     "requests_channel_permissions" |
     "requests_client_permissions" |
     "requests_client_channel_permissions" |
     "requests_playlist_permissions" |
     "requests_playlist_client_permissions";
-export class PermissionManager extends AbstractCommandHandler {
+class PermissionManager extends connection.AbstractCommandHandler {
     readonly handle: ConnectionHandler;
 
     permissionList: PermissionInfo[] = [];
@@ -610,7 +603,7 @@ export class PermissionManager extends AbstractCommandHandler {
         this._cacheNeededPermissions = undefined;
     }
 
-    handle_command(command: ServerCommand): boolean {
+    handle_command(command: connection.ServerCommand): boolean {
         switch (command.command) {
             case "notifyclientneededpermissions":
                 this.onNeededPermissions(command.arguments);

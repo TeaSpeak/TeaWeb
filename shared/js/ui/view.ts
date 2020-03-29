@@ -4,12 +4,12 @@
 /// <reference path="client.ts" />
 /// <reference path="server.ts" />
 /// <reference path="../bookmarks.ts" />
-/// <reference path="../ui/elements/context_menu.ts" />
-/// <reference path="../ui/modal/ModalCreateChannel.ts" />
+/// <reference path="elements/context_menu.ts" />
+/// <reference path="modal/ModalCreateChannel.ts" />
 /// <reference path="../../backend/ppt.d.ts" />
 
 
-export class ChannelTree {
+class ChannelTree {
     client: ConnectionHandler;
     server: ServerEntry;
 

@@ -1,6 +1,6 @@
-import {PermissionType} from "../../../permission/PermissionManager";
+/// <reference path="../../../permission/PermissionManager.ts" />
 
-export namespace permissions {
+namespace permissions {
     export const senseless_server_group_permissions: PermissionType[] = [
         PermissionType.B_CHANNEL_GROUP_INHERITANCE_END
     ];

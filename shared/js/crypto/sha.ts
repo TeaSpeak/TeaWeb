@@ -10,7 +10,7 @@ interface Window {
 }
 */
 
-export namespace sha {
+namespace sha {
     /*
      * [js-sha1]{@link https://github.com/emn178/js-sha1}
      *

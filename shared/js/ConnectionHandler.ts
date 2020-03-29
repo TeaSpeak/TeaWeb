@@ -1,6 +1,6 @@
 /// <reference path="log.ts" />
 /// <reference path="proto.ts" />
-/// <reference path="channel-tree/view.ts" />
+/// <reference path="ui/view.ts" />
 /// <reference path="settings.ts" />
 /// <reference path="FileManager.ts" />
 /// <reference path="permission/PermissionManager.ts" />
@@ -8,17 +8,7 @@
 /// <reference path="ui/frames/ControlBar.ts" />
 /// <reference path="connection/ConnectionBase.ts" />
 
-import {ChannelTree} from "./channel-tree/view";
-import {LocalClientEntry} from "./channel-tree/client";
-import {ServerAddress} from "./channel-tree/server";
-import {ChannelEntry} from "./channel-tree/channel";
-import {AbstractServerConnection} from "./connection/ConnectionBase";
-import {PermissionManager} from "./permission/PermissionManager";
-import {GroupManager} from "./permission/GroupManager";
-import {ServerSettings} from "./settings";
-import {Hostbanner} from "./ui/frames/hostbanner";
-
-export enum DisconnectReason {
+enum DisconnectReason {
     HANDLER_DESTROYED,
     REQUESTED,
     DNS_FAILED,
@@ -38,7 +28,7 @@ export enum DisconnectReason {
     UNKNOWN
 }
 
-export enum ConnectionState {
+enum ConnectionState {
     UNCONNECTED,
     CONNECTING,
     INITIALISING,
@@ -46,7 +36,7 @@ export enum ConnectionState {
     DISCONNECTING
 }
 
-export enum ViewReasonId {
+enum ViewReasonId {
     VREASON_USER_ACTION = 0,
     VREASON_MOVED = 1,
     VREASON_SYSTEM = 2,
@@ -61,7 +51,7 @@ export enum ViewReasonId {
     VREASON_SERVER_SHUTDOWN = 11
 }
 
-export interface VoiceStatus {
+interface VoiceStatus {
     input_hardware: boolean;
     input_muted: boolean;
     output_muted: boolean;
@@ -78,7 +68,7 @@ export interface VoiceStatus {
     queries_visible: boolean;
 }
 
-export interface ConnectParameters {
+interface ConnectParameters {
     nickname?: string;
     channel?: {
         target: string | number;
@@ -89,10 +79,10 @@ export interface ConnectParameters {
     auto_reconnect_attempt?: boolean;
 }
 
-export class ConnectionHandler {
+class ConnectionHandler {
     channelTree: ChannelTree;
 
-    serverConnection: AbstractServerConnection;
+    serverConnection: connection.AbstractServerConnection;
 
     fileManager: FileManager;
 

@@ -9,7 +9,9 @@
     "jsx": "react",
     "baseUrl": ".",
     "paths": {
-      "*": ["shared/declarations/*"]
+      "*": ["shared/declarations/*"],
+      "tc-shared/*": ["shared/js/*"],
+      "tc-backend/*": ["web/js/*"]
     }
   },
   "exclude": [

@@ -1,11 +1,5 @@
 /* the bar on the right with the chats (Channel & Client) */
-import {ChannelEntry} from "../../channel-tree/channel";
-import {Modals} from "../modal/ModalMusicManage";
-import {MessageHelper} from "./chat";
-import {ServerEntry} from "../../channel-tree/server";
-import {ConnectionHandler} from "../../ConnectionHandler";
-
-export namespace chat {
+namespace chat {
     declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
     declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 

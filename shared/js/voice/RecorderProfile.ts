@@ -1,7 +1,7 @@
-import {ConnectionHandler} from "../ConnectionHandler";
+/// <reference path="../PPTListener.ts" />
 
-export type VadType = "threshold" | "push_to_talk" | "active";
-export interface RecorderProfileConfig {
+type VadType = "threshold" | "push_to_talk" | "active";
+interface RecorderProfileConfig {
     version: number;
 
     /* devices unique id */
@@ -25,8 +25,8 @@ export interface RecorderProfileConfig {
     }
 }
 
-export let default_recorder: RecorderProfile; /* needs initialize */
-export class RecorderProfile {
+let default_recorder: RecorderProfile; /* needs initialize */
+class RecorderProfile {
     readonly name;
     readonly volatile; /* not saving profile */
 

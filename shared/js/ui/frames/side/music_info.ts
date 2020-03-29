@@ -1,7 +1,6 @@
-import {MusicClientEntry} from "../../../channel-tree/client";
-import {image_preview} from "../image_preview";
+namespace chat {
+    import PlayerState = connection.voice.PlayerState;
 
-export namespace chat {
     declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
     declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 

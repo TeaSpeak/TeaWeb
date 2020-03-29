@@ -1,4 +1,8 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../proto.ts" />
+
+namespace Modals {
     const avatar_to_uid = (id: string) => {
         const buffer = new Uint8Array(id.length / 2);
         for(let index = 0; index < id.length; index += 2) {

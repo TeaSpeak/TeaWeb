@@ -1,4 +1,8 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../proto.ts" />
+
+namespace Modals {
     let modal: Modal;
     export function spawnChangeLatency(client: ClientEntry, current: connection.voice.LatencySettings, reset: () => connection.voice.LatencySettings, apply: (settings: connection.voice.LatencySettings) => any, callback_flush?: () => any) {
         if(modal) modal.close();

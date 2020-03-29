@@ -1,4 +1,4 @@
-export namespace contextmenu {
+namespace contextmenu {
     export interface MenuEntry {
         callback?: () => void;
         type: MenuEntryType;

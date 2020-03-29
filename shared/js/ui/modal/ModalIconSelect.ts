@@ -1,4 +1,8 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../proto.ts" />
+
+namespace Modals {
     export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
         selected_icon = selected_icon || 0;
         let allow_manage = client.permissions.neededPermission(PermissionType.B_ICON_MANAGE).granted(1);

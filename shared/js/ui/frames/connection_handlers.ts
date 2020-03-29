@@ -1,11 +1,7 @@
-import {ConnectionHandler, DisconnectReason} from "../../ConnectionHandler";
-import {Settings, settings} from "../../settings";
-import {control_bar} from "./ControlBar";
-import {top_menu} from "./MenuBar";
 
-export let server_connections: ServerConnectionManager;
+let server_connections: ServerConnectionManager;
 
-export class ServerConnectionManager {
+class ServerConnectionManager {
     private connection_handlers: ConnectionHandler[] = [];
     private active_handler: ConnectionHandler | undefined;
 

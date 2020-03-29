@@ -1,4 +1,4 @@
-export namespace hex {
+namespace hex {
     export function encode(buffer) {
         let hexCodes = [];
         let view = new DataView(buffer);

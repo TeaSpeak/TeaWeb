@@ -1,18 +1,19 @@
+/// <reference path="ui/frames/chat.ts" />
+/// <reference path="ui/modal/ModalConnect.ts" />
+/// <reference path="ui/modal/ModalCreateChannel.ts" />
+/// <reference path="ui/modal/ModalBanClient.ts" />
+/// <reference path="ui/modal/ModalYesNo.ts" />
+/// <reference path="ui/modal/ModalBanList.ts" />
+/// <reference path="settings.ts" />
+/// <reference path="log.ts" />
+/// <reference path="PPTListener.ts" />
+
 import spawnYesNo = Modals.spawnYesNo;
-import {ConnectionHandler} from "./ConnectionHandler";
-import {bipc} from "./BrowserIPC";
-import {log, LogCategory} from "./log";
-import {profiles} from "./profiles/ConnectionProfile";
-import {Modals} from "./ui/modal/ModalConnect";
-import {settings, Settings} from "./settings";
-import {i18n} from "./i18n/localize";
-import {createInfoModal} from "./ui/elements/modal";
-import {MessageHelper} from "./ui/frames/chat";
 
-export const js_render = window.jsrender || $;
-export const native_client = window.require !== undefined;
+const js_render = window.jsrender || $;
+const native_client = window.require !== undefined;
 
-export function getUserMediaFunctionPromise() : (constraints: MediaStreamConstraints) => Promise<MediaStream> {
+function getUserMediaFunctionPromise() : (constraints: MediaStreamConstraints) => Promise<MediaStream> {
     if('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices)
         return constraints => navigator.mediaDevices.getUserMedia(constraints);
 
@@ -23,12 +24,11 @@ export function getUserMediaFunctionPromise() : (constraints: MediaStreamConstra
     return constraints => new Promise<MediaStream>((resolve, reject) => _callbacked_function(constraints, resolve, reject));
 }
 
-export interface Window {
+interface Window {
     open_connected_question: () => Promise<boolean>;
 }
 
-export declare const nodeRequire: typeof require;
-export function setup_close() {
+function setup_close() {
     window.onbeforeunload = event => {
         if(profiles.requires_save())
             profiles.save();
@@ -50,7 +50,7 @@ export function setup_close() {
                     }));
 
                     const exit = () => {
-                        const {remote} = nodeRequire('electron');
+                        const {remote} = require('electron');
                         remote.getCurrentWindow().close();
                     };
 
@@ -80,8 +80,8 @@ export function setup_close() {
     };
 }
 
-export declare function moment(...arguments) : any;
-export function setup_jsrender() : boolean {
+declare function moment(...arguments) : any;
+function setup_jsrender() : boolean {
     if(!js_render) {
         loader.critical_error("Missing jsrender extension!");
         return false;
@@ -115,7 +115,7 @@ export function setup_jsrender() : boolean {
     return true;
 }
 
-export async function initialize() {
+async function initialize() {
     Settings.initialize();
 
     try {
@@ -129,7 +129,7 @@ export async function initialize() {
     bipc.setup();
 }
 
-export async function initialize_app() {
+async function initialize_app() {
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag({
             multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
@@ -180,7 +180,7 @@ export async function initialize_app() {
     setup_close();
 }
 
-export function str2ab8(str) {
+function str2ab8(str) {
     const buf = new ArrayBuffer(str.length);
     const bufView = new Uint8Array(buf);
     for (let i = 0, strLen = str.length; i < strLen; i++) {
@@ -190,7 +190,7 @@ export function str2ab8(str) {
 }
 
 /* FIXME Dont use atob, because it sucks for non UTF-8 tings */
-export function arrayBufferBase64(base64: string) {
+function arrayBufferBase64(base64: string) {
     base64 = atob(base64);
     const buf = new ArrayBuffer(base64.length);
     const bufView = new Uint8Array(buf);
@@ -200,7 +200,7 @@ export function arrayBufferBase64(base64: string) {
     return buf;
 }
 
-export function base64_encode_ab(source: ArrayBufferLike) {
+function base64_encode_ab(source: ArrayBufferLike) {
     const encodings = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let base64      = "";
 

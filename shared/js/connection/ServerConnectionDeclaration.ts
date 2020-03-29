@@ -1,6 +1,4 @@
-import {LaterPromise} from "../utils/helpers";
-
-export enum ErrorID {
+enum ErrorID {
     NOT_IMPLEMENTED = 0x2,
     COMMAND_NOT_FOUND = 0x100,
 
@@ -17,7 +15,7 @@ export enum ErrorID {
     CONVERSATION_IS_PRIVATE = 0x2202
 }
 
-export class CommandResult {
+class CommandResult {
     success: boolean;
     id: number;
     message: string;
@@ -37,39 +35,39 @@ export class CommandResult {
     }
 }
 
-export interface ClientNameInfo {
+interface ClientNameInfo {
     //cluid=tYzKUryn\/\/Y8VBMf8PHUT6B1eiE= name=Exp clname=Exp cldbid=9
     client_unique_id: string;
     client_nickname: string;
     client_database_id: number;
 }
 
-export interface ClientNameFromUid {
+interface ClientNameFromUid {
     promise: LaterPromise<ClientNameInfo[]>,
     keys: string[],
     response: ClientNameInfo[]
 }
 
-export interface ServerGroupClient {
+interface ServerGroupClient {
     client_nickname: string;
     client_unique_identifier: string;
     client_database_id: number;
 }
 
-export interface QueryListEntry {
+interface QueryListEntry {
     username: string;
     unique_id: string;
     bounded_server: number;
 }
 
-export interface QueryList {
+interface QueryList {
     flag_own: boolean;
     flag_all: boolean;
 
     queries: QueryListEntry[];
 }
 
-export interface Playlist {
+interface Playlist {
     playlist_id: number;
     playlist_bot_id: number;
     playlist_title: string;
@@ -85,7 +83,7 @@ export interface Playlist {
     needed_power_song_remove: number;
 }
 
-export interface PlaylistInfo {
+interface PlaylistInfo {
     playlist_id: number,
     playlist_title: string,
     playlist_description: string,
@@ -102,7 +100,7 @@ export interface PlaylistInfo {
     playlist_max_songs: number
 }
 
-export interface PlaylistSong {
+interface PlaylistSong {
     song_id: number;
     song_previous_song_id: number;
     song_invoker: string;

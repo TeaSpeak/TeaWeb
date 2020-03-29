@@ -1,4 +1,4 @@
-export namespace htmltags {
+namespace htmltags {
     let mouse_coordinates: {x: number, y: number} = {x: 0, y: 0};
 
     function initialize() {

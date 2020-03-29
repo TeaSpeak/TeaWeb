@@ -1,4 +1,4 @@
-export namespace dns {
+namespace dns {
     export interface AddressTarget {
         target_ip: string;
         target_port?: number;

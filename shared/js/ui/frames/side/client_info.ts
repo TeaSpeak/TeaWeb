@@ -1,11 +1,4 @@
-import {ClientEntry, LocalClientEntry} from "../../../channel-tree/client";
-import {Modals} from "../../modal/ModalClientInfo";
-import {htmltags} from "../../htmltags";
-import {image_preview} from "../image_preview";
-import {i18n} from "../../../i18n/country";
-import {GroupManager} from "../../../permission/GroupManager";
-
-export namespace chat {
+namespace chat {
     declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
     declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 

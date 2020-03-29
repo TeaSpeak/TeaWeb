@@ -1,4 +1,4 @@
-export namespace Modals {
+namespace Modals {
     export enum RequestInfoStatus {
         SUCCESS,
         UNKNOWN,

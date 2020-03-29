@@ -1,4 +1,8 @@
-export namespace Modals {
+/// <reference path="../../ui/elements/modal.ts" />
+/// <reference path="../../ConnectionHandler.ts" />
+/// <reference path="../../proto.ts" />
+
+namespace Modals {
     //TODO: Test if we could render this image and not only the browser by knowing the type.
     export function spawnAvatarUpload(callback_data: (data: ArrayBuffer | undefined | null) => any) {
         const modal = createModal({

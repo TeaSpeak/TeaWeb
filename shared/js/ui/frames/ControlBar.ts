@@ -13,27 +13,12 @@
         client_away_message Value: ''
  */
 
-import {ConnectionHandler, DisconnectReason} from "../../ConnectionHandler";
-import {top_menu} from "./MenuBar";
-import {Settings, settings} from "../../settings";
-import {createErrorModal, createInfoModal, createInputModal} from "../elements/modal";
-import {default_recorder} from "../../voice/RecorderProfile";
-import {sound, Sound} from "../../sound/Sounds";
-import {Modals} from "../modal/ModalConnect";
-import {Modal as ModalsS} from "../modal/ModalSettings";
-import {log} from "./server_log";
-import {MessageHelper} from "./chat";
-import {CommandResult} from "../../connection/ServerConnectionDeclaration";
-import {PermissionType} from "../../permission/PermissionManager";
-import {bookmarks} from "../../bookmarks";
-import {contextmenu} from "../elements/context_menu";
+let control_bar: ControlBar; /* global variable to access the control bar */
 
-export let control_bar: ControlBar; /* global variable to access the control bar */
-
-export type MicrophoneState = "disabled" | "muted" | "enabled";
-export type HeadphoneState = "muted" | "enabled";
-export type AwayState = "away-global" | "away" | "online";
-export class ControlBar {
+type MicrophoneState = "disabled" | "muted" | "enabled";
+type HeadphoneState = "muted" | "enabled";
+type AwayState = "away-global" | "away" | "online";
+class ControlBar {
     private _button_away_active: AwayState;
     private _button_microphone: MicrophoneState;
     private _button_speakers: HeadphoneState;
@@ -436,7 +421,7 @@ export class ControlBar {
     }
 
     private on_open_settings() {
-        ModalsS.spawnSettingsModal();
+        Modals.spawnSettingsModal();
     }
 
     private on_open_connect() {

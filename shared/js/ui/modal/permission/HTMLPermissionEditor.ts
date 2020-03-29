@@ -1,4 +1,6 @@
-export namespace pe {
+/// <reference path="./ModalPermissionEdit.ts" /> /* first needs the AbstractPermissionEdit */
+
+namespace pe {
     class HTMLPermission {
         readonly handle: HTMLPermissionEditor;
         readonly group: HTMLPermissionGroup;
@@ -121,7 +123,7 @@ export namespace pe {
                 this._tag_value_input.on('change', event => {
                      const str_value =  this._tag_value_input.val() as string;
                      const value = parseInt(str_value);
-                     if(!HTMLPermission.number_filter_re.test(str_value) || value == NaN) {
+                     if(!HTMLPermission.number_filter_re.test(str_value) || isNaN(value)) {
                          console.warn(tr("Failed to parse given permission value string: %s"), this._tag_value_input.val());
                          this._reset_value();
                          return;

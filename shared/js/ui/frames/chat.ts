@@ -1,6 +1,4 @@
-import {log, LogCategory} from "../../log";
-
-export enum ChatType {
+enum ChatType {
     GENERAL,
     SERVER,
     CHANNEL,
@@ -8,7 +6,7 @@ export enum ChatType {
 }
 
 declare const xbbcode: any;
-export namespace MessageHelper {
+namespace MessageHelper {
     export function htmlEscape(message: string) : string[] {
         const div = document.createElement('div');
         div.innerText = message;
