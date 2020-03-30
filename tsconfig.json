@@ -11,7 +11,8 @@
     "paths": {
       "*": ["shared/declarations/*"],
       "tc-shared/*": ["shared/js/*"],
-      "tc-backend/*": ["web/js/*"]
+      "tc-backend/*": ["shared/backend.d/*"],
+      "tc-loader": ["loader/exports/loader.d.ts"]
     }
   },
   "exclude": [

@@ -1,7 +1,13 @@
+import {ConnectionHandler, DisconnectReason} from "tc-shared/ConnectionHandler";
+import {Settings, settings} from "tc-shared/settings";
+import {control_bar} from "tc-shared/ui/frames/ControlBar";
+import * as top_menu from "./MenuBar";
 
-let server_connections: ServerConnectionManager;
-
-class ServerConnectionManager {
+export let server_connections: ServerConnectionManager;
+export function initialize(manager: ServerConnectionManager) {
+    server_connections = manager;
+}
+export class ServerConnectionManager {
     private connection_handlers: ConnectionHandler[] = [];
     private active_handler: ConnectionHandler | undefined;
 

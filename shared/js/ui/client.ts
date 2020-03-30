@@ -1,8 +1,34 @@
-/// <reference path="channel.ts" />
-/// <reference path="modal/ModalChangeVolume.ts" />
-/// <reference path="client_move.ts" />
+import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
+import {channel_tree, Registry} from "tc-shared/events";
+import {ChannelTree} from "tc-shared/ui/view";
+import * as log from "tc-shared/log";
+import {LogCategory, LogType} from "tc-shared/log";
+import {Settings, settings} from "tc-shared/settings";
+import {KeyCode, SpecialKey} from "tc-shared/PPTListener";
+import {Sound} from "tc-shared/sound/Sounds";
+import {Group, GroupManager, GroupTarget, GroupType} from "tc-shared/permission/GroupManager";
+import PermissionType from "tc-shared/permission/PermissionType";
+import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
+import * as htmltags from "tc-shared/ui/htmltags";
+import * as server_log from "tc-shared/ui/frames/server_log";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ChannelEntry} from "tc-shared/ui/channel";
+import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
+import {voice} from "tc-shared/connection/ConnectionBase";
+import VoiceClient = voice.VoiceClient;
+import {spawnPermissionEdit} from "tc-shared/ui/modal/permission/ModalPermissionEdit";
+import {createServerGroupAssignmentModal} from "tc-shared/ui/modal/ModalGroupAssignment";
+import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
+import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
+import {spawnChangeVolume} from "tc-shared/ui/modal/ModalChangeVolume";
+import {spawnChangeLatency} from "tc-shared/ui/modal/ModalChangeLatency";
+import {spawnPlaylistEdit} from "tc-shared/ui/modal/ModalPlaylistEdit";
+import {formatMessage} from "tc-shared/ui/frames/chat";
+import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
+import * as ppt from "tc-backend/ppt";
+import * as hex from "tc-shared/crypto/hex";
 
-enum ClientType {
+export enum ClientType {
     CLIENT_VOICE,
     CLIENT_QUERY,
     CLIENT_INTERNAL,
@@ -11,7 +37,7 @@ enum ClientType {
     CLIENT_UNDEFINED
 }
 
-class ClientProperties {
+export class ClientProperties {
     client_type: ClientType = ClientType.CLIENT_VOICE; //TeamSpeaks type
     client_type_exact: ClientType = ClientType.CLIENT_VOICE;
 
@@ -57,7 +83,7 @@ class ClientProperties {
     client_is_priority_speaker: boolean = false;
 }
 
-class ClientConnectionInfo {
+export class ClientConnectionInfo {
     connection_bandwidth_received_last_minute_control: number = -1;
     connection_bandwidth_received_last_minute_keepalive: number = -1;
     connection_bandwidth_received_last_minute_speech: number = -1;
@@ -109,8 +135,8 @@ class ClientConnectionInfo {
     connection_client_port: number = -1;
 }
 
-class ClientEntry {
-    readonly events: events.Registry<events.channel_tree.client>;
+export class ClientEntry {
+    readonly events: Registry<channel_tree.client>;
 
     protected _clientId: number;
     protected _channel: ChannelEntry;
@@ -121,7 +147,7 @@ class ClientEntry {
     protected _speaking: boolean;
     protected _listener_initialized: boolean;
 
-    protected _audio_handle: connection.voice.VoiceClient;
+    protected _audio_handle: VoiceClient;
     protected _audio_volume: number;
     protected _audio_muted: boolean;
 
@@ -136,7 +162,7 @@ class ClientEntry {
     channelTree: ChannelTree;
 
     constructor(clientId: number, clientName, properties: ClientProperties = new ClientProperties()) {
-        this.events = new events.Registry<events.channel_tree.client>();
+        this.events = new Registry<channel_tree.client>();
 
         this._properties = properties;
         this._properties.client_nickname = clientName;
@@ -181,7 +207,7 @@ class ClientEntry {
         this._channel = undefined;
     }
 
-    set_audio_handle(handle: connection.voice.VoiceClient) {
+    set_audio_handle(handle: VoiceClient) {
         if(this._audio_handle === handle)
             return;
 
@@ -200,7 +226,7 @@ class ClientEntry {
         handle.callback_stopped = () => this.speaking = false;
     }
 
-    get_audio_handle() : connection.voice.VoiceClient {
+    get_audio_handle() : VoiceClient {
         return this._audio_handle;
     }
 
@@ -285,7 +311,7 @@ class ClientEntry {
 
             let clients = this.channelTree.currently_selected as (ClientEntry | ClientEntry[]);
 
-            if(ppt.key_pressed(ppt.SpecialKey.SHIFT)) {
+            if(ppt.key_pressed(SpecialKey.SHIFT)) {
                 if(clients != this && !($.isArray(clients) && clients.indexOf(this) != -1))
                     clients = $.isArray(clients) ? [...clients, this] : [clients, this];
             } else {
@@ -418,20 +444,20 @@ class ClientEntry {
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-permission_client",
                     name: tr("Client permissions"),
-                    callback: () => Modals.spawnPermissionEdit(this.channelTree.client, "clp", {unique_id: this.clientUid()}).open()
+                    callback: () => spawnPermissionEdit(this.channelTree.client, "clp", {unique_id: this.clientUid()}).open()
                 },
                 {
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-permission_client",
                     name: tr("Client channel permissions"),
-                    callback: () => Modals.spawnPermissionEdit(this.channelTree.client, "clchp", {unique_id: this.clientUid(), channel_id: this._channel ? this._channel.channelId : undefined }).open()
+                    callback: () => spawnPermissionEdit(this.channelTree.client, "clchp", {unique_id: this.clientUid(), channel_id: this._channel ? this._channel.channelId : undefined }).open()
                 }
             ]
         }];
     }
 
     open_assignment_modal() {
-        Modals.createServerGroupAssignmentModal(this, (groups, flag) => {
+        createServerGroupAssignmentModal(this, (groups, flag) => {
             if(groups.length == 0) return Promise.resolve(true);
 
             if(groups.length == 1) {
@@ -490,7 +516,7 @@ class ClientEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-about",
                 name: tr("Show client info"),
-                callback: () => Modals.openClientInfo(this)
+                callback: () => openClientInfo(this)
             },
             contextmenu.Entry.HR(),
             {
@@ -582,7 +608,7 @@ class ClientEntry {
                 name: tr("Ban client"),
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
-                    Modals.spawnBanClient(this.channelTree.client, [{
+                    spawnBanClient(this.channelTree.client, [{
                         name: this.properties.client_nickname,
                         unique_id: this.properties.client_unique_identifier
                     }], (data) => {
@@ -622,7 +648,7 @@ class ClientEntry {
                 icon_class: "client-volume",
                 name: tr("Change Volume"),
                 callback: () => {
-                    Modals.spawnChangeVolume(this, true, this._audio_volume, undefined, volume => {
+                    spawnChangeVolume(this, true, this._audio_volume, undefined, volume => {
                         this._audio_volume = volume;
                         this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
                         if(this._audio_handle)
@@ -635,7 +661,7 @@ class ClientEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Change playback latency"),
                 callback: () => {
-                    Modals.spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
+                    spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
                         this._audio_handle.reset_latency_settings();
                         return this._audio_handle.latency_settings();
                     }, settings => this._audio_handle.latency_settings(settings), this._audio_handle.support_flush ? () => {
@@ -843,7 +869,7 @@ class ClientEntry {
             if(variable.key == "client_nickname") {
                 if(variable.value !== old_value && typeof(old_value) === "string") {
                     if(!(this instanceof LocalClientEntry)) { /* own changes will be logged somewhere else */
-                        this.channelTree.client.log.log(log.server.Type.CLIENT_NICKNAME_CHANGED, {
+                        this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGED, {
                             own_client: false,
                             client: this.log_data(),
                             new_name: variable.value,
@@ -1082,7 +1108,7 @@ class ClientEntry {
         this.tag.css('padding-left', (5 + (index + 2) * 16) + "px");
     }
 
-    log_data() : log.server.base.Client {
+    log_data() : server_log.base.Client {
         return {
             client_unique_id: this.properties.client_unique_identifier,
             client_name: this.clientNickName(),
@@ -1123,7 +1149,7 @@ class ClientEntry {
     }
 }
 
-class LocalClientEntry extends ClientEntry {
+export class LocalClientEntry extends ClientEntry {
     handle: ConnectionHandler;
 
     private renaming: boolean;
@@ -1216,14 +1242,14 @@ class LocalClientEntry extends ClientEntry {
             const old_name = this.clientNickName();
             this.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
                 settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, text);
-                this.channelTree.client.log.log(log.server.Type.CLIENT_NICKNAME_CHANGED, {
+                this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGED, {
                     client: this.log_data(),
                     old_name: old_name,
                     new_name: text,
                     own_client: true
                 });
             }).catch((e: CommandResult) => {
-                this.channelTree.client.log.log(log.server.Type.CLIENT_NICKNAME_CHANGE_FAILED, {
+                this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGE_FAILED, {
                     reason: e.extra_message
                 });
                 this.openRename();
@@ -1232,7 +1258,7 @@ class LocalClientEntry extends ClientEntry {
     }
 }
 
-class MusicClientProperties extends ClientProperties {
+export class MusicClientProperties extends ClientProperties {
     player_state: number = 0;
     player_volume: number = 0;
 
@@ -1264,7 +1290,7 @@ class MusicClientProperties extends ClientProperties {
     }
  */
 
-class SongInfo {
+export class SongInfo {
     song_id: number = 0;
     song_url: string = "";
     song_invoker: number = 0;
@@ -1277,7 +1303,7 @@ class SongInfo {
     song_length: number = 0;
 }
 
-class MusicClientPlayerInfo extends SongInfo {
+export class MusicClientPlayerInfo extends SongInfo {
     bot_id: number = 0;
     player_state: number = 0;
 
@@ -1290,7 +1316,7 @@ class MusicClientPlayerInfo extends SongInfo {
     player_description: string = "";
 }
 
-class MusicClientEntry extends ClientEntry {
+export class MusicClientEntry extends ClientEntry {
     private _info_promise: Promise<MusicClientPlayerInfo>;
     private _info_promise_age: number = 0;
     private _info_promise_resolve: any;
@@ -1366,7 +1392,7 @@ class MusicClientEntry extends ClientEntry {
                     this.channelTree.client.serverConnection.command_helper.request_playlist_list().then(lists => {
                         for(const entry of lists) {
                             if(entry.playlist_id == this.properties.client_playlist_id) {
-                                Modals.spawnPlaylistEdit(this.channelTree.client, entry);
+                                spawnPlaylistEdit(this.channelTree.client, entry);
                                 return;
                             }
                         }
@@ -1435,7 +1461,7 @@ class MusicClientEntry extends ClientEntry {
                 icon_class: "client-volume",
                 name: tr("Change local volume"),
                 callback: () => {
-                    Modals.spawnChangeVolume(this, true, this._audio_handle.get_volume(), undefined, volume => {
+                    spawnChangeVolume(this, true, this._audio_handle.get_volume(), undefined, volume => {
                         this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
                         this._audio_handle.set_volume(volume);
                     });
@@ -1450,7 +1476,7 @@ class MusicClientEntry extends ClientEntry {
                     if(max_volume < 0)
                         max_volume = 100;
 
-                    Modals.spawnChangeVolume(this, false, this.properties.player_volume, max_volume / 100, value => {
+                    spawnChangeVolume(this, false, this.properties.player_volume, max_volume / 100, value => {
                         if(typeof(value) !== "number")
                             return;
 
@@ -1467,7 +1493,7 @@ class MusicClientEntry extends ClientEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Change playback latency"),
                 callback: () => {
-                    Modals.spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
+                    spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
                         this._audio_handle.reset_latency_settings();
                         return this._audio_handle.latency_settings();
                     }, settings => this._audio_handle.latency_settings(settings), this._audio_handle.support_flush ? () => {
@@ -1482,8 +1508,8 @@ class MusicClientEntry extends ClientEntry {
                 icon_class: "client-delete",
                 disabled: false,
                 callback: () => {
-                    const tag = $.spawn("div").append(MessageHelper.formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
-                    Modals.spawnYesNo(tr("Are you sure?"), $.spawn("div").append(tag), result => {
+                    const tag = $.spawn("div").append(formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
+                    spawnYesNo(tr("Are you sure?"), $.spawn("div").append(tag), result => {
                        if(result) {
                            this.channelTree.client.serverConnection.send_command("musicbotdelete", {
                                bot_id: this.properties.client_database_id

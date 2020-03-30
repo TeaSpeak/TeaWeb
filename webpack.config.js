@@ -1,16 +1,28 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CircularDependencyPlugin = require('circular-dependency-plugin')
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 module.exports = {
-    entry: './shared/js/main.ts',
+    entry: {
+        //"shared-app": "./shared/js/main.ts"
+        "shared-app": "./web/js/index.ts"
+    },
     devtool: 'inline-source-map',
     mode: "development",
     plugins: [
         new MiniCssExtractPlugin({
             filename: isDevelopment ? '[name].css' : '[name].[hash].css',
             chunkFilename: isDevelopment ? '[id].css' : '[id].[hash].css'
+        }),
+        /*
+        new CircularDependencyPlugin({
+            //exclude: /a\.js|node_modules/,
+            failOnError: true,
+            allowAsyncCycles: false,
+            cwd: process.cwd(),
         })
+         */
     ],
     module: {
         rules: [
@@ -42,7 +54,7 @@ module.exports = {
                     {
                         loader: 'ts-loader',
                         options: {
-                            //transpileOnly: true
+                            transpileOnly: true
                         }
                     }
                 ]
@@ -54,11 +66,17 @@ module.exports = {
         alias: {
             "tc-shared": path.resolve(__dirname, "shared/js"),
             "tc-backend": path.resolve(__dirname, "web/js")
-        }
+            //"tc-backend": path.resolve(__dirname, "shared/backend.d"),
+        },
+    },
+    externals: {
+        "tc-loader": "umd loader"
     },
     output: {
-        filename: 'bundle.js',
+        filename: 'shared-app.js',
         path: path.resolve(__dirname, 'dist'),
+        libraryTarget: "umd",
+        library: "shared"
     },
     optimization: {
         /*

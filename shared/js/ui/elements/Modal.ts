@@ -1,13 +1,13 @@
-/// <reference path="../../PPTListener.ts" />
+import {KeyCode} from "tc-shared/PPTListener";
 
-enum ElementType {
+export enum ElementType {
     HEADER,
     BODY,
     FOOTER
 }
 
-type BodyCreator = (() => JQuery | JQuery[] | string) | string | JQuery | JQuery[];
-const ModalFunctions = {
+export type BodyCreator = (() => JQuery | JQuery[] | string) | string | JQuery | JQuery[];
+export const ModalFunctions = {
     divify: function (val: JQuery) {
         if(val.length > 1)
             return $.spawn("div").append(val);
@@ -54,7 +54,7 @@ const ModalFunctions = {
     }
 };
 
-class ModalProperties {
+export class ModalProperties {
     template?: string;
     header: BodyCreator = () => "HEADER";
     body: BodyCreator = ()    => "BODY";
@@ -184,7 +184,7 @@ let _global_modal_count = 0;
 let _global_modal_last: HTMLElement;
 let _global_modal_last_time: number;
 
-class Modal {
+export class Modal {
     private _htmlTag: JQuery;
     properties: ModalProperties;
     shown: boolean;
@@ -296,11 +296,11 @@ class Modal {
     }
 }
 
-function createModal(data: ModalProperties | any) : Modal {
+export function createModal(data: ModalProperties | any) : Modal {
     return new Modal(ModalFunctions.warpProperties(data));
 }
 
-class InputModalProperties extends ModalProperties {
+export class InputModalProperties extends ModalProperties {
     maxLength?: number;
 
     field_title?: string;
@@ -310,7 +310,7 @@ class InputModalProperties extends ModalProperties {
     error_message?: string;
 }
 
-function createInputModal(headMessage: BodyCreator, question: BodyCreator, validator: (input: string) => boolean, callback: (flag: boolean | string) => void, props: InputModalProperties | any = {}) : Modal {
+export function createInputModal(headMessage: BodyCreator, question: BodyCreator, validator: (input: string) => boolean, callback: (flag: boolean | string) => void, props: InputModalProperties | any = {}) : Modal {
     props = ModalFunctions.warpProperties(props);
     props.template_properties || (props.template_properties = {});
     props.template_properties.field_title = props.field_title;
@@ -370,7 +370,7 @@ function createInputModal(headMessage: BodyCreator, question: BodyCreator, valid
     return modal;
 }
 
-function createErrorModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: undefined }) {
+export function createErrorModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: undefined }) {
     props = ModalFunctions.warpProperties(props);
     (props.template_properties || (props.template_properties = {})).header_class = "modal-header-error";
 
@@ -382,7 +382,7 @@ function createErrorModal(header: BodyCreator, message: BodyCreator, props: Moda
     return modal;
 }
 
-function createInfoModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: undefined }) {
+export function createInfoModal(header: BodyCreator, message: BodyCreator, props: ModalProperties | any = { footer: undefined }) {
     props = ModalFunctions.warpProperties(props);
     (props.template_properties || (props.template_properties = {})).header_class = "modal-header-info";
 
@@ -393,52 +393,6 @@ function createInfoModal(header: BodyCreator, message: BodyCreator, props: Modal
     modal.htmlTag.find(".modal-body").addClass("modal-info");
     return modal;
 }
-
-/* extend jquery */
-
-interface ModalElements {
-    header?: BodyCreator;
-    body?: BodyCreator;
-    footer?: BodyCreator;
-}
-
-interface JQuery<TElement = HTMLElement> {
-    modalize(entry_callback?: (header: JQuery, body: JQuery, footer: JQuery) => ModalElements | void, properties?: ModalProperties | any) : Modal;
-}
-
-$.fn.modalize = function (this: JQuery, entry_callback?: (header: JQuery, body: JQuery, footer: JQuery) => ModalElements | void, properties?: ModalProperties | any) : Modal {
-    properties = properties || {} as ModalProperties;
-    entry_callback = entry_callback || ((a,b,c) => undefined);
-
-    let tag_modal = this[0].tagName.toLowerCase() == "modal" ? this : undefined; /* TODO may throw exception? */
-
-    let tag_head = tag_modal ? tag_modal.find("modal-header") : ModalFunctions.jqueriefy(properties.header);
-    let tag_body = tag_modal ? tag_modal.find("modal-body") : this;
-    let tag_footer = tag_modal ? tag_modal.find("modal-footer") : ModalFunctions.jqueriefy(properties.footer);
-
-    const result = entry_callback(tag_head as any, tag_body, tag_footer as any) || {};
-    properties.header = result.header || tag_head;
-    properties.body = result.body || tag_body;
-    properties.footer = result.footer || tag_footer;
-    return createModal(properties);
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

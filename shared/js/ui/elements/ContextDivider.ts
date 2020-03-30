@@ -1,5 +1,15 @@
-interface JQuery<TElement = HTMLElement> {
-    dividerfy() : this;
+import {settings} from "tc-shared/settings";
+import {LogCategory} from "tc-shared/log";
+import * as log from "tc-shared/log";
+
+declare global {
+    interface JQuery<TElement = HTMLElement> {
+        dividerfy() : this;
+    }
+}
+
+export function initialize() {
+
 }
 
 if(!$.fn.dividerfy) {
@@ -58,8 +68,8 @@ if(!$.fn.dividerfy) {
                     Math.max(previous_offset.top + previous_element.height(), next_offset.top + next_element.height());
                 */
 
-                let previous = 0;
-                let next = 0;
+                let previous;
+                let next;
                 if(current < min) {
                     previous = 0;
                     next = 1;
@@ -89,7 +99,7 @@ if(!$.fn.dividerfy) {
                     }));
             };
 
-            const listener_up = (event: MouseEvent) => {
+            const listener_up = () => {
                 document.removeEventListener('mousemove', listener_move);
                 document.removeEventListener('touchmove', listener_move);
 

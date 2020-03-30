@@ -1,41 +1,39 @@
-/// <reference path="loader.ts" />
+import * as loader from "./loader";
 
-interface Window {
-    $: JQuery;
+declare global {
+    interface Window {
+        native_client: boolean;
+    }
 }
 
-namespace app {
-    export enum Type {
-        UNKNOWN,
-        CLIENT_RELEASE,
-        CLIENT_DEBUG,
-        WEB_DEBUG,
-        WEB_RELEASE
+const node_require: typeof require = window.require;
+
+let _ui_version;
+export function ui_version() {
+    if(typeof(_ui_version) !== "string") {
+        const version_node = document.getElementById("app_version");
+        if(!version_node) return undefined;
+
+        const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
+        if(!version) return undefined;
+
+        return (_ui_version = version);
     }
-    export let type: Type = Type.UNKNOWN;
-
-    export function is_web() {
-        return type == Type.WEB_RELEASE || type == Type.WEB_DEBUG;
-    }
-
-    let _ui_version;
-    export function ui_version() {
-        if(typeof(_ui_version) !== "string") {
-            const version_node = document.getElementById("app_version");
-            if(!version_node) return undefined;
-
-            const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
-            if(!version) return undefined;
-
-            return (_ui_version = version);
-        }
-        return _ui_version;
-    }
+    return _ui_version;
 }
 
 /* all javascript loaders */
 const loader_javascript = {
     detect_type: async () => {
+        //TODO: Detect real version!
+        loader.set_version({
+            backend: "-",
+            ui: ui_version(),
+            debug_mode: true,
+            type: "web"
+        });
+        window.native_client = false;
+        return;
         if(window.require) {
             const request = new Request("js/proto.js");
             let file_path = request.url;
@@ -43,11 +41,11 @@ const loader_javascript = {
                 throw "Invalid file path (" + file_path + ")";
             file_path = file_path.substring(process.platform === "win32" ? 8 : 7);
 
-            const fs = require('fs');
+            const fs = node_require('fs');
             if(fs.existsSync(file_path)) {
-                app.type = app.Type.CLIENT_DEBUG;
+                //type = Type.CLIENT_DEBUG;
             } else {
-                app.type = app.Type.CLIENT_RELEASE;
+                //type = Type.CLIENT_RELEASE;
             }
         } else {
             /* test if js/proto.js is available. If so we're in debug mode */
@@ -58,9 +56,9 @@ const loader_javascript = {
                 request.onreadystatechange = () => {
                     if (request.readyState === 4){
                         if (request.status === 404) {
-                            app.type = app.Type.WEB_RELEASE;
+                            //type = Type.WEB_RELEASE;
                         } else {
-                            app.type = app.Type.WEB_DEBUG;
+                            //type = Type.WEB_DEBUG;
                         }
                         resolve();
                     }
@@ -101,7 +99,7 @@ const loader_javascript = {
             ["vendor/emoji-picker/src/jquery.lsxemojipicker.js"]
         ]);
 
-        if(app.type == app.Type.WEB_RELEASE || app.type == app.Type.CLIENT_RELEASE) {
+        if(!loader.version().debug_mode) {
             loader.register_task(loader.Stage.JAVASCRIPT, {
                 name: "scripts release",
                 priority: 20,
@@ -116,176 +114,8 @@ const loader_javascript = {
         }
     },
     load_scripts_debug: async () => {
-        /* test if we're loading as TeaClient or WebClient */
-        if(!window.require) {
-            loader.register_task(loader.Stage.JAVASCRIPT, {
-                name: "javascript web",
-                priority: 10,
-                function: loader_javascript.load_scripts_debug_web
-            });
-        } else {
-            loader.register_task(loader.Stage.JAVASCRIPT, {
-                name: "javascript client",
-                priority: 10,
-                function: loader_javascript.load_scripts_debug_client
-            });
-        }
-
-        /* load some extends classes */
-        await loader.load_scripts([
-            ["js/connection/ConnectionBase.js"]
-        ]);
-
-        /* load the main app */
-        await loader.load_scripts([
-            //Load general API's
-            "js/proto.js",
-            "js/i18n/localize.js",
-            "js/i18n/country.js",
-            "js/log.js",
-            "js/events.js",
-
-            "js/sound/Sounds.js",
-
-            "js/utils/helpers.js",
-
-            "js/crypto/sha.js",
-            "js/crypto/hex.js",
-            "js/crypto/asn1.js",
-            "js/crypto/crc32.js",
-
-            //load the profiles
-            "js/profiles/ConnectionProfile.js",
-            "js/profiles/Identity.js",
-            "js/profiles/identities/teaspeak-forum.js",
-
-            //Basic UI elements
-            "js/ui/elements/context_divider.js",
-            "js/ui/elements/context_menu.js",
-            "js/ui/elements/modal.js",
-            "js/ui/elements/tab.js",
-            "js/ui/elements/slider.js",
-            "js/ui/elements/tooltip.js",
-            "js/ui/elements/net_graph.js",
-
-            //Load permissions
-            "js/permission/PermissionManager.js",
-            "js/permission/GroupManager.js",
-
-            //Load UI
-            "js/ui/modal/ModalAbout.js",
-            "js/ui/modal/ModalAvatar.js",
-            "js/ui/modal/ModalAvatarList.js",
-            "js/ui/modal/ModalClientInfo.js",
-            "js/ui/modal/ModalChannelInfo.js",
-            "js/ui/modal/ModalServerInfo.js",
-            "js/ui/modal/ModalServerInfoBandwidth.js",
-            "js/ui/modal/ModalQuery.js",
-            "js/ui/modal/ModalQueryManage.js",
-            "js/ui/modal/ModalPlaylistList.js",
-            "js/ui/modal/ModalPlaylistEdit.js",
-            "js/ui/modal/ModalBookmarks.js",
-            "js/ui/modal/ModalConnect.js",
-            "js/ui/modal/ModalSettings.js",
-            "js/ui/modal/ModalNewcomer.js",
-            "js/ui/modal/ModalCreateChannel.js",
-            "js/ui/modal/ModalServerEdit.js",
-            "js/ui/modal/ModalChangeVolume.js",
-            "js/ui/modal/ModalChangeLatency.js",
-            "js/ui/modal/ModalBanClient.js",
-            "js/ui/modal/ModalIconSelect.js",
-            "js/ui/modal/ModalInvite.js",
-            "js/ui/modal/ModalIdentity.js",
-            "js/ui/modal/ModalBanList.js",
-            "js/ui/modal/ModalMusicManage.js",
-            "js/ui/modal/ModalYesNo.js",
-            "js/ui/modal/ModalPoke.js",
-            "js/ui/modal/ModalKeySelect.js",
-            "js/ui/modal/ModalGroupAssignment.js",
-            "js/ui/modal/permission/ModalPermissionEdit.js",
-            {url: "js/ui/modal/permission/SenselessPermissions.js", depends: ["js/permission/PermissionManager.js"]},
-            {url: "js/ui/modal/permission/CanvasPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
-            {url: "js/ui/modal/permission/HTMLPermissionEditor.js", depends: ["js/ui/modal/permission/ModalPermissionEdit.js"]},
-
-            "js/channel-tree/channel.js",
-            "js/channel-tree/client.js",
-            "js/channel-tree/server.js",
-            "js/channel-tree/view.js",
-            "js/ui/client_move.js",
-            "js/ui/htmltags.js",
-
-
-            "js/ui/frames/side/chat_helper.js",
-            "js/ui/frames/side/chat_box.js",
-            "js/ui/frames/side/client_info.js",
-            "js/ui/frames/side/music_info.js",
-            "js/ui/frames/side/conversations.js",
-            "js/ui/frames/side/private_conversations.js",
-
-            "js/ui/frames/ControlBar.js",
-            "js/ui/frames/chat.js",
-            "js/ui/frames/chat_frame.js",
-            "js/ui/frames/connection_handlers.js",
-            "js/ui/frames/server_log.js",
-            "js/ui/frames/hostbanner.js",
-            "js/ui/frames/MenuBar.js",
-            "js/ui/frames/image_preview.js",
-
-            //Load audio
-            "js/voice/RecorderBase.js",
-            "js/voice/RecorderProfile.js",
-
-            //Load general stuff
-            "js/settings.js",
-            "js/bookmarks.js",
-            "js/FileManager.js",
-            "js/ConnectionHandler.js",
-            "js/BrowserIPC.js",
-            "js/MessageFormatter.js",
-
-            //Connection
-            "js/connection/CommandHandler.js",
-            "js/connection/CommandHelper.js",
-            "js/connection/HandshakeHandler.js",
-            "js/connection/ServerConnectionDeclaration.js",
-
-            "js/stats.js",
-            "js/PPTListener.js",
-
-            "js/profiles/identities/NameIdentity.js", //Depends on Identity
-            "js/profiles/identities/TeaForumIdentity.js", //Depends on Identity
-            "js/profiles/identities/TeamSpeakIdentity.js", //Depends on Identity
-        ]);
-
-        await loader.load_script("js/main.js");
+        await loader.load_scripts(["js/shared-app.js"])
     },
-    load_scripts_debug_web: async () => {
-        await loader.load_scripts([
-            "js/audio/AudioPlayer.js",
-            "js/audio/sounds.js",
-            "js/audio/WebCodec.js",
-            "js/WebPPTListener.js",
-
-            "js/voice/AudioResampler.js",
-            "js/voice/JavascriptRecorder.js",
-            "js/voice/VoiceHandler.js",
-            "js/voice/VoiceClient.js",
-
-            //Connection
-            "js/connection/ServerConnection.js",
-            "js/dns_impl.js",
-
-            //Load codec
-            "js/codec/Codec.js",
-            "js/codec/BasicCodec.js",
-            {url: "js/codec/CodecWrapperWorker.js", depends: ["js/codec/BasicCodec.js"]},
-        ]);
-    },
-    load_scripts_debug_client: async () => {
-        await loader.load_scripts([
-        ]);
-    },
-
     load_release: async () => {
         console.log("Load for release!");
 
@@ -329,7 +159,7 @@ const loader_style = {
             ["vendor/highlight/styles/darcula.css", ""], /* empty string means not required */
         ]);
 
-        if(app.type == app.Type.WEB_DEBUG || app.type == app.Type.CLIENT_DEBUG) {
+        if(loader.version().debug_mode) {
             await loader_style.load_style_debug();
         } else {
             await loader_style.load_style_release();
@@ -494,21 +324,8 @@ loader.register_task(loader.Stage.TEMPLATES, {
 
 loader.register_task(loader.Stage.LOADED, {
     name: "loaded handler",
-    function: async () => {
-        fadeoutLoader();
-    },
+    function: async () => loader.hide_overlay(),
     priority: 5
-});
-
-loader.register_task(loader.Stage.LOADED, {
-    name: "error task",
-    function: async () => {
-        if(Settings.instance.static(Settings.KEY_LOAD_DUMMY_ERROR, false)) {
-            loader.critical_error("The tea is cold!", "Argh, this is evil! Cold tea dosn't taste good.");
-            throw "The tea is cold!";
-        }
-    },
-    priority: 20
 });
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
@@ -576,31 +393,26 @@ loader.register_task(loader.Stage.SETUP, {
     priority: 100
 });
 
-loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-    name: "log enabled initialisation",
-    function: async () => log.initialize(app.type === app.Type.CLIENT_DEBUG || app.type === app.Type.WEB_DEBUG ? log.LogType.TRACE : log.LogType.INFO),
-    priority: 150
-});
+export function run() {
+    window["Module"] = (window["Module"] || {}) as any;
+    /* TeaClient */
+    if(node_require) {
+        const path = node_require("path");
+        const remote = node_require('electron').remote;
+        module.paths.push(path.join(remote.app.getAppPath(), "/modules"));
+        module.paths.push(path.join(path.dirname(remote.getGlobal("browser-root")), "js"));
 
-window["Module"] = (window["Module"] || {}) as any;
-/* TeaClient */
-if(window.require) {
-    const path = require("path");
-    const remote = require('electron').remote;
-    module.paths.push(path.join(remote.app.getAppPath(), "/modules"));
-    module.paths.push(path.join(path.dirname(remote.getGlobal("browser-root")), "js"));
+        //TODO: HERE!
+        const connector = node_require("renderer");
+        loader.register_task(loader.Stage.INITIALIZING, {
+            name: "teaclient initialize",
+            function: connector.initialize,
+            priority: 40
+        });
+    }
 
-    const connector = require("renderer");
-    console.log(connector);
-
-    loader.register_task(loader.Stage.INITIALIZING, {
-        name: "teaclient initialize",
-        function: connector.initialize,
-        priority: 40
-    });
-}
-
-if(!loader.running()) {
-    /* we know that we want to load the app */
-    loader.execute_managed();
+    if(!loader.running()) {
+        /* we know that we want to load the app */
+        loader.execute_managed();
+    }
 }

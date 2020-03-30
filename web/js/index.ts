@@ -1,0 +1,1 @@
+const tc = require("tc-shared/main");

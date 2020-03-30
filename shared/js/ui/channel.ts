@@ -1,12 +1,26 @@
-/// <reference path="view.ts" />
-/// <reference path="../utils/helpers.ts" />
+import {ChannelTree} from "tc-shared/ui/view";
+import {ClientEntry} from "tc-shared/ui/client";
+import * as log from "tc-shared/log";
+import {LogCategory, LogType} from "tc-shared/log";
+import PermissionType from "tc-shared/permission/PermissionType";
+import {settings, Settings} from "tc-shared/settings";
+import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
+import {Sound} from "tc-shared/sound/Sounds";
+import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import * as htmltags from "./htmltags";
+import {hashPassword} from "tc-shared/utils/helpers";
+import * as server_log from "tc-shared/ui/frames/server_log";
+import {openChannelInfo} from "tc-shared/ui/modal/ModalChannelInfo";
+import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
+import {formatMessage} from "tc-shared/ui/frames/chat";
 
-enum ChannelType {
+export enum ChannelType {
     PERMANENT,
     SEMI_PERMANENT,
     TEMPORARY
 }
-namespace ChannelType {
+export namespace ChannelType {
     export function normalize(mode: ChannelType) {
         let value: string = ChannelType[mode];
         value = value.toLowerCase();
@@ -14,13 +28,13 @@ namespace ChannelType {
     }
 }
 
-enum ChannelSubscribeMode {
+export enum ChannelSubscribeMode {
     SUBSCRIBED,
     UNSUBSCRIBED,
     INHERITED
 }
 
-class ChannelProperties {
+export class ChannelProperties {
     channel_order: number = 0;
     channel_name: string = "";
     channel_name_phonetic: string = "";
@@ -55,7 +69,7 @@ class ChannelProperties {
     channel_conversation_history_length: number = -1;
 }
 
-class ChannelEntry {
+export class ChannelEntry {
     channelTree: ChannelTree;
     channelId: number;
     parent?: ChannelEntry;
@@ -525,7 +539,7 @@ class ChannelEntry {
                 name: tr("Show channel info"),
                 callback: () => {
                     trigger_close = false;
-                    Modals.openChannelInfo(this);
+                    openChannelInfo(this);
                 },
                 icon_class: "client-about"
             },
@@ -565,7 +579,7 @@ class ChannelEntry {
                 name: tr("Edit channel"),
                 invalidPermission: !channelModify,
                 callback: () => {
-                    Modals.createChannelModal(this.channelTree.client, this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
+                    createChannelModal(this.channelTree.client, this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
                         if(changes) {
                             changes["cid"] = this.channelId;
                             this.channelTree.client.serverConnection.send_command("channeledit", changes);
@@ -617,7 +631,7 @@ class ChannelEntry {
                             error = error.extra_message || error.message;
                         }
 
-                        createErrorModal(tr("Failed to create bot"), MessageHelper.formatMessage(tr("Failed to create the music bot:<br>{0}"), error)).open();
+                        createErrorModal(tr("Failed to create bot"), formatMessage(tr("Failed to create the music bot:<br>{0}"), error)).open();
                     });
                 }
             },
@@ -834,7 +848,7 @@ class ChannelEntry {
             !this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).granted(1)) {
             createInputModal(tr("Channel password"), tr("Channel password:"), () => true, text => {
                 if(typeof(text) == typeof(true)) return;
-                helpers.hashPassword(text as string).then(result => {
+                hashPassword(text as string).then(result => {
                     this._cachedPassword = result;
                     this.joinChannel();
                     this.updateChannelTypeIcon();
@@ -923,7 +937,7 @@ class ChannelEntry {
         this._tag_channel.find(".marker-text-unread").toggleClass("hidden", !flag);
     }
 
-    log_data() : log.server.base.Channel {
+    log_data() : server_log.base.Channel {
         return {
             channel_name: this.channelName(),
             channel_id: this.channelId

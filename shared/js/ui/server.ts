@@ -1,7 +1,21 @@
-/// <reference path="channel.ts" />
-/// <reference path="modal/ModalServerEdit.ts" />
+import {ChannelTree} from "tc-shared/ui/view";
+import {Settings, settings} from "tc-shared/settings";
+import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
+import * as log from "tc-shared/log";
+import {LogCategory, LogType} from "tc-shared/log";
+import {Sound} from "tc-shared/sound/Sounds";
+import * as bookmarks from "tc-shared/bookmarks";
+import {spawnInviteEditor} from "tc-shared/ui/modal/ModalInvite";
+import {openServerInfo} from "tc-shared/ui/modal/ModalServerInfo";
+import {createServerModal} from "tc-shared/ui/modal/ModalServerEdit";
+import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
+import {spawnAvatarList} from "tc-shared/ui/modal/ModalAvatarList";
+import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {control_bar} from "tc-shared/ui/frames/ControlBar";
+import {connection_log} from "tc-shared/ui/modal/ModalConnect";
+import * as top_menu from "./frames/MenuBar";
 
-class ServerProperties {
+export class ServerProperties {
     virtualserver_host: string = "";
     virtualserver_port: number = 0;
 
@@ -78,7 +92,7 @@ class ServerProperties {
     virtualserver_total_bytes_uploaded: number = 0;
 }
 
-interface ServerConnectionInfo {
+export interface ServerConnectionInfo {
     connection_filetransfer_bandwidth_sent: number;
     connection_filetransfer_bandwidth_received: number;
 
@@ -103,12 +117,12 @@ interface ServerConnectionInfo {
     connection_ping: number;
 }
 
-interface ServerAddress {
+export interface ServerAddress {
     host: string;
     port: number;
 }
 
-class ServerEntry {
+export class ServerEntry {
     remote_address: ServerAddress;
     channelTree: ChannelTree;
     properties: ServerProperties;
@@ -209,14 +223,14 @@ class ServerEntry {
                 name: tr("Show server info"),
                 callback: () => {
                     trigger_close = false;
-                    Modals.openServerInfo(this);
+                    openServerInfo(this);
                 },
                 icon_class: "client-about"
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-invite_buddy",
                 name: tr("Invite buddy"),
-                callback: () => Modals.spawnInviteEditor(this.channelTree.client)
+                callback: () => spawnInviteEditor(this.channelTree.client)
             }, {
                 type: contextmenu.MenuEntryType.HR,
                 name: ''
@@ -234,7 +248,7 @@ class ServerEntry {
                 icon_class: "client-virtualserver_edit",
                 name: tr("Edit"),
                 callback: () => {
-                    Modals.createServerModal(this, properties => {
+                    createServerModal(this, properties => {
                         log.info(LogCategory.SERVER, tr("Changing server properties %o"), properties);
                         console.log(tr("Changed properties: %o"), properties);
                         if (properties) {
@@ -255,13 +269,13 @@ class ServerEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-iconviewer",
                 name: tr("View icons"),
-                callback: () => Modals.spawnIconSelect(this.channelTree.client)
+                callback: () => spawnIconSelect(this.channelTree.client)
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: 'client-iconsview',
                 name: tr("View avatars"),
                 visible: false, //TODO: Enable again as soon the new design is finished
-                callback: () => Modals.spawnAvatarList(this.channelTree.client)
+                callback: () => spawnAvatarList(this.channelTree.client)
             },
             contextmenu.Entry.CLOSE(() => trigger_close ? on_close() : {})
         );

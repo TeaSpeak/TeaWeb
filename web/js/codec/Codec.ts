@@ -1,8 +1,8 @@
-interface CodecCostructor {
+export interface CodecConstructor {
     new (codecSampleRate: number) : Codec;
 }
 
-enum CodecType {
+export enum CodecType {
     OPUS_VOICE,
     OPUS_MUSIC,
 
@@ -12,7 +12,7 @@ enum CodecType {
     CELT_MONO
 }
 
-class BufferChunk {
+export class BufferChunk {
     buffer: AudioBuffer;
     index: number;
 
@@ -34,7 +34,7 @@ class BufferChunk {
     }
 }
 
-class CodecClientCache {
+export class CodecClientCache {
     _last_access: number;
     _chunks: BufferChunk[] = [];
 
@@ -46,7 +46,7 @@ class CodecClientCache {
     }
 }
 
-interface Codec {
+export interface Codec {
     on_encoded_data: (Uint8Array) => void;
 
     channelCount: number;

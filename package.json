@@ -19,7 +19,9 @@
     "minify-web-rel-file": "terser --compress --mangle --ecma 6 --keep_classnames --keep_fnames --output",
     "start": "npm run compile-file-helper && node file.js ndevelop",
     "build": "webpack --config webpack.config.js",
-    "watch": "webpack --watch"
+    "build-loader": "webpack --config loader/webpack.config.js",
+    "watch": "webpack --watch",
+    "watch-loader": "webpack --watch --config loader/webpack.config.js"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
@@ -63,6 +65,7 @@
   "homepage": "https://www.teaspeak.de",
   "dependencies": {
     "@types/fs-extra": "^8.0.1",
+    "circular-dependency-plugin": "^5.2.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   }

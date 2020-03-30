@@ -1,6 +1,10 @@
-/// <reference path="BasicCodec.ts"/>
+import {BasicCodec} from "./BasicCodec";
+import {CodecType} from "./Codec";
+import {LogCategory} from "tc-shared/log";
+import * as log from "tc-shared/log";
+import {settings} from "tc-shared/settings";
 
-class CodecWrapperWorker extends BasicCodec {
+export class CodecWrapperWorker extends BasicCodec {
     private _worker: Worker;
     private _workerListener: {token: string, resolve: (data: any) => void}[] = [];
     private _workerCallbackToken = "callback_token";

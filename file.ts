@@ -444,6 +444,7 @@ const CLIENT_APP_FILE_LIST = [
         ...APP_FILE_LIST_CLIENT_SOURCE
 ];
 
+/*
 const WEB_APP_FILE_LIST = [
     ...APP_FILE_LIST_SHARED_SOURCE,
     ...APP_FILE_LIST_SHARED_VENDORS,
@@ -451,6 +452,174 @@ const WEB_APP_FILE_LIST = [
     ...APP_FILE_LIST_WEB_TEASPEAK,
     ...CERTACCEPT_FILE_LIST,
 ];
+*/
+const WEB_APP_FILE_LIST = [
+    ...APP_FILE_LIST_SHARED_VENDORS,
+    { /* shared html and php files */
+        "type": "html",
+        "search-pattern": /^.*([a-zA-Z]+)\.(html|php|json)$/,
+        "build-target": "dev|rel",
+
+        "path": "./",
+        "local-path": "./shared/html/"
+    },
+    { /* javascript loader for releases */
+        "type": "js",
+        "search-pattern": /.*$/,
+        "build-target": "dev|rel",
+
+        "path": "js/",
+        "local-path": "./dist/"
+    },
+
+    { /* shared javascript files (WebRTC adapter) */
+        "type": "js",
+        "search-pattern": /.*\.js$/,
+        "build-target": "dev|rel",
+
+        "path": "adapter/",
+        "local-path": "./shared/adapter/"
+    },
+
+    { /* shared generated worker codec */
+        "type": "js",
+        "search-pattern": /(WorkerPOW.js)$/,
+        "build-target": "dev|rel",
+
+        "path": "js/workers/",
+        "local-path": "./shared/js/workers/"
+    },
+    { /* shared developer single css files */
+        "type": "css",
+        "search-pattern": /.*\.css$/,
+        "build-target": "dev",
+
+        "path": "css/",
+        "local-path": "./shared/css/"
+    },
+    { /* shared css mapping files (development mode only) */
+        "type": "css",
+        "search-pattern": /.*\.(css.map|scss)$/,
+        "build-target": "dev",
+
+        "path": "css/",
+        "local-path": "./shared/css/",
+        "req-parm": ["--mappings"]
+    },
+    { /* shared release css files */
+        "type": "css",
+        "search-pattern": /.*\.css$/,
+        "build-target": "rel",
+
+        "path": "css/",
+        "local-path": "./shared/generated/"
+    },
+    { /* shared release css files */
+        "type": "css",
+        "search-pattern": /.*\.css$/,
+        "build-target": "rel",
+
+        "path": "css/loader/",
+        "local-path": "./shared/css/loader/"
+    },
+    { /* shared release css files */
+        "type": "css",
+        "search-pattern": /.*\.css$/,
+        "build-target": "dev|rel",
+
+        "path": "css/theme/",
+        "local-path": "./shared/css/theme/"
+    },
+    { /* shared sound files */
+        "type": "wav",
+        "search-pattern": /.*\.wav$/,
+        "build-target": "dev|rel",
+
+        "path": "audio/",
+        "local-path": "./shared/audio/"
+    },
+    { /* shared data sound files */
+        "type": "json",
+        "search-pattern": /.*\.json/,
+        "build-target": "dev|rel",
+
+        "path": "audio/",
+        "local-path": "./shared/audio/"
+    },
+    { /* shared image files */
+        "type": "img",
+        "search-pattern": /.*\.(svg|png)/,
+        "build-target": "dev|rel",
+
+        "path": "img/",
+        "local-path": "./shared/img/"
+    },
+    { /* own webassembly files */
+        "type": "wasm",
+        "search-pattern": /.*\.(wasm)/,
+        "build-target": "dev|rel",
+
+        "path": "wat/",
+        "local-path": "./shared/wat/"
+    },
+
+
+    /* web specific */
+    { /* generated assembly files */
+        "web-only": true,
+        "type": "wasm",
+        "search-pattern": /.*\.(wasm)/,
+        "build-target": "dev|rel",
+
+        "path": "wasm/",
+        "local-path": "./asm/generated/"
+    },
+    { /* generated assembly javascript files */
+        "web-only": true,
+        "type": "js",
+        "search-pattern": /.*\.(js)/,
+        "build-target": "dev|rel",
+
+        "path": "wasm/",
+        "local-path": "./asm/generated/"
+    },
+    { /* web generated worker codec */
+        "web-only": true,
+        "type": "js",
+        "search-pattern": /(WorkerCodec.js)$/,
+        "build-target": "dev|rel",
+
+        "path": "js/workers/",
+        "local-path": "./web/js/workers/"
+    },
+    { /* web css files */
+        "web-only": true,
+        "type": "css",
+        "search-pattern": /.*\.css$/,
+        "build-target": "dev|rel",
+
+        "path": "css/",
+        "local-path": "./web/css/"
+    },
+    { /* web html files */
+        "web-only": true,
+        "type": "html",
+        "search-pattern": /.*\.(php|html)/,
+        "build-target": "dev|rel",
+
+        "path": "./",
+        "local-path": "./web/html/"
+    },
+    { /* translations */
+        "web-only": true, /* Only required for the web client */
+        "type": "i18n",
+        "search-pattern": /.*\.(translation|json)/,
+        "build-target": "dev|rel",
+
+        "path": "i18n/",
+        "local-path": "./shared/i18n/"
+    }
+] as any;
 
 //@ts-ignore
 declare module "fs-extra" {

@@ -1,6 +1,10 @@
-/// <reference path="client.ts" />
+import {ChannelTree} from "tc-shared/ui/view";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import {ClientEntry} from "tc-shared/ui/client";
+import {ChannelEntry} from "tc-shared/ui/channel";
 
-class ClientMover {
+export class ClientMover {
     static readonly listener_root = $(document);
     static readonly move_element = $("#mouse-move");
     readonly channel_tree: ChannelTree;

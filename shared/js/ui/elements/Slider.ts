@@ -1,4 +1,6 @@
-interface SliderOptions {
+import * as tooltip from "tc-shared/ui/elements/Tooltip";
+
+export interface SliderOptions {
     min_value?: number;
     max_value?: number;
     initial_value?: number;
@@ -8,11 +10,11 @@ interface SliderOptions {
     value_field?: JQuery | JQuery[];
 }
 
-interface Slider {
+export interface Slider {
     value(value?: number) : number;
 }
 
-function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
+export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
     options = Object.assign( {
         initial_value: 0,
         min_value: 0,
@@ -30,7 +32,7 @@ function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
         throw "invalid step size";
 
 
-    const tool = tooltip(slider); /* add the tooltip functionality */
+    const tool = tooltip.initialize(slider); /* add the tooltip functionality */
     const filler = slider.find(".filler");
     const thumb = slider.find(".thumb");
     const tooltip_text = slider.find(".tooltip a");

@@ -1,82 +1,80 @@
-namespace contextmenu {
-    export interface MenuEntry {
-        callback?: () => void;
-        type: MenuEntryType;
-        name: (() => string) | string;
-        icon_class?: string;
-        icon_path?: string;
-        disabled?:  boolean;
-        visible?: boolean;
+export interface MenuEntry {
+    callback?: () => void;
+    type: MenuEntryType;
+    name: (() => string) | string;
+    icon_class?: string;
+    icon_path?: string;
+    disabled?:  boolean;
+    visible?: boolean;
 
-        checkbox_checked?: boolean;
+    checkbox_checked?: boolean;
 
-        invalidPermission?:  boolean;
-        sub_menu?: MenuEntry[];
-    }
+    invalidPermission?:  boolean;
+    sub_menu?: MenuEntry[];
+}
 
-    export enum MenuEntryType {
-        CLOSE,
-        ENTRY,
-        CHECKBOX,
-        HR,
-        SUB_MENU
-    }
+export enum MenuEntryType {
+    CLOSE,
+    ENTRY,
+    CHECKBOX,
+    HR,
+    SUB_MENU
+}
 
-    export class Entry {
-        static HR() {
-            return {
-                callback: () => {},
-                type: MenuEntryType.HR,
-                name: "",
-                icon: ""
-            };
+export class Entry {
+    static HR() {
+        return {
+            callback: () => {},
+            type: MenuEntryType.HR,
+            name: "",
+            icon: ""
         };
+    };
 
-        static CLOSE(callback: () => void) {
-            return {
-                callback: callback,
-                type: MenuEntryType.CLOSE,
-                name: "",
-                icon: ""
-            };
-        }
-    }
-
-    export interface ContextMenuProvider {
-        despawn_context_menu();
-        spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]);
-
-        initialize();
-        finalize();
-
-        html_format_enabled() : boolean;
-    }
-
-    let provider: ContextMenuProvider;
-    export function spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]) {
-        if(!provider) {
-            console.error(tr("Failed to spawn context menu! Missing provider!"));
-            return;
-        }
-
-        provider.spawn_context_menu(x, y, ...entries);
-    }
-
-    export function despawn_context_menu() {
-        if(!provider)
-            return;
-
-        provider.despawn_context_menu();
-    }
-
-    export function get_provider() : ContextMenuProvider { return provider; }
-    export function set_provider(_provider: ContextMenuProvider) {
-        provider = _provider;
-        provider.initialize();
+    static CLOSE(callback: () => void) {
+        return {
+            callback: callback,
+            type: MenuEntryType.CLOSE,
+            name: "",
+            icon: ""
+        };
     }
 }
 
-class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
+export interface ContextMenuProvider {
+    despawn_context_menu();
+    spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]);
+
+    initialize();
+    finalize();
+
+    html_format_enabled() : boolean;
+}
+
+let provider: ContextMenuProvider;
+export function spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]) {
+    if(!provider) {
+        console.error(tr("Failed to spawn context menu! Missing provider!"));
+        return;
+    }
+
+    provider.spawn_context_menu(x, y, ...entries);
+}
+
+export function despawn_context_menu() {
+    if(!provider)
+        return;
+
+    provider.despawn_context_menu();
+}
+
+export function get_provider() : ContextMenuProvider { return provider; }
+export function set_provider(_provider: ContextMenuProvider) {
+    provider = _provider;
+    provider.initialize();
+}
+
+class HTMLContextMenuProvider implements ContextMenuProvider {
     private _global_click_listener: (event) => any;
     private _context_menu: JQuery;
     private _close_callbacks: (() => any)[] = [];
@@ -118,10 +116,10 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
         }
     }
 
-    private generate_tag(entry: contextmenu.MenuEntry) : JQuery {
-        if(entry.type == contextmenu.MenuEntryType.HR) {
+    private generate_tag(entry: MenuEntry) : JQuery {
+        if(entry.type == MenuEntryType.HR) {
             return $.spawn("hr");
-        } else if(entry.type == contextmenu.MenuEntryType.ENTRY) {
+        } else if(entry.type == MenuEntryType.ENTRY) {
             let icon = entry.icon_class;
             if(!icon || icon.length == 0) icon = "icon_empty";
             else icon = "icon " + icon;
@@ -141,7 +139,7 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
                 });
             }
             return tag;
-        } else if(entry.type == contextmenu.MenuEntryType.CHECKBOX) {
+        } else if(entry.type == MenuEntryType.CHECKBOX) {
              let checkbox = $.spawn("label").addClass("ccheckbox");
                 $.spawn("input").attr("type", "checkbox").prop("checked", !!entry.checkbox_checked).appendTo(checkbox);
                 $.spawn("span").addClass("checkmark").appendTo(checkbox);
@@ -161,7 +159,7 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
                 });
             }
             return tag;
-        } else if(entry.type == contextmenu.MenuEntryType.SUB_MENU) {
+        } else if(entry.type == MenuEntryType.SUB_MENU) {
             let icon = entry.icon_class;
             if(!icon || icon.length == 0) icon = "icon_empty";
             else icon = "icon " + icon;
@@ -187,7 +185,7 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
         return $.spawn("div").text("undefined");
     }
 
-    spawn_context_menu(x: number, y: number, ...entries: contextmenu.MenuEntry[]) {
+    spawn_context_menu(x: number, y: number, ...entries: MenuEntry[]) {
         this._visible = true;
 
         let menu_tag = this._context_menu || (this._context_menu = $(".context-menu"));
@@ -200,7 +198,7 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
             if(typeof(entry.visible) === 'boolean' && !entry.visible)
                 continue;
 
-            if(entry.type == contextmenu.MenuEntryType.CLOSE) {
+            if(entry.type == MenuEntryType.CLOSE) {
                 if(entry.callback)
                     this._close_callbacks.push(entry.callback);
             } else
@@ -225,5 +223,4 @@ class HTMLContextMenuProvider implements contextmenu.ContextMenuProvider {
         return true;
     }
 }
-
-contextmenu.set_provider(new HTMLContextMenuProvider());
+set_provider(new HTMLContextMenuProvider());

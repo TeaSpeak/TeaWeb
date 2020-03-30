@@ -1,4 +1,4 @@
-/// <reference path="loader.ts" />
+import * as loader from "./loader";
 
 let is_debug = false;
 
@@ -25,34 +25,8 @@ const loader_javascript = {
 
     load_scripts: async () => {
         await loader.load_script(["vendor/jquery/jquery.min.js"]);
-
-        if(!is_debug) {
-            loader.register_task(loader.Stage.JAVASCRIPT, {
-                name: "scripts release",
-                priority: 20,
-                function: loader_javascript.load_release
-            });
-        } else {
-            loader.register_task(loader.Stage.JAVASCRIPT, {
-                name: "scripts debug",
-                priority: 20,
-                function: loader_javascript.load_scripts_debug
-            });
-        }
-    },
-    load_scripts_debug: async () => {
         await loader.load_scripts([
-            ["js/proto.js"],
-            ["js/log.js"],
-            ["js/BrowserIPC.js"],
-            ["js/settings.js"],
-            ["js/main.js"]
-        ]);
-    },
-
-    load_release: async () => {
-        await loader.load_scripts([
-            ["js/certaccept.min.js", "js/certaccept.js"]
+            ["dist/certificate-popup.js"],
         ]);
     }
 };
@@ -99,9 +73,7 @@ loader.register_task(loader.Stage.STYLE, {
 
 loader.register_task(loader.Stage.LOADED, {
     name: "loaded handler",
-    function: async () => {
-        fadeoutLoader();
-    },
+    function: async () => loader.hide_overlay(),
     priority: 0
 });
 
@@ -121,25 +93,6 @@ loader.register_task(loader.Stage.INITIALIZING, {
             });
     },
     priority: 50
-});
-
-loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-    name: "settings initialisation",
-    function: async () => Settings.initialize(),
-    priority: 200
-});
-
-loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-    name: "bipc initialisation",
-    function: async () => bipc.setup(),
-    priority: 100
-});
-
-
-loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-    name: "log enabled initialisation",
-    function: async () => log.initialize(is_debug ? log.LogType.TRACE : log.LogType.INFO),
-    priority: 150
 });
 
 if(!loader.running()) {

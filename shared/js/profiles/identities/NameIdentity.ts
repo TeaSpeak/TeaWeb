@@ -1,88 +1,97 @@
-/// <reference path="../Identity.ts" />
+import {
+    AbstractHandshakeIdentityHandler,
+    HandshakeCommandHandler,
+    IdentitifyType,
+    Identity
+} from "tc-shared/profiles/Identity";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
+import {HandshakeIdentityHandler} from "tc-shared/connection/HandshakeHandler";
 
-namespace profiles.identities {
-    class NameHandshakeHandler extends AbstractHandshakeIdentityHandler {
-        readonly identity: NameIdentity;
-        handler: HandshakeCommandHandler<NameHandshakeHandler>;
+console.error(AbstractHandshakeIdentityHandler);
+class NameHandshakeHandler extends AbstractHandshakeIdentityHandler {
+    readonly identity: NameIdentity;
+    handler: HandshakeCommandHandler<NameHandshakeHandler>;
 
-        constructor(connection: connection.AbstractServerConnection, identity: profiles.identities.NameIdentity) {
-            super(connection);
-            this.identity = identity;
+    constructor(connection: AbstractServerConnection, identity: NameIdentity) {
+        super(connection);
+        this.identity = identity;
 
-            this.handler = new HandshakeCommandHandler(connection, this);
-            this.handler["handshakeidentityproof"] = () => this.trigger_fail("server requested unexpected proof");
-        }
-
-        start_handshake() {
-            this.connection.command_handler_boss().register_handler(this.handler);
-            this.connection.send_command("handshakebegin", {
-                intention: 0,
-                authentication_method: this.identity.type(),
-                client_nickname: this.identity.name()
-            }).catch(error => {
-                log.error(LogCategory.IDENTITIES, tr("Failed to initialize name based handshake. Error: %o"), error);
-                if(error instanceof CommandResult)
-                    error = error.extra_message || error.message;
-                this.trigger_fail("failed to execute begin (" + error + ")");
-            }).then(() => this.trigger_success());
-        }
-
-        protected trigger_fail(message: string) {
-            this.connection.command_handler_boss().unregister_handler(this.handler);
-            super.trigger_fail(message);
-        }
-
-        protected trigger_success() {
-            this.connection.command_handler_boss().unregister_handler(this.handler);
-            super.trigger_success();
-        }
+        this.handler = new HandshakeCommandHandler(connection, this);
+        this.handler["handshakeidentityproof"] = () => this.trigger_fail("server requested unexpected proof");
     }
 
-    export class NameIdentity implements Identity {
-        private _name: string;
+    start_handshake() {
+        this.connection.command_handler_boss().register_handler(this.handler);
+        this.connection.send_command("handshakebegin", {
+            intention: 0,
+            authentication_method: this.identity.type(),
+            client_nickname: this.identity.name()
+        }).catch(error => {
+            log.error(LogCategory.IDENTITIES, tr("Failed to initialize name based handshake. Error: %o"), error);
+            if(error instanceof CommandResult)
+                error = error.extra_message || error.message;
+            this.trigger_fail("failed to execute begin (" + error + ")");
+        }).then(() => this.trigger_success());
+    }
 
-        constructor(name?: string) {
-            this._name = name;
-        }
+    protected trigger_fail(message: string) {
+        this.connection.command_handler_boss().unregister_handler(this.handler);
+        super.trigger_fail(message);
+    }
 
-        set_name(name: string) { this._name = name; }
+    protected trigger_success() {
+        this.connection.command_handler_boss().unregister_handler(this.handler);
+        super.trigger_success();
+    }
+}
 
-        name() : string { return this._name; }
+export class NameIdentity implements Identity {
+    private _name: string;
 
-        fallback_name(): string | undefined {
-            return this._name;
-        }
+    constructor(name?: string) {
+        this._name = name;
+    }
 
-        uid(): string {
-            return btoa(this._name); //FIXME hash!
-        }
+    set_name(name: string) { this._name = name; }
 
-        type(): IdentitifyType {
-            return IdentitifyType.NICKNAME;
-        }
+    name() : string { return this._name; }
 
-        valid(): boolean {
-            return this._name != undefined && this._name.length >= 5;
-        }
+    fallback_name(): string | undefined {
+        return this._name;
+    }
 
-        decode(data) : Promise<void> {
-            data = JSON.parse(data);
-            if(data.version !== 1)
-                throw "invalid version";
+    uid(): string {
+        return btoa(this._name); //FIXME hash!
+    }
 
-            this._name = data["name"];
-            return;
-        }
+    type(): IdentitifyType {
+        return IdentitifyType.NICKNAME;
+    }
 
-        encode?() : string {
-            return JSON.stringify({
-                version: 1,
-                name: this._name
-            });
-        }
+    valid(): boolean {
+        return this._name != undefined && this._name.length >= 5;
+    }
 
-        spawn_identity_handshake_handler(connection: connection.AbstractServerConnection) : connection.HandshakeIdentityHandler {
-            return new NameHandshakeHandler(connection, this);
-        }
+    decode(data) : Promise<void> {
+        data = JSON.parse(data);
+        if(data.version !== 1)
+            throw "invalid version";
+
+        this._name = data["name"];
+        return;
+    }
+
+    encode?() : string {
+        return JSON.stringify({
+            version: 1,
+            name: this._name
+        });
+    }
+
+    spawn_identity_handshake_handler(connection: AbstractServerConnection) : HandshakeIdentityHandler {
+        return new NameHandshakeHandler(connection, this);
     }
 }

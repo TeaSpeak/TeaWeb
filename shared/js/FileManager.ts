@@ -1,76 +1,80 @@
-/// <reference path="connection/CommandHandler.ts" />
-/// <reference path="connection/ConnectionBase.ts" />
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import {ChannelEntry} from "tc-shared/ui/channel";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ServerCommand} from "tc-shared/connection/ConnectionBase";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ClientEntry} from "tc-shared/ui/client";
+import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 
-class FileEntry {
+export class FileEntry {
     name: string;
     datetime: number;
     type: number;
     size: number;
 }
 
-class FileListRequest {
+export class FileListRequest {
     path: string;
     entries: FileEntry[];
 
     callback: (entries: FileEntry[]) => void;
 }
 
-namespace transfer {
-    export interface TransferKey {
-        client_transfer_id: number;
-        server_transfer_id: number;
+export interface TransferKey {
+    client_transfer_id: number;
+    server_transfer_id: number;
 
-        key: string;
+    key: string;
 
-        file_path: string;
-        file_name: string;
+    file_path: string;
+    file_name: string;
 
-        peer: {
-            hosts: string[],
-            port: number;
-        };
+    peer: {
+        hosts: string[],
+        port: number;
+    };
 
-        total_size: number;
-    }
-
-    export interface UploadOptions {
-        name: string;
-        path: string;
-
-        channel?: ChannelEntry;
-        channel_password?: string;
-
-        size: number;
-        overwrite: boolean;
-    }
-
-    export interface DownloadTransfer {
-        get_key() : DownloadKey;
-
-        request_file() : Promise<Response>;
-    }
-    
-    export interface UploadTransfer {
-        get_key(): UploadKey;
-
-        put_data(data: BlobPart | File) : Promise<void>;
-    }
-
-    export type DownloadKey = TransferKey;
-    export type UploadKey = TransferKey;
-
-    export function spawn_download_transfer(key: DownloadKey) : DownloadTransfer {
-        return new RequestFileDownload(key);
-    }
-    export function spawn_upload_transfer(key: UploadKey) : UploadTransfer {
-        return new RequestFileUpload(key);
-    }
+    total_size: number;
 }
 
-class RequestFileDownload implements transfer.DownloadTransfer {
-    readonly transfer_key: transfer.DownloadKey;
+export interface UploadOptions {
+    name: string;
+    path: string;
 
-    constructor(key: transfer.DownloadKey) {
+    channel?: ChannelEntry;
+    channel_password?: string;
+
+    size: number;
+    overwrite: boolean;
+}
+
+export interface DownloadTransfer {
+    get_key() : DownloadKey;
+
+    request_file() : Promise<Response>;
+}
+
+export interface UploadTransfer {
+    get_key(): UploadKey;
+
+    put_data(data: BlobPart | File) : Promise<void>;
+}
+
+export type DownloadKey = TransferKey;
+export type UploadKey = TransferKey;
+
+export function spawn_download_transfer(key: DownloadKey) : DownloadTransfer {
+    return new RequestFileDownload(key);
+}
+export function spawn_upload_transfer(key: UploadKey) : UploadTransfer {
+    return new RequestFileUpload(key);
+}
+
+export class RequestFileDownload implements DownloadTransfer {
+    readonly transfer_key: DownloadKey;
+
+    constructor(key: DownloadKey) {
         this.transfer_key = key;
     }
 
@@ -97,18 +101,18 @@ class RequestFileDownload implements transfer.DownloadTransfer {
         return response;
     }
 
-    get_key(): transfer.DownloadKey {
+    get_key(): DownloadKey {
         return this.transfer_key;
     }
 }
 
-class RequestFileUpload implements transfer.UploadTransfer {
-    readonly transfer_key: transfer.UploadKey;
-    constructor(key: transfer.DownloadKey) {
+export class RequestFileUpload implements UploadTransfer {
+    readonly transfer_key: UploadKey;
+    constructor(key: DownloadKey) {
         this.transfer_key = key;
     }
 
-    get_key(): transfer.UploadKey {
+    get_key(): UploadKey {
         return this.transfer_key;
     }
 
@@ -152,14 +156,14 @@ class RequestFileUpload implements transfer.UploadTransfer {
     }
 }
 
-class FileManager extends connection.AbstractCommandHandler {
+export class FileManager extends AbstractCommandHandler {
     handle: ConnectionHandler;
     icons: IconManager;
     avatars: AvatarManager;
 
     private listRequests: FileListRequest[] = [];
-    private pending_download_requests: transfer.DownloadKey[] = [];
-    private pending_upload_requests: transfer.UploadKey[] = [];
+    private pending_download_requests: DownloadKey[] = [];
+    private pending_upload_requests: UploadKey[] = [];
 
     private transfer_counter : number = 1;
 
@@ -191,7 +195,7 @@ class FileManager extends connection.AbstractCommandHandler {
         this.avatars = undefined;
     }
 
-    handle_command(command: connection.ServerCommand): boolean {
+    handle_command(command: ServerCommand): boolean {
         switch (command.command) {
             case "notifyfilelist":
                 this.notifyFileList(command.arguments);
@@ -276,15 +280,15 @@ class FileManager extends connection.AbstractCommandHandler {
 
 
     /******************************** File download/upload ********************************/
-    download_file(path: string, file: string, channel?: ChannelEntry, password?: string) : Promise<transfer.DownloadKey> {
-        const transfer_data: transfer.DownloadKey = {
+    download_file(path: string, file: string, channel?: ChannelEntry, password?: string) : Promise<DownloadKey> {
+        const transfer_data: DownloadKey = {
             file_name: file,
             file_path: path,
             client_transfer_id: this.transfer_counter++
         } as any;
 
         this.pending_download_requests.push(transfer_data);
-        return new Promise<transfer.DownloadKey>((resolve, reject) => {
+        return new Promise<DownloadKey>((resolve, reject) => {
             transfer_data["_callback"] = resolve;
             this.handle.serverConnection.send_command("ftinitdownload", {
                 "path": path,
@@ -301,8 +305,8 @@ class FileManager extends connection.AbstractCommandHandler {
         });
     }
 
-    upload_file(options: transfer.UploadOptions) : Promise<transfer.UploadKey> {
-        const transfer_data: transfer.UploadKey = {
+    upload_file(options: UploadOptions) : Promise<UploadKey> {
+        const transfer_data: UploadKey = {
             file_path: options.path,
             file_name: options.name,
             client_transfer_id: this.transfer_counter++,
@@ -310,7 +314,7 @@ class FileManager extends connection.AbstractCommandHandler {
         } as any;
 
         this.pending_upload_requests.push(transfer_data);
-        return new Promise<transfer.UploadKey>((resolve, reject) => {
+        return new Promise<UploadKey>((resolve, reject) => {
             transfer_data["_callback"] = resolve;
             this.handle.serverConnection.send_command("ftinitupload", {
                 "path": options.path,
@@ -333,7 +337,7 @@ class FileManager extends connection.AbstractCommandHandler {
         json = json[0];
 
         let clientftfid = parseInt(json["clientftfid"]);
-        let transfer: transfer.DownloadKey;
+        let transfer: DownloadKey;
         for(let e of this.pending_download_requests)
             if(e.client_transfer_id == clientftfid) {
                 transfer = e;
@@ -355,14 +359,14 @@ class FileManager extends connection.AbstractCommandHandler {
         if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
             transfer.peer.hosts[0] = this.handle.serverConnection.remote_address().host;
 
-        (transfer["_callback"] as (val: transfer.DownloadKey) => void)(transfer);
+        (transfer["_callback"] as (val: DownloadKey) => void)(transfer);
         this.pending_download_requests.remove(transfer);
     }
 
     private notifyStartUpload(json) {
         json = json[0];
 
-        let transfer: transfer.UploadKey;
+        let transfer: UploadKey;
         let clientftfid = parseInt(json["clientftfid"]);
         for(let e of this.pending_upload_requests)
             if(e.client_transfer_id == clientftfid) {
@@ -384,7 +388,7 @@ class FileManager extends connection.AbstractCommandHandler {
         if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
             transfer.peer.hosts[0] = this.handle.serverConnection.remote_address().host;
 
-        (transfer["_callback"] as (val: transfer.UploadKey) => void)(transfer);
+        (transfer["_callback"] as (val: UploadKey) => void)(transfer);
         this.pending_upload_requests.remove(transfer);
     }
 
@@ -411,12 +415,12 @@ class FileManager extends connection.AbstractCommandHandler {
     }
 }
 
-class Icon {
+export class Icon {
     id: number;
     url: string;
 }
 
-enum ImageType {
+export enum ImageType {
     UNKNOWN,
     BITMAP,
     PNG,
@@ -425,7 +429,7 @@ enum ImageType {
     JPEG
 }
 
-function media_image_type(type: ImageType, file?: boolean) {
+export function media_image_type(type: ImageType, file?: boolean) {
     switch (type) {
         case ImageType.BITMAP:
             return "bmp";
@@ -442,7 +446,7 @@ function media_image_type(type: ImageType, file?: boolean) {
     }
 }
 
-function image_type(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) {
+export function image_type(encoded_data: string | ArrayBuffer, base64_encoded?: boolean) {
     const ab2str10 = () => {
         const buf = new Uint8Array(encoded_data as ArrayBuffer);
         if(buf.byteLength < 10)
@@ -472,7 +476,7 @@ function image_type(encoded_data: string | ArrayBuffer, base64_encoded?: boolean
     return ImageType.UNKNOWN;
 }
 
-class CacheManager {
+export class CacheManager {
     readonly cache_name: string;
 
     private _cache_category: Cache;
@@ -547,7 +551,7 @@ class CacheManager {
     }
 }
 
-class IconManager {
+export class IconManager {
     private static cache: CacheManager = new CacheManager("icons");
 
     handle: FileManager;
@@ -590,7 +594,7 @@ class IconManager {
         return this.handle.requestFileList("/icons");
     }
 
-    create_icon_download(id: number) : Promise<transfer.DownloadKey> {
+    create_icon_download(id: number) : Promise<DownloadKey> {
         return this.handle.download_file("", "/icon_" + id);
     }
 
@@ -665,7 +669,7 @@ class IconManager {
 
     private async _load_icon(id: number) : Promise<Icon> {
         try {
-            let download_key: transfer.DownloadKey;
+            let download_key: DownloadKey;
             try {
                 download_key = await this.create_icon_download(id);
             } catch(error) {
@@ -673,7 +677,7 @@ class IconManager {
                 throw "Failed to request icon";
             }
 
-            const downloader = transfer.spawn_download_transfer(download_key);
+            const downloader = spawn_download_transfer(download_key);
             let response: Response;
             try {
                 response = await downloader.request_file();
@@ -801,14 +805,14 @@ class IconManager {
     }
 }
 
-class Avatar {
+export class Avatar {
     client_avatar_id: string; /* the base64 uid thing from a-m */
     avatar_id: string; /* client_flag_avatar */
     url: string;
     type: ImageType;
 }
 
-class AvatarManager {
+export class AvatarManager {
     handle: FileManager;
 
     private static cache: CacheManager;
@@ -867,14 +871,14 @@ class AvatarManager {
         };
     }
 
-    create_avatar_download(client_avatar_id: string) : Promise<transfer.DownloadKey> {
+    create_avatar_download(client_avatar_id: string) : Promise<DownloadKey> {
         log.debug(LogCategory.GENERAL, "Requesting download for avatar %s", client_avatar_id);
         return this.handle.download_file("", "/avatar_" + client_avatar_id);
     }
 
     private async _load_avatar(client_avatar_id: string, avatar_version: string) {
         try {
-            let download_key: transfer.DownloadKey;
+            let download_key: DownloadKey;
             try {
                 download_key = await this.create_avatar_download(client_avatar_id);
             } catch(error) {
@@ -882,7 +886,7 @@ class AvatarManager {
                 throw "failed to request avatar download";
             }
 
-            const downloader = transfer.spawn_download_transfer(download_key);
+            const downloader = spawn_download_transfer(download_key);
             let response: Response;
             try {
                 response = await downloader.request_file();

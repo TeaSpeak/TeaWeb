@@ -1,12 +1,11 @@
-/// <reference path="../../i18n/localize.ts" />
+declare global {
+    interface JQuery<TElement = HTMLElement> {
+        asTabWidget(copy?: boolean) : JQuery<TElement>;
+        tabify(copy?: boolean) : this;
 
-interface JQuery<TElement = HTMLElement> {
-    asTabWidget(copy?: boolean) : JQuery<TElement>;
-    tabify(copy?: boolean) : this;
-
-    changeElementType(type: string) : JQuery<TElement>;
+        changeElementType(type: string) : JQuery<TElement>;
+    }
 }
-
 
 if(typeof (customElements) !== "undefined") {
     try {
@@ -26,7 +25,7 @@ if(typeof (customElements) !== "undefined") {
     console.warn(tr("Could not defied tab customElements!"));
 }
 
-var TabFunctions = {
+export const TabFunctions = {
     tabify(template: JQuery, copy: boolean = true) : JQuery {
         console.log("Tabify: copy=" + copy);
         console.log(template);
