@@ -1,2 +1,4 @@
 generated/
-build/
+build_/
+libraries/opus/build_
+libraries/opus/out
