@@ -1,6 +1,10 @@
 const path = require('path');
+const webpack = require("webpack");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CircularDependencyPlugin = require('circular-dependency-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+const ManifestGenerator = require("./webpack/ManifestPlugin");
+const WorkerPlugin = require('worker-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 module.exports = {
@@ -11,10 +15,16 @@ module.exports = {
     devtool: 'inline-source-map',
     mode: "development",
     plugins: [
+        new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
             filename: isDevelopment ? '[name].css' : '[name].[hash].css',
             chunkFilename: isDevelopment ? '[id].css' : '[id].[hash].css'
         }),
+        new ManifestGenerator({
+            file: path.join(__dirname, "dist/manifest.json")
+        }),
+        new WorkerPlugin(),
+        //new BundleAnalyzerPlugin()
         /*
         new CircularDependencyPlugin({
             //exclude: /a\.js|node_modules/,
@@ -23,6 +33,12 @@ module.exports = {
             cwd: process.cwd(),
         })
          */
+        /*
+        new webpack.optimize.AggressiveSplittingPlugin({
+            minSize: 1024 * 128,
+            maxSize: 1024 * 1024
+        })
+        */
     ],
     module: {
         rules: [
@@ -58,49 +74,28 @@ module.exports = {
                         }
                     }
                 ]
-            },
+            }
         ],
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', ".scss"],
         alias: {
             "tc-shared": path.resolve(__dirname, "shared/js"),
-            "tc-backend": path.resolve(__dirname, "web/js")
+            "tc-backend/web": path.resolve(__dirname, "web/js"),
+            "tc-backend": path.resolve(__dirname, "web/js"),
+            "tc-generated/codec/opus": path.resolve(__dirname, "asm/generated/TeaWeb-Worker-Codec-Opus.js"),
             //"tc-backend": path.resolve(__dirname, "shared/backend.d"),
         },
     },
     externals: {
-        "tc-loader": "umd loader"
+        "tc-loader": "window loader"
     },
     output: {
-        filename: 'shared-app.js',
+        filename: '[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
-        libraryTarget: "umd",
-        library: "shared"
+        publicPath: "js/"
     },
     optimization: {
-        /*
-        splitChunks: {
-            chunks: 'async',
-            minSize: 1,
-            maxSize: 500000,
-            minChunks: 1,
-            maxAsyncRequests: 6,
-            maxInitialRequests: 4,
-            automaticNameDelimiter: '~',
-            automaticNameMaxLength: 30,
-            cacheGroups: {
-                defaultVendors: {
-                    test: /[\\/]node_modules[\\/]/,
-                    priority: -10
-                },
-                default: {
-                    minChunks: 2,
-                    priority: -20,
-                    reuseExistingChunk: true
-                }
-            }
-        }
-         */
+        splitChunks: { }
     }
 };

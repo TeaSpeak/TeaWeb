@@ -463,7 +463,7 @@ const WEB_APP_FILE_LIST = [
         "path": "./",
         "local-path": "./shared/html/"
     },
-    { /* javascript loader for releases */
+    { /* javascript files as manifest.json */
         "type": "js",
         "search-pattern": /.*$/,
         "build-target": "dev|rel",
@@ -471,7 +471,14 @@ const WEB_APP_FILE_LIST = [
         "path": "js/",
         "local-path": "./dist/"
     },
+    { /* loader javascript file */
+        "type": "js",
+        "search-pattern": /.*$/,
+        "build-target": "dev|rel",
 
+        "path": "js/",
+        "local-path": "./loader/dist/"
+    },
     { /* shared javascript files (WebRTC adapter) */
         "type": "js",
         "search-pattern": /.*\.js$/,
@@ -661,41 +668,49 @@ namespace generator {
         return result.digest("hex");
     }
 
+    const rreaddir = async p => {
+        const result = [];
+        try {
+            const files = await fs.readdir(p);
+            for(const file of files) {
+                const file_path = path.join(p, file);
+
+                const info = await fs.stat(file_path);
+                if(info.isDirectory()) {
+                    result.push(...await rreaddir(file_path));
+                } else {
+                    result.push(file_path);
+                }
+            }
+        } catch(error) {
+            if(error.code === "ENOENT")
+                return [];
+            throw error;
+        }
+        return result;
+    };
+
+    function file_matches_options(file: ProjectResource, options: SearchOptions) {
+        if(typeof file["web-only"] === "boolean" && file["web-only"] && options.target !== "web")
+            return false;
+
+        if(typeof file["client-only"] === "boolean" && file["client-only"] && options.target !== "client")
+            return false;
+
+        if(typeof file["serve-only"] === "boolean" && file["serve-only"] && !options.serving)
+            return false;
+
+        if(!file["build-target"].split("|").find(e => e === options.mode))
+            return false;
+
+        return !(Array.isArray(file["req-parm"]) && file["req-parm"].find(e => !options.parameter.find(p => p.toLowerCase() === e.toLowerCase())));
+    }
+
     export async function search_files(files: ProjectResource[], options: SearchOptions) : Promise<Entry[]> {
         const result: Entry[] = [];
 
-        const rreaddir = async p => {
-            const result = [];
-            try {
-                const files = await fs.readdir(p);
-                for(const file of files) {
-                    const file_path = path.join(p, file);
-
-                    const info = await fs.stat(file_path);
-                    if(info.isDirectory()) {
-                        result.push(...await rreaddir(file_path));
-                    } else {
-                        result.push(file_path);
-                    }
-                }
-            } catch(error) {
-                if(error.code === "ENOENT")
-                    return [];
-                throw error;
-            }
-            return result;
-        };
-
         for(const file of files) {
-            if(typeof file["web-only"] === "boolean" && file["web-only"] && options.target !== "web")
-                continue;
-            if(typeof file["client-only"] === "boolean" && file["client-only"] && options.target !== "client")
-                continue;
-            if(typeof file["serve-only"] === "boolean" && file["serve-only"] && !options.serving)
-                continue;
-            if(!file["build-target"].split("|").find(e => e === options.mode))
-                continue;
-            if(Array.isArray(file["req-parm"]) && file["req-parm"].find(e => !options.parameter.find(p => p.toLowerCase() === e.toLowerCase())))
+            if(!file_matches_options(file, options))
                 continue;
 
             const normal_local = path.normalize(path.join(options.source_path, file["local-path"]));
@@ -723,23 +738,52 @@ namespace generator {
 
         return result;
     }
+
+    export async function search_http_file(files: ProjectResource[], target_file: string, options: SearchOptions) : Promise<string> {
+        for(const file of files) {
+            if(!file_matches_options(file, options))
+                continue;
+
+            if(file.path !== "./" && !target_file.startsWith("/" + file.path.replace(/\\/g, "/")))
+                continue;
+
+            const normal_local = path.normalize(path.join(options.source_path, file["local-path"]));
+            const files: string[] = await rreaddir(normal_local);
+            for(const f of files) {
+                const local_name = f.substr(normal_local.length);
+                if(!local_name.match(file["search-pattern"]) && !local_name.replace("\\\\", "/").match(file["search-pattern"]))
+                    continue;
+
+                if(typeof(file["search-exclude"]) !== "undefined" && f.match(file["search-exclude"]))
+                    continue;
+
+                if("/" + path.join(file.path, local_name).replace(/\\/g, "/") === target_file)
+                    return f;
+            }
+        }
+
+        return undefined;
+    }
 }
 
 namespace server {
+    import SearchOptions = generator.SearchOptions;
     export type Options = {
         port: number;
         php: string;
+
+        search_options: SearchOptions;
     }
 
     const exec: (command: string) => Promise<{ stdout: string, stderr: string }> = util.promisify(cp.exec);
 
-    let files: (generator.Entry & { http_path: string; })[] = [];
+    let files: ProjectResource[] = [];
     let server: http.Server;
     let php: string;
-    export async function launch(_files: generator.Entry[], options: Options) {
-        //Don't use this check anymore, because we're searching within the PATH variable
-        //if(!await fs.exists(options.php) || !(await fs.stat(options.php)).isFile())
-        //    throw "invalid php interpreter (not found)";
+    let options: Options;
+    export async function launch(_files: ProjectResource[], options_: Options) {
+        options = options_;
+        files = _files;
 
         try {
             const info = await exec(options.php + " --version");
@@ -762,17 +806,6 @@ namespace server {
                 server.off("error", reject);
                 resolve();
             });
-        });
-
-        files = _files.map(e =>{
-            return {
-                type: e.type,
-                name: e.name,
-                hash: e.hash,
-                local_path: e.local_path,
-                target_path: e.target_path,
-                http_path: "/" + e.target_path.replace(/\\/g, "/")
-            }
         });
     }
 
@@ -817,8 +850,8 @@ namespace server {
         });
     }
 
-    function serve_file(pathname: string, query: any, response: http.ServerResponse) {
-        const file = files.find(e => e.http_path === pathname);
+    async function serve_file(pathname: string, query: any, response: http.ServerResponse) {
+        const file = await generator.search_http_file(files, pathname, options.search_options);
         if(!file) {
             console.log("[SERVER] Client requested unknown file %s", pathname);
             response.writeHead(404);
@@ -827,13 +860,13 @@ namespace server {
             return;
         }
 
-        let type = mt.lookup(path.extname(file.local_path)) || "text/html";
-        console.log("[SERVER] Serving file %s (%s) (%s)", file.target_path, type, file.local_path);
-        if(path.extname(file.local_path) === ".php") {
-            serve_php(file.local_path, query, response);
+        let type = mt.lookup(path.extname(file)) || "text/html";
+        console.log("[SERVER] Serving file %s", file, type);
+        if(path.extname(file) === ".php") {
+            serve_php(file, query, response);
             return;
         }
-        const fis = fs.createReadStream(file.local_path);
+        const fis = fs.createReadStream(file);
 
         response.writeHead(200, "success", {
             "Content-Type": type + "; charset=utf-8"
@@ -846,23 +879,22 @@ namespace server {
         fis.on("data", data => response.write(data));
     }
 
-    function handle_api_request(request: http.IncomingMessage, response: http.ServerResponse, url: url_utils.UrlWithParsedQuery) {
+    async function handle_api_request(request: http.IncomingMessage, response: http.ServerResponse, url: url_utils.UrlWithParsedQuery) {
         if(url.query["type"] === "files") {
             response.writeHead(200, { "info-version": 1 });
             response.write("type\thash\tpath\tname\n");
-            for(const file of files)
-                if(file.http_path.endsWith(".php"))
-                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.http_path) + "\t" + path.basename(file.http_path, ".php") + ".html" + "\n");
+            for(const file of await generator.search_files(files, options.search_options))
+                if(file.name.endsWith(".php"))
+                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.target_path) + "\t" + path.basename(file.name, ".php") + ".html" + "\n");
                 else
-                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.http_path) + "\t" + path.basename(file.http_path) + "\n");
+                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.target_path) + "\t" + file.name + "\n");
             response.end();
             return;
         } else if(url.query["type"] === "file") {
             let p = path.join(url.query["path"] as string, url.query["name"] as string).replace(/\\/g, "/");
             if(p.endsWith(".html")) {
-                const np = p.substr(0, p.length - 5) + ".php";
-                if(files.find(e => e.http_path == np) && !files.find(e => e.http_path == p))
-                    p = np;
+                const np = await generator.search_http_file(files, p, options.search_options);
+                if(np) p = np;
             }
             serve_file(p, url.query, response);
             return;
@@ -1041,17 +1073,16 @@ function php_exe() : string {
 }
 
 async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: number) {
-    const files = await generator.search_files(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
-        source_path: __dirname,
-        parameter: [],
-        target: target,
-        mode: mode,
-        serving: true
-    });
-
-    await server.launch(files, {
+    await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
         port: port,
         php: php_exe(),
+        search_options: {
+            source_path: __dirname,
+            parameter: [],
+            target: target,
+            mode: mode,
+            serving: true
+        }
     });
 
     console.log("Server started on %d", port);
@@ -1060,14 +1091,6 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
 }
 
 async function main_develop(node: boolean, target: "client" | "web", port: number, flags: string[]) {
-    const files = await generator.search_files(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
-        source_path: __dirname,
-        parameter: [],
-        target: target,
-        mode: "dev",
-        serving: true
-    });
-
     const tscwatcher = new watcher.TSCWatcher();
     try {
         if(flags.indexOf("--no-tsc") == -1)
@@ -1079,9 +1102,16 @@ async function main_develop(node: boolean, target: "client" | "web", port: numbe
                 await sasswatcher.start();
 
             try {
-                await server.launch(files, {
+                await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
                     port: port,
                     php: php_exe(),
+                    search_options: {
+                        source_path: __dirname,
+                        parameter: [],
+                        target: target,
+                        mode: "dev",
+                        serving: true
+                    }
                 });
             } catch(error) {
                 console.error("Failed to start server: %o", error instanceof Error ? error.message : error);

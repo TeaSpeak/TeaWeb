@@ -1,78 +1,82 @@
-/// <reference path="CodecWorker.ts" />
+import * as cworker from "./CodecWorker";
+import {CodecType} from "tc-backend/web/codec/Codec";
+import {CodecWorker} from "./CodecWorker";
+
+const prefix = "OpusWorker";
+
+declare global {
+    interface Window {
+        __init_em_module: ((Module: any) => void)[];
+    }
+}
+self.__init_em_module = self.__init_em_module || [];
 
 const WASM_ERROR_MESSAGES = [
     'no native wasm support detected'
 ];
 
-this["Module"] = this["Module"] || ({} as any); /* its required to cast {} to any!*/
+let Module;
+self.__init_em_module.push(m => Module = m);
+const runtime_initialize_promise = new Promise((resolve, reject) => {
+    self.__init_em_module.push(Module => {
+        const cleanup = () => {
+            Module['onRuntimeInitialized'] = undefined;
+            Module['onAbort'] = undefined;
+        };
 
-let initialized = false;
-Module['onRuntimeInitialized'] = function() {
-    initialized = true;
-    console.log(prefix + "Initialized!");
+        Module['onRuntimeInitialized'] = () => {
+            cleanup();
+            resolve();
+        };
 
-    sendMessage({
-        token: workerCallbackToken,
-        type: "loaded",
-        success: true
-    })
-};
+        Module['onAbort'] = error => {
+            cleanup();
+
+            let message;
+            if(error instanceof DOMException)
+                message = "DOMException (" + error.name + "): " + error.code + " => " + error.message;
+            else {
+                abort_message = error;
+                message = error;
+                if(error.indexOf("no binaryen method succeeded") != -1) {
+                    for(const error of WASM_ERROR_MESSAGES) {
+                        if(last_error_message.indexOf(error) != -1) {
+                            message = "no native wasm support detected, but its required";
+                            break;
+                        }
+                    }
+                }
+            }
+
+            reject(message);
+        }
+    });
+});
 
 let abort_message: string = undefined;
 let last_error_message: string;
+self.__init_em_module.push(Module => {
+    Module['print'] = function() {
+        if(arguments.length == 1 && arguments[0] == abort_message)
+            return; /* we don't need to reprint the abort message! */
 
-Module['print'] = function() {
-    if(arguments.length == 1 && arguments[0] == abort_message)
-        return; /* we don't need to reprint the abort message! */
-    console.log(...arguments);
-};
+        console.log("Print: ", ...arguments);
+    };
 
-Module['printErr'] = function() {
-    if(arguments.length == 1 && arguments[0] == abort_message)
-        return; /* we don't need to reprint the abort message! */
+    Module['printErr'] = function() {
+        if(arguments.length == 1 && arguments[0] == abort_message)
+            return; /* we don't need to reprint the abort message! */
 
-    last_error_message = arguments[0];
-    for(const suppress of WASM_ERROR_MESSAGES)
-        if((arguments[0] as string).indexOf(suppress) != -1)
-            return;
+        last_error_message = arguments[0];
+        for(const suppress of WASM_ERROR_MESSAGES)
+            if((arguments[0] as string).indexOf(suppress) != -1)
+                return;
 
-    console.error(...arguments);
-};
+        console.error("Error: ",...arguments);
+    };
 
-Module['onAbort'] = (message: string | DOMException) => {
-    /* no native wasm support detected */
-    Module['onAbort'] = undefined;
-
-    if(message instanceof DOMException)
-        message = "DOMException (" + message.name + "): " + message.code + " => " + message.message;
-    else {
-        abort_message = message;
-        if(message.indexOf("no binaryen method succeeded") != -1)
-            for(const error of WASM_ERROR_MESSAGES)
-                if(last_error_message.indexOf(error) != -1) {
-                    message = "no native wasm support detected, but its required";
-                    break;
-                }
-    }
-
-    sendMessage({
-        token: workerCallbackToken,
-        type: "loaded",
-        success: false,
-        message: message
-    });
-};
-
-try {
-    console.log("Node init!");
     Module['locateFile'] = file => "../../wasm/" + file;
-    importScripts("../../wasm/TeaWeb-Worker-Codec-Opus.js");
-} catch (e) {
-    if(typeof(Module['onAbort']) === "function") {
-        console.log(e);
-        Module['onAbort']("Failed to load native scripts");
-    } /* else the error had been already handled because its a WASM error */
-}
+});
 
 enum OpusType {
     VOIP = 2048,
@@ -89,6 +93,7 @@ class OpusWorker implements CodecWorker {
     private fn_decode: any;
     private fn_encode: any;
     private fn_reset: any;
+    private fn_error_message: any;
 
     private bufferSize = 4096 * 2;
     private encodeBufferRaw: any;
@@ -106,11 +111,12 @@ class OpusWorker implements CodecWorker {
     }
 
     initialise?() : string {
-        this.fn_newHandle = cwrap("codec_opus_createNativeHandle", "number", ["number", "number"]);
-        this.fn_decode = cwrap("codec_opus_decode", "number", ["number", "number", "number", "number"]);
+        this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "number", ["number", "number"]);
+        this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["number", "number", "number", "number"]);
         /* codec_opus_decode(handle, buffer, length, maxlength) */
-        this.fn_encode = cwrap("codec_opus_encode", "number", ["number", "number", "number", "number"]);
-        this.fn_reset = cwrap("codec_opus_reset", "number", ["number"]);
+        this.fn_encode = Module.cwrap("codec_opus_encode", "number", ["number", "number", "number", "number"]);
+        this.fn_reset = Module.cwrap("codec_opus_reset", "number", ["number"]);
+        this.fn_error_message = Module.cwrap("opus_error_message", "string", ["number"]);
 
         this.nativeHandle = this.fn_newHandle(this.channelCount, this.type);
 
@@ -127,12 +133,8 @@ class OpusWorker implements CodecWorker {
     decode(data: Uint8Array): Float32Array | string {
         if (data.byteLength > this.decodeBuffer.byteLength) return "Data to long!";
         this.decodeBuffer.set(data);
-        //console.log("decode(" + data.length + ")");
-        //console.log(data);
         let result = this.fn_decode(this.nativeHandle, this.decodeBuffer.byteOffset, data.byteLength, this.decodeBuffer.byteLength);
-        if (result < 0) {
-            return "invalid result on decode (" + result + ")";
-        }
+        if (result < 0) return this.fn_error_message(result);
         return Module.HEAPF32.slice(this.decodeBuffer.byteOffset / 4, (this.decodeBuffer.byteOffset / 4) + (result * this.channelCount));
     }
 
@@ -140,9 +142,7 @@ class OpusWorker implements CodecWorker {
         this.encodeBuffer.set(data);
 
         let result = this.fn_encode(this.nativeHandle, this.encodeBuffer.byteOffset, data.length, this.encodeBuffer.byteLength);
-        if (result < 0) {
-            return "invalid result on encode (" + result + ")";
-        }
+        if (result < 0) return this.fn_error_message(result);
         let buf = Module.HEAP8.slice(this.encodeBuffer.byteOffset, this.encodeBuffer.byteOffset + result);
         return Uint8Array.from(buf);
     }
@@ -152,3 +152,24 @@ class OpusWorker implements CodecWorker {
         this.fn_reset(this.nativeHandle);
     }
 }
+cworker.register_codec(CodecType.OPUS_MUSIC, async () => new OpusWorker(2, OpusType.AUDIO));
+cworker.register_codec(CodecType.OPUS_VOICE, async () => new OpusWorker(1, OpusType.VOIP));
+
+cworker.set_initialize_callback(async () => {
+    try {
+        require("tc-generated/codec/opus");
+    } catch (e) {
+        if(Module) {
+            if(typeof(Module['onAbort']) === "function") {
+                Module['onAbort']("Failed to load native scripts");
+            } /* else the error had been already handled because its a WASM error */
+        } else {
+            throw e;
+        }
+    }
+    if(!Module)
+        throw "Missing module handle";
+
+    await runtime_initialize_promise;
+    return true;
+});

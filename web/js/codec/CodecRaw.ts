@@ -1,6 +1,6 @@
 import {BasicCodec} from "./BasicCodec";
 
-export class CodecWrapperRaw extends BasicCodec {
+export class CodecRaw extends BasicCodec {
     converterRaw: any;
     converter: Uint8Array;
     bufferSize: number = 4096 * 4;

@@ -1,5 +1,6 @@
 import {settings, Settings} from "tc-shared/settings";
 import * as loader from "tc-loader";
+import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import * as bipc from "tc-shared/BrowserIPC";
 

@@ -1,4 +1,4 @@
-import * as loader from "./loader";
+import * as loader from "./loader/loader";
 
 let is_debug = false;
 

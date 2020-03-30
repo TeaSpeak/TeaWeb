@@ -73,12 +73,6 @@ export type DependSource = {
     depends: string[];
 }
 export type SourcePath = string | DependSource | string[];
-export function load_script(path: SourcePath) : Promise<void>;
-export function load_scripts(paths: SourcePath[]) : Promise<void>;
-export function load_style(path: SourcePath) : Promise<void>;
-export function load_styles(paths: SourcePath[]) : Promise<void>;
-export function load_template(path: SourcePath) : Promise<void>;
-export function load_templates(paths: SourcePath[]) : Promise<void>;
 export type ErrorHandler = (message: string, detail: string) => void;
 export function critical_error(message: string, detail?: string);
 export function critical_error_handler(handler?: ErrorHandler, override?: boolean);

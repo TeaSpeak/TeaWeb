@@ -23,6 +23,7 @@ extern "C" {
 			"Memory allocation has failed" //-7 (OPUS_ALLOC_FAIL)
 	};
 
+    EMSCRIPTEN_KEEPALIVE
 	inline const char* opus_error_message(int error) {
 		error = abs(error);
 		if(error > 0 && error <= 7) return opus_errors[error - 1];
@@ -59,11 +60,13 @@ extern "C" {
 	    INVOKE_OPUS(error, opus_encoder_ctl, handle->encoder, OPUS_SET_COMPLEXITY(1));
 	    //INVOKE_OPUS(error, opus_encoder_ctl, handle->encoder, OPUS_SET_BITRATE(4740));
 
+        /* //This method is obsolete!
 	    EM_ASM(
 		    printMessageToServerTab('Encoder initialized!');
 		    printMessageToServerTab('  Comprexity: 1');
 		    printMessageToServerTab('  Bitrate:    4740');
 	    );
+	    */
 
         return true;
     }
@@ -98,9 +101,11 @@ extern "C" {
         auto result = opus_encode_float(handle->encoder, (float*) buffer, length / handle->channelCount, buffer, maxLength);
         if(result < 0) return result;
 	    auto end = currentMillies();
+	    /* //This message is obsolete
 	    EM_ASM({
-		           printMessageToServerTab("codec_opus_encode(...) tooks " + $0 + "ms to execute!");
-	           }, end - begin);
+            printMessageToServerTab("codec_opus_encode(...) tooks " + $0 + "ms to execute!");
+        }, end - begin);
+        */
         return result;
     }
 

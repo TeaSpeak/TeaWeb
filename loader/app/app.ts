@@ -1,4 +1,4 @@
-import * as loader from "./loader";
+import * as loader from "./loader/loader";
 
 declare global {
     interface Window {
@@ -7,6 +7,11 @@ declare global {
 }
 
 const node_require: typeof require = window.require;
+
+function cache_tag() {
+    const ui = ui_version();
+    return "?_ts=" + (!!ui && ui !== "unknown" ? ui : Date.now());
+}
 
 let _ui_version;
 export function ui_version() {
@@ -20,6 +25,15 @@ export function ui_version() {
         return (_ui_version = version);
     }
     return _ui_version;
+}
+
+interface Manifest {
+    version: number;
+
+    chunks: {[key: string]: {
+        hash: string,
+        file: string
+    }[]};
 }
 
 /* all javascript loaders */
@@ -72,7 +86,7 @@ const loader_javascript = {
     },
     load_scripts: async () => {
         if(!window.require) {
-            await loader.load_script(["vendor/jquery/jquery.min.js"]);
+            await loader.scripts.load(["vendor/jquery/jquery.min.js"], { cache_tag: cache_tag() });
         } else {
             /*
             loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
@@ -84,45 +98,41 @@ const loader_javascript = {
             });
             */
         }
-        await loader.load_script(["vendor/DOMPurify/purify.min.js"]);
+        await loader.scripts.load(["vendor/DOMPurify/purify.min.js"], { cache_tag: cache_tag() });
 
-        await loader.load_script("vendor/jsrender/jsrender.min.js");
-        await loader.load_scripts([
+        await loader.scripts.load("vendor/jsrender/jsrender.min.js", { cache_tag: cache_tag() });
+        await loader.scripts.load_multiple([
             ["vendor/xbbcode/src/parser.js"],
             ["vendor/moment/moment.js"],
             ["vendor/twemoji/twemoji.min.js", ""], /* empty string means not required */
             ["vendor/highlight/highlight.pack.js", ""], /* empty string means not required */
             ["vendor/remarkable/remarkable.min.js", ""], /* empty string means not required */
             ["adapter/adapter-latest.js", "https://webrtc.github.io/adapter/adapter-latest.js"]
-        ]);
-        await loader.load_scripts([
-            ["vendor/emoji-picker/src/jquery.lsxemojipicker.js"]
-        ]);
+        ], {
+            cache_tag: cache_tag(),
+            max_parallel_requests: -1
+        });
 
-        if(!loader.version().debug_mode) {
-            loader.register_task(loader.Stage.JAVASCRIPT, {
-                name: "scripts release",
-                priority: 20,
-                function: loader_javascript.load_release
-            });
-        } else {
-            loader.register_task(loader.Stage.JAVASCRIPT, {
-                name: "scripts debug",
-                priority: 20,
-                function: loader_javascript.load_scripts_debug
-            });
+        await loader.scripts.load("vendor/emoji-picker/src/jquery.lsxemojipicker.js", { cache_tag: cache_tag() });
+
+        let manifest: Manifest;
+        try {
+            const response = await fetch("js/manifest.json");
+            if(!response.ok) throw response.status + " " + response.statusText;
+
+            manifest = await response.json();
+        } catch(error) {
+            console.error("Failed to load javascript manifest: %o", error);
+            loader.critical_error("Failed to load manifest.json", error);
+            throw "failed to load manifest.json";
         }
-    },
-    load_scripts_debug: async () => {
-        await loader.load_scripts(["js/shared-app.js"])
-    },
-    load_release: async () => {
-        console.log("Load for release!");
+        if(manifest.version !== 1)
+            throw "invalid manifest version";
 
-        await loader.load_scripts([
-            //Load general API's
-            ["js/client.min.js", "js/client.js"]
-        ]);
+        await loader.scripts.load_multiple(manifest.chunks["shared-app"].map(e => "js/" + e.file), {
+            cache_tag: undefined,
+            max_parallel_requests: -1
+        });
     }
 };
 
@@ -149,15 +159,20 @@ const loader_webassembly = {
 
 const loader_style = {
     load_style: async () => {
-        await loader.load_styles([
+        const options = {
+            cache_tag: cache_tag(),
+            max_parallel_requests: -1
+        };
+
+        await loader.style.load_multiple([
             "vendor/xbbcode/src/xbbcode.css"
-        ]);
-        await loader.load_styles([
+        ], options);
+        await loader.style.load_multiple([
             "vendor/emoji-picker/src/jquery.lsxemojipicker.css"
-        ]);
-        await loader.load_styles([
+        ], options);
+        await loader.style.load_multiple([
             ["vendor/highlight/styles/darcula.css", ""], /* empty string means not required */
-        ]);
+        ], options);
 
         if(loader.version().debug_mode) {
             await loader_style.load_style_debug();
@@ -167,7 +182,7 @@ const loader_style = {
     },
 
     load_style_debug: async () => {
-        await loader.load_styles([
+        await loader.style.load_multiple([
             "css/static/main.css",
             "css/static/main-layout.css",
             "css/static/helptag.css",
@@ -218,14 +233,20 @@ const loader_style = {
             "css/static/htmltags.css",
             "css/static/hostbanner.css",
             "css/static/menu-bar.css"
-        ]);
+        ], {
+            cache_tag: cache_tag(),
+            max_parallel_requests: -1
+        });
     },
 
     load_style_release: async () => {
-        await loader.load_styles([
+        await loader.style.load_multiple([
             "css/static/base.css",
             "css/static/main.css",
-        ]);
+        ], {
+            cache_tag: cache_tag(),
+            max_parallel_requests: -1
+        });
     }
 };
 
@@ -313,11 +334,14 @@ loader.register_task(loader.Stage.STYLE, {
 loader.register_task(loader.Stage.TEMPLATES, {
     name: "templates",
     function: async () => {
-        await loader.load_templates([
+        await loader.templates.load_multiple([
             "templates.html",
             "templates/modal/musicmanage.html",
             "templates/modal/newcomer.html",
-        ]);
+        ], {
+            cache_tag: cache_tag(),
+            max_parallel_requests: -1
+        });
     },
     priority: 10
 });
