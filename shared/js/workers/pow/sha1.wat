@@ -1,5 +1,6 @@
 ;; SHA-1 code from https://github.com/Snack-X/wasm-works/blob/master/modules/sha1.wat by Snack-X
-
+;; TODO: Cache the sha1 state after the first 64 bytes.
+;;       Maybe as well for 128 bytes. But this block may be recalculated on number change because not every identity is 128 bytes long
 (module
   ;; import 1 page of memory from env.memory
   ;; [0x000;0x03f] will be used as input chunk
@@ -136,7 +137,7 @@
         ;; calculate f and determine k
         (block $get_key
           (if (i32.lt_s (get_local $w) (i32.const 20))
-            (block
+            (block ;; depth: 6
               ;; f = (b & c) | (~b & d)
               (set_local $f
                 (i32.or
@@ -146,7 +147,7 @@
                 )
               )
               (set_local $k (i32.const 0x5a827999))
-              (br $get_key)
+              (br 2) ;; $get_key
             )
           )
           (if (i32.lt_s (get_local $w) (i32.const 40))
@@ -159,7 +160,7 @@
                 )
               )
               (set_local $k (i32.const 0x6ed9eba1))
-              (br $get_key)
+              (br 2) ;; $get_key
             )
           )
           (if (i32.lt_s (get_local $w) (i32.const 60))
@@ -175,7 +176,7 @@
                 )
               )
               (set_local $k (i32.const 0x8f1bbcdc))
-              (br $get_key)
+              (br 2) ;; $get_key
             )
           )
           (if (i32.lt_s (get_local $w) (i32.const 80))
@@ -188,7 +189,7 @@
                 )
               )
               (set_local $k (i32.const 0xca62c1d6))
-              (br $get_key)
+              (br 2) ;; $get_key
             )
           )
         )
@@ -221,10 +222,10 @@
         (set_local $w (i32.add (get_local $w) (i32.const 1)))
 
         ;; if 80 <= w, break
-        (br_if $done (i32.ge_s (get_local $w) (i32.const 80)))
+        (br_if 1 (i32.ge_s (get_local $w) (i32.const 80))) ;; 1 := $done
 
         ;; else, continue
-        (br $loop)
+        (br 0) ;; $loop
       )
     )
 
@@ -259,11 +260,11 @@
         (block $done_pad
           ;; zero pad
           (loop $loop
-            (br_if $done_pad (i32.ge_s (get_local $i) (i32.const 64)))
+            (br_if 1 (i32.ge_s (get_local $i) (i32.const 64))) ;; 1 := $done_pad
 
             (i32.store8 (get_local $i) (i32.const 0))
             (set_local $i (i32.add (get_local $i) (i32.const 1)))
-            (br $loop)
+            (br 0) ;; $loop
           )
         )
 
@@ -284,11 +285,11 @@
       (block $done_pad
         ;; zero pad
         (loop $loop
-          (br_if $done_pad (i32.ge_s (get_local $i) (i32.const 56)))
+          (br_if 1 (i32.ge_s (get_local $i) (i32.const 56))) ;; 1 := $done_pad
 
           (i32.store8 (get_local $i) (i32.const 0))
           (set_local $i (i32.add (get_local $i) (i32.const 1)))
-          (br $loop)
+          (br 0) ;; $loop
         )
       )
     )
@@ -350,7 +351,7 @@
                 ;; Set it to '0' and decrease $index
                 (i32.store8 (get_local $index) (i32.const 48))
 
-                (br $main_loop)
+                (br 2) ;; 2 := $main_loop
             )
         )
 
@@ -362,7 +363,7 @@
   )
 
 
-  (func $mine
+  (func $mine ;; depth := 0
     ;; Length of the base 64 string
     (param $length64 i32)
     ;; Length of the counter
@@ -384,8 +385,8 @@
 
     (set_local $best_level (get_local $target_level))
 
-    (block $done
-        (loop $main_loop
+    (block $done ;; depth := 1
+        (loop $main_loop  ;; depth := 2
             call $sha1_init
 
             ;; Load the first 64 bytes
@@ -403,7 +404,7 @@
             (set_local $write_index (i32.const 0x0E0))
             (set_local $write_offset (i32.const 0))
 
-            (loop $write_loop
+            (loop $write_loop ;; depth := 3
                 (i32.store8 (get_local $write_offset) (i32.load8_u (get_local $write_index)))
 
                 (set_local $write_offset (i32.add (get_local $write_offset) (i32.const 1)))
@@ -415,7 +416,7 @@
                 )
 
                 (set_local $write_index (i32.add (get_local $write_index) (i32.const 1)))
-                (br_if $write_loop (i32.lt_s (get_local $write_index) (get_local $max_write_index)))
+                (br_if 0 (i32.lt_s (get_local $write_index) (get_local $max_write_index))) ;; 0 := $write_loop
             )
             (call $sha1_end (get_local $write_offset))
 
@@ -468,7 +469,7 @@
                     ;; If we have a target level then break here
                     (if
                         (i32.ne (get_local $target_level) (i32.const 0))
-                        (br $done)
+                        (br 4) ;; $done maybe 4?
                     )
                 )
             )
@@ -479,7 +480,7 @@
                 (call $increase_counter (i32.add (i32.const 0x0A0) (get_local $length64)) (get_local $length_counter))
             )
 
-            (br_if $main_loop (i32.gt_u (get_local $iterations) (i32.const 0)))
+            (br_if 0 (i32.gt_u (get_local $iterations) (i32.const 0))) ;; 0 := $main_loop
         )
     )
 

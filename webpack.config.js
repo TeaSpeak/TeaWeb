@@ -72,6 +72,12 @@ module.exports = {
                         }
                     }
                 ]
+            },
+            {
+                test: /\.was?t$/,
+                loader: [
+                    "./webpack/WatLoader.js"
+                ]
             }
         ],
     },

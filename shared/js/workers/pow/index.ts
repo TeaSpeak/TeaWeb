@@ -1,12 +1,8 @@
-declare namespace WebAssembly {
-    export function instantiateStreaming(stream: Promise<Response>, imports?: any) : Promise<WebAssembly.WebAssemblyInstantiatedSource>;
-}
 declare function postMessage(message: any): void;
 
 const prefix = "[POWWorker] ";
 
 let initialized = false;
-
 let memory: WebAssembly.Memory;
 let memory_u8: Uint8Array;
 let wasm_object: WebAssembly.WebAssemblyInstantiatedSource;
@@ -31,15 +27,7 @@ function post_status(code: string | undefined, result: boolean | string | any) {
     memory = new WebAssembly.Memory({ initial: 1 });
     memory_u8 = new Uint8Array(memory.buffer);
 
-    if(typeof(WebAssembly.instantiateStreaming) === "undefined") {
-        WebAssembly.instantiateStreaming = async (stream: Promise<Response>, imports?: any) => {
-            const response = await stream;
-            const buffer = await response.arrayBuffer();
-            return WebAssembly.instantiate(buffer, imports);
-        }
-    }
-
-    WebAssembly.instantiateStreaming(fetch('../../wat/pow/sha1.wasm'), {
+    WebAssembly.instantiate(require("./sha1.wat") as Uint8Array, {
         env: {
             memory: memory
         }
@@ -96,3 +84,5 @@ onmessage = function(e: MessageEvent) {
         post_status(data.code, true);
     }
 };
+
+export = {};

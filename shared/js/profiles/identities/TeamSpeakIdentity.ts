@@ -279,9 +279,10 @@ class IdentityPOWWorker {
     private _worker: Worker;
     private _current_hash: string;
     private _best_level: number;
+    private _initialized = false;
 
     async initialize(key: string) {
-        this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerPOW.js");
+        this._worker = new Worker("tc-shared/workers/pow", { type: "module" });
 
         /* initialize */
         await new Promise<void>((resolve, reject) => {
@@ -309,6 +310,7 @@ class IdentityPOWWorker {
                 reject("Failed to load worker (" + event.message + ")");
             };
         });
+        this._initialized = true;
 
         /* set data */
         await new Promise<void>((resolve, reject) => {
@@ -389,35 +391,37 @@ class IdentityPOWWorker {
     }
 
     async finalize(timeout?: number) {
-        try {
-            await new Promise<void>((resolve, reject) => {
-                this._worker.postMessage({
-                    type: "finalize",
-                    code: "finalize"
+        if(this._initialized) {
+            try {
+                await new Promise<void>((resolve, reject) => {
+                    this._worker.postMessage({
+                        type: "finalize",
+                        code: "finalize"
+                    });
+
+                    const timeout_id = setTimeout(() => reject("timeout"), timeout || 250);
+
+                    this._worker.onmessage = event => {
+                        this._worker.onmessage = event => this.handle_message(event.data);
+
+                        clearTimeout(timeout_id);
+
+                        if (!event.data) {
+                            reject("invalid data");
+                            return;
+                        }
+
+                        if (!event.data.success) {
+                            reject("failed to finalize (" + event.data.success + " | " + (event.data.message || "unknown eroror") + ")");
+                            return;
+                        }
+
+                        resolve();
+                    };
                 });
-
-                const timeout_id = setTimeout(() => reject("timeout"), timeout || 250);
-
-                this._worker.onmessage = event => {
-                    this._worker.onmessage = event => this.handle_message(event.data);
-
-                    clearTimeout(timeout_id);
-
-                    if (!event.data) {
-                        reject("invalid data");
-                        return;
-                    }
-
-                    if (!event.data.success) {
-                        reject("failed to finalize (" + event.data.success + " | " + (event.data.message || "unknown eroror") + ")");
-                        return;
-                    }
-
-                    resolve();
-                };
-            });
-        } catch(error) {
-            log.error(LogCategory.IDENTITIES, tr("Failed to finalize POW worker! (%o)"), error);
+            } catch(error) {
+                log.error(LogCategory.IDENTITIES, tr("Failed to finalize POW worker! (%o)"), error);
+            }
         }
 
         this._worker.terminate();
@@ -652,113 +656,116 @@ export class TeaSpeakIdentity implements Identity {
             return current_hash;
         };
 
-        { /* init */
-            const initialize_promise: Promise<void>[] = [];
-            for(let index = 0; index  < threads; index++) {
-                const worker = new IdentityPOWWorker();
-                workers.push(worker);
-                initialize_promise.push(worker.initialize(this.public_key));
+        try {
+            { /* init */
+                const initialize_promise: Promise<void>[] = [];
+                for (let index = 0; index < threads; index++) {
+                    const worker = new IdentityPOWWorker();
+                    workers.push(worker);
+                    initialize_promise.push(worker.initialize(this.public_key));
+                }
+
+                try {
+                    await Promise.all(initialize_promise);
+                } catch (error) {
+                    log.error(LogCategory.IDENTITIES, error);
+                    throw "failed to initialize";
+                }
             }
+
+            let result = false;
+            let best_level = 0;
+            let target_level = target > 0 ? target : await this.level() + 1;
+
+            const worker_promise: Promise<void>[] = [];
+
+            const hash_timestamps: number[] = [];
+            let last_hashrate_update: number = 0;
+
+            const update_hashrate = () => {
+                if (!callback_status) return;
+                const now = Date.now();
+                hash_timestamps.push(now);
+
+                if (last_hashrate_update + 1000 < now) {
+                    last_hashrate_update = now;
+
+                    const timeout = now - 10 * 1000; /* 10s */
+                    const rounds = hash_timestamps.filter(e => e > timeout);
+                    callback_status(Math.ceil((rounds.length * iterations) / Math.ceil((now - rounds[0]) / 1000)))
+                }
+            };
 
             try {
-                await Promise.all(initialize_promise);
-            } catch(error) {
-                log.error(LogCategory.IDENTITIES, error);
-                throw "failed to initialize";
-            }
-        }
+                result = await new Promise<boolean>((resolve, reject) => {
+                    let active = true;
 
-        let result = false;
-        let best_level = 0;
-        let target_level = target > 0 ? target : await this.level() + 1;
-
-        const worker_promise: Promise<void>[] = [];
-
-        const hash_timestamps: number[] = [];
-        let last_hashrate_update: number = 0;
-
-        const update_hashrate = () => {
-            if(!callback_status) return;
-            const now = Date.now();
-            hash_timestamps.push(now);
-
-            if(last_hashrate_update + 1000 < now) {
-                last_hashrate_update = now;
-
-                const timeout = now - 10 * 1000; /* 10s */
-                const rounds = hash_timestamps.filter(e => e > timeout);
-                callback_status(Math.ceil((rounds.length * iterations) / Math.ceil((now - rounds[0]) / 1000)))
-            }
-        };
-
-        try {
-            result = await new Promise<boolean>((resolve, reject) => {
-                let active = true;
-
-                const exit = () => {
-                    const timeout = setTimeout(() => resolve(true), 1000);
-                    Promise.all(worker_promise).then(result => {
-                        clearTimeout(timeout);
-                        resolve(true);
-                    }).catch(error => resolve(true));
-                    active = false;
-                };
-
-                for(const worker of workers) {
-                    const worker_mine = () => {
-                        if(!active) return;
-
-                        const promise = worker.mine(next_hash(), iterations, target_level);
-                        const p = promise.then(result => {
-                            update_hashrate();
-
-                            worker_promise.remove(p);
-
-                            if(result.valueOf()) {
-                                if(worker.current_level() > best_level) {
-                                    this.hash_number = worker.current_hash();
-
-                                    log.info(LogCategory.IDENTITIES, "Found new best at %s (%d). Old was %d", this.hash_number, worker.current_level(), best_level);
-                                    best_level = worker.current_level();
-                                    if(callback_level)
-                                        callback_level(best_level);
-                                }
-
-                                if(active) {
-                                    if(target > 0)
-                                        exit();
-                                    else
-                                        target_level = best_level + 1;
-                                }
-                            }
-
-                            if(active && (active = active_callback()))
-                                setTimeout(() => worker_mine(), 0);
-                            else {
-                                exit();
-                            }
-
-                            return Promise.resolve();
-                        }).catch(error => {
-                            worker_promise.remove(p);
-
-                            log.warn(LogCategory.IDENTITIES, "POW worker error %o", error);
-                            reject(error);
-
-                            return Promise.resolve();
-                        });
-
-                        worker_promise.push(p);
+                    const exit = () => {
+                        const timeout = setTimeout(() => resolve(true), 1000);
+                        Promise.all(worker_promise).then(result => {
+                            clearTimeout(timeout);
+                            resolve(true);
+                        }).catch(error => resolve(true));
+                        active = false;
                     };
 
-                    worker_mine();
-                }
-            });
-        } catch(error) {
-            //error already printed before reject had been called
-        }
+                    for (const worker of workers) {
+                        const worker_mine = () => {
+                            if (!active) return;
 
-        { /* shutdown */
+                            const promise = worker.mine(next_hash(), iterations, target_level);
+                            const p = promise.then(result => {
+                                update_hashrate();
+
+                                worker_promise.remove(p);
+
+                                if (result.valueOf()) {
+                                    if (worker.current_level() > best_level) {
+                                        this.hash_number = worker.current_hash();
+
+                                        log.info(LogCategory.IDENTITIES, "Found new best at %s (%d). Old was %d", this.hash_number, worker.current_level(), best_level);
+                                        best_level = worker.current_level();
+                                        if (callback_level)
+                                            callback_level(best_level);
+                                    }
+
+                                    if (active) {
+                                        if (target > 0)
+                                            exit();
+                                        else
+                                            target_level = best_level + 1;
+                                    }
+                                }
+
+                                if (active && (active = active_callback()))
+                                    setTimeout(() => worker_mine(), 0);
+                                else {
+                                    exit();
+                                }
+
+                                return Promise.resolve();
+                            }).catch(error => {
+                                worker_promise.remove(p);
+
+                                log.warn(LogCategory.IDENTITIES, "POW worker error %o", error);
+                                reject(error);
+
+                                return Promise.resolve();
+                            });
+
+                            worker_promise.push(p);
+                        };
+
+                        worker_mine();
+                    }
+                });
+            } catch (error) {
+                //error already printed before reject had been called
+            }
+
+            return result;
+        } finally {
+            /* shutdown */
             const finalize_promise: Promise<void>[] = [];
             for(const worker of workers)
                 finalize_promise.push(worker.finalize(250));
@@ -766,13 +773,10 @@ export class TeaSpeakIdentity implements Identity {
             try {
                 await Promise.all(finalize_promise);
             } catch(error) {
-                log.error(LogCategory.IDENTITIES, error);
-                throw "failed to finalize";
+                log.error(LogCategory.IDENTITIES, "Failed to shutdown worker: %o", error);
             }
         }
-
-
-        return result;
+        throw "this should never be reached";
     }
 
     private async initialize() {
@@ -783,7 +787,7 @@ export class TeaSpeakIdentity implements Identity {
         try {
             jwk = await CryptoHelper.decode_tomcrypt_key(this.private_key);
             if(!jwk)
-                throw "result undefined";
+                throw tr("result undefined");
         } catch(error) {
             throw "failed to parse key (" + error + ")";
         }
