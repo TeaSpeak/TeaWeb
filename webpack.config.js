@@ -33,12 +33,10 @@ module.exports = {
             cwd: process.cwd(),
         })
          */
-        /*
         new webpack.optimize.AggressiveSplittingPlugin({
             minSize: 1024 * 128,
             maxSize: 1024 * 1024
         })
-        */
     ],
     module: {
         rules: [

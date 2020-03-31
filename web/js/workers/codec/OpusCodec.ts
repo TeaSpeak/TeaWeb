@@ -2,8 +2,6 @@ import * as cworker from "./CodecWorker";
 import {CodecType} from "tc-backend/web/codec/Codec";
 import {CodecWorker} from "./CodecWorker";
 
-const prefix = "OpusWorker";
-
 declare global {
     interface Window {
         __init_em_module: ((Module: any) => void)[];
@@ -60,7 +58,7 @@ self.__init_em_module.push(Module => {
         if(arguments.length == 1 && arguments[0] == abort_message)
             return; /* we don't need to reprint the abort message! */
 
-        console.log("Print: ", ...arguments);
+        console.log(...arguments);
     };
 
     Module['printErr'] = function() {
@@ -72,7 +70,7 @@ self.__init_em_module.push(Module => {
             if((arguments[0] as string).indexOf(suppress) != -1)
                 return;
 
-        console.error("Error: ",...arguments);
+        console.error(...arguments);
     };
 
     Module['locateFile'] = file => "../../wasm/" + file;
@@ -84,22 +82,31 @@ enum OpusType {
     RESTRICTED_LOWDELAY = 2051
 }
 
+const OPUS_ERROR_CODES = [
+    "One or more invalid/out of range arguments", //-1 (OPUS_BAD_ARG)
+    "Not enough bytes allocated in the buffer", //-2 (OPUS_BUFFER_TOO_SMALL)
+    "An internal error was detected", //-3 (OPUS_INTERNAL_ERROR)
+    "The compressed data passed is corrupted", //-4 (OPUS_INVALID_PACKET)
+    "Invalid/unsupported request number", //-5 (OPUS_UNIMPLEMENTED)
+    "An encoder or decoder structure is invalid or already freed", //-6 (OPUS_INVALID_STATE)
+    "Memory allocation has failed" //-7 (OPUS_ALLOC_FAIL)
+];
+
 class OpusWorker implements CodecWorker {
-    private channelCount: number;
+    private readonly channelCount: number;
+    private readonly type: OpusType;
     private nativeHandle: any;
-    private type: OpusType;
 
     private fn_newHandle: any;
     private fn_decode: any;
     private fn_encode: any;
     private fn_reset: any;
-    private fn_error_message: any;
 
-    private bufferSize = 4096 * 2;
-    private encodeBufferRaw: any;
-    private encodeBuffer: Float32Array;
-    private decodeBufferRaw: any;
-    private decodeBuffer: Uint8Array;
+    private buffer_size = 4096 * 2;
+    private buffer: any;
+
+    private encode_buffer: Float32Array;
+    private decode_buffer: Uint8Array;
 
     constructor(channelCount: number, type: OpusType) {
         this.channelCount = channelCount;
@@ -113,42 +120,39 @@ class OpusWorker implements CodecWorker {
     initialise?() : string {
         this.fn_newHandle = Module.cwrap("codec_opus_createNativeHandle", "number", ["number", "number"]);
         this.fn_decode = Module.cwrap("codec_opus_decode", "number", ["number", "number", "number", "number"]);
-        /* codec_opus_decode(handle, buffer, length, maxlength) */
         this.fn_encode = Module.cwrap("codec_opus_encode", "number", ["number", "number", "number", "number"]);
         this.fn_reset = Module.cwrap("codec_opus_reset", "number", ["number"]);
-        this.fn_error_message = Module.cwrap("opus_error_message", "string", ["number"]);
 
         this.nativeHandle = this.fn_newHandle(this.channelCount, this.type);
 
-        this.encodeBufferRaw = Module._malloc(this.bufferSize);
-        this.encodeBuffer = new Float32Array(Module.HEAPF32.buffer, this.encodeBufferRaw, this.bufferSize / 4);
-
-        this.decodeBufferRaw = Module._malloc(this.bufferSize);
-        this.decodeBuffer = new Uint8Array(Module.HEAPU8.buffer, this.decodeBufferRaw, this.bufferSize);
+        this.buffer = Module._malloc(this.buffer_size);
+        this.encode_buffer = new Float32Array(Module.HEAPF32.buffer, this.buffer, Math.floor(this.buffer_size / 4));
+        this.decode_buffer = new Uint8Array(Module.HEAPU8.buffer, this.buffer, this.buffer_size);
         return undefined;
     }
 
     deinitialise() { } //TODO
 
     decode(data: Uint8Array): Float32Array | string {
-        if (data.byteLength > this.decodeBuffer.byteLength) return "Data to long!";
-        this.decodeBuffer.set(data);
-        let result = this.fn_decode(this.nativeHandle, this.decodeBuffer.byteOffset, data.byteLength, this.decodeBuffer.byteLength);
-        if (result < 0) return this.fn_error_message(result);
-        return Module.HEAPF32.slice(this.decodeBuffer.byteOffset / 4, (this.decodeBuffer.byteOffset / 4) + (result * this.channelCount));
+        if (data.byteLength > this.decode_buffer.byteLength) return "supplied data exceeds internal buffer";
+        this.decode_buffer.set(data);
+
+        let result = this.fn_decode(this.nativeHandle, this.decode_buffer.byteOffset, data.byteLength, this.decode_buffer.byteLength);
+        if (result < 0) return OPUS_ERROR_CODES[-result] || "unknown decode error " + result;
+
+        return Module.HEAPF32.slice(this.decode_buffer.byteOffset / 4, (this.decode_buffer.byteOffset / 4) + (result * this.channelCount));
     }
 
     encode(data: Float32Array): Uint8Array | string {
-        this.encodeBuffer.set(data);
+        this.encode_buffer.set(data);
 
-        let result = this.fn_encode(this.nativeHandle, this.encodeBuffer.byteOffset, data.length, this.encodeBuffer.byteLength);
-        if (result < 0) return this.fn_error_message(result);
-        let buf = Module.HEAP8.slice(this.encodeBuffer.byteOffset, this.encodeBuffer.byteOffset + result);
-        return Uint8Array.from(buf);
+        let result = this.fn_encode(this.nativeHandle, this.encode_buffer.byteOffset, data.length, this.encode_buffer.byteLength);
+        if (result < 0) return OPUS_ERROR_CODES[-result] || "unknown encode error " + result;
+
+        return Module.HEAP8.slice(this.encode_buffer.byteOffset, this.encode_buffer.byteOffset + result);
     }
 
     reset() {
-        console.log(prefix + " Reseting opus codec!");
         this.fn_reset(this.nativeHandle);
     }
 }

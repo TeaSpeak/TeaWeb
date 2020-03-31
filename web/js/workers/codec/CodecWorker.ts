@@ -22,24 +22,7 @@ export function set_initialize_callback(callback: () => Promise<true | string>) 
     initialize_callback = callback;
 }
 
-export let codecInstance: CodecWorker;
-
-function printMessageToServerTab(message: string) {
-    /*
-    sendMessage({
-        token: workerCallbackToken,
-        type: "chatmessage_server",
-        message: message
-    });
-    */
-}
-
-declare function postMessage(message: any): void;
-function sendMessage(message: any, origin?: string) {
-    message["timestamp"] = Date.now();
-    postMessage(message);
-}
-
+export let codec_instance: CodecWorker;
 let globally_initialized = false;
 let global_initialize_result;
 
@@ -59,18 +42,18 @@ async function handle_message(command: string, data: any) : Promise<string | obj
 
             return {};
         case "initialise":
-            console.log(prefix + "Got initialize for type " + CodecType[data.type as CodecType]);
+            console.log(prefix + "Initialize for codec %s", CodecType[data.type as CodecType]);
             if(!supported_types[data.type])
                 return "type unsupported";
 
             try {
-                codecInstance = await supported_types[data.type](data.options);
+                codec_instance = await supported_types[data.type](data.options);
             } catch(ex) {
                 console.error(prefix + "Failed to allocate codec: %o", ex);
                 return typeof ex === "string" ? ex : "failed to allocate codec";
             }
 
-            const error = codecInstance.initialise();
+            const error = codec_instance.initialise();
             if(error) return error;
 
             return {};
@@ -79,7 +62,7 @@ async function handle_message(command: string, data: any) : Promise<string | obj
             for(let index = 0; index < encodeArray.length; index++)
                 encodeArray[index] = data.data[index];
 
-            let encodeResult = codecInstance.encode(encodeArray);
+            let encodeResult = codec_instance.encode(encodeArray);
             if(typeof encodeResult === "string")
                 return encodeResult;
             else
@@ -89,13 +72,13 @@ async function handle_message(command: string, data: any) : Promise<string | obj
             for(let index = 0; index < decodeArray.length; index++)
                 decodeArray[index] = data.data[index];
 
-            let decodeResult = codecInstance.decode(decodeArray);
+            let decodeResult = codec_instance.decode(decodeArray);
             if(typeof decodeResult === "string")
                 return decodeResult;
             else
                 return { data: decodeResult, length: decodeResult.length };
         case "reset":
-            codecInstance.reset();
+            codec_instance.reset();
             break;
         default:
             return "unknown command";
@@ -123,7 +106,7 @@ const handle_message_event = (e: MessageEvent) => {
         data["timestamp_received"] = received;
         data["timestamp_send"] = Date.now();
 
-        sendMessage(data, e.origin);
+        postMessage(data, undefined);
     };
     handle_message(e.data.command, e.data.data).then(res => {
         if(token) {
