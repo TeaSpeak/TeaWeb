@@ -555,6 +555,15 @@ const WEB_APP_FILE_LIST = [
 
 
     /* web specific */
+    { /* generated assembly files */
+        "web-only": true,
+        "type": "wasm",
+        "search-pattern": /.*\.(wasm)/,
+        "build-target": "dev|rel",
+
+        "path": "wasm/",
+        "local-path": "./asm/generated/"
+    },
     { /* web css files */
         "web-only": true,
         "type": "css",

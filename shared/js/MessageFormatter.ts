@@ -4,6 +4,7 @@ import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import {guid} from "tc-shared/crypto/uid";
 import * as loader from "tc-loader";
 import * as image_preview from "./ui/frames/image_preview"
+import * as DOMPurify from "dompurify";
 
 declare const xbbcode;
 export namespace bbcode {

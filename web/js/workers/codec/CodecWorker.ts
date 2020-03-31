@@ -34,11 +34,17 @@ let global_initialize_result;
 async function handle_message(command: string, data: any) : Promise<string | object> {
     switch (command) {
         case "global-initialize":
-            const init_result = globally_initialized ? global_initialize_result : await initialize_callback();
-            globally_initialized = true;
+            try {
+                const init_result = globally_initialized ? global_initialize_result : await initialize_callback();
+                globally_initialized = true;
 
-            if(typeof init_result === "string")
-                return init_result;
+                if(typeof init_result === "string")
+                    throw init_result;
+            } catch (e) {
+                if(typeof e === "string")
+                    return e;
+                throw e;
+            }
 
             return {};
         case "initialise":

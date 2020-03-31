@@ -1,6 +1,7 @@
 import * as cworker from "./CodecWorker";
 import {CodecType} from "tc-backend/web/codec/Codec";
 import {CodecWorker} from "./CodecWorker";
+import {type} from "os";
 
 declare global {
     interface Window {
@@ -33,17 +34,10 @@ const runtime_initialize_promise = new Promise((resolve, reject) => {
             let message;
             if(error instanceof DOMException)
                 message = "DOMException (" + error.name + "): " + error.code + " => " + error.message;
-            else {
-                abort_message = error;
+            else if(error instanceof Error) {
+                message = error.message;
+            } else {
                 message = error;
-                if(error.indexOf("no binaryen method succeeded") != -1) {
-                    for(const error of WASM_ERROR_MESSAGES) {
-                        if(last_error_message.indexOf(error) != -1) {
-                            message = "no native wasm support detected, but its required";
-                            break;
-                        }
-                    }
-                }
             }
 
             reject(message);
@@ -51,21 +45,44 @@ const runtime_initialize_promise = new Promise((resolve, reject) => {
     });
 });
 
-let abort_message: string = undefined;
-let last_error_message: string;
 self.__init_em_module.push(Module => {
     Module['print'] = function() {
-        if(arguments.length == 1 && arguments[0] == abort_message)
-            return; /* we don't need to reprint the abort message! */
-
+        const message = arguments[0] as string;
+        if(message.startsWith("CompileError: WebAssembly.instantiate(): ")) {
+            /* Compile errors also get printed to error stream so no need to log them here */
+            return;
+        }
         console.log(...arguments);
     };
 
     Module['printErr'] = function() {
-        if(arguments.length == 1 && arguments[0] == abort_message)
-            return; /* we don't need to reprint the abort message! */
+        const message = arguments[0] as string;
+        if(message.startsWith("wasm streaming compile failed: ")) {
+            const error_message = message.substr(31);
+            if(error_message.startsWith("TypeError: Failed to execute 'compile' on 'WebAssembly': ")) {
+                console.warn("Failed to compile opus native code: %s", error_message.substr(57));
+            } else {
+                console.warn("Failed to prepare opus native code asynchronously: %s", error_message);
+            }
+            return;
+        } else if(message === "falling back to ArrayBuffer instantiation") {
+            /*
+                We suppress this message, because it comes directly after "wasm streaming compile failed:".
+                So if we want to print multiple lines we just have to edit the lines above.
+             */
+            return;
+        } else if(message.startsWith("failed to asynchronously prepare wasm:")) {
+            /*
+                Will be handled via abort
+             */
+            return;
+        } else if(message.startsWith("CompileError: WebAssembly.instantiate():")) {
+            /*
+                Will be handled via abort already
+             */
+            return;
+        }
 
-        last_error_message = arguments[0];
         for(const suppress of WASM_ERROR_MESSAGES)
             if((arguments[0] as string).indexOf(suppress) != -1)
                 return;
@@ -74,6 +91,18 @@ self.__init_em_module.push(Module => {
     };
 
     Module['locateFile'] = file => "../../wasm/" + file;
+});
+
+self.addEventListener("unhandledrejection", event => {
+    if(event.reason instanceof Error) {
+        if(event.reason.name === "RuntimeError" && event.reason.message.startsWith("abort(CompileError: WebAssembly.instantiate():")) {
+            /*
+                We already handled that error via the Module['printErr'] callback.
+             */
+            event.preventDefault();
+            return;
+        }
+    }
 });
 
 enum OpusType {

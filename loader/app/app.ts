@@ -98,11 +98,11 @@ const loader_javascript = {
             });
             */
         }
-        await loader.scripts.load(["vendor/DOMPurify/purify.min.js"], { cache_tag: cache_tag() });
 
-        await loader.scripts.load("vendor/jsrender/jsrender.min.js", { cache_tag: cache_tag() });
         await loader.scripts.load_multiple([
+            ["vendor/jsrender/jsrender.min.js"],
             ["vendor/xbbcode/src/parser.js"],
+            ["vendor/emoji-picker/src/jquery.lsxemojipicker.js"],
             ["vendor/twemoji/twemoji.min.js", ""], /* empty string means not required */
             ["vendor/highlight/highlight.pack.js", ""], /* empty string means not required */
             ["vendor/remarkable/remarkable.min.js", ""], /* empty string means not required */
@@ -110,8 +110,6 @@ const loader_javascript = {
             cache_tag: cache_tag(),
             max_parallel_requests: -1
         });
-
-        await loader.scripts.load("vendor/emoji-picker/src/jquery.lsxemojipicker.js", { cache_tag: cache_tag() });
 
         let manifest: Manifest;
         try {

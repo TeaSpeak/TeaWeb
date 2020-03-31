@@ -63,14 +63,6 @@ declare global {
         second_best?: any;
     }
 
-    interface DOMPurify {
-        sanitize(html: string, config?: {
-            ADD_ATTR?: string[]
-            ADD_TAGS?: string[];
-        }) : string;
-    }
-    let DOMPurify: DOMPurify;
-
     let remarkable: typeof window.remarkable;
 
     class webkitAudioContext extends AudioContext {}
