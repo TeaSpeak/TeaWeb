@@ -2,7 +2,6 @@ asm/generated/
 node_modules/
 auth/certs/
 auth/js/auth.js.map
-package-lock.json
 
 .sass-cache/
 .idea/
