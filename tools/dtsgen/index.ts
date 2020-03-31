@@ -5,6 +5,8 @@ import * as glob from "glob";
 import * as path from "path";
 import * as mkdirp from "mkdirp";
 import {removeSync} from "fs-extra";
+import * as import_organizer from "./import_organizer";
+import * as declare_fixup from "./declare_fixup";
 
 let source_files: string[] = [];
 let exclude_files: string[] = [];
@@ -110,10 +112,12 @@ source_files.forEach(file => {
         );
 
         console.log("Compile %s (%s)", _file, relpath);
-        const result = decl.print(source, decl.generate(source, {
+        const decl_nodes = decl.generate(source, {
             remove_private: false,
             module_mode: module_mode
-        }));
+        });
+
+        const result = decl.print(source, declare_fixup.fix_declare_global(import_organizer.remove_unused(source, decl_nodes)));
 
         let fpath = path.join(base_path, target_directory, relpath);
         fpath = fpath.substr(0, fpath.lastIndexOf(".")) + ".d.ts";

@@ -452,6 +452,6 @@ generators[SyntaxKind.ImportDeclaration] = (settings, stack, node: ts.ImportDecl
         node.decorators,
         node.modifiers,
         node.importClause,
-        ts.createStringLiteral(specifier.text + ".d")
+        ts.createStringLiteral(specifier.text)
     );
 };

@@ -6,6 +6,6 @@
     "workers/**/*.ts"
   ],
   "base_directory": "shared/js/",
-  "target_directory": "../declarations/shared-app",
+  "target_directory": "../../declarations/shared-app",
   "modular": true
 }

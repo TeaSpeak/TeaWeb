@@ -78,14 +78,6 @@ module.exports = {
                                 };
                             }
                         }
-                        /*
-                          {
-                            "transform": "../../tools/trgen/ttsc_transformer.js",
-                            "type": "program",
-                            "target_file": "../generated/messages_script.json",
-                            "verbose": true
-                          }
-                         */
                     }
                 ]
             },

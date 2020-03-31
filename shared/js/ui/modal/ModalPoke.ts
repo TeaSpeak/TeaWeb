@@ -6,7 +6,7 @@ import * as moment from "moment";
 
 let global_modal: PokeModal;
 
-interface ServerEntry {
+export interface ServerEntry {
     source: ConnectionHandler;
     add_message(invoker: PokeInvoker, message: string);
 }
