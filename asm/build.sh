@@ -14,7 +14,7 @@ emcmake cmake .. || {
   exit 1
 }
 
-emmake make || {
+emmake make -j"$(nproc --all)" || {
   echo "Failed to build file"
   exit 1
 }

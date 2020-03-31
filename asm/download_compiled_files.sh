@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd $(dirname $0)
+cd "$(dirname "$0")" || exit 1
 
 if [[ -d generated/ ]]; then
     rm -r generated
@@ -15,19 +15,19 @@ mkdir generated
     exit 1
 }
 
-$(curl --version &> /dev/null)
-[[ $? -ne 0 ]] && {
+curl --version &> /dev/null; _exit_code=$?
+[[ $_exit_code -ne 0 ]] && {
     echo "Missing CURL. Please install it"
     exit 1
 }
 
-curl https://web.teaspeak.de/wasm/TeaWeb-Worker-Codec-Opus.js --output generated/TeaWeb-Worker-Codec-Opus.js
-[[ $? -ne 0 ]] && {
+curl https://web.teaspeak.de/wasm/TeaWeb-Worker-Codec-Opus.js --output generated/TeaWeb-Worker-Codec-Opus.js; _exit_code=$?
+[[ $_exit_code -ne 0 ]] && {
     echo "Failed to download opus worker library"
     exit 1
 }
-curl https://web.teaspeak.de/wasm/TeaWeb-Worker-Codec-Opus.wasm --output generated/TeaWeb-Worker-Codec-Opus.wasm
-[[ $? -ne 0 ]] && {
+curl https://web.teaspeak.de/wasm/TeaWeb-Worker-Codec-Opus.wasm --output generated/TeaWeb-Worker-Codec-Opus.wasm; _exit_code=$?
+[[ $_exit_code -ne 0 ]] && {
     echo "Failed to download opus worker library natives"
     exit 1
 }
