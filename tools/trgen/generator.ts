@@ -1,4 +1,3 @@
-
 export interface TranslationEntry {
     filename: string;
     line: number;

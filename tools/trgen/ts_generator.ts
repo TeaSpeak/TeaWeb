@@ -11,10 +11,14 @@ export function generate(file: ts.SourceFile, config: Configuration) : Translati
     return result;
 }
 
-function report(node: ts.Node, message: string) {
+const source_location = (node: ts.Node) => {
     const sf = node.getSourceFile();
     let { line, character } = sf ? sf.getLineAndCharacterOfPosition(node.getStart()) : {line: -1, character: -1};
-    console.log(`${(sf || {fileName: "unknown"}).fileName} (${line + 1},${character + 1}): ${message}`);
+    return `${(sf || {fileName: "unknown"}).fileName} (${line + 1},${character + 1})`;
+};
+
+function report(node: ts.Node, message: string) {
+    console.log(`${source_location(node)}: ${message}`);
 }
 
 function _generate(config: Configuration, node: ts.Node, result: TranslationEntry[]) {
@@ -27,7 +31,6 @@ function _generate(config: Configuration, node: ts.Node, result: TranslationEntr
         if(call_name != "tr") break call_analize;
 
         console.dir(call_name);
-
         console.log("Parameters: %o", call.arguments.length);
         if(call.arguments.length > 1) {
             report(call, "Invalid argument count");
@@ -159,7 +162,7 @@ function create_unique_check(source_file: ts.SourceFile, variable: ts.Expression
     return [...nodes, ts.createLabel(unique_check_label_name, ts.createBlock(blocked_nodes))];
 }
 
-export function transform(config: Configuration, context: ts.TransformationContext, node: ts.SourceFile) : TransformResult {
+export function transform(config: Configuration, context: ts.TransformationContext, source_file: ts.SourceFile) : TransformResult {
     const cache: VolatileTransformConfig = {} as any;
     cache.translations = [];
 
@@ -215,56 +218,59 @@ export function transform(config: Configuration, context: ts.TransformationConte
 
     function visit(node: ts.Node): ts.Node {
         node = ts.visitEachChild(node, visit, context);
-        return replace_processor(config, cache, node);
+        return replace_processor(config, cache, node, source_file);
     }
-    node = ts.visitNode(node, visit);
-    extra_nodes.push(...create_unique_check(node, cache.nodes.translation_map_init, generated_names));
+    source_file = ts.visitNode(source_file, visit);
+    extra_nodes.push(...create_unique_check(source_file, cache.nodes.translation_map_init, generated_names));
 
-    node = ts.updateSourceFileNode(node, [...(extra_nodes as any[]), ...node.statements], node.isDeclarationFile, node.referencedFiles, node.typeReferenceDirectives, node.hasNoDefaultLib, node.referencedFiles);
+    source_file = ts.updateSourceFileNode(source_file, [...(extra_nodes as any[]), ...source_file.statements], source_file.isDeclarationFile, source_file.referencedFiles, source_file.typeReferenceDirectives, source_file.hasNoDefaultLib, source_file.referencedFiles);
 
     const result: TransformResult = {} as any;
-    result.node = node;
+    result.node = source_file;
     result.translations = cache.translations;
     return result;
 }
 
-export function replace_processor(config: Configuration, cache: VolatileTransformConfig, node: ts.Node) : ts.Node {
+export function replace_processor(config: Configuration, cache: VolatileTransformConfig, node: ts.Node, source_file: ts.SourceFile) : ts.Node {
     if(config.verbose)
         console.log("Process %s", SyntaxKind[node.kind]);
     if(ts.isCallExpression(node)) {
         const call = <ts.CallExpression>node;
         const call_name = call.expression["escapedText"] as string;
         if(call_name != "tr") return node;
-
+        if(!node.getSourceFile()) return node;
         if(config.verbose) {
             console.dir(call_name);
             console.log("Parameters: %o", call.arguments.length);
         }
-        if(call.arguments.length > 1) {
-            report(call, "Invalid argument count");
+
+        if(call.arguments.length > 1)
+            throw new Error(source_location(call) + ": tr(...) has been called with an invalid arguments (" +  (call.arguments.length === 0 ? "too few" : "too many") + ")");
+
+        const fullText = call.getFullText(source_file);
+        if(fullText && fullText.indexOf("@tr-ignore") !== -1)
             return node;
-        }
 
         const object = <ts.StringLiteral>call.arguments[0];
         if(object.kind != SyntaxKind.StringLiteral) {
-            report(call, "Invalid argument: " + SyntaxKind[object.kind]);
-            return node;
+            if(call.getSourceFile())
+                throw new Error(source_location(call) + ": Ignoring tr call because given argument isn't of type string literal. (" + SyntaxKind[object.kind] + ")");
+            report(call, "Ignoring tr call because given argument isn't of type string literal. (" + SyntaxKind[object.kind] + ")");
         }
 
         if(config.verbose)
-            console.log("Message: %o", object.text || object.getText());
+            console.log("Message: %o", object.text || object.getText(source_file));
 
-        const variable_name = ts.createIdentifier(cache.name_generator(config, node, object.text || object.getText()));
+        const variable_name = ts.createIdentifier(cache.name_generator(config, node, object.text || object.getText(source_file)));
         const variable_init = ts.createPropertyAccess(cache.nodes.translation_map_init, variable_name);
 
         const variable = ts.createPropertyAccess(cache.nodes.translation_map, variable_name);
         const new_variable = ts.createAssignment(variable, call);
 
-        const source_file = node.getSourceFile();
-        let { line, character } = source_file ? source_file.getLineAndCharacterOfPosition(node.getStart()) : {line: -1, character: -1};
+        let { line, character } = source_file.getLineAndCharacterOfPosition(node.getStart());
 
         cache.translations.push({
-            message: object.text || object.getText(),
+            message: object.text || object.getText(source_file),
             line: line,
             character: character,
             filename: (source_file || {fileName: "unknown"}).fileName

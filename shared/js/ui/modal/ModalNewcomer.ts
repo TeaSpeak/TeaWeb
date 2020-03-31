@@ -163,7 +163,7 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
             container.addClass("help-shown");
 
 
-            const text = tr(
+            const text = tr( /* @tr-ignore */
                 "After you've successfully set upped your microphone,\n" +
                 "lets setup some profiles and identities!\n" +
                 "\n" +
@@ -202,7 +202,7 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
             update_position();
             container_help_text.off('resize').on('resize', update_position);
 
-            const text = tr(
+            const text = tr( /* @tr-ignore */
                 "You could have as many connect profiles as you want.\n" +
                 "All created profiles will be listed here.\n" +
                 "\n" +
@@ -234,7 +234,7 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
                     bottom: "1em"
                 });
             };
-            set_help_text(tr(
+            set_help_text(tr( /* @tr-ignore */
                 "In the upper left, you'll find the profile settings for the selected profile.\n" +
                 "You could give each profile an individual name. You could also specify the default connect nickname here.\n" +
                 "\n" +
@@ -267,7 +267,7 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
                     bottom: "1em"
                 });
             };
-            set_help_text(tr(
+            set_help_text(tr( /* @tr-ignore */
                 "When selecting an identify type, some corresponding will pop up in the highlighted area.\n" +
                 "\n" +
                 "But don't worry, we've already generated\n" +
@@ -321,7 +321,7 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.n
             is_first_show = false;
 
             container.addClass("help-shown");
-            const text = tr(
+            const text = tr( /* @tr-ignore */
                 "Firstly we need to setup a microphone.\n" +
                 "Let me guide you thru the basic UI elements.\n" +
                 "\n" +
@@ -356,7 +356,7 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.n
             update_position();
             container_help_text.off('resize').on('resize', update_position);
 
-            const text = tr(
+            const text = tr( /* @tr-ignore */
                 "All your available microphones are listed within this box.\n" +
                 "\n" +
                 "The currently selected microphone\n" +
@@ -393,7 +393,7 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.n
                 $.spawn("ol").append(
                     $.spawn("li").addClass("vad-type").append(
                         $.spawn("a").addClass("title").text(tr("Push to Talk")),
-                        $.spawn("a").addClass("description").html(tr(
+                        $.spawn("a").addClass("description").html(tr( /* @tr-ignore */
                             "To transmit audio data you'll have to<br>" +
                             "press a key. The key could be selected " +
                             "via the button right to the radio button."
@@ -401,7 +401,7 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.n
                     ),
                     $.spawn("li").addClass("vad-type").append(
                         $.spawn("a").addClass("title").text(tr("Voice activity detection")),
-                        $.spawn("a").addClass("description").html(tr(
+                        $.spawn("a").addClass("description").html(tr( /* @tr-ignore */
                             "In this mode, TeaSpeak will continuously analyze your microphone input. " +
                             "If the audio level is grater than a certain threshold, " +
                             "the audio will be transmitted. " +
@@ -410,7 +410,7 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.n
                     ),
                     $.spawn("li").addClass("vad-type").append(
                         $.spawn("a").addClass("title").html(tr("Always active")),
-                        $.spawn("a").addClass("description").text(tr(
+                        $.spawn("a").addClass("description").text(tr( /* @tr-ignore */
                             "Continuously transmit any audio data.\n"
                         ))
                     )

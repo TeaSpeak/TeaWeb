@@ -70,7 +70,7 @@ export function tr(message: string, key?: string) {
 }
 
 export function tra(message: string, ...args: any[]) {
-    message = tr(message);
+    message = /* @tr-ignore */ tr(message);
     return formatMessage(message, ...args);
 }
 

@@ -477,7 +477,7 @@ export class ConnectionHandler {
 
                     this._certificate_modal = createErrorModal(
                         tr("Could not connect"),
-                        formatMessage(tr(error_message_format), this.generate_ssl_certificate_accept())
+                        formatMessage(/* @tr-ignore */ tr(error_message_format), this.generate_ssl_certificate_accept())
                     );
                     this._certificate_modal.close_listener.push(() => this._certificate_modal = undefined);
                     this._certificate_modal.open();

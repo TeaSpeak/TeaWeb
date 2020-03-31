@@ -1,19 +1,23 @@
+import * as ts from "typescript";
+import trtransformer, {Config} from "./tools/trgen/ts_transformer";
+
 const path = require('path');
 const webpack = require("webpack");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const ManifestGenerator = require("./webpack/ManifestPlugin");
 const WorkerPlugin = require('worker-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+let isDevelopment = process.env.NODE_ENV === 'development';
+isDevelopment = true;
 module.exports = {
     entry: {
-        //"shared-app": "./shared/js/main.ts"
         "shared-app": "./web/js/index.ts"
     },
-    devtool: 'inline-source-map',
-    mode: "development",
+    devtool: isDevelopment ? "inline-source-map" : undefined,
+    mode: isDevelopment ? "development" : "production",
     plugins: [
         new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
@@ -34,8 +38,8 @@ module.exports = {
         })
          */
         new webpack.optimize.AggressiveSplittingPlugin({
-            minSize: 1024 * 128,
-            maxSize: 1024 * 1024
+            minSize: 1024 * 8,
+            maxSize: 1024 * 128
         })
     ],
     module: {
@@ -43,8 +47,7 @@ module.exports = {
             {
                 test: /\.s[ac]ss$/,
                 loader: [
-                    //isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
-                    'style-loader',
+                    isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
                     {
                         loader: 'css-loader',
                         options: {
@@ -68,8 +71,21 @@ module.exports = {
                     {
                         loader: 'ts-loader',
                         options: {
-                            transpileOnly: true
+                            transpileOnly: true,
+                            getCustomTransformers: (prog: ts.Program) => {
+                                return {
+                                    before: [trtransformer(prog, {})]
+                                };
+                            }
                         }
+                        /*
+                          {
+                            "transform": "../../tools/trgen/ttsc_transformer.js",
+                            "type": "program",
+                            "target_file": "../generated/messages_script.json",
+                            "verbose": true
+                          }
+                         */
                     }
                 ]
             },
@@ -100,6 +116,8 @@ module.exports = {
         publicPath: "js/"
     },
     optimization: {
-        splitChunks: { }
+        splitChunks: { },
+        minimize: !isDevelopment,
+        minimizer: [new TerserPlugin()]
     }
 };

@@ -113,7 +113,7 @@ function setup_jsrender() : boolean {
     });
 
     js_render.views.tags("tr", (...args) => {
-        return tr(args[0]);
+        return /* @tr-ignore */ tr(args[0]);
     });
 
     $(".jsrender-template").each((idx, _entry) => {
@@ -481,7 +481,7 @@ const task_connect_handler: loader.Task = {
                         "You could now close this page.";
                     createInfoModal(
                         tr("Connecting successfully within other instance"),
-                        formatMessage(tr(message), connect_data.address),
+                        formatMessage(/* @tr-ignore */ tr(message), connect_data.address),
                         {
                             closeable: false,
                             footer: undefined
@@ -548,7 +548,7 @@ const task_certificate_callback: loader.Task = {
                     "This page will close in {0} seconds.";
                 createInfoModal(
                     tr("Certificate acccepted successfully"),
-                    formatMessage(tr(message), seconds_tag),
+                    formatMessage(/* @tr-ignore */ tr(message), seconds_tag),
                     {
                         closeable: false,
                         footer: undefined

@@ -49,7 +49,6 @@ function compile(fileNames: string[], options: ts.CompilerOptions): void {
 }
 
 const config = ts.parseCommandLine(process.argv.slice(2), file => readFileSync(file).toString());
-console.dir(config);
 if(config.errors && config.errors.length > 0) {
     for(const error of config.errors)
         console.log(error.messageText);

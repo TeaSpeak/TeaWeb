@@ -23,6 +23,7 @@ import {
     senseless_client_permissions, senseless_server_group_permissions
 } from "tc-shared/ui/modal/permission/SenselessPermissions";
 import {AbstractPermissionEditor, PermissionEditorMode} from "tc-shared/ui/modal/permission/AbstractPermissionEditor";
+import {tra} from "tc-shared/i18n/localize";
 
 declare global {
     interface JQuery<TElement = HTMLElement> {
@@ -1358,7 +1359,7 @@ function apply_server_groups(connection: ConnectionHandler, editor: AbstractPerm
                     console.log(tr("Failed to add client %o to server group %o: %o"), dbid, current_group.id, error);
                     if(error instanceof CommandResult)
                         error = error.extra_message || error.message;
-                    createErrorModal(tr("Failed to add client"), tr("Failed to add client to server group\n" + error)).open();
+                    createErrorModal(tr("Failed to add client"), tra("Failed to add client to server group{:br:}", error)).open();
                 });
             }).open();
         });

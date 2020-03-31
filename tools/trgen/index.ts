@@ -8,8 +8,6 @@ import {isArray} from "util";
 import * as mkdirp from "mkdirp";
 import {TranslationEntry} from "./generator";
 
-console.log("TR GEN!");
-
 /*
 const files = ["/home/wolverindev/TeaSpeak/TeaSpeak/Web-Client/build/trgen/test/test_01.ts"];
 files.forEach(file => {

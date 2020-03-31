@@ -10,7 +10,6 @@ import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "tc-shared/connection/HandshakeHandler";
 
-console.error(AbstractHandshakeIdentityHandler);
 class NameHandshakeHandler extends AbstractHandshakeIdentityHandler {
     readonly identity: NameIdentity;
     handler: HandshakeCommandHandler<NameHandshakeHandler>;
