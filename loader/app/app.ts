@@ -103,11 +103,9 @@ const loader_javascript = {
         await loader.scripts.load("vendor/jsrender/jsrender.min.js", { cache_tag: cache_tag() });
         await loader.scripts.load_multiple([
             ["vendor/xbbcode/src/parser.js"],
-            ["vendor/moment/moment.js"],
             ["vendor/twemoji/twemoji.min.js", ""], /* empty string means not required */
             ["vendor/highlight/highlight.pack.js", ""], /* empty string means not required */
             ["vendor/remarkable/remarkable.min.js", ""], /* empty string means not required */
-            ["adapter/adapter-latest.js", "https://webrtc.github.io/adapter/adapter-latest.js"]
         ], {
             cache_tag: cache_tag(),
             max_parallel_requests: -1

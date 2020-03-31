@@ -6,6 +6,7 @@ import {media_image_type} from "tc-shared/FileManager";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {ClientEntry} from "tc-shared/ui/client";
 import * as log from "tc-shared/log";
+import * as moment from "moment";
 
 const avatar_to_uid = (id: string) => {
     const buffer = new Uint8Array(id.length / 2);
@@ -24,7 +25,6 @@ export const human_file_size = (size: number) => {
     return (size / Math.pow(1024, exp)).toFixed(2) + 'KMGTPE'.charAt(exp - 1) + "iB";
 };
 
-declare const moment;
 export function spawnAvatarList(client: ConnectionHandler) {
     const modal = createModal({
         header: tr("Avatars"),

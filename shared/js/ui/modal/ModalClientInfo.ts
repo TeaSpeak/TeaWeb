@@ -4,6 +4,7 @@ import {createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import * as i18nc from "tc-shared/i18n/country";
 import * as tooltip from "tc-shared/ui/elements/Tooltip";
+import * as moment from "moment";
 import {format_number, network} from "tc-shared/ui/frames/chat";
 
 type InfoUpdateCallback = (info: ClientConnectionInfo) => any;
@@ -126,7 +127,6 @@ function apply_client_status(client: ClientEntry, tag: JQuery, modal: Modal, cal
     }
 }
 
-declare const moment;
 function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callbacks: InfoUpdateCallback[]) {
     /* Unique ID */
     {

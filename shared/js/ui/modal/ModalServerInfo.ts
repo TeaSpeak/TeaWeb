@@ -12,8 +12,8 @@ import * as tooltip from "tc-shared/ui/elements/Tooltip";
 import * as i18nc from "tc-shared/i18n/country";
 import {format_time, formatMessage} from "tc-shared/ui/frames/chat";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
+import * as moment from "moment";
 
-declare const moment;
 export function openServerInfo(server: ServerEntry) {
     let modal: Modal;
     let update_callbacks: ServerBandwidthInfoUpdateCallback[] = [];

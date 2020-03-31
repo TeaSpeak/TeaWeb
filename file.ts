@@ -479,23 +479,6 @@ const WEB_APP_FILE_LIST = [
         "path": "js/",
         "local-path": "./loader/dist/"
     },
-    { /* shared javascript files (WebRTC adapter) */
-        "type": "js",
-        "search-pattern": /.*\.js$/,
-        "build-target": "dev|rel",
-
-        "path": "adapter/",
-        "local-path": "./shared/adapter/"
-    },
-
-    { /* shared generated worker codec */
-        "type": "js",
-        "search-pattern": /(WorkerPOW.js)$/,
-        "build-target": "dev|rel",
-
-        "path": "js/workers/",
-        "local-path": "./shared/js/workers/"
-    },
     { /* shared developer single css files */
         "type": "css",
         "search-pattern": /.*\.css$/,
@@ -572,33 +555,6 @@ const WEB_APP_FILE_LIST = [
 
 
     /* web specific */
-    { /* generated assembly files */
-        "web-only": true,
-        "type": "wasm",
-        "search-pattern": /.*\.(wasm)/,
-        "build-target": "dev|rel",
-
-        "path": "wasm/",
-        "local-path": "./asm/generated/"
-    },
-    { /* generated assembly javascript files */
-        "web-only": true,
-        "type": "js",
-        "search-pattern": /.*\.(js)/,
-        "build-target": "dev|rel",
-
-        "path": "wasm/",
-        "local-path": "./asm/generated/"
-    },
-    { /* web generated worker codec */
-        "web-only": true,
-        "type": "js",
-        "search-pattern": /(WorkerCodec.js)$/,
-        "build-target": "dev|rel",
-
-        "path": "js/workers/",
-        "local-path": "./web/js/workers/"
-    },
     { /* web css files */
         "web-only": true,
         "type": "css",

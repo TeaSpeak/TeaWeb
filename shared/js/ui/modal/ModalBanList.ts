@@ -8,6 +8,7 @@ import * as log from "tc-shared/log";
 import * as tooltip from "tc-shared/ui/elements/Tooltip";
 import * as htmltags from "tc-shared/ui/htmltags";
 import {format_time, formatMessage} from "tc-shared/ui/frames/chat";
+import * as moment from "moment";
 
 export function openBanList(client: ConnectionHandler) {
     let modal: Modal;
@@ -270,7 +271,6 @@ export const duration_data = {
     },
 };
 
-declare const moment;
 function generate_dom(controller: BanListController) : JQuery {
     const template = $("#tmpl_ban_list").renderTag();
 

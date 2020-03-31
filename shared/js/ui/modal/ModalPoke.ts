@@ -2,6 +2,7 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import * as htmltags from "tc-shared/ui/htmltags";
 import {bbcode_chat} from "tc-shared/ui/frames/chat";
+import * as moment from "moment";
 
 let global_modal: PokeModal;
 
@@ -10,7 +11,6 @@ interface ServerEntry {
     add_message(invoker: PokeInvoker, message: string);
 }
 
-declare const moment;
 class PokeModal {
     private _handle: Modal;
     private source_map: ServerEntry[] = [];

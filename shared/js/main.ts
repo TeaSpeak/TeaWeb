@@ -1,3 +1,4 @@
+import * as moment from "moment";
 import * as loader from "tc-loader";
 import {settings, Settings} from "tc-shared/settings";
 import * as profiles from "tc-shared/profiles/ConnectionProfile";
@@ -90,7 +91,6 @@ function setup_close() {
     };
 }
 
-declare function moment(...arguments) : any;
 function setup_jsrender() : boolean {
     if(!js_render) {
         loader.critical_error("Missing jsrender extension!");
