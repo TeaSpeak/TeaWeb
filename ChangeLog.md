@@ -1,4 +1,7 @@
 # Changelog:
+* **28.03.20**
+    - Fixed a bug within the permission editor which kicks you from the server
+    
 * **21.03.20**
     - Fixed identity import throwing an "btoa" error
     
