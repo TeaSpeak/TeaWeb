@@ -144,7 +144,7 @@ async function initialize_app() {
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag({
             multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
-            app_version: loader.version().ui
+            app_version: __build.version
         }).dividerfy();
 
         $("body").append(main);
@@ -589,7 +589,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         try {
             await initialize();
 
-            if(loader.version().type == "web") {
+            if(__build.target == "web") {
                 loader.register_task(loader.Stage.LOADED, task_certificate_callback);
             } else {
                 loader.register_task(loader.Stage.LOADED, task_teaweb_starter);

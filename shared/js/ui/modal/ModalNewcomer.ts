@@ -24,9 +24,9 @@ const last_step: {[key: string]:string} = (() => {
 
 export function openModalNewcomer() : Modal {
     let modal = createModal({
-        header: tra("Welcome to the {}", loader.version().type === "web" ? "TeaSpeak - Web client" : "TeaSpeak - Client"),
+        header: tra("Welcome to the {}", __build.version === "web" ? "TeaSpeak - Web client" : "TeaSpeak - Client"),
         body:  () => $("#tmpl_newcomer").renderTag({
-            is_web: loader.version().type === "web"
+            is_web: __build.version === "web"
         }).children(),
         footer: null,
 

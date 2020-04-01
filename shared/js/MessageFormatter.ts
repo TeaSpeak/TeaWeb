@@ -126,7 +126,7 @@ export namespace bbcode {
                     },
                     name: tr("Open URL in Browser"),
                     type: contextmenu.MenuEntryType.ENTRY,
-                    visible: loader.version().type === "native" && false // Currently not possible
+                    visible: __build.target === "client" && false // Currently not possible
                 }, contextmenu.Entry.HR(), {
                     callback: () => copy_to_clipboard(url),
                     name: tr("Copy URL to clipboard"),

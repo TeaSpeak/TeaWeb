@@ -515,4 +515,4 @@ export class ServerSettings extends SettingsBase {
     }
 }
 
-export let settings: Settings;
+export let settings: Settings = null;

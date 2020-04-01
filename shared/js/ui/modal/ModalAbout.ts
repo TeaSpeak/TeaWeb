@@ -27,9 +27,9 @@ export function spawnAbout() {
         header: tr("About"),
         body: () => {
             let tag = $("#tmpl_about").renderTag({
-                client: loader.version().type !== "web",
+                client: __build.target !== "web",
 
-                version_client: loader.version().type === "web" ? app_version || "in-dev" : "loading...",
+                version_client: __build.target === "web" ? app_version || "in-dev" : "loading...",
                 version_ui: app_version || "in-dev",
 
                 version_timestamp: !!app_version ? format_date(Date.now()) : "--"
@@ -43,7 +43,7 @@ export function spawnAbout() {
     connectModal.htmlTag.find(".modal-body").addClass("modal-about");
     connectModal.open();
 
-    if(loader.version().type !== "web") {
+    if(__build.target !== "web") {
         (window as any).native.client_version().then(version => {
             connectModal.htmlTag.find(".version-client").text(version);
         }).catch(error => {

@@ -64,7 +64,7 @@ function _generate(config: Configuration, node: ts.Node, result: TranslationEntr
 
     node.forEachChild(n => _generate(config, n, result));
 }
-function create_unique_check(source_file: ts.SourceFile, variable: ts.Expression, variables: { name: string, node: ts.Node }[]) : ts.Node[] {
+function create_unique_check(config: Configuration, source_file: ts.SourceFile, variable: ts.Expression, variables: { name: string, node: ts.Node }[]) : ts.Node[] {
     const nodes: ts.Node[] = [], blocked_nodes: ts.Statement[] = [];
 
     const node_path = (node: ts.Node) => {
@@ -90,10 +90,10 @@ function create_unique_check(source_file: ts.SourceFile, variable: ts.Expression
 
     /* initialization */
     {
-        const declarations = ts.createElementAccess(variable, ts.createLiteral("declared"));
+        const declarations = ts.createElementAccess(variable, ts.createLiteral(config.variables.declarations));
         nodes.push(ts.createAssignment(declarations, ts.createBinary(declarations, SyntaxKind.BarBarToken, ts.createAssignment(declarations, ts.createObjectLiteral()))));
 
-        declarations_file = ts.createElementAccess(variable, ts.createLiteral("declared_files"));
+        declarations_file = ts.createElementAccess(variable, ts.createLiteral(config.variables.declare_files));
         nodes.push(ts.createAssignment(declarations_file, ts.createBinary(declarations_file, SyntaxKind.BarBarToken, ts.createAssignment(declarations_file, ts.createObjectLiteral()))));
 
         variable = declarations;
@@ -126,8 +126,8 @@ function create_unique_check(source_file: ts.SourceFile, variable: ts.Expression
         const for_variable_name = ts.createLoopVariable();
         const for_variable_path = ts.createLoopVariable();
         const for_declaration = ts.createVariableDeclarationList([ts.createVariableDeclaration(ts.createObjectBindingPattern([
-                ts.createBindingElement(undefined, "name", for_variable_name, undefined),
-                ts.createBindingElement(undefined, "path", for_variable_path, undefined)])
+                ts.createBindingElement(undefined, config.optimized ? "n": "name", for_variable_name, undefined),
+                ts.createBindingElement(undefined, config.optimized ? "p": "path", for_variable_path, undefined)])
             , undefined, undefined)]);
 
         let for_block: ts.Statement;
@@ -151,8 +151,8 @@ function create_unique_check(source_file: ts.SourceFile, variable: ts.Expression
         let block = ts.createForOf(undefined,
             for_declaration, ts.createArrayLiteral(
                 [...variables.map(e => ts.createObjectLiteral([
-                    ts.createPropertyAssignment("name", ts.createLiteral(e.name)),
-                    ts.createPropertyAssignment("path", ts.createLiteral(node_path(e.node)))
+                    ts.createPropertyAssignment(config.optimized ? "n": "name", ts.createLiteral(e.name)),
+                    ts.createPropertyAssignment(config.optimized ? "p": "path", ts.createLiteral(node_path(e.node)))
                     ]))
                 ])
             , for_block);
@@ -166,52 +166,69 @@ export function transform(config: Configuration, context: ts.TransformationConte
     const cache: VolatileTransformConfig = {} as any;
     cache.translations = [];
 
+    config.variables = (config.variables || {}) as any;
+    config.variables.base = config.variables.base || (config.optimized ? "__tr" : "_translations");
+    config.variables.declare_files = config.variables.declare_files || (config.optimized ? "f" : "declare_files");
+    config.variables.declarations = config.variables.declarations || (config.optimized ? "d" : "definitions");
+
     //Initialize nodes
     const extra_nodes: ts.Node[] = [];
     {
         cache.nodes = {} as any;
         if(config.use_window) {
             const window = ts.createIdentifier("window");
-            let translation_map = ts.createPropertyAccess(window, ts.createIdentifier("_translations"));
+            let translation_map = ts.createPropertyAccess(window, ts.createIdentifier(config.variables.base));
             const new_translations = ts.createAssignment(translation_map, ts.createObjectLiteral());
 
             let translation_map_init: ts.Expression = ts.createBinary(translation_map, ts.SyntaxKind.BarBarToken, new_translations);
             translation_map_init = ts.createParen(translation_map_init);
 
+            extra_nodes.push(translation_map_init);
             cache.nodes = {
-                translation_map: translation_map,
-                translation_map_init: translation_map_init
+                translation_map: translation_map
             };
-        } else {
-            const variable_name = "_translations";
-            const variable_map = ts.createIdentifier(variable_name);
+        } else if(config.module) {
+            cache.nodes = {
+                translation_map: ts.createIdentifier(config.variables.base)
+            };
 
+            extra_nodes.push(ts.createVariableDeclarationList([
+                ts.createVariableDeclaration(config.variables.base, undefined, ts.createObjectLiteral())
+            ], ts.NodeFlags.Const), ts.createToken(SyntaxKind.SemicolonToken));
+        } else {
+            const variable_map = ts.createIdentifier(config.variables.base);
             const inline_if = ts.createBinary(ts.createBinary(ts.createTypeOf(variable_map), SyntaxKind.ExclamationEqualsEqualsToken, ts.createLiteral("undefined")), ts.SyntaxKind.BarBarToken, ts.createAssignment(variable_map, ts.createObjectLiteral()));
 
             cache.nodes = {
                 translation_map: variable_map,
-                translation_map_init: variable_map
             };
 
-            //ts.createVariableDeclarationList([ts.createVariableDeclaration(variable_name)], ts.NodeFlags.Let)
             extra_nodes.push(inline_if);
         }
     }
 
+    const used_names = [config.variables.declarations, config.variables.declare_files];
     const generated_names: { name: string, node: ts.Node }[] = [];
+    let generator_base = 0;
     cache.name_generator = (config, node, message) => {
         const characters = "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        let name = "";
-        while(name.length < 8) {
-            const char = characters[Math.floor(Math.random() * characters.length)];
-            name = name + char;
-            if(name[0] >= '0' && name[0] <= '9')
-                name = name.substr(1) || "";
-        }
+        let name;
+        do {
+            name = "";
 
-        //FIXME
-        //if(generated_names.indexOf(name) != -1)
-        //    return cache.name_generator(config, node, message);
+            if(config.module) {
+                name = "_" + generator_base++;
+            } else {
+                /* Global namespace. We've to generate a random name so no duplicates happen */
+                while(name.length < 8) {
+                    const char = characters[Math.floor(Math.random() * characters.length)];
+                    name = name + char;
+                    if(name[0] >= '0' && name[0] <= '9')
+                        name = name.substr(1) || "";
+                }
+            }
+        } while(used_names.findIndex(e => e === name) !== -1);
+
         generated_names.push({name: name, node: node});
         return name;
     };
@@ -221,7 +238,10 @@ export function transform(config: Configuration, context: ts.TransformationConte
         return replace_processor(config, cache, node, source_file);
     }
     source_file = ts.visitNode(source_file, visit);
-    extra_nodes.push(...create_unique_check(source_file, cache.nodes.translation_map_init, generated_names));
+    if(!config.module) {
+        /* we don't need a unique check because we're just in our scope */
+        extra_nodes.push(...create_unique_check(config, source_file, cache.nodes.translation_map, generated_names));
+    }
 
     source_file = ts.updateSourceFileNode(source_file, [...(extra_nodes as any[]), ...source_file.statements], source_file.isDeclarationFile, source_file.referencedFiles, source_file.typeReferenceDirectives, source_file.hasNoDefaultLib, source_file.referencedFiles);
 
@@ -262,7 +282,7 @@ export function replace_processor(config: Configuration, cache: VolatileTransfor
             console.log("Message: %o", object.text || object.getText(source_file));
 
         const variable_name = ts.createIdentifier(cache.name_generator(config, node, object.text || object.getText(source_file)));
-        const variable_init = ts.createPropertyAccess(cache.nodes.translation_map_init, variable_name);
+        const variable_init = ts.createPropertyAccess(cache.nodes.translation_map, variable_name);
 
         const variable = ts.createPropertyAccess(cache.nodes.translation_map, variable_name);
         const new_variable = ts.createAssignment(variable, call);
@@ -284,6 +304,15 @@ export interface Configuration {
     use_window?: boolean;
     replace_cache?: boolean;
     verbose?: boolean;
+
+    optimized?: boolean;
+    module?: boolean;
+
+    variables?: {
+        base: string,
+        declarations: string,
+        declare_files: string
+    }
 }
 
 export interface TransformResult {
@@ -294,7 +323,6 @@ export interface TransformResult {
 interface VolatileTransformConfig {
     nodes: {
         translation_map: ts.Expression;
-        translation_map_init: ts.Expression;
     };
 
     name_generator: (config: Configuration, node: ts.Node, message: string) => string;

@@ -1,5 +1,3 @@
-import {AppVersion} from "tc-loader";
-import {LoadSyntaxError, script_name} from "./utils";
 import * as script_loader from "./script_loader";
 import * as style_loader from "./style_loader";
 import * as template_loader from "./template_loader";
@@ -75,37 +73,34 @@ const tasks: {[key:number]:Task[]} = {};
 
 /* test if all files shall be load from cache or fetch again */
 function loader_cache_tag() {
-    const app_version = (() => {
-        const version_node = document.getElementById("app_version");
-        if(!version_node) return undefined;
-
-        const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
-        if(!version) return undefined;
-
-        if(!version || version == "unknown" || version.replace(/0+/, "").length == 0)
-            return undefined;
-
-        return version;
-    })();
-    if(config.verbose) console.log("Found current app version: %o", app_version);
-
-    if(!app_version) {
-        /* TODO add warning */
+    if(__build.mode === "debug") {
         cache_tag = "?_ts=" + Date.now();
         return;
     }
+
     const cached_version = localStorage.getItem("cached_version");
-    if(!cached_version || cached_version != app_version) {
+    if(!cached_version || cached_version !== __build.version) {
         register_task(Stage.LOADED, {
             priority: 0,
             name: "cached version updater",
             function: async () => {
-                localStorage.setItem("cached_version", app_version);
+                localStorage.setItem("cached_version", __build.version);
             }
         });
     }
-    cache_tag = "?_version=" + app_version;
+    cache_tag = "?_version=" + __build.version;
 }
+
+export type ModuleMapping = {
+    application: string,
+    modules: {
+        "id": string,
+        "context": string,
+        "resource": string
+    }[]
+};
+const module_mapping_: ModuleMapping[] = [];
+export function module_mapping() : ModuleMapping[] { return module_mapping_; }
 
 export function get_cache_version() { return cache_tag; }
 
@@ -258,12 +253,6 @@ export function hide_overlay() {
         $(".loader").detach();
     });
 }
-
-/* versions management */
-let version_: AppVersion;
-export function version() : AppVersion { return version_; }
-export function set_version(version: AppVersion) { version_ = version; }
-
 
 /* critical error handler */
 export type ErrorHandler = (message: string, detail: string) => void;

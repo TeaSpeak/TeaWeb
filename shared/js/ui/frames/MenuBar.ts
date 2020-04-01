@@ -370,7 +370,7 @@ export function initialize() {
             return true;
         }};
 
-        if(loader.version().type !== "web") {
+        if(__build.target !== "web") {
             menu.append_hr();
 
             item = menu.append_item(tr("Quit"));
@@ -532,7 +532,7 @@ export function initialize() {
     {
         const menu = driver_.append_item(tr("Help"));
 
-        if(loader.version().type !== "web") {
+        if(__build.target !== "web") {
             item = menu.append_item(tr("Check for updates"));
             item.click(() => native_actions.check_native_update());
 
@@ -546,7 +546,7 @@ export function initialize() {
         item = menu.append_item(tr("Visit TeaSpeak forum"));
         item.click(() => window.open('https://forum.teaspeak.de/', '_blank'));
 
-        if(loader.version().type !== "web" && typeof(native_actions.show_dev_tools) === "function" && native_actions.show_dev_tools()) {
+        if(__build.target !== "web" && typeof(native_actions.show_dev_tools) === "function" && native_actions.show_dev_tools()) {
             menu.append_hr();
             item = menu.append_item(tr("Open developer tools"));
             item.click(() => native_actions.open_dev_tools());
@@ -556,7 +556,7 @@ export function initialize() {
         }
 
         menu.append_hr();
-        item = menu.append_item(loader.version().type === "web" ? tr("About TeaWeb") : tr("About TeaClient"));
+        item = menu.append_item(__build.target === "web" ? tr("About TeaWeb") : tr("About TeaClient"));
         item.click(() => spawnAbout())
     }
 

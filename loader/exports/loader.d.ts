@@ -61,7 +61,15 @@ export enum Stage {
     DONE
 }
 
-export function version() : AppVersion;
+export type ModuleMapping = {
+    application: string,
+    modules: {
+        "id": string,
+        "context": string,
+        "resource": string
+    }[]
+};
+export function module_mapping() : ModuleMapping;
 
 export function finished();
 export function running();

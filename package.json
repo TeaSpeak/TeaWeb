@@ -21,9 +21,7 @@
     "build-web": "webpack --config webpack-web.config.js",
     "watch-web": "webpack --watch --config webpack-web.config.js",
     "build-client": "webpack --config webpack-client.config.js",
-    "watch-client": "webpack --watch --config webpack-client.config.js",
-    "build-loader": "webpack --config loader/webpack.config.js",
-    "watch-loader": "webpack --watch --config loader/webpack.config.js"
+    "watch-client": "webpack --watch --config webpack-client.config.js"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",

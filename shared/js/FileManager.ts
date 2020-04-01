@@ -1,4 +1,5 @@
 import * as log from "tc-shared/log";
+import * as hex from "tc-shared/crypto/hex";
 import {LogCategory} from "tc-shared/log";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";

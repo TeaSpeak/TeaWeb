@@ -9,6 +9,7 @@ import {TranslationEntry} from "./generator";
 export interface Config {
     target_file?: string;
     verbose?: boolean;
+    optimized?: boolean;
 }
 
 let process_config: Config;
@@ -37,6 +38,7 @@ export default function(program: ts.Program, config?: Config) : (context: ts.Tra
     return ctx => transformer(ctx) as any;
 }
 
+let processed = [];
 const translations: TranslationEntry[] = [];
 const transformer = (context: ts.TransformationContext) =>
 (rootNode: ts.Node) => {
@@ -51,10 +53,17 @@ const transformer = (context: ts.TransformationContext) =>
         } else if(rootNode.kind == ts.SyntaxKind.SourceFile) {
             const file = rootNode as ts.SourceFile;
 
+            if(processed.findIndex(e => e === file.fileName) !== -1) {
+                console.log("Skipping %s (already processed)", file.fileName);
+                return rootNode;
+            }
+            processed.push(file.fileName);
             console.log("Processing " + file.fileName);
             const result = ts_generator.transform({
                 use_window: false,
-                replace_cache: true
+                replace_cache: true,
+                module: true,
+                optimized: process_config.optimized
             }, context, file);
             translations.push(...result.translations);
             return result.node;

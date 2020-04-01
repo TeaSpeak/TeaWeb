@@ -31,38 +31,20 @@ interface Manifest {
     version: number;
 
     chunks: {[key: string]: {
-        hash: string,
-        file: string
-    }[]};
-}
-
-interface BuildDefinitions {
-    development: boolean,
-    version: string
-}
-declare global {
-    const __build: BuildDefinitions;
+        files: {
+            hash: string,
+            file: string
+        }[],
+        modules: {
+            id: string,
+            context: string,
+            resource: string
+        }[]
+    }};
 }
 
 /* all javascript loaders */
 const loader_javascript = {
-    detect_type: async () => {
-        if(window.native_client) {
-            loader.set_version({
-                backend: "-",
-                ui: ui_version(),
-                debug_mode: __build.development,
-                type: "native"
-            });
-        } else {
-            loader.set_version({
-                backend: "-",
-                ui: ui_version(),
-                debug_mode: __build.development,
-                type: "web"
-            });
-        }
-    },
     load_scripts: async () => {
         if(!window.require) {
             await loader.scripts.load(["vendor/jquery/jquery.min.js"], { cache_tag: cache_tag() });
@@ -101,15 +83,19 @@ const loader_javascript = {
             loader.critical_error("Failed to load manifest.json", error);
             throw "failed to load manifest.json";
         }
-        if(manifest.version !== 1)
+        if(manifest.version !== 2)
             throw "invalid manifest version";
 
-        const chunk_name = loader.version().type === "web" ? "shared-app" : "client-app";
-        if(!Array.isArray(manifest.chunks[chunk_name])) {
+        const chunk_name = __build.entry_chunk_name;
+        if(typeof manifest.chunks[chunk_name] !== "object") {
             loader.critical_error("Missing entry chunk in manifest.json", "Chunk " + chunk_name + " is missing.");
             throw "missing entry chunk";
         }
-        await loader.scripts.load_multiple(manifest.chunks[chunk_name].map(e => "js/" + e.file), {
+        loader.module_mapping().push({
+            application: chunk_name,
+            modules: manifest.chunks[chunk_name].modules
+        });
+        await loader.scripts.load_multiple(manifest.chunks[chunk_name].files.map(e => "js/" + e.file), {
             cache_tag: undefined,
             max_parallel_requests: -1
         });
@@ -154,7 +140,7 @@ const loader_style = {
             ["vendor/highlight/styles/darcula.css", ""], /* empty string means not required */
         ], options);
 
-        if(loader.version().debug_mode) {
+        if(__build.mode === "debug") {
             await loader_style.load_style_debug();
         } else {
             await loader_style.load_style_release();
@@ -293,12 +279,6 @@ loader.register_task(loader.Stage.INITIALIZING, {
     priority: 20
 });
 
-loader.register_task(loader.Stage.INITIALIZING, {
-    name: "app type test",
-    function: loader_javascript.detect_type,
-    priority: 20
-});
-
 loader.register_task(loader.Stage.JAVASCRIPT, {
     name: "javascript",
     function: loader_javascript.load_scripts,
@@ -398,9 +378,14 @@ loader.register_task(loader.Stage.SETUP, {
 });
 
 export function run() {
-    window["Module"] = (window["Module"] || {}) as any;
+    window["Module"] = (window["Module"] || {}) as any; /* Why? */
+
     /* TeaClient */
     if(node_require) {
+        if(__build.target !== "client") {
+            loader.critical_error("App seems not to be compiled for the client.", "This app has been compiled for " + __build.target);
+            return;
+        }
         window.native_client = true;
 
         const path = node_require("path");
@@ -415,6 +400,11 @@ export function run() {
             priority: 40
         });
     } else {
+        if(__build.target !== "web") {
+            loader.critical_error("App seems not to be compiled for the web.", "This app has been compiled for " + __build.target);
+            return;
+        }
+
         window.native_client = false;
     }
 

@@ -250,7 +250,7 @@ export class Group {
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "log enabled initialisation",
-    function: async () => initialize(loader.version().debug_mode ? LogType.TRACE : LogType.INFO),
+    function: async () => initialize(__build.mode === "debug" ? LogType.TRACE : LogType.INFO),
     priority: 150
 });
 

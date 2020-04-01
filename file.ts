@@ -37,8 +37,6 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "path": "./",
         "local-path": "./shared/html/"
     },
-
-
     { /* javascript files as manifest.json */
         "type": "js",
         "search-pattern": /.*$/,
@@ -47,15 +45,6 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "path": "js/",
         "local-path": "./dist/"
     },
-    { /* loader javascript file */
-        "type": "js",
-        "search-pattern": /.*$/,
-        "build-target": "dev|rel",
-
-        "path": "js/",
-        "local-path": "./loader/dist/"
-    },
-
     { /* shared developer single css files */
         "type": "css",
         "search-pattern": /.*\.css$/,

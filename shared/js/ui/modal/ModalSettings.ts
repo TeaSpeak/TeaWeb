@@ -331,7 +331,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
     }
 
     container.find(".button-restart").on('click', () => {
-        if(loader.version().type === "web") {
+        if(__build.target === "web") {
             location.reload();
         } else {
             createErrorModal(tr("Not implemented"), tr("Client restart isn't implemented.<br>Please do it manually!")).open();
