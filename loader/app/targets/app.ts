@@ -1,4 +1,4 @@
-import * as loader from "./loader/loader";
+import * as loader from "../loader/loader";
 
 declare global {
     interface Window {
@@ -36,51 +36,30 @@ interface Manifest {
     }[]};
 }
 
+interface BuildDefinitions {
+    development: boolean,
+    version: string
+}
+declare global {
+    const __build: BuildDefinitions;
+}
+
 /* all javascript loaders */
 const loader_javascript = {
     detect_type: async () => {
-        //TODO: Detect real version!
-        loader.set_version({
-            backend: "-",
-            ui: ui_version(),
-            debug_mode: true,
-            type: "web"
-        });
-        window.native_client = false;
-        return;
-        if(window.require) {
-            const request = new Request("js/proto.js");
-            let file_path = request.url;
-            if(!file_path.startsWith("file://"))
-                throw "Invalid file path (" + file_path + ")";
-            file_path = file_path.substring(process.platform === "win32" ? 8 : 7);
-
-            const fs = node_require('fs');
-            if(fs.existsSync(file_path)) {
-                //type = Type.CLIENT_DEBUG;
-            } else {
-                //type = Type.CLIENT_RELEASE;
-            }
+        if(window.native_client) {
+            loader.set_version({
+                backend: "-",
+                ui: ui_version(),
+                debug_mode: __build.development,
+                type: "native"
+            });
         } else {
-            /* test if js/proto.js is available. If so we're in debug mode */
-            const request = new XMLHttpRequest();
-            request.open('GET', "js/proto.js?_ts=" + Date.now(), true);
-
-            await new Promise((resolve, reject) => {
-                request.onreadystatechange = () => {
-                    if (request.readyState === 4){
-                        if (request.status === 404) {
-                            //type = Type.WEB_RELEASE;
-                        } else {
-                            //type = Type.WEB_DEBUG;
-                        }
-                        resolve();
-                    }
-                };
-                request.onerror = () => {
-                    reject("Failed to detect app type");
-                };
-                request.send();
+            loader.set_version({
+                backend: "-",
+                ui: ui_version(),
+                debug_mode: __build.development,
+                type: "web"
             });
         }
     },
@@ -125,7 +104,12 @@ const loader_javascript = {
         if(manifest.version !== 1)
             throw "invalid manifest version";
 
-        await loader.scripts.load_multiple(manifest.chunks["shared-app"].map(e => "js/" + e.file), {
+        const chunk_name = loader.version().type === "web" ? "shared-app" : "client-app";
+        if(!Array.isArray(manifest.chunks[chunk_name])) {
+            loader.critical_error("Missing entry chunk in manifest.json", "Chunk " + chunk_name + " is missing.");
+            throw "missing entry chunk";
+        }
+        await loader.scripts.load_multiple(manifest.chunks[chunk_name].map(e => "js/" + e.file), {
             cache_tag: undefined,
             max_parallel_requests: -1
         });
@@ -417,18 +401,21 @@ export function run() {
     window["Module"] = (window["Module"] || {}) as any;
     /* TeaClient */
     if(node_require) {
+        window.native_client = true;
+
         const path = node_require("path");
         const remote = node_require('electron').remote;
-        module.paths.push(path.join(remote.app.getAppPath(), "/modules"));
-        module.paths.push(path.join(path.dirname(remote.getGlobal("browser-root")), "js"));
 
-        //TODO: HERE!
-        const connector = node_require("renderer");
+        const render_entry = path.join(remote.app.getAppPath(), "/modules/", "renderer");
+        const render = node_require(render_entry);
+
         loader.register_task(loader.Stage.INITIALIZING, {
             name: "teaclient initialize",
-            function: connector.initialize,
+            function: render.initialize,
             priority: 40
         });
+    } else {
+        window.native_client = false;
     }
 
     if(!loader.running()) {

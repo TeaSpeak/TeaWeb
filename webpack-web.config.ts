@@ -12,9 +12,10 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 let isDevelopment = process.env.NODE_ENV === 'development';
 isDevelopment = true;
-export = {
-    entry: {}, /* will be individually set */
-
+module.exports = {
+    entry: {
+        "shared-app": "./web/js/index.ts"
+    },
     devtool: isDevelopment ? "inline-source-map" : undefined,
     mode: isDevelopment ? "development" : "production",
     plugins: [
@@ -36,11 +37,11 @@ export = {
             cwd: process.cwd(),
         })
          */
-        isDevelopment ? undefined : new webpack.optimize.AggressiveSplittingPlugin({
+        new webpack.optimize.AggressiveSplittingPlugin({
             minSize: 1024 * 8,
             maxSize: 1024 * 128
         })
-    ].filter(e => !!e),
+    ],
     module: {
         rules: [
             {
@@ -90,13 +91,19 @@ export = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', ".scss"],
-        alias: { }, /* will be individually set */
+        alias: {
+            "tc-shared": path.resolve(__dirname, "shared/js"),
+            "tc-backend/web": path.resolve(__dirname, "web/js"),
+            "tc-backend": path.resolve(__dirname, "web/js"),
+            "tc-generated/codec/opus": path.resolve(__dirname, "asm/generated/TeaWeb-Worker-Codec-Opus.js"),
+            //"tc-backend": path.resolve(__dirname, "shared/backend.d"),
+        },
     },
     externals: {
         "tc-loader": "window loader"
     },
     output: {
-        filename: isDevelopment ? '[name].js' : '[contenthash].js',
+        filename: '[contenthash].js',
         path: path.resolve(__dirname, 'dist'),
         publicPath: "js/"
     },

@@ -18,9 +18,11 @@
     "rebuild-structure-web-dev": "php files.php generate web dev",
     "minify-web-rel-file": "terser --compress --mangle --ecma 6 --keep_classnames --keep_fnames --output",
     "start": "npm run compile-file-helper && node file.js ndevelop",
-    "build": "webpack --config webpack.config.js",
+    "build-web": "webpack --config webpack-web.config.js",
+    "watch-web": "webpack --watch --config webpack-web.config.js",
+    "build-client": "webpack --config webpack-client.config.js",
+    "watch-client": "webpack --watch --config webpack-client.config.js",
     "build-loader": "webpack --config loader/webpack.config.js",
-    "watch": "webpack --watch",
     "watch-loader": "webpack --watch --config loader/webpack.config.js"
   },
   "author": "TeaSpeak (WolverinDEV)",

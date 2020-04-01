@@ -1,7 +1,9 @@
+const webpack = require("webpack");
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+let isDevelopment = process.env.NODE_ENV === 'development';
+isDevelopment = true;
 module.exports = {
     entry: path.join(__dirname, "app/index.ts"),
     devtool: 'inline-source-map',
@@ -10,6 +12,12 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: isDevelopment ? '[name].css' : '[name].[hash].css',
             chunkFilename: isDevelopment ? '[id].css' : '[id].[hash].css'
+        }),
+        new webpack.DefinePlugin({
+            __build: {
+                development: isDevelopment,
+                version: '0000' //TODO!
+            }
         })
     ],
     module: {
@@ -51,6 +59,7 @@ module.exports = {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', ".scss"],
+        alias: { }
     },
     output: {
         filename: 'loader.js',

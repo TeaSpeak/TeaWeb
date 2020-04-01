@@ -118,7 +118,13 @@ export function register_task(stage: Stage, task: Task) {
     if(current_stage > stage) {
         if(config.error)
             console.warn("Register loading task, but it had already been finished. Executing task anyways!");
-        task.function().catch(error => {
+
+        const promise = task.function();
+        if(!promise) {
+            console.error("Loading task %s hasn't returned a promise!", task.name);
+            return;
+        }
+        promise.catch(error => {
             if(config.error) {
                 console.error("Failed to execute delayed loader task!");
                 console.log(" - %s: %o", task.name, error);
@@ -160,7 +166,12 @@ export async function execute() {
         for(const task of current_tasks) {
            try {
                if(config.verbose) console.debug("Executing loader %s (%d)", task.name, task.priority);
-               promises.push(task.function().catch(error => {
+               const promise = task.function();
+               if(!promise) {
+                   console.error("Loading task %s hasn't returned a promise!", task.name);
+                   continue;
+               }
+               promises.push(promise.catch(error => {
                    errors.push({
                        task: task,
                        error: error

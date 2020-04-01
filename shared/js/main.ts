@@ -29,6 +29,7 @@ import * as ppt from "tc-backend/ppt";
 /* required import for init */
 require("./proto").initialize();
 require("./ui/elements/ContextDivider").initialize();
+require("./connection/CommandHandler"); /* else it might not get bundled because only the backends are accessing it */
 
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
@@ -233,7 +234,7 @@ interface Window {
 }
 */
 
-function handle_connect_request(properties: bipc.connect.ConnectRequestData, connection: ConnectionHandler) {
+export function handle_connect_request(properties: bipc.connect.ConnectRequestData, connection: ConnectionHandler) {
     const profile_uuid = properties.profile || (profiles.default_profile() || {id: 'default'}).id;
     const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
     const username = properties.username || profile.connect_username();
