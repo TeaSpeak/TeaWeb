@@ -616,5 +616,3 @@ loader.register_task(loader.Stage.LOADED, {
     },
     priority: 20
 });
-
-export = {};

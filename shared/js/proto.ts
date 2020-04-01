@@ -65,12 +65,9 @@ declare global {
 
     let remarkable: typeof window.remarkable;
 
-    class webkitAudioContext extends AudioContext {}
-    class webkitOfflineAudioContext extends OfflineAudioContext {}
-
     interface Window {
-        readonly webkitAudioContext: typeof webkitAudioContext;
-        readonly AudioContext: typeof webkitAudioContext;
+        readonly webkitAudioContext: typeof AudioContext;
+        readonly AudioContext: typeof OfflineAudioContext;
         readonly OfflineAudioContext: typeof OfflineAudioContext;
         readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
         readonly RTCPeerConnection: typeof RTCPeerConnection;
