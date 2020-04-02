@@ -1,0 +1,24 @@
+/* TSC config for the core files of the application, like the file manager and webpack */
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "lib": ["es6", "dom"],
+    "removeComments": false,
+  },
+  "include": [
+    "webpack.config.ts",
+    "webpack-client.config.ts",
+    "webpack-web.config.ts",
+
+    "webpack/build-definitions.d.ts",
+    "webpack/ManifestPlugin.ts",
+    "webpack/WatLoader.ts",
+
+    "file.ts"
+  ],
+  "exclude": [
+    "node_modules",
+  ]
+}

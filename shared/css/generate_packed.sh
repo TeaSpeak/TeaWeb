@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd $(dirname $0)
+cd "$(dirname "$0")" || exit 1
 #find css/static/ -name '*.css' -exec cat {} \; | npm run csso -- --output `pwd`/generated/static/base.css
 
 
@@ -62,20 +62,20 @@ files=(
 target_file=`pwd`/../generated/static/base.css
 
 if [[ ! -d $(dirname ${target_file}) ]]; then
-    echo "Creating target path ($(dirname ${target_file}))"
-    mkdir -p $(dirname ${target_file})
+    echo "Creating target path ($(dirname "${target_file}"))"
+    mkdir -p $(dirname "${target_file}")
     if [[ $? -ne 0 ]]; then
         echo "Failed to create target path!"
         exit 1
     fi
 fi
 
-echo "/* Auto generated merged CSS file */" > ${target_file}
+echo "/* Auto generated merged CSS file */" > "${target_file}"
 for file in "${files[@]}"; do
     if [[ ${file} =~ css/* ]]; then
         file="./${file:4}"
     fi
-    cat ${file} >> ${target_file}
+    cat "${file}" >> "${target_file}"
 done
 
-cat ${target_file} | npm run csso -- --output `pwd`/../generated/static/base.css
+cat "${target_file}" | npm run csso -- --output "$(pwd)/../generated/static/base.css"

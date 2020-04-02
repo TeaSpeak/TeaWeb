@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as config_base from "./webpack.config";
 
-const config = config_base.config();
+const config = config_base.config("web");
 Object.assign(config.entry, {
     "shared-app": "./web/js/index.ts"
 });

@@ -12,9 +12,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 export let isDevelopment = process.env.NODE_ENV === 'development';
-isDevelopment = true;
-
-const generate_definitions = () => {
+console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
+const generate_definitions = (target: string) => {
     const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
     let version;
     if(git_rev.indexOf("/") === -1)
@@ -24,16 +23,16 @@ const generate_definitions = () => {
 
     return {
         "__build": {
-            target: JSON.stringify("web"),
+            target: JSON.stringify(target),
             mode: JSON.stringify(isDevelopment ? "debug" : "release"),
             version: JSON.stringify(version),
             timestamp: Date.now(),
-            entry_chunk_name: JSON.stringify("shared-app")
+            entry_chunk_name: JSON.stringify(target === "web" ? "shared-app" : "client-app")
         } as BuildDefinitions
     } as any;
 };
 
-export const config = () => { return {
+export const config = (target: "web" | "client") => { return {
     entry: {
         "loader": "./loader/app/index.ts"
     },
@@ -64,7 +63,7 @@ export const config = () => { return {
             minSize: 1024 * 8,
             maxSize: 1024 * 128
         }),
-        new webpack.DefinePlugin(generate_definitions())
+        new webpack.DefinePlugin(generate_definitions(target))
     ].filter(e => !!e),
     module: {
         rules: [
@@ -123,7 +122,11 @@ export const config = () => { return {
         {"tc-loader": "window loader"}
     ] as any[],
     output: {
-        filename: isDevelopment ? '[name].js' : '[contenthash].js',
+        filename: (chunkData) => {
+            if(chunkData.chunk.name === "loader")
+                return "loader.js";
+            return isDevelopment ? '[name].js' : '[contenthash].js';
+        },
         path: path.resolve(__dirname, 'dist'),
         publicPath: "js/"
     },

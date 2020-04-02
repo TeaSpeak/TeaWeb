@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as config_base from "./webpack.config";
 
-const config = config_base.config();
+const config = config_base.config("client");
 Object.assign(config.entry, {
     "client-app": "./client/js/index.ts"
 });

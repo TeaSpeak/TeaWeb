@@ -259,6 +259,8 @@ export type ErrorHandler = (message: string, detail: string) => void;
 let _callback_critical_error: ErrorHandler;
 let _callback_critical_called: boolean = false;
 export function critical_error(message: string, detail?: string) {
+    document.getElementById("loader-overlay").classList.add("started");
+
     if(_callback_critical_called) {
         console.warn("[CRITICAL] %s", message);
         if(typeof(detail) === "string")

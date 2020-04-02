@@ -750,7 +750,6 @@ namespace server {
             if(!p.startsWith("/")) p = "/" + p;
             if(p.endsWith(".html")) {
                 const np = await generator.search_http_file(files, p.substr(0, p.length - 5) + ".php", options.search_options);
-                console.log("%s => %s", p, np);
                 if(np) p = p.substr(0, p.length - 5) + ".php";
             }
             serve_file(p, url.query, response);
@@ -1007,18 +1006,12 @@ async function main_develop(node: boolean, target: "client" | "web", port: numbe
 }
 
 async function git_tag() {
-    const exec = util.promisify(cp.exec);
-
-    /* check if we've any uncommited changes */
-    {
-        let { stdout, stderr } = await exec("git diff-index HEAD -- . ':!asm/libraries/' ':!package-lock.json' ':!vendor/'");
-        if(stderr) throw stderr;
-        if(stdout) return "0000000";
-    }
-
-    let { stdout, stderr } = await exec("git rev-parse --short HEAD");
-    if(stderr) throw stderr;
-    return stdout.substr(0, 7);
+    const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
+    let version;
+    if(git_rev.indexOf("/") === -1)
+        return git_rev.substr(0, 7);
+    else
+        return fs.readFileSync(path.join(__dirname, ".git", git_rev.substr(5).trim())).toString().substr(0, 7);
 }
 
 async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest_path: string, args: any[]) {
@@ -1219,4 +1212,5 @@ main(process.argv.slice(2)).then(ignore_exit => {
 }).catch(error => {
     console.error("Failed to execute application. Exception reached execution root!");
     console.error(error);
+    process.exit(1);
 });
