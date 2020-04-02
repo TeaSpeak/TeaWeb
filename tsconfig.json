@@ -5,7 +5,16 @@
     "module": "commonjs",
     "sourceMap": true,
     "lib": ["es6", "dom", "dom.iterable"],
-    "removeComments": true /* we dont really need them within the target files */
+    "removeComments": true, /* we dont really need them within the target files */
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["shared/declarations/*"],
+      "tc-shared/*": ["shared/js/*"],
+      "tc-backend/web/*": ["web/js/*"], /* specific web part */
+      "tc-backend/*": ["shared/backend.d/*"],
+      "tc-loader": ["loader/exports/loader.d.ts"]
+    }
   },
   "exclude": [
     "node_modules",

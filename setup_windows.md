@@ -66,7 +66,7 @@ npm install
 Before you could start ahead with developing you've to compile everything.  
 Just execute the `web_build.sh` script:
 ```shell script
-./scripts/web_build.sh develop
+./scripts/web_build.sh development
 ```
 
 ### 2.5 Starting the development environment

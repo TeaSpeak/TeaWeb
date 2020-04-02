@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-BASEDIR=$(dirname "$0")
-cd "$BASEDIR/../"
+cd "$(dirname "$0")/../" || { echo "Failed to enter base directory"; exit 1; }
 
 if [[ "$1" == "development" ]] || [[ "$1" == "dev" ]] || [[ "$1" == "dev" ]]; then
     source_path="web/environment/development"
@@ -36,19 +35,18 @@ fi
 
 if [[ -e ${NAME} ]]; then
     echo "Found old file. Deleting it."
-    rm -r ${NAME}
+    rm -r "${NAME}"
 fi
 
 current_path=$(pwd)
-cd "$source_path"
-zip -9 -r ${NAME} *
+cd "$source_path" || { echo "Failed to enter source path"; exit 1; }
 
-if [[ $? -ne 0 ]]; then
+if zip -9 -r "${NAME}" ./*; then
     echo "Failed to package environment!"
     exit 1
 fi
 
-cd "$current_path"
+cd "$current_path" || { echo "Failed to reenter source path"; exit 1; }
 
 mv "${source_path}/${NAME}" .
 echo "Release package successfully packaged!"

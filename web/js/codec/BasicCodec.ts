@@ -1,4 +1,8 @@
-/// <reference path="Codec.ts"/>
+import * as log from "tc-shared/log";
+import * as aplayer from "../audio/player";
+import {LogCategory} from "tc-shared/log";
+import {BufferChunk, Codec, CodecClientCache} from "./Codec";
+import {AudioResampler} from "../voice/AudioResampler";
 
 class AVGCalculator {
     history_size: number = 100;
@@ -18,7 +22,7 @@ class AVGCalculator {
     }
 }
 
-abstract class BasicCodec implements Codec {
+export abstract class BasicCodec implements Codec {
     protected _audioContext: OfflineAudioContext;
     protected _decodeResampler: AudioResampler;
     protected _encodeResampler: AudioResampler;
@@ -32,9 +36,9 @@ abstract class BasicCodec implements Codec {
     protected constructor(codecSampleRate: number) {
         this.channelCount = 1;
         this.samplesPerUnit = 960;
-        this._audioContext = new (window.webkitOfflineAudioContext || window.OfflineAudioContext)(audio.player.destination().channelCount, 1024, audio.player.context().sampleRate);
+        this._audioContext = new (window.webkitOfflineAudioContext || window.OfflineAudioContext)(aplayer.destination().channelCount, 1024, aplayer.context().sampleRate);
         this._codecSampleRate = codecSampleRate;
-        this._decodeResampler = new AudioResampler(audio.player.context().sampleRate);
+        this._decodeResampler = new AudioResampler(aplayer.context().sampleRate);
         this._encodeResampler = new AudioResampler(codecSampleRate);
     }
 

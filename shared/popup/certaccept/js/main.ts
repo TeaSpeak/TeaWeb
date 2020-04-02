@@ -1,4 +1,10 @@
+import {settings, Settings} from "tc-shared/settings";
+import * as loader from "tc-loader";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import * as bipc from "tc-shared/BrowserIPC";
 
+const is_debug = false; //TODO: Sync with loader!
 function tr(text: string) { return text; }
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
@@ -38,4 +44,25 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         }
     },
     priority: 10
+});
+
+
+
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+    name: "settings initialisation",
+    function: async () => Settings.initialize(),
+    priority: 200
+});
+
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+    name: "bipc initialisation",
+    function: async () => bipc.setup(),
+    priority: 100
+});
+
+
+loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+    name: "log enabled initialisation",
+    function: async () => log.initialize(is_debug ? log.LogType.TRACE : log.LogType.INFO),
+    priority: 150
 });

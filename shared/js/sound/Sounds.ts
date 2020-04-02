@@ -1,4 +1,10 @@
-enum Sound {
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import {settings} from "tc-shared/settings";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import * as sbackend from "tc-backend/audio/sounds";
+
+export enum Sound {
     SOUND_TEST = "sound.test",
     SOUND_EGG = "sound.egg",
 
@@ -61,345 +67,211 @@ enum Sound {
     GROUP_CHANNEL_CHANGED_SELF = "group.channel.changed.self"
 }
 
-namespace sound {
-    export interface SoundHandle {
-        key: string;
-        filename: string;
+export interface SoundHandle {
+    key: string;
+    filename: string;
+}
 
-        not_supported?: boolean;
-        not_supported_timeout?: number;
-        cached?: AudioBuffer;
-        node?: HTMLAudioElement;
+export interface SoundFile {
+    path: string;
+    volume?: number;
+}
 
-        replaying: boolean;
-    }
+let speech_mapping: {[key: string]:SoundHandle} = {};
 
-    let warned = false;
-    let speech_mapping: {[key: string]:SoundHandle} = {};
+let volume_require_save = false;
+let speech_volume: {[key: string]:number} = {};
+let master_volume: number;
 
-    let volume_require_save = false;
-    let speech_volume: {[key: string]:number} = {};
-    let master_volume: number;
+let overlap_sounds: boolean;
+let ignore_muted: boolean;
 
-    let overlap_sounds: boolean;
-    let ignore_muted: boolean;
+let master_mixed: GainNode;
 
-    let master_mixed: GainNode;
+function register_sound(key: string, file: string) {
+    speech_mapping[key] = {key: key, filename: file} as SoundHandle;
+}
 
-    function register_sound(key: string, file: string) {
-        speech_mapping[key] = {key: key, filename: file} as SoundHandle;
-    }
-
-    export function get_sound_volume(sound: Sound, default_volume?: number) : number {
-        let result = speech_volume[sound];
-        if(typeof(result) === "undefined") {
-            if(typeof(default_volume) !== "undefined")
-                result = default_volume;
-            else
-                result = 1;
-        }
-        return result;
-    }
-
-    export function set_sound_volume(sound: Sound, volume: number) {
-        volume_require_save = volume_require_save || speech_volume[sound] != volume;
-        speech_volume[sound] = volume == 1 ? undefined : volume;
-    }
-
-    export function get_master_volume() : number {
-        return master_volume;
-    }
-
-    export function set_master_volume(volume: number) {
-        volume_require_save = volume_require_save || master_volume != volume;
-        master_volume = volume;
-        if(master_mixed) {
-            if(master_mixed.gain.setValueAtTime)
-                master_mixed.gain.setValueAtTime(volume, 0);
-            else
-                master_mixed.gain.value = volume;
-        }
-    }
-
-    export function overlap_activated() : boolean {
-        return overlap_sounds;
-    }
-
-    export function set_overlap_activated(flag: boolean) {
-        volume_require_save = volume_require_save || overlap_sounds != flag;
-        overlap_sounds = flag;
-    }
-
-    export function ignore_output_muted() : boolean {
-        return ignore_muted;
-    }
-
-    export function set_ignore_output_muted(flag: boolean) {
-        volume_require_save = volume_require_save || ignore_muted != flag;
-        ignore_muted = flag;
-    }
-
-    export function reinitialisize_audio() {
-        const context = audio.player.context();
-        const destination = audio.player.destination();
-
-        if(master_mixed)
-            master_mixed.disconnect();
-
-        master_mixed = context.createGain();
-        if(master_mixed.gain.setValueAtTime)
-            master_mixed.gain.setValueAtTime(master_volume, 0);
+export function get_sound_volume(sound: Sound, default_volume?: number) : number {
+    let result = speech_volume[sound];
+    if(typeof(result) === "undefined") {
+        if(typeof(default_volume) !== "undefined")
+            result = default_volume;
         else
-            master_mixed.gain.value = master_volume;
-        master_mixed.connect(destination);
+            result = 1;
     }
+    return result;
+}
 
-    export function save() {
-        if(volume_require_save) {
-            volume_require_save = false;
+export function set_sound_volume(sound: Sound, volume: number) {
+    volume_require_save = volume_require_save || speech_volume[sound] != volume;
+    speech_volume[sound] = volume == 1 ? undefined : volume;
+}
 
-            const data: any = {};
-            data.version = 1;
+export function get_master_volume() : number {
+    return master_volume;
+}
 
-            for(const key in Sound) {
-                if(typeof(speech_volume[Sound[key]]) !== "undefined")
-                    data[Sound[key]] = speech_volume[Sound[key]];
-            }
-            data.master = master_volume;
-            data.overlap = overlap_sounds;
-            data.ignore_muted = ignore_muted;
+export function set_master_volume(volume: number) {
+    volume_require_save = volume_require_save || master_volume != volume;
+    master_volume = volume;
+    if(master_mixed) {
+        if(master_mixed.gain.setValueAtTime)
+            master_mixed.gain.setValueAtTime(volume, 0);
+        else
+            master_mixed.gain.value = volume;
+    }
+}
 
-            settings.changeGlobal("sound_volume", JSON.stringify(data));
+export function overlap_activated() : boolean {
+    return overlap_sounds;
+}
+
+export function set_overlap_activated(flag: boolean) {
+    volume_require_save = volume_require_save || overlap_sounds != flag;
+    overlap_sounds = flag;
+}
+
+export function ignore_output_muted() : boolean {
+    return ignore_muted;
+}
+
+export function set_ignore_output_muted(flag: boolean) {
+    volume_require_save = volume_require_save || ignore_muted != flag;
+    ignore_muted = flag;
+}
+
+export function save() {
+    if(volume_require_save) {
+        volume_require_save = false;
+
+        const data: any = {};
+        data.version = 1;
+
+        for(const key of Object.keys(Sound)) {
+            if(typeof(speech_volume[Sound[key]]) !== "undefined")
+                data[Sound[key]] = speech_volume[Sound[key]];
         }
+        data.master = master_volume;
+        data.overlap = overlap_sounds;
+        data.ignore_muted = ignore_muted;
+
+        settings.changeGlobal("sound_volume", JSON.stringify(data));
+    }
+}
+
+export function initialize() : Promise<void> {
+    $.ajaxSetup({
+        beforeSend: function(jqXHR,settings){
+            if (settings.dataType === 'binary') {
+                settings.xhr().responseType = 'arraybuffer';
+                settings.processData = false;
+            }
+        }
+    });
+
+    /* volumes */
+    {
+        const data = JSON.parse(settings.static_global("sound_volume", "{}"));
+        for(const sound_key of Object.keys(Sound)) {
+            if(typeof(data[Sound[sound_key]]) !== "undefined")
+                speech_volume[Sound[sound_key]] = data[Sound[sound_key]];
+        }
+
+        master_volume = typeof(data.master) === "number" ? data.master : 1;
+        overlap_sounds = typeof(data.overlap) === "boolean" ? data.overlap : true;
+        ignore_muted = typeof(data.ignore_muted) === "boolean" ? data.ignore_muted : false;
     }
 
-    export function initialize() : Promise<void> {
-        $.ajaxSetup({
-            beforeSend: function(jqXHR,settings){
-                if (settings.dataType === 'binary') {
-                    settings.xhr().responseType = 'arraybuffer';
-                    settings.processData = false;
-                }
-            }
+    register_sound("message.received", "effects/message_received.wav");
+    register_sound("message.send", "effects/message_send.wav");
+
+    manager = new SoundManager(undefined);
+    return new Promise<void>((resolve, reject) => {
+        $.ajax({
+            url: "audio/speech/mapping.json",
+            success: response => {
+                if(typeof(response) === "string")
+                    response = JSON.parse(response);
+                for(const entry of response)
+                    register_sound(entry.key, "speech/" + entry.file);
+                resolve();
+            },
+            error: error => {
+                log.error(LogCategory.AUDIO, "error: %o", error);
+                reject();
+            },
+            timeout: 5000,
+            async: true,
+            type: 'GET'
         });
+    });
+}
 
-        /* volumes */
-        {
-            const data = JSON.parse(settings.static_global("sound_volume", "{}"));
-            for(const sound_key in Sound) {
-                if(typeof(data[Sound[sound_key]]) !== "undefined")
-                    speech_volume[Sound[sound_key]] = data[Sound[sound_key]];
-            }
+export interface PlaybackOptions {
+    ignore_muted?: boolean;
+    ignore_overlap?: boolean;
 
-            master_volume = typeof(data.master) === "number" ? data.master : 1;
-            overlap_sounds = typeof(data.overlap) === "boolean" ? data.overlap : true;
-            ignore_muted = typeof(data.ignore_muted) === "boolean" ? data.ignore_muted : false;
-        }
+    default_volume?: number;
 
-        register_sound("message.received", "effects/message_received.wav");
-        register_sound("message.send", "effects/message_send.wav");
+    callback?: (flag: boolean) => any;
+}
 
-        manager = new SoundManager(undefined);
-        audio.player.on_ready(reinitialisize_audio);
-        return new Promise<void>((resolve, reject) => {
-            $.ajax({
-                url: "audio/speech/mapping.json",
-                success: response => {
-                    if(typeof(response) === "string")
-                        response = JSON.parse(response);
-                    for(const entry of response)
-                        register_sound(entry.key, "speech/" + entry.file);
-                    resolve();
-                },
-                error: error => {
-                    log.error(LogCategory.AUDIO, "error: %o", error);
-                    reject();
-                },
-                timeout: 5000,
-                async: true,
-                type: 'GET'
-            });
-        });
+export async function resolve_sound(sound: Sound) : Promise<SoundHandle> {
+    const file: SoundHandle = speech_mapping[sound];
+    if(!file) throw tr("Missing sound handle");
+
+    return file;
+}
+
+export let manager: SoundManager;
+
+export class SoundManager {
+    private readonly _handle: ConnectionHandler;
+    private _playing_sounds: {[key: string]:number} = {};
+
+    constructor(handle: ConnectionHandler) {
+        this._handle = handle;
     }
 
-    export interface PlaybackOptions {
-        ignore_muted?: boolean;
-        ignore_overlap?: boolean;
+    play(_sound: Sound, options?: PlaybackOptions) {
+        options = options || {};
 
-        default_volume?: number;
+        const volume = get_sound_volume(_sound, options.default_volume);
+        log.info(LogCategory.AUDIO, tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), _sound, volume, master_volume);
 
-        callback?: (flag: boolean) => any;
-    }
+        if(volume == 0 || master_volume == 0)
+            return;
 
-    export async function resolve_sound(sound: Sound) : Promise<SoundHandle> {
-        const file: SoundHandle = speech_mapping[sound];
-        if(!file)
-            throw tr("Missing sound handle");
+        if(this._handle && !options.ignore_muted && !ignore_output_muted() && this._handle.client_status.output_muted)
+            return;
 
+        resolve_sound(_sound).then(handle => {
+            if(!handle) return;
 
-        if(file.not_supported) {
-            if(!file.not_supported_timeout || Date.now() < file.not_supported_timeout) //Test if the not supported flag has been expired
-                return file;
-
-            file.not_supported = false;
-            file.not_supported_timeout = undefined;
-        }
-
-
-        const context = audio.player.context();
-        if(!context)
-            return file;
-
-        const path = "audio/" + file.filename;
-        if(context.decodeAudioData) {
-            if(!file.cached) {
-                const decode_data = buffer => {
-                    try {
-                        log.info(LogCategory.AUDIO, tr("Decoding data"));
-                        context.decodeAudioData(buffer, result => {
-                            file.cached = result;
-                        }, error => {
-                            log.error(LogCategory.AUDIO, tr("Failed to decode audio data for %o: %o"), sound, error);
-                            file.not_supported = true;
-                            file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
-                        })
-                    } catch (error) {
-                        log.error(LogCategory.AUDIO, error);
-                        file.not_supported = true;
-                        file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
-                    }
-                };
-
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', path, true);
-                xhr.responseType = 'arraybuffer';
-
-                try {
-                    const result = new Promise((resolve, reject) => {
-                        xhr.onload = resolve;
-                        xhr.onerror = reject;
-                    });
-
-                    xhr.send();
-                    await result;
-
-                    if (xhr.status != 200)
-                        throw "invalid response code (" + xhr.status + ")";
-
-                    log.debug(LogCategory.AUDIO, tr("Decoding data"));
-                    try {
-                        file.cached = await context.decodeAudioData(xhr.response);
-                    } catch(error) {
-                        log.error(LogCategory.AUDIO, error);
-                        throw "failed to decode audio data";
-                    }
-                } catch(error) {
-                    log.error(LogCategory.AUDIO, tr("Failed to load audio file %s. Error: %o"), sound, error);
-                    file.not_supported = true;
-                    file.not_supported_timeout = Date.now() + 1000 * 60 * 2; //Try in 2min again!
-                }
-            }
-        } else {
-            if(!file.node) {
-                if(!warned) {
-                    warned = true;
-                    log.warn(LogCategory.AUDIO, tr("Your browser does not support decodeAudioData! Using a node to playback! This bypasses the audio output and volume regulation!"));
-                }
-                const container = $("#sounds");
-                const node = $.spawn("audio").attr("src", path);
-                node.appendTo(container);
-
-                file.node = node[0];
-            }
-        }
-
-        return file;
-    }
-
-    export let manager: SoundManager;
-
-    export class SoundManager {
-        private _handle: ConnectionHandler;
-        private _playing_sounds: {[key: string]:number} = {};
-
-        constructor(handle: ConnectionHandler) {
-            this._handle = handle;
-        }
-
-        play(_sound: Sound, options?: PlaybackOptions) {
-            options = options || {};
-
-            const volume = get_sound_volume(_sound, options.default_volume);
-            log.info(LogCategory.AUDIO, tr("Replaying sound %s (Sound volume: %o | Master volume %o)"), _sound, volume, master_volume);
-
-            if(volume == 0 || master_volume == 0)
-                return;
-
-            if(this._handle && !options.ignore_muted && !sound.ignore_output_muted() && this._handle.client_status.output_muted)
-                return;
-
-            const context = audio.player.context();
-            if(!context) {
-                log.warn(LogCategory.AUDIO, tr("Tried to replay a sound without an audio context (Sound: %o). Dropping playback"), _sound);
+            if(!options.ignore_overlap && (this._playing_sounds[handle.filename] > 0) && !overlap_activated()) {
+                log.info(LogCategory.AUDIO, tr("Dropping requested playback for sound %s because it would overlap."), _sound);
                 return;
             }
 
-            sound.resolve_sound(_sound).then(handle => {
-                if(!handle)
-                    return;
-
-                if(!options.ignore_overlap && (this._playing_sounds[_sound] > 0) && !sound.overlap_activated()) {
-                    log.info(LogCategory.AUDIO, tr("Dropping requested playback for sound %s because it would overlap."), _sound);
-                    return;
-                }
-
-                if(handle.cached) {
-                    this._playing_sounds[_sound] = Date.now();
-
-                    const player = context.createBufferSource();
-                    player.buffer = handle.cached;
-                    player.start(0);
-
-                    handle.replaying = true;
-                    player.onended = event => {
-                        if(options.callback)
-                            options.callback(true);
-                        delete this._playing_sounds[_sound];
-                    };
-
-                    if(volume != 1 && context.createGain) {
-                        const gain = context.createGain();
-                        if(gain.gain.setValueAtTime)
-                            gain.gain.setValueAtTime(volume, 0);
-                        else
-                            gain.gain.value = volume;
-
-                        player.connect(gain);
-                        gain.connect(master_mixed);
-                    } else {
-                        player.connect(master_mixed);
-                    }
-                } else if(handle.node) {
-                    handle.node.currentTime = 0;
-                    handle.node.play().then(() => {
-                        if(options.callback)
-                            options.callback(true);
-                    }).catch(error => {
-                        log.warn(LogCategory.AUDIO, tr("Sound playback for sound %o resulted in an error: %o"), sound, error);
-                        if(options.callback)
-                            options.callback(false);
-                    });
-                } else {
-                    log.warn(LogCategory.AUDIO, tr("Failed to replay sound %o because of missing handles."), sound);
-                    if(options.callback)
-                        options.callback(false);
-                    return;
-                }
+            this._playing_sounds[handle.filename] = (this._playing_sounds[handle.filename] || 0) + 1;
+            sbackend.play_sound({
+                path: "audio/" + handle.filename,
+                volume: volume * master_volume
+            }).then(() => {
+                if(options.callback)
+                    options.callback(true);
             }).catch(error => {
-                log.warn(LogCategory.AUDIO, tr("Failed to replay sound %o because it could not be resolved: %o"), sound, error);
+                log.warn(LogCategory.AUDIO, tr("Failed to replay sound %s: %o"), handle.filename, error);
                 if(options.callback)
                     options.callback(false);
+            }).then(() => {
+                this._playing_sounds[handle.filename]--;
             });
-        }
+        }).catch(error => {
+            log.warn(LogCategory.AUDIO, tr("Failed to replay sound %o because it could not be resolved: %o"), _sound, error);
+            if(options.callback)
+                options.callback(false);
+        });
     }
 }

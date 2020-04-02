@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
 BASEDIR=$(dirname "$0")
+# shellcheck disable=SC1090
 source "${BASEDIR}/resolve_commands.sh"
-cd "$BASEDIR/../"
+cd "$BASEDIR/../" || { echo "Failed to enter parent directory!"; exit 1; }
 
 function generate_link() {
     if [[ ! -L $2 ]] || [[ "${BASH_ARGV[0]}" == "force" ]]; then
@@ -20,12 +21,19 @@ function replace_tribble() {
 
 
 #Building the generator
-./tools/build_dtsgen.sh
-if [[ $? -ne 0 ]]; then
-    echo "Failed to build typescript declaration generator"
+./tools/build_dtsgen.sh; _exit_code=$?
+if [[ $_exit_code -ne 0 ]]; then
+    echo "Failed to build typescript declaration generator ($_exit_code)"
     exit 1
 fi
 
+#Shared
+./shared/generate_declarations.sh; _exit_code=$?
+[[ $_exit_code -ne 0 ]] && {
+    echo "Failed to generate shared ($_exit_code)"
+}
+
+exit 0
 #Easy going: Each "module" has it's exports and imports
 #So lets first build the exports and ignore any errors
 #Note: For the client we have to use the given file
@@ -39,12 +47,6 @@ echo "Generated web declarations"
 npm run dtsgen -- --config client/tsconfig/dtsconfig.json -v
 replace_tribble client/declarations/exports.d.ts
 echo "Generated client declarations"
-
-#Shared
-./shared/generate_declarations.sh
-[[ $? -ne 0 ]] && {
-    echo "Failed to generate shared"
-}
 
 #replace_tribble shared/declarations/exports.d.ts
 echo "Generated shared declarations"

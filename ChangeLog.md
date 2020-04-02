@@ -1,4 +1,43 @@
 # Changelog:
+* **28.03.20**
+    - Fixed a bug within the permission editor which kicks you from the server
+    
+* **21.03.20**
+    - Fixed identity import throwing an "btoa" error
+    
+* **19.03.20**
+    - Using proper icons for the client info
+    - Added an image preview overlay
+    - Added image preview within the chat
+    - Added an image preview to the music bot thumbnails
+    - Added an image preview to client avatars
+    - Fixed the translations system default repository
+    
+* **18.03.20**
+    - Updated the sound playback mechanism and allowing the native backend to playback sounds via the native interface.
+    
+* **22.02.20**
+    - Added a music bot control panel
+    
+* **16.02.20**
+    - Updated the `setup_windows.md` tutorial
+    - Correct redirecting to `index.php` when using the serve mode
+    - Added correct hostname resolving for the web client.
+    - Fixed automatically added new lines for inserted text
+    - Improved button icon visibility within the permission editor
+    - Fixed missing "private chats" button
+    - Allowing YT videos within the chat and channel descriptions
+    
+* **02.02.20**
+    - Added a music bot GUI
+    
+* **30.01.20**
+    - Improved chat message parsing
+        - Fixed copy & paste error
+        - Better handling for spaces & tab indention
+    - Fixed internal audio codec error
+    - Fixed modal spam on microphone start fail
+        
 * **21.12.19**
     - Improved background performance when the microphone has been muted
     - Added support for `[ul]` and `[ol]` tags within the chat
@@ -19,6 +58,7 @@
     - Improved "About" modal overflow behaviour
     - Allow the client to use the scroll bar without closing the modal within modals
     - Improved bookmarks modal for smaller devices
+    - Fixed invalid white space representation
     
 * **10.12.19**
     - Show the server online count along the server chat

@@ -1,131 +1,37 @@
-/// <reference path="BasicCodec.ts"/>
+import {BasicCodec} from "./BasicCodec";
+import {CodecType} from "./Codec";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 
-class CodecWrapperWorker extends BasicCodec {
+interface ExecuteResult {
+    result?: any;
+    error?: string;
+
+    success: boolean;
+
+    timings: {
+        upstream: number;
+        downstream: number;
+        handle: number;
+    }
+}
+
+export class CodecWrapperWorker extends BasicCodec {
     private _worker: Worker;
-    private _workerListener: {token: string, resolve: (data: any) => void}[] = [];
-    private _workerCallbackToken = "callback_token";
-    private _workerTokeIndex: number = 0;
-    type: CodecType;
-
     private _initialized: boolean = false;
-    private _workerCallbackResolve: () => any;
-    private _workerCallbackReject: ($: any) => any;
+    private _initialize_promise: Promise<Boolean>;
 
-    private _initializePromise: Promise<Boolean>;
-    name(): string {
-        return "Worker for " + CodecType[this.type] + " Channels " + this.channelCount;
-    }
+    private _token_index: number = 0;
+    readonly type: CodecType;
 
-    initialise() : Promise<Boolean> {
-        if(this._initializePromise) return this._initializePromise;
-        return this._initializePromise = this.spawnWorker().then(() => new Promise<Boolean>((resolve, reject) => {
-            const token = this.generateToken();
-            this.sendWorkerMessage({
-                command: "initialise",
-                type: this.type,
-                channelCount: this.channelCount,
-                token: token
-            });
+    private pending_executes: {[key: string]: {
+        timeout?: any;
 
-            this._workerListener.push({
-                token: token,
-                resolve: data => {
-                    this._initialized = data["success"] == true;
-                    if(data["success"] == true)
-                        resolve();
-                    else
-                        reject(data.message);
-                }
-            })
-        }));
-    }
+        timestamp_send: number,
 
-    initialized() : boolean {
-        return this._initialized;
-    }
-
-    deinitialise() {
-        this.sendWorkerMessage({
-            command: "deinitialise"
-        });
-    }
-
-    decode(data: Uint8Array): Promise<AudioBuffer> {
-        let token = this.generateToken();
-        let result = new Promise<AudioBuffer>((resolve, reject) => {
-            this._workerListener.push(
-                {
-                    token: token,
-                    resolve: (data) => {
-                        if(data.success) {
-                            let array = new Float32Array(data.dataLength);
-                            for(let index = 0; index < array.length; index++)
-                                array[index] = data.data[index];
-
-                            let audioBuf = this._audioContext.createBuffer(this.channelCount, array.length / this.channelCount, this._codecSampleRate);
-                            for (let channel = 0; channel < this.channelCount; channel++) {
-                                for (let offset = 0; offset < audioBuf.length; offset++) {
-                                    audioBuf.getChannelData(channel)[offset] = array[channel + offset * this.channelCount];
-                                }
-                            }
-                            resolve(audioBuf);
-                        } else {
-                            reject(data.message);
-                        }
-                    }
-                }
-            );
-        });
-        this.sendWorkerMessage({
-            command: "decodeSamples",
-            token: token,
-            data: data,
-            dataLength: data.length
-        });
-        return result;
-    }
-
-    encode(data: AudioBuffer) : Promise<Uint8Array> {
-        let token = this.generateToken();
-        let result = new Promise<Uint8Array>((resolve, reject) => {
-            this._workerListener.push(
-                {
-                    token: token,
-                    resolve: (data) => {
-                        if(data.success) {
-                            let array = new Uint8Array(data.dataLength);
-                            for(let index = 0; index < array.length; index++)
-                                array[index] = data.data[index];
-                            resolve(array);
-                        } else {
-                            reject(data.message);
-                        }
-                    }
-                }
-            );
-        });
-
-        let buffer = new Float32Array(this.channelCount * data.length);
-        for (let offset = 0; offset < data.length; offset++) {
-            for (let channel = 0; channel < this.channelCount; channel++)
-                buffer[offset * this.channelCount + channel] = data.getChannelData(channel)[offset];
-        }
-
-        this.sendWorkerMessage({
-            command: "encodeSamples",
-            token: token,
-            data: buffer,
-            dataLength: buffer.length
-        });
-        return result;
-    }
-
-    reset() : boolean {
-        this.sendWorkerMessage({
-            command: "reset"
-        });
-        return true;
-    }
+        resolve: (_: ExecuteResult) => void;
+        reject: (_: any) => void;
+    }} = {};
 
     constructor(type: CodecType) {
         super(48000);
@@ -142,35 +48,92 @@ class CodecWrapperWorker extends BasicCodec {
         }
     }
 
-    private generateToken() {
-        return this._workerTokeIndex++ + "_token";
+    name(): string {
+        return "Worker for " + CodecType[this.type] + " Channels " + this.channelCount;
     }
 
-    private sendWorkerMessage(message: any, transfare?: any[]) {
-        message["timestamp"] = Date.now();
-        this._worker.postMessage(message, transfare as any);
+    async initialise() : Promise<Boolean> {
+        if(this._initialized) return;
+
+        this._initialize_promise = this.spawn_worker().then(() => this.execute("initialise", {
+            type: this.type,
+            channelCount: this.channelCount,
+        })).then(result => {
+            if(result.success)
+                return Promise.resolve(true);
+
+            log.error(LogCategory.VOICE, tr("Failed to initialize codec %s: %s"), CodecType[this.type], result.error);
+            return Promise.reject(result.error);
+        });
+
+        this._initialized = true;
+        await this._initialize_promise;
     }
 
-    private onWorkerMessage(message: any) {
+    initialized() : boolean {
+        return this._initialized;
+    }
+
+    deinitialise() {
+        this.execute("deinitialise", {});
+        this._initialized = false;
+        this._initialize_promise = undefined;
+    }
+
+    async decode(data: Uint8Array): Promise<AudioBuffer> {
+        const result = await this.execute("decodeSamples", { data: data, length: data.length });
+        if(result.timings.downstream > 5 || result.timings.upstream > 5 || result.timings.handle > 5)
+            log.warn(LogCategory.VOICE, tr("Worker message stock time: {downstream: %dms, handle: %dms, upstream: %dms}"), result.timings.downstream, result.timings.handle, result.timings.upstream);
+
+        if(!result.success) throw result.error || tr("unknown decode error");
+
+        let array = new Float32Array(result.result.length);
+        for(let index = 0; index < array.length; index++)
+            array[index] = result.result.data[index];
+
+        let audioBuf = this._audioContext.createBuffer(this.channelCount, array.length / this.channelCount, this._codecSampleRate);
+        for (let channel = 0; channel < this.channelCount; channel++) {
+            for (let offset = 0; offset < audioBuf.length; offset++) {
+                audioBuf.getChannelData(channel)[offset] = array[channel + offset * this.channelCount];
+            }
+        }
+
+        return audioBuf;
+    }
+
+    async encode(data: AudioBuffer) : Promise<Uint8Array> {
+        let buffer = new Float32Array(this.channelCount * data.length);
+        for (let offset = 0; offset < data.length; offset++) {
+            for (let channel = 0; channel < this.channelCount; channel++)
+                buffer[offset * this.channelCount + channel] = data.getChannelData(channel)[offset];
+        }
+
+        const result = await this.execute("encodeSamples", { data: buffer, length: buffer.length });
+        if(result.timings.downstream > 5 || result.timings.upstream > 5)
+            log.warn(LogCategory.VOICE, tr("Worker message stock time: {downstream: %dms, handle: %dms, upstream: %dms}"), result.timings.downstream, result.timings.handle, result.timings.upstream);
+        if(!result.success) throw result.error || tr("unknown encode error");
+
+        let array = new Uint8Array(result.result.length);
+        for(let index = 0; index < array.length; index++)
+            array[index] = result.result.data[index];
+        return array;
+    }
+
+    reset() : boolean {
+        //TODO: Await result!
+        this.execute("reset", {});
+        return true;
+    }
+
+    private handle_worker_message(message: any) {
         if(!message["token"]) {
             log.error(LogCategory.VOICE, tr("Invalid worker token!"));
             return;
         }
 
-        if(message["token"] == this._workerCallbackToken) {
-            if(message["type"] == "loaded") {
-                log.info(LogCategory.VOICE, tr("[Codec] Got worker init response: Success: %o Message: %o"), message["success"], message["message"]);
-                if(message["success"]) {
-                    if(this._workerCallbackResolve)
-                        this._workerCallbackResolve();
-                } else {
-                    if(this._workerCallbackReject)
-                        this._workerCallbackReject(message["message"]);
-                }
-                this._workerCallbackReject = undefined;
-                this._workerCallbackResolve = undefined;
-                return;
-            } else if(message["type"] == "chatmessage_server") {
+        if(message["token"] === "notify") {
+            /* currently not really used */
+             if(message["type"] == "chatmessage_server") {
                 //FIXME?
                 return;
             }
@@ -178,29 +141,69 @@ class CodecWrapperWorker extends BasicCodec {
             return;
         }
 
-        /* lets warn on general packets. Control packets are allowed to "stuck" a bit longer */
-        if(Date.now() - message["timestamp"] > 5)
-            log.warn(LogCategory.VOICE, tr("Worker message stock time: %d"), Date.now() - message["timestamp"]);
-
-        for(let entry of this._workerListener) {
-            if(entry.token == message["token"]) {
-                entry.resolve(message);
-                this._workerListener.remove(entry);
-                return;
-            }
+        const request = this.pending_executes[message["token"]];
+        if(typeof request !== "object") {
+            log.error(LogCategory.VOICE, tr("Received worker execute result for unknown token (%s)"), message["token"]);
+            return;
         }
+        delete this.pending_executes[message["token"]];
 
-        log.error(LogCategory.VOICE, tr("Could not find worker token entry! (%o)"), message["token"]);
+        const result: ExecuteResult = {
+            success: message["success"],
+            error: message["error"],
+            result: message["result"],
+            timings: {
+                downstream: message["timestamp_received"] - request.timestamp_send,
+                handle: message["timestamp_send"] - message["timestamp_received"],
+                upstream: Date.now() - message["timestamp_send"]
+            }
+        };
+        clearTimeout(request.timeout);
+        request.resolve(result);
     }
 
-    private spawnWorker() : Promise<Boolean> {
-        return new Promise<Boolean>((resolve, reject) => {
-            this._workerCallbackReject = reject;
-            this._workerCallbackResolve = resolve;
+    private handle_worker_error(error: any) {
+        log.error(LogCategory.VOICE, tr("Received error from codec worker. Closing worker."));
+        for(const token of Object.keys(this.pending_executes)) {
+            this.pending_executes[token].reject(error);
+            delete this.pending_executes[token];
+        }
 
-            this._worker = new Worker(settings.static("worker_directory", "js/workers/") + "WorkerCodec.js");
-            this._worker.onmessage = event => this.onWorkerMessage(event.data);
-            this._worker.onerror = (error: ErrorEvent) => reject("Failed to load worker (" + error.message + ")"); //TODO tr
+        this._worker = undefined;
+    }
+
+    private execute(command: string, data: any, timeout?: number) : Promise<ExecuteResult> {
+        return new Promise<any>((resolve, reject) => {
+            if(!this._worker) {
+                reject(tr("worker does not exists"));
+                return;
+            }
+
+            const token = this._token_index++ + "_token";
+
+            const payload = {
+                token: token,
+                command: command,
+                data: data,
+            };
+
+            this.pending_executes[token] = {
+                timeout: typeof timeout === "number" ? setTimeout(() => reject(tr("timeout for command ") + command), timeout) : undefined,
+                resolve: resolve,
+                reject: reject,
+                timestamp_send: Date.now()
+            };
+
+            this._worker.postMessage(payload);
         });
+    }
+
+    private async spawn_worker() : Promise<void> {
+        this._worker = new Worker("tc-backend/web/workers/codec", { type: "module" });
+        this._worker.onmessage = event => this.handle_worker_message(event.data);
+        this._worker.onerror = event => this.handle_worker_error(event.error);
+
+        const result = await this.execute("global-initialize", {}, 15000);
+        if(!result.success) throw result.error;
     }
 }

@@ -24,8 +24,22 @@ function has_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersArra
 function append_modifier<T extends ts.Modifier["kind"]>(modifiers: ts.ModifiersArray | undefined, target: T) : ts.ModifiersArray {
     if(has_modifier(modifiers, target)) return modifiers;
 
+    const sort_oder: {[key: number]:number} = {};
+    sort_oder[SyntaxKind.AbstractKeyword]   = 20;
+    sort_oder[SyntaxKind.AsyncKeyword]      = 20;
+    sort_oder[SyntaxKind.ConstKeyword]      = 20;
+    sort_oder[SyntaxKind.DeclareKeyword]    = 20;
+    sort_oder[SyntaxKind.DefaultKeyword]    = 20;
+    sort_oder[SyntaxKind.ExportKeyword]     = 10;
+    sort_oder[SyntaxKind.PublicKeyword]     = 30;
+    sort_oder[SyntaxKind.PrivateKeyword]    = 30;
+    sort_oder[SyntaxKind.ProtectedKeyword]  = 30;
+    sort_oder[SyntaxKind.ReadonlyKeyword]   = 30;
+    sort_oder[SyntaxKind.StaticKeyword]     = 30;
+
+    const comparator = (a: ts.Modifier, b: ts.Modifier) => sort_oder[a.kind] - sort_oder[b.kind];
     return ts.createNodeArray(
-        [ts.createModifier(target as number), ...(modifiers || [])].map((e, index, array) => {
+        [ts.createModifier(target as number), ...(modifiers || [])].sort(comparator).map((e, index, array) => {
             const range = ts.getCommentRange(e);
             if(range.end === -1 && range.pos === -1)
                 return e;
@@ -153,6 +167,8 @@ export interface Settings {
     log?: {
         unhandled_types: boolean;
     } | boolean;
+
+    module_mode?: boolean;
 }
 
 class _Settings implements Settings {
@@ -168,7 +184,9 @@ class _Settings implements Settings {
         unhandled_types: boolean;
     } = {
         unhandled_types: false
-    }
+    };
+
+    module_mode?: boolean;
 }
 
 function specify_settings(settings?: Settings) : _Settings {
@@ -187,7 +205,8 @@ function specify_settings(settings?: Settings) : _Settings {
         result.log = {
             unhandled_types: settings.log,
         };
-
+    if(typeof(settings.module_mode) !== "boolean")
+        result.module_mode = false;
     return result;
 }
 
@@ -196,7 +215,13 @@ export function generate(file: ts.SourceFile, settings?: Settings) : ts.Node[]{
     const stack = new StackParameters();
     const _settings = specify_settings(settings);
 
+    stack.push({
+        flag_class: false,
+        flag_declare: false,
+        flag_namespace: _settings.module_mode
+    });
     _generate(_settings, stack, layer, file);
+    stack.pop();
 
     return layer;
 }
@@ -221,12 +246,9 @@ generators[SyntaxKind.ModuleBlock] = (settings, stack, node: ts.ModuleBlock) => 
 };
 
 generators[SyntaxKind.ModuleDeclaration] = (settings, stack, node: ts.ModuleDeclaration) => {
-    switch (node.flags) {
-        case ts.NodeFlags.Namespace:
-            break;
-        default:
-        //throw "flag " + node.flags + " isn't supported yet!"; /* TODO wrap with more info */
-    }
+    //if (node.flags & ~(ts.NodeFlags.Namespace | ts.NodeFlags.NestedNamespace | ts.NodeFlags.ExportContext)) {
+    //    throw "Some module declaration flags are not jet supported (flags: " + Object.keys(ts.NodeFlags).filter(e => node.flags & ts.NodeFlags[e]).join(", ") + ")";
+    //}
 
 
     stack.push({
@@ -411,24 +433,25 @@ generators[SyntaxKind.EnumDeclaration] = (settings, stack, node: ts.EnumDeclarat
     return ts.createEnumDeclaration(undefined, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, members);
 };
 
-generators[SyntaxKind.HeritageClause] = (settings, stack, node: ts.HeritageClause) => {
-    return undefined;
-};
+generators[SyntaxKind.HeritageClause] = () => undefined;
 
 /* every variable in a block has no global scope! */
-generators[SyntaxKind.Block] = (settings, stack, node: ts.Block) => {
-    return undefined;
-};
+generators[SyntaxKind.Block] = () => undefined;
+generators[SyntaxKind.IfStatement] = () => undefined;
 
-generators[SyntaxKind.IfStatement] = (settings, stack, node: ts.IfStatement) => {
-    return undefined;
-};
+/* Example for an ExpressionStatement would be: Module["text"] = "XXX"; */
+generators[SyntaxKind.ExpressionStatement] = () => undefined;
+generators[SyntaxKind.SemicolonClassElement] = () => undefined;
 
-/* Example for an ExpressionStatement would be: Modul["text"] = "XXX"; */
-generators[SyntaxKind.ExpressionStatement] = (settings, stack, node: ts.ExpressionStatement) => {
-    return undefined;
-};
+generators[SyntaxKind.ImportDeclaration] = (settings, stack, node: ts.ImportDeclaration) => {
+    const specifier = node.moduleSpecifier as ts.StringLiteral;
+    if(specifier.kind !== SyntaxKind.StringLiteral)
+        throw "cant handle import declaration with specifier of type " + specifier.kind;
 
-generators[SyntaxKind.SemicolonClassElement] = (settings, stack, node: ts.ExpressionStatement) => {
-    return undefined;
+    return ts.createImportDeclaration(
+        node.decorators,
+        node.modifiers,
+        node.importClause,
+        ts.createStringLiteral(specifier.text)
+    );
 };

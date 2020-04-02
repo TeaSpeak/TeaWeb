@@ -1,14 +1,38 @@
-/// <reference path="log.ts" />
-/// <reference path="proto.ts" />
-/// <reference path="ui/view.ts" />
-/// <reference path="settings.ts" />
-/// <reference path="FileManager.ts" />
-/// <reference path="permission/PermissionManager.ts" />
-/// <reference path="permission/GroupManager.ts" />
-/// <reference path="ui/frames/ControlBar.ts" />
-/// <reference path="connection/ConnectionBase.ts" />
+import {ChannelTree} from "tc-shared/ui/view";
+import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
+import {PermissionManager} from "tc-shared/permission/PermissionManager";
+import {GroupManager} from "tc-shared/permission/GroupManager";
+import {ServerSettings, Settings, StaticSettings} from "tc-shared/settings";
+import {Sound, SoundManager} from "tc-shared/sound/Sounds";
+import {LocalClientEntry} from "tc-shared/ui/client";
+import {ServerLog} from "tc-shared/ui/frames/server_log";
+import {ConnectionProfile, default_profile, find_profile} from "tc-shared/profiles/ConnectionProfile";
+import {ServerAddress} from "tc-shared/ui/server";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import * as server_log from "tc-shared/ui/frames/server_log";
+import {createErrorModal, createInfoModal, createInputModal, Modal} from "tc-shared/ui/elements/Modal";
+import {hashPassword} from "tc-shared/utils/helpers";
+import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
+import * as htmltags from "./ui/htmltags";
+import {ChannelEntry} from "tc-shared/ui/channel";
+import {InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
+import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {guid} from "tc-shared/crypto/uid";
+import * as bipc from "./BrowserIPC";
+import {FileManager, spawn_upload_transfer, UploadKey} from "tc-shared/FileManager";
+import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
+import {Frame} from "tc-shared/ui/frames/chat_frame";
+import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
+import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {connection_log, Regex} from "tc-shared/ui/modal/ModalConnect";
+import {control_bar} from "tc-shared/ui/frames/ControlBar";
+import {formatMessage} from "tc-shared/ui/frames/chat";
+import {spawnAvatarUpload} from "tc-shared/ui/modal/ModalAvatar";
+import * as connection from "tc-backend/connection";
+import * as dns from "tc-backend/dns";
 
-enum DisconnectReason {
+export enum DisconnectReason {
     HANDLER_DESTROYED,
     REQUESTED,
     DNS_FAILED,
@@ -28,7 +52,7 @@ enum DisconnectReason {
     UNKNOWN
 }
 
-enum ConnectionState {
+export enum ConnectionState {
     UNCONNECTED,
     CONNECTING,
     INITIALISING,
@@ -36,7 +60,7 @@ enum ConnectionState {
     DISCONNECTING
 }
 
-enum ViewReasonId {
+export enum ViewReasonId {
     VREASON_USER_ACTION = 0,
     VREASON_MOVED = 1,
     VREASON_SYSTEM = 2,
@@ -51,7 +75,7 @@ enum ViewReasonId {
     VREASON_SERVER_SHUTDOWN = 11
 }
 
-interface VoiceStatus {
+export interface VoiceStatus {
     input_hardware: boolean;
     input_muted: boolean;
     output_muted: boolean;
@@ -68,7 +92,7 @@ interface VoiceStatus {
     queries_visible: boolean;
 }
 
-interface ConnectParameters {
+export interface ConnectParameters {
     nickname?: string;
     channel?: {
         target: string | number;
@@ -79,20 +103,21 @@ interface ConnectParameters {
     auto_reconnect_attempt?: boolean;
 }
 
-class ConnectionHandler {
+declare const native_client;
+export class ConnectionHandler {
     channelTree: ChannelTree;
 
-    serverConnection: connection.AbstractServerConnection;
+    serverConnection: AbstractServerConnection;
 
     fileManager: FileManager;
 
     permissions: PermissionManager;
     groups: GroupManager;
 
-    side_bar: chat.Frame;
+    side_bar: Frame;
 
     settings: ServerSettings;
-    sound: sound.SoundManager;
+    sound: SoundManager;
 
     hostbanner: Hostbanner;
 
@@ -121,15 +146,15 @@ class ConnectionHandler {
     };
 
     invoke_resized_on_activate: boolean = false;
-    log: log.ServerLog;
+    log: ServerLog;
 
     constructor() {
         this.settings = new ServerSettings();
 
-        this.log = new log.ServerLog(this);
+        this.log = new ServerLog(this);
         this.channelTree = new ChannelTree(this);
-        this.side_bar = new chat.Frame(this);
-        this.sound = new sound.SoundManager(this);
+        this.side_bar = new Frame(this);
+        this.sound = new SoundManager(this);
         this.hostbanner = new Hostbanner(this);
 
         this.serverConnection = connection.spawn_server_connection(this);
@@ -169,7 +194,7 @@ class ConnectionHandler {
 
     setup() { }
 
-    async startConnection(addr: string, profile: profiles.ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
+    async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
         this.tab_set_name(tr("Connecting"));
         this.cancel_reconnect(false);
         this._reconnect_attempt = parameters.auto_reconnect_attempt || false;
@@ -192,7 +217,7 @@ class ConnectionHandler {
             }
         }
         log.info(LogCategory.CLIENT, tr("Start connection to %s:%d"), server_address.host, server_address.port);
-        this.log.log(log.server.Type.CONNECTION_BEGIN, {
+        this.log.log(server_log.Type.CONNECTION_BEGIN, {
             address: {
                 server_hostname: server_address.host,
                 server_port: server_address.port
@@ -203,7 +228,7 @@ class ConnectionHandler {
 
         if(parameters.password && !parameters.password.hashed){
             try {
-                const password = await helpers.hashPassword(parameters.password.password);
+                const password = await hashPassword(parameters.password.password);
                 parameters.password = {
                     hashed: true,
                     password: password
@@ -221,9 +246,9 @@ class ConnectionHandler {
         }
 
         const original_address = {host: server_address.host, port: server_address.port};
-        if(dns.supported() && !server_address.host.match(Modals.Regex.IP_V4) && !server_address.host.match(Modals.Regex.IP_V6)) {
+        if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
             const id = ++this._connect_initialize_id;
-            this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVE, {});
+            this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVE, {});
             try {
                 const resolved = await dns.resolve_address(server_address, { timeout: 5000 }) || {} as any;
                 if(id != this._connect_initialize_id)
@@ -231,7 +256,7 @@ class ConnectionHandler {
 
                 server_address.host = typeof(resolved.target_ip) === "string" ? resolved.target_ip : server_address.host;
                 server_address.port = typeof(resolved.target_port) === "number" ? resolved.target_port : server_address.port;
-                this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVED, {
+                this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVED, {
                     address: {
                         server_port: server_address.port,
                         server_hostname: server_address.host
@@ -245,7 +270,7 @@ class ConnectionHandler {
             }
         }
 
-        await this.serverConnection.connect(server_address, new connection.HandshakeHandler(profile, parameters));
+        await this.serverConnection.connect(server_address, new HandshakeHandler(profile, parameters));
         setTimeout(() => {
             const connected = this.serverConnection.connected();
             if(user_action && connected) {
@@ -270,7 +295,7 @@ class ConnectionHandler {
         return this._clientId;
     }
 
-    getServerConnection() : connection.AbstractServerConnection { return this.serverConnection; }
+    getServerConnection() : AbstractServerConnection { return this.serverConnection; }
 
 
     /**
@@ -380,7 +405,7 @@ class ConnectionHandler {
 
                     popup.close(); /* no need, but nicer */
 
-                    const profile = profiles.find_profile(properties.connect_profile) || profiles.default_profile();
+                    const profile = find_profile(properties.connect_profile) || default_profile();
                     const cprops = this.reconnect_properties(profile);
                     this.startConnection(properties.connect_address, profile, true, cprops);
                 });
@@ -418,12 +443,12 @@ class ConnectionHandler {
             case DisconnectReason.HANDLER_DESTROYED:
                 if(data) {
                     this.sound.play(Sound.CONNECTION_DISCONNECTED);
-                    this.log.log(log.server.Type.DISCONNECTED, {});
+                    this.log.log(server_log.Type.DISCONNECTED, {});
                 }
                 break;
             case DisconnectReason.DNS_FAILED:
                 log.error(LogCategory.CLIENT, tr("Failed to resolve hostname: %o"), data);
-                this.log.log(log.server.Type.CONNECTION_HOSTNAME_RESOLVE_ERROR, {
+                this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVE_ERROR, {
                     message: data as any
                 });
                 this.sound.play(Sound.CONNECTION_REFUSED);
@@ -431,7 +456,7 @@ class ConnectionHandler {
             case DisconnectReason.CONNECT_FAILURE:
                 if(this._reconnect_attempt) {
                     auto_reconnect = true;
-                    this.log.log(log.server.Type.CONNECTION_FAILED, {});
+                    this.log.log(server_log.Type.CONNECTION_FAILED, {});
                     break;
                 }
                 if(data)
@@ -452,7 +477,7 @@ class ConnectionHandler {
 
                     this._certificate_modal = createErrorModal(
                         tr("Could not connect"),
-                        MessageHelper.formatMessage(tr(error_message_format), this.generate_ssl_certificate_accept())
+                        formatMessage(/* @tr-ignore */ tr(error_message_format), this.generate_ssl_certificate_accept())
                     );
                     this._certificate_modal.close_listener.push(() => this._certificate_modal = undefined);
                     this._certificate_modal.open();
@@ -470,7 +495,7 @@ class ConnectionHandler {
             case DisconnectReason.HANDSHAKE_TEAMSPEAK_REQUIRED:
                 createErrorModal(
                     tr("Target server is a TeamSpeak server"),
-                    MessageHelper.formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."))
+                    formatMessage(tr("The target server is a TeamSpeak 3 server!{:br:}Only TeamSpeak 3 based identities are able to connect.{:br:}Please select another profile or change the identify type."))
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
                 auto_reconnect = false;
@@ -478,7 +503,7 @@ class ConnectionHandler {
             case DisconnectReason.IDENTITY_TOO_LOW:
                 createErrorModal(
                     tr("Identity level is too low"),
-                    MessageHelper.formatMessage(tr("You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"), data["extra_message"])
+                    formatMessage(tr("You've been disconnected, because your Identity level is too low.{:br:}You need at least a level of {0}"), data["extra_message"])
                 ).open();
                 this.sound.play(Sound.CONNECTION_DISCONNECTED);
 
@@ -506,7 +531,7 @@ class ConnectionHandler {
 
                 break;
             case DisconnectReason.SERVER_CLOSED:
-                this.log.log(log.server.Type.SERVER_CLOSED, {message: data.reasonmsg});
+                this.log.log(server_log.Type.SERVER_CLOSED, {message: data.reasonmsg});
 
                 createErrorModal(
                     tr("Server closed"),
@@ -518,7 +543,7 @@ class ConnectionHandler {
                 auto_reconnect = true;
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
-                this.log.log(log.server.Type.SERVER_REQUIRES_PASSWORD, {});
+                this.log.log(server_log.Type.SERVER_REQUIRES_PASSWORD, {});
 
                 createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
@@ -540,7 +565,7 @@ class ConnectionHandler {
                 const have_invoker = typeof(data["invokerid"]) !== "undefined" && parseInt(data["invokerid"]) !== 0;
                 const modal = createErrorModal(
                     tr("You've been kicked"),
-                    MessageHelper.formatMessage(
+                    formatMessage(
                         have_invoker ? tr("You've been kicked from the server by {0}:{:br:}{1}") : tr("You've been kicked from the server:{:br:}{1}"),
                         have_invoker ?
                             htmltags.generate_client_object({ client_id: parseInt(data["invokerid"]), client_unique_id: data["invokeruid"], client_name: data["invokername"]}) :
@@ -559,7 +584,7 @@ class ConnectionHandler {
                 this.sound.play(Sound.CONNECTION_BANNED);
                 break;
             case DisconnectReason.CLIENT_BANNED:
-                this.log.log(log.server.Type.SERVER_BANNED, {
+                this.log.log(server_log.Type.SERVER_BANNED, {
                     invoker: {
                         client_name: data["invokername"],
                         client_id: parseInt(data["invokerid"]),
@@ -592,7 +617,7 @@ class ConnectionHandler {
                 log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
             }
-            this.log.log(log.server.Type.RECONNECT_SCHEDULED, {timeout: 5000});
+            this.log.log(server_log.Type.RECONNECT_SCHEDULED, {timeout: 5000});
 
             log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
@@ -600,7 +625,7 @@ class ConnectionHandler {
 
             this._reconnect_timer = setTimeout(() => {
                 this._reconnect_timer = undefined;
-                this.log.log(log.server.Type.RECONNECT_EXECUTE, {});
+                this.log.log(server_log.Type.RECONNECT_EXECUTE, {});
                 log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
 
                 this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
@@ -610,7 +635,7 @@ class ConnectionHandler {
 
     cancel_reconnect(log_event: boolean) {
         if(this._reconnect_timer) {
-            if(log_event) this.log.log(log.server.Type.RECONNECT_CANCELED, {});
+            if(log_event) this.log.log(server_log.Type.RECONNECT_CANCELED, {});
             clearTimeout(this._reconnect_timer);
             this._reconnect_timer = undefined;
         }
@@ -621,6 +646,7 @@ class ConnectionHandler {
             control_bar.update_connection_state();
     }
 
+    private _last_record_error_popup: number;
     update_voice_status(targetChannel?: ChannelEntry) {
         if(!this._local_client) return; /* we've been destroyed */
 
@@ -664,7 +690,7 @@ class ConnectionHandler {
             if(Object.keys(property_update).length > 0) {
                 this.serverConnection.send_command("clientupdate", property_update).catch(error => {
                     log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
-                    this.log.log(log.server.Type.ERROR_CUSTOM, {message: tr("Failed to update audio hardware properties.")});
+                    this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to update audio hardware properties.")});
 
                     /* Update these properties anyways (for case the server fails to handle the command) */
                     const updates = [];
@@ -703,20 +729,25 @@ class ConnectionHandler {
         if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().record_supported) {
             const active = !this.client_status.input_muted && !this.client_status.output_muted;
             /* No need to start the microphone when we're not even connected */
-            if(active && this.serverConnection.connected()) {
-                if(vconnection.voice_recorder().input.current_state() === audio.recorder.InputState.PAUSED) {
-                    vconnection.voice_recorder().input.start().then(result => {
-                        if(result != audio.recorder.InputStartResult.EOK) {
-                            log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), result);
-                            createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), result)).open();
-                        }
-                    }).catch(error => {
-                        log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
-                        createErrorModal(tr("Failed to start recording"), MessageHelper.formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
-                    });
+
+            const input = vconnection.voice_recorder().input;
+            if(input) {
+                if(active && this.serverConnection.connected()) {
+                    if(input.current_state() === InputState.PAUSED) {
+                        input.start().then(result => {
+                            if(result != InputStartResult.EOK)
+                                throw result;
+                        }).catch(error => {
+                            log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
+                            if(Date.now() - (this._last_record_error_popup || 0) > 10 * 1000) {
+                                this._last_record_error_popup = Date.now();
+                                createErrorModal(tr("Failed to start recording"), formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
+                            }
+                        });
+                    }
+                } else {
+                    input.stop();
                 }
-            } else {
-                vconnection.voice_recorder().input.stop();
             }
         }
 
@@ -735,7 +766,7 @@ class ConnectionHandler {
                 client_output_hardware: this.client_status.sound_playback_supported
             }).catch(error => {
                 log.warn(LogCategory.GENERAL, tr("Failed to sync handler state with server. Error: %o"), error);
-                this.log.log(log.server.Type.ERROR_CUSTOM, {message: tr("Failed to sync handler state with server.")});
+                this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to sync handler state with server.")});
             });
     }
 
@@ -755,7 +786,7 @@ class ConnectionHandler {
             client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
         }).catch(error => {
             log.warn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
-            this.log.log(log.server.Type.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
+            this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
         });
 
         control_bar.update_button_away();
@@ -775,10 +806,10 @@ class ConnectionHandler {
         });
     }
 
-    reconnect_properties(profile?: profiles.ConnectionProfile) : ConnectParameters {
+    reconnect_properties(profile?: ConnectionProfile) : ConnectParameters {
         const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
                         (this.serverConnection && this.serverConnection.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
-                        settings.static_global(Settings.KEY_CONNECT_USERNAME, profile ? profile.default_username : undefined) ||
+                        StaticSettings.instance.static(Settings.KEY_CONNECT_USERNAME, profile ? profile.default_username : undefined) ||
                         "Another TeaSpeak user";
         const channel = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().channelId : 0) ||
                         (this.serverConnection && this.serverConnection.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).target : "");
@@ -792,7 +823,7 @@ class ConnectionHandler {
     }
 
     update_avatar() {
-        Modals.spawnAvatarUpload(data => {
+        spawnAvatarUpload(data => {
             if(typeof(data) === "undefined")
                 return;
             if(data === null) {
@@ -808,16 +839,16 @@ class ConnectionHandler {
 
                     let message;
                     if(error instanceof CommandResult)
-                        message = MessageHelper.formatMessage(tr("Failed to delete avatar.{:br:}Error: {0}"), error.extra_message || error.message);
+                        message = formatMessage(tr("Failed to delete avatar.{:br:}Error: {0}"), error.extra_message || error.message);
                     if(!message)
-                        message = MessageHelper.formatMessage(tr("Failed to delete avatar.{:br:}Lookup the console for more details"));
+                        message = formatMessage(tr("Failed to delete avatar.{:br:}Lookup the console for more details"));
                     createErrorModal(tr("Failed to delete avatar"), message).open();
                     return;
                 });
             } else {
                 log.info(LogCategory.CLIENT, tr("Uploading new avatar"));
                 (async () => {
-                    let key: transfer.UploadKey;
+                    let key: UploadKey;
                     try {
                         key = await this.fileManager.upload_file({
                             size: data.byteLength,
@@ -834,28 +865,28 @@ class ConnectionHandler {
                             //TODO: Resolve permission name
                             //i_client_max_avatar_filesize
                             if(error.id == ErrorID.PERMISSION_ERROR) {
-                                message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Missing permission {0}"), error["failed_permid"]);
+                                message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Missing permission {0}"), error["failed_permid"]);
                             } else {
-                                message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Error: {0}"), error.extra_message || error.message);
+                                message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Error: {0}"), error.extra_message || error.message);
                             }
                         }
                         if(!message)
-                            message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
+                            message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
                         createErrorModal(tr("Failed to upload avatar"), message).open();
                         return;
                     }
 
                     try {
-                        await transfer.spawn_upload_transfer(key).put_data(data);
+                        await spawn_upload_transfer(key).put_data(data);
                     } catch(error) {
                         log.error(LogCategory.GENERAL, tr("Failed to upload avatar: %o"), error);
 
                         let message;
                         if(typeof(error) === "string")
-                            message = MessageHelper.formatMessage(tr("Failed to upload avatar.{:br:}Error: {0}"), error);
+                            message = formatMessage(tr("Failed to upload avatar.{:br:}Error: {0}"), error);
 
                         if(!message)
-                            message = MessageHelper.formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
+                            message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
                         createErrorModal(tr("Failed to upload avatar"), message).open();
                         return;
                     }
@@ -868,9 +899,9 @@ class ConnectionHandler {
 
                         let message;
                         if(error instanceof CommandResult)
-                            message = MessageHelper.formatMessage(tr("Failed to update avatar flag.{:br:}Error: {0}"), error.extra_message || error.message);
+                            message = formatMessage(tr("Failed to update avatar flag.{:br:}Error: {0}"), error.extra_message || error.message);
                         if(!message)
-                            message = MessageHelper.formatMessage(tr("Failed to update avatar flag.{:br:}Lookup the console for more details"));
+                            message = formatMessage(tr("Failed to update avatar flag.{:br:}Lookup the console for more details"));
                         createErrorModal(tr("Failed to set avatar"), message).open();
                         return;
                     }

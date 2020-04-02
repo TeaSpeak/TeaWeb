@@ -1,4 +1,7 @@
-class AudioResampler {
+import {LogCategory} from "tc-shared/log";
+import * as log from "tc-shared/log";
+
+export class AudioResampler {
     targetSampleRate: number;
     private _use_promise: boolean;
 

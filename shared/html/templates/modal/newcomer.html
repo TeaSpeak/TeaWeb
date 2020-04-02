@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Template modal newcomer</title>
+</head>
+<body>
+    <script class="jsrender-template" id="tmpl_newcomer" type="text/html">
+        <div> <!-- required for the renderer -->
+            <div class="container-header">
+                <!-- We don't have a title here because we've put it into the body. -->
+                <!-- <div class="step step-welcome">{{tr "Welcome to the easy setup guide!" /}} </div> -->
+                <div class="step step-identity">{{tr "Identity setup" /}}</div>
+                <div class="step step-microphone">{{tr "Microphone setup" /}}</div>
+                <div class="step step-speaker">{{tr "Speaker setup" /}}</div>
+                <!-- <div class="step step-finish">{{tr "Setup finished" /}}</div> -->
+            </div>
+            <div class="container-body">
+                <div class="body">
+                    <div class="step step-welcome">
+                        <div class="logo">
+                            <img src="img/teaspeak_cup_animated.png">
+                        </div>
+                        <div class="text">
+                            <h1>{{tr "Welcome dear TeaSpeak user." /}}</h1>
+                            {{tr "We would like to setup a few things before you're ready to go.<br>" /}}
+                            {{tr "Dont worry! We'll guide you thru the basic setup process." /}}<br>
+                            {{tr "Together we'll go thru these steps:" /}}
+                            <ol>
+                                <li>{{tr "Welcome Greeting" /}}</li>
+                                <li>{{tr "Microphone configuration" /}}</li>
+                                <li>{{tr "Identity setup" /}}</li>
+                                {{if !is_web}}
+                                <!-- <li>{{tr "Speaker configuration" /}}</li> -->
+                                {{/if}}
+                            </ol>
+                            {{tr "It is save to exit this guide at any point and directly jump ahead using the client." /}}
+                        </div>
+                    </div>
+                    <div class="step step-microphone">
+                        {{include tmpl="tmpl_settings-microphone" /}}
+                    </div>
+                    <div class="step step-identity">
+                        {{include tmpl="tmpl_settings-profiles" /}}
+                    </div>
+                    <div class="step step-speaker">
+                        <h1>TODO</h1>
+                    </div>
+                    <div class="step step-finish">
+                        <div class="logo">
+                            <img src="img/teaspeak_cup_animated.png">
+                        </div>
+                        <div class="text">
+                            <h1>{{tr "Congratulations,<br>your done setting up TeaSpeak" /}}</h1>
+                            {{tr "You're done setting up your client. But dont worry,<br>" /}}
+                            {{tr "your could find all these settings within the settings menu<br>" /}}
+                            {{tr 'To open the client settings click on "tools" and than "settings"<br>' /}}
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="buttons">
+                <button class="btn btn-red button-last-step">error: last step</button>
+                <button class="btn btn-green button-next-step">error: next step</button>
+            </div>
+        </div>
+    </script>
+</body>
+</html>

@@ -1,4 +1,6 @@
-enum ErrorID {
+import {LaterPromise} from "tc-shared/utils/LaterPromise";
+
+export enum ErrorID {
     NOT_IMPLEMENTED = 0x2,
     COMMAND_NOT_FOUND = 0x100,
 
@@ -15,7 +17,7 @@ enum ErrorID {
     CONVERSATION_IS_PRIVATE = 0x2202
 }
 
-class CommandResult {
+export class CommandResult {
     success: boolean;
     id: number;
     message: string;
@@ -35,39 +37,39 @@ class CommandResult {
     }
 }
 
-interface ClientNameInfo {
+export interface ClientNameInfo {
     //cluid=tYzKUryn\/\/Y8VBMf8PHUT6B1eiE= name=Exp clname=Exp cldbid=9
     client_unique_id: string;
     client_nickname: string;
     client_database_id: number;
 }
 
-interface ClientNameFromUid {
+export interface ClientNameFromUid {
     promise: LaterPromise<ClientNameInfo[]>,
     keys: string[],
     response: ClientNameInfo[]
 }
 
-interface ServerGroupClient {
+export interface ServerGroupClient {
     client_nickname: string;
     client_unique_identifier: string;
     client_database_id: number;
 }
 
-interface QueryListEntry {
+export interface QueryListEntry {
     username: string;
     unique_id: string;
     bounded_server: number;
 }
 
-interface QueryList {
+export interface QueryList {
     flag_own: boolean;
     flag_all: boolean;
 
     queries: QueryListEntry[];
 }
 
-interface Playlist {
+export interface Playlist {
     playlist_id: number;
     playlist_bot_id: number;
     playlist_title: string;
@@ -83,7 +85,7 @@ interface Playlist {
     needed_power_song_remove: number;
 }
 
-interface PlaylistInfo {
+export interface PlaylistInfo {
     playlist_id: number,
     playlist_title: string,
     playlist_description: string,
@@ -96,9 +98,11 @@ interface PlaylistInfo {
     playlist_flag_finished: boolean,
     playlist_replay_mode: number,
     playlist_current_song_id: number,
+
+    playlist_max_songs: number
 }
 
-interface PlaylistSong {
+export interface PlaylistSong {
     song_id: number;
     song_previous_song_id: number;
     song_invoker: string;

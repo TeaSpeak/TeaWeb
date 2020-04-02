@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-cd $(dirname $0)
+cd "$(dirname "$0")" || exit 1
 #find css/static/ -name '*.css' -exec cat {} \; | npm run csso -- --output `pwd`/generated/static/base.css
 
 
@@ -35,6 +35,7 @@ files=(
     "css/static/modal-group-assignment.css"
     "css/static/modal-icons.css"
     "css/static/modal-identity.css"
+    "css/static/modal-newcomer.css"
     "css/static/modal-invite.css"
     "css/static/modal-keyselect.css"
     "css/static/modal-permissions.css"
@@ -42,10 +43,12 @@ files=(
     "css/static/modal-poke.css"
     "css/static/modal-query.css"
     "css/static/modal-server.css"
+    "css/static/modal-musicmanage.css"
     "css/static/modal-serverinfobandwidth.css"
     "css/static/modal-serverinfo.css"
     "css/static/modal-settings.css"
     "css/static/modal-volume.css"
+    "css/static/overlay-image-preview.css"
 
     "css/static/ts/tab.css"
     "css/static/ts/chat.css"
@@ -59,20 +62,20 @@ files=(
 target_file=`pwd`/../generated/static/base.css
 
 if [[ ! -d $(dirname ${target_file}) ]]; then
-    echo "Creating target path ($(dirname ${target_file}))"
-    mkdir -p $(dirname ${target_file})
+    echo "Creating target path ($(dirname "${target_file}"))"
+    mkdir -p $(dirname "${target_file}")
     if [[ $? -ne 0 ]]; then
         echo "Failed to create target path!"
         exit 1
     fi
 fi
 
-echo "/* Auto generated merged CSS file */" > ${target_file}
+echo "/* Auto generated merged CSS file */" > "${target_file}"
 for file in "${files[@]}"; do
     if [[ ${file} =~ css/* ]]; then
         file="./${file:4}"
     fi
-    cat ${file} >> ${target_file}
+    cat "${file}" >> "${target_file}"
 done
 
-cat ${target_file} | npm run csso -- --output `pwd`/../generated/static/base.css
+cat "${target_file}" | npm run csso -- --output "$(pwd)/../generated/static/base.css"

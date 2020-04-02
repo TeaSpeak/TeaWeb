@@ -145,9 +145,11 @@
 
         <meta name="app-loader-target" content="app">
         <div id="scripts">
+            <!--
             <script type="application/javascript" src="loader/loader_app.min.js" async defer></script>
             <script type="application/javascript" src="loader/loader_app.js" async defer></script>
-            <script type="application/javascript" src="loader/loader.js?_<?php echo time() ?>" async defer></script>
+            -->
+            <script type="application/javascript" src="js/loader.js?_<?php echo time() ?>" async defer></script>
         </div>
 
         <!-- Loading screen -->

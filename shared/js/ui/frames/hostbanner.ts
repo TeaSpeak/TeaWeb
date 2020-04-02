@@ -1,4 +1,9 @@
-class Hostbanner {
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {settings, Settings} from "tc-shared/settings";
+import {LogCategory} from "tc-shared/log";
+import * as log from "tc-shared/log";
+
+export class Hostbanner {
     readonly html_tag: JQuery<HTMLElement>;
     readonly client: ConnectionHandler;
 

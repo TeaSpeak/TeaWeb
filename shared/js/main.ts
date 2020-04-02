@@ -1,31 +1,43 @@
-/// <reference path="ui/frames/chat.ts" />
-/// <reference path="ui/modal/ModalConnect.ts" />
-/// <reference path="ui/modal/ModalCreateChannel.ts" />
-/// <reference path="ui/modal/ModalBanClient.ts" />
-/// <reference path="ui/modal/ModalYesNo.ts" />
-/// <reference path="ui/modal/ModalBanList.ts" />
-/// <reference path="settings.ts" />
-/// <reference path="log.ts" />
-/// <reference path="PPTListener.ts" />
+import * as moment from "moment";
+import * as loader from "tc-loader";
+import {settings, Settings} from "tc-shared/settings";
+import * as profiles from "tc-shared/profiles/ConnectionProfile";
+import {LogCategory} from "tc-shared/log";
+import * as log from "tc-shared/log";
+import * as bipc from "./BrowserIPC";
+import * as sound from "./sound/Sounds";
+import * as i18n from "./i18n/localize";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {createInfoModal} from "tc-shared/ui/elements/Modal";
+import {tra} from "./i18n/localize";
+import {RequestFileUpload} from "tc-shared/FileManager";
+import * as stats from "./stats";
+import * as fidentity from "./profiles/identities/TeaForumIdentity";
+import {default_recorder, RecorderProfile, set_default_recorder} from "tc-shared/voice/RecorderProfile";
+import * as cmanager from "tc-shared/ui/frames/connection_handlers";
+import {server_connections, ServerConnectionManager} from "tc-shared/ui/frames/connection_handlers";
+import * as control_bar from "tc-shared/ui/frames/ControlBar";
+import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
+import * as top_menu from "./ui/frames/MenuBar";
+import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
+import {formatMessage} from "tc-shared/ui/frames/chat";
+import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
+import * as aplayer from "tc-backend/audio/player";
+import * as arecorder from "tc-backend/audio/recorder";
+import * as ppt from "tc-backend/ppt";
 
-import spawnYesNo = Modals.spawnYesNo;
+/* required import for init */
+require("./proto").initialize();
+require("./ui/elements/ContextDivider").initialize();
+require("./connection/CommandHandler"); /* else it might not get bundled because only the backends are accessing it */
 
 const js_render = window.jsrender || $;
 const native_client = window.require !== undefined;
 
-function getUserMediaFunctionPromise() : (constraints: MediaStreamConstraints) => Promise<MediaStream> {
-    if('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices)
-        return constraints => navigator.mediaDevices.getUserMedia(constraints);
-
-    const _callbacked_function = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    if(!_callbacked_function)
-        return undefined;
-
-    return constraints => new Promise<MediaStream>((resolve, reject) => _callbacked_function(constraints, resolve, reject));
-}
-
-interface Window {
-    open_connected_question: () => Promise<boolean>;
+declare global {
+    interface Window {
+        open_connected_question: () => Promise<boolean>;
+    }
 }
 
 function setup_close() {
@@ -50,7 +62,7 @@ function setup_close() {
                     }));
 
                     const exit = () => {
-                        const {remote} = require('electron');
+                        const {remote} = window.require('electron');
                         remote.getCurrentWindow().close();
                     };
 
@@ -80,7 +92,6 @@ function setup_close() {
     };
 }
 
-declare function moment(...arguments) : any;
 function setup_jsrender() : boolean {
     if(!js_render) {
         loader.critical_error("Missing jsrender extension!");
@@ -103,7 +114,7 @@ function setup_jsrender() : boolean {
     });
 
     js_render.views.tags("tr", (...args) => {
-        return tr(args[0]);
+        return /* @tr-ignore */ tr(args[0]);
     });
 
     $(".jsrender-template").each((idx, _entry) => {
@@ -133,7 +144,7 @@ async function initialize_app() {
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag({
             multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
-            app_version: app.ui_version()
+            app_version: __build.version
         }).dividerfy();
 
         $("body").append(main);
@@ -143,19 +154,24 @@ async function initialize_app() {
         return;
     }
 
-    control_bar = new ControlBar($("#control_bar")); /* setup the control bar */
+    control_bar.set_control_bar(new control_bar.ControlBar($("#control_bar"))); /* setup the control bar */
 
-    if(!audio.player.initialize())
+    if(!aplayer.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
-    if(audio.player.set_master_volume)
-        audio.player.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100);
-    else
-        log.warn(LogCategory.GENERAL, tr("Client does not support audio.player.set_master_volume()... May client is too old?"));
-    if(audio.recorder.device_refresh_available())
-        await audio.recorder.refresh_devices();
 
-    default_recorder = new RecorderProfile("default");
-    await default_recorder.initialize();
+    aplayer.on_ready(() => {
+        if(aplayer.set_master_volume)
+            aplayer.on_ready(() => aplayer.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100));
+        else
+            log.warn(LogCategory.GENERAL, tr("Client does not support aplayer.set_master_volume()... May client is too old?"));
+        if(arecorder.device_refresh_available())
+            arecorder.refresh_devices();
+    });
+
+    set_default_recorder(new RecorderProfile("default"));
+    default_recorder.initialize().catch(error => {
+        log.error(LogCategory.AUDIO, tr("Failed to initialize default recorder: %o"), error);
+    });
 
     sound.initialize().then(() => {
         log.info(LogCategory.AUDIO, tr("Sounds initialized"));
@@ -173,78 +189,6 @@ async function initialize_app() {
     }
 
     setup_close();
-}
-
-function str2ab8(str) {
-    const buf = new ArrayBuffer(str.length);
-    const bufView = new Uint8Array(buf);
-    for (let i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-    }
-    return buf;
-}
-
-/* FIXME Dont use atob, because it sucks for non UTF-8 tings */
-function arrayBufferBase64(base64: string) {
-    base64 = atob(base64);
-    const buf = new ArrayBuffer(base64.length);
-    const bufView = new Uint8Array(buf);
-    for (let i = 0, strLen = base64.length; i < strLen; i++) {
-        bufView[i] = base64.charCodeAt(i);
-    }
-    return buf;
-}
-
-function base64_encode_ab(source: ArrayBufferLike) {
-    const encodings = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let base64      = "";
-
-    const bytes          = new Uint8Array(source);
-    const byte_length    = bytes.byteLength;
-    const byte_reminder  = byte_length % 3;
-    const main_length    = byte_length - byte_reminder;
-
-    let a, b, c, d;
-    let chunk;
-
-    // Main loop deals with bytes in chunks of 3
-    for (let i = 0; i < main_length; i = i + 3) {
-        // Combine the three bytes into a single integer
-        chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
-
-        // Use bitmasks to extract 6-bit segments from the triplet
-        a = (chunk & 16515072) >> 18; // 16515072 = (2^6 - 1) << 18
-        b = (chunk & 258048)   >> 12; // 258048   = (2^6 - 1) << 12
-        c = (chunk & 4032)     >>  6; // 4032     = (2^6 - 1) <<  6
-        d = (chunk & 63)       >>  0; // 63       = (2^6 - 1) <<  0
-
-        // Convert the raw binary segments to the appropriate ASCII encoding
-        base64 += encodings[a] + encodings[b] + encodings[c] + encodings[d];
-    }
-
-    // Deal with the remaining bytes and padding
-    if (byte_reminder == 1) {
-        chunk = bytes[main_length];
-
-        a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
-
-        // Set the 4 least significant bits to zero
-        b = (chunk & 3)   << 4; // 3   = 2^2 - 1
-
-        base64 += encodings[a] + encodings[b] + '==';
-    } else if (byte_reminder == 2) {
-        chunk = (bytes[main_length] << 8) | bytes[main_length + 1];
-
-        a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10
-        b = (chunk & 1008)  >>  4; // 1008  = (2^6 - 1) <<  4
-
-        // Set the 2 least significant bits to zero
-        c = (chunk & 15)    <<  2; // 15    = 2^4 - 1
-
-        base64 += encodings[a] + encodings[b] + encodings[c] + '=';
-    }
-
-    return base64
 }
 
 /*
@@ -290,7 +234,7 @@ interface Window {
 }
 */
 
-function handle_connect_request(properties: bipc.connect.ConnectRequestData, connection: ConnectionHandler) {
+export function handle_connect_request(properties: bipc.connect.ConnectRequestData, connection: ConnectionHandler) {
     const profile_uuid = properties.profile || (profiles.default_profile() || {id: 'default'}).id;
     const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
     const username = properties.username || profile.connect_username();
@@ -308,7 +252,7 @@ function handle_connect_request(properties: bipc.connect.ConnectRequestData, con
         });
         server_connections.set_active_connection_handler(connection);
     } else {
-        Modals.spawnConnectModal({},{
+        spawnConnectModal({},{
             url: properties.address,
             enforce: true
         }, {
@@ -351,14 +295,14 @@ function main() {
 
     top_menu.initialize();
 
-    server_connections = new ServerConnectionManager($("#connection-handlers"));
-    control_bar.initialise(); /* before connection handler to allow property apply */
+    cmanager.initialize(new ServerConnectionManager($("#connection-handlers")));
+    control_bar.control_bar.initialise(); /* before connection handler to allow property apply */
 
     const initial_handler = server_connections.spawn_server_connection_handler();
     initial_handler.acquire_recorder(default_recorder, false);
-    control_bar.set_connection_handler(initial_handler);
+    control_bar.control_bar.set_connection_handler(initial_handler);
     /** Setup the XF forum identity **/
-    profiles.identities.update_forum();
+    fidentity.update_forum();
 
     let _resize_timeout: NodeJS.Timer;
     $(window).on('resize', event => {
@@ -472,6 +416,13 @@ function main() {
         modal.open();
     }
      */
+
+
+    /* for testing */
+    if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
+        const modal = openModalNewcomer();
+        modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
+    }
 }
 
 const task_teaweb_starter: loader.Task = {
@@ -480,12 +431,12 @@ const task_teaweb_starter: loader.Task = {
         try {
             await initialize_app();
             main();
-            if(!audio.player.initialized()) {
+            if(!aplayer.initialized()) {
                 log.info(LogCategory.VOICE, tr("Initialize audio controller later!"));
-                if(!audio.player.initializeFromGesture) {
-                    console.error(tr("Missing audio.player.initializeFromGesture"));
+                if(!aplayer.initializeFromGesture) {
+                    console.error(tr("Missing aplayer.initializeFromGesture"));
                 } else
-                    $(document).one('click', event => audio.player.initializeFromGesture());
+                    $(document).one('click', event => aplayer.initializeFromGesture());
             }
         } catch (ex) {
             console.error(ex.stack);
@@ -531,7 +482,7 @@ const task_connect_handler: loader.Task = {
                         "You could now close this page.";
                     createInfoModal(
                         tr("Connecting successfully within other instance"),
-                        MessageHelper.formatMessage(tr(message), connect_data.address),
+                        formatMessage(/* @tr-ignore */ tr(message), connect_data.address),
                         {
                             closeable: false,
                             footer: undefined
@@ -598,7 +549,7 @@ const task_certificate_callback: loader.Task = {
                     "This page will close in {0} seconds.";
                 createInfoModal(
                     tr("Certificate acccepted successfully"),
-                    MessageHelper.formatMessage(tr(message), seconds_tag),
+                    formatMessage(/* @tr-ignore */ tr(message), seconds_tag),
                     {
                         closeable: false,
                         footer: undefined
@@ -638,7 +589,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         try {
             await initialize();
 
-            if(app.is_web()) {
+            if(__build.target == "web") {
                 loader.register_task(loader.Stage.LOADED, task_certificate_callback);
             } else {
                 loader.register_task(loader.Stage.LOADED, task_teaweb_starter);
@@ -655,3 +606,13 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     priority: 1000
 });
 
+loader.register_task(loader.Stage.LOADED, {
+    name: "error task",
+    function: async () => {
+        if(Settings.instance.static(Settings.KEY_LOAD_DUMMY_ERROR, false)) {
+            loader.critical_error("The tea is cold!", "Argh, this is evil! Cold tea dosn't taste good.");
+            throw "The tea is cold!";
+        }
+    },
+    priority: 20
+});

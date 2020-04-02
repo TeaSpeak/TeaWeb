@@ -1,17 +1,24 @@
-/// <reference path="../connection/ConnectionBase.ts" />
+import {LaterPromise} from "tc-shared/utils/LaterPromise";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import {PermissionManager, PermissionValue} from "tc-shared/permission/PermissionManager";
+import {ServerCommand} from "tc-shared/connection/ConnectionBase";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 
-enum GroupType {
+export enum GroupType {
     QUERY,
     TEMPLATE,
     NORMAL
 }
 
-enum GroupTarget {
+export enum GroupTarget {
     SERVER,
     CHANNEL
 }
 
-class GroupProperties {
+export class GroupProperties {
     iconid: number = 0;
 
     sortid: number = 0;
@@ -19,12 +26,12 @@ class GroupProperties {
     namemode: number = 0;
 }
 
-class GroupPermissionRequest {
+export class GroupPermissionRequest {
     group_id: number;
     promise: LaterPromise<PermissionValue[]>;
 }
 
-class Group {
+export class Group {
     properties: GroupProperties = new GroupProperties();
 
     readonly handle: GroupManager;
@@ -63,7 +70,7 @@ class Group {
     }
 }
 
-class GroupManager extends connection.AbstractCommandHandler {
+export class GroupManager extends AbstractCommandHandler {
     readonly handle: ConnectionHandler;
 
     serverGroups: Group[] = [];
@@ -83,7 +90,7 @@ class GroupManager extends connection.AbstractCommandHandler {
         this.channelGroups = undefined;
     }
 
-    handle_command(command: connection.ServerCommand): boolean {
+    handle_command(command: ServerCommand): boolean {
         switch (command.command) {
             case "notifyservergrouplist":
             case "notifychannelgrouplist":
@@ -160,7 +167,7 @@ class GroupManager extends connection.AbstractCommandHandler {
             }
 
             let group = new Group(this,parseInt(target == GroupTarget.SERVER ? groupData["sgid"] : groupData["cgid"]), target, type, groupData["name"]);
-            for(let key in groupData as any) {
+            for(let key in Object.keys(groupData)) {
                 if(key == "sgid") continue;
                 if(key == "cgid") continue;
                 if(key == "type") continue;

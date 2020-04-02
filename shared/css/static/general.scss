@@ -108,6 +108,14 @@ button, input, optgroup, select, textarea {
 	line-height: inherit;
 }
 
+select {
+	-webkit-border-radius: 1px!important;
+
+	option {
+		color: black;
+	}
+}
+
 
 fieldset {
 	border: unset;
@@ -115,7 +123,6 @@ fieldset {
 }
 
 code {
-	background-color: lightgray;
 	padding: 2px;
 }
 
@@ -231,4 +238,9 @@ a.rainbow-letter {
 	font-weight: bold;
 	border-bottom: 1px solid #ab4788;
 	line-height: 1em;
+}
+
+iframe {
+	border-radius: .2em;
+	border: none;
 }

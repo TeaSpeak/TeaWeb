@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Template Music manage</title>
+</head>
+<body>
+    <script class="jsrender-template" id="tmpl_music_manage" type="text/html">
+    <div>
+        <div class="header">
+            <div class="category category-settings">
+                <a>{{tr "Settings" /}}</a>
+            </div>
+            <div class="category category-permissions">
+                <a>{{tr "Permissions" /}}</a>
+            </div>
+        </div>
+        <div class="body">
+            <div class="container category-settings">
+                <div class="container-settings">
+                    <div class="settings settings-bot">
+                        <a>{{tr "Music Bot" /}}</a>
+                        <div class="body">
+                            <div class="container-name-country">
+                                <input class="input-boxed option-bot-name" placeholder="Bot name" max="30">
+                                <div class="input-boxed container-country">
+                                    <input class="option-bot-country" maxlength="2">
+                                    <div class="country flag-de"></div>
+                                </div>
+                            </div>
+                            <label>
+                                <div class="checkbox">
+                                    <input type="checkbox" class="option-channel-commander">
+                                    <div class="mark"></div>
+                                </div>
+                                <a>{{tr "Music bot is channel commander" /}}</a>
+                            </label>
+                            <label>
+                                <div class="checkbox">
+                                    <input type="checkbox" class="option-priority-speaker">
+                                    <div class="mark"></div>
+                                </div>
+                                <a>{{tr "Music bot is priority speaker" /}}</a>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings settings-playlist">
+                        <a>{{tr "Replay" /}}</a>
+                        <div class="body">
+                            <div class="container-replay-mode">
+                                <a>{{tr "Replay mode" /}}</a>
+                                <select class="input-boxed option-replay-mode">
+                                    <option value="-1" style="display: none;">{{tr "Unknown" /}}</option>
+                                    <option value="0">{{tr "Normal" /}}</option>
+                                    <option value="1">{{tr "Looped" /}}</option>
+                                    <option value="2">{{tr "Single-Looped" /}}</option>
+                                    <option value="3">{{tr "Shuffle" /}}</option>
+                                </select>
+                            </div>
+                            <div class="container-max-playlist-size">
+                                <a>{{tr "Max playlist size" /}}</a>
+                                <div class="input-boxed">
+                                    <input type="number" min="0" value="60" maxlength="6">
+                                    <div class="container-tooltip">
+                                        <img src="img/icon_tooltip_music_permission.svg">
+                                        <div class="tooltip">
+                                            <a>You could set this value up to X.</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <label>
+                                <div class="checkbox">
+                                    <input type="checkbox" class="option-delete-played-songs">
+                                    <div class="mark"></div>
+                                </div>
+                                <a>{{tr "Delete played songs from playlist" /}}</a>
+                            </label>
+                            <label>
+                                <div class="checkbox">
+                                    <input type="checkbox" class="option-notify-songs-change">
+                                    <div class="mark"></div>
+                                </div>
+                                <a>{{tr "Send a channel message when the song changes" /}}</a>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-buttons">
+                    <button class="btn btn-blue button-reload">{{tr "Reload" /}}</button>
+                </div>
+            </div>
+            <div class="container category-permissions">
+                <div class="table-head">
+                    <div class="column column-permission">
+                        <a>{{tr "Permission" /}}</a>
+                    </div>
+                    <div class="column column-required">
+                        <a>{{tr "Required value" /}}</a>
+                    </div>
+                    <div class="column column-client-specific">
+                        <div class="client-select">
+                            <div class="row">
+                                <a>{{tr "Search for an client:" /}}</a>
+                                <button class="btn btn-blue button-list-clients">error: client list</button>
+                            </div>
+                            <div class="row">
+                                <input type="text" class="input-boxed input-search" placeholder="error: placeholder" maxlength="40">
+                                <button class="btn btn-green button-search">{{tr "Search" /}}</button>
+                            </div>
+                        </div>
+                        <div class="client-info hidden">
+                            <div class="row">
+                                <a></a>
+                                <button class="btn btn-blue button-client-deselect">{{tr "Unselect" /}}</button>
+                            </div>
+                            <div class="row container-selected-client">
+                                <a>{{tr "Showing permissions for:" /}}</a>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-body">
+                    <div class="column column-permission">
+                        <div class="entry master">
+                            <a>{{tr "Bot permissions" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power to rename the music bot" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power to modify the music bot permissions" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power to delete the music bot" /}}</a>
+                        </div>
+                        <div class="entry master">
+                            <a>{{tr "Playlist permissions" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power to see the playlist songs" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power for editing playlist settings" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power for viewing playlist permissions" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power for editing playlist permissions" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power for adding a song to the playlist" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power to reorder a song within the playlist" /}}</a>
+                        </div>
+                        <div class="entry slave">
+                            <a>{{tr "Power to delete a song from the playlist" /}}</a>
+                        </div>
+                    </div>
+                    <div class="column column-required">
+                        <div class="entry"></div> <!-- bot permissions -->
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_client_music_needed_rename_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could rename the bot:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_client_music_needed_modify_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could modify the bot:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}<br>
+                                                b_virtualserver_permission_find
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_client_music_needed_delete_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could delete the bot:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry"></div> <!-- play permissions -->
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_playlist_needed_view_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could view the playlist:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_playlist_needed_modify_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could edit the playlist settings:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="b_virtualserver_playlist_permission_list">
+                                <div style="flex-grow: 1; flex-shrink: 1; min-width: 0"></div>
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could view the playlist permissions:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_playlist_needed_permission_modify_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could edit the playlist permissions:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_playlist_song_needed_add_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could add a song:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_playlist_song_needed_move_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could reorder the songs:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input general-permission" x-permission="i_playlist_song_needed_remove_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <img src="img/icon_tooltip_music_permission.svg">
+                                    <div class="tooltip">
+                                        <a class="tooltip-music-permission-overview">
+                                            <div class="container-title">{{tr "These groups could delete a song:" /}}</div>
+                                            <div class="container-status status-no-groups">
+                                                {{tr "No group could do that." /}}
+                                            </div>
+                                            <div class="container-status status-loading">
+                                                {{tr "loading..." /}}
+                                            </div>
+                                            <div class="container-status status-error-permission">
+                                                {{tr "failed on permission" /}}
+                                            </div>
+                                            <div class="container-status status-error">
+                                                error: error
+                                            </div>
+                                            <div class="container-groups"> </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column column-client-specific">
+                        <div class="entry"></div> <!-- bot permissions -->
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_client_music_rename_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-apply"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_client_music_modify_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_client_music_delete_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry"></div> <!-- play permissions -->
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_playlist_view_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_playlist_modify_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="b_virtualserver_playlist_permission_list">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could no see the permissions" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_playlist_permission_modify_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_playlist_song_add_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_playlist_song_move_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="entry">
+                            <div class="container-input client-permission" x-permission="i_playlist_song_remove_power">
+                                <input type="number" min="0" value="60">
+                                <div class="container-tooltip">
+                                    <div class="icon_em client-delete"></div>
+                                    <div class="tooltip">
+                                        <a>{{tr "Client could perform this action" /}}</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="overlay-client-list">
+                            <div class="title">{{tr "Clients which have special permissions:" /}}</div>
+                            <div class="container-client-list">
+                                <div class="overlay overlay-filter-no-result">
+                                    <a>{{tr "No clients match the filter" /}}</a>
+                                </div>
+                                <div class="overlay overlay-empty-list">
+                                    <a>{{tr "No clients available" /}}</a>
+                                </div>
+                                <div class="overlay overlay-query-error">
+                                    <a>error: error text</a>
+                                </div>
+                                <div class="overlay overlay-query-error-permissions">
+                                    <a>error: permission error text</a>
+                                </div>
+                                <div class="overlay overlay-refreshing">
+                                    <a>{{tr "Loading..." /}}</a>
+                                </div>
+                            </div>
+                            <div class="container-buttons">
+                                <button class="btn btn-blue button-clientlist-refresh">{{tr "Refresh client list" /}}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="container-buttons">
+                    <button class="btn btn-blue button-permission-refresh">{{tr "Refresh" /}}</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </script>
+</body>
+</html>

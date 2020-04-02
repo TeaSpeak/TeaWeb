@@ -1,7 +1,15 @@
-/// <reference path="../PPTListener.ts" />
+import * as log from "tc-shared/log";
+import {AbstractInput, filter, InputDevice} from "tc-shared/voice/RecorderBase";
+import {KeyDescriptor, KeyHook} from "tc-shared/PPTListener";
+import {LogCategory} from "tc-shared/log";
+import {Settings, settings} from "tc-shared/settings";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import * as aplayer from "tc-backend/audio/player";
+import * as arecorder from "tc-backend/audio/recorder";
+import * as ppt from "tc-backend/ppt";
 
-type VadType = "threshold" | "push_to_talk" | "active";
-interface RecorderProfileConfig {
+export type VadType = "threshold" | "push_to_talk" | "active";
+export interface RecorderProfileConfig {
     version: number;
 
     /* devices unique id */
@@ -25,13 +33,16 @@ interface RecorderProfileConfig {
     }
 }
 
-let default_recorder: RecorderProfile; /* needs initialize */
-class RecorderProfile {
+export let default_recorder: RecorderProfile; /* needs initialize */
+export function set_default_recorder(recorder: RecorderProfile) {
+    default_recorder = recorder;
+}
+export class RecorderProfile {
     readonly name;
     readonly volatile; /* not saving profile */
 
     config: RecorderProfileConfig;
-    input: audio.recorder.AbstractInput;
+    input: AbstractInput;
 
     current_handler: ConnectionHandler;
 
@@ -43,7 +54,7 @@ class RecorderProfile {
 
     record_supported: boolean;
 
-    private _ppt_hook: ppt.KeyHook;
+    private _ppt_hook: KeyHook;
     private _ppt_timeout: NodeJS.Timer;
     private _ppt_hook_registered: boolean;
 
@@ -51,51 +62,40 @@ class RecorderProfile {
         this.name = name;
         this.volatile = typeof(volatile) === "boolean" ? volatile : false;
 
-        this.initialize_input();
-
         this._ppt_hook = {
             callback_release: () => {
                 if(this._ppt_timeout)
                     clearTimeout(this._ppt_timeout);
 
                 this._ppt_timeout = setTimeout(() => {
-                    const filter = this.input.get_filter(audio.recorder.filter.Type.STATE) as audio.recorder.filter.StateFilter;
-                    if(filter)
-                        filter.set_state(true);
+                    const f = this.input.get_filter(filter.Type.STATE) as filter.StateFilter;
+                    if(f) f.set_state(true);
                 }, Math.min(this.config.vad_push_to_talk.delay, 0));
             },
             callback_press: () => {
                 if(this._ppt_timeout)
                     clearTimeout(this._ppt_timeout);
 
-                const filter = this.input.get_filter(audio.recorder.filter.Type.STATE) as audio.recorder.filter.StateFilter;
-                if(filter)
-                    filter.set_state(false);
+                const f = this.input.get_filter(filter.Type.STATE) as filter.StateFilter;
+                if(f) f.set_state(false);
             },
 
             cancel: false
-        } as ppt.KeyHook;
+        } as KeyHook;
         this._ppt_hook_registered = false;
         this.record_supported = true;
     }
 
     async initialize() : Promise<void> {
-        await this.load();
-        await this.reinitialize_filter();
-        //Why we started directly after initialize?
-        //After we connect to a server the ConnectionHandler will automatically
-        //start the VoiceRecorder as soon we've a voice bridge.
-        /*
-        try {
-            await this.input.start();
-        } catch(error) {
-            console.warn(tr("Failed to start recorder after initialize (%o)"), error);
-        }
-        */
+        aplayer.on_ready(async () => {
+            this.initialize_input();
+            await this.load();
+            await this.reinitialize_filter();
+        });
     }
 
     private initialize_input() {
-        this.input = audio.recorder.create_input();
+        this.input = arecorder.create_input();
         this.input.callback_begin = () => {
             log.debug(LogCategory.VOICE, "Voice start");
             if(this.callback_start)
@@ -107,19 +107,6 @@ class RecorderProfile {
             if(this.callback_stop)
                 this.callback_stop();
         };
-
-        /*
-        this.input.callback_state_change = () => {
-            const new_state = this.input.current_state() === audio.recorder.InputState.RECORDING || this.input.current_state() === audio.recorder.InputState.DRY;
-
-            if(new_state === this.record_supported)
-                return;
-
-            this.record_supported = new_state;
-            if(this.callback_support_change)
-                this.callback_support_change();
-        }
-        */
     }
 
     private async load() {
@@ -149,7 +136,7 @@ class RecorderProfile {
         this.input.set_volume(this.config.volume / 100);
 
         {
-            const all_devices = audio.recorder.devices();
+            const all_devices = arecorder.devices();
             const devices = all_devices.filter(e => e.default_input || e.unique_id === this.config.device_id);
             const device = devices.find(e => e.unique_id === this.config.device_id) || devices[0];
 
@@ -163,12 +150,13 @@ class RecorderProfile {
     }
 
     private save(enforce?: boolean) {
-        if(enforce || !this.volatile) {
+        if(enforce || !this.volatile)
             settings.changeGlobal(Settings.FN_PROFILE_RECORD(this.name), this.config);
-        }
     }
 
     private async reinitialize_filter() {
+        if(!this.input) return;
+
         this.input.clear_filter();
         if(this._ppt_hook_registered) {
             ppt.unregister_key_hook(this._ppt_hook);
@@ -176,27 +164,27 @@ class RecorderProfile {
         }
 
         if(this.config.vad_type === "threshold") {
-            const filter = this.input.get_filter(audio.recorder.filter.Type.THRESHOLD) as audio.recorder.filter.ThresholdFilter;
-            await filter.set_threshold(this.config.vad_threshold.threshold);
-            await filter.set_margin_frames(10); /* 500ms */
+            const filter_ = this.input.get_filter(filter.Type.THRESHOLD) as filter.ThresholdFilter;
+            await filter_.set_threshold(this.config.vad_threshold.threshold);
+            await filter_.set_margin_frames(10); /* 500ms */
 
             /* legacy client support */
-            if('set_attack_smooth' in filter)
-                filter.set_attack_smooth(.25);
-            if('set_release_smooth' in filter)
-                filter.set_release_smooth(.9);
+            if('set_attack_smooth' in filter_)
+                filter_.set_attack_smooth(.25);
+            if('set_release_smooth' in filter_)
+                filter_.set_release_smooth(.9);
 
-            this.input.enable_filter(audio.recorder.filter.Type.THRESHOLD);
+            this.input.enable_filter(filter.Type.THRESHOLD);
         } else if(this.config.vad_type === "push_to_talk") {
-            const filter = this.input.get_filter(audio.recorder.filter.Type.STATE) as audio.recorder.filter.StateFilter;
-            await filter.set_state(true);
+            const filter_ = this.input.get_filter(filter.Type.STATE) as filter.StateFilter;
+            await filter_.set_state(true);
 
             for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
                 this._ppt_hook[key] = this.config.vad_push_to_talk[key];
             ppt.register_key_hook(this._ppt_hook);
             this._ppt_hook_registered = true;
 
-            this.input.enable_filter(audio.recorder.filter.Type.STATE);
+            this.input.enable_filter(filter.Type.STATE);
         } else if(this.config.vad_type === "active") {}
     }
 
@@ -218,13 +206,16 @@ class RecorderProfile {
     }
 
     get_vad_type() { return this.config.vad_type; }
-    set_vad_type(type: VadType) {
+    set_vad_type(type: VadType) : boolean {
         if(this.config.vad_type === type)
-            return;
+            return true;
+        if(["push_to_talk", "threshold", "active"].findIndex(e => e === type) == -1)
+            return false;
 
         this.config.vad_type = type;
         this.reinitialize_filter();
         this.save();
+        return true;
     }
 
     get_vad_threshold() { return parseInt(this.config.vad_threshold.threshold as any); } /* for some reason it might be a string... */
@@ -237,8 +228,8 @@ class RecorderProfile {
         this.save();
     }
 
-    get_vad_ppt_key() : ppt.KeyDescriptor { return this.config.vad_push_to_talk; }
-    set_vad_ppt_key(key: ppt.KeyDescriptor) {
+    get_vad_ppt_key() : KeyDescriptor { return this.config.vad_push_to_talk; }
+    set_vad_ppt_key(key: KeyDescriptor) {
         for(const _key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
             this.config.vad_push_to_talk[_key] = key[_key];
 
@@ -257,8 +248,8 @@ class RecorderProfile {
     }
 
 
-    current_device() : audio.recorder.InputDevice | undefined { return this.input.current_device(); }
-    set_device(device: audio.recorder.InputDevice | undefined) : Promise<void> {
+    current_device() : InputDevice | undefined { return this.input.current_device(); }
+    set_device(device: InputDevice | undefined) : Promise<void> {
         this.config.device_id = device ? device.unique_id : undefined;
         this.save();
         return this.input.set_device(device);

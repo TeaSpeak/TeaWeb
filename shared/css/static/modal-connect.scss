@@ -19,6 +19,7 @@
 		padding: .75em 24px;
 
 		border-left: 2px solid #0073d4;
+		overflow: hidden;
 
 		> .row {
 			display: flex;
@@ -91,6 +92,9 @@
 			.container-buttons-connect {
 				display: flex;
 				flex-direction: row;
+
+				flex-shrink: 1;
+				min-width: 6em;
 			}
 
 			.button-right {
