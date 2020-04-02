@@ -160,7 +160,7 @@ const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
         "build-target": "dev|rel",
 
         "path": "wasm/",
-        "local-path": "./asm/generated/"
+        "local-path": "./web/native-codec/generated/"
     },
     { /* web css files */
         "web-only": true,
