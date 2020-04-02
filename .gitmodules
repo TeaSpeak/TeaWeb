@@ -1,7 +1,3 @@
-[submodule "asm/libraries/opus"]
-	path = asm/libraries/opus
-	url = https://github.com/xiph/opus.git
-	branch = 1.1.2
 [submodule "vendor/xbbcode"]
 	path = vendor/xbbcode
 	url = https://github.com/WolverinDEV/XBBCode.git
