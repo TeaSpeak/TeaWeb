@@ -1,0 +1,11 @@
+[EXECUTE] Executing commands:
+[EXECUTE]   git pull
+[EXECUTE]   git submodule update --init --recursive --remote --checkout
+[EXECUTE]   git status &>/dev/null
+$> git pull
+$> git submodule update --init --recursive --remote --checkout
+$> git status &>/dev/null
+[EXECUTE] Command exited with exit code 0 (Runtime 1657ms)
+[EXECUTE] Executing command "npm install"
+$> npm install
+[EXECUTE] Command exited with exit code 2 (Runtime 26ms)
