@@ -1,20 +1,31 @@
-asm/generated/
-node_modules/
-auth/certs/
-auth/js/auth.js.map
-
-.sass-cache/
+# Global ignorings
 .idea/
+node_modules/
+.sass-cache/
 
-vendor/emoji-picker/**/*.js
-vendor/emoji-picker/**/*.js.map
+/auth/certs/
+/auth/js/auth.js.map
 
-TeaSpeakUI.tar.gz
-TeaWeb-*.zip
+/.idea/
 
-todo.txt
+/vendor/emoji-picker/**/*.js
+/vendor/emoji-picker/**/*.js.map
+!/vendor/emoji-picker/webpack.config.js
 
-tmp/
+# Some build output
+/dist/
+/declarations/
 
-file.js
-file.js.map
+# Don't add the created packages to git
+/TeaSpeakUI.tar.gz
+/TeaWeb-*.zip
+
+/todo.txt
+/tmp/
+
+# All out config files are .ts files
+/*.js
+/*.js.map
+
+/webpack/*.js
+/webpack/*.js.map

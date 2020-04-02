@@ -1,0 +1,8 @@
+/dtsgen/**/*.js
+/dtsgen/**/*.js.map
+
+# Output directory for some local tests
+/dtsgen/test/
+
+/trgen/**/*.js
+/trgen/**/*.js.map

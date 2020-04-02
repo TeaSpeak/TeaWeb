@@ -2,3 +2,5 @@ generated/
 build_/
 libraries/opus/build_
 libraries/opus/out
+cmake-build-*/
+libraries/opus/*
