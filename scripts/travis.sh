@@ -160,6 +160,8 @@ execute \
     "Failed to update npm" \
     "npm install"
 
+sudo docker exec -it emscripten bash -c 'web/native-codec/build.sh'
+docker exec -it emscripten bash -c 'web/native-codec/build.sh'
 execute \
     "Failed to build native opus codec" \
     "docker exec -it emscripten bash -c 'web/native-codec/build.sh'"
