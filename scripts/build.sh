@@ -56,7 +56,7 @@ if [[ $_exit_code -ne 0 ]]; then
 fi
 
 echo "Compile vendor XBBCode"
-execute_ttsc -p ./vendor/xbbcode/tsconfig.json; _exit_code=$?
+execute_tsc -p ./vendor/xbbcode/tsconfig.json; _exit_code=$?
 if [[ $_exit_code -ne 0 ]]; then
     echo "Failed to build the XBBCode vendor"
     exit 1
