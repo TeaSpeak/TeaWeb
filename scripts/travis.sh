@@ -160,8 +160,7 @@ execute \
     "Failed to update npm" \
     "npm install"
 
-sudo docker exec -it emscripten bash -c 'web/native-codec/build.sh'
-docker exec -it emscripten bash -c 'web/native-codec/build.sh'
+chmod +x ./web/native-codec/build.sh
 execute \
     "Failed to build native opus codec" \
     "docker exec -it emscripten bash -c 'web/native-codec/build.sh'"
@@ -210,6 +209,8 @@ function execute_build_debug() {
     move_target_file
 }
 
+chmod +x ./scripts/build.sh
+chmod +x ./scripts/web_package.sh
 if [[ ${build_release} ]]; then
     execute_build_release
 fi
