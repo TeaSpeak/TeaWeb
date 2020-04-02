@@ -26,8 +26,7 @@ fi
 
 response=$(git diff-index HEAD -- . ':!asm/libraries/' ':!package-lock.json' ':!vendor/')
 if [[ "$response" != "" ]]; then
-    echo "You're using a private modified build!"
-    echo "Cant assign git hash!"
+    echo "You're using a private modified build! Cant assign git hash!"
     NAME="TeaWeb-${type}.zip"
 else
     NAME="TeaWeb-${type}-$(git rev-parse --short HEAD).zip"
@@ -41,7 +40,8 @@ fi
 current_path=$(pwd)
 cd "$source_path" || { echo "Failed to enter source path"; exit 1; }
 
-if zip -9 -r "${NAME}" ./*; then
+zip -9 -r "${NAME}" ./*; _exit_code=$?
+if [[ $_exit_code -ne 0 ]]; then
     echo "Failed to package environment!"
     exit 1
 fi
@@ -50,4 +50,4 @@ cd "$current_path" || { echo "Failed to reenter source path"; exit 1; }
 
 mv "${source_path}/${NAME}" .
 echo "Release package successfully packaged!"
-echo "Target file: ${NAME}"
+echo "Target file: ${NAME} ($(pwd))"

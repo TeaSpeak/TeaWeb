@@ -3,7 +3,7 @@
     "baseUrl": ".",
     "moduleResolution": "node",
     "module": "commonjs",
-    "lib": ["es6", "dom"],
+    "lib": ["es6", "dom"]
 
     /*
     "typeRoots": [],

@@ -15,6 +15,7 @@ node_modules/
 # Some build output
 /dist/
 /declarations/
+/travis-build/
 
 # Don't add the created packages to git
 /TeaSpeakUI.tar.gz

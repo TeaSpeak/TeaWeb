@@ -1,8 +1,6 @@
 #!/bin/bash
 
-[[ ! -d libraries/opus/out/ ]] && { echo "Missing opus build. Please build it before!"; exit 1; }
-[[ ! -f libraries/opus/out/lib/libopus.a ]] && { echo "Missing opus static library. Please unsure your opus build was successfull."; exit 1; }
-
+cd "$(dirname "$0")" || { echo "Failed to enter base dir"; exit 1; }
 [[ -d build_ ]] && {
   rm -r build_ || { echo "failed to remove old build directory"; exit 1; }
 }
