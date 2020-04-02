@@ -1,15 +1,25 @@
-/// <reference path="../ConnectionHandler.ts" />
-/// <reference path="../proto.ts" />
-/// <reference path="channel.ts" />
-/// <reference path="client.ts" />
-/// <reference path="server.ts" />
-/// <reference path="../bookmarks.ts" />
-/// <reference path="elements/context_menu.ts" />
-/// <reference path="modal/ModalCreateChannel.ts" />
-/// <reference path="../../backend/ppt.d.ts" />
+import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
+import * as log from "tc-shared/log";
+import {Settings, settings} from "tc-shared/settings";
+import PermissionType from "tc-shared/permission/PermissionType";
+import {LogCategory} from "tc-shared/log";
+import {KeyCode, SpecialKey} from "tc-shared/PPTListener";
+import {createInputModal} from "tc-shared/ui/elements/Modal";
+import {Sound} from "tc-shared/sound/Sounds";
+import {Group} from "tc-shared/permission/GroupManager";
+import * as server_log from "tc-shared/ui/frames/server_log";
+import {ServerAddress, ServerEntry} from "tc-shared/ui/server";
+import {ClientMover} from "tc-shared/ui/client_move";
+import {ChannelEntry, ChannelSubscribeMode} from "tc-shared/ui/channel";
+import {ClientEntry, ClientType, LocalClientEntry, MusicClientEntry} from "tc-shared/ui/client";
+import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
+import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
+import {formatMessage} from "tc-shared/ui/frames/chat";
+import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
+import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
+import * as ppt from "tc-backend/ppt";
 
-
-class ChannelTree {
+export class ChannelTree {
     client: ConnectionHandler;
     server: ServerEntry;
 
@@ -465,7 +475,7 @@ class ChannelTree {
     }
 
     onSelect(entry?: ChannelEntry | ClientEntry | ServerEntry, enforce_single?: boolean, flag_shift?: boolean) {
-        if(this.currently_selected && (ppt.key_pressed(ppt.SpecialKey.SHIFT) || flag_shift) && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
+        if(this.currently_selected && (ppt.key_pressed(SpecialKey.SHIFT) || flag_shift) && entry instanceof ClientEntry) { //Currently we're only supporting client multiselects :D
             if(!entry) return; //Nowhere
 
             if($.isArray(this.currently_selected)) {
@@ -615,7 +625,7 @@ class ChannelTree {
                     name: tr("Ban clients"),
                     invalidPermission: !this.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                     callback: () => {
-                        Modals.spawnBanClient(this.client, (clients).map(entry => {
+                        spawnBanClient(this.client, (clients).map(entry => {
                             return {
                                 name: entry.clientNickName(),
                                 unique_id: entry.properties.client_unique_identifier
@@ -644,9 +654,9 @@ class ChannelTree {
                     callback: () => {
                         const param_string = clients.map((_, index) => "{" + index + "}").join(', ');
                         const param_values = clients.map(client => client.createChatTag(true));
-                        const tag = $.spawn("div").append(...MessageHelper.formatMessage(tr("Do you really want to delete ") + param_string, ...param_values));
+                        const tag = $.spawn("div").append(...formatMessage(tr("Do you really want to delete ") + param_string, ...param_values));
                         const tag_container = $.spawn("div").append(tag);
-                        Modals.spawnYesNo(tr("Are you sure?"), tag_container, result => {
+                        spawnYesNo(tr("Are you sure?"), tag_container, result => {
                             if(result) {
                                 for(const client of clients)
                                     this.client.serverConnection.send_command("musicbotdelete", {
@@ -706,7 +716,7 @@ class ChannelTree {
     }
 
     spawnCreateChannel(parent?: ChannelEntry) {
-        Modals.createChannelModal(this.client, undefined, parent, this.client.permissions, (properties?, permissions?) => {
+        createChannelModal(this.client, undefined, parent, this.client.permissions, (properties?, permissions?) => {
             if(!properties) return;
             properties["cpid"] = parent ? parent.channelId : 0;
             log.debug(LogCategory.CHANNEL, tr("Creating a new channel.\nProperties: %o\nPermissions: %o"), properties);
@@ -735,7 +745,7 @@ class ChannelTree {
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
             }).then(channel => {
-                this.client.log.log(log.server.Type.CHANNEL_CREATE, {
+                this.client.log.log(server_log.Type.CHANNEL_CREATE, {
                     channel: channel.log_data(),
                     creator: this.client.getClient().log_data(),
                     own_action: true

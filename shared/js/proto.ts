@@ -1,45 +1,98 @@
 //Used by CertAccept popup
 
-interface Array<T> {
-    remove(elem?: T): boolean;
-    last?(): T;
+declare global {
+    interface Array<T> {
+        remove(elem?: T): boolean;
+        last?(): T;
 
-    pop_front(): T | undefined;
+        pop_front(): T | undefined;
+    }
+
+    interface JSON {
+        map_to<T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number) : number;
+        map_field_to<T>(object: T, value: any, field: string) : boolean;
+    }
+
+    type JQueryScrollType = "height" | "width";
+    interface JQuery<TElement = HTMLElement> {
+        render(values?: any) : string;
+        renderTag(values?: any) : JQuery<TElement>;
+        hasScrollBar(direction?: JQueryScrollType) : boolean;
+
+
+        visible_height() : number;
+        visible_width() : number;
+
+        /* bootstrap */
+        alert() : JQuery<TElement>;
+        modal(properties: any) : this;
+        bootstrapMaterialDesign() : this;
+
+        /* first element which matches the selector, could be the element itself or a parent */
+        firstParent(selector: string) : JQuery;
+    }
+
+    interface JQueryStatic<TElement extends Node = HTMLElement> {
+        spawn<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]>;
+        views: any;
+    }
+
+    interface String {
+        format(...fmt): string;
+        format(arguments: string[]): string;
+    }
+
+    interface Twemoji {
+        parse(message: string) : string;
+    }
+    let twemoji: Twemoji;
+
+    interface HighlightJS {
+        listLanguages() : string[];
+        getLanguage(name: string) : any | undefined;
+
+        highlight(language: string, text: string, ignore_illegals?: boolean) : HighlightJSResult;
+        highlightAuto(text: string) : HighlightJSResult;
+    }
+
+    interface HighlightJSResult {
+        language: string;
+        relevance: number;
+
+        value: string;
+        second_best?: any;
+    }
+
+    let remarkable: typeof window.remarkable;
+
+    interface Window {
+        readonly webkitAudioContext: typeof AudioContext;
+        readonly AudioContext: typeof OfflineAudioContext;
+        readonly OfflineAudioContext: typeof OfflineAudioContext;
+        readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
+        readonly RTCPeerConnection: typeof RTCPeerConnection;
+        readonly Pointer_stringify: any;
+        readonly jsrender: any;
+
+        twemoji: Twemoji;
+        hljs: HighlightJS;
+        remarkable: any;
+
+        require(id: string): any;
+    }
+
+    interface Navigator {
+        browserSpecs: {
+            name: string,
+            version: string
+        };
+
+        mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+        webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
+    }
 }
 
-interface JSON {
-    map_to<T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number) : number;
-    map_field_to<T>(object: T, value: any, field: string) : boolean;
-}
-
-type JQueryScrollType = "height" | "width";
-interface JQuery<TElement = HTMLElement> {
-    render(values?: any) : string;
-    renderTag(values?: any) : JQuery<TElement>;
-    hasScrollBar(direction?: JQueryScrollType) : boolean;
-
-
-    visible_height() : number;
-    visible_width() : number;
-
-    /* bootstrap */
-    alert() : JQuery<TElement>;
-    modal(properties: any) : this;
-    bootstrapMaterialDesign() : this;
-
-    /* first element which matches the selector, could be the element itself or a parent */
-    firstParent(selector: string) : JQuery;
-}
-
-interface JQueryStatic<TElement extends Node = HTMLElement> {
-    spawn<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]>;
-    views: any;
-}
-
-interface String {
-    format(...fmt): string;
-    format(arguments: string[]): string;
-}
+export function initialize() { }
 
 if(!JSON.map_to) {
     JSON.map_to = function <T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number): number {
@@ -131,6 +184,7 @@ if(typeof ($) !== "undefined") {
             return $(document.createElement(tagName) as any);
         }
     }
+
     if(!$.fn.renderTag) {
         $.fn.renderTag = function (this: JQuery, values?: any) : JQuery {
             let result;
@@ -184,7 +238,8 @@ if(typeof ($) !== "undefined") {
             const result = this.height();
             this.attr("style", original_style || "");
             return result;
-        }
+        };
+
     if(!$.fn.visible_width)
         $.fn.visible_width = function (this: JQuery<HTMLElement>) {
             const original_style = this.attr("style");
@@ -197,7 +252,8 @@ if(typeof ($) !== "undefined") {
             const result = this.width();
             this.attr("style", original_style || "");
             return result;
-        }
+        };
+
     if(!$.fn.firstParent)
         $.fn.firstParent = function (this: JQuery<HTMLElement>, selector: string) {
             if(this.is(selector))
@@ -232,30 +288,6 @@ function concatenate(resultConstructor, ...arrays) {
     return result;
 }
 
-function formatDate(secs: number) : string {
-    let years   = Math.floor(secs  / (60 * 60 * 24 * 365));
-    let days    = Math.floor(secs  / (60 * 60 * 24)) % 365;
-    let hours   = Math.floor(secs / (60 * 60)) % 24;
-    let minutes = Math.floor(secs / 60) % 60;
-    let seconds = Math.floor(secs % 60);
-
-    let result = "";
-    if(years > 0)
-        result += years + " " + tr("years") + " ";
-    if(years > 0 || days > 0)
-        result += days + " " + tr("days") + " ";
-    if(years > 0 || days > 0 || hours > 0)
-        result += hours + " " + tr("hours") + " ";
-    if(years > 0 || days > 0 || hours > 0 || minutes > 0)
-        result += minutes + " " + tr("minutes") + " ";
-    if(years > 0 || days > 0 || hours > 0 || minutes > 0 || seconds > 0)
-        result += seconds + " " + tr("seconds") + " ";
-    else
-        result = tr("now") + " ";
-
-    return result.substr(0, result.length - 1);
-}
-
 function calculate_width(text: string) : number {
     let element = $.spawn("div");
     element.text(text)
@@ -265,64 +297,4 @@ function calculate_width(text: string) : number {
     let size = element.width();
     element.detach();
     return size;
-}
-
-interface Twemoji {
-    parse(message: string) : string;
-}
-declare let twemoji: Twemoji;
-
-interface HighlightJS {
-    listLanguages() : string[];
-    getLanguage(name: string) : any | undefined;
-
-    highlight(language: string, text: string, ignore_illegals?: boolean) : HighlightJSResult;
-    highlightAuto(text: string) : HighlightJSResult;
-}
-
-interface HighlightJSResult {
-    language: string;
-    relevance: number;
-
-    value: string;
-    second_best?: any;
-}
-
-interface DOMPurify {
-    sanitize(html: string, config?: {
-        ADD_ATTR?: string[]
-        ADD_TAGS?: string[];
-    }) : string;
-}
-declare let DOMPurify: DOMPurify;
-
-declare let remarkable: typeof window.remarkable;
-
-declare class webkitAudioContext extends AudioContext {}
-declare class webkitOfflineAudioContext extends OfflineAudioContext {}
-
-interface Window {
-    readonly webkitAudioContext: typeof webkitAudioContext;
-    readonly AudioContext: typeof webkitAudioContext;
-    readonly OfflineAudioContext: typeof OfflineAudioContext;
-    readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
-    readonly RTCPeerConnection: typeof RTCPeerConnection;
-    readonly Pointer_stringify: any;
-    readonly jsrender: any;
-
-    twemoji: Twemoji;
-    hljs: HighlightJS;
-    remarkable: any;
-
-    require(id: string): any;
-}
-
-interface Navigator {
-    browserSpecs: {
-        name: string,
-        version: string
-    };
-
-    mozGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
-    webkitGetUserMedia(constraints: MediaStreamConstraints, successCallback: NavigatorUserMediaSuccessCallback, errorCallback: NavigatorUserMediaErrorCallback): void;
 }

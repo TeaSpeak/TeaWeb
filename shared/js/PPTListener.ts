@@ -1,4 +1,4 @@
-enum KeyCode {
+export enum KeyCode {
     KEY_CANCEL = 3,
     KEY_HELP = 6,
     KEY_BACK_SPACE = 8,
@@ -118,59 +118,57 @@ enum KeyCode {
     KEY_META = 224
 }
 
-namespace ppt {
-    export enum EventType {
-        KEY_PRESS,
-        KEY_RELEASE,
-        KEY_TYPED
-    }
+export enum EventType {
+    KEY_PRESS,
+    KEY_RELEASE,
+    KEY_TYPED
+}
 
-    export enum SpecialKey {
-        CTRL,
-        WINDOWS,
-        SHIFT,
-        ALT
-    }
+export enum SpecialKey {
+    CTRL,
+    WINDOWS,
+    SHIFT,
+    ALT
+}
 
-    export interface KeyDescriptor {
-        key_code: string;
+export interface KeyDescriptor {
+    key_code: string;
 
-        key_ctrl: boolean;
-        key_windows: boolean;
-        key_shift: boolean;
-        key_alt: boolean;
-    }
+    key_ctrl: boolean;
+    key_windows: boolean;
+    key_shift: boolean;
+    key_alt: boolean;
+}
 
-    export interface KeyEvent extends KeyDescriptor {
-        readonly type: EventType;
+export interface KeyEvent extends KeyDescriptor {
+    readonly type: EventType;
 
-        readonly key: string;
-    }
+    readonly key: string;
+}
 
-    export interface KeyHook extends KeyDescriptor {
-        cancel: boolean;
+export interface KeyHook extends KeyDescriptor {
+    cancel: boolean;
 
 
-        callback_press: () => any;
-        callback_release: () => any;
-    }
+    callback_press: () => any;
+    callback_release: () => any;
+}
 
-    export function key_description(key: KeyDescriptor) {
-        let result = "";
-        if(key.key_shift)
-            result += " + " + tr("Shift");
-        if(key.key_alt)
-            result += " + " + tr("Alt");
-        if(key.key_ctrl)
-            result += " + " + tr("CTRL");
-        if(key.key_windows)
-            result += " + " + tr("Win");
+export function key_description(key: KeyDescriptor) {
+    let result = "";
+    if(key.key_shift)
+        result += " + " + tr("Shift");
+    if(key.key_alt)
+        result += " + " + tr("Alt");
+    if(key.key_ctrl)
+        result += " + " + tr("CTRL");
+    if(key.key_windows)
+        result += " + " + tr("Win");
 
-        if(!result && !key.key_code)
-            return tr("unset");
+    if(!result && !key.key_code)
+        return tr("unset");
 
-        if(key.key_code)
-            result += " + " + key.key_code;
-        return result.substr(3);
-    }
+    if(key.key_code)
+        result += " + " + key.key_code;
+    return result.substr(3);
 }

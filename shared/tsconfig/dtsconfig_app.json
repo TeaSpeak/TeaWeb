@@ -1,9 +1,11 @@
 {
   "source_files": [
-    "../js/**/*.ts"
+    "**/*.ts"
   ],
   "exclude": [
-    "../js/workers/**/*.ts"
+    "workers/**/*.ts"
   ],
-  "target_file": "../declarations/exports_app.d.ts"
+  "base_directory": "shared/js/",
+  "target_directory": "../../declarations/shared-app",
+  "modular": true
 }

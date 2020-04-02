@@ -1,110 +1,119 @@
-namespace profiles.identities {
-    export enum IdentitifyType {
-        TEAFORO,
-        TEAMSPEAK,
-        NICKNAME
+import {AbstractServerConnection, ServerCommand} from "tc-shared/connection/ConnectionBase";
+import {HandshakeIdentityHandler} from "tc-shared/connection/HandshakeHandler";
+import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
+
+export enum IdentitifyType {
+    TEAFORO,
+    TEAMSPEAK,
+    NICKNAME
+}
+
+export interface Identity {
+    fallback_name(): string | undefined ;
+    uid() : string;
+    type() : IdentitifyType;
+
+    valid() : boolean;
+
+    encode?() : string;
+    decode(data: string) : Promise<void>;
+
+    spawn_identity_handshake_handler(connection: AbstractServerConnection) : HandshakeIdentityHandler;
+}
+
+/* avoid circular dependencies here */
+export async function decode_identity(type: IdentitifyType, data: string) : Promise<Identity> {
+    let identity: Identity;
+    switch (type) {
+        case IdentitifyType.NICKNAME:
+            const nidentity = require("tc-shared/profiles/identities/NameIdentity");
+            identity = new nidentity.NameIdentity();
+            break;
+        case IdentitifyType.TEAFORO:
+            const fidentity = require("tc-shared/profiles/identities/TeaForumIdentity");
+            identity = new fidentity.TeaForumIdentity(undefined);
+            break;
+        case IdentitifyType.TEAMSPEAK:
+            const tidentity = require("tc-shared/profiles/identities/TeamSpeakIdentity");
+            identity = new tidentity.TeaSpeakIdentity(undefined, undefined);
+            break;
+    }
+    if(!identity)
+        return undefined;
+
+    try {
+        await identity.decode(data)
+    } catch(error) {
+        /* todo better error handling! */
+        console.error(error);
+        return undefined;
     }
 
-    export interface Identity {
-        fallback_name(): string | undefined ;
-        uid() : string;
-        type() : IdentitifyType;
+    return identity;
+}
 
-        valid() : boolean;
+export function create_identity(type: IdentitifyType) {
+    let identity: Identity;
+    switch (type) {
+        case IdentitifyType.NICKNAME:
+            const nidentity = require("tc-shared/profiles/identities/NameIdentity");
+            identity = new nidentity.NameIdentity();
+            break;
+        case IdentitifyType.TEAFORO:
+            const fidentity = require("tc-shared/profiles/identities/TeaForumIdentity");
+            identity = new fidentity.TeaForumIdentity(undefined);
+            break;
+        case IdentitifyType.TEAMSPEAK:
+            const tidentity = require("tc-shared/profiles/identities/TeamSpeakIdentity");
+            identity = new tidentity.TeaSpeakIdentity(undefined, undefined);
+            break;
+    }
+    return identity;
+}
 
-        encode?() : string;
-        decode(data: string) : Promise<void>;
+export class HandshakeCommandHandler<T extends AbstractHandshakeIdentityHandler> extends AbstractCommandHandler {
+    readonly handle: T;
 
-        spawn_identity_handshake_handler(connection: connection.AbstractServerConnection) : connection.HandshakeIdentityHandler;
+    constructor(connection: AbstractServerConnection, handle: T) {
+        super(connection);
+        this.handle = handle;
     }
 
-    export async function decode_identity(type: IdentitifyType, data: string) : Promise<Identity> {
-        let identity: Identity;
-        switch (type) {
-            case IdentitifyType.NICKNAME:
-                identity = new NameIdentity();
-                break;
-            case IdentitifyType.TEAFORO:
-                identity = new TeaForumIdentity(undefined);
-                break;
-            case IdentitifyType.TEAMSPEAK:
-                identity = new TeaSpeakIdentity(undefined, undefined);
-                break;
-        }
-        if(!identity)
-            return undefined;
 
-        try {
-            await identity.decode(data)
-        } catch(error) {
-            /* todo better error handling! */
-            console.error(error);
-            return undefined;
+    handle_command(command: ServerCommand): boolean {
+        if($.isFunction(this[command.command]))
+            this[command.command](command.arguments);
+        else if(command.command == "error") {
+            return false;
+        } else {
+            console.warn(tr("Received unknown command while handshaking (%o)"), command);
         }
+        return true;
+    }
+}
 
-        return identity;
+export abstract class AbstractHandshakeIdentityHandler implements HandshakeIdentityHandler {
+    connection: AbstractServerConnection;
+
+    protected callbacks: ((success: boolean, message?: string) => any)[] = [];
+
+    protected constructor(connection: AbstractServerConnection) {
+        this.connection = connection;
     }
 
-    export function create_identity(type: IdentitifyType) {
-        let identity: Identity;
-        switch (type) {
-            case IdentitifyType.NICKNAME:
-                identity = new NameIdentity();
-                break;
-            case IdentitifyType.TEAFORO:
-                identity = new TeaForumIdentity(undefined);
-                break;
-            case IdentitifyType.TEAMSPEAK:
-                identity = new TeaSpeakIdentity(undefined, undefined);
-                break;
-        }
-        return identity;
+    register_callback(callback: (success: boolean, message?: string) => any) {
+        this.callbacks.push(callback);
     }
 
-    export class HandshakeCommandHandler<T extends AbstractHandshakeIdentityHandler> extends connection.AbstractCommandHandler {
-        readonly handle: T;
+    abstract start_handshake();
 
-        constructor(connection: connection.AbstractServerConnection, handle: T) {
-            super(connection);
-            this.handle = handle;
-        }
-
-
-        handle_command(command: connection.ServerCommand): boolean {
-            if($.isFunction(this[command.command]))
-                this[command.command](command.arguments);
-            else if(command.command == "error") {
-                return false;
-            } else {
-                console.warn(tr("Received unknown command while handshaking (%o)"), command);
-            }
-            return true;
-        }
+    protected trigger_success() {
+        for(const callback of this.callbacks)
+            callback(true);
     }
 
-    export abstract class AbstractHandshakeIdentityHandler implements connection.HandshakeIdentityHandler {
-        connection: connection.AbstractServerConnection;
-
-        protected callbacks: ((success: boolean, message?: string) => any)[] = [];
-
-        protected constructor(connection: connection.AbstractServerConnection) {
-            this.connection = connection;
-        }
-
-        register_callback(callback: (success: boolean, message?: string) => any) {
-            this.callbacks.push(callback);
-        }
-
-        abstract start_handshake();
-
-        protected trigger_success() {
-            for(const callback of this.callbacks)
-                callback(true);
-        }
-
-        protected trigger_fail(message: string) {
-            for(const callback of this.callbacks)
-                callback(false, message);
-        }
+    protected trigger_fail(message: string) {
+        for(const callback of this.callbacks)
+            callback(false, message);
     }
 }

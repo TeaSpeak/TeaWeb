@@ -1,24 +1,40 @@
-/// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../modal/ModalSettings.ts" />
-/// <reference path="../modal/ModalBanList.ts" />
-/*
-        client_output_hardware Value: '1'
-        client_output_muted Value: '0'
-        client_outputonly_muted Value: '0'
+import {ConnectionHandler, DisconnectReason} from "tc-shared/ConnectionHandler";
+import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
+import {manager, Sound} from "tc-shared/sound/Sounds";
+import {default_recorder} from "tc-shared/voice/RecorderProfile";
+import {Settings, settings} from "tc-shared/settings";
+import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
+import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import PermissionType from "tc-shared/permission/PermissionType";
+import {spawnPermissionEdit} from "tc-shared/ui/modal/permission/ModalPermissionEdit";
+import {openBanList} from "tc-shared/ui/modal/ModalBanList";
+import {
+    add_current_server,
+    Bookmark,
+    bookmarks,
+    BookmarkType,
+    boorkmak_connect,
+    DirectoryBookmark
+} from "tc-shared/bookmarks";
+import {IconManager} from "tc-shared/FileManager";
+import {spawnBookmarkModal} from "tc-shared/ui/modal/ModalBookmarks";
+import {spawnQueryCreate} from "tc-shared/ui/modal/ModalQuery";
+import {spawnQueryManage} from "tc-shared/ui/modal/ModalQueryManage";
+import {spawnPlaylistManage} from "tc-shared/ui/modal/ModalPlaylistList";
+import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
+import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {formatMessage} from "tc-shared/ui/frames/chat";
+import * as slog from "tc-shared/ui/frames/server_log";
+import * as top_menu from "./MenuBar";
 
-        client_input_hardware Value: '1'
-        client_input_muted Value: '0'
+export let control_bar: ControlBar; /* global variable to access the control bar */
+export function set_control_bar(bar: ControlBar) { control_bar = bar; }
 
-        client_away Value: '0'
-        client_away_message Value: ''
- */
-
-let control_bar: ControlBar; /* global variable to access the control bar */
-
-type MicrophoneState = "disabled" | "muted" | "enabled";
-type HeadphoneState = "muted" | "enabled";
-type AwayState = "away-global" | "away" | "online";
-class ControlBar {
+export type MicrophoneState = "disabled" | "muted" | "enabled";
+export type HeadphoneState = "muted" | "enabled";
+export type AwayState = "away-global" | "away" | "online";
+export class ControlBar {
     private _button_away_active: AwayState;
     private _button_microphone: MicrophoneState;
     private _button_speakers: HeadphoneState;
@@ -363,10 +379,10 @@ class ControlBar {
     private on_toggle_microphone() {
         if(this._button_microphone === "disabled" || this._button_microphone === "muted") {
             this.button_microphone = "enabled";
-            sound.manager.play(Sound.MICROPHONE_ACTIVATED);
+            manager.play(Sound.MICROPHONE_ACTIVATED);
         } else {
             this.button_microphone = "muted";
-            sound.manager.play(Sound.MICROPHONE_MUTED);
+            manager.play(Sound.MICROPHONE_MUTED);
         }
 
         if(this.connection_handler) {
@@ -384,10 +400,10 @@ class ControlBar {
     private on_toggle_sound() {
         if(this._button_speakers === "muted") {
             this.button_speaker = "enabled";
-            sound.manager.play(Sound.SOUND_ACTIVATED);
+            manager.play(Sound.SOUND_ACTIVATED);
         } else {
             this.button_speaker = "muted";
-            sound.manager.play(Sound.SOUND_MUTED);
+            manager.play(Sound.SOUND_MUTED);
         }
 
         if(this.connection_handler) {
@@ -421,20 +437,20 @@ class ControlBar {
     }
 
     private on_open_settings() {
-        Modals.spawnSettingsModal();
+        spawnSettingsModal();
     }
 
     private on_open_connect() {
         if(this.connection_handler)
             this.connection_handler.cancel_reconnect(true);
-        Modals.spawnConnectModal({}, {
+        spawnConnectModal({}, {
             url: "ts.TeaSpeak.de",
             enforce: false
         });
     }
 
     private on_open_connect_new_tab() {
-        Modals.spawnConnectModal({
+        spawnConnectModal({
             default_connect_new_tab: true
         }, {
             url: "ts.TeaSpeak.de",
@@ -470,7 +486,7 @@ class ControlBar {
         this.connection_handler.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
         this.update_connection_state();
         this.connection_handler.sound.play(Sound.CONNECTION_DISCONNECTED);
-        this.connection_handler.log.log(log.server.Type.DISCONNECTED, {});
+        this.connection_handler.log.log(slog.Type.DISCONNECTED, {});
     }
 
     private on_token_use() {
@@ -483,7 +499,7 @@ class ControlBar {
                     createInfoModal(tr("Use token"), tr("Toke successfully used!")).open();
                 }).catch(error => {
                     //TODO tr
-                    createErrorModal(tr("Use token"), MessageHelper.formatMessage(tr("Failed to use token: {}"), error instanceof CommandResult ? error.message : error)).open();
+                    createErrorModal(tr("Use token"), formatMessage(tr("Failed to use token: {}"), error instanceof CommandResult ? error.message : error)).open();
                 });
         }).open();
     }
@@ -497,7 +513,7 @@ class ControlBar {
         button.addClass("activated");
         setTimeout(() => {
             if(this.connection_handler)
-                Modals.spawnPermissionEdit(this.connection_handler).open();
+                spawnPermissionEdit(this.connection_handler).open();
             else
                 createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
             button.removeClass("activated");
@@ -508,7 +524,7 @@ class ControlBar {
         if(!this.connection_handler.serverConnection) return;
 
         if(this.connection_handler.permissions.neededPermission(PermissionType.B_CLIENT_BAN_LIST).granted(1)) {
-            Modals.openBanList(this.connection_handler);
+            openBanList(this.connection_handler);
         } else {
             createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to view the ban list")).open();
             this.connection_handler.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
@@ -516,7 +532,7 @@ class ControlBar {
     }
 
     private on_bookmark_server_add() {
-        bookmarks.add_current_server();
+        add_current_server();
     }
 
     update_bookmark_status() {
@@ -530,13 +546,13 @@ class ControlBar {
         let tag_bookmark = this.htmlTag.find(".btn_bookmark > .dropdown");
         tag_bookmark.find(".bookmark, .directory").remove();
 
-        const build_entry = (bookmark: bookmarks.DirectoryBookmark | bookmarks.Bookmark) => {
-            if(bookmark.type == bookmarks.BookmarkType.ENTRY) {
-                const mark = <bookmarks.Bookmark>bookmark;
+        const build_entry = (bookmark: DirectoryBookmark | Bookmark) => {
+            if(bookmark.type == BookmarkType.ENTRY) {
+                const mark = <Bookmark>bookmark;
 
                 const bookmark_connect = (new_tab: boolean) => {
                     this.htmlTag.find(".btn_bookmark").find(".dropdown").removeClass("displayed"); //FIXME Not working
-                    bookmarks.boorkmak_connect(mark, new_tab);
+                    boorkmak_connect(mark, new_tab);
                 };
 
                 return $.spawn("div")
@@ -580,7 +596,7 @@ class ControlBar {
                                 })
                         )
             } else {
-                const mark = <bookmarks.DirectoryBookmark>bookmark;
+                const mark = <DirectoryBookmark>bookmark;
                 const container = $.spawn("div").addClass("sub-menu dropdown");
 
                 const result = $.spawn("div")
@@ -609,19 +625,19 @@ class ControlBar {
             }
         };
 
-        for(const bookmark of bookmarks.bookmarks().content) {
+        for(const bookmark of bookmarks().content) {
             const entry = build_entry(bookmark);
             tag_bookmark.append(entry);
         }
     }
 
     private on_bookmark_manage() {
-        Modals.spawnBookmarkModal();
+        spawnBookmarkModal();
     }
 
     private on_open_query_create() {
         if(this.connection_handler.permissions.neededPermission(PermissionType.B_CLIENT_CREATE_MODIFY_SERVERQUERY_LOGIN).granted(1)) {
-            Modals.spawnQueryCreate(this.connection_handler);
+            spawnQueryCreate(this.connection_handler);
         } else {
             createErrorModal(tr("You dont have the permission"), tr("You dont have the permission to create a server query login")).open();
             this.connection_handler.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
@@ -630,7 +646,7 @@ class ControlBar {
 
     private on_open_query_manage() {
         if(this.connection_handler && this.connection_handler.connected) {
-            Modals.spawnQueryManage(this.connection_handler);
+            spawnQueryManage(this.connection_handler);
         } else {
             createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
         }
@@ -638,7 +654,7 @@ class ControlBar {
 
     private on_open_playlist_manage() {
         if(this.connection_handler && this.connection_handler.connected) {
-            Modals.spawnPlaylistManage(this.connection_handler);
+            spawnPlaylistManage(this.connection_handler);
         } else {
             createErrorModal(tr("You have to be connected"), tr("You have to be connected to use this function!")).open();
         }

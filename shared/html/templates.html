@@ -2736,13 +2736,13 @@
             </div>
             {{else type == "default" }}
             <div class="entry default {{if selected}}selected{{/if}}">
-                <div class="country flag-gb" title="{{*:i18n.country_name('gb')}}"></div>
+                <div class="country flag-gb" title="{{>fallback_country_name}}"></div>
                 <div class="name">{{tr "English (Default / Fallback)" /}}</div>
             </div>
             {{else}}
             <div class="entry translation {{if selected}}selected{{/if}}" parent-repository="{{:id}}">
                 <div class="country flag-{{:country_code}}"
-                     title="{{*:i18n.country_name(data.country_code || 'XX')}}"></div>
+                     title="{{>country_name}}"></div>
                 <div class="name">{{> name}}</div>
                 <div class="button button-info">
                     <div class="icon client-about"></div>

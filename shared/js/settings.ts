@@ -1,5 +1,9 @@
-/// <reference path="ui/elements/modal.ts" />
 //Used by CertAccept popup
+
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {LogCategory} from "tc-shared/log";
+import * as loader from "tc-loader";
+import * as log from "tc-shared/log";
 
 if(typeof(customElements) !== "undefined") {
     try {
@@ -9,12 +13,12 @@ if(typeof(customElements) !== "undefined") {
         customElements.define('x-properties', X_Properties, { extends: 'div' });
         customElements.define('x-property', X_Property, { extends: 'div' });
     } catch(error) {
-        console.warn("failed to define costum elements");
+        console.warn("failed to define costume elements");
     }
 }
 
 /* T = value type */
-interface SettingsKey<T> {
+export interface SettingsKey<T> {
     key: string;
 
     fallback_keys?: string | string[];
@@ -25,7 +29,7 @@ interface SettingsKey<T> {
     require_restart?: boolean;
 }
 
-class SettingsBase {
+export class SettingsBase {
     protected static readonly UPDATE_DIRECT: boolean = true;
 
     protected static transformStO?<T>(input?: string, _default?: T, default_type?: string) : T {
@@ -77,7 +81,7 @@ class SettingsBase {
     }
 }
 
-class StaticSettings extends SettingsBase {
+export class StaticSettings extends SettingsBase {
     private static _instance: StaticSettings;
     static get instance() : StaticSettings {
         if(!this._instance)
@@ -139,7 +143,7 @@ class StaticSettings extends SettingsBase {
     }
 }
 
-class Settings extends StaticSettings {
+export class Settings extends StaticSettings {
     static readonly KEY_USER_IS_NEW: SettingsKey<boolean> = {
         key: 'user_is_new_user',
         default_value: true
@@ -433,7 +437,7 @@ class Settings extends StaticSettings {
     }
 }
 
-class ServerSettings extends SettingsBase {
+export class ServerSettings extends SettingsBase {
     private cacheServer = {};
     private _server_unique_id: string;
     private _server_save_worker: NodeJS.Timer;
@@ -511,4 +515,4 @@ class ServerSettings extends SettingsBase {
     }
 }
 
-let settings: Settings;
+export let settings: Settings = null;
