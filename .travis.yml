@@ -18,5 +18,5 @@ jobs:
       name: TeaWeb build master branch
       script:
         - "./scripts/travis.sh --enable-release --enable-debug || travis_terminate 1;"
-      #  - "./scripts/travis_deploy.sh || travis_terminate 1;"
+        - "./scripts/travis_deploy.sh || travis_terminate 1;"
       if: branch = master
