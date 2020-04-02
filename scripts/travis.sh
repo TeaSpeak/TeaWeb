@@ -162,7 +162,7 @@ execute \
 
 execute \
     "Failed to build native opus codec" \
-    "docker exec emscripten bash -c 'web/native-codec/build.sh'"
+    "docker exec -it emscripten bash -c 'web/native-codec/build.sh'"
 
 echo "----------   Web client    ----------"
 
