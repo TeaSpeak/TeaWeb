@@ -11,6 +11,8 @@ services:
 before_install:
   # If ever run on windows make sure you don't run this in the git bash!
   - docker run -dit --name emscripten -v "$(pwd)":"/src/" trzeci/emscripten:sdk-incoming-64bit bash
+  - chmod +x ./scripts/travis.sh
+  - chmod +x ./scripts/travis_deploy.sh
 
 branches:
   only:
