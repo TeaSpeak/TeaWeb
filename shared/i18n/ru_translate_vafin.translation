@@ -3,8 +3,8 @@
     "name": "Русский",
     "contributors": [
       {
-        "name": "Google Translate, via script by Markus Hadenfeldt",
-        "email": "gtr.i18n.client@teaspeak.de"
+        "name": "Администрация хостинга 1GTS.RU",
+        "email": "support@1gts.ru"
       }
     ]
   },
@@ -9073,6 +9073,15 @@
       }
     },
     {
+      "translated": "Подключиться в той же вкладке",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Connect in same tab"
+      }
+    },
+    {
       "translated": "Отключиться от текущего сервера",
       "flags": [
         "google-translate"
@@ -9622,6 +9631,24 @@
       }
     },
     {
+      "translated": "Фиксированная метка времени чата (Убирает такие метки как \"2 секунды назад\"... и т.д.)",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Fixed chat timestamp (Disables \"2 seconds ago\"... etc)"
+      }
+    },
+    {
+      "translated": "Отметка времени в чате (Добавляет такие метки как \"Вчера в...\" или \"Сегодня в...\")",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Colloquial chat timestamp (Enables \"Yesterday at ...\" or \"Today at ...\")"
+      }
+    },
+    {
       "translated": "Переключить чат на выбранный канал",
       "flags": [
         "google-translate"
@@ -9649,12 +9676,21 @@
       }
     },
     {
-      "translated": "Включает поддержку ввода markdown для чата.",
+      "translated": "Включить для чата поддержку синтаксиса Markdown",
       "flags": [
         "google-translate"
       ],
       "key": {
         "message": "Enables markdown input support for chat. "
+      }
+    },
+    {
+      "translated": "Включить для чата поддержку синтаксиса BBCode.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enable the BBCode syntax for your chat."
       }
     },
     {
@@ -11087,8 +11123,908 @@
       "key": {
         "message": "Add Bookmark"
       }
-    }    
+    },
+    {
+      "translated": "Это недавно созданный сервер, для которого еще не были запрошены права администратора.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "This is a newly created server for which administrator privileges have not yet been claimed."
+      }
+    },
+    {
+      "translated": "Для получения прав администратора, пожалуйста введите \"ключ привилегий\", который был автоматически сгенерирован при создании этого сервера.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Please enter the \"privilege key\" that was automatically generated when this server was created to gain administrator permissions."
+      }
+    },
 
+    {
+      "translated": "Использовать ключ привилегий ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Use a privilege key"
+      }
+    },
+    {
+      "translated": "Введите ключ привилегий",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enter Privilege Key"
+      }
+    },
+    {
+      "translated": "Имя канала",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Channel name"
+      }
+    },
+    {
+      "translated": "Загрузка Аватара",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Avatar Upload"
+      }
+    },
+    {
+      "translated": "Выберите аватар",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Select avatar"
+      }
+    },
+    {
+      "translated": "Загрузить аватар",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Upload avatar"
+      }
+    },
+    {
+      "translated": "Удалить аватар",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Delete avatar"
+      }
+    },
+    {
+      "translated": "Поддерживаемые типы изображений: SVG, PNG, JPEG",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Supported image types: SVG, PNG, JPEG"
+      }
+    },
+    {
+      "translated": "Поддерживаемые размеры изображения: любые",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Supported image sizes: any"
+      }
+    },
+    {
+      "translated": "Предосмотр",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Preview"
+      }
+    },
+    {
+      "translated": "Информация о клиенте",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Client info"
+      }
+    },
+    {
+      "translated": "Аватар в чате",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Chat avatar"
+      }
+    },
+    {
+      "translated": "Аватар в списке чатов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Chat list avatar"
+      }
+    },
+    {
+      "translated": "Аватар успешно загружен",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Avatar successfully uploaded"
+      }
+    },
+    {
+      "translated": "Ваш аватар был успешно загружен!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Your avatar has been uploaded successfully!"
+      }
+    },
+    {
+      "translated": "Управление ботом",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Manage Bot"
+      }
+    },
+    {
+      "translated": "Введите URL песни",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enter song URL"
+      }
+    },
+    {
+      "translated": "Введите URL песни или потока",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enter song URL"
+      }
+    },
+    {
+      "translated": "Пожалуйста, введите URL песни или потока",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Please enter the target song URL"
+      }
+    },
+    {
+      "translated": "Воспроизвести тестовый звук",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Play test Sound"
+      }
+    },
+    {
+      "translated": "Информация о сервере: ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Server Information: "
+      }
+    },
+    {
+      "translated": "Пропускная способность",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Show Bandwidth"
+      }
+    },
+    {
+      "translated": "Песня не выбрана",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "No song selected"
+      }
+    },
+    {
+      "translated": "Управление Плейлистом",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Playlist Manage"
+      }
+    },
+    {
+      "translated": "Музыкальный Бот",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Music Bot"
+      }
+    },
+    {
+      "translated": "Воспроизведение",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Replay"
+      }
+    },
+    {
+      "translated": "Музыкальный бот как командир канала",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Music bot is channel commander"
+      }
+    },
+    {
+      "translated": "Музыкальный бот как приоритетный собеседник",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Music bot is priority speaker"
+      }
+    },
+    {
+      "translated": "Удалять песни из списка воспроизведения",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Delete played songs from playlist"
+      }
+    },
+    {
+      "translated": "Повторять плэйлист",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Looped"
+      }
+    },
+    {
+      "translated": "Повторять трек",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Single-Looped"
+      }
+    },
+    {
+      "translated": "Максимальный размер плейлиста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Max playlist size"
+      }
+    },
+    {
+      "translated": "Отправлять сообщение в канал, при смене трека",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Send a channel message when the song changes"
+      }
+    },
+    {
+      "translated": "Вы можете установить это значение до X.",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "You could set this value up to X."
+      }
+    },
+    {
+      "translated": "Разрешение",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Permission"
+      }
+    },
+    {
+      "translated": "Значение",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Required value"
+      }
+    },
+    {
+      "translated": "Поиск клиента:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Search for an client:"
+      }
+    },
+    {
+      "translated": "Uid клиента или ID базы данных",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Client uid or database id"
+      }
+    },
+    {
+      "translated": "Поиск",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Search"
+      }
+    },
+    {
+      "translated": "Список клиентов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "List clients"
+      }
+    },
+    {
+      "translated": "Скрыть клиентов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Hide clients"
+      }
+    },
+    {
+      "translated": "Поиск списка клиентов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Search client list"
+      }
+    },
+    {
+      "translated": "Клиенты, имеющие специальные разрешения:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Clients which have special permissions:"
+      }
+    },
+    {
+      "translated": "Нет доступных клиентов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "No clients available"
+      }
+    },
+    {
+      "translated": "Обновить список клиентов",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Refresh client list"
+      }
+    },
+    {
+      "translated": "Показаны разрешения для:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Showing permissions for:"
+      }
+    },
+    {
+      "translated": "Отменить выбор",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Unselect"
+      }
+    },
+    {
+      "translated": "Разрешения бота",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Bot permissions"
+      }
+    },
+    {
+      "translated": "Возможность переименовать музыкальный бот",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power to rename the music bot"
+      }
+    },
+    {
+      "translated": "Эти группы могут переименовать бота:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could rename the bot:"
+      }
+    },
+    {
+      "translated": "Возможность изменять разрешения музыкального бота",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power to modify the music bot permissions"
+      }
+    },
+    {
+      "translated": "Эти группы могут менять настройки бота:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could modify the bot:"
+      }
+    },
+    {
+      "translated": "Возможность удаления музыкального бота",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power to delete the music bot"
+      }
+    },
+    {
+      "translated": "Эти группы могут удалить бота:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could delete the bot:"
+      }
+    },
+    {
+      "translated": "Разрешения плейлиста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Playlist permissions"
+      }
+    },
+    {
+      "translated": "Возможность просмотра списка воспроизведения песен",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power to see the playlist songs"
+      }
+    },
+    {
+      "translated": "Эти группы могут просматривать список воспроизведения:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could view the playlist:"
+      }
+    },
+    {
+      "translated": "Возможность редактирования параметров плейлиста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power for editing playlist settings"
+      }
+    },
+    {
+      "translated": "Эти группы могут редактировать параметры плейлиста:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could edit the playlist settings:"
+      }
+    },
+    {
+      "translated": "Возможность просмотра разрешений плейлиста:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power for viewing playlist permissions"
+      }
+    },
+    {
+      "translated": "Эти группы могут просматривать разрешения плейлиста:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could view the playlist permissions:"
+      }
+    },
+    {
+      "translated": "Возможность редактирования разрешений плейлиста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power for editing playlist permissions"
+      }
+    },
+    {
+      "translated": "Эти группы могут редактировать разрешения плэйлиста:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could edit the playlist permissions:"
+      }
+    },
+    {
+      "translated": "Возможность добавления песни в плейлист",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power for adding a song to the playlist"
+      }
+    },
+    {
+      "translated": "Эти группы могут добавить песню в плейлист:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could add a song:"
+      }
+    },
+    {
+      "translated": "Возможность изменять порядок песен в плейлисте",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power to reorder a song within the playlist"
+      }
+    },
+    {
+      "translated": "Эти группы могут изменить порядок песен:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could reorder the songs:"
+      }
+    },
+    {
+      "translated": "Возможность удалить песню из плейлиста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Power to delete a song from the playlist"
+      }
+    },
+    {
+      "translated": "Эти группы могут удалить песню:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "These groups could delete a song:"
+      }
+    },
+    {
+      "translated": "Импорт из текста",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Import from text"
+      }
+    },
+    {
+      "translated": "Импорт из файла",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Import from file"
+      }
+    },
+    {
+      "translated": "Пожалуйста, вставьте данные идентификатора",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Please paste your identity data here"
+      }
+    },
+    {
+      "translated": "Выбрать файл",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Select file"
+      }
+    },
+    {
+      "translated": "Файл не выбран",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "No file selected"
+      }
+    },
+    {
+      "translated": "Еще не реализовано",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Not implemented yet"
+      }
+    },
+    {
+      "translated": "Эта функция еще не реализована!",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "This function hasn't been implemented yet!"
+      }
+    },
+    {
+      "translated": "Добавление клиента в группу сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Add client to server group"
+      }
+    },
+    {
+      "translated": "Введите уникальный идентификатор клиента или идентификатор базы данных",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enter the client unique id or database id"
+      }
+    },
+    {
+      "translated": "Создание новой группы сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create a new group"
+      }
+    },
+    {
+      "translated": "Имя группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Group name"
+      }
+    },
+    {
+      "translated": "Недопустимое имя группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Invalid group name"
+      }
+    },
+    {
+      "translated": "Создать группу с использованием следующего типа:",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Created group should have the type:"
+      }
+    },
+    {
+      "translated": "Создать",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create"
+      }
+    },
+    {
+      "translated": "Создать группу сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create a server group"
+      }
+    },
+    {
+      "translated": "Переименовать группу сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Rename server group"
+      }
+    },
+    {
+      "translated": "Копировать группу сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Duplicate server group"
+      }
+    },
+    {
+      "translated": "Удалить группу сервера",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Delete server group"
+      }
+    },
+    {
+      "translated": "Создать группу канала",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Create a channel group"
+      }
+    },
+    {
+      "translated": "Переименовать группу канала",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Rename channel group"
+      }
+    },
+    {
+      "translated": "Копировать группу канала",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Duplicate channel group"
+      }
+    },
+    {
+      "translated": "Удалить группу канала",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Delete channel group"
+      }
+    },
+    {
+      "translated": "Группа шаблона",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Template group"
+      }
+    },
+    {
+      "translated": "Обычная группа",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Regular group"
+      }
+    },
+    {
+      "translated": "Группа ServerQuery",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "ServerQuery group"
+      }
+    },
+    {
+      "translated": "Переименовать группу",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Rename group"
+      }
+    },
+    {
+      "translated": "Введите новое имя группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enter the new group name"
+      }
+    },
+    {
+      "translated": "Введите новое имя группы",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Enter the new group name"
+      }
+    },
+    {
+      "translated": "Вы действительно хотите удалить группу ",
+      "flags": [
+        "google-translate"
+      ],
+      "key": {
+        "message": "Do you really want to delete the group "
+      }
+    }                                 
                     
 
   ]
