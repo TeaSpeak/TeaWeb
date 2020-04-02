@@ -1,6 +1,7 @@
 #!/bin/bash
 
 LOG_FILE="auto-build/logs/build.log"
+PACKAGES_DIRECTORY="auto-build/packages/"
 build_verbose=1
 build_release=1
 build_debug=0
@@ -173,8 +174,8 @@ function move_target_file() {
         handle_failure -1 "Failed to find target file"
     fi
 
-    mkdir -p packages || { echo "failed to create target path"; exit 1; }
-    target_file="../packages/$file_name"
+    mkdir -p "${PACKAGES_DIRECTORY}" || { echo "failed to create target path"; exit 1; }
+    target_file="${PACKAGES_DIRECTORY}/$file_name"
     if [[ -f "$target_file" ]]; then
         echo "Removing old packed file located at $target_file"
         rm "${target_file}" && handle_failure -1 "Failed to remove target file"
