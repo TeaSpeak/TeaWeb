@@ -1,19 +1,22 @@
 sudo: true
 dist: trusty
 
+language: node_js
+node_js:
+  - "12"
+
 services:
   - docker
 
 before_install:
-  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker pull $DOCKER_USERNAME/teaweb:build_new
+  # If ever run on windows make sure you don't run this in the git bash!
+  - docker run -dit --name emscripten -v "$(pwd)":"/src/" trzeci/emscripten:sdk-incoming-64bit bash
 
 jobs:
   include:
     - stage: "build"
       name: TeaWeb build master branch
       script:
-        - "mkdir -p /tmp/build"
-        - "docker run --rm -v /tmp/build/logs/:/build/logs/ -v /tmp/build/packages/:/build/packages/ -v `pwd`:/build/TeaWeb $DOCKER_USERNAME/teaweb:build_new --enable-release --enable-debug || travis_terminate 1;"
-        - "./scripts/travis_deploy.sh || travis_terminate 1;"
+        - "./scripts/travis.sh --enable-release --enable-debug || travis_terminate 1;"
+      #  - "./scripts/travis_deploy.sh || travis_terminate 1;"
       if: branch = master
