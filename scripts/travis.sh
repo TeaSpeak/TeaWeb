@@ -173,6 +173,7 @@ function move_target_file() {
         handle_failure -1 "Failed to find target file"
     fi
 
+    mkdir -p packages || { echo "failed to create target path"; exit 1; }
     target_file="../packages/$file_name"
     if [[ -f "$target_file" ]]; then
         echo "Removing old packed file located at $target_file"
