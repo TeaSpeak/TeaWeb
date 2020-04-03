@@ -46,7 +46,7 @@ export class RecorderProfile {
 
     current_handler: ConnectionHandler;
 
-    callback_support_change: () => any;
+    callback_input_change: (old_input: AbstractInput, new_input: AbstractInput) => Promise<void>;
     callback_start: () => any;
     callback_stop: () => any;
 
@@ -107,6 +107,9 @@ export class RecorderProfile {
             if(this.callback_stop)
                 this.callback_stop();
         };
+
+        //TODO: Await etc?
+        this.callback_input_change && this.callback_input_change(undefined, this.input);
     }
 
     private async load() {
@@ -199,6 +202,7 @@ export class RecorderProfile {
             }
         }
 
+        this.callback_input_change = undefined;
         this.callback_start = undefined;
         this.callback_stop = undefined;
         this.callback_unmount = undefined;
