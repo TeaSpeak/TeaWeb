@@ -382,7 +382,8 @@ export class ConnectionHandler {
         if(pathname.endsWith(".php"))
             pathname = pathname.substring(0, pathname.lastIndexOf("/"));
 
-        if(bipc.supported()) {
+        /* certaccept is currently not working! */
+        if(bipc.supported() && false) {
             tag.attr('href', "#");
             let popup: Window;
             tag.on('click', event => {
