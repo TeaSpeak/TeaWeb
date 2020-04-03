@@ -98,7 +98,8 @@ export const config = (target: "web" | "client") => { return {
                             getCustomTransformers: (prog: ts.Program) => {
                                 return {
                                     before: [trtransformer(prog, {
-                                        optimized: true
+                                        optimized: true,
+                                        target_file: path.join(__dirname, "dist", "translations.json")
                                     })]
                                 };
                             }

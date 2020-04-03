@@ -83,7 +83,7 @@ export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
         update_value(value, true);
     };
 
-    slider.on('mousedown', event => {
+    slider.on('mousedown touchstart', ((event: MouseEvent | TouchEvent) => {
         document.addEventListener('mousemove', mouse_listener);
         document.addEventListener('touchmove', mouse_listener);
 
@@ -93,7 +93,9 @@ export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
 
         tool.show();
         slider.addClass("active");
-    });
+
+        mouse_listener(event);
+    }) as any);
 
     update_value(options.initial_value, false);
 

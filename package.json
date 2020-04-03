@@ -17,11 +17,13 @@
     "build-web": "webpack --config webpack-web.config.js",
     "watch-web": "webpack --watch --config webpack-web.config.js",
     "build-client": "webpack --config webpack-client.config.js",
-    "watch-client": "webpack --watch --config webpack-client.config.js"
+    "watch-client": "webpack --watch --config webpack-client.config.js",
+    "generate-i18n-gtranslate": "node shared/generate_i18n_gtranslate.js"
   },
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
   "devDependencies": {
+    "@google-cloud/translate": "^5.3.0",
     "@types/dompurify": "^2.0.1",
     "@types/emscripten": "^1.38.0",
     "@types/fs-extra": "^8.0.1",

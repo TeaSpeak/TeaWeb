@@ -1,4 +1,8 @@
 # Changelog:
+* **03.03.20**
+    - Using webpack instead of our own loaded (a lot of restructuring)
+    - Fixed that the microphone slider hasn't worked for touch devices
+    
 * **28.03.20**
     - Fixed a bug within the permission editor which kicks you from the server
     
