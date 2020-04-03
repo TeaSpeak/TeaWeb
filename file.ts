@@ -9,6 +9,7 @@ import * as mt from "mime-types";
 import * as os from "os";
 import {PathLike} from "fs";
 import {ChildProcess} from "child_process";
+import * as https from "https";
 
 /* All project files */
 type ProjectResourceType = "html" | "js" | "css" | "wasm" | "wav" | "json" | "img" | "i18n" | "pem";
@@ -495,6 +496,8 @@ namespace server {
     let server: http.Server;
     let php: string;
     let options: Options;
+
+    const use_https = true;
     export async function launch(_files: ProjectResource[], options_: Options) {
         options = options_;
         files = _files;
@@ -513,7 +516,24 @@ namespace server {
             console.error("failed to validate php interpreter: %o", error);
             throw "invalid php interpreter";
         }
-        server = http.createServer(handle_request);
+
+        if(process.env["ssl_enabled"] || use_https) {
+            //openssl req -nodes -new -x509 -keyout files_key.pem -out files_cert.pem
+            const key_file = process.env["ssl_key"] || path.join(__dirname, "files_key.pem");
+            const cert_file = process.env["ssl_cert"] || path.join(__dirname, "files_cert.pem");
+            if(!await fs.pathExists(key_file))
+                throw "Missing ssl key file";
+
+            if(!await fs.pathExists(cert_file))
+                throw "Missing ssl cert file";
+
+            server = https.createServer({
+                key: await fs.readFile(key_file),
+                cert: await fs.readFile(cert_file),
+            }, handle_request);
+        } else {
+            server = http.createServer(handle_request);
+        }
         await new Promise((resolve, reject) => {
             server.on('error', reject);
             server.listen(options.port, () => {
