@@ -13,6 +13,7 @@ async function run_translate(messages: string[], source_language: string, target
         const chunk_size = Math.min(messages_left.length, 128);
         const chunk = messages_left.slice(0, chunk_size);
 
+        console.log("Translated %d/%d. Messages left: %d. Chunk size: %d", messages.length - messages_left.length, messages.length, messages_left.length, chunk_size);
         try {
             const [response] = await translation_client.translateText({
                 parent: `projects/${translation_project_id}/locations/${translation_location}`,
@@ -29,7 +30,7 @@ async function run_translate(messages: string[], source_language: string, target
             throw "translated failed";
         }
 
-        messages_left = messages.slice(chunk_size);
+        messages_left = messages_left.slice(chunk_size);
     }
     return result;
 }
@@ -119,18 +120,20 @@ async function translate_messages(input_file: string, output_file: string, sourc
         });
     }
 
-    await fs.writeJSON(output_file, output_data);
+    await fs.writeJSON(output_file, output_data, {
+        spaces: "  "
+    });
 }
 
 const process_args = process.argv.slice(2);
-if(process_args.length !== 1) {
+if(process_args.length < 1) {
     console.error("Invalid argument count");
-    console.error("Usage: ./generate_i18n_gtranslate.py <language>");
+    console.error("Usage: ./generate_i18n_gtranslate.py <language> [<target file>]");
     process.exit(1);
 }
 
 const input_files = ["../dist/translations.json", "generated/translations_html.json"].map(e => path.join(__dirname, e));
-const output_file = path.join(__dirname, "i18n", process_args[0] + "_google_translate.translation");
+const output_file = process_args[1] || path.join(__dirname, "i18n", process_args[0] + "_google_translate.translation");
 
 (async () => {
     for(const file of input_files)
