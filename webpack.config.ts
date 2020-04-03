@@ -124,7 +124,6 @@ export const config = (target: "web" | "client") => { return {
     ] as any[],
     output: {
         filename: (chunkData) => {
-            console.log(chunkData.chunk.name);
             if(chunkData.chunk.name === "loader")
                 return "loader.js";
 
