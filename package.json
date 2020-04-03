@@ -5,7 +5,7 @@
   "main": "main.js",
   "directories": {},
   "scripts": {
-    "compile-sass": "sass --update shared/css/:shared/css/ web/css/:web/css/ client/css/:client/css/",
+    "compile-sass": "sass --update shared/css/:shared/css/ web/css/:web/css/ client/css/:client/css/ vendor/:vendor/",
     "compile-project-base": "tsc -p tsbaseconfig.json",
     "dtsgen": "node tools/dtsgen/index.js",
     "trgen": "node tools/trgen/index.js",

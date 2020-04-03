@@ -26,11 +26,12 @@ if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
             exit 1
         }
 
-        gunzip /tmp/git-release.gz && chmod +x /tmp/git-release;
-        [[ $? -eq 0 ]] || {
+        gunzip /tmp/git-release.gz; _exit_code=$?;
+        [[ $_exit_code -eq 0 ]] || {
             echo "Failed to unzip github-release-linux"
             exit 1
         }
+        chmod +x /tmp/git-release;
 
         echo "Download of github-release-linux (1.2.4) finished"
     else
