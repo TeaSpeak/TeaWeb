@@ -215,6 +215,7 @@ export namespace bbcode {
                     }
                 });
 
+            const load_callback = guid();
             /* the image parse & displayer */
             xbbcode.register.register_parser({
                 tag: ["img", "image"],
@@ -237,10 +238,11 @@ export namespace bbcode {
                         return fallback_value;
                     }
 
-                    sanitizer_escaped_map[uid] = "<div class='xbbcode-tag-img'><img src='img/loading_image.svg' onload='messages.formatter.bbcode.load_image(this)' x-image-url='" + encodeURIComponent(target) + "' title='" + sanitize_text(target) + "' /></div>";
+                    sanitizer_escaped_map[uid] = "<div class='xbbcode-tag-img'><img src='img/loading_image.svg' onload='window[\"" + load_callback + "\"](this)' x-image-url='" + encodeURIComponent(target) + "' title='" + sanitize_text(target) + "' /></div>";
                     return sanitizer_escaped(uid);
                 }
-            })
+            });
+            window[load_callback] = load_image;
         },
         priority: 10
     });

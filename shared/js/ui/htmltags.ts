@@ -4,6 +4,7 @@ import {ChannelEntry} from "tc-shared/ui/channel";
 import {ClientEntry} from "tc-shared/ui/client";
 import {htmlEscape} from "tc-shared/ui/frames/chat";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {guid} from "tc-shared/crypto/uid";
 
 let mouse_coordinates: {x: number, y: number} = {x: 0, y: 0};
 
@@ -30,6 +31,7 @@ export interface ChannelProperties {
     add_braces?: boolean
 }
 
+const callback_object_id = guid();
 /* required for the bbcodes */
 function generate_client_open(properties: ClientProperties) : string {
     let result = "";
@@ -57,7 +59,7 @@ function generate_client_open(properties: ClientProperties) : string {
     }
 
     /* add the click handler */
-    result += "oncontextmenu='return htmltags.callbacks.callback_context_client($(this));'";
+    result += "oncontextmenu='return window[\"" + callback_object_id + "\"].callback_context_client($(this));'";
 
     result = result + ">";
     return result;
@@ -100,7 +102,7 @@ function generate_channel_open(properties: ChannelProperties) : string {
         result = result + "channel-name='" + encodeURIComponent(properties.channel_name) + "' ";
 
     /* add the click handler */
-    result += "oncontextmenu='return htmltags.callbacks.callback_context_channel($(this));'";
+    result += "oncontextmenu='return window[\"" + callback_object_id + "\"].callback_context_channel($(this));'";
 
     result = result + ">";
     return result;
@@ -186,6 +188,7 @@ export namespace callbacks {
         return false;
     }
 }
+window[callback_object_id] = callbacks;
 
 declare const xbbcode;
 namespace bbcodes {
