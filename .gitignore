@@ -30,3 +30,5 @@ node_modules/
 
 /webpack/*.js
 /webpack/*.js.map
+
+/files_*.pem
