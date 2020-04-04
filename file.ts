@@ -497,7 +497,7 @@ namespace server {
     let php: string;
     let options: Options;
 
-    const use_https = true;
+    const use_https = false;
     export async function launch(_files: ProjectResource[], options_: Options) {
         options = options_;
         files = _files;

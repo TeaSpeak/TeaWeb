@@ -58,6 +58,8 @@ export abstract class AbstractCommandHandlerBoss {
 
 
     register_single_handler(handler: SingleCommandHandler) {
+        if(typeof handler.command === "string")
+            handler.command = [handler.command];
         this.single_command_handler.push(handler);
     }
 
@@ -82,7 +84,8 @@ export abstract class AbstractCommandHandlerBoss {
         }
 
         for(const handler of [...this.single_command_handler]) {
-            if(handler.command && handler.command != command.command)
+            // We already know that handler.command must be an array (It will be converted within the register single handler methode)
+            if(handler.command && (handler.command as string[]).findIndex(e => e === command.command) == -1)
                 continue;
 
             try {
