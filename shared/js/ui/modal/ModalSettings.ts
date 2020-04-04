@@ -198,7 +198,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
     };
 
     const update_current_selected = () => {
-        const container_current = container.find(".selected-language6");
+        const container_current = container.find(".selected-language");
         container_current.empty().text(tr("Loading"));
 
         let current_translation: RepositoryTranslation;
