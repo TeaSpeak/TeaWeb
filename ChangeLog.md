@@ -1,4 +1,8 @@
 # Changelog:
+* **04.03.20**
+    - Implemented the new music bot playlist song list
+    - Implemented the missing server log message builders
+    
 * **03.03.20**
     - Using webpack instead of our own loaded (a lot of restructuring)
     - Fixed that the microphone slider hasn't worked for touch devices
