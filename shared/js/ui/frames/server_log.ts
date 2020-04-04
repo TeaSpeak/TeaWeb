@@ -4,6 +4,7 @@ import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import * as htmltags from "tc-shared/ui/htmltags";
 import {bbcode_chat, format_time, formatMessage} from "tc-shared/ui/frames/chat";
 import {formatDate} from "tc-shared/MessageFormatter";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 
 export enum Type {
     CONNECTION_BEGIN = "connection_begin",
@@ -261,10 +262,13 @@ export type MessageBuilderOptions = {};
 export type MessageBuilder<T extends keyof TypeInfo> = (data: TypeInfo[T], options: MessageBuilderOptions) => JQuery[] | undefined;
 
 export const MessageBuilders: {[key: string]: MessageBuilder<any>} = {
-    "error_custom": (data: event.ErrorCustom, options) => {
+    "error_custom": (data: event.ErrorCustom) => {
         return [$.spawn("div").addClass("log-error").text(data.message)]
     }
 };
+function register_message_builder<T extends keyof TypeInfo>(key: T, builder: MessageBuilder<T>) {
+    MessageBuilders[key] = builder;
+}
 
 export class ServerLog {
     private readonly handle: ConnectionHandler;
@@ -384,27 +388,27 @@ const channel_tag = (channel: base.Channel, braces?: boolean) => htmltags.genera
     add_braces: braces
 });
 
-MessageBuilders["connection_begin"] = (data: event.ConnectBegin, options) => {
+MessageBuilders["connection_begin"] = (data: event.ConnectBegin) => {
     return formatMessage(tr("Connecting to {0}{1}"), data.address.server_hostname, data.address.server_port == 9987 ? "" : (":" + data.address.server_port));
 };
 
-MessageBuilders["connection_hostname_resolve"] = (data: event.ConnectionHostnameResolve, options) => formatMessage(tr("Resolving hostname"));
-MessageBuilders["connection_hostname_resolved"] = (data: event.ConnectionHostnameResolved, options) => formatMessage(tr("Hostname resolved successfully to {0}:{1}"), data.address.server_hostname, data.address.server_port);
-MessageBuilders["connection_hostname_resolve_error"] = (data: event.ConnectionHostnameResolveError, options) => formatMessage(tr("Failed to resolve hostname. Connecting to given hostname. Error: {0}"), data.message);
+MessageBuilders["connection_hostname_resolve"] = (data: event.ConnectionHostnameResolve) => formatMessage(tr("Resolving hostname"));
+MessageBuilders["connection_hostname_resolved"] = (data: event.ConnectionHostnameResolved) => formatMessage(tr("Hostname resolved successfully to {0}:{1}"), data.address.server_hostname, data.address.server_port);
+MessageBuilders["connection_hostname_resolve_error"] = (data: event.ConnectionHostnameResolveError) => formatMessage(tr("Failed to resolve hostname. Connecting to given hostname. Error: {0}"), data.message);
 
-MessageBuilders["connection_login"] = (data: event.ConnectionLogin, options) => formatMessage(tr("Logging in..."));
-MessageBuilders["connection_failed"] = (data: event.ConnectionFailed, options) => formatMessage(tr("Connect failed."));
-MessageBuilders["connection_connected"] = (data: event.ConnectionConnected, options) => formatMessage(tr("Connected as {0}"), client_tag(data.own_client, true));
+MessageBuilders["connection_login"] = () => formatMessage(tr("Logging in..."));
+MessageBuilders["connection_failed"] = () => formatMessage(tr("Connect failed."));
+MessageBuilders["connection_connected"] = (data: event.ConnectionConnected) => formatMessage(tr("Connected as {0}"), client_tag(data.own_client, true));
 
-MessageBuilders["connection_voice_setup_failed"] = (data: event.ConnectionVoiceSetupFailed, options) => {
+MessageBuilders["connection_voice_setup_failed"] = (data: event.ConnectionVoiceSetupFailed) => {
     return formatMessage(tr("Failed to setup voice bridge: {0}. Allow reconnect: {1}"), data.reason, data.reconnect_delay > 0 ? tr("yes") : tr("no"));
 };
 
-MessageBuilders["error_permission"] = (data: event.ErrorPermission, options) => {
+MessageBuilders["error_permission"] = (data: event.ErrorPermission) => {
     return formatMessage(tr("Insufficient client permissions. Failed on permission {0}"), data.permission ? data.permission.name : "unknown").map(e => e.addClass("log-error"));
 };
 
-MessageBuilders["client_view_enter"] = (data: event.ClientEnter, options) => {
+MessageBuilders["client_view_enter"] = (data: event.ClientEnter) => {
     if(data.reason == ViewReasonId.VREASON_SYSTEM) {
         return undefined;
     } if(data.reason == ViewReasonId.VREASON_USER_ACTION) {
@@ -450,7 +454,7 @@ MessageBuilders["client_view_enter"] = (data: event.ClientEnter, options) => {
     return [$.spawn("div").addClass("log-error").text("Invalid view enter reason id (" + data.message + ")")];
 };
 
-MessageBuilders["client_view_move"] = (data: event.ClientMove, options) => {
+MessageBuilders["client_view_move"] = (data: event.ClientMove) => {
     if(data.reason == ViewReasonId.VREASON_MOVED) {
         return formatMessage(data.client_own ? tr("You was moved by {3} from channel {1} to {2}") : tr("{0} was moved from channel {1} to {2} by {3}"),
             client_tag(data.client),
@@ -476,7 +480,7 @@ MessageBuilders["client_view_move"] = (data: event.ClientMove, options) => {
     return [$.spawn("div").addClass("log-error").text("Invalid view move reason id (" + data.reason + ")")];
 };
 
-MessageBuilders["client_view_leave"] = (data: event.ClientLeave, options) => {
+MessageBuilders["client_view_leave"] = (data: event.ClientLeave) => {
     if(data.reason == ViewReasonId.VREASON_USER_ACTION) {
         return formatMessage(data.own_channel ? tr("{0} disappeared from your channel {1} to {2}") : tr("{0} disappeared from {1} to {2}"), client_tag(data.client), channel_tag(data.channel_from), channel_tag(data.channel_to));
     } else if(data.reason == ViewReasonId.VREASON_SERVER_LEFT) {
@@ -509,41 +513,45 @@ MessageBuilders["client_view_leave"] = (data: event.ClientLeave, options) => {
     return [$.spawn("div").addClass("log-error").text("Invalid view leave reason id (" + data.reason + ")")];
 };
 
-MessageBuilders["server_welcome_message"] = (data: event.WelcomeMessage, options) => {
+MessageBuilders["server_welcome_message"] = (data: event.WelcomeMessage) => {
     return bbcode_chat("[color=green]" + data.message + "[/color]");
 };
 
-MessageBuilders["server_host_message"] = (data: event.WelcomeMessage, options) => {
+MessageBuilders["server_host_message"] = (data: event.WelcomeMessage) => {
     return bbcode_chat("[color=green]" + data.message + "[/color]");
 };
 
-MessageBuilders["client_nickname_changed"] = (data: event.ClientNicknameChanged, options) => {
+MessageBuilders["client_nickname_changed"] = (data: event.ClientNicknameChanged) => {
     if(data.own_client) {
-        return formatMessage(tr("Nickname successfully changed."));
+        return tra("Nickname successfully changed.");
     } else {
-        return formatMessage(tr("{0} changed his nickname from \"{1}\" to \"{2}\""), client_tag(data.client), data.old_name, data.new_name);
+        return tra("{0} changed his nickname from \"{1}\" to \"{2}\"", client_tag(data.client), data.old_name, data.new_name);
     }
 };
 
-MessageBuilders["global_message"] = (data: event.GlobalMessage, options) => {
+register_message_builder("client_nickname_change_failed", (data) => {
+    return tra("Failed to change own client name: {}", data.reason);
+});
+
+MessageBuilders["global_message"] = () => {
     return []; /* we do not show global messages within log */
 };
 
 MessageBuilders["disconnected"] = () => formatMessage(tr("Disconnected from server"));
 
-MessageBuilders["reconnect_scheduled"] = (data: event.ReconnectScheduled, options) => {
+MessageBuilders["reconnect_scheduled"] = (data: event.ReconnectScheduled) => {
     return tra("Reconnecting in {0}.", format_time(data.timeout, tr("now")))
 };
 
-MessageBuilders["reconnect_canceled"] = (data: event.ReconnectCanceled, options) => {
+MessageBuilders["reconnect_canceled"] = () => {
     return tra("Canceled reconnect.")
 };
 
-MessageBuilders["reconnect_execute"] = (data: event.ReconnectExecute, options) => {
+MessageBuilders["reconnect_execute"] = () => {
     return tra("Reconnecting...")
 };
 
-MessageBuilders["server_banned"] = (data: event.ServerBanned, options) => {
+MessageBuilders["server_banned"] = (data: event.ServerBanned) => {
     let result: JQuery[];
 
     const time = data.time == 0 ? tr("ever") : format_time(data.time * 1000, tr("one second"));
@@ -561,3 +569,38 @@ MessageBuilders["server_banned"] = (data: event.ServerBanned, options) => {
 
     return result.map(e => e.addClass("log-error"));
 };
+
+register_message_builder("server_host_message_disconnect", (data) => {
+    return tra(data.message);
+});
+
+register_message_builder("server_requires_password", () => {
+    return tra("Server requires a password to connect.");
+});
+
+register_message_builder("server_closed", (data) => {
+    return data.message ? tra("Server has been closed ({}).", data.message) : tra("Server has been closed.");
+});
+
+register_message_builder("connection_command_error", (data) => {
+    let error_message;
+    if(typeof data.error === "string")
+        error_message = data.error;
+    else if(data.error instanceof CommandResult)
+        error_message = data.error.extra_message || data.error.message;
+    else
+        error_message = data.error + "";
+    return tra("Command execution resulted in: {}", error_message);
+});
+
+register_message_builder("channel_create", (data) => {
+    if(data.own_action)
+        return tra("Channel {} has been created.", channel_tag(data.channel));
+    return tra("Channel {} has been created by {}.", channel_tag(data.channel), client_tag(data.creator));
+});
+
+register_message_builder("channel_delete", (data) => {
+    if(data.own_action)
+        return tra("Channel {} has been deleted.", channel_tag(data.channel));
+    return tra("Channel {] has been deleted by {}.", channel_tag(data.channel), client_tag(data.deleter));
+});
