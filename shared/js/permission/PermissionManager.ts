@@ -1,6 +1,6 @@
 import * as log from "tc-shared/log";
 import {LogCategory, LogType} from "tc-shared/log";
-import PermissionType from "tc-shared/permission/PermissionType";
+import {PermissionType} from "tc-shared/permission/PermissionType";
 import {LaterPromise} from "tc-shared/utils/LaterPromise";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";

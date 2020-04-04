@@ -1779,7 +1779,7 @@ export namespace modal_settings {
                     console.debug(tr("Changed default microphone device"));
                     event_registry.fire_async("set-device-result", { status: "success", device_id: event.device_id });
                 }).catch((error) => {
-                    log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.unique_id : "none", error)
+                    log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.unique_id : "none", error);
                     event_registry.fire_async("set-device-result", { status: "success", device_id: event.device_id });
                 });
             });
@@ -1956,7 +1956,7 @@ export namespace modal_settings {
                         const tags = volume_bar_tags[device.device_id];
                         if(!tags) continue;
 
-                        let level = typeof device.level === "number" ? device.level : 100;
+                        let level = typeof device.level === "number" ? device.level : 0;
                         if(level > 100) level = 100;
                         else if(level < 0) level = 0;
                         tags.error.attr('title', device.error || null).text(device.error || null);

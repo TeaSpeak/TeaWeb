@@ -3,7 +3,7 @@ import {format} from "tc-shared/ui/frames/side/chat_helper";
 import {bbcode_chat, formatMessage} from "tc-shared/ui/frames/chat";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {LogCategory} from "tc-shared/log";
-import PermissionType from "tc-shared/permission/PermissionType";
+import {PermissionType} from "tc-shared/permission/PermissionType";
 import {ChatBox} from "tc-shared/ui/frames/side/chat_box";
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";

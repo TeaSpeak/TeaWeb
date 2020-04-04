@@ -14,7 +14,7 @@ import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import {spawnPermissionEdit} from "tc-shared/ui/modal/permission/ModalPermissionEdit";
 import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import PermissionType from "tc-shared/permission/PermissionType";
+import {PermissionType} from "tc-shared/permission/PermissionType";
 import {openBanList} from "tc-shared/ui/modal/ModalBanList";
 import {spawnQueryManage} from "tc-shared/ui/modal/ModalQueryManage";
 import {spawnQueryCreate} from "tc-shared/ui/modal/ModalQuery";
