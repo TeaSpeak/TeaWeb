@@ -263,6 +263,7 @@ export class CommandHelper extends AbstractCommandHandler {
     }
 
     request_playlist_songs(playlist_id: number) : Promise<PlaylistSong[]> {
+        //FIXME: notifyplaylistsonglistfinish for the result!
         return new Promise((resolve, reject) => {
             const single_handler: SingleCommandHandler = {
                 command: "notifyplaylistsonglist",

@@ -63,6 +63,13 @@ if [[ $_exit_code -ne 0 ]]; then
     exit 1
 fi
 
+echo "Compile vendor emoji-picker"
+execute_tsc ./vendor/emoji-picker/src/jquery.lsxemojipicker.ts
+if [[ $_exit_code -ne 0 ]]; then
+    echo "Failed to build the emoji-picker vendor"
+    exit 1
+fi
+
 if [[ "$build_type" == "release" ]]; then # Compile everything for release mode
     echo "Packing generated css files"
     chmod +x ./shared/css/generate_packed.sh
