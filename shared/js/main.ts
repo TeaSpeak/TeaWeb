@@ -29,6 +29,7 @@ import * as ppt from "tc-backend/ppt";
 /* required import for init */
 require("./proto").initialize();
 require("./ui/elements/ContextDivider").initialize();
+require("./ui/elements/Tab");
 require("./connection/CommandHandler"); /* else it might not get bundled because only the backends are accessing it */
 
 const js_render = window.jsrender || $;
