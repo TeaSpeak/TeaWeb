@@ -2,6 +2,7 @@
 import {MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {guid} from "tc-shared/crypto/uid";
+import * as React from "react";
 
 export interface EventConvert<All> {
     as<T extends keyof All>() : All[T];
@@ -18,11 +19,16 @@ export class SingletonEvent implements Event<"singletone-instance"> {
     private constructor() { }
 }
 
+const event_annotation_key = guid();
 export class Registry<Events> {
     private readonly registry_uuid;
 
     private handler: {[key: string]: ((event) => void)[]} = {};
     private connections: {[key: string]:Registry<string>[]} = {};
+    private event_handler_objects: {
+        object: any,
+        handlers: {[key: string]: ((event) => void)[]}
+    }[] = [];
     private debug_prefix = undefined;
 
     constructor() {
@@ -120,6 +126,87 @@ export class Registry<Events> {
 
     destory() {
         this.handler = {};
+    }
+
+    register_handler(handler: any) {
+        if(typeof handler !== "object")
+            throw "event handler must be an object";
+        const proto = Object.getPrototypeOf(handler);
+        if(typeof proto !== "object")
+            throw "event handler must have a prototype";
+
+        let registered_events = {};
+        for(const function_name of Object.getOwnPropertyNames(proto)) {
+            if(function_name === "constructor") continue;
+            if(typeof proto[function_name][event_annotation_key] !== "object") continue;
+
+            const event_data = proto[function_name][event_annotation_key];
+            console.log("Registering method %s for %o", function_name, event_data.events);
+            const ev_handler = event => proto[function_name].call(handler, [event]);
+            for(const event of event_data.events) {
+                registered_events[event] = registered_events[event] || [];
+                registered_events[event].push(ev_handler);
+                this.on(event, ev_handler);
+            }
+        }
+        if(Object.keys(registered_events).length === 0)
+            throw "no events found in event handler";
+
+        this.event_handler_objects.push({
+            handlers: registered_events,
+            object: handler
+        });
+    }
+
+    unregister_handler(handler: any) {
+        const data = this.event_handler_objects.find(e => e.object === handler);
+        if(!data) throw "unknown event handler";
+        this.event_handler_objects.remove(data);
+
+        for(const key of Object.keys(data.handlers)) {
+            for(const evhandler of data.handlers[key])
+                this.off(evhandler);
+        }
+    }
+}
+
+export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof EventTypes)[]) {
+    return function (target: any,
+                     propertyKey: string,
+                     descriptor: PropertyDescriptor) {
+        if(typeof target[propertyKey] !== "function")
+            throw "Invalid event handler annotation. Expected to be on a function type.";
+
+        target[propertyKey][event_annotation_key] = {
+            events: Array.isArray(events) ? events : [events]
+        };
+    }
+}
+
+export function ReactEventHandler<EventTypes>(registry_callback: (object: JSX.Element) => Registry<EventTypes>) {
+    return function (constructor: Function) {
+        if(!React.Component.prototype.isPrototypeOf(constructor.prototype))
+            throw "Class/object isn't an instance of React.Component";
+
+        const didMount = constructor.prototype.componentDidMount;
+        constructor.prototype.componentDidMount = function() {
+            const registry = registry_callback(this);
+            if(!registry) throw "Event registry returned for an event object is invalid";
+            registry.register_handler(this);
+
+            if(typeof didMount === "function")
+                didMount.call(this, arguments);
+        };
+
+        const willUnmount = constructor.prototype.componentWillUnmount;
+        constructor.prototype.componentWillUnmount = function () {
+            const registry = registry_callback(this);
+            if(!registry) throw "Event registry returned for an event object is invalid";
+            registry.unregister_handler(this);
+
+            if(typeof willUnmount === "function")
+                willUnmount.call(this, arguments);
+        };
     }
 }
 
