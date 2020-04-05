@@ -57,7 +57,7 @@
     "terser": "^4.2.1",
     "terser-webpack-plugin": "latest",
     "ts-loader": "^6.2.2",
-    "typescript": "3.6.5",
+    "typescript": "^3.7.0",
     "wabt": "^1.0.13",
     "webpack": "^4.42.1",
     "webpack-bundle-analyzer": "^3.6.1",
