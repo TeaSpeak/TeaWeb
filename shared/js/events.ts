@@ -1,22 +1,23 @@
-//TODO: Combine EventConvert and Event?
 import {MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {guid} from "tc-shared/crypto/uid";
 import * as React from "react";
 
-export interface EventConvert<All> {
-    as<T extends keyof All>() : All[T];
-}
-
-export interface Event<T> {
+export interface Event<Events, T> {
     readonly type: T;
+    as<T extends keyof Events>() : Events[T];
 }
 
-export class SingletonEvent implements Event<"singletone-instance"> {
+interface SingletonEvents {
+    "singletone-instance": never;
+}
+
+export class SingletonEvent implements Event<SingletonEvents, "singletone-instance"> {
     static readonly instance = new SingletonEvent();
 
     readonly type = "singletone-instance";
     private constructor() { }
+    as<T extends keyof SingletonEvents>() : SingletonEvents[T] { return; }
 }
 
 const event_annotation_key = guid();
@@ -39,8 +40,8 @@ export class Registry<Events> {
     enable_debug(prefix: string) { this.debug_prefix = prefix || "---"; }
     disable_debug() { this.debug_prefix = undefined; }
 
-    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<T> & EventConvert<Events>) => void);
-    on(events: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
+    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
+    on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
     on(events, handler) {
         if(!Array.isArray(events))
             events = [events];
@@ -55,8 +56,8 @@ export class Registry<Events> {
     }
 
     /* one */
-    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<T> & EventConvert<Events>) => void);
-    one(events: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
+    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
+    one(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
     one(events, handler) {
         if(!Array.isArray(events))
             events = [events];
@@ -69,9 +70,9 @@ export class Registry<Events> {
         }
     }
 
-    off<T extends keyof Events>(handler: (event?: Event<T>) => void);
-    off<T extends keyof Events>(event: T, handler: (event?: Event<T> & EventConvert<Events>) => void);
-    off(event: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
+    off<T extends keyof Events>(handler: (event?: Event<Events, T>) => void);
+    off<T extends keyof Events>(event: T, handler: (event?: Event<Events, T>) => void);
+    off(event: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
     off(handler_or_events, handler?) {
         if(typeof handler_or_events === "function") {
             for(const key of Object.keys(this.handler))
@@ -183,7 +184,7 @@ export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof Eve
     }
 }
 
-export function ReactEventHandler<EventTypes>(registry_callback: (object: JSX.Element) => Registry<EventTypes>) {
+export function ReactEventHandler<ObjectClass, EventTypes = any>(registry_callback: (object: ObjectClass) => Registry<EventTypes>) {
     return function (constructor: Function) {
         if(!React.Component.prototype.isPrototypeOf(constructor.prototype))
             throw "Class/object isn't an instance of React.Component";
@@ -682,11 +683,10 @@ export namespace modal {
     }
 }
 
-/*
 //Some test code
-const eclient = new events.Registry<events.channel_tree.client>();
-const emusic = new events.Registry<events.sidebar.music>();
+const eclient = new Registry<channel_tree.client>();
+const emusic = new Registry<sidebar.music>();
 
+eclient.on("property_update", event => { event.as<"playlist_song_loaded">(); });
 eclient.connect("playlist_song_loaded", emusic);
 eclient.connect("playlist_song_loaded", emusic);
-*/
