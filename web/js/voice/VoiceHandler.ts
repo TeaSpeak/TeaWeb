@@ -1,19 +1,19 @@
 import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 import * as loader from "tc-loader";
 import * as aplayer from "../audio/player";
 import * as elog from "tc-shared/ui/frames/server_log";
 import {BasicCodec} from "../codec/BasicCodec";
 import {CodecType} from "../codec/Codec";
-import {LogCategory} from "tc-shared/log";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {CodecWrapperWorker} from "../codec/CodecWrapperWorker";
 import {ServerConnection} from "../connection/ServerConnection";
 import {voice} from "tc-shared/connection/ConnectionBase";
-import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClientController} from "./VoiceClient";
 import {settings} from "tc-shared/settings";
 import {CallbackInputConsumer, InputConsumerType, NodeInputConsumer} from "tc-shared/voice/RecorderBase";
+import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 import VoiceClient = voice.VoiceClient;
 
 export namespace codec {
@@ -258,31 +258,48 @@ export class VoiceConnection extends AbstractVoiceConnection {
             recorder.callback_start = this.handle_local_voice_started.bind(this);
             recorder.callback_stop = this.handle_local_voice_ended.bind(this);
 
-            if(this._type == VoiceEncodeType.NATIVE_ENCODE) {
-                if(!this.local_audio_stream)
-                    this.setup_native(); /* requires initialized audio */
-
-                await recorder.input.set_consumer({
-                    type: InputConsumerType.NODE,
-                    callback_node: node => {
-                        if(!this.local_audio_stream || !this.local_audio_mute)
-                            return;
-
-                        node.connect(this.local_audio_mute);
-                    },
-                    callback_disconnect: node => {
-                        if(!this.local_audio_mute)
-                            return;
-
-                        node.disconnect(this.local_audio_mute);
+            recorder.callback_input_change = async (old_input, new_input) => {
+                if(old_input) {
+                    try {
+                        await old_input.set_consumer(undefined);
+                    } catch(error) {
+                        log.warn(LogCategory.VOICE, tr("Failed to release own consumer from old input: %o"), error);
                     }
-                } as NodeInputConsumer);
-            } else {
-                await recorder.input.set_consumer({
-                    type: InputConsumerType.CALLBACK,
-                    callback_audio: buffer => this.handle_local_voice(buffer, false)
-                } as CallbackInputConsumer);
-            }
+                }
+                if(new_input) {
+                    if(this._type == VoiceEncodeType.NATIVE_ENCODE) {
+                        if(!this.local_audio_stream)
+                            this.setup_native(); /* requires initialized audio */
+
+                        try {
+                            await new_input.set_consumer({
+                                type: InputConsumerType.NODE,
+                                callback_node: node => {
+                                    if(!this.local_audio_stream || !this.local_audio_mute)
+                                        return;
+
+                                    node.connect(this.local_audio_mute);
+                                },
+                                callback_disconnect: node => {
+                                    if(!this.local_audio_mute)
+                                        return;
+
+                                    node.disconnect(this.local_audio_mute);
+                                }
+                            } as NodeInputConsumer);
+                            log.debug(LogCategory.VOICE, tr("Successfully set/updated to the new input for the recorder"));
+                        } catch (e) {
+                            log.warn(LogCategory.VOICE, tr("Failed to set consumer to the new recorder input: %o"), e);
+                        }
+                    } else {
+                        //TODO: Error handling?
+                        await recorder.input.set_consumer({
+                            type: InputConsumerType.CALLBACK,
+                            callback_audio: buffer => this.handle_local_voice(buffer, false)
+                        } as CallbackInputConsumer);
+                    }
+                }
+            };
         }
         this.connection.client.update_voice_status(undefined);
     }

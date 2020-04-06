@@ -52,7 +52,7 @@ export enum BookmarkType {
 }
 
 export interface Bookmark {
-    type: /* BookmarkType.ENTRY */ BookmarkType;
+    type: BookmarkType.ENTRY;
     /* readonly */ parent: DirectoryBookmark;
 
     server_properties: ServerProperties;
@@ -70,7 +70,7 @@ export interface Bookmark {
 }
 
 export interface DirectoryBookmark {
-    type: /* BookmarkType.DIRECTORY */ BookmarkType;
+    type: BookmarkType.DIRECTORY;
     /* readonly */ parent: DirectoryBookmark;
 
     readonly content: (Bookmark | DirectoryBookmark)[];

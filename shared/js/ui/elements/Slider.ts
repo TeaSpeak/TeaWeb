@@ -73,7 +73,7 @@ export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
         const parent_offset = slider.offset();
         const min = parent_offset.left;
         const max = parent_offset.left + slider.width();
-        const current = event instanceof MouseEvent ? event.pageX : event.touches[event.touches.length - 1].clientX;
+        const current = 'touches' in event ? event.touches[event.touches.length - 1].clientX : event.pageX;
 
         const range = options.max_value - options.min_value;
         const offset = Math.round(((current - min) * (range / options.step)) / (max - min)) * options.step;
@@ -83,7 +83,7 @@ export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
         update_value(value, true);
     };
 
-    slider.on('mousedown', event => {
+    slider.on('mousedown touchstart', ((event: MouseEvent | TouchEvent) => {
         document.addEventListener('mousemove', mouse_listener);
         document.addEventListener('touchmove', mouse_listener);
 
@@ -93,7 +93,9 @@ export function sliderfy(slider: JQuery, options?: SliderOptions) : Slider {
 
         tool.show();
         slider.addClass("active");
-    });
+
+        mouse_listener(event);
+    }) as any);
 
     update_value(options.initial_value, false);
 

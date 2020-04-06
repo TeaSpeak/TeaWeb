@@ -9,6 +9,7 @@ import * as mt from "mime-types";
 import * as os from "os";
 import {PathLike} from "fs";
 import {ChildProcess} from "child_process";
+import * as https from "https";
 
 /* All project files */
 type ProjectResourceType = "html" | "js" | "css" | "wasm" | "wav" | "json" | "img" | "i18n" | "pem";
@@ -160,7 +161,7 @@ const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
         "build-target": "dev|rel",
 
         "path": "wasm/",
-        "local-path": "./asm/generated/"
+        "local-path": "./web/native-codec/generated/"
     },
     { /* web css files */
         "web-only": true,
@@ -342,147 +343,6 @@ const WEB_APP_FILE_LIST = [
     ...CERTACCEPT_FILE_LIST,
 ];
 
-
-//const WEB_APP_FILE_LIST = [
-//    ...APP_FILE_LIST_SHARED_VENDORS,
-//    { /* shared html and php files */
-//        "type": "html",
-//        "search-pattern": /^.*([a-zA-Z]+)\.(html|php|json)$/,
-//        "build-target": "dev|rel",
-//
-//        "path": "./",
-//        "local-path": "./shared/html/"
-//    },
-//    { /* javascript files as manifest.json */
-//        "type": "js",
-//        "search-pattern": /.*$/,
-//        "build-target": "dev|rel",
-//
-//        "path": "js/",
-//        "local-path": "./dist/"
-//    },
-//    { /* loader javascript file */
-//        "type": "js",
-//        "search-pattern": /.*$/,
-//        "build-target": "dev|rel",
-//
-//        "path": "js/",
-//        "local-path": "./loader/dist/"
-//    },
-//    { /* shared developer single css files */
-//        "type": "css",
-//        "search-pattern": /.*\.css$/,
-//        "build-target": "dev",
-//
-//        "path": "css/",
-//        "local-path": "./shared/css/"
-//    },
-//    { /* shared css mapping files (development mode only) */
-//        "type": "css",
-//        "search-pattern": /.*\.(css.map|scss)$/,
-//        "build-target": "dev",
-//
-//        "path": "css/",
-//        "local-path": "./shared/css/",
-//        "req-parm": ["--mappings"]
-//    },
-//    { /* shared release css files */
-//        "type": "css",
-//        "search-pattern": /.*\.css$/,
-//        "build-target": "rel",
-//
-//        "path": "css/",
-//        "local-path": "./shared/generated/"
-//    },
-//    { /* shared release css files */
-//        "type": "css",
-//        "search-pattern": /.*\.css$/,
-//        "build-target": "rel",
-//
-//        "path": "css/loader/",
-//        "local-path": "./shared/css/loader/"
-//    },
-//    { /* shared release css files */
-//        "type": "css",
-//        "search-pattern": /.*\.css$/,
-//        "build-target": "dev|rel",
-//
-//        "path": "css/theme/",
-//        "local-path": "./shared/css/theme/"
-//    },
-//    { /* shared sound files */
-//        "type": "wav",
-//        "search-pattern": /.*\.wav$/,
-//        "build-target": "dev|rel",
-//
-//        "path": "audio/",
-//        "local-path": "./shared/audio/"
-//    },
-//    { /* shared data sound files */
-//        "type": "json",
-//        "search-pattern": /.*\.json/,
-//        "build-target": "dev|rel",
-//
-//        "path": "audio/",
-//        "local-path": "./shared/audio/"
-//    },
-//    { /* shared image files */
-//        "type": "img",
-//        "search-pattern": /.*\.(svg|png)/,
-//        "build-target": "dev|rel",
-//
-//        "path": "img/",
-//        "local-path": "./shared/img/"
-//    },
-//    { /* own webassembly files */
-//        "type": "wasm",
-//        "search-pattern": /.*\.(wasm)/,
-//        "build-target": "dev|rel",
-//
-//        "path": "wat/",
-//        "local-path": "./shared/wat/"
-//    },
-//
-//
-//    /* web specific */
-//    { /* generated assembly files */
-//        "web-only": true,
-//        "type": "wasm",
-//        "search-pattern": /.*\.(wasm)/,
-//        "build-target": "dev|rel",
-//
-//        "path": "wasm/",
-//        "local-path": "./asm/generated/"
-//    },
-//    { /* web css files */
-//        "web-only": true,
-//        "type": "css",
-//        "search-pattern": /.*\.css$/,
-//        "build-target": "dev|rel",
-//
-//        "path": "css/",
-//        "local-path": "./web/css/"
-//    },
-//    { /* web html files */
-//        "web-only": true,
-//        "type": "html",
-//        "search-pattern": /.*\.(php|html)/,
-//        "build-target": "dev|rel",
-//
-//        "path": "./",
-//        "local-path": "./web/html/"
-//    },
-//    { /* translations */
-//        "web-only": true, /* Only required for the web client */
-//        "type": "i18n",
-//        "search-pattern": /.*\.(translation|json)/,
-//        "build-target": "dev|rel",
-//
-//        "path": "i18n/",
-//        "local-path": "./shared/i18n/"
-//    }
-//] as any;
-
 //@ts-ignore
 declare module "fs-extra" {
     export function exists(path: PathLike): Promise<boolean>;
@@ -636,6 +496,8 @@ namespace server {
     let server: http.Server;
     let php: string;
     let options: Options;
+
+    const use_https = false;
     export async function launch(_files: ProjectResource[], options_: Options) {
         options = options_;
         files = _files;
@@ -654,7 +516,24 @@ namespace server {
             console.error("failed to validate php interpreter: %o", error);
             throw "invalid php interpreter";
         }
-        server = http.createServer(handle_request);
+
+        if(process.env["ssl_enabled"] || use_https) {
+            //openssl req -nodes -new -x509 -keyout files_key.pem -out files_cert.pem
+            const key_file = process.env["ssl_key"] || path.join(__dirname, "files_key.pem");
+            const cert_file = process.env["ssl_cert"] || path.join(__dirname, "files_cert.pem");
+            if(!await fs.pathExists(key_file))
+                throw "Missing ssl key file";
+
+            if(!await fs.pathExists(cert_file))
+                throw "Missing ssl cert file";
+
+            server = https.createServer({
+                key: await fs.readFile(key_file),
+                cert: await fs.readFile(cert_file),
+            }, handle_request);
+        } else {
+            server = http.createServer(handle_request);
+        }
         await new Promise((resolve, reject) => {
             server.on('error', reject);
             server.listen(options.port, () => {

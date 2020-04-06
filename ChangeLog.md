@@ -1,4 +1,14 @@
 # Changelog:
+* **04.03.20**
+    - Implemented the new music bot playlist song list
+    - Implemented the missing server log message builders
+    
+* **03.03.20**
+    - Using webpack instead of our own loaded (a lot of restructuring)
+    - Fixed that the microphone slider hasn't worked for touch devices
+    - Fixed a bug which caused that audio data hasn't been transmitted
+    - Added the ability to start a https web server
+     
 * **28.03.20**
     - Fixed a bug within the permission editor which kicks you from the server
     

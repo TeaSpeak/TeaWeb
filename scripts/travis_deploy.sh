@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+PACKAGES_DIRECTORY="auto-build/packages/"
+LOG_FILE="auto-build/logs/build.log"
+
 if [[ -z "${GIT_AUTHTOKEN}" ]]; then
     echo "Missing environment variable GIT_AUTHTOKEN. Please set it before usign this script!"
     exit 1
@@ -23,11 +26,12 @@ if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
             exit 1
         }
 
-        gunzip /tmp/git-release.gz && chmod +x /tmp/git-release;
-        [[ $? -eq 0 ]] || {
+        gunzip /tmp/git-release.gz; _exit_code=$?;
+        [[ $_exit_code -eq 0 ]] || {
             echo "Failed to unzip github-release-linux"
             exit 1
         }
+        chmod +x /tmp/git-release;
 
         echo "Download of github-release-linux (1.2.4) finished"
     else
@@ -40,6 +44,7 @@ if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
     fi
 fi
 
+cd "$(dirname "$0")/.." || { echo "Failed to enter base dir"; exit 1; }
 echo "Generating release"
 ${GIT_RELEASE_EXECUTABLE} release \
 	--repo "TeaWeb" \
@@ -54,7 +59,7 @@ ${GIT_RELEASE_EXECUTABLE} release \
 }
 
 echo "Uploading release files"
-folders=("/tmp/build/logs/" "/tmp/build/packages/")
+folders=("${LOG_FILE}" "${PACKAGES_DIRECTORY}")
 uploaded_files=()
 failed_files=()
 

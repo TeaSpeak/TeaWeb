@@ -1,29 +1,37 @@
-//TODO: Combine EventConvert and Event?
 import {MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {guid} from "tc-shared/crypto/uid";
+import * as React from "react";
 
-export interface EventConvert<All> {
-    as<T extends keyof All>() : All[T];
-}
-
-export interface Event<T> {
+export interface Event<Events, T = keyof Events> {
     readonly type: T;
+    as<T extends keyof Events>() : Events[T];
 }
 
-export class SingletonEvent implements Event<"singletone-instance"> {
+interface SingletonEvents {
+    "singletone-instance": never;
+}
+
+export class SingletonEvent implements Event<SingletonEvents, "singletone-instance"> {
     static readonly instance = new SingletonEvent();
 
     readonly type = "singletone-instance";
     private constructor() { }
+    as<T extends keyof SingletonEvents>() : SingletonEvents[T] { return; }
 }
 
+const event_annotation_key = guid();
 export class Registry<Events> {
     private readonly registry_uuid;
 
     private handler: {[key: string]: ((event) => void)[]} = {};
     private connections: {[key: string]:Registry<string>[]} = {};
+    private event_handler_objects: {
+        object: any,
+        handlers: {[key: string]: ((event) => void)[]}
+    }[] = [];
     private debug_prefix = undefined;
+    private warn_unhandled_events = true;
 
     constructor() {
         this.registry_uuid = "evreg_data_" + guid();
@@ -33,8 +41,11 @@ export class Registry<Events> {
     enable_debug(prefix: string) { this.debug_prefix = prefix || "---"; }
     disable_debug() { this.debug_prefix = undefined; }
 
-    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<T> & EventConvert<Events>) => void);
-    on(events: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
+    enable_warn_unhandled_events() { this.warn_unhandled_events = true; }
+    disable_warn_unhandled_events() { this.warn_unhandled_events = false; }
+
+    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
+    on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
     on(events, handler) {
         if(!Array.isArray(events))
             events = [events];
@@ -49,8 +60,8 @@ export class Registry<Events> {
     }
 
     /* one */
-    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<T> & EventConvert<Events>) => void);
-    one(events: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
+    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
+    one(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
     one(events, handler) {
         if(!Array.isArray(events))
             events = [events];
@@ -63,9 +74,9 @@ export class Registry<Events> {
         }
     }
 
-    off<T extends keyof Events>(handler: (event?: Event<T>) => void);
-    off<T extends keyof Events>(event: T, handler: (event?: Event<T> & EventConvert<Events>) => void);
-    off(event: (keyof Events)[], handler: (event?: Event<keyof Events> & EventConvert<Events>) => void);
+    off<T extends keyof Events>(handler: (event?: Event<Events, T>) => void);
+    off<T extends keyof Events>(event: T, handler: (event?: Event<Events, T>) => void);
+    off(event: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
     off(handler_or_events, handler?) {
         if(typeof handler_or_events === "function") {
             for(const key of Object.keys(this.handler))
@@ -81,12 +92,14 @@ export class Registry<Events> {
         }
     }
 
-    connect<EOther, T extends keyof Events & keyof EOther>(event: T, target: Registry<EOther>) {
-        (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
+    connect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: Registry<EOther>) {
+        for(const event of Array.isArray(events) ? events : [events])
+            (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
     }
 
-    disconnect<EOther, T extends keyof Events & keyof EOther>(event: T, target: Registry<EOther>) {
-        (this.connections[event as string] || []).remove(target as any);
+    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: Registry<EOther>) {
+        for(const event of Array.isArray(events) ? events : [events])
+            (this.connections[event as string] || []).remove(target as any);
     }
 
     disconnect_all<EOther>(target: Registry<EOther>) {
@@ -102,24 +115,113 @@ export class Registry<Events> {
             as: function () { return this; }
         });
 
+        let invoke_count = 0;
         for(const handler of (this.handler[event_type as string] || [])) {
             handler(event);
+            invoke_count++;
 
             const reg_data = handler[this.registry_uuid];
             if(typeof reg_data === "object" && reg_data.singleshot)
                 this.handler[event_type as string].remove(handler);
         }
 
-        for(const evhandler of (this.connections[event_type as string] || []))
+        for(const evhandler of (this.connections[event_type as string] || [])) {
             evhandler.fire(event_type as any, event as any);
+            invoke_count++;
+        }
+        if(invoke_count === 0) {
+            console.warn("Event handler (%s) triggered event %s which has no consumers.", this.debug_prefix, event_type);
+        }
     }
 
     fire_async<T extends keyof Events>(event_type: T, data?: Events[T]) {
         setTimeout(() => this.fire(event_type, data));
     }
 
-    destory() {
+    destroy() {
         this.handler = {};
+        this.connections = {};
+        this.event_handler_objects = [];
+    }
+
+    register_handler(handler: any) {
+        if(typeof handler !== "object")
+            throw "event handler must be an object";
+        const proto = Object.getPrototypeOf(handler);
+        if(typeof proto !== "object")
+            throw "event handler must have a prototype";
+
+        let registered_events = {};
+        for(const function_name of Object.getOwnPropertyNames(proto)) {
+            if(function_name === "constructor") continue;
+            if(typeof proto[function_name][event_annotation_key] !== "object") continue;
+
+            const event_data = proto[function_name][event_annotation_key];
+            const ev_handler = event => proto[function_name].call(handler, event);
+            for(const event of event_data.events) {
+                registered_events[event] = registered_events[event] || [];
+                registered_events[event].push(ev_handler);
+                this.on(event, ev_handler);
+            }
+        }
+        if(Object.keys(registered_events).length === 0)
+            throw "no events found in event handler";
+
+        this.event_handler_objects.push({
+            handlers: registered_events,
+            object: handler
+        });
+    }
+
+    unregister_handler(handler: any) {
+        const data = this.event_handler_objects.find(e => e.object === handler);
+        if(!data) throw "unknown event handler";
+        this.event_handler_objects.remove(data);
+
+        for(const key of Object.keys(data.handlers)) {
+            for(const evhandler of data.handlers[key])
+                this.off(evhandler);
+        }
+    }
+}
+
+export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof EventTypes)[]) {
+    return function (target: any,
+                     propertyKey: string,
+                     descriptor: PropertyDescriptor) {
+        if(typeof target[propertyKey] !== "function")
+            throw "Invalid event handler annotation. Expected to be on a function type.";
+
+        target[propertyKey][event_annotation_key] = {
+            events: Array.isArray(events) ? events : [events]
+        };
+    }
+}
+
+export function ReactEventHandler<ObjectClass = React.Component<any, any>, EventTypes = any>(registry_callback: (object: ObjectClass) => Registry<EventTypes>) {
+    return function (constructor: Function) {
+        if(!React.Component.prototype.isPrototypeOf(constructor.prototype))
+            throw "Class/object isn't an instance of React.Component";
+
+        const didMount = constructor.prototype.componentDidMount;
+        constructor.prototype.componentDidMount = function() {
+            const registry = registry_callback(this);
+            if(!registry) throw "Event registry returned for an event object is invalid";
+            registry.register_handler(this);
+
+            if(typeof didMount === "function")
+                didMount.call(this, arguments);
+        };
+
+        const willUnmount = constructor.prototype.componentWillUnmount;
+        constructor.prototype.componentWillUnmount = function () {
+            const registry = registry_callback(this);
+            if(!registry) throw "Event registry returned for an event object is invalid";
+            registry.unregister_handler(this);
+
+            if(typeof willUnmount === "function")
+                willUnmount.call(this, arguments);
+        };
     }
 }
 
@@ -595,11 +697,10 @@ export namespace modal {
     }
 }
 
-/*
 //Some test code
-const eclient = new events.Registry<events.channel_tree.client>();
-const emusic = new events.Registry<events.sidebar.music>();
+const eclient = new Registry<channel_tree.client>();
+const emusic = new Registry<sidebar.music>();
 
+eclient.on("property_update", event => { event.as<"playlist_song_loaded">(); });
 eclient.connect("playlist_song_loaded", emusic);
 eclient.connect("playlist_song_loaded", emusic);
-*/

@@ -2,7 +2,7 @@ import {ChannelTree} from "tc-shared/ui/view";
 import {ClientEntry} from "tc-shared/ui/client";
 import * as log from "tc-shared/log";
 import {LogCategory, LogType} from "tc-shared/log";
-import PermissionType from "tc-shared/permission/PermissionType";
+import {PermissionType} from "tc-shared/permission/PermissionType";
 import {settings, Settings} from "tc-shared/settings";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {Sound} from "tc-shared/sound/Sounds";

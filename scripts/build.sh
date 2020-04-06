@@ -42,6 +42,7 @@ if [[ $_exit_code -ne 0 ]]; then
 fi
 
 echo "Generating required build tooks"
+chmod +x ./tools/build_trgen.sh
 ./tools/build_trgen.sh; _exit_code=$?
 if [[ $_exit_code -ne 0 ]]; then
     echo "Failed to build build_typescript translation generator"
@@ -56,14 +57,22 @@ if [[ $_exit_code -ne 0 ]]; then
 fi
 
 echo "Compile vendor XBBCode"
-execute_ttsc -p ./vendor/xbbcode/tsconfig.json; _exit_code=$?
+execute_tsc -p ./vendor/xbbcode/tsconfig.json; _exit_code=$?
 if [[ $_exit_code -ne 0 ]]; then
     echo "Failed to build the XBBCode vendor"
     exit 1
 fi
 
+echo "Compile vendor emoji-picker"
+execute_tsc ./vendor/emoji-picker/src/jquery.lsxemojipicker.ts
+if [[ $_exit_code -ne 0 ]]; then
+    echo "Failed to build the emoji-picker vendor"
+    exit 1
+fi
+
 if [[ "$build_type" == "release" ]]; then # Compile everything for release mode
     echo "Packing generated css files"
+    chmod +x ./shared/css/generate_packed.sh
     ./shared/css/generate_packed.sh; _exit_code=$?
     if [[ $_exit_code -ne 0 ]]; then
         echo "Failed to package generated css files"

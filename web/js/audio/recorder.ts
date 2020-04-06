@@ -458,11 +458,14 @@ class JavascriptInput implements AbstractInput {
             audio_constrains.groupId = group_id;
 
             audio_constrains.echoCancellation = true;
-            /* may supported */ (audio_constrains as any).autoGainControl = true;
-            /* may supported */ (audio_constrains as any).noiseSuppression = true;
+            audio_constrains.autoGainControl = true;
+            audio_constrains.noiseSuppression = true;
             /* disabled because most the time we get a OverconstrainedError */ //audio_constrains.sampleSize = {min: 420, max: 960 * 10, ideal: 960};
 
-            const stream = await media_function({audio: audio_constrains, video: undefined});
+            const stream = await media_function({
+                audio: audio_constrains,
+                video: undefined
+            });
             if(!_queried_permissioned) query_devices(); /* we now got permissions, requery devices */
             return stream;
         } catch(error) {

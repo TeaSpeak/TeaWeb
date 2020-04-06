@@ -1,11 +1,8 @@
 #!/usr/bin/env bash
 
 function execute_tsc() {
+    # shellcheck disable=SC2068
     execute_npm_command tsc $@
-}
-
-function execute_ttsc() {
-    execute_npm_command ttsc $@
 }
 
 function execute_npm_command() {

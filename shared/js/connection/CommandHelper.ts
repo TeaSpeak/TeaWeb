@@ -263,38 +263,53 @@ export class CommandHelper extends AbstractCommandHandler {
     }
 
     request_playlist_songs(playlist_id: number) : Promise<PlaylistSong[]> {
+        let bulked_response = false;
+        let bulk_index = 0;
+
+        const result: PlaylistSong[] = [];
         return new Promise((resolve, reject) => {
             const single_handler: SingleCommandHandler = {
-                command: "notifyplaylistsonglist",
+                command: ["notifyplaylistsonglist", "notifyplaylistsonglistfinished"],
                 function: command => {
                     const json = command.arguments;
 
-                    if(json[0]["playlist_id"] != playlist_id) {
-                        log.error(LogCategory.NETWORKING, tr("Received invalid notification for playlist songs"));
-                        return false;
+                    if(bulk_index === 0) {
+                        /* we're sending the response as bulk */
+                        bulked_response = parseInt(json[0]["version"]) >= 2;
                     }
 
-                    const result: PlaylistSong[] = [];
+                    if(parseInt(json[0]["playlist_id"]) !== playlist_id)
+                        return false; /* not our request */
 
-                    for(const entry of json) {
-                        try {
-                            result.push({
-                                song_id: parseInt(entry["song_id"]),
-                                song_invoker: entry["song_invoker"],
-                                song_previous_song_id: parseInt(entry["song_previous_song_id"]),
-                                song_url: entry["song_url"],
-                                song_url_loader: entry["song_url_loader"],
+                    if(command.command === "notifyplaylistsonglistfinished") {
+                        resolve(result);
+                        return true;
+                    } else {
+                        for(const entry of json) {
+                            try {
+                                result.push({
+                                    song_id: parseInt(entry["song_id"]),
+                                    song_invoker: entry["song_invoker"],
+                                    song_previous_song_id: parseInt(entry["song_previous_song_id"]),
+                                    song_url: entry["song_url"],
+                                    song_url_loader: entry["song_url_loader"],
 
-                                song_loaded: entry["song_loaded"] == true || entry["song_loaded"] == "1",
-                                song_metadata: entry["song_metadata"]
-                            });
-                        } catch(error) {
-                            log.error(LogCategory.NETWORKING, tr("Failed to parse playlist song entry: %o"), error);
+                                    song_loaded: entry["song_loaded"] == true || entry["song_loaded"] == "1",
+                                    song_metadata: entry["song_metadata"]
+                                });
+                            } catch(error) {
+                                log.error(LogCategory.NETWORKING, tr("Failed to parse playlist song entry: %o"), error);
+                            }
+                        }
+
+                        if(bulked_response) {
+                            bulk_index++;
+                            return false;
+                        } else {
+                            resolve(result);
+                            return true;
                         }
                     }
-
-                    resolve(result);
-                    return true;
                 }
             };
             this.handler_boss.register_single_handler(single_handler);

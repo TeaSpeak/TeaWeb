@@ -1,7 +1,7 @@
 import {
     PermissionManager,
 } from "tc-shared/permission/PermissionManager";
-import PermissionType from "tc-shared/permission/PermissionType";
+import {PermissionType} from "tc-shared/permission/PermissionType";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {HTMLPermissionEditor} from "tc-shared/ui/modal/permission/HTMLPermissionEditor";

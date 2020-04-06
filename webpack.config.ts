@@ -98,7 +98,8 @@ export const config = (target: "web" | "client") => { return {
                             getCustomTransformers: (prog: ts.Program) => {
                                 return {
                                     before: [trtransformer(prog, {
-                                        optimized: true
+                                        optimized: true,
+                                        target_file: path.join(__dirname, "dist", "translations.json")
                                     })]
                                 };
                             }
@@ -125,8 +126,10 @@ export const config = (target: "web" | "client") => { return {
         filename: (chunkData) => {
             if(chunkData.chunk.name === "loader")
                 return "loader.js";
-            return isDevelopment ? '[name].js' : '[contenthash].js';
+
+            return '[name].js';
         },
+        chunkFilename: "[name].js",
         path: path.resolve(__dirname, 'dist'),
         publicPath: "js/"
     },

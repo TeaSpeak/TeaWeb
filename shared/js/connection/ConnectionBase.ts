@@ -121,7 +121,7 @@ export class ServerCommand {
 
 export interface SingleCommandHandler {
     name?: string;
-    command?: string;
+    command?: string | string[];
     timeout?: number;
 
     /* if the return is true then the command handler will be removed */

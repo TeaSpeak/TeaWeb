@@ -10,7 +10,7 @@ Object.assign(config.resolve.alias, {
     "tc-shared": path.resolve(__dirname, "shared/js"),
     "tc-backend/web": path.resolve(__dirname, "web/js"),
     "tc-backend": path.resolve(__dirname, "web/js"),
-    "tc-generated/codec/opus": path.resolve(__dirname, "asm/generated/TeaWeb-Worker-Codec-Opus.js"),
+    "tc-generated/codec/opus": path.resolve(__dirname, "web/native-codec/generated/TeaWeb-Worker-Codec-Opus.js"),
 });
 
 export = config;

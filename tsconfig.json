@@ -1,6 +1,7 @@
 /* General file with least possible errors. This is just for your IDE (PHP-Storm for example) */
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "target": "es6",
     "module": "commonjs",
     "sourceMap": true,

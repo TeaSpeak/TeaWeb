@@ -167,7 +167,7 @@ export class GroupManager extends AbstractCommandHandler {
             }
 
             let group = new Group(this,parseInt(target == GroupTarget.SERVER ? groupData["sgid"] : groupData["cgid"]), target, type, groupData["name"]);
-            for(let key in Object.keys(groupData)) {
+            for(let key of Object.keys(groupData)) {
                 if(key == "sgid") continue;
                 if(key == "cgid") continue;
                 if(key == "type") continue;

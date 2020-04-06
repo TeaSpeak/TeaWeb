@@ -16,8 +16,8 @@ import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import * as i18nc from "tc-shared/i18n/country";
 import {formatMessage} from "tc-shared/ui/frames/chat";
-import {control_bar} from "tc-shared/ui/frames/ControlBar";
 import * as top_menu from "../frames/MenuBar";
+import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 
 export function spawnBookmarkModal() {
     let modal: Modal;
@@ -375,7 +375,7 @@ export function spawnBookmarkModal() {
 
     modal.htmlTag.dividerfy().find(".modal-body").addClass("modal-bookmarks");
     modal.close_listener.push(() => {
-        control_bar.update_bookmarks();
+        control_bar_instance()?.events().fire("update_state", { state: "bookmarks" });
         top_menu.rebuild_bookmarks();
     });
 

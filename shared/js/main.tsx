@@ -16,7 +16,6 @@ import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {default_recorder, RecorderProfile, set_default_recorder} from "tc-shared/voice/RecorderProfile";
 import * as cmanager from "tc-shared/ui/frames/connection_handlers";
 import {server_connections, ServerConnectionManager} from "tc-shared/ui/frames/connection_handlers";
-import * as control_bar from "tc-shared/ui/frames/ControlBar";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
@@ -26,9 +25,16 @@ import * as aplayer from "tc-backend/audio/player";
 import * as arecorder from "tc-backend/audio/recorder";
 import * as ppt from "tc-backend/ppt";
 
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import * as cbar from "./ui/frames/control-bar";
+import {Registry} from "tc-shared/events";
+import {ClientGlobalControlEvents} from "tc-shared/events/GlobalEvents";
+
 /* required import for init */
 require("./proto").initialize();
 require("./ui/elements/ContextDivider").initialize();
+require("./ui/elements/Tab");
 require("./connection/CommandHandler"); /* else it might not get bundled because only the backends are accessing it */
 
 const js_render = window.jsrender || $;
@@ -140,6 +146,8 @@ async function initialize() {
     bipc.setup();
 }
 
+export let client_control_events: Registry<ClientGlobalControlEvents>;
+
 async function initialize_app() {
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag({
@@ -154,7 +162,15 @@ async function initialize_app() {
         return;
     }
 
-    control_bar.set_control_bar(new control_bar.ControlBar($("#control_bar"))); /* setup the control bar */
+    client_control_events = new Registry<ClientGlobalControlEvents>();
+    {
+        const bar = (
+            <cbar.ControlBar ref={cbar.react_reference()} multiSession={true} />
+        );
+
+        ReactDOM.render(bar, $(".container-control-bar")[0]);
+        cbar.control_bar_instance().load_default_states();
+    }
 
     if(!aplayer.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
@@ -333,7 +349,7 @@ function main() {
     server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
 
 
-    (<any>window).test_upload = (message?: string) => {
+    (window as any).test_upload = (message?: string) => {
         message = message || "Hello World";
 
         const connection = server_connections.active_connection_handler();

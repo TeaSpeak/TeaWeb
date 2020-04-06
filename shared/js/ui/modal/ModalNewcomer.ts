@@ -1,7 +1,6 @@
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
-import * as loader from "tc-loader";
 import { modal as emodal } from "tc-shared/events";
 import {modal_settings} from "tc-shared/ui/modal/ModalSettings";
 import {profiles} from "tc-shared/profiles/ConnectionProfile";

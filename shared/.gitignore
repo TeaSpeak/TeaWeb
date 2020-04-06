@@ -21,3 +21,6 @@ popup/**/*.js
 popup/**/*.js.map
 
 generated/*
+
+/*.js
+/*.js.map

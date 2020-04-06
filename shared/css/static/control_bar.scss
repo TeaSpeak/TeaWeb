@@ -190,7 +190,7 @@ $border_color_activated: rgba(255, 255, 255, .75);
 			}
 		}
 
-		&:hover.displayed, &.force-show {
+		&:hover.dropdownDisplayed, &.force-show {
 			.dropdown {
 				display: block;
 			}

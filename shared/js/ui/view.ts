@@ -1,7 +1,7 @@
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import * as log from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
-import PermissionType from "tc-shared/permission/PermissionType";
+import {PermissionType} from "tc-shared/permission/PermissionType";
 import {LogCategory} from "tc-shared/log";
 import {KeyCode, SpecialKey} from "tc-shared/PPTListener";
 import {createInputModal} from "tc-shared/ui/elements/Modal";

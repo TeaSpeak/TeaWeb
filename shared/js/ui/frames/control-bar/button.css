@@ -1,0 +1,188 @@
+/* Some general browser helpers */
+/* border etc */
+.button, .dropdownArrow {
+  text-align: center;
+  border: 0.05em solid rgba(0, 0, 0, 0);
+  border-radius: 0.1em;
+  background-color: #454545;
+  -moz-transition: background-color 0.25s ease-in-out, border-color 0.25s ease-in-out;
+  -o-transition: background-color 0.25s ease-in-out, border-color 0.25s ease-in-out;
+  -webkit-transition: background-color 0.25s ease-in-out, border-color 0.25s ease-in-out;
+  transition: background-color 0.25s ease-in-out, border-color 0.25s ease-in-out;
+}
+.button:hover, .dropdownArrow:hover {
+  background-color: #393c43;
+  border-color: #4a4c55;
+  /*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
+}
+.button.activated, .dropdownArrow.activated {
+  background-color: #2f3841;
+  border-color: #005fa1;
+}
+.button.activated:hover, .dropdownArrow.activated:hover {
+  background-color: #263340;
+  border-color: #005fa1;
+}
+.button.activated.theme-red, .dropdownArrow.activated.theme-red {
+  background-color: #412f2f;
+  border-color: #a10000;
+}
+.button.activated.theme-red:hover, .dropdownArrow.activated.theme-red:hover {
+  background-color: #402626;
+  border-color: #a10000;
+}
+.button :global(.icon_em), .dropdownArrow :global(.icon_em) {
+  font-size: 1.5em;
+}
+
+.button {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  height: 2em;
+  width: 2em;
+  cursor: pointer;
+  align-items: center;
+  margin-right: 5px;
+  margin-left: 5px;
+}
+.button.buttonHostbutton {
+  overflow: hidden;
+  padding: 0.25em;
+}
+.button.buttonHostbutton img {
+  min-width: 1.5em;
+  max-width: 1.5em;
+  height: 1.5em;
+  width: 1.5em;
+}
+
+.buttonDropdown {
+  height: 100%;
+  position: relative;
+}
+.buttonDropdown .buttons {
+  height: 2em;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+.buttonDropdown .buttons .dropdownArrow {
+  height: 2em;
+  display: inline-flex;
+  justify-content: space-around;
+  width: 1.5em;
+  cursor: pointer;
+  border-radius: 0 0.1em 0.1em 0;
+  align-items: center;
+  border-left: 0;
+}
+.buttonDropdown .buttons .button {
+  margin-right: 0;
+}
+.buttonDropdown .buttons:hover .button, .buttonDropdown .buttons:hover .dropdownArrow {
+  background-color: #393c43;
+  border-color: #4a4c55;
+}
+.buttonDropdown .buttons:hover .button {
+  border-right-color: transparent;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+.buttonDropdown .dropdown {
+  display: none;
+  position: absolute;
+  margin-left: 5px;
+  color: #c4c5c5;
+  background-color: #2d3032;
+  align-items: center;
+  border: 0.05em solid #2c2525;
+  border-radius: 0 0.15em 0.15em 0.15em;
+  width: 15em;
+  /* fallback */
+  width: max-content;
+  max-width: 25em;
+  z-index: 1000;
+  /*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
+}
+.buttonDropdown .dropdown:global(.right) {
+  right: 0;
+}
+.buttonDropdown .dropdown :global .icon, .buttonDropdown .dropdown :global .icon-container, .buttonDropdown .dropdown :global .icon_em {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.buttonDropdown .dropdown :global .icon-empty, .buttonDropdown .dropdown :global .icon_empty {
+  flex-shrink: 0;
+  flex-grow: 0;
+  height: 16px;
+  width: 16px;
+}
+.buttonDropdown .dropdown .dropdownEntry {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+  padding: 1px 2px 1px 4px;
+  align-items: center;
+  justify-content: stretch;
+}
+.buttonDropdown .dropdown .dropdownEntry .entryName {
+  flex-grow: 1;
+  flex-shrink: 1;
+  vertical-align: text-top;
+  margin-right: 0.5em;
+}
+.buttonDropdown .dropdown .dropdownEntry .icon, .buttonDropdown .dropdown .dropdownEntry .arrow {
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+.buttonDropdown .dropdown .dropdownEntry .arrow {
+  margin-right: 0.5em;
+}
+.buttonDropdown .dropdown .dropdownEntry:first-of-type {
+  border-radius: 0.1em 0.1em 0 0;
+}
+.buttonDropdown .dropdown .dropdownEntry:last-of-type {
+  border-radius: 0 0 0.1em 0.1em;
+}
+.buttonDropdown .dropdown .dropdownEntry > .dropdown {
+  margin-left: 0;
+}
+.buttonDropdown .dropdown .dropdownEntry:hover {
+  background-color: #252729;
+}
+.buttonDropdown .dropdown .dropdownEntry:hover > .dropdown {
+  display: block;
+  margin-left: 0;
+  left: 100%;
+  top: 0;
+}
+.buttonDropdown .dropdown.displayLeft {
+  margin-left: -179px;
+  border-radius: 0.15em 0 0.15em 0.15em;
+}
+.buttonDropdown.dropdownDisplayed > .dropdown {
+  display: block;
+}
+.buttonDropdown.dropdownDisplayed .button, .buttonDropdown.dropdownDisplayed .dropdown-arrow {
+  background-color: #393c43;
+  border-color: #4a4c55;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.buttonDropdown.dropdownDisplayed .button {
+  border-right-color: transparent;
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+}
+.buttonDropdown hr {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.buttonBookmarks .dropdown {
+  width: 300px;
+}
+
+/*# sourceMappingURL=button.css.map */
