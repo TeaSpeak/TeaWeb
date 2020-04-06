@@ -66,7 +66,7 @@ export class MusicInfo {
 
     destroy() {
         this.set_current_bot(undefined);
-        this.events.destory();
+        this.events.destroy();
 
         this._html_tag && this._html_tag.remove();
         this._html_tag = undefined;

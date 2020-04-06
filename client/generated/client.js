@@ -15307,8 +15307,10 @@ class ConnectionHandler {
                 }
             }
         }
-        if (control_bar.current_connection_handler() === this)
+        if (control_bar.current_connection_handler() === this) {
             control_bar.apply_server_voice_state();
+            top_menu.update_state(); //TODO: Only run "small" update?
+        }
     }
     sync_status_with_server() {
         if (this.serverConnection.connected())

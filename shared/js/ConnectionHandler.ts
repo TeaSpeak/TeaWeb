@@ -26,11 +26,12 @@ import {Frame} from "tc-shared/ui/frames/chat_frame";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {connection_log, Regex} from "tc-shared/ui/modal/ModalConnect";
-import {control_bar} from "tc-shared/ui/frames/ControlBar";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnAvatarUpload} from "tc-shared/ui/modal/ModalAvatar";
 import * as connection from "tc-backend/connection";
 import * as dns from "tc-backend/dns";
+import * as top_menu from "tc-shared/ui/frames/MenuBar";
+import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -344,10 +345,7 @@ export class ConnectionHandler {
             }
         }
 
-        if(update_control && server_connections.active_connection_handler() === this) {
-            control_bar.apply_server_state();
-        }
-
+        control_bar_instance()?.events().fire("server_updated", { category: "settings-initialized", handler: this });
     }
 
     get connected() : boolean {
@@ -608,8 +606,7 @@ export class ConnectionHandler {
         if(this.serverConnection)
             this.serverConnection.disconnect();
 
-        if(control_bar.current_connection_handler() == this)
-            control_bar.update_connection_state();
+        this.on_connection_state_changed(); /* really required to call? */
         this.side_bar.private_conversations().clear_client_ids();
         this.hostbanner.update();
 
@@ -643,8 +640,7 @@ export class ConnectionHandler {
     }
 
     private on_connection_state_changed() {
-        if(control_bar.current_connection_handler() == this)
-            control_bar.update_connection_state();
+        control_bar_instance()?.events().fire("server_updated", { category: "connection-state", handler: this });
     }
 
     private _last_record_error_popup: number;
@@ -752,8 +748,9 @@ export class ConnectionHandler {
             }
         }
 
-        if(control_bar.current_connection_handler() === this)
-            control_bar.apply_server_voice_state();
+
+        control_bar_instance()?.events().fire("server_updated", { category: "audio", handler: this });
+        top_menu.update_state(); //TODO: Only run "small" update?
     }
 
     sync_status_with_server() {
@@ -771,7 +768,7 @@ export class ConnectionHandler {
             });
     }
 
-    set_away_status(state: boolean | string) {
+    set_away_status(state: boolean | string, update_control_bar: boolean) {
         if(this.client_status.away === state)
             return;
 
@@ -790,7 +787,8 @@ export class ConnectionHandler {
             this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
         });
 
-        control_bar.update_button_away();
+        if(update_control_bar)
+            control_bar_instance()?.events().fire("server_updated", { category: "away-status", handler: this });
     }
 
     resize_elements() {

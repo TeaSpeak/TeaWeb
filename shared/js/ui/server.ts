@@ -11,9 +11,9 @@ import {createServerModal} from "tc-shared/ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "tc-shared/ui/modal/ModalAvatarList";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {control_bar} from "tc-shared/ui/frames/ControlBar";
 import {connection_log} from "tc-shared/ui/modal/ModalConnect";
 import * as top_menu from "./frames/MenuBar";
+import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 
 export class ServerProperties {
     virtualserver_host: string = "";
@@ -318,7 +318,8 @@ export class ServerEntry {
                     });
                     bookmarks.save_bookmark();
                     top_menu.rebuild_bookmarks();
-                    control_bar.update_bookmarks();
+
+                    control_bar_instance()?.events().fire("update_state", { state: "bookmarks" });
                 }
 
                 if(this.channelTree.client.fileManager && this.channelTree.client.fileManager.icons)
@@ -332,8 +333,7 @@ export class ServerEntry {
         if(update_bannner)
             this.channelTree.client.hostbanner.update();
         if(update_button)
-            if(control_bar.current_connection_handler() === this.channelTree.client)
-                control_bar.apply_server_hostbutton();
+            control_bar_instance()?.events().fire("server_updated", { handler: this.channelTree.client, category: "hostbanner" });
 
         group.end();
         if(is_self_notify && this.info_request_promise_resolve) {

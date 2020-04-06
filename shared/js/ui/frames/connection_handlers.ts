@@ -1,7 +1,8 @@
 import {ConnectionHandler, DisconnectReason} from "tc-shared/ConnectionHandler";
 import {Settings, settings} from "tc-shared/settings";
-import {control_bar} from "tc-shared/ui/frames/ControlBar";
 import * as top_menu from "./MenuBar";
+import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
+import {client_control_events} from "tc-shared/main";
 
 export let server_connections: ServerConnectionManager;
 export function initialize(manager: ServerConnectionManager) {
@@ -97,7 +98,7 @@ export class ServerConnectionManager {
                 handler.resize_elements();
         }
         this.active_handler = handler;
-        control_bar.set_connection_handler(handler);
+        client_control_events.fire("action_set_active_connection_handler", { handler: handler }); //FIXME: This even should set the new handler, not vice versa!
         top_menu.update_state();
     }
 

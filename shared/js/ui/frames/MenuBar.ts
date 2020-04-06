@@ -21,10 +21,10 @@ import {spawnQueryCreate} from "tc-shared/ui/modal/ModalQuery";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {control_bar} from "tc-shared/ui/frames/ControlBar";
 import * as loader from "tc-loader";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import * as slog from "tc-shared/ui/frames/server_log";
+import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 
 export interface HRItem { }
 
@@ -348,7 +348,8 @@ export function initialize() {
                 handler.sound.play(Sound.CONNECTION_DISCONNECTED);
                 handler.log.log(slog.Type.DISCONNECTED, {});
             }
-            control_bar.update_connection_state();
+
+            control_bar_instance()?.events().fire("update_state", { state: "connect-state" });
             update_state();
         };
         item = menu.append_item(tr("Disconnect from current server"));

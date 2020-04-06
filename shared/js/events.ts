@@ -3,7 +3,7 @@ import {PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {guid} from "tc-shared/crypto/uid";
 import * as React from "react";
 
-export interface Event<Events, T> {
+export interface Event<Events, T = keyof Events> {
     readonly type: T;
     as<T extends keyof Events>() : Events[T];
 }
@@ -31,6 +31,7 @@ export class Registry<Events> {
         handlers: {[key: string]: ((event) => void)[]}
     }[] = [];
     private debug_prefix = undefined;
+    private warn_unhandled_events = true;
 
     constructor() {
         this.registry_uuid = "evreg_data_" + guid();
@@ -39,6 +40,9 @@ export class Registry<Events> {
 
     enable_debug(prefix: string) { this.debug_prefix = prefix || "---"; }
     disable_debug() { this.debug_prefix = undefined; }
+
+    enable_warn_unhandled_events() { this.warn_unhandled_events = true; }
+    disable_warn_unhandled_events() { this.warn_unhandled_events = false; }
 
     on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
     on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
@@ -88,12 +92,14 @@ export class Registry<Events> {
         }
     }
 
-    connect<EOther, T extends keyof Events & keyof EOther>(event: T, target: Registry<EOther>) {
-        (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
+    connect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: Registry<EOther>) {
+        for(const event of Array.isArray(events) ? events : [events])
+            (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
     }
 
-    disconnect<EOther, T extends keyof Events & keyof EOther>(event: T, target: Registry<EOther>) {
-        (this.connections[event as string] || []).remove(target as any);
+    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: Registry<EOther>) {
+        for(const event of Array.isArray(events) ? events : [events])
+            (this.connections[event as string] || []).remove(target as any);
     }
 
     disconnect_all<EOther>(target: Registry<EOther>) {
@@ -109,24 +115,33 @@ export class Registry<Events> {
             as: function () { return this; }
         });
 
+        let invoke_count = 0;
         for(const handler of (this.handler[event_type as string] || [])) {
             handler(event);
+            invoke_count++;
 
             const reg_data = handler[this.registry_uuid];
             if(typeof reg_data === "object" && reg_data.singleshot)
                 this.handler[event_type as string].remove(handler);
         }
 
-        for(const evhandler of (this.connections[event_type as string] || []))
+        for(const evhandler of (this.connections[event_type as string] || [])) {
             evhandler.fire(event_type as any, event as any);
+            invoke_count++;
+        }
+        if(invoke_count === 0) {
+            console.warn("Event handler (%s) triggered event %s which has no consumers.", this.debug_prefix, event_type);
+        }
     }
 
     fire_async<T extends keyof Events>(event_type: T, data?: Events[T]) {
         setTimeout(() => this.fire(event_type, data));
     }
 
-    destory() {
+    destroy() {
         this.handler = {};
+        this.connections = {};
+        this.event_handler_objects = [];
     }
 
     register_handler(handler: any) {
@@ -142,8 +157,7 @@ export class Registry<Events> {
             if(typeof proto[function_name][event_annotation_key] !== "object") continue;
 
             const event_data = proto[function_name][event_annotation_key];
-            console.log("Registering method %s for %o", function_name, event_data.events);
-            const ev_handler = event => proto[function_name].call(handler, [event]);
+            const ev_handler = event => proto[function_name].call(handler, event);
             for(const event of event_data.events) {
                 registered_events[event] = registered_events[event] || [];
                 registered_events[event].push(ev_handler);
@@ -184,7 +198,7 @@ export function EventHandler<EventTypes>(events: (keyof EventTypes) | (keyof Eve
     }
 }
 
-export function ReactEventHandler<ObjectClass, EventTypes = any>(registry_callback: (object: ObjectClass) => Registry<EventTypes>) {
+export function ReactEventHandler<ObjectClass = React.Component<any, any>, EventTypes = any>(registry_callback: (object: ObjectClass) => Registry<EventTypes>) {
     return function (constructor: Function) {
         if(!React.Component.prototype.isPrototypeOf(constructor.prototype))
             throw "Class/object isn't an instance of React.Component";

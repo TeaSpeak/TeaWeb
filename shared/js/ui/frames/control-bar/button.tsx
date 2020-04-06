@@ -6,6 +6,7 @@ const cssStyle = require("./button.scss");
 export interface ButtonState {
     switched: boolean;
     dropdownShowed: boolean;
+    dropdownForceShow: boolean;
 }
 
 export interface ButtonProperties {
@@ -29,7 +30,8 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
     protected default_state(): ButtonState {
         return {
             switched: false,
-            dropdownShowed: false
+            dropdownShowed: false,
+            dropdownForceShow: false
         }
     }
 
@@ -49,7 +51,7 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
             return button;
 
         return (
-            <div className={this.classList(cssStyle.buttonDropdown, this.state.dropdownShowed ? cssStyle.dropdownDisplayed : "", this.props.dropdownButtonExtraClass)} onMouseLeave={this.onMouseLeave.bind(this)}>
+            <div className={this.classList(cssStyle.buttonDropdown, this.state.dropdownShowed || this.state.dropdownForceShow ? cssStyle.dropdownDisplayed : "", this.props.dropdownButtonExtraClass)} onMouseLeave={this.onMouseLeave.bind(this)}>
                 <div className={cssStyle.buttons}>
                     {button}
                     <div className={cssStyle.dropdownArrow} onMouseEnter={this.onMouseEnter.bind(this)}>

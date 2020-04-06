@@ -3,21 +3,51 @@ import {ReactComponentBase} from "tc-shared/ui/elements/ReactComponentBase";
 const cssStyle = require("./button.scss");
 
 export interface DropdownEntryProperties {
-    icon?: string;
-    text: JSX.Element;
+    icon?: string | JQuery<HTMLDivElement>;
+    text: JSX.Element | string;
 
-    onClick?: () => void;
+    onClick?: (event) => void;
+    onContextMenu?: (event) => void;
+}
+
+class IconRenderer extends React.Component<{ icon: string | JQuery<HTMLDivElement> }, {}> {
+    private readonly icon_ref: React.RefObject<HTMLDivElement>;
+
+    constructor(props) {
+        super(props);
+
+        if(typeof this.props.icon === "object")
+            this.icon_ref = React.createRef();
+    }
+
+    render() {
+        if(!this.props.icon)
+            return <div className={"icon-container icon-empty"} />;
+        else if(typeof this.props.icon === "string")
+            return <div className={"icon " + this.props.icon} />;
+
+
+        return <div ref={this.icon_ref} />;
+    }
+
+    componentDidMount(): void {
+        if(this.icon_ref)
+            $(this.icon_ref.current).replaceWith(this.props.icon);
+    }
+    componentWillUnmount(): void {
+        if(this.icon_ref)
+            $(this.icon_ref.current).empty();
+    }
 }
 
 export class DropdownEntry extends ReactComponentBase<DropdownEntryProperties, {}> {
     protected default_state() { return {}; }
 
     render() {
-        const icon = this.props.icon ? this.classList("icon", this.props.icon) : this.classList("icon-container", "icon-empty");
         if(this.props.children) {
             return (
-                <div className={cssStyle.dropdownEntry} onClick={this.props.onClick}>
-                    <div className={icon} />
+                <div className={cssStyle.dropdownEntry} onClick={this.props.onClick} onContextMenu={this.props.onContextMenu}>
+                    <IconRenderer icon={this.props.icon} />
                     <a className={cssStyle.entryName}>{this.props.text}</a>
                     <div className={this.classList("arrow", "right")} />
                     <DropdownContainer>
@@ -27,8 +57,8 @@ export class DropdownEntry extends ReactComponentBase<DropdownEntryProperties, {
             );
         } else {
             return (
-                <div className={cssStyle.dropdownEntry} onClick={this.props.onClick}>
-                    <div className={icon} />
+                <div className={cssStyle.dropdownEntry} onClick={this.props.onClick} onContextMenu={this.props.onContextMenu}>
+                    <IconRenderer icon={this.props.icon} />
                     <a className={cssStyle.entryName}>{this.props.text}</a>
                 </div>
             );
