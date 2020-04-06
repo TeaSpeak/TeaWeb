@@ -26,6 +26,10 @@ import * as aplayer from "tc-backend/audio/player";
 import * as arecorder from "tc-backend/audio/recorder";
 import * as ppt from "tc-backend/ppt";
 
+import * as React from "react";
+import * as ReactDOM from "react-dom";
+import * as cbar from "./ui/frames/control-bar";
+
 /* required import for init */
 require("./proto").initialize();
 require("./ui/elements/ContextDivider").initialize();
@@ -156,6 +160,13 @@ async function initialize_app() {
     }
 
     control_bar.set_control_bar(new control_bar.ControlBar($("#control_bar"))); /* setup the control bar */
+    {
+        const bar = (
+            <cbar.ControlBar multiSession={true} />
+        );
+
+        ReactDOM.render(bar, $(".container-control-bar")[0]);
+    }
 
     if(!aplayer.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
@@ -334,7 +345,7 @@ function main() {
     server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
 
 
-    (<any>window).test_upload = (message?: string) => {
+    (window as any).test_upload = (message?: string) => {
         message = message || "Hello World";
 
         const connection = server_connections.active_connection_handler();
