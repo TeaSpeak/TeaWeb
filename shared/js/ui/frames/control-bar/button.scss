@@ -1,39 +1,54 @@
 @import "../../../../css/static/properties";
 @import "../../../../css/static/mixin";
 
-$border_color_activated: rgba(255, 255, 255, .75);
+/* Variables */
+html:root {
+    --menu-bar-button-background: #454545;
+    --menu-bar-button-background-hover: #393c43;
+    --menu-bar-button-background-activated: #2f3841;
+    --menu-bar-button-background-activated-red: #412f2f;
+    --menu-bar-button-background-activated-hover: #263340;
+    --menu-bar-button-background-activated-red-hover: #402626;
+
+    --menu-bar-button-border: #454545;
+    --menu-bar-button-border-hover: #4a4c55;
+    --menu-bar-button-border-activated: #005fa1;
+    --menu-bar-button-border-activated-red: #a10000;
+    --menu-bar-button-border-activated-hover: #005fa1;
+    --menu-bar-button-border-activated-red-hover: #a10000;
+}
 
 /* border etc */
 .button, .dropdownArrow {
     text-align: center;
 
-    border: .05em solid rgba(0, 0, 0, 0);
+    border: .05em solid var(--menu-bar-button-border);
     border-radius: $border_radius_small;
 
-    background-color: #454545;
+    background-color: var(--menu-bar-button-background);
 
     &:hover {
-        background-color: #393c43;
-        border-color: #4a4c55;
-        /*box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);*/
+        background-color: var(--menu-bar-button-background-hover);
+        border-color: var(--menu-bar-button-border-hover);
+        /* box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19); */
     }
 
     &.activated {
-        background-color: #2f3841;
-        border-color: #005fa1;
+        background-color: var(--menu-bar-button-background-activated);
+        border-color: var(--menu-bar-button-border-activated);
 
         &:hover {
-            background-color: #263340;
-            border-color: #005fa1;
+            background-color: var(--menu-bar-button-background-activated-hover);
+            border-color: var(--menu-bar-button-border-activated-hover);
         }
 
         &.theme-red {
-            background-color: #412f2f;
-            border-color: #a10000;
+            background-color: var(--menu-bar-button-background-activated-red);
+            border-color: var(--menu-bar-button-border-activated-red);
 
             &:hover {
-                background-color: #402626;
-                border-color: #a10000;
+                background-color: var(--menu-bar-button-background-activated-red-hover);
+                border-color: var(--menu-bar-button-border-activated-red-hover);
             }
         }
     }

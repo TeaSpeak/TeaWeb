@@ -1,11 +1,9 @@
 import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 import * as server_log from "tc-shared/ui/frames/server_log";
-import {
-    AbstractServerConnection, CommandOptions, ServerCommand
-} from "tc-shared/connection/ConnectionBase";
+import {AbstractServerConnection, CommandOptions, ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {Sound} from "tc-shared/sound/Sounds";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
-import {LogCategory} from "tc-shared/log";
 import {createErrorModal, createInfoModal, createInputModal, createModal} from "tc-shared/ui/elements/Modal";
 import {
     ClientConnectionInfo,
@@ -16,7 +14,7 @@ import {
     SongInfo
 } from "tc-shared/ui/client";
 import {ChannelEntry} from "tc-shared/ui/channel";
-import {ConnectionHandler, DisconnectReason, ViewReasonId} from "tc-shared/ConnectionHandler";
+import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {bbcode_chat, formatMessage} from "tc-shared/ui/frames/chat";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnPoke} from "tc-shared/ui/modal/ModalPoke";
@@ -247,7 +245,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         if(properties.virtualserver_ask_for_privilegekey) {
             createInputModal(tr("Use a privilege key"), tr("This is a newly created server for which administrator privileges have not yet been claimed.<br>Please enter the \"privilege key\" that was automatically generated when this server was created to gain administrator permissions."), message => message.length > 0, result => {
                 if(!result) return;
-                const scon = server_connections.active_connection_handler();
+                const scon = server_connections.active_connection();
 
                 if(scon.serverConnection.connected)
                     scon.serverConnection.send_command("tokenuse", {
@@ -260,11 +258,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             }, { field_placeholder: tr("Enter Privilege Key") }).open();
         }
 
-        this.connection_handler.log.log(server_log.Type.CONNECTION_CONNECTED, {
-            own_client: this.connection_handler.getClient().log_data()
-        });
-        this.connection_handler.sound.play(Sound.CONNECTION_CONNECTED);
-        this.connection.client.onConnected();
+        this.connection.updateConnectionState(ConnectionState.CONNECTED);
     }
 
     handleNotifyServerConnectionInfo(json) {

@@ -47,6 +47,9 @@ export abstract class AbstractServerConnection {
     abstract remote_address() : ServerAddress; /* only valid when connected */
     abstract handshake_handler() : HandshakeHandler; /* only valid when connected */
 
+    //FIXME: Remove this this is currently only some kind of hack
+    abstract updateConnectionState(state: ConnectionState);
+
     abstract ping() : {
         native: number,
         javascript?: number

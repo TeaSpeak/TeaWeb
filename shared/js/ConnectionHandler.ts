@@ -2,15 +2,14 @@ import {ChannelTree} from "tc-shared/ui/view";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {PermissionManager} from "tc-shared/permission/PermissionManager";
 import {GroupManager} from "tc-shared/permission/GroupManager";
-import {ServerSettings, Settings, StaticSettings} from "tc-shared/settings";
+import {ServerSettings, Settings, settings, StaticSettings} from "tc-shared/settings";
 import {Sound, SoundManager} from "tc-shared/sound/Sounds";
 import {LocalClientEntry} from "tc-shared/ui/client";
-import {ServerLog} from "tc-shared/ui/frames/server_log";
+import * as server_log from "tc-shared/ui/frames/server_log";
 import {ConnectionProfile, default_profile, find_profile} from "tc-shared/profiles/ConnectionProfile";
 import {ServerAddress} from "tc-shared/ui/server";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import * as server_log from "tc-shared/ui/frames/server_log";
 import {createErrorModal, createInfoModal, createInputModal, Modal} from "tc-shared/ui/elements/Modal";
 import {hashPassword} from "tc-shared/utils/helpers";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
@@ -31,7 +30,8 @@ import {spawnAvatarUpload} from "tc-shared/ui/modal/ModalAvatar";
 import * as connection from "tc-backend/connection";
 import * as dns from "tc-backend/dns";
 import * as top_menu from "tc-shared/ui/frames/MenuBar";
-import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
+import {EventHandler, Registry} from "tc-shared/events";
+import {ServerLog} from "tc-shared/ui/frames/server_log";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -54,11 +54,25 @@ export enum DisconnectReason {
 }
 
 export enum ConnectionState {
-    UNCONNECTED,
-    CONNECTING,
-    INITIALISING,
-    CONNECTED,
-    DISCONNECTING
+    UNCONNECTED, /* no connection is currenting running */
+    CONNECTING, /* we try to establish a connection to the target server */
+    INITIALISING, /* we're setting up the connection encryption */
+    AUTHENTICATING, /* we're authenticating ourself so we get a unique ID */
+    CONNECTED, /* we're connected to the server. Server init has been done, may not everything is initialized */
+    DISCONNECTING/* we're curently disconnecting from the server and awaiting disconnect acknowledge */
+}
+
+export namespace ConnectionState {
+    export function socket_connected(state: ConnectionState) {
+        switch (state) {
+            case ConnectionState.CONNECTED:
+            case ConnectionState.AUTHENTICATING:
+            //case ConnectionState.INITIALISING: /* its not yet possible to send any data */
+                return true;
+            default:
+                return false;
+        }
+    }
 }
 
 export enum ViewReasonId {
@@ -76,7 +90,7 @@ export enum ViewReasonId {
     VREASON_SERVER_SHUTDOWN = 11
 }
 
-export interface VoiceStatus {
+export interface LocalClientStatus {
     input_hardware: boolean;
     input_muted: boolean;
     output_muted: boolean;
@@ -106,6 +120,7 @@ export interface ConnectParameters {
 
 declare const native_client;
 export class ConnectionHandler {
+    private readonly event_registry: Registry<ConnectionEvents>;
     channelTree: ChannelTree;
 
     serverConnection: AbstractServerConnection;
@@ -132,7 +147,7 @@ export class ConnectionHandler {
 
     private _connect_initialize_id: number = 1;
 
-    client_status: VoiceStatus = {
+    private client_status: LocalClientStatus = {
         input_hardware: false,
         input_muted: false,
         output_muted: false,
@@ -150,6 +165,9 @@ export class ConnectionHandler {
     log: ServerLog;
 
     constructor() {
+        this.event_registry = new Registry<ConnectionEvents>();
+        this.event_registry.enable_debug("connection-handler");
+
         this.settings = new ServerSettings();
 
         this.log = new ServerLog(this);
@@ -178,22 +196,36 @@ export class ConnectionHandler {
                 if(event.isDefaultPrevented())
                     return;
 
-                server_connections.set_active_connection_handler(this);
+                server_connections.set_active_connection(this);
             });
             this.tag_connection_handler.find(".button-close").on('click', event => {
-                server_connections.destroy_server_connection_handler(this);
+                server_connections.destroy_server_connection(this);
                 event.preventDefault();
             });
             this.tab_set_name(tr("Not connected"));
         }
+
+        this.event_registry.register_handler(this);
+    }
+
+    initialize_client_state(source?: ConnectionHandler) {
+        this.client_status.input_muted = source ? source.client_status.input_muted : settings.global(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED);
+        this.client_status.output_muted = source ? source.client_status.output_muted : settings.global(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED);
+        this.update_voice_status();
+
+        this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.global(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
+        this.setAway_(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : true), false);
+        this.setQueriesShown(source ? source.client_status.queries_visible : settings.global(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
+    }
+
+    events() : Registry<ConnectionEvents> {
+        return this.event_registry;
     }
 
     tab_set_name(name: string) {
         this.tag_connection_handler.toggleClass('cutoff-name', name.length > 30);
         this.tag_connection_handler.find(".server-name").text(name);
     }
-
-    setup() { }
 
     async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
         this.tab_set_name(tr("Connecting"));
@@ -283,6 +315,17 @@ export class ConnectionHandler {
         }, 50);
     }
 
+    async disconnectFromServer(reason?: string) {
+        this.cancel_reconnect(true);
+        this.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
+        try {
+            await this.serverConnection.disconnect();
+        } catch (error) {
+            log.warn(LogCategory.CLIENT, tr("Failed to successfully disconnect from server: {}"), error);
+        }
+        this.sound.play(Sound.CONNECTION_DISCONNECTED);
+        this.log.log(server_log.Type.DISCONNECTED, {});
+    }
 
     getClient() : LocalClientEntry { return this._local_client; }
     getClientId() { return this._clientId; }
@@ -299,16 +342,20 @@ export class ConnectionHandler {
     getServerConnection() : AbstractServerConnection { return this.serverConnection; }
 
 
-    /**
-     * LISTENER
-     */
-    onConnected() {
+    @EventHandler<ConnectionEvents>("notify_connection_state_changed")
+    private handleConnectionConnected(event: ConnectionEvents["notify_connection_state_changed"]) {
+        if(event.new_state !== ConnectionState.CONNECTED) return;
         log.info(LogCategory.CLIENT, tr("Client connected"));
+        this.log.log(server_log.Type.CONNECTION_CONNECTED, {
+            own_client: this.getClient().log_data()
+        });
+        this.sound.play(Sound.CONNECTION_CONNECTED);
+
         this.permissions.requestPermissionList();
         if(this.groups.serverGroups.length == 0)
             this.groups.requestGroups();
 
-        this.initialize_server_settings();
+        this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
 
         /* apply the server settings */
         if(this.client_status.channel_subscribe_all)
@@ -325,27 +372,6 @@ export class ConnectionHandler {
         if(control_bar.current_connection_handler() === this)
             control_bar.apply_server_voice_state();
         */
-    }
-
-    private initialize_server_settings() {
-        let update_control = false;
-        this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
-        {
-            const flag_subscribe = this.settings.server(Settings.KEY_CONTROL_CHANNEL_SUBSCRIBE_ALL, true);
-            if(this.client_status.channel_subscribe_all != flag_subscribe) {
-                this.client_status.channel_subscribe_all = flag_subscribe;
-                update_control = true;
-            }
-        }
-        {
-            const flag_query = this.settings.server(Settings.KEY_CONTROL_SHOW_QUERIES, false);
-            if(this.client_status.queries_visible != flag_query) {
-                this.client_status.queries_visible = flag_query;
-                update_control = true;
-            }
-        }
-
-        control_bar_instance()?.events().fire("server_updated", { category: "settings-initialized", handler: this });
     }
 
     get connected() : boolean {
@@ -606,7 +632,6 @@ export class ConnectionHandler {
         if(this.serverConnection)
             this.serverConnection.disconnect();
 
-        this.on_connection_state_changed(); /* really required to call? */
         this.side_bar.private_conversations().clear_client_ids();
         this.hostbanner.update();
 
@@ -639,12 +664,16 @@ export class ConnectionHandler {
         }
     }
 
-    private on_connection_state_changed() {
-        control_bar_instance()?.events().fire("server_updated", { category: "connection-state", handler: this });
+    private on_connection_state_changed(old_state: ConnectionState, new_state: ConnectionState) {
+        this.event_registry.fire("notify_connection_state_changed", {
+            old_state: old_state,
+            new_state: new_state
+        });
     }
 
     private _last_record_error_popup: number;
     update_voice_status(targetChannel?: ChannelEntry) {
+        //TODO: Simplify this
         if(!this._local_client) return; /* we've been destroyed */
 
         targetChannel = targetChannel || this.getClient().currentChannel();
@@ -748,9 +777,14 @@ export class ConnectionHandler {
             }
         }
 
-
-        control_bar_instance()?.events().fire("server_updated", { category: "audio", handler: this });
-        top_menu.update_state(); //TODO: Only run "small" update?
+        //TODO: Only trigger events for stuff which has been updated
+        this.event_registry.fire("notify_state_updated", {
+            state: "microphone"
+        });
+        this.event_registry.fire("notify_state_updated", {
+            state: "speaker"
+        });
+        top_menu.update_state(); //TODO: Top-Menu should register their listener
     }
 
     sync_status_with_server() {
@@ -768,35 +802,13 @@ export class ConnectionHandler {
             });
     }
 
-    set_away_status(state: boolean | string, update_control_bar: boolean) {
-        if(this.client_status.away === state)
-            return;
-
-        if(state) {
-            this.sound.play(Sound.AWAY_ACTIVATED);
-        } else {
-            this.sound.play(Sound.AWAY_DEACTIVATED);
-        }
-
-        this.client_status.away = state;
-        this.serverConnection.send_command("clientupdate", {
-            client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
-            client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
-        }).catch(error => {
-            log.warn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
-            this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
-        });
-
-        if(update_control_bar)
-            control_bar_instance()?.events().fire("server_updated", { category: "away-status", handler: this });
-    }
-
     resize_elements() {
         this.channelTree.handle_resized();
         this.invoke_resized_on_activate = false;
     }
 
     acquire_recorder(voice_recoder: RecorderProfile, update_control_bar: boolean) {
+        /* TODO: If the voice connection hasn't been set upped cache the target recorder */
         const vconnection = this.serverConnection.voice_connection();
         (vconnection ? vconnection.acquire_voice_recorder(voice_recoder) : Promise.resolve()).catch(error => {
             log.warn(LogCategory.VOICE, tr("Failed to acquire recorder (%o)"), error);
@@ -804,6 +816,8 @@ export class ConnectionHandler {
             this.update_voice_status(undefined);
         });
     }
+
+    getVoiceRecorder() :RecorderProfile | undefined { return this.serverConnection?.voice_connection()?.voice_recorder(); }
 
     reconnect_properties(profile?: ConnectionProfile) : ConnectParameters {
         const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
@@ -913,6 +927,7 @@ export class ConnectionHandler {
     }
 
     destroy() {
+        this.event_registry.unregister_handler(this);
         this.cancel_reconnect(true);
 
         this.tag_connection_handler && this.tag_connection_handler.remove();
@@ -953,5 +968,108 @@ export class ConnectionHandler {
 
         this.sound = undefined;
         this._local_client = undefined;
+    }
+
+    /* state changing methods */
+    setMicrophoneMuted(muted: boolean) {
+        if(this.client_status.input_muted === muted) return;
+        this.client_status.input_muted = muted;
+        this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
+        this.update_voice_status();
+    }
+
+    isMicrophoneMuted() { return this.client_status.input_muted; }
+
+    /*
+     * Returns whatever the client is able to talk or not. Reasons for returning true could be:
+     * - Channel codec isn't supported
+     * - No recorder has been acquired
+     * - Voice bridge hasn't been set upped yet
+     */
+    isMicrophoneDisabled() { return !this.client_status.input_hardware; }
+
+    setSpeakerMuted(muted: boolean) {
+        if(this.client_status.output_muted === muted) return;
+        if(muted) this.sound.play(Sound.SOUND_MUTED); /* play the sound *before* we're setting the muted state */
+        this.client_status.output_muted = muted;
+        if(!muted) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
+        this.update_voice_status();
+    }
+
+    isSpeakerMuted() { return this.client_status.output_muted; }
+
+    /*
+     * Returns whatever the client is able to playback sound (voice). Reasons for returning true could be:
+     * - Channel codec isn't supported
+     * - Voice bridge hasn't been set upped yet
+     */
+    //TODO: This currently returns false
+    isSpeakerDisabled() { return false; }
+
+    setSubscribeToAllChannels(flag: boolean) {
+        if(this.client_status.channel_subscribe_all === flag) return;
+        this.client_status.channel_subscribe_all = flag;
+        if(flag)
+            this.channelTree.subscribe_all_channels();
+        else
+            this.channelTree.unsubscribe_all_channels();
+        this.event_registry.fire("notify_state_updated", { state: "subscribe" });
+    }
+
+    isSubscribeToAllChannels() { return this.client_status.channel_subscribe_all; }
+
+    setAway(state: boolean | string) {
+        this.setAway_(state, true);
+    }
+
+    private setAway_(state: boolean | string, play_sound: boolean) {
+        if(this.client_status.away === state)
+            return;
+
+        const was_away = this.isAway();
+        const will_away = typeof state === "boolean" ? state : true;
+        if(was_away != will_away && play_sound)
+            this.sound.play(will_away ? Sound.AWAY_ACTIVATED : Sound.AWAY_DEACTIVATED);
+
+        this.client_status.away = state;
+        this.serverConnection.send_command("clientupdate", {
+            client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
+            client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
+        }).catch(error => {
+            log.warn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
+            this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
+        });
+
+        this.event_registry.fire("notify_state_updated", {
+            state: "away"
+        });
+    }
+
+    isAway() : boolean { return typeof this.client_status.away !== "boolean" || this.client_status.away; }
+
+    setQueriesShown(flag: boolean) {
+        if(this.client_status.queries_visible === flag) return;
+        this.client_status.queries_visible = flag;
+        this.channelTree.toggle_server_queries(flag);
+
+        this.event_registry.fire("notify_state_updated", {
+            state: "query"
+        });
+    }
+
+    areQueriesShown() {
+        return this.client_status.queries_visible;
+    }
+}
+
+export type ConnectionStateUpdateType = "microphone" | "speaker" | "away" | "subscribe" | "query";
+export interface ConnectionEvents {
+    notify_state_updated: {
+        state: ConnectionStateUpdateType;
+    }
+
+    notify_connection_state_changed: {
+        old_state: ConnectionState,
+        new_state: ConnectionState
     }
 }

@@ -12,6 +12,8 @@ export abstract class ReactComponentBase<Properties, State> extends React.Compon
     protected abstract default_state() : State;
 
     updateState(updates: {[key in keyof State]?: State[key]}) {
+        if(Object.keys(updates).findIndex(e => updates[e] !== this.state[e]) === -1)
+            return; /* no state has been changed */
         this.setState(Object.assign(this.state, updates));
     }
 

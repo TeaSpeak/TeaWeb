@@ -5,14 +5,15 @@ import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/
 import {default_profile, find_profile} from "tc-shared/profiles/ConnectionProfile";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
-import {control_bar} from "tc-shared/ui/frames/ControlBar";
 import * as top_menu from "./ui/frames/MenuBar";
+import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 
 export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
     const profile = find_profile(mark.connect_profile) || default_profile();
     if(profile.valid()) {
-        const connection = (typeof(new_tab) !== "boolean" || !new_tab) ? server_connections.active_connection_handler() : server_connections.spawn_server_connection_handler();
-        server_connections.set_active_connection_handler(connection);
+        const connection = (typeof(new_tab) !== "boolean" || !new_tab) ? server_connections.active_connection() : server_connections.spawn_server_connection();
+        server_connections.set_active_connection(connection);
         connection.startConnection(
             mark.server_properties.server_address + ":" + mark.server_properties.server_port,
             profile,
@@ -232,23 +233,23 @@ export function delete_bookmark(bookmark: Bookmark | DirectoryBookmark) {
     delete_bookmark_recursive(bookmarks(), bookmark)
 }
 
-export function add_current_server() {
-    const ch = server_connections.active_connection_handler();
-    if(ch && ch.connected) {
-        const ce = ch.getClient();
+export function add_server_to_bookmarks(server: ConnectionHandler) {
+    if(server && server.connected) {
+        const ce = server.getClient();
         const name = ce ? ce.clientNickName() : undefined;
         createInputModal(tr("Enter bookmarks name"), tr("Please enter the bookmarks name:<br>"), text => text.length > 0, result => {
             if(result) {
                 const bookmark = create_bookmark(result as string, bookmarks(), {
-                    server_port: ch.serverConnection.remote_address().port,
-                    server_address: ch.serverConnection.remote_address().host,
+                    server_port: server.serverConnection.remote_address().port,
+                    server_address: server.serverConnection.remote_address().host,
 
                     server_password: "",
                     server_password_hash: ""
                 }, name);
                 save_bookmark(bookmark);
 
-                control_bar.update_bookmarks();
+                control_bar_instance().events().fire("update_state", { state: "bookmarks" });
+                //control_bar.update_bookmarks();
                 top_menu.rebuild_bookmarks();
 
                 createInfoModal(tr("Server added"), tr("Server has been successfully added to your bookmarks.")).open();

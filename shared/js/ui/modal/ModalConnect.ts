@@ -241,7 +241,7 @@ export function spawnConnectModal(options: {
         button_connect.on('click', event => {
             modal.close();
 
-            const connection = server_connections.active_connection_handler();
+            const connection = server_connections.active_connection();
             if(connection) {
                 connection.startConnection(
                     current_connect_data ? current_connect_data.address.hostname + ":" + current_connect_data.address.port : server_address(),
@@ -259,8 +259,8 @@ export function spawnConnectModal(options: {
         button_connect_tab.on('click', event => {
             modal.close();
 
-            const connection = server_connections.spawn_server_connection_handler();
-            server_connections.set_active_connection_handler(connection);
+            const connection = server_connections.spawn_server_connection();
+            server_connections.set_active_connection(connection);
             connection.startConnection(
                 current_connect_data ? current_connect_data.address.hostname + ":" + current_connect_data.address.port :  server_address(),
                 selected_profile,

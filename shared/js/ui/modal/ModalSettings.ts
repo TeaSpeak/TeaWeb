@@ -92,7 +92,7 @@ function settings_general_application(container: JQuery, modal: Modal) {
         const option = container.find(".option-hostbanner-background") as JQuery<HTMLInputElement>;
         option.on('change', event => {
             settings.changeGlobal(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
-            for(const sc of server_connections.server_connection_handlers())
+            for(const sc of server_connections.all_connections())
                 sc.hostbanner.update();
         }).prop("checked", settings.static_global(Settings.KEY_HOSTBANNER_BACKGROUND));
     }
@@ -384,7 +384,7 @@ function settings_general_chat(container: JQuery, modal: Modal) {
         }).prop("checked", settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES));
     }
 
-    const update_format_helper = () => server_connections.server_connection_handlers().map(e => e.side_bar).forEach(e => {
+    const update_format_helper = () => server_connections.all_connections().map(e => e.side_bar).forEach(e => {
         e.private_conversations().update_input_format_helper();
         e.channel_conversations().update_input_format_helper();
     });

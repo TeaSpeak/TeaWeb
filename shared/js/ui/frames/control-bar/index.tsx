@@ -3,11 +3,12 @@ import {Button} from "./button";
 import {DropdownEntry} from "tc-shared/ui/frames/control-bar/dropdown";
 import {Translatable} from "tc-shared/ui/elements/i18n";
 import {ReactComponentBase} from "tc-shared/ui/elements/ReactComponentBase";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ConnectionEvents, ConnectionHandler, ConnectionStateUpdateType} from "tc-shared/ConnectionHandler";
 import {Event, EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {ConnectionManagerEvents, server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {Settings, settings} from "tc-shared/settings";
 import {
+    add_server_to_bookmarks,
     Bookmark,
     bookmarks,
     BookmarkType,
@@ -17,8 +18,9 @@ import {
 } from "tc-shared/bookmarks";
 import {IconManager} from "tc-shared/FileManager";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
-import {client_control_events} from "tc-shared/main";
-const register_actions = require("./actions");
+import {createInputModal} from "tc-shared/ui/elements/Modal";
+import {default_recorder} from "tc-shared/voice/RecorderProfile";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
 
 const cssStyle = require("./index.scss");
 const cssButtonStyle = require("./button.scss");
@@ -29,7 +31,7 @@ export interface ConnectionState {
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_registry: Registry<ControlBarEvents> }, ConnectionState> {
+class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_registry: Registry<InternalControlBarEvents> }, ConnectionState> {
     protected default_state(): ConnectionState {
         return {
             connected: false,
@@ -43,51 +45,51 @@ class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_re
             if(!this.state.connected) {
                 subentries.push(
                     <DropdownEntry key={"connect-server"} icon={"client-connect"} text={<Translatable message={"Connect to a server"} />}
-                                   onClick={ () => client_control_events.fire("action_open_connect", { new_tab: false }) } />
+                                   onClick={ () => global_client_actions.fire("action_open_window_connect", {new_tab: false }) } />
                 );
             } else {
                 subentries.push(
-                    <DropdownEntry key={"disconnect-current"} icon={"client-disconnect"} text={<Translatable message={"Disconnect from current server"} />}
-                                   onClick={ () => client_control_events.fire("action_disconnect", { globally: false }) }/>
+                    <DropdownEntry key={"disconnect-current-a"} icon={"client-disconnect"} text={<Translatable message={"Disconnect from current server"} />}
+                                   onClick={ () => this.props.event_registry.fire("action_disconnect", { globally: false }) }/>
                 );
             }
             if(this.state.connectedAnywhere) {
                 subentries.push(
-                    <DropdownEntry key={"disconnect-current"} icon={"client-disconnect"} text={<Translatable message={"Disconnect from all servers"} />}
-                                   onClick={ () => client_control_events.fire("action_disconnect", { globally: true }) }/>
+                    <DropdownEntry key={"disconnect-current-b"} icon={"client-disconnect"} text={<Translatable message={"Disconnect from all servers"} />}
+                                   onClick={ () => this.props.event_registry.fire("action_disconnect", { globally: true }) }/>
                 );
             }
             subentries.push(
                 <DropdownEntry key={"connect-new-tab"} icon={"client-connect"} text={<Translatable message={"Connect to a server in another tab"} />}
-                               onClick={ () => client_control_events.fire("action_open_connect", { new_tab: true }) } />
+                               onClick={ () => global_client_actions.fire("action_open_window_connect", { new_tab: true }) } />
             );
         }
 
         if(!this.state.connected) {
             return (
                 <Button colorTheme={"default"} autoSwitch={false} iconNormal={"client-connect"} tooltip={tr("Connect to a server")}
-                        onToggle={ () => client_control_events.fire("action_open_connect", { new_tab: false }) }>
+                        onToggle={ () => global_client_actions.fire("action_open_window_connect", { new_tab: false }) }>
                     {subentries}
                 </Button>
             );
         } else {
             return (
                 <Button colorTheme={"default"} autoSwitch={false} iconNormal={"client-disconnect"} tooltip={tr("Disconnect from server")}
-                        onToggle={ () => client_control_events.fire("action_disconnect", { globally: false }) }>
+                        onToggle={ () => this.props.event_registry.fire("action_disconnect", { globally: false }) }>
                     {subentries}
                 </Button>
             );
         }
     }
 
-    @EventHandler<ControlBarEvents>("update_connect_state")
+    @EventHandler<InternalControlBarEvents>("update_connect_state")
     private handleStateUpdate(state: ConnectionState) {
         this.updateState(state);
     }
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<ControlBarEvents> }, {}> {
+class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, {}> {
     private button_ref: React.RefObject<Button>;
 
     protected initialize() {
@@ -105,8 +107,9 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Contr
         return (
             <Button ref={this.button_ref} dropdownButtonExtraClass={cssButtonStyle.buttonBookmarks} autoSwitch={false} iconNormal={"client-bookmark_manager"}>
                 <DropdownEntry icon={"client-bookmark_manager"} text={<Translatable message={"Manage bookmarks"} />}
-                               onClick={() => client_control_events.fire("action_open_window", { window: "bookmark-manage" })} />
-                <DropdownEntry icon={"client-bookmark_add"} text={<Translatable message={"Add current server to bookmarks"} />} />
+                               onClick={() => this.props.event_registry.fire("action_open_window", { window: "bookmark-manage" })} />
+                <DropdownEntry icon={"client-bookmark_add"} text={<Translatable message={"Add current server to bookmarks"} />}
+                                onClick={() => this.props.event_registry.fire("action_add_current_server_to_bookmarks")} />
                 {marks}
             </Button>
         )
@@ -160,7 +163,7 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Contr
         }));
     }
 
-    @EventHandler<ControlBarEvents>("update_bookmarks")
+    @EventHandler<InternalControlBarEvents>("update_bookmarks")
     private handleStateUpdate() {
         this.forceUpdate();
     }
@@ -173,7 +176,7 @@ export interface AwayState {
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class AwayButton extends ReactComponentBase<{ event_registry: Registry<ControlBarEvents> }, AwayState> {
+class AwayButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, AwayState> {
     protected default_state(): AwayState {
         return {
             away: false,
@@ -186,35 +189,42 @@ class AwayButton extends ReactComponentBase<{ event_registry: Registry<ControlBa
         let dropdowns = [];
         if(this.state.away) {
             dropdowns.push(<DropdownEntry key={"cgo"} icon={"client-present"} text={<Translatable message={"Go online"} />}
-                                onClick={() => client_control_events.fire("action_disable_away", { globally: false })} />);
+                                onClick={() => this.props.event_registry.fire("action_disable_away", { globally: false })} />);
         } else {
             dropdowns.push(<DropdownEntry key={"sas"} icon={"client-away"} text={<Translatable message={"Set away on this server"} />}
-                                          onClick={() => client_control_events.fire("action_set_away", { globally: false, prompt_reason: false })} />);
+                                          onClick={() => this.props.event_registry.fire("action_set_away", { globally: false, prompt_reason: false })} />);
         }
         dropdowns.push(<DropdownEntry key={"sam"} icon={"client-away"} text={<Translatable message={"Set away message on this server"} />}
-                                      onClick={() => client_control_events.fire("action_set_away", { globally: false, prompt_reason: true })} />);
+                                      onClick={() => this.props.event_registry.fire("action_set_away", { globally: false, prompt_reason: true })} />);
 
         dropdowns.push(<hr key={"-hr"} />);
         if(this.state.awayAnywhere) {
             dropdowns.push(<DropdownEntry key={"goa"} icon={"client-present"} text={<Translatable message={"Go online for all servers"} />}
-                                          onClick={() => client_control_events.fire("action_disable_away", { globally: true })} />);
+                                          onClick={() => this.props.event_registry.fire("action_disable_away", { globally: true })} />);
         }
         if(!this.state.awayAll) {
             dropdowns.push(<DropdownEntry key={"saa"} icon={"client-away"} text={<Translatable message={"Set away on all servers"} />}
-                                          onClick={() => client_control_events.fire("action_set_away", { globally: true, prompt_reason: false })} />);
+                                          onClick={() => this.props.event_registry.fire("action_set_away", { globally: true, prompt_reason: false })} />);
         }
         dropdowns.push(<DropdownEntry key={"sama"} icon={"client-away"} text={<Translatable message={"Set away message for all servers"} />}
-                                      onClick={() => client_control_events.fire("action_set_away", { globally: true, prompt_reason: true })} />);
+                                      onClick={() => this.props.event_registry.fire("action_set_away", { globally: true, prompt_reason: true })} />);
 
         /* switchable because we're switching it manually */
         return (
-            <Button autoSwitch={false} iconNormal={this.state.away ? "client-present" : "client-away"}>
+            <Button autoSwitch={false} switched={this.state.away} iconNormal={this.state.away ? "client-present" : "client-away"} onToggle={this.handleButtonToggled.bind(this)}>
                 {dropdowns}
             </Button>
         );
     }
 
-    @EventHandler<ControlBarEvents>("update_away_state")
+    private handleButtonToggled(state: boolean) {
+        if(state)
+            this.props.event_registry.fire("action_set_away", { globally: false, prompt_reason: false });
+        else
+            this.props.event_registry.fire("action_disable_away");
+    }
+
+    @EventHandler<InternalControlBarEvents>("update_away_state")
     private handleStateUpdate(state: AwayState) {
         this.updateState(state);
     }
@@ -225,17 +235,17 @@ export interface ChannelSubscribeState {
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class ChannelSubscribeButton extends ReactComponentBase<{ event_registry: Registry<ControlBarEvents> }, ChannelSubscribeState> {
+class ChannelSubscribeButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, ChannelSubscribeState> {
     protected default_state(): ChannelSubscribeState {
         return { subscribeEnabled: false };
     }
 
     render() {
         return <Button switched={this.state.subscribeEnabled} autoSwitch={false} iconNormal={"client-unsubscribe_from_all_channels"} iconSwitched={"client-subscribe_to_all_channels"}
-                    onToggle={flag => client_control_events.fire("action_set_channel_subscribe_mode", { subscribe: flag })}/>;
+                    onToggle={flag => this.props.event_registry.fire("action_set_subscribe", { subscribe: flag })}/>;
     }
 
-    @EventHandler<ControlBarEvents>("update_subscribe_state")
+    @EventHandler<InternalControlBarEvents>("update_subscribe_state")
     private handleStateUpdate(state: ChannelSubscribeState) {
         this.updateState(state);
     }
@@ -247,7 +257,7 @@ export interface MicrophoneState {
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class MicrophoneButton extends ReactComponentBase<{ event_registry: Registry<ControlBarEvents> }, MicrophoneState> {
+class MicrophoneButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, MicrophoneState> {
     protected default_state(): MicrophoneState {
         return {
             enabled: false,
@@ -258,15 +268,15 @@ class MicrophoneButton extends ReactComponentBase<{ event_registry: Registry<Con
     render() {
         if(!this.state.enabled)
             return <Button autoSwitch={false} iconNormal={"client-activate_microphone"} tooltip={tr("Enable your microphone on this server")}
-                           onToggle={() => client_control_events.fire("action_toggle_microphone", { state: true })} />;
+                           onToggle={() => this.props.event_registry.fire("action_enable_microphone")} />;
         if(this.state.muted)
             return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={"client-input_muted"} tooltip={tr("Unmute microphone")}
-                           onToggle={() => client_control_events.fire("action_toggle_microphone", { state: true })} />;
+                           onToggle={() => this.props.event_registry.fire("action_enable_microphone")} />;
         return <Button colorTheme={"red"} autoSwitch={false} iconNormal={"client-input_muted"} tooltip={tr("Mute microphone")}
-                       onToggle={() => client_control_events.fire("action_toggle_microphone", { state: false })} />;
+                       onToggle={() => this.props.event_registry.fire("action_disable_microphone")} />;
     }
 
-    @EventHandler<ControlBarEvents>("update_microphone_state")
+    @EventHandler<InternalControlBarEvents>("update_microphone_state")
     private handleStateUpdate(state: MicrophoneState) {
         this.updateState(state);
     }
@@ -277,7 +287,7 @@ export interface SpeakerState {
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class SpeakerButton extends ReactComponentBase<{ event_registry: Registry<ControlBarEvents> }, SpeakerState> {
+class SpeakerButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, SpeakerState> {
     protected default_state(): SpeakerState {
         return {
             muted: false
@@ -287,12 +297,12 @@ class SpeakerButton extends ReactComponentBase<{ event_registry: Registry<Contro
     render() {
         if(this.state.muted)
             return <Button switched={true} colorTheme={"red"} autoSwitch={false} iconNormal={"client-output_muted"} tooltip={tr("Unmute headphones")}
-                           onToggle={() => client_control_events.fire("action_toggle_speaker", { state: true })}/>;
+                           onToggle={() => this.props.event_registry.fire("action_enable_speaker")}/>;
         return <Button colorTheme={"red"} autoSwitch={false} iconNormal={"client-output_muted"} tooltip={tr("Mute headphones")}
-                       onToggle={() => client_control_events.fire("action_toggle_speaker", { state: false })}/>;
+                       onToggle={() => this.props.event_registry.fire("action_disable_speaker")}/>;
     }
 
-    @EventHandler<ControlBarEvents>("update_speaker_state")
+    @EventHandler<InternalControlBarEvents>("update_speaker_state")
     private handleStateUpdate(state: SpeakerState) {
         this.updateState(state);
     }
@@ -303,7 +313,7 @@ export interface QueryState {
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class QueryButton extends ReactComponentBase<{ event_registry: Registry<ControlBarEvents> }, QueryState> {
+class QueryButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, QueryState> {
     protected default_state() {
         return {
             queryShown: false
@@ -313,22 +323,22 @@ class QueryButton extends ReactComponentBase<{ event_registry: Registry<ControlB
     render() {
         let toggle;
         if(this.state.queryShown)
-            toggle = <DropdownEntry icon={""} text={<Translatable message={"Hide server queries"} />}
-                                    onClick={() => client_control_events.fire("action_toggle_query", { shown: false })}/>;
+            toggle = <DropdownEntry icon={"client-toggle_server_query_clients"} text={<Translatable message={"Hide server queries"} />}
+                                    onClick={() => this.props.event_registry.fire("action_toggle_query", { shown: false })}/>;
         else
             toggle = <DropdownEntry icon={"client-toggle_server_query_clients"} text={<Translatable message={"Show server queries"} />}
-                                    onClick={() => client_control_events.fire("action_toggle_query", { shown: true })}/>;
+                                    onClick={() => this.props.event_registry.fire("action_toggle_query", { shown: true })}/>;
         return (
             <Button switched={this.state.queryShown} autoSwitch={false} iconNormal={"client-server_query"}
-                    onToggle={flag => client_control_events.fire("action_toggle_query", { shown: flag })}>
+                    onToggle={flag => this.props.event_registry.fire("action_toggle_query", { shown: flag })}>
                 {toggle}
                 <DropdownEntry icon={"client-server_query"} text={<Translatable message={"Manage server queries"} />}
-                                onClick={() => client_control_events.fire("action_open_window", { window: "query-manage" })}/>
+                                onClick={() => this.props.event_registry.fire("action_open_window", { window: "query-manage" })}/>
             </Button>
         )
     }
 
-    @EventHandler<ControlBarEvents>("update_query_state")
+    @EventHandler<InternalControlBarEvents>("update_query_state")
     private handleStateUpdate(state: QueryState) {
         this.updateState(state);
     }
@@ -341,7 +351,7 @@ export interface HostButtonState {
 }
 
 @ReactEventHandler(obj => obj.props.event_registry)
-class HostButton extends ReactComponentBase<{ event_registry: Registry<ControlBarEvents> }, HostButtonState> {
+class HostButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, HostButtonState> {
     protected default_state() {
         return {
             url: undefined,
@@ -370,7 +380,7 @@ class HostButton extends ReactComponentBase<{ event_registry: Registry<ControlBa
         event.preventDefault();
     }
 
-    @EventHandler<ControlBarEvents>("update_host_button")
+    @EventHandler<InternalControlBarEvents>("update_host_button")
     private handleStateUpdate(state: HostButtonState) {
         this.updateState(state);
     }
@@ -382,33 +392,25 @@ export interface ControlBarProperties {
 
 @ReactEventHandler<ControlBar>(obj => obj.event_registry)
 export class ControlBar extends React.Component<ControlBarProperties, {}> {
-    private readonly event_registry: Registry<ControlBarEvents>;
+    private readonly event_registry: Registry<InternalControlBarEvents>;
     private connection: ConnectionHandler;
+    private connection_handler_callbacks = {
+        notify_state_updated: this.handleConnectionHandlerStateChange.bind(this),
+        notify_connection_state_changed: this.handleConnectionHandlerConnectionStateChange.bind(this)
+    };
+    private connection_manager_callbacks = {
+        active_handler_changed: this.handleActiveConnectionHandlerChanged.bind(this)
+    };
 
     constructor(props) {
         super(props);
 
-        this.event_registry = new Registry<ControlBarEvents>();
+        this.event_registry = new Registry<InternalControlBarEvents>();
         this.event_registry.enable_debug("control-bar");
-        register_actions(this.event_registry);
-
+        initialize(this.event_registry);
     }
 
-    componentDidMount(): void {
-
-    }
-
-    /*
-    initialize_connection_handler_state(handler?: ConnectionHandler) {
-        handler.client_status.output_muted = this._button_speakers === "muted";
-        handler.client_status.input_muted = this._button_microphone === "muted";
-
-        handler.client_status.channel_subscribe_all = this._button_subscribe_all;
-        handler.client_status.queries_visible = this._button_query_visible;
-    }
-     */
-
-    events() : Registry<ControlBarEvents> { return this.event_registry; }
+    events() : Registry<InternalControlBarEvents> { return this.event_registry; }
 
     render() {
         return (
@@ -428,22 +430,66 @@ export class ControlBar extends React.Component<ControlBarProperties, {}> {
         )
     }
 
-    @EventHandler<ControlBarEvents>("set_connection_handler")
-    private handleSetConnectionHandler(event: ControlBarEvents["set_connection_handler"]) {
-        if(this.connection == event.handler) return;
+    private handleActiveConnectionHandlerChanged(event: ConnectionManagerEvents["notify_active_handler_changed"]) {
+        if(event.old_handler)
+            this.unregisterConnectionHandlerEvents(event.old_handler);
 
-        this.connection = event.handler;
+        this.connection = event.new_handler;
+        if(event.new_handler)
+            this.registerConnectionHandlerEvents(event.new_handler);
+
+        this.event_registry.fire("set_connection_handler", { handler: this.connection });
         this.event_registry.fire("update_state_all");
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateHostButton(event: Event<ControlBarEvents>) {
-        if(event.type === "update_state")4
-            if(event.as<"update_state">().state !== "host-button")
+    private unregisterConnectionHandlerEvents(target: ConnectionHandler) {
+        const events = target.events();
+        events.off("notify_state_updated", this.connection_handler_callbacks.notify_state_updated);
+        events.off("notify_connection_state_changed", this.connection_handler_callbacks.notify_connection_state_changed);
+    }
+
+    private registerConnectionHandlerEvents(target: ConnectionHandler) {
+        const events = target.events();
+        events.on("notify_state_updated", this.connection_handler_callbacks.notify_state_updated);
+        events.on("notify_connection_state_changed", this.connection_handler_callbacks.notify_connection_state_changed);
+    }
+
+    componentDidMount(): void {
+        console.error(server_connections.events());
+        server_connections.events().on("notify_active_handler_changed", this.connection_manager_callbacks.active_handler_changed);
+        this.event_registry.fire("set_connection_handler", { handler: server_connections.active_connection() });
+    }
+
+    componentWillUnmount(): void {
+        server_connections.events().off("notify_active_handler_changed", this.connection_manager_callbacks.active_handler_changed);
+    }
+
+    /* Active server connection handler events */
+    private handleConnectionHandlerStateChange(event: ConnectionEvents["notify_state_updated"]) {
+        const type_mapping: {[T in ConnectionStateUpdateType]:ControlStateUpdateType[]} = {
+            "microphone": ["microphone"],
+            "speaker": ["speaker"],
+            "away": ["away"],
+            "subscribe": ["subscribe-mode"],
+            "query": ["query"]
+        };
+        for(const type of type_mapping[event.state] || [])
+            this.event_registry.fire("update_state", { state: type });
+    }
+
+    private handleConnectionHandlerConnectionStateChange(/* event: ConnectionEvents["notify_connection_state_changed"] */) {
+        this.event_registry.fire("update_state", { state: "connect-state" });
+    }
+
+    /* own update & state gathering events */
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateHostButton(event: Event<InternalControlBarEvents>) {
+        if(event.type === "update_state")
+            if(event.as<"update_state">().state !== "host-button" && event.as<"update_state">().state !== "connect-state")
                 return;
 
-        const sprops = this.connection?.channelTree.server?.properties;
-        if(!sprops || !sprops.virtualserver_hostbutton_gfx_url) {
+        const server_props = this.connection?.channelTree.server?.properties;
+        if(!this.connection?.connected || !server_props || !server_props.virtualserver_hostbutton_gfx_url) {
             this.event_registry.fire("update_host_button", {
                 url: undefined,
                 target_url: undefined,
@@ -453,88 +499,88 @@ export class ControlBar extends React.Component<ControlBarProperties, {}> {
         }
 
         this.event_registry.fire("update_host_button", {
-            url: sprops.virtualserver_hostbutton_gfx_url,
-            target_url: sprops.virtualserver_hostbutton_url,
-            title: sprops.virtualserver_hostbutton_tooltip
+            url: server_props.virtualserver_hostbutton_gfx_url,
+            target_url: server_props.virtualserver_hostbutton_url,
+            title: server_props.virtualserver_hostbutton_tooltip
         });
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateSubscribe(event: Event<ControlBarEvents>) {
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateSubscribe(event: Event<InternalControlBarEvents>) {
         if(event.type === "update_state")
             if(event.as<"update_state">().state !== "subscribe-mode")
                 return;
 
         this.event_registry.fire("update_subscribe_state", {
-            subscribeEnabled: !!this.connection?.client_status.channel_subscribe_all
+            subscribeEnabled: !!this.connection?.isSubscribeToAllChannels()
         });
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateConnect(event: Event<ControlBarEvents>) {
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateConnect(event: Event<InternalControlBarEvents>) {
         if(event.type === "update_state")
             if(event.as<"update_state">().state !== "connect-state")
                 return;
 
         this.event_registry.fire("update_connect_state", {
-            connectedAnywhere: server_connections.server_connection_handlers().findIndex(e => e.connected) !== -1,
+            connectedAnywhere: server_connections.all_connections().findIndex(e => e.connected) !== -1,
             connected: !!this.connection?.connected
         });
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateAway(event: Event<ControlBarEvents>) {
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateAway(event: Event<InternalControlBarEvents>) {
         if(event.type === "update_state")
             if(event.as<"update_state">().state !== "away")
                 return;
 
-        const connections = server_connections.server_connection_handlers();
-        const away_connections = server_connections.server_connection_handlers().filter(e => e.client_status.away);
+        const connections = server_connections.all_connections();
+        const away_connections = server_connections.all_connections().filter(e => e.isAway());
 
-        const away_status = this.connection?.client_status.away;
+        const away_status = !!this.connection?.isAway();
         this.event_registry.fire("update_away_state", {
             awayAnywhere: away_connections.length > 0,
-            away: typeof away_status === "string" ? true : !!away_status,
+            away: away_status,
             awayAll: connections.length === away_connections.length
         });
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateMicrophone(event: Event<ControlBarEvents>) {
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateMicrophone(event: Event<InternalControlBarEvents>) {
         if(event.type === "update_state")
             if(event.as<"update_state">().state !== "microphone")
                 return;
 
         this.event_registry.fire("update_microphone_state", {
-            enabled: !!this.connection?.client_status.input_hardware,
-            muted: this.connection?.client_status.input_muted
+            enabled: !this.connection?.isMicrophoneDisabled(),
+            muted: !!this.connection?.isMicrophoneMuted()
         });
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateSpeaker(event: Event<ControlBarEvents>) {
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateSpeaker(event: Event<InternalControlBarEvents>) {
         if(event.type === "update_state")
             if(event.as<"update_state">().state !== "speaker")
                 return;
 
         this.event_registry.fire("update_speaker_state", {
-            muted: this.connection?.client_status.output_muted
+            muted: !!this.connection?.isSpeakerMuted()
         });
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateQuery(event: Event<ControlBarEvents>) {
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateQuery(event: Event<InternalControlBarEvents>) {
         if(event.type === "update_state")
             if(event.as<"update_state">().state !== "query")
                 return;
 
         this.event_registry.fire("update_query_state", {
-            queryShown: !!this.connection?.client_status.queries_visible
+            queryShown: !!this.connection?.areQueriesShown()
         });
     }
 
-    @EventHandler<ControlBarEvents>(["update_state_all", "update_state"])
-    private updateStateBookmarks(event: Event<ControlBarEvents>) {
+    @EventHandler<InternalControlBarEvents>(["update_state_all", "update_state"])
+    private updateStateBookmarks(event: Event<InternalControlBarEvents>) {
         if(event.type === "update_state")
             if(event.as<"update_state">().state !== "bookmarks")
                 return;
@@ -549,7 +595,19 @@ export function control_bar_instance() : ControlBar | undefined {
     return react_reference_?.current;
 }
 
+export type ControlStateUpdateType = "host-button" | "bookmarks" | "subscribe-mode" | "connect-state" | "away" | "microphone" | "speaker" | "query";
 export interface ControlBarEvents {
+    update_state: {
+        state: "host-button" | "bookmarks" | "subscribe-mode" | "connect-state" | "away" | "microphone" | "speaker" | "query"
+    },
+
+    server_updated: {
+        handler: ConnectionHandler,
+        category: "audio" | "settings-initialized" | "connection-state" | "away-status" | "hostbanner"
+    }
+}
+
+export interface InternalControlBarEvents extends ControlBarEvents {
     /* update the UI */
     update_host_button: HostButtonState;
     update_subscribe_state: ChannelSubscribeState;
@@ -559,20 +617,131 @@ export interface ControlBarEvents {
     update_speaker_state: SpeakerState;
     update_query_state: QueryState;
     update_bookmarks: {},
-    update_state: {
-        state: "host-button" | "bookmarks" | "subscribe-mode" | "connect-state" | "away" | "microphone" | "speaker" | "query"
-    },
     update_state_all: { },
 
-    /* trigger actions */
-    set_connection_handler: {
-        handler?: ConnectionHandler
+
+    /* UI-Actions */
+    action_set_subscribe: { subscribe: boolean },
+    action_disconnect: { globally: boolean },
+
+    action_enable_microphone: {}, /* enable/unmute microphone */
+    action_disable_microphone: {},
+
+    action_enable_speaker: {},
+    action_disable_speaker: {},
+
+    action_disable_away: {
+        globally: boolean
+    },
+    action_set_away: {
+        globally: boolean;
+        prompt_reason: boolean;
     },
 
-    server_updated: {
-        handler: ConnectionHandler,
-        category: "audio" | "settings-initialized" | "connection-state" | "away-status" | "hostbanner"
-    }
+    action_toggle_query: {
+        shown: boolean
+    },
 
-    //settings-initialized: Update query and channel flags
+    action_open_window: {
+        window: "bookmark-manage" | "query-manage"
+    },
+
+    action_add_current_server_to_bookmarks: {},
+
+    /* manly used for the action handler */
+    set_connection_handler: {
+        handler?: ConnectionHandler
+    }
+}
+
+
+function initialize(event_registry: Registry<InternalControlBarEvents>) {
+    let current_connection_handler: ConnectionHandler;
+
+    event_registry.on("set_connection_handler", event => current_connection_handler = event.handler);
+
+    event_registry.on("action_disconnect", event => {
+        (event.globally ? server_connections.all_connections() : [server_connections.active_connection()]).filter(e => !!e).forEach(connection => {
+            connection.disconnectFromServer();
+        });
+    });
+
+    event_registry.on("action_set_away", event => {
+        const set_away = message => {
+            const value = typeof message === "string" ? message : true;
+            (event.globally ? server_connections.all_connections() : [server_connections.active_connection()]).filter(e => !!e).forEach(connection => {
+                connection.setAway(value);
+            });
+            settings.changeGlobal(Settings.KEY_CLIENT_STATE_AWAY, true);
+            settings.changeGlobal(Settings.KEY_CLIENT_AWAY_MESSAGE, typeof value === "boolean" ? "" : value);
+        };
+
+        if(event.prompt_reason) {
+            createInputModal(tr("Set away message"), tr("Please enter your away message"), () => true, message => {
+                if(typeof(message) === "string")
+                    set_away(message);
+            }).open();
+        } else {
+            set_away(undefined);
+        }
+    });
+
+    event_registry.on("action_disable_away", event => {
+        for(const connection of event.globally ? server_connections.all_connections() : [server_connections.active_connection()]) {
+            if(!connection) continue;
+
+            connection.setAway(false);
+        }
+
+        settings.changeGlobal(Settings.KEY_CLIENT_STATE_AWAY, false);
+    });
+
+
+    event_registry.on(["action_enable_microphone", "action_disable_microphone"], event => {
+        const state = event.type === "action_enable_microphone";
+        /* change the default global setting */
+        settings.changeGlobal(Settings.KEY_CLIENT_STATE_MICROPHONE_MUTED,  !state);
+
+        if(current_connection_handler) {
+            current_connection_handler.setMicrophoneMuted(!state);
+            if(!current_connection_handler.getVoiceRecorder())
+                current_connection_handler.acquire_recorder(default_recorder, true); /* acquire_recorder already updates the voice status */
+        }
+    });
+
+    event_registry.on(["action_enable_speaker", "action_disable_speaker"], event => {
+        const state = event.type === "action_enable_speaker";
+        /* change the default global setting */
+        settings.changeGlobal(Settings.KEY_CLIENT_STATE_SPEAKER_MUTED, !state);
+
+        current_connection_handler?.setSpeakerMuted(!state);
+    });
+
+    event_registry.on("action_set_subscribe", event => {
+        /* change the default global setting */
+        settings.changeGlobal(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS, event.subscribe);
+
+        current_connection_handler?.setSubscribeToAllChannels(event.subscribe);
+    });
+
+    event_registry.on("action_toggle_query", event => {
+        /* change the default global setting */
+        settings.changeGlobal(Settings.KEY_CLIENT_STATE_QUERY_SHOWN, event.shown);
+
+        current_connection_handler?.setQueriesShown(event.shown);
+    });
+
+    event_registry.on("action_add_current_server_to_bookmarks", () => add_server_to_bookmarks(current_connection_handler));
+
+    event_registry.on("action_open_window", event => {
+        switch (event.window) {
+            case "bookmark-manage":
+                global_client_actions.fire("action_open_window", { window: "bookmark-manage", connection: current_connection_handler });
+                return;
+
+            case "query-manage":
+                global_client_actions.fire("action_open_window", { window: "query-manage", connection: current_connection_handler });
+                return;
+        }
+    })
 }

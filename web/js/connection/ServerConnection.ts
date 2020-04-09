@@ -2,7 +2,8 @@ import {
     AbstractServerConnection,
     CommandOptionDefaults,
     CommandOptions,
-    ConnectionStateListener, voice
+    ConnectionStateListener,
+    voice
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";
 import {ServerAddress} from "tc-shared/ui/server";
@@ -10,13 +11,13 @@ import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
 import {ConnectionCommandHandler, ServerConnectionCommandBoss} from "tc-shared/connection/CommandHandler";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {settings, Settings} from "tc-shared/settings";
-import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
-import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import * as elog from "tc-shared/ui/frames/server_log";
 import {VoiceConnection} from "../voice/VoiceHandler";
+import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -304,36 +305,38 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     async disconnect(reason?: string) : Promise<void> {
-        clearTimeout(this._connect_timeout_timer);
-        this._connect_timeout_timer = undefined;
+        this.updateConnectionState(ConnectionState.DISCONNECTING);
+        try {
+            clearTimeout(this._connect_timeout_timer);
+            this._connect_timeout_timer = undefined;
 
-        clearTimeout(this._ping.thread_id);
-        this._ping.thread_id = undefined;
+            clearTimeout(this._ping.thread_id);
+            this._ping.thread_id = undefined;
 
-        if(typeof(reason) === "string") {
-            //TODO send disconnect reason
-        }
+            if(typeof(reason) === "string") {
+                //TODO send disconnect reason
+            }
 
 
-        if(this._connectionState != ConnectionState.UNCONNECTED)
+            if(this._voice_connection)
+                this._voice_connection.drop_rtp_session();
+
+
+            if(this._socket_connected) {
+                this._socket_connected.close(3000 + 0xFF, tr("request disconnect"));
+                this._socket_connected = undefined;
+            }
+
+
+            for(let future of this._retListener)
+                future.reject(tr("Connection closed"));
+            this._retListener = [];
+
+            this._connected = false;
+            this._retCodeIdx = 0;
+        } finally {
             this.updateConnectionState(ConnectionState.UNCONNECTED);
-
-        if(this._voice_connection)
-            this._voice_connection.drop_rtp_session();
-
-
-        if(this._socket_connected) {
-            this._socket_connected.close(3000 + 0xFF, tr("request disconnect"));
-            this._socket_connected = undefined;
         }
-
-
-        for(let future of this._retListener)
-            future.reject(tr("Connection closed"));
-        this._retListener = [];
-
-        this._connected = false;
-        this._retCodeIdx = 0;
     }
 
     private handle_socket_message(data) {

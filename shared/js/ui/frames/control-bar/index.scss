@@ -1,6 +1,11 @@
 @import "../../../../css/static/properties";
 @import "../../../../css/static/mixin";
 
+/* Variables */
+html:root {
+    --menu-bar-background: #454545;
+}
+
 /* max height is 2em */
 .controlBar {
     display: flex;
@@ -10,6 +15,7 @@
 
     height: 100%;
     align-items: center;
+    background: var(--menu-bar-background);
 
     /* tmp fix for ultra small devices */
     overflow-y: visible;

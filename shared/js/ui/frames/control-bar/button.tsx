@@ -78,7 +78,7 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
     }
 
     private onClick() {
-        const new_state = !this.state.switched;
+        const new_state = !(this.state.switched || this.props.switched);
         const result = this.props.onToggle?.call(undefined, new_state);
         if(this.props.autoSwitch)
             this.updateState({ switched: typeof result === "boolean" ? result : new_state });

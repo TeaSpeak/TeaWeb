@@ -1,7 +1,7 @@
 import {Icon, IconManager} from "tc-shared/FileManager";
 import {spawnBookmarkModal} from "tc-shared/ui/modal/ModalBookmarks";
 import {
-    add_current_server,
+    add_server_to_bookmarks,
     Bookmark,
     bookmarks,
     BookmarkType,
@@ -23,7 +23,6 @@ import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import * as loader from "tc-loader";
 import {formatMessage} from "tc-shared/ui/frames/chat";
-import * as slog from "tc-shared/ui/frames/server_log";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 
 export interface HRItem { }
@@ -268,7 +267,7 @@ export function rebuild_bookmarks() {
 
         _items_bookmark.add_current = _items_bookmark.root.append_item(tr("Add current server to bookmarks"));
         _items_bookmark.add_current.icon('client-bookmark_add');
-        _items_bookmark.add_current.click(() => add_current_server());
+        _items_bookmark.add_current.click(() => add_server_to_bookmarks(server_connections.active_connection()));
         _state_updater["bookmarks.ac"] = { item: _items_bookmark.add_current, conditions: [condition_connected]};
     }
 
@@ -320,7 +319,7 @@ export function update_state() {
 }
 
 const condition_connected = () => {
-    const scon = server_connections ? server_connections.active_connection_handler() : undefined;
+    const scon = server_connections ? server_connections.active_connection() : undefined;
     return scon && scon.connected;
 };
 
@@ -341,13 +340,8 @@ export function initialize() {
         item.click(() => spawnConnectModal({}));
 
         const do_disconnect = (handlers: ConnectionHandler[]) => {
-            for(const handler of handlers) {
-                handler.cancel_reconnect(true);
-                handler.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
-                server_connections.active_connection_handler().serverConnection.disconnect();
-                handler.sound.play(Sound.CONNECTION_DISCONNECTED);
-                handler.log.log(slog.Type.DISCONNECTED, {});
-            }
+            for(const handler of handlers)
+                handler.disconnectFromServer();
 
             control_bar_instance()?.events().fire("update_state", { state: "connect-state" });
             update_state();
@@ -356,7 +350,7 @@ export function initialize() {
         item.icon('client-disconnect');
         item.disabled(true);
         item.click(() => {
-            const handler = server_connections.active_connection_handler();
+            const handler = server_connections.active_connection();
             do_disconnect([handler]);
         });
         _state_updater["connection.dc"] = { item: item, conditions: [() => condition_connected()]};
@@ -364,10 +358,10 @@ export function initialize() {
         item = menu.append_item(tr("Disconnect from all servers"));
         item.icon('client-disconnect');
         item.click(() => {
-            do_disconnect(server_connections.server_connection_handlers());
+            do_disconnect(server_connections.all_connections());
         });
         _state_updater["connection.dca"] = { item: item, conditions: [], update_handler: (item) => {
-            item.visible(server_connections && server_connections.server_connection_handlers().length > 1);
+            item.visible(server_connections && server_connections.all_connections().length > 1);
             return true;
         }};
 
@@ -394,35 +388,35 @@ export function initialize() {
         item = menu.append_item(tr("Server Groups"));
         item.icon("client-permission_server_groups");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection_handler(), "sg").open();
+            spawnPermissionEdit(server_connections.active_connection(), "sg").open();
         });
         _state_updater["permission.sg"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Client Permissions"));
         item.icon("client-permission_client");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection_handler(), "clp").open();
+            spawnPermissionEdit(server_connections.active_connection(), "clp").open();
         });
         _state_updater["permission.clp"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Channel Client Permissions"));
         item.icon("client-permission_client");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection_handler(), "clchp").open();
+            spawnPermissionEdit(server_connections.active_connection(), "clchp").open();
         });
         _state_updater["permission.chclp"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Channel Groups"));
         item.icon("client-permission_channel");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection_handler(), "cg").open();
+            spawnPermissionEdit(server_connections.active_connection(), "cg").open();
         });
         _state_updater["permission.cg"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Channel Permissions"));
         item.icon("client-permission_channel");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection_handler(), "chp").open();
+            spawnPermissionEdit(server_connections.active_connection(), "chp").open();
         });
         _state_updater["permission.cp"] = { item: item, conditions: [condition_connected]};
 
@@ -440,7 +434,7 @@ export function initialize() {
             //TODO: Fixeme use one method for the control bar and here!
             createInputModal(tr("Use token"), tr("Please enter your token/privilege key"), message => message.length > 0, result => {
                 if(!result) return;
-                const scon = server_connections.active_connection_handler();
+                const scon = server_connections.active_connection();
 
                 if(scon.serverConnection.connected)
                     scon.serverConnection.send_command("tokenuse", {
@@ -476,7 +470,7 @@ export function initialize() {
         item = menu.append_item(tr("Ban List"));
         item.icon('client-ban_list');
         item.click(() => {
-            const scon = server_connections.active_connection_handler();
+            const scon = server_connections.active_connection();
             if(scon && scon.connected) {
                 if(scon.permissions.neededPermission(PermissionType.B_CLIENT_BAN_LIST).granted(1)) {
                     openBanList(scon);
@@ -493,7 +487,7 @@ export function initialize() {
         item = menu.append_item(tr("Query List"));
         item.icon('client-server_query');
         item.click(() => {
-            const scon = server_connections.active_connection_handler();
+            const scon = server_connections.active_connection();
             if(scon && scon.connected) {
                 if(scon.permissions.neededPermission(PermissionType.B_CLIENT_QUERY_LIST).granted(1) || scon.permissions.neededPermission(PermissionType.B_CLIENT_QUERY_LIST_OWN).granted(1)) {
                     spawnQueryManage(scon);
@@ -510,7 +504,7 @@ export function initialize() {
         item = menu.append_item(tr("Query Create"));
         item.icon('client-server_query');
         item.click(() => {
-            const scon = server_connections.active_connection_handler();
+            const scon = server_connections.active_connection();
             if(scon && scon.connected) {
                 if(scon.permissions.neededPermission(PermissionType.B_CLIENT_CREATE_MODIFY_SERVERQUERY_LOGIN).granted(1) || scon.permissions.neededPermission(PermissionType.B_CLIENT_QUERY_CREATE).granted(1)) {
                     spawnQueryCreate(scon);

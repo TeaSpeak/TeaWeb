@@ -7,7 +7,7 @@ import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {default_recorder} from "tc-shared/voice/RecorderProfile";
 import {Settings, settings} from "tc-shared/settings";
-import {add_current_server} from "tc-shared/bookmarks";
+import {add_server_to_bookmarks} from "tc-shared/bookmarks";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {spawnQueryCreate} from "tc-shared/ui/modal/ModalQuery";
@@ -17,6 +17,7 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 
+/*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
     {
         let microphone_muted = undefined;
@@ -38,102 +39,16 @@ function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) 
     }
 }
 
-function load_default_states() {
-    this.event_registry.fire("action_toggle_speaker", { state: settings.static_global(Settings.KEY_CONTROL_MUTE_OUTPUT, false) });
-    this.event_registry.fire("action_toggle_microphone", { state: settings.static_global(Settings.KEY_CONTROL_MUTE_INPUT, false) });
+export function load_default_states(event_registry: Registry<ClientGlobalControlEvents>) {
+    event_registry.fire("action_toggle_speaker", { state: settings.static_global(Settings.KEY_CONTROL_MUTE_OUTPUT, false) });
+    event_registry.fire("action_toggle_microphone", { state: settings.static_global(Settings.KEY_CONTROL_MUTE_INPUT, false) });
 }
+*/
 
 export function initialize(event_registry: Registry<ClientGlobalControlEvents>) {
     let current_connection_handler: ConnectionHandler | undefined;
-    event_registry.on("action_set_active_connection_handler", event => { current_connection_handler = event.handler; });
-
-    initialize_sounds(event_registry);
-
-    /* away state handler */
-    event_registry.on("action_set_away", event => {
-        const set_away = message => {
-            for(const connection of event.globally ? server_connections.server_connection_handlers() : [server_connections.active_connection_handler()]) {
-                if(!connection) continue;
-
-                connection.set_away_status(typeof message === "string" && !!message ? message : true, false);
-            }
-            control_bar_instance()?.events()?.fire("update_state", { state: "away" });
-        };
-
-        if(event.prompt_reason) {
-            createInputModal(tr("Set away message"), tr("Please enter your away message"), () => true, message => {
-                if(typeof(message) === "string")
-                    set_away(message);
-            }).open();
-        } else {
-            set_away(undefined);
-        }
-    });
-
-    event_registry.on("action_disable_away", event => {
-        for(const connection of event.globally ? server_connections.server_connection_handlers() : [server_connections.active_connection_handler()]) {
-            if(!connection) continue;
-
-            connection.set_away_status(false, false);
-        }
-
-        control_bar_instance()?.events()?.fire("update_state", { state: "away" });
-    });
-
-
-    event_registry.on("action_toggle_microphone", event => {
-        /* just update the last changed value */
-        settings.changeGlobal(Settings.KEY_CONTROL_MUTE_INPUT,  !event.state);
-
-        if(current_connection_handler) {
-            current_connection_handler.client_status.input_muted = !event.state;
-            if(!current_connection_handler.client_status.input_hardware)
-                current_connection_handler.acquire_recorder(default_recorder, true); /* acquire_recorder already updates the voice status */
-            else
-                current_connection_handler.update_voice_status(undefined);
-        }
-    });
-
-    event_registry.on("action_toggle_speaker", event => {
-        /* just update the last changed value */
-        settings.changeGlobal(Settings.KEY_CONTROL_MUTE_OUTPUT, !event.state);
-
-        if(!current_connection_handler) return;
-
-        current_connection_handler.client_status.output_muted = !event.state;
-        current_connection_handler.update_voice_status(undefined);
-    });
-
-    event_registry.on("action_set_channel_subscribe_mode", event => {
-        if(!current_connection_handler) return;
-
-        current_connection_handler.client_status.channel_subscribe_all = event.subscribe;
-        if(event.subscribe)
-            current_connection_handler.channelTree.subscribe_all_channels();
-        else
-            current_connection_handler.channelTree.unsubscribe_all_channels(true);
-        current_connection_handler.settings.changeServer(Settings.KEY_CONTROL_CHANNEL_SUBSCRIBE_ALL, event.subscribe);
-    });
-
-    event_registry.on("action_toggle_query", event => {
-        if(!current_connection_handler) return;
-
-        current_connection_handler.client_status.queries_visible = event.shown;
-        current_connection_handler.channelTree.toggle_server_queries(event.shown);
-        current_connection_handler.settings.changeServer(Settings.KEY_CONTROL_SHOW_QUERIES, event.shown);
-    });
-
-    event_registry.on("action_add_current_server_to_bookmarks", () => add_current_server());
-
-    event_registry.on("action_open_connect", event => {
-        current_connection_handler?.cancel_reconnect(true);
-        spawnConnectModal({
-            default_connect_new_tab: event.new_tab
-        }, {
-            url: "ts.TeaSpeak.de",
-            enforce: false
-        });
-    });
+    server_connections.events().on("notify_active_handler_changed", event => current_connection_handler = event.new_handler);
+    //initialize_sounds(event_registry);
 
     event_registry.on("action_open_window", event => {
         const handle_import_error = error => {
@@ -233,5 +148,9 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
         }
     });
 
-    load_default_states();
+    event_registry.on("action_open_window_connect", event => {
+        spawnConnectModal({
+            default_connect_new_tab: event.new_tab
+        });
+    });
 }

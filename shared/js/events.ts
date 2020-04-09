@@ -110,6 +110,7 @@ export class Registry<Events> {
     fire<T extends keyof Events>(event_type: T, data?: Events[T]) {
         if(this.debug_prefix) console.log("[%s] Trigger event: %s", this.debug_prefix, event_type);
 
+        if(typeof data === "object" && 'type' in data) throw tr("The keyword 'type' is reserved for the event type and should not be passed as argument");
         const event = Object.assign(typeof data === "undefined" ? SingletonEvent.instance : data, {
             type: event_type,
             as: function () { return this; }
@@ -130,7 +131,7 @@ export class Registry<Events> {
             invoke_count++;
         }
         if(invoke_count === 0) {
-            console.warn("Event handler (%s) triggered event %s which has no consumers.", this.debug_prefix, event_type);
+            console.warn(tr("Event handler (%s) triggered event %s which has no consumers."), this.debug_prefix, event_type);
         }
     }
 
@@ -154,6 +155,7 @@ export class Registry<Events> {
         let registered_events = {};
         for(const function_name of Object.getOwnPropertyNames(proto)) {
             if(function_name === "constructor") continue;
+            if(typeof proto[function_name] !== "function") continue;
             if(typeof proto[function_name][event_annotation_key] !== "object") continue;
 
             const event_data = proto[function_name][event_annotation_key];

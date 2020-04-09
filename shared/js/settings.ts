@@ -184,18 +184,34 @@ export class Settings extends StaticSettings {
         description: 'Triggers a loading error at the end of the loading process.'
     };
 
-    /* Control bar */
-    static readonly KEY_CONTROL_MUTE_INPUT: SettingsKey<boolean> = {
-        key: 'mute_input'
+    /* Default client states */
+    static readonly KEY_CLIENT_STATE_MICROPHONE_MUTED: SettingsKey<boolean> = {
+        key: 'client_state_microphone_muted',
+        default_value: false,
+        fallback_keys: ["mute_input"]
     };
-    static readonly KEY_CONTROL_MUTE_OUTPUT: SettingsKey<boolean> = {
-        key: 'mute_output'
+    static readonly KEY_CLIENT_STATE_SPEAKER_MUTED: SettingsKey<boolean> = {
+        key: 'client_state_speaker_muted',
+        default_value: false,
+        fallback_keys: ["mute_output"]
     };
-    static readonly KEY_CONTROL_SHOW_QUERIES: SettingsKey<boolean> = {
-        key: 'show_server_queries'
+    static readonly KEY_CLIENT_STATE_QUERY_SHOWN: SettingsKey<boolean> = {
+        key: 'client_state_query_shown',
+        default_value: false,
+        fallback_keys: ["show_server_queries"]
     };
-    static readonly KEY_CONTROL_CHANNEL_SUBSCRIBE_ALL: SettingsKey<boolean> = {
-        key: 'channel_subscribe_all'
+    static readonly KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS: SettingsKey<boolean> = {
+        key: 'client_state_subscribe_all_channels',
+        default_value: true,
+        fallback_keys: ["channel_subscribe_all"]
+    };
+    static readonly KEY_CLIENT_STATE_AWAY: SettingsKey<boolean> = {
+        key: 'client_state_away',
+        default_value: false
+    };
+    static readonly KEY_CLIENT_AWAY_MESSAGE: SettingsKey<string> = {
+        key: 'client_away_message',
+        default_value: ""
     };
 
     /* Connect parameters */
@@ -367,6 +383,8 @@ export class Settings extends StaticSettings {
 
     static initialize() {
         settings = new Settings();
+        (window as any).settings = settings;
+        (window as any).Settings = Settings;
     }
 
     private cacheGlobal = {};
@@ -417,9 +435,7 @@ export class Settings extends StaticSettings {
 
     changeGlobal<T>(key: string | SettingsKey<T>, value?: T){
         key = Settings.keyify(key);
-
-
-        if(this.cacheGlobal[key.key] == value) return;
+        if(this.cacheGlobal[key.key] === value) return;
 
         this.updated = true;
         this.cacheGlobal[key.key] = StaticSettings.transformOtS(value);

@@ -15,7 +15,7 @@ import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {default_recorder, RecorderProfile, set_default_recorder} from "tc-shared/voice/RecorderProfile";
 import * as cmanager from "tc-shared/ui/frames/connection_handlers";
-import {server_connections, ServerConnectionManager} from "tc-shared/ui/frames/connection_handlers";
+import {server_connections, ConnectionManager} from "tc-shared/ui/frames/connection_handlers";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
@@ -28,8 +28,9 @@ import * as ppt from "tc-backend/ppt";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as cbar from "./ui/frames/control-bar";
+import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {Registry} from "tc-shared/events";
-import {ClientGlobalControlEvents} from "tc-shared/events/GlobalEvents";
+import {ClientGlobalControlEvents, global_client_actions} from "tc-shared/events/GlobalEvents";
 
 /* required import for init */
 require("./proto").initialize();
@@ -52,14 +53,14 @@ function setup_close() {
             profiles.save();
 
         if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) {
-            const active_connections = server_connections.server_connection_handlers().filter(e => e.connected);
+            const active_connections = server_connections.all_connections().filter(e => e.connected);
             if(active_connections.length == 0) return;
 
             if(!native_client) {
                 event.returnValue = "Are you really sure?<br>You're still connected!";
             } else {
                 const do_exit = () => {
-                    const dp = server_connections.server_connection_handlers().map(e => {
+                    const dp = server_connections.all_connections().map(e => {
                         if(e.serverConnection.connected())
                             return e.serverConnection.disconnect(tr("client closed"));
                         return Promise.resolve();
@@ -146,8 +147,6 @@ async function initialize() {
     bipc.setup();
 }
 
-export let client_control_events: Registry<ClientGlobalControlEvents>;
-
 async function initialize_app() {
     try { //Initialize main template
         const main = $("#tmpl_main").renderTag({
@@ -161,16 +160,22 @@ async function initialize_app() {
         loader.critical_error(tr("Failed to setup main page!"));
         return;
     }
-
-    client_control_events = new Registry<ClientGlobalControlEvents>();
+    cmanager.initialize();
+    global_ev_handler.initialize(global_client_actions);
     {
         const bar = (
             <cbar.ControlBar ref={cbar.react_reference()} multiSession={true} />
         );
 
         ReactDOM.render(bar, $(".container-control-bar")[0]);
-        cbar.control_bar_instance().load_default_states();
     }
+    /*
+    loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
+        name: "settings init",
+        priority: 10,
+        function: async () => global_ev_handler.load_default_states(client_control_events)
+    });
+    */
 
     if(!aplayer.initialize())
         console.warn(tr("Failed to initialize audio controller!"));
@@ -266,7 +271,7 @@ export function handle_connect_request(properties: bipc.connect.ConnectRequestDa
                 hashed: password_hashed
             } : undefined
         });
-        server_connections.set_active_connection_handler(connection);
+        server_connections.set_active_connection(connection);
     } else {
         spawnConnectModal({},{
             url: properties.address,
@@ -311,12 +316,9 @@ function main() {
 
     top_menu.initialize();
 
-    cmanager.initialize(new ServerConnectionManager($("#connection-handlers")));
-    control_bar.control_bar.initialise(); /* before connection handler to allow property apply */
-
-    const initial_handler = server_connections.spawn_server_connection_handler();
+    const initial_handler = server_connections.spawn_server_connection();
     initial_handler.acquire_recorder(default_recorder, false);
-    control_bar.control_bar.set_connection_handler(initial_handler);
+    cmanager.server_connections.set_active_connection(initial_handler);
     /** Setup the XF forum identity **/
     fidentity.update_forum();
 
@@ -328,9 +330,9 @@ function main() {
         if(_resize_timeout)
             clearTimeout(_resize_timeout);
         _resize_timeout = setTimeout(() => {
-            for(const connection of server_connections.server_connection_handlers())
+            for(const connection of server_connections.all_connections())
                 connection.invoke_resized_on_activate = true;
-            const active_connection = server_connections.active_connection_handler();
+            const active_connection = server_connections.active_connection();
             if(active_connection)
                 active_connection.resize_elements();
             $(".window-resize-listener").trigger('resize');
@@ -346,13 +348,13 @@ function main() {
         log.info(LogCategory.STATISTICS, tr("Received user count update: %o"), status);
     });
 
-    server_connections.set_active_connection_handler(server_connections.server_connection_handlers()[0]);
+    server_connections.set_active_connection(server_connections.all_connections()[0]);
 
 
     (window as any).test_upload = (message?: string) => {
         message = message || "Hello World";
 
-        const connection = server_connections.active_connection_handler();
+        const connection = server_connections.active_connection();
         connection.fileManager.upload_file({
             size: message.length,
             overwrite: true,
@@ -376,7 +378,7 @@ function main() {
 
     /* schedule it a bit later then the main because the main function is still within the loader */
     setTimeout(() => {
-        const connection = server_connections.active_connection_handler();
+        const connection = server_connections.active_connection();
         /*
         Modals.createChannelModal(connection, undefined, undefined, connection.permissions, (cb, perms) => {
             
@@ -512,7 +514,7 @@ const task_connect_handler: loader.Task = {
 
             loader.register_task(loader.Stage.LOADED, {
                 priority: 0,
-                function: async () => handle_connect_request(connect_data, server_connections.active_connection_handler() || server_connections.spawn_server_connection_handler()),
+                function: async () => handle_connect_request(connect_data, server_connections.active_connection() || server_connections.spawn_server_connection()),
                 name: tr("default url connect")
             });
         }
@@ -523,7 +525,7 @@ const task_connect_handler: loader.Task = {
             };
 
             chandler.callback_execute = data => {
-                handle_connect_request(data, server_connections.spawn_server_connection_handler());
+                handle_connect_request(data, server_connections.spawn_server_connection());
                 return true;
             }
         }

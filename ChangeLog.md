@@ -1,4 +1,10 @@
 # Changelog:
+* **09.03.20**
+    - Using React for the client control bar
+    - Saving last away state and message
+    - Saving last query show state
+    - Removing the hostbutton when we're disconnected from the server
+    
 * **04.03.20**
     - Implemented the new music bot playlist song list
     - Implemented the missing server log message builders

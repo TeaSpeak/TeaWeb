@@ -1,14 +1,15 @@
 import {ConnectionHandler, DisconnectReason} from "tc-shared/ConnectionHandler";
 import {Settings, settings} from "tc-shared/settings";
 import * as top_menu from "./MenuBar";
-import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
-import {client_control_events} from "tc-shared/main";
+import {Registry} from "tc-shared/events";
 
-export let server_connections: ServerConnectionManager;
-export function initialize(manager: ServerConnectionManager) {
-    server_connections = manager;
+export let server_connections: ConnectionManager;
+export function initialize() {
+    if(server_connections) throw tr("Connection manager has already been initialized");
+    server_connections = new ConnectionManager($("#connection-handlers"));
 }
-export class ServerConnectionManager {
+export class ConnectionManager {
+    private readonly event_registry: Registry<ConnectionManagerEvents>;
     private connection_handlers: ConnectionHandler[] = [];
     private active_handler: ConnectionHandler | undefined;
 
@@ -23,7 +24,20 @@ export class ServerConnectionManager {
     private _tag_button_scoll_right: JQuery;
     private _tag_button_scoll_left: JQuery;
 
+    private default_server_state: {
+        microphone_disabled: boolean,
+        speaker_disabled: boolean,
+        away: string | boolean
+    } = {
+        away: false,
+        speaker_disabled: false,
+        microphone_disabled: false
+    };
+
     constructor(tag: JQuery) {
+        this.event_registry = new Registry<ConnectionManagerEvents>();
+        this.event_registry.enable_debug("connection-manager");
+
         this._tag = tag;
 
         if(settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION, false))
@@ -42,23 +56,42 @@ export class ServerConnectionManager {
         this._container_hostbanner = $("#hostbanner");
         this._container_chat = $("#chat");
 
-        this.set_active_connection_handler(undefined);
+        this.set_active_connection(undefined);
     }
 
-    spawn_server_connection_handler() : ConnectionHandler {
+    events() : Registry<ConnectionManagerEvents> {
+        return this.event_registry;
+    }
+
+    spawn_server_connection() : ConnectionHandler {
         const handler = new ConnectionHandler();
+        handler.initialize_client_state(this.active_handler);
         this.connection_handlers.push(handler);
-        control_bar.update_button_away();
-        control_bar.initialize_connection_handler_state(handler);
+
+        //FIXME: Load last status from last connection or via global variables!
+        /*
+        handler.set_away_status(this.default_server_state.away, false);
+        handler.client_status.input_muted = this.default_server_state.microphone_disabled;
+        handler.client_status.output_muted = this.default_server_state.speaker_disabled;
+        if(!this.default_server_state.microphone_disabled)
+            handler.acquire_recorder(default_recorder, true);
+         */
 
         handler.tag_connection_handler.appendTo(this._tag_connection_entries);
         this._tag.toggleClass("shown", this.connection_handlers.length > 1);
         this._update_scroll();
+
+        this.event_registry.fire("notify_handler_created", { handler: handler });
         return handler;
     }
 
-    destroy_server_connection_handler(handler: ConnectionHandler) {
-        this.connection_handlers.remove(handler);
+    destroy_server_connection(handler: ConnectionHandler) {
+        if(this.connection_handlers.length <= 1)
+            throw "cannot deleted the last connection handler";
+
+        if(!this.connection_handlers.remove(handler))
+            throw "unknown connection handler";
+
         handler.tag_connection_handler.remove();
         this._update_scroll();
         this._tag.toggleClass("shown", this.connection_handlers.length > 1);
@@ -70,16 +103,22 @@ export class ServerConnectionManager {
         }
 
         if(handler === this.active_handler)
-            this.set_active_connection_handler(this.connection_handlers[0]);
+            this.set_active_connection_(this.connection_handlers[0]);
+        this.event_registry.fire("notify_handler_deleted", { handler: handler });
 
         /* destroy all elements */
         handler.destroy();
     }
 
-    set_active_connection_handler(handler: ConnectionHandler) {
+    set_active_connection(handler: ConnectionHandler) {
         if(handler && this.connection_handlers.indexOf(handler) == -1)
             throw "Handler hasn't been registered or is already obsolete!";
+        if(handler === this.active_handler)
+            return;
+        this.set_active_connection_(handler);
+    }
 
+    private set_active_connection_(handler: ConnectionHandler) {
         this._tag_connection_entries.find(".active").removeClass("active");
         this._container_channel_tree.children().detach();
         this._container_chat.children().detach();
@@ -97,16 +136,20 @@ export class ServerConnectionManager {
             if(handler.invoke_resized_on_activate)
                 handler.resize_elements();
         }
+        const old_handler = this.active_handler;
         this.active_handler = handler;
-        client_control_events.fire("action_set_active_connection_handler", { handler: handler }); //FIXME: This even should set the new handler, not vice versa!
-        top_menu.update_state();
+        this.event_registry.fire("notify_active_handler_changed", {
+            old_handler: old_handler,
+            new_handler: handler
+        });
+        top_menu.update_state(); //FIXME: Top menu should listen to our events!
     }
 
-    active_connection_handler() : ConnectionHandler | undefined {
+    active_connection() : ConnectionHandler | undefined {
         return this.active_handler;
     }
 
-    server_connection_handlers() : ConnectionHandler[] {
+    all_connections() : ConnectionHandler[] {
         return this.connection_handlers;
     }
 
@@ -139,5 +182,23 @@ export class ServerConnectionManager {
         const scroll = this._tag_connection_entries.scrollLeft() || 0;
         this._tag_button_scoll_left.toggleClass("disabled", scroll <= 0);
         this._tag_button_scoll_right.toggleClass("disabled", scroll + this._tag_connection_entries.width() + 2 >= this._tag_connection_entries[0].scrollWidth);
+    }
+}
+
+export interface ConnectionManagerEvents {
+    notify_handler_created: {
+        handler: ConnectionHandler
+    },
+
+    /* This will also trigger when a connection gets deleted. So if you're just interested to connect event handler to the active connection,
+        unregister them from the old handler and register them for the new handler every time */
+    notify_active_handler_changed: {
+        old_handler: ConnectionHandler | undefined,
+        new_handler: ConnectionHandler | undefined
+    },
+
+    /* Will never fire on an active connection handler! */
+    notify_handler_deleted: {
+        handler: ConnectionHandler
     }
 }
