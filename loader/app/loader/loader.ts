@@ -374,13 +374,3 @@ export const templates = template_loader;
         clog("%c ", display_detect);
     }
 }
-
-/* Loading error image (async) */
-const init_error_image = () => {
-    const node = document.getElementById("load-error-image");
-    const image = document.createElement("img");
-    image.src = node.getAttribute("x-src");
-    image.style.height = "12em";
-    node.replaceWith(image);
-};
-setTimeout(init_error_image, 100);
