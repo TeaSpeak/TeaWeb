@@ -116,7 +116,7 @@ function handle_failure() {
     echo "Exit code    : $1"
     echo "Error message: ${*:2}"
     if [[ ${build_verbose} -eq 0 ]] && [[ "$error" != "" ]]; then
-        echo "Command log  : (lookup \"$(realpath --relative-to="$(pwd)" "${LOG_FILE}")\" for detailed output!)"
+        echo "Command log  : (lookup \"${LOG_FILE}\" for detailed output!)"
         echo "$error" | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
     fi
     echo "--------------------------- [ERROR] ---------------------------"
