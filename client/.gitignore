@@ -5,3 +5,4 @@ js/**/*.js
 js/**/*.js.map
 
 declarations/
+generated/

@@ -7,6 +7,8 @@ css/static/**/*.css.map
 
 js/**/*.js
 js/**/*.js.map
+js/**/*.css
+js/**/*.css.map
 
 loader/**/*.css
 loader/**/*.css.map
