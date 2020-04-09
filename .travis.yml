@@ -27,10 +27,12 @@ deploy:
   - provider: script
     script: "bash  scripts/travis_deploy_dev_server.sh"
     cleanup: false
+    skip_cleanup: true
     on:
       branch: develop
   - provider: script
     cleanup: false
+    skip_cleanup: true
     script: "bash  scripts/travis_deploy_github.sh"
     on:
       branch: master
