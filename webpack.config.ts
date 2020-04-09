@@ -3,6 +3,7 @@ import * as fs from "fs";
 import trtransformer from "./tools/trgen/ts_transformer";
 import {exec} from "child_process";
 import * as util from "util";
+import EJSGenerator = require("./webpack/EJSGenerator");
 
 const path = require('path');
 const webpack = require("webpack");
@@ -74,7 +75,24 @@ export const config = async (target: "web" | "client") => { return {
             minSize: 1024 * 8,
             maxSize: 1024 * 128
         }),
-        new webpack.DefinePlugin(await generate_definitions(target))
+        new webpack.DefinePlugin(await generate_definitions(target)),
+
+        new EJSGenerator({
+            variables: {
+                build_target: target
+            },
+            input: path.join(__dirname, "shared/html/index.html.ejs"),
+            output: path.join(__dirname, "dist/index.html"),
+            initialJSEntryChunk: "loader",
+            minify: !isDevelopment,
+            embedInitialJSEntryChunk: !isDevelopment,
+
+            embedInitialCSSFile: !isDevelopment,
+            initialCSSFile: {
+                localFile: path.join(__dirname, "loader/css/loader.css"),
+                publicFile: "css/loader.css"
+            }
+        })
     ].filter(e => !!e),
     module: {
         rules: [
@@ -142,13 +160,8 @@ export const config = async (target: "web" | "client") => { return {
         {"tc-loader": "window loader"}
     ] as any[],
     output: {
-        filename: (chunkData) => {
-            if(chunkData.chunk.name === "loader")
-                return "loader.js";
-
-            return '[name].js';
-        },
-        chunkFilename: "[name].js",
+        filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
+        chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
         path: path.resolve(__dirname, 'dist'),
         publicPath: "js/"
     },

@@ -1,5 +1,4 @@
 import {createModal} from "tc-shared/ui/elements/Modal";
-import * as loader from "tc-loader";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 
@@ -10,29 +9,16 @@ function format_date(date: number) {
 }
 
 export function spawnAbout() {
-    const app_version = (() => {
-        const version_node = document.getElementById("app_version");
-        if(!version_node) return undefined;
-
-        const version = version_node.hasAttribute("value") ? version_node.getAttribute("value") : undefined;
-        if(!version) return undefined;
-
-        if(version == "unknown" || version.replace(/0+/, "").length == 0)
-            return undefined;
-
-        return version;
-    })();
-
     const connectModal = createModal({
         header: tr("About"),
         body: () => {
             let tag = $("#tmpl_about").renderTag({
                 client: __build.target !== "web",
 
-                version_client: __build.target === "web" ? app_version || "in-dev" : "loading...",
-                version_ui: app_version || "in-dev",
+                version_client: __build.target === "web" ? __build.version || "in-dev" : "loading...",
+                version_ui: __build.version || "in-dev",
 
-                version_timestamp: !!app_version ? format_date(Date.now()) : "--"
+                version_timestamp: format_date(__build.timestamp)
             });
             return tag;
         },

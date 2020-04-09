@@ -309,85 +309,78 @@ export const templates = template_loader;
 /* Hello World message */
 {
 
-    const hello_world = () => {
-        const clog = console.log;
-        const print_security = () => {
-            {
-                const css = [
-                    "display: block",
-                    "text-align: center",
-                    "font-size: 42px",
-                    "font-weight: bold",
-                    "-webkit-text-stroke: 2px black",
-                    "color: red"
-                ].join(";");
-                clog("%c ", "font-size: 100px;");
-                clog("%cSecurity warning:", css);
-            }
-            {
-                const css = [
-                    "display: block",
-                    "text-align: center",
-                    "font-size: 18px",
-                    "font-weight: bold"
-                ].join(";");
-
-                clog("%cPasting anything in here could give attackers access to your data.", css);
-                clog("%cUnless you understand exactly what you are doing, close this window and stay safe.", css);
-                clog("%c ", "font-size: 100px;");
-            }
-        };
-
-        /* print the hello world */
+    const clog = console.log;
+    const print_security = () => {
         {
             const css = [
                 "display: block",
                 "text-align: center",
-                "font-size: 72px",
+                "font-size: 42px",
                 "font-weight: bold",
                 "-webkit-text-stroke: 2px black",
-                "color: #18BC9C"
+                "color: red"
             ].join(";");
-            clog("%cHey, hold on!", css);
+            clog("%c ", "font-size: 100px;");
+            clog("%cSecurity warning:", css);
         }
         {
             const css = [
                 "display: block",
                 "text-align: center",
-                "font-size: 26px",
+                "font-size: 18px",
                 "font-weight: bold"
             ].join(";");
 
-            const css_2 = [
-                "display: block",
-                "text-align: center",
-                "font-size: 26px",
-                "font-weight: bold",
-                "color: blue"
-            ].join(";");
-
-            const display_detect = /./;
-            display_detect.toString = function() { print_security(); return ""; };
-
-            clog("%cLovely to see you using and debugging the TeaSpeak-Web client.", css);
-            clog("%cIf you have some good ideas or already done some incredible changes,", css);
-            clog("%cyou'll be may interested to share them here: %chttps://github.com/TeaSpeak/TeaWeb", css, css_2);
-            clog("%c ", display_detect);
+            clog("%cPasting anything in here could give attackers access to your data.", css);
+            clog("%cUnless you understand exactly what you are doing, close this window and stay safe.", css);
+            clog("%c ", "font-size: 100px;");
         }
     };
 
-    try { /* lets try to print it as VM code :)*/
-        let hello_world_code = hello_world.toString();
-        hello_world_code = hello_world_code.substr(hello_world_code.indexOf('() => {') + 8);
-        hello_world_code = hello_world_code.substring(0, hello_world_code.lastIndexOf("}"));
+    /* print the hello world */
+    {
+        const css = [
+            "display: block",
+            "text-align: center",
+            "font-size: 72px",
+            "font-weight: bold",
+            "-webkit-text-stroke: 2px black",
+            "color: #18BC9C"
+        ].join(";");
+        clog("%cHey, hold on!", css);
+    }
+    {
+        const css = [
+            "display: block",
+            "text-align: center",
+            "font-size: 26px",
+            "font-weight: bold"
+        ].join(";");
 
-        //Look aheads are not possible with firefox
-        //hello_world_code = hello_world_code.replace(/(?<!const|let)(?<=^([^"'/]|"[^"]*"|'[^']*'|`[^`]*`|\/[^/]*\/)*) /gm, ""); /* replace all spaces */
-        hello_world_code = hello_world_code.replace(/[\n\r]/g, ""); /* replace as new lines */
+        const css_2 = [
+            "display: block",
+            "text-align: center",
+            "font-size: 26px",
+            "font-weight: bold",
+            "color: blue"
+        ].join(";");
 
-        eval(hello_world_code);
-    } catch(e) {
-        console.error(e);
-        hello_world();
+        const display_detect = /./;
+        display_detect.toString = function() { print_security(); return ""; };
+
+        clog("%cLovely to see you using and debugging the TeaSpeak-Web client.", css);
+        clog("%cIf you have some good ideas or already done some incredible changes,", css);
+        clog("%cyou'll be may interested to share them here: %chttps://github.com/TeaSpeak/TeaWeb", css, css_2);
+        clog("%c ", display_detect);
     }
 }
+
+/* Loading error image (async) */
+const init_error_image = () => {
+    const node = document.getElementById("load-error-image");
+    const image = document.createElement("img");
+    image.src = node.getAttribute("x-src");
+    image.style.height = "12em";
+    node.replaceWith(image);
+};
+setTimeout(init_error_image, 100);

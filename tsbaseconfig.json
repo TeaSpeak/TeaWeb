@@ -14,6 +14,7 @@
 
     "webpack/build-definitions.d.ts",
     "webpack/ManifestPlugin.ts",
+    "webpack/EJSGenerator.ts",
     "webpack/WatLoader.ts",
 
     "file.ts"

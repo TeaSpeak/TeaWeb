@@ -24,8 +24,9 @@ class ManifestGenerator {
                 const modules = [];
 
                 for(const chunk of chunk_group.chunks) {
+                    if(!chunk.files.length) continue;
                     if(chunk.files.length !== 1) {
-                        console.error("Expected only on file per chunk but got " + chunk.files.length);
+                        console.error("Expected only one file per chunk but got " + chunk.files.length);
                         chunk.files.forEach(e => console.log(" - %s", e));
                         throw "expected only one file per chunk";
                     }

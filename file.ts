@@ -40,11 +40,27 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
     },
     { /* javascript files as manifest.json */
         "type": "js",
-        "search-pattern": /.*$/,
+        "search-pattern": /.*\.(js|json)$/,
         "build-target": "dev|rel",
 
         "path": "js/",
         "local-path": "./dist/"
+    },
+    { /* javascript files as manifest.json */
+        "type": "html",
+        "search-pattern": /.*\.html$/,
+        "build-target": "dev|rel",
+
+        "path": "./",
+        "local-path": "./dist/"
+    },
+    { /* Loader css file (only required in dev mode. In release it gets inlined) */
+        "type": "css",
+        "search-pattern": /.*\.css$/,
+        "build-target": "dev",
+
+        "path": "css/",
+        "local-path": "./loader/css/"
     },
     { /* shared developer single css files */
         "type": "css",

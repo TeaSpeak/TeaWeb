@@ -1,13 +1,10 @@
-<?php
-	ini_set('display_errors', 1);
-	ini_set('display_startup_errors', 1);
-	error_reporting(E_ALL);
+<%
+/* given build compile */
+var build_target;
+var initial_script;
+var initial_css;
+%>
 
-	$WEB_CLIENT = (!isset($CLIENT) || !$CLIENT) && http_response_code() !== false || (defined("TEA_SERVE") && TEA_SERVE);
-    $localhost = false;
-    if(gethostname() == "WolverinDEV")
-        $localhost = true;
-?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -25,39 +22,22 @@
         <!-- TODO Needs some fix -->
         <link rel="manifest" href="manifest.json">
 
-<?php
-            if(!$WEB_CLIENT) {
-                echo "\t\t<title>TeaClient</title>" . PHP_EOL;
-				echo "\t\t<meta name='og:title' content='TeaClient'>" . PHP_EOL;
-            } else {
-				echo "\t\t<title>TeaSpeak-Web</title>" . PHP_EOL;
-				echo "\t\t<meta name='og:title' content='TeaSpeak-Web'>" . PHP_EOL;
-				echo "\t\t<link rel='shortcut icon' href='img/favicon/teacup.png' type='image/x-icon'>" . PHP_EOL;
-				//<link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png">
-            }
-?>
+    <% if(build_target === "client") { %>
+        <title>TeaClient</title>
+        <meta name='og:title' content='TeaClient'>
+    <% } else { %>
+        <title>TeaSpeak-Web</title>
+        <meta name='og:title' content='TeaSpeak-Web'>
+        <link rel='shortcut icon' href='img/favicon/teacup.png' type='image/x-icon'>
+        <!-- <link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png"> -->
+    <% } %>
 
-        <!-- PHP generated properties -->
         <x-properties id="properties" style="display: none">
-<?php
-				function spawn_property($name, $value, $element_id = null)
-				{
-				    if(isset($value))
-					    echo "\t\t\t<x-property key=\"" . $name . "\" " . (isset($element_id) ? "id=\"" . $element_id . "\" " : "") . "value=\"" . urlencode($value) . "\"></x-property>\r\n";
-				}
-
-				spawn_property('connect_default_host', $localhost ? "localhost" : "ts.TeaSpeak.de");
-				spawn_property('localhost_debug', $localhost ? "true" : "false");
-
-				if(defined("TEA_SERVE") && TEA_SERVE) {
-                    $version = "0000000";
-                } else {
-                    $version = file_get_contents("./version");
-                    if ($version === false)
-                        $version = "unknown";
-                }
-				spawn_property("version", $version, "app_version");
-?>
+            <!--
+            We don't need to put any properties down here.
+            But this tag is here to not brick the settings class.
+            But it will be removed quite soonly as soon this class has been fixed
+            -->
         </x-properties>
 
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -124,6 +104,8 @@
                 display: block;
             }
         </style>
+
+        <%- initial_css %>
     </head>
     <body>
         <!-- No javascript error -->
@@ -139,18 +121,8 @@
         </noscript>
 
         <!-- loader setup -->
-        <div id="style">
-            <link rel="stylesheet" href="css/loader/loader.css">
-        </div>
-
-        <meta name="app-loader-target" content="app">
-        <div id="scripts">
-            <!--
-            <script type="application/javascript" src="loader/loader_app.min.js" async defer></script>
-            <script type="application/javascript" src="loader/loader_app.js" async defer></script>
-            -->
-            <script type="application/javascript" src="js/loader.js?_<?php echo time() ?>" async defer></script>
-        </div>
+        <div id="style"></div>
+        <div id="scripts"></div>
 
         <!-- Loading screen -->
         <div class="loader" id="loader-overlay">
@@ -172,13 +144,15 @@
         <!-- Critical load error -->
         <div class="fulloverlay" id="critical-load">
             <div class="container">
-                <img src="img/loading_error_right.svg" style="height: 12em">
+                <!-- We're loading the error image via JS so improve first page content loaded speed -->
+                <div id="load-error-image" x-src="img/loading_error_right.svg"></div>
+
                 <h1 class="error" style="color: red; margin-bottom: 0"></h1>
                 <h3 class="detail" style="margin-top: .5em"></h3>
             </div>
         </div>
 
-        <!-- debugging close -->
+<%# <!-- Old debgging stuff back for the days where we designed the client -->
 <?php if($localhost && false) { ?>
         <div id="spoiler-style" style="z-index: 1000000; position: absolute; display: block; background: white; right: 5px; left: 5px; top: 34px;">
             <!-- <img src="https://www.chromatic-solutions.de/teaspeak/window/connect_opened.png"> -->
@@ -241,6 +215,7 @@
             };
             setTimeout(() => init($), 1000);
         </script>
-<?php } ?>
+%>
+        <%- initial_script %>
     </body>
 </html>

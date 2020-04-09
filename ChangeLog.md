@@ -4,7 +4,9 @@
     - Saving last away state and message
     - Saving last query show state
     - Removing the hostbutton when we're disconnected from the server
-    
+    - Improved main pages loader speed as well inlining the initial js/css sources
+      This ensures that the error & loading animation loads properly regardless of any errors
+      
 * **04.03.20**
     - Implemented the new music bot playlist song list
     - Implemented the missing server log message builders
