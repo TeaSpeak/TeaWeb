@@ -2,7 +2,7 @@
 
 LOG_FILE="auto-build/logs/build.log"
 PACKAGES_DIRECTORY="auto-build/packages/"
-build_verbose=1
+build_verbose=0
 build_release=1
 build_debug=0
 
@@ -59,17 +59,10 @@ function parse_arguments() {
 function execute() {
     time_begin=$(date +%s%N)
 
+    echo "> Executing step: $1" >> ${LOG_FILE}
+    echo -e "\e[32m> Executing step: $1\e[0m"
     #Execute the command
-    if [[ "$#" -gt 2 ]]; then
-        echo "[EXECUTE] Executing commands:" >> ${LOG_FILE}
-        for command in "${@:2}"; do
-            echo "[EXECUTE]   $command" >> ${LOG_FILE}
-        done
-    else
-        echo "[EXECUTE] Executing command \"$2\"" >> ${LOG_FILE}
-    fi
-
-    for command in "${@:2}"; do
+    for command in "${@:3}"; do
         echo "$> $command" >> ${LOG_FILE}
         if [[ ${build_verbose} -gt 0 ]]; then
             echo "$> $command"
@@ -80,13 +73,14 @@ function execute() {
             if [[ -f ${LOG_FILE}.tmp ]]; then
                 rm ${LOG_FILE}.tmp
             fi
-            eval "${command}" |& tee ${LOG_FILE}.tmp | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
+            ${command} |& tee ${LOG_FILE}.tmp | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
 
             error_code=${PIPESTATUS[0]}
             error=$(cat ${LOG_FILE}.tmp)
+            cat ${LOG_FILE}.tmp >> ${LOG_FILE}
             rm ${LOG_FILE}.tmp
         else
-            error=$(eval "${command}" 2>&1)
+            error=$(${command} 2>&1)
             error_code=$?
             echo "$error" >> ${LOG_FILE}
         fi
@@ -101,13 +95,15 @@ function execute() {
     time_end=$(date +%s%N)
     time_needed=$((time_end - time_begin))
     time_needed_ms=$((time_needed / 1000000))
-    echo "[EXECUTE] Command exited with exit code $error_code (Runtime ${time_needed_ms}ms)" >> ${LOG_FILE}
+    step_color="\e[32m"
+    [[ ${error_code} -ne 0 ]] && step_color="\e[31m"
+    echo "$step_color> Step took ${time_needed_ms}ms" >> ${LOG_FILE}
+    echo -e "$step_color> Step took ${time_needed_ms}ms\e[0m"
 
     if [[ ${error_code} -ne 0 ]]; then
-        handle_failure ${error_code} "$1"
+        handle_failure ${error_code} "$2"
     fi
 
-    echo "Command execution required ${time_needed_ms}ms"
     error=""
 }
 
@@ -120,8 +116,8 @@ function handle_failure() {
     echo "Exit code    : $1"
     echo "Error message: ${*:2}"
     if [[ ${build_verbose} -eq 0 ]] && [[ "$error" != "" ]]; then
-        echo "Command log: (lookup \"${LOG_FILE}\" for detailed output!)"
-        echo "$error" | grep -v 'libstdc++.so\S*: no version information available'
+        echo "Command log  : (lookup \"$(realpath --relative-to="$(pwd)" "${LOG_FILE}")\" for detailed output!)"
+        echo "$error" | grep -E '^[^(/\S*/libstdc++.so\S*: no version information available)].*'
     fi
     echo "--------------------------- [ERROR] ---------------------------"
     exit 1
@@ -135,7 +131,11 @@ if [[ ! -d $(dirname "${LOG_FILE}") ]]; then
     mkdir -p "$(dirname "${LOG_FILE}")"
 fi
 
-echo "Script arguments: $* ($#)"
+if [[ $# -eq 0 ]]; then
+    echo "Executing build scripts with no arguments"
+else
+    echo "Executing build scripts with arguments: $* ($#)"
+fi
 if [[ "$1" == "bash" ]]; then
     bash
     exit 0
@@ -147,22 +147,22 @@ if [[ -e "$LOG_FILE" ]]; then
     rm "$LOG_FILE"
 fi
 
-echo "Updating project and submodules"
 execute \
+    "Git checkout" \
     "Failed to update submodules" \
     "git pull" \
     "git submodule update --init --recursive --remote --checkout" \
     "git status &>/dev/null" #We need this to "attach" to git else the git diff dosn't work
 
 
-echo "---------- Native modules ---------- "
-echo "Updating NPM"
-execute \
-    "Failed to update npm" \
-    "npm install"
+#execute \
+#    "NPM Update" \
+#    "Failed to update npm" \
+#    "npm install"
 
 chmod +x ./web/native-codec/build.sh
 execute \
+    "Building native codes" \
     "Failed to build native opus codec" \
     "docker exec -it emscripten bash -c 'web/native-codec/build.sh'"
 
@@ -185,26 +185,26 @@ function move_target_file() {
 }
 
 function execute_build_release() {
-    echo "Building release package"
     execute \
+        "Building release package" \
         "Failed to build release" \
         "./scripts/build.sh web release"
 
-    echo "Packaging release"
     execute \
+        "Packaging release" \
         "Failed to package release" \
         "./scripts/web_package.sh release"
 
     move_target_file
 }
 function execute_build_debug() {
-    echo "Building debug package"
     execute \
+        "Building debug package" \
         "Failed to build debug" \
         "./scripts/build.sh web dev"
 
-    echo "Packaging release"
     execute \
+        "Packaging release" \
         "Failed to package debug" \
         "./scripts/web_package.sh dev"
 
