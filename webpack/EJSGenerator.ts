@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as util from "util";
 import * as minifier from "html-minifier";
 import * as path from "path";
-import {Compilation} from "webpack";
+import Compilation = webpack.compilation.Compilation;
 
 interface Options {
     input: string,

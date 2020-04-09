@@ -10,6 +10,7 @@
     "dtsgen": "node tools/dtsgen/index.js",
     "trgen": "node tools/trgen/index.js",
     "sass": "sass",
+    "csso": "csso",
     "tsc": "tsc",
     "start": "npm run compile-project-base && node file.js ndevelop",
     "build-web": "webpack --config webpack-web.config.js",
