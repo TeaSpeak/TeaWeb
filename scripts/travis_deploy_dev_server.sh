@@ -14,9 +14,9 @@ chmod 600 /tmp/sftp_key
 }
 cd "$(dirname "$0")/.." || { echo "Failed to enter base dir"; exit 1; }
 
-file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "*.zip" -print)
+file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "TeaWeb-Release*.zip" -print)
 [[ $(echo "$file" | wc -l) -ne 1 ]] && {
-    echo "Invalid release file count (Expected 1 but got $(echo "$file" | wc -l))"
+    echo "Invalid release file count (Expected 1 but got $(echo "$file" | wc -l)): ${file[*]}"
     exit 1
 }
 [[ ! -e "$file" ]] && {
