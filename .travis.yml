@@ -17,16 +17,20 @@ before_install:
 stages:
   - compile
   # - test We've no tested defined yet
-  - name: deploy-develop
-    if: branch = develop
-  - name: deploy-release
-    if: branch = master
 
 jobs:
   include:
     - stage: compile
       script: "./scripts/travis.sh --enable-release --enable-debug || travis_terminate 1;"
-    - stage: deploy-develop
-      script: "./scripts/travis_deploy_dev_server.sh || travis_terminate 1;"
-    - stage: deploy-release
-      script: "./scripts/travis_deploy_github.sh || travis_terminate 1;"
+
+deploy:
+  - provider: script
+    script: "./scripts/travis_deploy_dev_server.sh || travis_terminate 1;"
+    skip_cleanup: true
+    on:
+      branch: develop
+  - provider: script
+    skip_cleanup: true
+    script: "./scripts/travis_deploy_github.sh || travis_terminate 1;"
+    on:
+      branch: master
