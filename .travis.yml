@@ -1,4 +1,4 @@
-sudo: true
+sudo: required
 dist: trusty
 
 language: node_js
@@ -12,13 +12,9 @@ before_install:
   # If ever run on windows make sure you don't run this in the git bash!
   - docker run -dit --name emscripten -v "$(pwd)":"/src/" trzeci/emscripten:sdk-incoming-64bit bash
   - chmod +x ./scripts/travis.sh
+  - chmod +x ./scripts/travis_deploy.sh
   - chmod +x ./scripts/travis_deploy_dev_server.sh
   - chmod +x ./scripts/travis_deploy_github.sh
-
-branches:
-  only:
-    - master
-    - develop
 
 stages:
   - compile

@@ -4,8 +4,8 @@ PACKAGES_DIRECTORY="auto-build/packages/"
 LOG_FILE="auto-build/logs/build.log"
 
 if [[ -z "${GIT_AUTHTOKEN}" ]]; then
-    echo "Missing environment variable GIT_AUTHTOKEN. Please set it before usign this script!"
-    exit 1
+    echo "GIT_AUTHTOKEN isn't set. Don't deploying build!"
+    exit 0
 fi
 
 GIT_COMMIT_SHORT=$(git rev-parse --short HEAD)
