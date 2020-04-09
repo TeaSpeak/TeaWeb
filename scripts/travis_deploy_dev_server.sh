@@ -30,7 +30,7 @@ ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Tr
     echo "Failed to delete the old .zip files"
 }
 
-filename="$PACKAGES_DIRECTORY/TeaWeb-Release-$(git rev-parse --short HEAD)"
+filename="TeaWeb-Release-$(git rev-parse --short HEAD).zip"
 sftp -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@dev.web.teaspeak.de << EOF
     put $file tmp-upload/$filename
 EOF
