@@ -20,7 +20,7 @@ const generate_definitions = async (target: string) => {
     const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
     let version;
     if(git_rev.indexOf("/") === -1)
-        version = git_rev;
+        version = (git_rev || "0000000").substr(0, 7);
     else
         version = fs.readFileSync(path.join(__dirname, ".git", git_rev.substr(5).trim())).toString().substr(0, 7);
 
