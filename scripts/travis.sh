@@ -147,19 +147,6 @@ if [[ -e "$LOG_FILE" ]]; then
     rm "$LOG_FILE"
 fi
 
-execute \
-    "Git checkout" \
-    "Failed to update submodules" \
-    "git pull" \
-    "git submodule update --init --recursive --remote --checkout" \
-    "git status &>/dev/null" #We need this to "attach" to git else the git diff dosn't work
-
-
-#execute \
-#    "NPM Update" \
-#    "Failed to update npm" \
-#    "npm install"
-
 chmod +x ./web/native-codec/build.sh
 execute \
     "Building native codes" \
