@@ -753,8 +753,15 @@ namespace watcher {
 
             const data = buffer.toString();
             if(this.verbose) {
-                for(const line of data.split("\n"))
+                const lines = data.split("\n");
+                for(let index = 0; index < lines.length; index++) {
+                    let line = lines[index];
+                    if(line.charAt(0) === "\r")
+                        line = line.substr(1);
+                    if(line === "" && index + 1 === lines.length)
+                        break;
                     console.log("%s: %s", this.name, line);
+                }
             }
         }
 
@@ -783,18 +790,29 @@ namespace watcher {
         }
 
         protected start_command(): string[] {
-            return ["npm", "run", "ttsc", "--", "-w"];
+            return ["npm", "run", "tsc", "--", "-w"];
         }
     }
 
     export class SASSWatcher extends Watcher {
         constructor() {
             super("SASS Watcher");
-            this.verbose = true;
+            this.verbose = false;
         }
 
         protected start_command(): string[] {
             return ["npm", "run", "sass", "--", "--watch", ".:."];
+        }
+    }
+
+    export class WebPackWatcher extends Watcher {
+        constructor() {
+            super("WebPack Watcher");
+            this.verbose = true;
+        }
+
+        protected start_command(): string[] {
+            return ["npm", "run", "watch-web"];
         }
     }
 }
@@ -836,33 +854,48 @@ async function main_develop(node: boolean, target: "client" | "web", port: numbe
             if(flags.indexOf("--no-sass") == -1)
                 await sasswatcher.start();
 
-            try {
-                await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
-                    port: port,
-                    php: php_exe(),
-                    search_options: {
-                        source_path: __dirname,
-                        parameter: [],
-                        target: target,
-                        mode: "dev",
-                        serving: true
-                    }
-                });
-            } catch(error) {
-                console.error("Failed to start server: %o", error instanceof Error ? error.message : error);
-                return;
-            }
-
-            console.log("Server started on %d", port);
-            console.log("To stop the session press ^K^C.");
-
-            await new Promise(resolve => process.once('SIGINT', resolve));
-            console.log("Stopping session.");
+            const webpackwatcher = new watcher.WebPackWatcher();
 
             try {
-                await server.shutdown();
-            } catch(error) {
-                console.warn("Failed to stop web server: %o", error instanceof Error ? error.message : error);
+                if(flags.indexOf("--no-webpack") == -1)
+                    await webpackwatcher.start();
+
+                try {
+                    await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
+                        port: port,
+                        php: php_exe(),
+                        search_options: {
+                            source_path: __dirname,
+                            parameter: [],
+                            target: target,
+                            mode: "dev",
+                            serving: true
+                        }
+                    });
+                } catch(error) {
+                    console.error("Failed to start server: %o", error instanceof Error ? error.message : error);
+                    return;
+                }
+
+                console.log("Server started on %d", port);
+                console.log("To stop the session press ^K^C.");
+
+                await new Promise(resolve => process.once('SIGINT', resolve));
+                console.log("Stopping session.");
+
+                try {
+                    await server.shutdown();
+                } catch(error) {
+                    console.warn("Failed to stop web server: %o", error instanceof Error ? error.message : error);
+                }
+            } catch (error) {
+                console.error("Failed to start WebPack watcher: %o", error instanceof Error ? error.message : error);
+            } finally {
+                try {
+                    await webpackwatcher.stop();
+                } catch(error) {
+                    console.warn("Failed to stop WebPack watcher: %o", error instanceof Error ? error.message : error);
+                }
             }
         } catch(error) {
             console.error("Failed to start SASS watcher: %o", error instanceof Error ? error.message : error);

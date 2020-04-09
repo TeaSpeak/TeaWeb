@@ -1,6 +1,8 @@
 import * as ts from "typescript";
 import * as fs from "fs";
 import trtransformer from "./tools/trgen/ts_transformer";
+import {exec} from "child_process";
+import * as util from "util";
 
 const path = require('path');
 const webpack = require("webpack");
@@ -13,7 +15,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 export let isDevelopment = process.env.NODE_ENV === 'development';
 console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
-const generate_definitions = (target: string) => {
+const generate_definitions = async (target: string) => {
     const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
     let version;
     if(git_rev.indexOf("/") === -1)
@@ -21,18 +23,27 @@ const generate_definitions = (target: string) => {
     else
         version = fs.readFileSync(path.join(__dirname, ".git", git_rev.substr(5).trim())).toString().substr(0, 7);
 
+    let timestamp;
+    try {
+        const { stdout } = await util.promisify(exec)("git show -s --format=%ct");
+        timestamp = parseInt(stdout.toString());
+        if(isNaN(timestamp)) throw "failed to parse timestamp '" + stdout.toString() + "'";
+    } catch (error) {
+        console.error("Failed to get commit timestamp: %o", error);
+        throw "failed to get commit timestamp";
+    }
     return {
         "__build": {
             target: JSON.stringify(target),
             mode: JSON.stringify(isDevelopment ? "debug" : "release"),
             version: JSON.stringify(version),
-            timestamp: Date.now(),
+            timestamp: timestamp,
             entry_chunk_name: JSON.stringify(target === "web" ? "shared-app" : "client-app")
         } as BuildDefinitions
     } as any;
 };
 
-export const config = (target: "web" | "client") => { return {
+export const config = async (target: "web" | "client") => { return {
     entry: {
         "loader": "./loader/app/index.ts"
     },
@@ -63,7 +74,7 @@ export const config = (target: "web" | "client") => { return {
             minSize: 1024 * 8,
             maxSize: 1024 * 128
         }),
-        new webpack.DefinePlugin(generate_definitions(target))
+        new webpack.DefinePlugin(await generate_definitions(target))
     ].filter(e => !!e),
     module: {
         rules: [
