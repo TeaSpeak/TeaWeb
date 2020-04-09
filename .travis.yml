@@ -8,19 +8,31 @@ node_js:
 services:
   - docker
 
-sudo: required
-
 before_install:
   # If ever run on windows make sure you don't run this in the git bash!
   - docker run -dit --name emscripten -v "$(pwd)":"/src/" trzeci/emscripten:sdk-incoming-64bit bash
   - chmod +x ./scripts/travis.sh
-  - chmod +x ./scripts/travis_deploy.sh
+  - chmod +x ./scripts/travis_deploy_dev_server.sh
+  - chmod +x ./scripts/travis_deploy_github.sh
 
 branches:
   only:
     - master
     - develop
 
-script:
-  - "./scripts/travis.sh --enable-release --enable-debug || travis_terminate 1;"
-  - "./scripts/travis_deploy.sh || travis_terminate 1;"
+stages:
+  - compile
+  # - test We've no tested defined yet
+  - name: deploy-develop
+    if: branch = develop
+  - name: deploy-release
+    if: branch = master
+
+jobs:
+  include:
+    - stage: compile
+      script: "./scripts/travis.sh --enable-release --enable-debug || travis_terminate 1;"
+    - stage: deploy-develop
+      script: "./scripts/travis_deploy_dev_server.sh || travis_terminate 1;"
+    - stage: deploy-release
+      script: "./scripts/travis_deploy_github.sh || travis_terminate 1;"

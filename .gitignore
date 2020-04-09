@@ -20,6 +20,7 @@ node_modules/
 # Don't add the created packages to git
 /TeaSpeakUI.tar.gz
 /TeaWeb-*.zip
+/auto-build
 
 /todo.txt
 /tmp/
