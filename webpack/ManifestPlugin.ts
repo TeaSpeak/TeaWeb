@@ -20,16 +20,31 @@ class ManifestGenerator {
             const chunks_data = {};
             for(const chunk_group of compilation.chunkGroups) {
                 const js_files = [];
+                const css_files = [];
                 const modules = [];
 
                 for(const chunk of chunk_group.chunks) {
-                    if(chunk.files.length !== 1) throw "expected only one file per chunk";
+                    if(chunk.files.length !== 1) {
+                        console.error("Expected only on file per chunk but got " + chunk.files.length);
+                        chunk.files.forEach(e => console.log(" - %s", e));
+                        throw "expected only one file per chunk";
+                    }
 
-                    js_files.push({
-                        hash: chunk.hash,
-                        file: chunk.files[0]
-                    });
-
+                    for(const file of chunk.files) {
+                        const extension = path.extname(file);
+                        if(extension === ".js")
+                            js_files.push({
+                                hash: chunk.hash,
+                                file: file
+                            });
+                        else if(extension === ".css")
+                            css_files.push({
+                                hash: chunk.hash,
+                                file: file
+                            });
+                        else
+                            throw "Unknown chunk file with extension " + extension;
+                    }
 
                     for(const module of chunk._modules) {
                         if(!module.type.startsWith("javascript/"))
@@ -51,6 +66,7 @@ class ManifestGenerator {
 
                 chunks_data[chunk_group.options.name] = {
                     files: js_files,
+                    css_files: css_files,
                     modules: modules
                 };
             }

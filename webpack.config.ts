@@ -70,7 +70,15 @@ export const config = (target: "web" | "client") => { return {
             {
                 test: /\.s[ac]ss$/,
                 loader: [
-                    isDevelopment ? 'style-loader' : MiniCssExtractPlugin.loader,
+                    'style-loader',
+                    /*
+                    {
+                        loader: MiniCssExtractPlugin.loader,
+                        options: {
+                            esModule: true,
+                        },
+                    },
+                    */
                     {
                         loader: 'css-loader',
                         options: {
