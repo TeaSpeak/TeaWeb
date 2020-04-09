@@ -25,12 +25,12 @@ jobs:
 
 deploy:
   - provider: script
-    script: "./scripts/travis_deploy_dev_server.sh || travis_terminate 1;"
-    skip_cleanup: true
+    script: "bash  scripts/travis_deploy_dev_server.sh"
+    cleanup: false
     on:
       branch: develop
   - provider: script
-    skip_cleanup: true
-    script: "./scripts/travis_deploy_github.sh || travis_terminate 1;"
+    cleanup: false
+    script: "bash  scripts/travis_deploy_github.sh"
     on:
       branch: master
