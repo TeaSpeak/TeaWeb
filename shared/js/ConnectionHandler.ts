@@ -214,7 +214,7 @@ export class ConnectionHandler {
         this.update_voice_status();
 
         this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.global(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
-        this.setAway_(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : true), false);
+        this.setAway_(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
         this.setQueriesShown(source ? source.client_status.queries_visible : settings.global(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
     }
 
