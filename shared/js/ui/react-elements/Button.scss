@@ -1,0 +1,76 @@
+@import "../../../css/static/mixin.scss";
+@import "../../../css/static/properties.scss";
+
+.button {
+    cursor: pointer;
+
+    background-color: rgba(0, 0, 0, 0.5);
+
+    border-width: 0;
+    border-radius: $border_radius_middle;
+    border-style: solid;
+
+    color: #7c7c7c;
+
+    height: 2.2em;
+    padding: .25em 1em;
+
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14), 0 3px 1px -2px rgba(0, 0, 0, .2), 0 1px 5px 0 rgba(0, 0, 0, .12);
+
+    @include text-dotdotdot();
+
+    &:hover {
+        background-color: #0a0a0a;
+    }
+
+    &:disabled {
+        box-shadow: none;
+        background-color: rgba(0, 0, 0, 0.27);
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.27);
+        }
+    }
+
+    &.color-green {
+        border-bottom-width: 2px;
+        border-bottom-color: #389738;
+    }
+
+    &.color-blue, &.color-default {
+        border-bottom-width: 2px;
+        border-bottom-color: #386896;
+    }
+
+    &.color-red {
+        border-bottom-width: 2px;
+        border-bottom-color: #973838;
+    }
+
+    &.color-purple {
+        border-bottom-width: 2px;
+        border-bottom-color: #5f3586;
+    }
+
+    &.color-brown {
+        border-bottom-width: 2px;
+        border-bottom-color: #965238;
+    }
+
+    &.color-yellow {
+        border-bottom-width: 2px;
+        border-bottom-color: #96903a;
+    }
+
+    &.type-normal { }
+
+    &.type-small {
+        font-size: .9em;
+    }
+
+    &.type-extra-small {
+        font-size: .6em;
+    }
+
+    @include transition(background-color $button_hover_animation_time ease-in-out);
+}

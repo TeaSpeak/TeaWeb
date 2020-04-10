@@ -317,6 +317,8 @@ export class ConnectionHandler {
 
     async disconnectFromServer(reason?: string) {
         this.cancel_reconnect(true);
+        if(!this.connected) return;
+
         this.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
         try {
             await this.serverConnection.disconnect();
@@ -977,7 +979,7 @@ export class ConnectionHandler {
         this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
         this.update_voice_status();
     }
-
+    toggleMicrophone() { this.setMicrophoneMuted(!this.isMicrophoneMuted()); }
     isMicrophoneMuted() { return this.client_status.input_muted; }
 
     /*
@@ -996,6 +998,7 @@ export class ConnectionHandler {
         this.update_voice_status();
     }
 
+    toggleSpeakerMuted() { this.setSpeakerMuted(!this.isSpeakerMuted()); }
     isSpeakerMuted() { return this.client_status.output_muted; }
 
     /*
@@ -1044,7 +1047,7 @@ export class ConnectionHandler {
             state: "away"
         });
     }
-
+    toggleAway() { this.setAway(!this.isAway()); }
     isAway() : boolean { return typeof this.client_status.away !== "boolean" || this.client_status.away; }
 
     setQueriesShown(flag: boolean) {

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {ReactComponentBase} from "tc-shared/ui/elements/ReactComponentBase";
+import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {DropdownContainer} from "tc-shared/ui/frames/control-bar/dropdown";
 const cssStyle = require("./button.scss");
 

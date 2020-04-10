@@ -1,8 +1,8 @@
 import * as React from "react";
 import {Button} from "./button";
 import {DropdownEntry} from "tc-shared/ui/frames/control-bar/dropdown";
-import {Translatable} from "tc-shared/ui/elements/i18n";
-import {ReactComponentBase} from "tc-shared/ui/elements/ReactComponentBase";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
+import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {ConnectionEvents, ConnectionHandler, ConnectionStateUpdateType} from "tc-shared/ConnectionHandler";
 import {Event, EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ConnectionManagerEvents, server_connections} from "tc-shared/ui/frames/connection_handlers";

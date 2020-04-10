@@ -9,6 +9,6 @@ export class Translatable extends React.Component<{ message: string }, { transla
     }
 
     render() {
-        return this.state.translated;
+        return this.state.translated || "";
     }
 }

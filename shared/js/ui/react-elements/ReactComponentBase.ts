@@ -11,10 +11,12 @@ export abstract class ReactComponentBase<Properties, State> extends React.Compon
     protected initialize() { }
     protected abstract default_state() : State;
 
-    updateState(updates: {[key in keyof State]?: State[key]}) {
-        if(Object.keys(updates).findIndex(e => updates[e] !== this.state[e]) === -1)
+    updateState(updates: {[key in keyof State]?: State[key]}, callback?: () => void) {
+        if(Object.keys(updates).findIndex(e => updates[e] !== this.state[e]) === -1) {
+            if(callback) setTimeout(callback, 0);
             return; /* no state has been changed */
-        this.setState(Object.assign(this.state, updates));
+        }
+        this.setState(Object.assign(this.state, updates), callback);
     }
 
     protected classList(...classes: (string | undefined)[]) {

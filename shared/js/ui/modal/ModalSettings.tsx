@@ -30,6 +30,9 @@ import * as loader from "tc-loader";
 import * as aplayer from "tc-backend/audio/player";
 import * as arecorder from "tc-backend/audio/recorder";
 import * as ppt from "tc-backend/ppt";
+import {KeyMapSettings} from "tc-shared/ui/modal/settings/Keymap";
+import * as React from "react";
+import * as ReactDOM from "react-dom";
 
 export function spawnSettingsModal(default_page?: string) : Modal {
     let modal: Modal;
@@ -71,6 +74,7 @@ export function spawnSettingsModal(default_page?: string) : Modal {
     settings_general_application(modal.htmlTag.find(".right .container.general-application"), modal);
     settings_general_language(modal.htmlTag.find(".right .container.general-language"), modal);
     settings_general_chat(modal.htmlTag.find(".right .container.general-chat"), modal);
+    settings_general_keymap(modal.htmlTag.find(".right .container.general-keymap"), modal);
     settings_audio_microphone(modal.htmlTag.find(".right .container.audio-microphone"), modal);
     settings_audio_speaker(modal.htmlTag.find(".right .container.audio-speaker"), modal);
     settings_audio_sounds(modal.htmlTag.find(".right .container.audio-sounds"), modal);
@@ -342,6 +346,12 @@ function settings_general_language(container: JQuery, modal: Modal) {
     update_current_selected();
 }
 
+function settings_general_keymap(container: JQuery, modal: Modal) {
+    const entry = <KeyMapSettings />;
+    ReactDOM.render(entry, container[0]);
+    modal.close_listener.push(() => ReactDOM.hydrate(entry, container[0])); //FIXME: hydrate does not work!
+}
+
 function settings_general_chat(container: JQuery, modal: Modal) {
     /* timestamp format */
     {
@@ -587,9 +597,12 @@ function settings_audio_sounds(contianer: JQuery, modal: Modal) {
     /* initialize sound list */
     {
         const container_sounds = contianer.find(".container-sounds");
+        let scrollbar;
+        /*
         let scrollbar: SimpleBar;
         if("SimpleBar" in window)
             scrollbar = new SimpleBar(container_sounds[0]);
+        */
 
         const generate_sound = (_sound: Sound) => {
             let tag_play_pause: JQuery, tag_play: JQuery, tag_pause: JQuery, tag_input_muted: JQuery;
@@ -662,13 +675,13 @@ function settings_audio_sounds(contianer: JQuery, modal: Modal) {
 
     const overlap_tag = contianer.find(".option-overlap-same");
     overlap_tag.on('change', event => {
-        const activated = (<HTMLInputElement>event.target).checked;
+        const activated = (event.target as HTMLInputElement).checked;
         sound.set_overlap_activated(activated);
     }).prop("checked", sound.overlap_activated());
 
     const mute_tag = contianer.find(".option-mute-output");
     mute_tag.on('change', event => {
-        const activated = (<HTMLInputElement>event.target).checked;
+        const activated = (event.target as HTMLInputElement).checked;
         sound.set_ignore_output_muted(!activated);
     }).prop("checked", !sound.ignore_output_muted());
 
@@ -2031,10 +2044,10 @@ export namespace modal_settings {
                 let last_value;
 
                 container_select.find("input").on('change', event => {
-                    if(!(<HTMLInputElement>event.target).checked)
+                    if(!(event.target as HTMLInputElement).checked)
                         return;
 
-                    const mode = (<HTMLInputElement>event.target).value;
+                    const mode = (event.target as HTMLInputElement).value;
                     if(mode === last_value) return;
 
                     event_registry.fire("set-setting", { setting: "vad-type", value: mode });

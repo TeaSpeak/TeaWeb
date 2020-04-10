@@ -1,4 +1,8 @@
 # Changelog:
+* **10.03.20**
+    - Improved key code displaying 
+    - Added a keymap system (Hotkeys)
+    
 * **09.03.20**
     - Using React for the client control bar
     - Saving last away state and message

@@ -168,7 +168,17 @@ export function key_description(key: KeyDescriptor) {
     if(!result && !key.key_code)
         return tr("unset");
 
-    if(key.key_code)
-        result += " + " + key.key_code;
+    if(key.key_code) {
+        let key_name;
+        if(key.key_code.startsWith("Key"))
+            key_name = key.key_code.substr(3);
+        else if(key.key_code.startsWith("Digit"))
+            key_name = key.key_code.substr(5);
+        else if(key.key_code.startsWith("Numpad"))
+            key_name = "Numpad " + key.key_code.substr(6);
+        else
+            key_name = key.key_code;
+        result += " + " + key_name;
+    }
     return result.substr(3);
 }

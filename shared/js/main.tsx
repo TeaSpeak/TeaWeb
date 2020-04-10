@@ -24,13 +24,13 @@ import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
 import * as aplayer from "tc-backend/audio/player";
 import * as arecorder from "tc-backend/audio/recorder";
 import * as ppt from "tc-backend/ppt";
-
+import * as keycontrol from "./KeyControl";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as cbar from "./ui/frames/control-bar";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
-import {Registry} from "tc-shared/events";
 import {ClientGlobalControlEvents, global_client_actions} from "tc-shared/events/GlobalEvents";
+import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 
 /* required import for init */
 require("./proto").initialize();
@@ -338,6 +338,7 @@ function main() {
             $(".window-resize-listener").trigger('resize');
         }, 1000);
     });
+    keycontrol.initialize();
 
     stats.initialize({
         verbose: true,
@@ -400,7 +401,7 @@ function main() {
         ], () => {});
         */
     }, 4000);
-    //Modals.spawnSettingsModal("identity-profiles");
+    spawnSettingsModal("general-keymap");
     //Modals.spawnKeySelect(console.log);
     //Modals.spawnBookmarkModal();
 

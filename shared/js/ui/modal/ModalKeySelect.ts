@@ -1,6 +1,5 @@
 import {createModal} from "tc-shared/ui/elements/Modal";
 import {EventType, key_description, KeyEvent} from "tc-shared/PPTListener";
-import * as loader from "tc-loader";
 import * as ppt from "tc-backend/ppt";
 
 export function spawnKeySelect(callback: (key?: KeyEvent) => void) {

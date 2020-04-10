@@ -343,6 +343,11 @@ export class Settings extends StaticSettings {
         default_value: 100
     };
 
+    static readonly KEY_KEYCONTROL_DATA: SettingsKey<string> = {
+        key: "keycontrol_data",
+        default_value: "{}"
+    };
+
     static readonly KEY_LAST_INVITE_LINK_TYPE: SettingsKey<string> = {
         key: "last_invite_link_type",
         default_value: "tea-web"

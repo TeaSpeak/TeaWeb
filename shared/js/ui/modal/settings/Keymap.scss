@@ -1,0 +1,167 @@
+@import "../../../../css/static/mixin.scss";
+@import "../../../../css/static/properties.scss";
+
+.containerList {
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    min-height: 6em;
+
+    background-color: $color_list_background;
+    border: 1px $color_list_border solid;
+
+    border-radius: $border_radius_large;
+
+    .elements {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+
+        overflow-x: hidden;
+        overflow-y: auto;
+
+        padding-top: .5em;
+        padding-bottom: .5em;
+
+        @include chat-scrollbar-vertical();
+
+        .row {
+            flex-grow: 0;
+            flex-shrink: 0;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            height: 1.5em;
+
+            padding-right: .5em;
+            cursor: pointer;
+
+            &.category {
+                padding-left: .25em;
+
+                :global .arrow {
+                    align-self: center;
+                    margin: .3em;
+                    /*
+                    margin-right: .5em;
+
+                    &.down {
+                        margin-bottom: .25em;
+                    }
+                    */
+                }
+
+                a {
+                    margin-left: .2em;
+                }
+            }
+
+            &.entry {
+                padding-left: 2em;
+
+                :global .icon {
+                    align-self: center;
+
+                    margin-right: .25em;
+                }
+
+                .key {
+                    flex-shrink: 0;
+                    flex-grow: 0;
+
+                    color: #464646;
+                    background-color: #17171a;
+                    border-radius: .2em;
+
+                    height: 1.5em;
+                    font-size: .7em;
+
+                    padding-left: .35em;
+                    padding-right: .35em;
+                    align-self: center;
+                }
+
+                .status {
+                    flex-shrink: 0;
+                    flex-grow: 0;
+
+                    font-size: .7em;
+                    align-self: center;
+
+                    &.error {
+                        color: #a10000;
+                    }
+                }
+            }
+
+            a {
+                flex-grow: 1;
+                flex-shrink: 1;
+
+                min-width: 2em;
+            }
+
+            &:hover {
+                background-color: $color_list_hover;
+            }
+
+            &.selected {
+                background-color: $color_list_selected;
+
+                .key {
+                    background-color: #0e0e10;
+                }
+            }
+        }
+
+        .row[hidden] {
+            display: none;
+        }
+    }
+
+    .buttons {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
+
+        background-color: #242527;
+
+        padding: .5em;
+
+        border: none;
+        border-top: 1px solid #161616;
+    }
+}
+
+.header {
+    height: 3em;
+    flex-grow: 0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    padding-bottom: 0.5em;
+
+    a {
+        flex-grow: 1;
+        flex-shrink: 1;
+        align-self: flex-end;
+        font-weight: bold;
+        color: #e0e0e0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
