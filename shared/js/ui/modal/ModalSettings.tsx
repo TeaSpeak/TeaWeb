@@ -349,7 +349,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
 function settings_general_keymap(container: JQuery, modal: Modal) {
     const entry = <KeyMapSettings />;
     ReactDOM.render(entry, container[0]);
-    modal.close_listener.push(() => ReactDOM.hydrate(entry, container[0])); //FIXME: hydrate does not work!
+    modal.close_listener.push(() => ReactDOM.unmountComponentAtNode(container[0]));
 }
 
 function settings_general_chat(container: JQuery, modal: Modal) {

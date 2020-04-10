@@ -401,7 +401,7 @@ function main() {
         ], () => {});
         */
     }, 4000);
-    spawnSettingsModal("general-keymap");
+    //spawnSettingsModal("general-keymap");
     //Modals.spawnKeySelect(console.log);
     //Modals.spawnBookmarkModal();
 
