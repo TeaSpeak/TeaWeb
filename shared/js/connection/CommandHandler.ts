@@ -208,16 +208,18 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         if(properties.virtualserver_hostmessage_mode > 0) {
             if(properties.virtualserver_hostmessage_mode == 1) {
                 /* show in log */
-                this.connection_handler.log.log(server_log.Type.SERVER_HOST_MESSAGE, {
-                    message: properties.virtualserver_hostmessage
-                });
+                if(properties.virtualserver_hostmessage)
+                    this.connection_handler.log.log(server_log.Type.SERVER_HOST_MESSAGE, {
+                        message: properties.virtualserver_hostmessage
+                    });
             } else {
                 /* create modal/create modal and quit */
-                createModal({
-                    header: tr("Host message"),
-                    body: bbcode_chat(properties.virtualserver_hostmessage),
-                    footer: undefined
-                }).open();
+                if(properties.virtualserver_hostmessage || properties.virtualserver_hostmessage_mode == 3)
+                    createModal({
+                        header: tr("Host message"),
+                        body: bbcode_chat(properties.virtualserver_hostmessage),
+                        footer: undefined
+                    }).open();
 
                 if(properties.virtualserver_hostmessage_mode == 3) {
                     /* first let the client initialize his stuff */
