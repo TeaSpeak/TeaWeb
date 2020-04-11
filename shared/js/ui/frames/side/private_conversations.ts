@@ -866,7 +866,7 @@ export class PrivateConverations {
                 this._current_conversation.set_unread_flag(false, true); /* only updates everything if the state changes */
         });
 
-        this._container_conversation_messages = this._container_conversation.find(".messages");
+        this._container_conversation_messages = this._container_conversation.find(".container-messages");
         this._container_conversation_messages.on('scroll', event => {
             if(!this._current_conversation)
                 return;
