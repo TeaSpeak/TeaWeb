@@ -323,10 +323,10 @@ class QueryButton extends ReactComponentBase<{ event_registry: Registry<Internal
     render() {
         let toggle;
         if(this.state.queryShown)
-            toggle = <DropdownEntry icon={"client-toggle_server_query_clients"} text={<Translatable message={"Hide server queries"} />}
+            toggle = <DropdownEntry key={"query-show"} icon={"client-toggle_server_query_clients"} text={<Translatable message={"Hide server queries"} />}
                                     onClick={() => this.props.event_registry.fire("action_toggle_query", { shown: false })}/>;
         else
-            toggle = <DropdownEntry icon={"client-toggle_server_query_clients"} text={<Translatable message={"Show server queries"} />}
+            toggle = <DropdownEntry key={"query-hide"} icon={"client-toggle_server_query_clients"} text={<Translatable message={"Show server queries"} />}
                                     onClick={() => this.props.event_registry.fire("action_toggle_query", { shown: true })}/>;
         return (
             <Button switched={this.state.queryShown} autoSwitch={false} iconNormal={"client-server_query"}
