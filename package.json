@@ -13,10 +13,14 @@
     "csso": "csso",
     "tsc": "tsc",
     "start": "npm run compile-project-base && node file.js ndevelop",
+
     "build-web": "webpack --config webpack-web.config.js",
-    "watch-web": "webpack --watch --config webpack-web.config.js",
+    "develop-web": "npm run compile-project-base && node file.js develop web",
     "build-client": "webpack --config webpack-client.config.js",
-    "watch-client": "webpack --watch --config webpack-client.config.js",
+    "develop-client": "npm run compile-project-base && node file.js develop client",
+
+    "webpack-web": "webpack --config webpack-web.config.js",
+    "webpack-client": "webpack --config webpack-client.config.js",
     "generate-i18n-gtranslate": "node shared/generate_i18n_gtranslate.js"
   },
   "author": "TeaSpeak (WolverinDEV)",

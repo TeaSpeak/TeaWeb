@@ -822,13 +822,16 @@ namespace watcher {
     }
 
     export class WebPackWatcher extends Watcher {
-        constructor() {
+        private readonly target;
+
+        constructor(target: "web" | "client") {
             super("WebPack Watcher");
+            this.target = target;
             this.verbose = true;
         }
 
         protected start_command(): string[] {
-            return ["npm", "run", "watch-web"];
+            return ["npm", "run", "webpack-" + this.target, "--", "--watch"];
         }
     }
 }
@@ -870,7 +873,7 @@ async function main_develop(node: boolean, target: "client" | "web", port: numbe
             if(flags.indexOf("--no-sass") == -1)
                 await sasswatcher.start();
 
-            const webpackwatcher = new watcher.WebPackWatcher();
+            const webpackwatcher = new watcher.WebPackWatcher(target);
 
             try {
                 if(flags.indexOf("--no-webpack") == -1)
