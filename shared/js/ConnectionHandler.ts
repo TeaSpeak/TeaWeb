@@ -347,6 +347,7 @@ export class ConnectionHandler {
     @EventHandler<ConnectionEvents>("notify_connection_state_changed")
     private handleConnectionConnected(event: ConnectionEvents["notify_connection_state_changed"]) {
         if(event.new_state !== ConnectionState.CONNECTED) return;
+
         log.info(LogCategory.CLIENT, tr("Client connected"));
         this.log.log(server_log.Type.CONNECTION_CONNECTED, {
             own_client: this.getClient().log_data()
@@ -667,6 +668,7 @@ export class ConnectionHandler {
     }
 
     private on_connection_state_changed(old_state: ConnectionState, new_state: ConnectionState) {
+        console.log("From %s to %s", ConnectionState[old_state], ConnectionState[new_state]);
         this.event_registry.fire("notify_connection_state_changed", {
             old_state: old_state,
             new_state: new_state

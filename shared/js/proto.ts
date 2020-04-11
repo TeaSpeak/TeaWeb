@@ -78,8 +78,10 @@ declare global {
         hljs: HighlightJS;
         remarkable: any;
 
-        require(id: string): any;
+
+        readonly require: typeof require;
     }
+    const __non_webpack_require__: typeof require;
 
     interface Navigator {
         browserSpecs: {

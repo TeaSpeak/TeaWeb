@@ -428,7 +428,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 tree.moveClient(client, channel);
             }
 
-            if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
+            if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 this.connection_handler.log.log(server_log.Type.CLIENT_VIEW_ENTER, {
                     channel_from: old_channel ? old_channel.log_data() : undefined,
@@ -531,7 +531,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             }
 
 
-            if(this.connection_handler.client_status.queries_visible || client.properties.client_type != ClientType.CLIENT_QUERY) {
+            if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 let channel_from = tree.findChannel(entry["cfid"]);
                 let channel_to = tree.findChannel(entry["ctid"]);

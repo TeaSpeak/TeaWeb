@@ -22,6 +22,7 @@ export type ConnectionStateListener = (old_state: ConnectionState, new_state: Co
 export abstract class AbstractServerConnection {
     readonly client: ConnectionHandler;
     readonly command_helper: CommandHelper;
+    protected connection_state_: ConnectionState = ConnectionState.UNCONNECTED;
 
     protected constructor(client: ConnectionHandler) {
         this.client = client;
@@ -48,7 +49,12 @@ export abstract class AbstractServerConnection {
     abstract handshake_handler() : HandshakeHandler; /* only valid when connected */
 
     //FIXME: Remove this this is currently only some kind of hack
-    abstract updateConnectionState(state: ConnectionState);
+    updateConnectionState(state: ConnectionState) {
+        const old_state = this.connection_state_;
+        this.connection_state_ = state;
+        if(this.onconnectionstatechanged)
+            this.onconnectionstatechanged(old_state, state);
+    }
 
     abstract ping() : {
         native: number,

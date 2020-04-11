@@ -76,12 +76,11 @@ export class HandshakeHandler {
 
     private handshake_finished(version?: string) {
         const _native = window["native"];
-        if(native_client && _native && _native.client_version && !version) {
+        if(__build.target === "client" && _native.client_version && !version) {
             _native.client_version()
                 .then( this.handshake_finished.bind(this))
                 .catch(error => {
-                    console.error(tr("Failed to get version:"));
-                    console.error(error);
+                    console.error(tr("Failed to get version: %o"), error);
                     this.handshake_finished("?.?.?");
                 });
             return;
@@ -102,19 +101,16 @@ export class HandshakeHandler {
             client_server_password: this.parameters.password ? this.parameters.password.password : undefined,
             client_browser_engine: navigator.product,
 
-            client_input_hardware: this.connection.client.client_status.input_hardware,
+            client_input_hardware: this.connection.client.client_status.input_hardware, //FIXME: No direct access to that state!
             client_output_hardware: false,
-            client_input_muted: this.connection.client.client_status.input_muted,
-            client_output_muted: this.connection.client.client_status.output_muted,
+            client_input_muted: this.connection.client.client_status.input_muted, //FIXME: No direct access to that state!
+            client_output_muted: this.connection.client.client_status.output_muted, //FIXME: No direct access to that state!
         };
 
-        //0.0.1 [Build: 1549713549]	Linux	7XvKmrk7uid2ixHFeERGqcC8vupeQqDypLtw2lY9slDNPojEv//F47UaDLG+TmVk4r6S0TseIKefzBpiRtLDAQ==
-
         if(version) {
-            data.client_version = "TeaClient ";
-            data.client_version += " " + version;
+            data.client_version = "TeaClient " + version;
 
-            const os = require("os");
+            const os = __non_webpack_require__("os");
             const arch_mapping = {
                 "x32": "32bit",
                 "x64": "64bit"
@@ -129,10 +125,8 @@ export class HandshakeHandler {
             data.client_platform = (os_mapping[os.platform()] || os.platform());
         }
 
-        /* required to keep compatibility */
-        if(this.profile.selected_type() === IdentitifyType.TEAMSPEAK) {
+        if(this.profile.selected_type() === IdentitifyType.TEAMSPEAK)
             data["client_key_offset"] = (this.profile.selected_identity() as TeaSpeakIdentity).hash_number;
-        }
 
         this.connection.send_command("clientinit", data).catch(error => {
             if(error instanceof CommandResult) {

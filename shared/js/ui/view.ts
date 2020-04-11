@@ -42,15 +42,15 @@ export class ChannelTree {
     private _listener_document_click;
     private _listener_document_key;
 
-    private _scroll_bar: SimpleBar;
+    private _scroll_bar/*: SimpleBar*/;
 
     constructor(client) {
         this.client = client;
 
         this._tag_container = $.spawn("div").addClass("channel-tree-container");
         this._tag_entries = $.spawn("div").addClass("channel-tree");
-        if('SimpleBar' in window) /* for MSEdge, and may consider Firefox? */
-            this._scroll_bar = new SimpleBar(this._tag_container[0]);
+        //if('SimpleBar' in window) /* for MSEdge, and may consider Firefox? */
+        //    this._scroll_bar = new SimpleBar(this._tag_container[0]);
 
         this.client_mover = new ClientMover(this);
         this.reset();
@@ -131,7 +131,7 @@ export class ChannelTree {
             e.recalculate_repetitive_name();
             e.reorderClients();
         });
-        this._scroll_bar.recalculate();
+        this._scroll_bar?.recalculate();
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {

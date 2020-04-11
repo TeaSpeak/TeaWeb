@@ -28,8 +28,6 @@ class ReturnListener<T> {
 }
 
 export class ServerConnection extends AbstractServerConnection {
-    _connectionState: ConnectionState = ConnectionState.UNCONNECTED;
-
     private _remote_address: ServerAddress;
     private _handshakeHandler: HandshakeHandler;
 
@@ -295,13 +293,6 @@ export class ServerConnection extends AbstractServerConnection {
         this.client.log.log(elog.Type.CONNECTION_LOGIN, {});
         this._handshakeHandler.initialize();
         this._handshakeHandler.startHandshake();
-    }
-
-    updateConnectionState(state: ConnectionState) {
-        const old_state = this._connectionState;
-        this._connectionState = state;
-        if(this._connection_state_listener)
-            this._connection_state_listener(old_state, state);
     }
 
     async disconnect(reason?: string) : Promise<void> {
