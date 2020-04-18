@@ -32,6 +32,7 @@ import * as dns from "tc-backend/dns";
 import * as top_menu from "tc-shared/ui/frames/MenuBar";
 import {EventHandler, Registry} from "tc-shared/events";
 import {ServerLog} from "tc-shared/ui/frames/server_log";
+import {server} from "websocket";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -279,7 +280,9 @@ export class ConnectionHandler {
         }
 
         const original_address = {host: server_address.host, port: server_address.port};
-        if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
+        if(server_address.host === "localhost") {
+            server_address.host = "127.0.0.1";
+        } else if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
             const id = ++this._connect_initialize_id;
             this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVE, {});
             try {
