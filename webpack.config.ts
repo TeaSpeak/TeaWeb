@@ -113,7 +113,7 @@ export const config = async (target: "web" | "client") => { return {
                         options: {
                             modules: {
                                 mode: "local",
-                                localIdentName: '[path][name]__[local]--[hash:base64:5]', //FIXME: Debug mode only!
+                                localIdentName: isDevelopment ? "[path][name]__[local]--[hash:base64:5]" : "[hash:base64]",
                             },
                             sourceMap: isDevelopment
                         }
