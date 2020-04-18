@@ -154,6 +154,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
     channel_previous?: ChannelEntry;
     channel_next?: ChannelEntry;
+    child_channel_head?: ChannelEntry;
 
     readonly events: Registry<ChannelEvents>;
     readonly view: React.Ref<ChannelEntryView>;
@@ -284,25 +285,15 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     getChannelId(){ return this.channelId; }
 
     children(deep = false) : ChannelEntry[] {
-        //TODO: Speed this up by caching the children!
         const result: ChannelEntry[] = [];
-        if(this.channelTree == null) return [];
+        let head = this.child_channel_head;
+        while(head) {
+            result.push(head);
+            head = head.channel_next;
+        }
 
-        const self = this;
-        this.channelTree.channels.forEach(function (entry) {
-            let current = entry;
-            if(deep) {
-                while(current) {
-                    if(current.parent_channel() == self) {
-                        result.push(entry);
-                        break;
-                    }
-                    current = current.parent_channel();
-                }
-            } else
-                if(current.parent_channel() == self)
-                    result.push(entry);
-        });
+        if(deep)
+            return result.map(e => e.children(true)).reduce((prv, now) => { prv.push(...now); return prv; }, []);
         return result;
     }
 

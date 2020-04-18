@@ -1,5 +1,5 @@
 import * as webpack from "webpack";
-import * as fs from "fs";
+import * as fs from "fs-extra";
 import * as path from "path";
 
 interface Options {
@@ -79,6 +79,8 @@ class ManifestGenerator {
         });
 
         compiler.hooks.done.tap(this.constructor.name, () => {
+            const file = this.options.file || "manifest.json";
+            fs.mkdirpSync(path.dirname(file));
             fs.writeFileSync(this.options.file || "manifest.json", JSON.stringify(this.manifest_content));
         });
     }

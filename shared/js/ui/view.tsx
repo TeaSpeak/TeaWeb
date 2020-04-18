@@ -359,9 +359,11 @@ export class ChannelTree {
     }
 
     private unregisterChannelFromTree(channel: ChannelEntry) {
-        //TODO: Parent/Child reference?
-        if(channel.parent)
+        if(channel.parent) {
+            if(channel.parent.child_channel_head === channel)
+                channel.parent.child_channel_head = channel.channel_next;
             channel.parent.events.fire("notify_children_changed");
+        }
 
         if(channel.channel_previous)
             channel.channel_previous.channel_next = channel.channel_next;
@@ -409,12 +411,13 @@ export class ChannelTree {
         } else {
             if(parent) {
                 let children = parent.children();
-                if(children.length <= 1) { //Self should be already in there
+                parent.child_channel_head = channel;
+                if(children.length === 0) { //Self should be already in there
                     channel.channel_next = undefined;
                 } else {
                     channel.channel_previous = undefined;
 
-                    channel.channel_next = children[1]; /* children 0 shall be the channel itself */
+                    channel.channel_next = children[0];
                     channel.channel_next.channel_previous = channel;
                 }
                 parent.events.fire("notify_children_changed");
