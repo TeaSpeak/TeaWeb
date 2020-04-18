@@ -80,6 +80,7 @@ An explanation how this works will come later. Stay tuned!
 ### 2.6 Generate a release package  
 In order to build your own TeaWeb-Package just execute the `scripts/build.sh` script.  
 ```shell script
-./scripts/build.sh web rel
+./scripts/build.sh web rel # Build the web client
+./scripts/web_package.sh rel # Bundle the webclient into one .zip archive
 ```
 You could also create a debug packaged just by replacing `rel` with `dev`.  
