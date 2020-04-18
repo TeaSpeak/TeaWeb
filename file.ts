@@ -30,9 +30,9 @@ type ProjectResource = {
 }
 
 const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
-    { /* shared html and php files */
+    { /* shared html files */
         "type": "html",
-        "search-pattern": /^.*([a-zA-Z]+)\.(html|php|json)$/,
+        "search-pattern": /^.*([a-zA-Z]+)\.(html|json)$/,
         "build-target": "dev|rel",
 
         "path": "./",
@@ -191,7 +191,7 @@ const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
     { /* web html files */
         "web-only": true,
         "type": "html",
-        "search-pattern": /.*\.(php|html)/,
+        "search-pattern": /.*\.(html)/,
         "build-target": "dev|rel",
 
         "path": "./",
@@ -208,56 +208,11 @@ const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
     }
 ];
 
-//TODO: This isn't needed anymore
-const APP_FILE_LIST_WEB_TEASPEAK: ProjectResource[] = [
-    /* special web.teaspeak.de only auth files */
-    { /* login page and api */
-        "web-only": true,
-        "type": "html",
-        "search-pattern": /[a-zA-Z_0-9]+\.(php|html)$/,
-        "build-target": "dev|rel",
-
-        "path": "./",
-        "local-path": "./auth/",
-        "req-parm": ["-xf"]
-    },
-    { /* javascript  */
-        "web-only": true,
-        "type": "js",
-        "search-pattern": /.*\.js$/,
-        "build-target": "dev|rel",
-
-        "path": "js/",
-        "local-path": "./auth/js/",
-        "req-parm": ["-xf"]
-    },
-    { /* web css files */
-        "web-only": true,
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "css/",
-        "local-path": "./auth/css/",
-        "req-parm": ["-xf"]
-    },
-    { /* certificates */
-        "web-only": true,
-        "type": "pem",
-        "search-pattern": /.*\.pem$/,
-        "build-target": "dev|rel",
-
-        "path": "certs/",
-        "local-path": "./auth/certs/",
-        "req-parm": ["-xf"]
-    }
-];
-
 //FIXME: This isn't working right now
 const CERTACCEPT_FILE_LIST: ProjectResource[] = [
     { /* html files */
         "type": "html",
-        "search-pattern": /^([a-zA-Z]+)\.(html|php|json)$/,
+        "search-pattern": /^([a-zA-Z]+)\.(html|json)$/,
         "build-target": "dev|rel",
 
         "path": "./popup/certaccept/",
@@ -355,7 +310,6 @@ const WEB_APP_FILE_LIST = [
     ...APP_FILE_LIST_SHARED_SOURCE,
     ...APP_FILE_LIST_SHARED_VENDORS,
     ...APP_FILE_LIST_WEB_SOURCE,
-    ...APP_FILE_LIST_WEB_TEASPEAK,
     ...CERTACCEPT_FILE_LIST,
 ];
 
@@ -501,8 +455,6 @@ namespace server {
     import SearchOptions = generator.SearchOptions;
     export type Options = {
         port: number;
-        php: string;
-
         search_options: SearchOptions;
     }
 
@@ -510,28 +462,12 @@ namespace server {
 
     let files: ProjectResource[] = [];
     let server: http.Server;
-    let php: string;
     let options: Options;
 
     const use_https = false;
     export async function launch(_files: ProjectResource[], options_: Options) {
         options = options_;
         files = _files;
-
-        try {
-            const info = await exec(options.php + " --version");
-            if(info.stderr)
-                throw info.stderr;
-
-            if(!info.stdout.startsWith("PHP 7."))
-                throw "invalid php interpreter version (Require at least 7)";
-
-            console.debug("Found PHP interpreter:\n%s", info.stdout);
-            php = options.php;
-        } catch(error) {
-            console.error("failed to validate php interpreter: %o", error);
-            throw "invalid php interpreter";
-        }
 
         if(process.env["ssl_enabled"] || use_https) {
             //openssl req -nodes -new -x509 -keyout files_key.pem -out files_cert.pem
@@ -566,40 +502,6 @@ namespace server {
         }
     }
 
-    function serve_php(file: string, query: any, response: http.ServerResponse) {
-        if(!fs.existsSync("tmp"))
-            fs.mkdirSync("tmp");
-        let tmp_script_name = path.join("tmp", Math.random().toFixed(32).substr(2));
-        let script = "<?php\n";
-        script += "$params = json_decode(urldecode(\"" + encodeURIComponent(JSON.stringify(query)) + "\")); \n";
-        script += "foreach($params as $key => $value) $_GET[$key] = $value;\n";
-        script += "chdir(urldecode(\"" + encodeURIComponent(path.dirname(file)) + "\"));";
-        script += "?>";
-        fs.writeFileSync(tmp_script_name, script, {flag: 'w'});
-        exec(php + " -d auto_prepend_file=" + tmp_script_name + " " + file).then(result => {
-            if(result.stderr && !result.stdout) {
-                response.writeHead(500);
-                response.write("Encountered error while interpreting PHP script:\n");
-                response.write(result.stderr);
-                response.end();
-                return;
-            }
-
-            response.writeHead(200, "success", {
-                "Content-Type": "text/html; charset=utf-8"
-            });
-            response.write(result.stdout);
-            response.end();
-        }).catch(error => {
-            response.writeHead(500);
-            response.write("Received an exception while interpreting PHP script:\n");
-            response.write(error.toString());
-            response.end();
-        }).then(() => fs.unlink(tmp_script_name)).catch(error => {
-            console.error("[SERVER] Failed to delete tmp PHP prepend file: %o", error);
-        });
-    }
-
     async function serve_file(pathname: string, query: any, response: http.ServerResponse) {
         const file = await generator.search_http_file(files, pathname, options.search_options);
         if(!file) {
@@ -612,10 +514,6 @@ namespace server {
 
         let type = mt.lookup(path.extname(file)) || "text/html";
         console.log("[SERVER] Serving file %s", file, type);
-        if(path.extname(file) === ".php") {
-            serve_php(file, query, response);
-            return;
-        }
         const fis = fs.createReadStream(file);
 
         response.writeHead(200, "success", {
@@ -634,19 +532,12 @@ namespace server {
             response.writeHead(200, { "info-version": 1 });
             response.write("type\thash\tpath\tname\n");
             for(const file of await generator.search_files(files, options.search_options))
-                if(file.name.endsWith(".php"))
-                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.target_path) + "\t" + path.basename(file.name, ".php") + ".html" + "\n");
-                else
-                    response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.target_path) + "\t" + file.name + "\n");
+                response.write(file.type + "\t" + file.hash + "\t" + path.dirname(file.target_path) + "\t" + file.name + "\n");
             response.end();
             return;
         } else if(url.query["type"] === "file") {
             let p = path.join(url.query["path"] as string, url.query["name"] as string).replace(/\\/g, "/");
             if(!p.startsWith("/")) p = "/" + p;
-            if(p.endsWith(".html")) {
-                const np = await generator.search_http_file(files, p.substr(0, p.length - 5) + ".php", options.search_options);
-                if(np) p = p.substr(0, p.length - 5) + ".php";
-            }
             serve_file(p, url.query, response);
             return;
         }
@@ -835,19 +726,9 @@ namespace watcher {
         }
     }
 }
-
-function php_exe() : string {
-    if(process.env["PHP_EXE"])
-        return process.env["PHP_EXE"];
-    if(os.platform() === "win32")
-        return "php.exe";
-    return "php";
-}
-
 async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: number) {
     await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
         port: port,
-        php: php_exe(),
         search_options: {
             source_path: __dirname,
             parameter: [],
@@ -882,7 +763,6 @@ async function main_develop(node: boolean, target: "client" | "web", port: numbe
                 try {
                     await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
                         port: port,
-                        php: php_exe(),
                         search_options: {
                             source_path: __dirname,
                             parameter: [],
@@ -1125,9 +1005,6 @@ async function main(args: string[]) {
     console.log("       node files.js list <client|web> <dev|rel>                               | List all project files");
     console.log("       node files.js develop <client|web> [port]                               | Start a developer session. All typescript an SASS files will generated automatically");
     console.log("                                                                               | You could access your current build via http://localhost:8081");
-    console.log("");
-    console.log("Influential environment variables:");
-    console.log("   PHP_EXE   |  Path to the PHP CLI interpreter");
 }
 
 /* proxy log for better format */
