@@ -362,7 +362,7 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
     render() {
         return (
             <div className={this.classList(clientStyle.clientEntry, viewStyle.treeEntry, this.props.client.isSelected() && viewStyle.selected)}
-                 style={{ paddingLeft: (this.props.depth * 16) + "px", top: this.props.offset }}
+                 style={{ paddingLeft: (this.props.depth * 16 + 2) + "px", top: this.props.offset }}
                  onDoubleClick={() => this.onDoubleClick()}
                  onMouseDown={e => this.onMouseDown(e as any)}
                  onContextMenu={e => this.onContextMenu(e as any)}

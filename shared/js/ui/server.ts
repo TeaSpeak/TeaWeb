@@ -245,7 +245,23 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
                 name: tr("View avatars"),
                 visible: false, //TODO: Enable again as soon the new design is finished
                 callback: () => spawnAvatarList(this.channelTree.client)
-            }
+            },
+            {
+                type: contextmenu.MenuEntryType.HR,
+                name: ''
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_collapse_all",
+                name: tr("Collapse all channels"),
+                callback: () => this.channelTree.collapse_channels()
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_expand_all",
+                name: tr("Expend all channels"),
+                callback: () => this.channelTree.expand_channels()
+            },
         ];
     }
 

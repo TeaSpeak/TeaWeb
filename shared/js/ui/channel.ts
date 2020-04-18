@@ -19,6 +19,7 @@ import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import { ChannelEntryView as ChannelEntryView } from "./tree/Channel";
+import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 
 export enum ChannelType {
     PERMANENT,
@@ -87,6 +88,9 @@ export interface ChannelEvents extends ChannelTreeEntryEvents {
 
     notify_subscribe_state_changed: {
         channel_subscribed: boolean
+    },
+    notify_collapsed_state_changed: {
+        collapsed: boolean
     },
 
     notify_children_changed: {},
@@ -157,7 +161,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     child_channel_head?: ChannelEntry;
 
     readonly events: Registry<ChannelEvents>;
-    readonly view: React.Ref<ChannelEntryView>;
+    readonly view: React.RefObject<ChannelEntryView>;
 
     parsed_channel_name: ParsedChannelName;
 
@@ -172,6 +176,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private _cached_channel_description_promise_resolve: any = undefined;
     private _cached_channel_description_promise_reject: any = undefined;
 
+    private _flag_collapsed: boolean; //TODO: Load from config!
     private _flag_subscribed: boolean;
     private _subscribe_mode: ChannelSubscribeMode;
 
@@ -378,6 +383,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
         let trigger_close = true;
 
+        const collapse_expendable = !!this.child_channel_head || this.client_list.length > 0;
         const bold = text => contextmenu.get_provider().html_format_enabled() ? "<b>" + text + "</b>" : text;
         contextmenu.spawn_context_menu(x, y, {
                 type: contextmenu.MenuEntryType.ENTRY,
@@ -496,6 +502,25 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                         createErrorModal(tr("Failed to create bot"), formatMessage(tr("Failed to create the music bot:<br>{0}"), error)).open();
                     });
                 }
+            },
+            {
+                type: MenuEntryType.HR,
+                name: "",
+                visible: collapse_expendable
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_collapse_all",
+                name: tr("Collapse sub channels"),
+                visible: collapse_expendable,
+                callback: () => this.channelTree.collapse_channels(this)
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_expand_all",
+                name: tr("Expend sub channels"),
+                visible: collapse_expendable,
+                callback: () => this.channelTree.expand_channels(this)
             },
             contextmenu.Entry.HR(),
             {
@@ -663,6 +688,18 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             for(const client of this.clients(false))
                 this.channelTree.deleteClient(client, false);
         }
+    }
+
+    get collapsed() : boolean {
+        return this._flag_collapsed;
+    }
+
+    set collapsed(flag: boolean) {
+        if(this._flag_collapsed === flag)
+            return;
+        this._flag_collapsed = flag;
+        this.events.fire("notify_collapsed_state_changed", { collapsed: flag });
+        this.view.current?.forceUpdate();
     }
 
     get flag_subscribed() : boolean {

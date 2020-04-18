@@ -49,6 +49,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     private flat_tree: FlatTreeEntry[] = [];
     private listener_client_change;
     private listener_channel_change;
+    private listener_state_collapsed;
     private update_timeout;
 
     private in_view_callbacks: {
@@ -93,6 +94,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         (window as any).do_tree_update = () => this.handleTreeUpdate();
         this.listener_client_change = () => this.handleTreeUpdate();
         this.listener_channel_change = () => this.handleTreeUpdate();
+        this.listener_state_collapsed = () => this.handleTreeUpdate();
     }
 
     private handleTreeUpdate() {
@@ -147,11 +149,14 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     private build_sub_tree(entry: ChannelEntry, depth: number) {
         entry.events.on("notify_clients_changed", this.listener_client_change);
         entry.events.on("notify_children_changed", this.listener_channel_change);
+        entry.events.on("notify_collapsed_state_changed", this.listener_state_collapsed);
 
         this.flat_tree.push({
             entry: entry,
             rendered: <ChannelEntryView key={"channel-" + entry.channelId} channel={entry} offset={this.build_top_offset += ChannelTreeView.EntryHeight} depth={depth} ref={entry.view} />
         });
+
+        if(entry.collapsed) return;
         this.flat_tree.push(...entry.clients(false).map(e => {
             return {
                 entry: e,
@@ -171,6 +176,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                 if(entry instanceof ChannelEntry) {
                     entry.events.off("notify_clients_changed", this.listener_client_change);
                     entry.events.off("notify_children_changed", this.listener_channel_change);
+                    entry.events.off("notify_collapsed_state_changed", this.listener_state_collapsed);
                 }
             }
         }

@@ -11,6 +11,20 @@
     align-items: center;
     cursor: pointer;
 
+    .containerArrow {
+        width: 16px;
+        margin-left: -16px;
+        text-align: center;
+
+        &.down {
+            align-self: normal;
+        }
+
+        :global .arrow {
+            border-color: hsla(220, 5%, 30%, 1);
+        }
+    }
+
     .channelType {
         flex-grow: 0;
         flex-shrink: 0;

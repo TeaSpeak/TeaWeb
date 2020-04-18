@@ -220,6 +220,14 @@ interface ChannelEntryViewProperties {
     offset: number;
 }
 
+
+const ChannelCollapsedIndicator = (props: { collapsed: boolean, onToggle: () => void }) => {
+    return <div className={channelStyle.containerArrow + (!props.collapsed ? " " + channelStyle.down : "")}><div className={"arrow " + (props.collapsed ? "right" : "down")} onClick={event => {
+        event.preventDefault();
+        props.onToggle();
+    }} /></div>
+};
+
 @ReactEventHandler<ChannelEntryView>(e => e.props.channel.events)
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
 export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> {
@@ -233,17 +241,23 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
     }
 
     render() {
+        const collapsed_indicator = this.props.channel.child_channel_head || this.props.channel.clients(false).length > 0;
         return <div className={this.classList(viewStyle.treeEntry, channelStyle.channelEntry, this.props.channel.isSelected() && viewStyle.selected)}
-                    style={{ paddingLeft: this.props.depth * 16, top: this.props.offset }}
+                    style={{ paddingLeft: this.props.depth * 16 + 2, top: this.props.offset }}
                     onMouseDown={e => this.onMouseDown(e as any)}
                     onDoubleClick={() => this.onDoubleClick()}
                     onContextMenu={e => this.onContextMenu(e as any)}
         >
             <UnreadMarker entry={this.props.channel} />
+            {collapsed_indicator && <ChannelCollapsedIndicator key={"collapsed-indicator"} onToggle={() => this.onCollapsedToggle()} collapsed={this.props.channel.collapsed} />}
             <ChannelEntryIcon channel={this.props.channel} />
             <ChannelEntryName channel={this.props.channel} />
             <ChannelEntryIcons channel={this.props.channel} />
         </div>;
+    }
+
+    private onCollapsedToggle() {
+        this.props.channel.collapsed = !this.props.channel.collapsed;
     }
 
     private onMouseDown(event: MouseEvent) {

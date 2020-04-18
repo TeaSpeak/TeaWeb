@@ -8,6 +8,7 @@
     - Fixed the invalid initialisation of codec workers
     - Improved context menu subcontainer selection
     - Fixed client channel permission tab within the permission editor (previously you've been kick from the server)
+    - Added the ability to collapse/expend the channel tree
     
 * **11.04.20**
     - Only show the host message when its not empty

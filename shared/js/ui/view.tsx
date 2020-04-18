@@ -291,6 +291,18 @@ export class ChannelTree {
                 invalidPermission: !channelCreate,
                 callback: () => this.spawnCreateChannel()
             },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_collapse_all",
+                name: tr("Collapse all channels"),
+                callback: () => this.collapse_channels()
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_expand_all",
+                name: tr("Expend all channels"),
+                callback: () => this.expand_channels()
+            },
             contextmenu.Entry.CLOSE(on_close)
         );
     }
@@ -1048,5 +1060,25 @@ export class ChannelTree {
         }).catch(error => {
             console.warn(tr("Failed to subscribe to all channels! (%o)"), error);
         });
+    }
+
+    expand_channels(root?: ChannelEntry) {
+        if(typeof root === "undefined")
+            this.rootChannel().forEach(e => this.expand_channels(e));
+        else {
+            root.collapsed = false;
+            for(const child of root.children(false))
+                this.expand_channels(child);
+        }
+    }
+
+    collapse_channels(root?: ChannelEntry) {
+        if(typeof root === "undefined")
+            this.rootChannel().forEach(e => this.collapse_channels(e));
+        else {
+            root.collapsed = true;
+            for(const child of root.children(false))
+                this.collapse_channels(child);
+        }
     }
 }
