@@ -358,11 +358,15 @@ export class ChannelTree {
         return undefined;
     }
 
-    private unregisterChannelFromTree(channel: ChannelEntry) {
+    private unregisterChannelFromTree(channel: ChannelEntry, new_parent?: ChannelEntry) {
         if(channel.parent) {
             if(channel.parent.child_channel_head === channel)
                 channel.parent.child_channel_head = channel.channel_next;
-            channel.parent.events.fire("notify_children_changed");
+
+            /* We need only trigger this once.
+               If the new parent is equal to the old one with applying the "new" parent this event will get triggered */
+            if(new_parent !== channel.parent)
+                channel.parent.events.fire("notify_children_changed");
         }
 
         if(channel.channel_previous)
@@ -389,7 +393,7 @@ export class ChannelTree {
         }
 
         let root_tree_updated = !channel.parent;
-        this.unregisterChannelFromTree(channel);
+        this.unregisterChannelFromTree(channel, parent);
         channel.channel_previous = channel_previous;
         channel.channel_next = undefined;
         channel.parent = parent;
@@ -415,8 +419,6 @@ export class ChannelTree {
                 if(children.length === 0) { //Self should be already in there
                     channel.channel_next = undefined;
                 } else {
-                    channel.channel_previous = undefined;
-
                     channel.channel_next = children[0];
                     channel.channel_next.channel_previous = channel;
                 }

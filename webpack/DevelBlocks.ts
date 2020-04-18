@@ -18,6 +18,9 @@ export default function loader(this: LoaderContext, source: string | Buffer, sou
 
     const pattern = new RegExp("[\\t ]*\\/\\* ?" + start_regex + " ?\\*\\/[\\s\\S]*?\\/\\* ?" + end_regex + " ?\\*\\/[\\t ]*\\n?", "g");
     source = (source as string).replace(pattern, (value, type) => {
+        if(type === "log-networking-commands")
+            return value;
+
         return "/* snipped block \"" + type + "\" */";
     });
     this.callback(null, source);

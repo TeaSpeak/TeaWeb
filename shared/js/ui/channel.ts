@@ -441,7 +441,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: tr("Edit channel"),
                 invalidPermission: !channelModify,
                 callback: () => {
-                    createChannelModal(this.channelTree.client, this, undefined, this.channelTree.client.permissions, (changes?, permissions?) => {
+                    createChannelModal(this.channelTree.client, this, this.parent, this.channelTree.client.permissions, (changes?, permissions?) => {
                         if(changes) {
                             changes["cid"] = this.channelId;
                             this.channelTree.client.serverConnection.send_command("channeledit", changes);

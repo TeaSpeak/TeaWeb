@@ -31,7 +31,7 @@ export class Registry<Events> {
         handlers: {[key: string]: ((event) => void)[]}
     }[] = [];
     private debug_prefix = undefined;
-    private warn_unhandled_events = true;
+    private warn_unhandled_events = false;
 
     constructor() {
         this.registry_uuid = "evreg_data_" + guid();
@@ -139,7 +139,7 @@ export class Registry<Events> {
             evhandler.fire_event(type, data);
             invoke_count++;
         }
-        if(invoke_count === 0) {
+        if(this.warn_unhandled_events && invoke_count === 0) {
             console.warn(tr("Event handler (%s) triggered event %s which has no consumers."), this.debug_prefix, type);
         }
     }

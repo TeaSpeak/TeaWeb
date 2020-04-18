@@ -77,10 +77,7 @@ export namespace codec {
                             this.entries[index].instance.initialise().then((flag) => {
                                 //TODO test success flag
                                 this.ownCodec(clientId, callback_encoded, false).then(resolve).catch(reject);
-                            }).catch(error => {
-                                log.error(LogCategory.VOICE, tr("Could not initialize codec!\nError: %o"), error);
-                                reject(typeof(error) === 'string' ? error : tr("Could not initialize codec!"));
-                            });
+                            }).catch(reject);
                         }
                         return;
                     } else if(this.entries[index].owner == 0) {

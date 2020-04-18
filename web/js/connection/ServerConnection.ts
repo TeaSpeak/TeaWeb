@@ -345,9 +345,11 @@ export class ServerConnection extends AbstractServerConnection {
                 return;
             }
             if(json["type"] === "command") {
+                /* devel-block(log-networking-commands) */
                 let group = log.group(log.LogType.DEBUG, LogCategory.NETWORKING, tr("Handling command '%s'"), json["command"]);
                 group.log(tr("Handling command '%s'"), json["command"]);
                 group.group(log.LogType.TRACE, tr("Json:")).collapsed(true).log("%o", json).end();
+                /* devel-block-end */
 
                 this._command_boss.invoke_handle({
                     command: json["command"],
@@ -361,7 +363,9 @@ export class ServerConnection extends AbstractServerConnection {
                     if(this._voice_connection)
                         this._voice_connection.start_rtc_session(); /* FIXME: Move it to a handler boss and not here! */
                 }
+                /* devel-block(log-networking-commands) */
                 group.end();
+                /* devel-block-end */
             } else if(json["type"] === "WebRTC") {
                 if(this._voice_connection)
                     this._voice_connection.handleControlPacket(json);
