@@ -156,7 +156,8 @@ export class Settings extends StaticSettings {
 
     static readonly KEY_DISABLE_CONTEXT_MENU: SettingsKey<boolean> = {
         key: 'disableContextMenu',
-        description: 'Disable the context menu for the channel tree which allows to debug the DOM easier'
+        description: 'Disable the context menu for the channel tree which allows to debug the DOM easier',
+        default_value: false
     };
 
     static readonly KEY_DISABLE_GLOBAL_CONTEXT_MENU: SettingsKey<boolean> = {

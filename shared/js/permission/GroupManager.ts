@@ -6,6 +6,7 @@ import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
+import {Registry} from "tc-shared/events";
 
 export enum GroupType {
     QUERY,
@@ -31,10 +32,21 @@ export class GroupPermissionRequest {
     promise: LaterPromise<PermissionValue[]>;
 }
 
-export class Group {
-    properties: GroupProperties = new GroupProperties();
+export interface GroupEvents {
+    notify_deleted: {},
 
+    notify_properties_updated: {
+        updated_properties: {[Key in keyof GroupProperties]: GroupProperties[Key]};
+        group_properties: GroupProperties
+    }
+}
+
+export class Group {
     readonly handle: GroupManager;
+
+    readonly events: Registry<GroupEvents>;
+    readonly properties: GroupProperties = new GroupProperties();
+
     readonly id: number;
     readonly target: GroupTarget;
     readonly type: GroupType;
@@ -46,6 +58,8 @@ export class Group {
 
 
     constructor(handle: GroupManager, id: number, target: GroupTarget, type: GroupType, name: string) {
+        this.events = new Registry<GroupEvents>();
+
         this.handle = handle;
         this.id = id;
         this.target = target;
@@ -53,20 +67,21 @@ export class Group {
         this.name = name;
     }
 
-    updateProperty(key, value) {
-        if(!JSON.map_field_to(this.properties, value, key))
-            return; /* no updates */
+    updateProperties(properties: {key: string, value: string}[]) {
+        let updates = {};
 
-        if(key == "iconid") {
-            this.properties.iconid = (new Uint32Array([this.properties.iconid]))[0];
-            this.handle.handle.channelTree.clientsByGroup(this).forEach(client => {
-                client.updateGroupIcon(this);
-            });
-        } else if(key == "sortid")
-            this.handle.handle.channelTree.clientsByGroup(this).forEach(client => {
-                client.update_group_icon_order();
-            });
+        for(const { key, value } of properties) {
+            if(!JSON.map_field_to(this.properties, value, key))
+                continue; /* no updates */
+            if(key === "iconid")
+                this.properties.iconid = this.properties.iconid >>> 0;
+            updates[key] = this.properties[key];
+        }
 
+        this.events.fire("notify_properties_updated", {
+            group_properties: this.properties,
+            updated_properties: updates as any
+        });
     }
 }
 
@@ -150,44 +165,45 @@ export class GroupManager extends AbstractCommandHandler {
             return;
         }
 
-        if(target == GroupTarget.SERVER)
-            this.serverGroups = [];
-        else
-            this.channelGroups = [];
+        let group_list = target == GroupTarget.SERVER ? this.serverGroups : this.channelGroups;
+        const deleted_groups = group_list.slice(0);
 
-        for(let groupData of json) {
+        for(const group_data of json) {
             let type : GroupType;
-            switch (Number.parseInt(groupData["type"])) {
+            switch (parseInt(group_data["type"])) {
                 case 0: type = GroupType.TEMPLATE; break;
                 case 1: type = GroupType.NORMAL; break;
                 case 2: type = GroupType.QUERY; break;
                 default:
-                    log.error(LogCategory.CLIENT, tr("Invalid group type: %o for group %s"), groupData["type"],groupData["name"]);
+                    log.error(LogCategory.CLIENT, tr("Invalid group type: %o for group %s"), group_data["type"],group_data["name"]);
                     continue;
             }
 
-            let group = new Group(this,parseInt(target == GroupTarget.SERVER ? groupData["sgid"] : groupData["cgid"]), target, type, groupData["name"]);
-            for(let key of Object.keys(groupData)) {
-                if(key == "sgid") continue;
-                if(key == "cgid") continue;
-                if(key == "type") continue;
-                if(key == "name") continue;
+            const group_id = parseInt(target == GroupTarget.SERVER ? group_data["sgid"] : group_data["cgid"]);
+            let group_index = deleted_groups.findIndex(e => e.id === group_id);
+            let group: Group;
+            if(group_index === -1) {
+                group = new Group(this, group_id, target, type, group_data["name"]);
+                group_list.push(group);
+            } else
+                group = deleted_groups.splice(group_index, 1)[0];
 
-                group.updateProperty(key, groupData[key]);
-            }
+            const property_blacklist = [
+                "sgid", "cgid", "type", "name",
 
-            group.requiredMemberRemovePower = parseInt(groupData["n_member_removep"]);
-            group.requiredMemberAddPower = parseInt(groupData["n_member_addp"]);
-            group.requiredModifyPower = parseInt(groupData["n_modifyp"]);
+                "n_member_removep", "n_member_addp", "n_modifyp"
+            ];
+            group.updateProperties(Object.keys(group_data).filter(e => property_blacklist.findIndex(a => a === e) === -1).map(e => { return { key: e, value: group_data[e] } }));
 
-            if(target == GroupTarget.SERVER)
-                this.serverGroups.push(group);
-            else
-                this.channelGroups.push(group);
+            group.requiredMemberRemovePower = parseInt(group_data["n_member_removep"]);
+            group.requiredMemberAddPower = parseInt(group_data["n_member_addp"]);
+            group.requiredModifyPower = parseInt(group_data["n_modifyp"]);
         }
 
-        for(const client of this.handle.channelTree.clients)
-            client.update_displayed_client_groups();
+        for(const deleted of deleted_groups) {
+            group_list.remove(deleted);
+            deleted.events.fire("notify_deleted");
+        }
     }
 
     request_permissions(group: Group) : Promise<PermissionValue[]> { //database_empty_result

@@ -676,7 +676,7 @@ namespace server {
             handle_api_request(request, response, url);
             return;
         } else if(url.pathname === "/") {
-            url.pathname = "/index.php";
+            url.pathname = "/index.html";
         }
         serve_file(url.pathname, url.query, response);
     }
@@ -688,7 +688,7 @@ namespace watcher {
             return cp.spawn(process.env.comspec, ["/C", cmd, ...args], {
                 stdio: "pipe",
                 cwd: __dirname,
-                env: process.env
+                env: Object.assign({ NODE_ENV: "development" }, process.env)
             });
         else
             return cp.spawn(cmd, args, {

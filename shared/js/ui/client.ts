@@ -1,17 +1,16 @@
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
-import {channel_tree, Registry} from "tc-shared/events";
+import {Registry} from "tc-shared/events";
 import {ChannelTree} from "tc-shared/ui/view";
 import * as log from "tc-shared/log";
 import {LogCategory, LogType} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
-import {KeyCode, SpecialKey} from "tc-shared/PPTListener";
 import {Sound} from "tc-shared/sound/Sounds";
 import {Group, GroupManager, GroupTarget, GroupType} from "tc-shared/permission/GroupManager";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import * as htmltags from "tc-shared/ui/htmltags";
 import * as server_log from "tc-shared/ui/frames/server_log";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {voice} from "tc-shared/connection/ConnectionBase";
@@ -25,8 +24,10 @@ import {spawnChangeLatency} from "tc-shared/ui/modal/ModalChangeLatency";
 import {spawnPlaylistEdit} from "tc-shared/ui/modal/ModalPlaylistEdit";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import * as ppt from "tc-backend/ppt";
 import * as hex from "tc-shared/crypto/hex";
+import { ClientEntry as ClientEntryView } from "./tree/Client";
+import * as React from "react";
+import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -135,12 +136,39 @@ export class ClientConnectionInfo {
     connection_client_port: number = -1;
 }
 
-export class ClientEntry {
-    readonly events: Registry<channel_tree.client>;
+export interface ClientEvents extends ChannelTreeEntryEvents {
+    "notify_enter_view": {},
+    "notify_left_view": {},
+
+    notify_properties_updated: {
+        updated_properties: {[Key in keyof ClientProperties]: ClientProperties[Key]};
+        client_properties: ClientProperties
+    },
+    notify_mute_state_change: { muted: boolean }
+    notify_speak_state_change: { speaking: boolean }
+
+    "music_status_update": {
+        player_buffered_index: number,
+        player_replay_index: number
+    },
+    "music_song_change": {
+        "song": SongInfo
+    },
+
+    /* TODO: Move this out of the music bots interface? */
+    "playlist_song_add": { song: PlaylistSong },
+    "playlist_song_remove": { song_id: number },
+    "playlist_song_reorder": { song_id: number, previous_song_id: number },
+    "playlist_song_loaded": { song_id: number, success: boolean, error_msg?: string, metadata?: string },
+
+}
+
+export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
+    readonly events: Registry<ClientEvents>;
+    readonly view: React.RefObject<ClientEntryView> = React.createRef<ClientEntryView>();
 
     protected _clientId: number;
     protected _channel: ChannelEntry;
-    protected _tag: JQuery<HTMLElement>;
 
     protected _properties: ClientProperties;
     protected lastVariableUpdate: number = 0;
@@ -162,7 +190,8 @@ export class ClientEntry {
     channelTree: ChannelTree;
 
     constructor(clientId: number, clientName, properties: ClientProperties = new ClientProperties()) {
-        this.events = new Registry<channel_tree.client>();
+        super();
+        this.events = new Registry<ClientEvents>();
 
         this._properties = properties;
         this._properties.client_nickname = clientName;
@@ -172,10 +201,6 @@ export class ClientEntry {
     }
 
     destroy() {
-        if(this._tag) {
-            this._tag.remove();
-            this._tag = undefined;
-        }
         if(this._audio_handle) {
             log.warn(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
             try {
@@ -240,7 +265,7 @@ export class ClientEntry {
     clientId(){ return this._clientId; }
 
     is_muted() { return !!this._audio_muted; }
-    set_muted(flag: boolean, update_icon: boolean, force?: boolean) {
+    set_muted(flag: boolean, force: boolean) {
         if(this._audio_muted === flag && !force)
             return;
 
@@ -264,13 +289,11 @@ export class ClientEntry {
             }
         }
 
-        if(update_icon)
-            this.updateClientSpeakIcon();
-
+        this.events.fire("notify_mute_state_change", { muted: flag });
         for(const client of this.channelTree.clients) {
-            if(client === this || client.properties.client_unique_identifier != this.properties.client_unique_identifier)
+            if(client === this || client.properties.client_unique_identifier !== this.properties.client_unique_identifier)
                 continue;
-            client.set_muted(flag, true);
+            client.set_muted(flag, false);
         }
     }
 
@@ -278,34 +301,8 @@ export class ClientEntry {
         if(this._listener_initialized) return;
         this._listener_initialized = true;
 
-        this.tag.on('mouseup', event => {
-            if(!this.channelTree.client_mover.is_active()) {
-                this.channelTree.onSelect(this);
-            }
-        });
-
-        if(!(this instanceof LocalClientEntry) && !(this instanceof MusicClientEntry))
-            this.tag.dblclick(event => {
-                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
-                    return;
-                }
-                this.open_text_chat();
-            });
-
-        if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            this.tag.on("contextmenu", (event) => {
-                event.preventDefault();
-                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
-                    (this.channelTree.currently_selected_context_callback || ((_) => null))(event);
-                    return;
-                }
-
-                this.channelTree.onSelect(this, true);
-                this.showContextMenu(event.pageX, event.pageY, () => {});
-                return false;
-            });
-        }
-
+        //FIXME: TODO!
+        /*
         this.tag.on('mousedown', event => {
             if(event.which != 1) return; //Only the left button
 
@@ -340,6 +337,19 @@ export class ClientEntry {
                 this.channelTree.onSelect();
             }, event);
         });
+         */
+    }
+
+    protected onSelect(singleSelect: boolean) {
+        super.onSelect(singleSelect);
+        if(!singleSelect) return;
+
+        if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CLIENT)) {
+            if(this instanceof MusicClientEntry)
+                this.channelTree.client.side_bar.show_music_player(this);
+            else
+                this.channelTree.client.side_bar.show_client_info(this);
+        }
     }
 
     protected contextmenu_info() : contextmenu.MenuEntry[] {
@@ -674,83 +684,16 @@ export class ClientEntry {
                 icon_class: "client-input_muted_local",
                 name: tr("Mute client"),
                 visible: !this._audio_muted,
-                callback: () => this.set_muted(true, true)
+                callback: () => this.set_muted(true, false)
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-input_muted_local",
                 name: tr("Unmute client"),
                 visible: this._audio_muted,
-                callback: () => this.set_muted(false, true)
+                callback: () => this.set_muted(false, false)
             },
             contextmenu.Entry.CLOSE(() => trigger_close && on_close ? on_close() : {})
         );
-    }
-
-    get tag() : JQuery<HTMLElement> {
-        if(this._tag) return this._tag;
-
-        let container_client = $.spawn("div")
-            .addClass("tree-entry client")
-            .attr("client-id", this.clientId());
-
-
-        /* unread marker */
-        {
-            container_client.append(
-                $.spawn("div")
-                    .addClass("marker-text-unread hidden")
-                    .attr("private-conversation", this._clientId)
-            );
-        }
-        container_client.append(
-            $.spawn("div")
-            .addClass("icon_client_state")
-            .attr("title", "Client state")
-        );
-
-        container_client.append(
-            $.spawn("div")
-            .addClass("group-prefix")
-            .attr("title", "Server groups prefixes")
-            .hide()
-        );
-        container_client.append(
-            $.spawn("div")
-            .addClass("client-name")
-            .text(this.clientNickName())
-        );
-        container_client.append(
-            $.spawn("div")
-            .addClass("group-suffix")
-            .attr("title", "Server groups suffix")
-            .hide()
-        );
-        container_client.append(
-            $.spawn("div")
-            .addClass("client-away-message")
-            .text(this.clientNickName())
-        );
-
-        let container_icons = $.spawn("div").addClass("container-icons");
-
-        container_icons.append(
-            $.spawn("div")
-                .addClass("icon icon_talk_power client-input_muted")
-                .hide()
-        );
-        container_icons.append(
-            $.spawn("div")
-            .addClass("container-icons-group")
-        );
-        container_icons.append(
-            $.spawn("div")
-            .addClass("container-icon-client")
-        );
-        container_client.append(container_icons);
-
-        this._tag = container_client;
-        this.initializeListener();
-        return this._tag;
     }
 
     static bbcodeTag(id: number, name: string, uid: string) : string {
@@ -777,80 +720,18 @@ export class ClientEntry {
     set speaking(flag) {
         if(flag === this._speaking) return;
         this._speaking = flag;
-        this.updateClientSpeakIcon();
+        this.events.fire("notify_speak_state_change", { speaking: flag });
     }
 
-    updateClientStatusIcons() {
-        let talk_power = this.properties.client_talk_power >= this._channel.properties.channel_needed_talk_power;
-        if(talk_power)
-            this.tag.find(".icon_talk_power").hide();
-        else
-            this.tag.find(".icon_talk_power").show();
-    }
-
-    updateClientSpeakIcon() {
-        let icon: string = "";
-        let clicon: string = "";
-
-        if(this.properties.client_type_exact == ClientType.CLIENT_QUERY) {
-            icon = "client-server_query";
-            console.log("Server query!");
-        } else {
-            if (this.properties.client_away) {
-                icon = "client-away";
-            } else if (this._audio_muted && !(this instanceof LocalClientEntry)) {
-                icon = "client-input_muted_local";
-            } else if(!this.properties.client_output_hardware) {
-                icon = "client-hardware_output_muted";
-            } else if(this.properties.client_output_muted) {
-                icon = "client-output_muted";
-            } else if(!this.properties.client_input_hardware) {
-                icon = "client-hardware_input_muted";
-            } else if(this.properties.client_input_muted) {
-                icon = "client-input_muted";
-            } else {
-                if(this._speaking) {
-                    if(this.properties.client_is_channel_commander)
-                        clicon = "client_cc_talk";
-                    else
-                        clicon = "client_talk";
-                } else {
-                    if(this.properties.client_is_channel_commander)
-                        clicon = "client_cc_idle";
-                    else
-                        clicon = "client_idle";
-                }
-            }
-        }
-
-
-        if(clicon.length > 0)
-            this.tag.find(".icon_client_state").attr('class', 'icon_client_state clicon ' + clicon);
-        else if(icon.length > 0)
-            this.tag.find(".icon_client_state").attr('class', 'icon_client_state icon ' + icon);
-        else
-            this.tag.find(".icon_client_state").attr('class', 'icon_client_state icon_empty');
-    }
-
-    updateAwayMessage() {
-        let tag = this.tag.find(".client-away-message");
-        if(this.properties.client_away == true && this.properties.client_away_message){
-            tag.text("[" + this.properties.client_away_message + "]");
-            tag.show();
-        } else {
-            tag.hide();
-        }
-    }
+    isSpeaking() { return this._speaking; }
 
     updateVariables(...variables: {key: string, value: string}[]) {
-        let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, tr("Update properties (%i) of %s (%i)"), variables.length, this.clientNickName(), this.clientId());
 
-        let update_icon_status = false;
-        let update_icon_speech = false;
-        let update_away = false;
         let reorder_channel = false;
         let update_avatar = false;
 
+        /* devel-block(log-client-property-updates) */
+        let group = log.group(log.LogType.DEBUG, LogCategory.CLIENT, tr("Update properties (%i) of %s (%i)"), variables.length, this.clientNickName(), this.clientId());
         {
             const entries = [];
             for(const variable of variables)
@@ -861,6 +742,7 @@ export class ClientEntry {
                 });
             log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Client update properties", entries);
         }
+        /* devel-block-end */
 
         for(const variable of variables) {
             const old_value = this._properties[variable.key];
@@ -878,8 +760,6 @@ export class ClientEntry {
                     }
                 }
 
-                this.tag.find(".client-name").text(variable.value);
-
                 const chat = this.channelTree.client.side_bar;
                 const conversation = chat.private_conversations().find_conversation({
                     name: this.clientNickName(),
@@ -893,32 +773,19 @@ export class ClientEntry {
                     conversation.set_client_name(variable.value);
                 reorder_channel = true;
             }
-            if(
-                variable.key == "client_away" ||
-                variable.key == "client_input_hardware" ||
-                variable.key == "client_output_hardware" ||
-                variable.key == "client_output_muted" ||
-                variable.key == "client_input_muted" ||
-                variable.key == "client_is_channel_commander"){
-                update_icon_speech = true;
-            }
-            if(variable.key == "client_away_message" || variable.key == "client_away") {
-                update_away = true;
-            }
             if(variable.key == "client_unique_identifier") {
                 this._audio_volume = parseFloat(this.channelTree.client.settings.server("volume_client_" + this.clientUid(), "1"));
                 const mute_status = this.channelTree.client.settings.server("mute_client_" + this.clientUid(), false);
-                this.set_muted(mute_status, false, mute_status); /* force only needed when we want to mute the client */
+                this.set_muted(mute_status, mute_status); /* force only needed when we want to mute the client */
 
                 if(this._audio_handle)
                     this._audio_handle.set_volume(this._audio_muted ? 0 : this._audio_volume);
 
-                update_icon_speech = true;
                 log.debug(LogCategory.CLIENT, tr("Loaded client (%s) server specific properties. Volume: %o Muted: %o."), this.clientUid(), this._audio_volume, this._audio_muted);
             }
             if(variable.key == "client_talk_power") {
                 reorder_channel = true;
-                update_icon_status = true;
+                //update_icon_status = true; DONE
             }
             if(variable.key == "client_icon_id") {
                 /* yeah we like javascript. Due to JS wiered integer behaviour parsing for example fails for 18446744073409829863.
@@ -926,24 +793,12 @@ export class ClientEntry {
                 *  In opposite "18446744073409829863" >>> 0 evaluates to 3995244544, which is the icon id :)
                 */
                 this.properties.client_icon_id = variable.value as any >>> 0;
-                this.updateClientIcon();
             }
-            if(variable.key =="client_channel_group_id" || variable.key == "client_servergroups")
-                this.update_displayed_client_groups();
             else if(variable.key == "client_flag_avatar")
                 update_avatar = true;
         }
 
         /* process updates after variables have been set */
-        if(this._channel && reorder_channel)
-            this._channel.reorderClients();
-        if(update_icon_speech)
-            this.updateClientSpeakIcon();
-        if(update_icon_status)
-            this.updateClientStatusIcons();
-        if(update_away)
-            this.updateAwayMessage();
-
         const side_bar = this.channelTree.client.side_bar;
         {
             const client_info = side_bar.client_info();
@@ -959,44 +814,15 @@ export class ClientEntry {
                 conversation.update_avatar();
         }
 
+        /* devel-block(log-client-property-updates) */
         group.end();
-        this.events.fire("property_update", {
-            properties: variables.map(e => e.key)
-        });
-    }
+        /* devel-block-end */
 
-    update_displayed_client_groups() {
-        this.tag.find(".container-icons-group").children().remove();
-
-        for(let id of this.assignedServerGroupIds())
-            this.updateGroupIcon(this.channelTree.client.groups.serverGroup(id));
-        this.update_group_icon_order();
-        this.updateGroupIcon(this.channelTree.client.groups.channelGroup(this.properties.client_channel_group_id));
-
-        let prefix_groups: string[] = [];
-        let suffix_groups: string[] = [];
-        for(const group_id of this.assignedServerGroupIds()) {
-            const group = this.channelTree.client.groups.serverGroup(group_id);
-            if(!group) continue;
-
-            if(group.properties.namemode == 1)
-                prefix_groups.push(group.name);
-            else if(group.properties.namemode == 2)
-                suffix_groups.push(group.name);
-        }
-
-        const tag_group_prefix = this.tag.find(".group-prefix");
-        const tag_group_suffix = this.tag.find(".group-suffix");
-        if(prefix_groups.length > 0) {
-            tag_group_prefix.text("[" + prefix_groups.join("][") + "]").show();
-        } else {
-            tag_group_prefix.hide()
-        }
-
-        if(suffix_groups.length > 0) {
-            tag_group_suffix.text("[" + suffix_groups.join("][") + "]").show();
-        } else {
-            tag_group_suffix.hide()
+        {
+            let properties = {};
+            for(const property of variables)
+                properties[property.key] = this.properties[property.key];
+            this.events.fire("notify_properties_updated", { updated_properties: properties as any, client_properties: this.properties });
         }
     }
 
@@ -1011,35 +837,6 @@ export class ClientEntry {
                 reject(error);
             });
         }));
-    }
-
-    updateClientIcon() {
-        this.tag.find(".container-icon-client").children().remove();
-        if(this.properties.client_icon_id > 0) {
-            this.channelTree.client.fileManager.icons.generateTag(this.properties.client_icon_id).attr("title", "Client icon")
-                .appendTo(this.tag.find(".container-icon-client"));
-        }
-    }
-
-    updateGroupIcon(group: Group) {
-        if(!group) return;
-
-        const container = this.tag.find(".container-icons-group");
-        container.find(".icon_group_" + group.id).remove();
-
-        if (group.properties.iconid > 0) {
-            container.append(
-                $.spawn("div").attr('group-power', group.properties.sortid)
-                    .addClass("container-group-icon icon_group_" + group.id)
-                    .append(this.channelTree.client.fileManager.icons.generateTag(group.properties.iconid)).attr("title", group.name)
-            );
-        }
-    }
-
-    update_group_icon_order() {
-        const container = this.tag.find(".container-icons-group");
-
-        container.append(...[...container.children()].sort((a, b) => parseInt(a.getAttribute("group-power")) - parseInt(b.getAttribute("group-power"))));
     }
 
     assignedServerGroupIds() : number[] {
@@ -1101,13 +898,6 @@ export class ClientEntry {
         }
     }
 
-    update_family_index() {
-        if(!this._channel) return;
-        const index = this._channel.calculate_family_index();
-
-        this.tag.css('padding-left', (5 + (index + 2) * 16) + "px");
-    }
-
     log_data() : server_log.base.Client {
         return {
             client_unique_id: this.properties.client_unique_identifier,
@@ -1142,10 +932,6 @@ export class ClientEntry {
         this._info_connection_promise_resolve(info);
         this._info_connection_promise_resolve = undefined;
         this._info_connection_promise_reject = undefined;
-    }
-
-    set flag_text_unread(flag: boolean) {
-        this._tag.find(".marker-text-unread").toggleClass("hidden", !flag);
     }
 }
 
@@ -1195,64 +981,42 @@ export class LocalClientEntry extends ClientEntry {
     }
 
     initializeListener(): void {
-        if(this._listener_initialized)
-            this.tag.off();
-        this._listener_initialized = false; /* could there be a better system */
         super.initializeListener();
-        this.tag.find(".client-name").addClass("client-name-own");
+    }
 
-        this.tag.on('dblclick', () => {
-            if(Array.isArray(this.channelTree.currently_selected)) { //Multiselect
-                return;
-            }
-            this.openRename();
+    renameSelf(new_name: string) : Promise<boolean> {
+        const old_name = this.properties.client_nickname;
+        this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
+        return this.handle.serverConnection.command_helper.updateClient("client_nickname", new_name).then((e) => {
+            settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, new_name);
+            this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGED, {
+                client: this.log_data(),
+                old_name: old_name,
+                new_name: new_name,
+                own_client: true
+            });
+            return true;
+        }).catch((e: CommandResult) => {
+            this.updateVariables({ key: "client_nickname", value: old_name }); /* change it back */
+            this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGE_FAILED, {
+                reason: e.extra_message
+            });
+            return false;
         });
     }
 
     openRename() : void {
-        this.channelTree.client_mover.enabled = false;
-
-        const elm = this.tag.find(".client-name");
-        elm.attr("contenteditable", "true");
-        elm.removeClass("client-name-own");
-        elm.css("background-color", "white");
-        elm.focus();
-        this.renaming = true;
-
-        elm.on('keypress', event => {
-            if(event.keyCode == KeyCode.KEY_RETURN) {
-                $(event.target).trigger("focusout");
-                return false;
+        const view = this.channelTree.view.current;
+        if(!view) return; //TODO: Fallback input modal
+        view.scrollEntryInView(this, () => {
+            const own_view = this.view.current;
+            if(!own_view) {
+                return; //TODO: Fallback input modal
             }
-        });
 
-        elm.on('focusout', event => {
-            this.channelTree.client_mover.enabled = true;
-
-            if(!this.renaming) return;
-            this.renaming = false;
-
-            elm.css("background-color", "");
-            elm.removeAttr("contenteditable");
-            elm.addClass("client-name-own");
-            let text = elm.text().toString();
-            if(this.clientNickName() == text) return;
-
-            elm.text(this.clientNickName());
-            const old_name = this.clientNickName();
-            this.handle.serverConnection.command_helper.updateClient("client_nickname", text).then((e) => {
-                settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, text);
-                this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGED, {
-                    client: this.log_data(),
-                    old_name: old_name,
-                    new_name: text,
-                    own_client: true
-                });
-            }).catch((e: CommandResult) => {
-                this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGE_FAILED, {
-                    reason: e.extra_message
-                });
-                this.openRename();
+            own_view.setState({
+                rename: true,
+                renameInitialName: this.properties.client_nickname
             });
         });
     }

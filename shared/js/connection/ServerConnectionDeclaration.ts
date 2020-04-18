@@ -9,6 +9,7 @@ export enum ErrorID {
     PLAYLIST_IS_IN_USE = 0x2103,
 
     FILE_ALREADY_EXISTS = 2050,
+    FILE_NOT_FOUND = 2051,
 
     CLIENT_INVALID_ID = 0x0200,
 

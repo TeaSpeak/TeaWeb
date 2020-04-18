@@ -16,7 +16,7 @@ export interface ButtonState {
 }
 
 export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
-    protected default_state(): ButtonState {
+    protected defaultState(): ButtonState {
         return {
             disabled: undefined
         };

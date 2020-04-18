@@ -1,0 +1,34 @@
+.serverEntry {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    position: relative;
+
+    cursor: pointer;
+    margin-left: 2px;
+    margin-right: 5px;
+
+    .server_type {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        margin-right: 2px;
+        margin-left: 2px;
+
+        z-index: 1;
+    }
+
+    .name {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        align-self: center;
+        color: var(--channel-tree-entry-color);
+
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}

@@ -1,10 +1,11 @@
 import * as React from "react";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {IconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {LocalIcon} from "tc-shared/FileManager";
 const cssStyle = require("./button.scss");
 
 export interface DropdownEntryProperties {
-    icon?: string | JQuery<HTMLDivElement>;
+    icon?: string | LocalIcon;
     text: JSX.Element | string;
 
     onClick?: (event) => void;
@@ -12,7 +13,7 @@ export interface DropdownEntryProperties {
 }
 
 export class DropdownEntry extends ReactComponentBase<DropdownEntryProperties, {}> {
-    protected default_state() { return {}; }
+    protected defaultState() { return {}; }
 
     render() {
         if(this.props.children) {
@@ -41,7 +42,7 @@ export interface DropdownContainerProperties { }
 export interface DropdownContainerState { }
 
 export class DropdownContainer extends ReactComponentBase<DropdownContainerProperties, DropdownContainerState> {
-    protected default_state() {
+    protected defaultState() {
         return { };
     }
 

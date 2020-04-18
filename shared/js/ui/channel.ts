@@ -1,5 +1,5 @@
 import {ChannelTree} from "tc-shared/ui/view";
-import {ClientEntry} from "tc-shared/ui/client";
+import {ClientEntry, ClientEvents} from "tc-shared/ui/client";
 import * as log from "tc-shared/log";
 import {LogCategory, LogType} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
@@ -14,6 +14,11 @@ import * as server_log from "tc-shared/ui/frames/server_log";
 import {openChannelInfo} from "tc-shared/ui/modal/ModalChannelInfo";
 import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
 import {formatMessage} from "tc-shared/ui/frames/chat";
+
+import * as React from "react";
+import {Registry} from "tc-shared/events";
+import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
+import { ChannelEntryView as ChannelEntryView } from "./tree/Channel";
 
 export enum ChannelType {
     PERMANENT,
@@ -69,7 +74,79 @@ export class ChannelProperties {
     channel_conversation_history_length: number = -1;
 }
 
-export class ChannelEntry {
+export interface ChannelEvents extends ChannelTreeEntryEvents {
+    notify_properties_updated: {
+        updated_properties: {[Key in keyof ChannelProperties]: ChannelProperties[Key]};
+        channel_properties: ChannelProperties
+    },
+
+    notify_cached_password_updated: {
+        reason: "channel-password-changed" | "password-miss-match" | "password-entered";
+        new_hash?: string;
+    },
+
+    notify_subscribe_state_changed: {
+        channel_subscribed: boolean
+    },
+
+    notify_children_changed: {},
+    notify_clients_changed: {}, /* will also be fired when clients haven been reordered */
+}
+
+export class ParsedChannelName {
+    readonly original_name: string;
+    alignment: "center" | "right" | "left" | "normal";
+    repetitive: boolean;
+    text: string; /* does not contain any alignment codes */
+
+    constructor(name: string, has_parent_channel: boolean) {
+        this.original_name = name;
+        this.parse(has_parent_channel);
+    }
+
+    private parse(has_parent_channel: boolean) {
+        this.alignment = "normal";
+
+        parse_type:
+        if(!has_parent_channel && this.original_name.charAt(0) == '[') {
+            let end = this.original_name.indexOf(']');
+            if(end === -1) break parse_type;
+
+            let options = this.original_name.substr(1, end - 1);
+            if(options.indexOf("spacer") === -1) break parse_type;
+            options = options.substr(0, options.indexOf("spacer"));
+
+            if(options.length == 0)
+                options = "l";
+            else if(options.length > 1)
+                options = options[0];
+
+            switch (options) {
+                case "r":
+                    this.alignment = "right";
+                    break;
+                case "l":
+                    this.alignment = "center";
+                    break;
+                case "c":
+                    this.alignment = "center";
+                    break;
+                case "*":
+                    this.alignment = "center";
+                    this.repetitive = true;
+                    break;
+                default:
+                    break parse_type;
+            }
+
+            this.text = this.original_name.substr(end + 1);
+        }
+        if(!this.text && this.alignment === "normal")
+            this.text = this.original_name;
+    }
+}
+
+export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     channelTree: ChannelTree;
     channelId: number;
     parent?: ChannelEntry;
@@ -78,15 +155,14 @@ export class ChannelEntry {
     channel_previous?: ChannelEntry;
     channel_next?: ChannelEntry;
 
-    private _channel_name_alignment: string = undefined;
-    private _channel_name_formatted: string = undefined;
+    readonly events: Registry<ChannelEvents>;
+    readonly view: React.Ref<ChannelEntryView>;
+
+    parsed_channel_name: ParsedChannelName;
+
     private _family_index: number = 0;
 
     //HTML DOM elements
-    private _tag_root:              JQuery<HTMLElement>; /* container for the channel, client and children tag */
-    private _tag_siblings:          JQuery<HTMLElement>; /* container for all sub channels */
-    private _tag_clients:           JQuery<HTMLElement>; /* container for all clients */
-    private _tag_channel:           JQuery<HTMLElement>; /* container for the channel info itself */
     private _destroyed = false;
 
     private _cachedPassword: string;
@@ -98,26 +174,33 @@ export class ChannelEntry {
     private _flag_subscribed: boolean;
     private _subscribe_mode: ChannelSubscribeMode;
 
-    constructor(channelId, channelName, parent = null) {
+    private client_list: ClientEntry[] = []; /* this list is sorted correctly! */
+    private readonly client_property_listener;
+
+    constructor(channelId, channelName) {
+        super();
+
+        this.events = new Registry<ChannelEvents>();
+        this.view = React.createRef<ChannelEntryView>();
+        
         this.properties = new ChannelProperties();
         this.channelId = channelId;
         this.properties.channel_name = channelName;
-        this.parent = parent;
         this.channelTree = null;
 
-        this.initializeTag();
-        this.__updateChannelName();
+        this.parsed_channel_name = new ParsedChannelName("undefined", false);
+
+        this.client_property_listener = (event: ClientEvents["notify_properties_updated"]) => {
+            if(typeof event.updated_properties.client_nickname !== "undefined" || typeof event.updated_properties.client_talk_power !== "undefined")
+                this.reorderClientList(true);
+        }
     }
 
     destroy() {
         this._destroyed = true;
-        if(this._tag_root) {
-            this._tag_root.remove(); /* removes also all other tags */
-            this._tag_root = undefined;
-        }
-        this._tag_siblings = undefined;
-        this._tag_channel = undefined;
-        this._tag_clients = undefined;
+
+        this.client_list.forEach(e => this.unregisterClient(e, true));
+        this.client_list = [];
 
         this._cached_channel_description_promise = undefined;
         this._cached_channel_description_promise_resolve = undefined;
@@ -134,7 +217,7 @@ export class ChannelEntry {
     }
 
     formattedChannelName() {
-        return this._channel_name_formatted || this.properties.channel_name;
+        return this.parsed_channel_name.text;
     }
 
     getChannelDescription() : Promise<string> {
@@ -151,11 +234,57 @@ export class ChannelEntry {
         });
     }
 
+    registerClient(client: ClientEntry) {
+        client.events.on("notify_properties_updated", this.client_property_listener);
+        this.client_list.push(client);
+        this.reorderClientList(false);
+
+        this.events.fire("notify_clients_changed");
+    }
+
+    unregisterClient(client: ClientEntry, no_event?: boolean) {
+        client.events.off("notify_properties_updated", this.client_property_listener);
+        if(!this.client_list.remove(client))
+            log.warn(LogCategory.CHANNEL, tr("Unregistered unknown client from channel %s"), this.channelName());
+
+        if(!no_event)
+            this.events.fire("notify_clients_changed");
+    }
+
+    private reorderClientList(fire_event: boolean) {
+        const original_list = this.client_list.slice(0);
+
+        this.client_list.sort((a, b) => {
+            if(a.properties.client_talk_power < b.properties.client_talk_power)
+                return 1;
+            if(a.properties.client_talk_power > b.properties.client_talk_power)
+                return -1;
+
+            if(a.properties.client_nickname > b.properties.client_nickname)
+                return 1;
+            if(a.properties.client_nickname < b.properties.client_nickname)
+                return -1;
+
+            return 0;
+        });
+
+        if(fire_event) {
+            /* only fire if really something has changed ;) */
+            for(let index = 0; index < this.client_list.length; index++) {
+                if(this.client_list[index] !== original_list[index]) {
+                    this.events.fire("notify_clients_changed");
+                    break;
+                }
+            }
+        }
+    }
+
     parent_channel() { return this.parent; }
     hasParent(){ return this.parent != null; }
     getChannelId(){ return this.channelId; }
 
     children(deep = false) : ChannelEntry[] {
+        //TODO: Speed this up by caching the children!
         const result: ChannelEntry[] = [];
         if(this.channelTree == null) return [];
 
@@ -178,53 +307,17 @@ export class ChannelEntry {
     }
 
     clients(deep = false) : ClientEntry[] {
-        const result: ClientEntry[] = [];
-        if(this.channelTree == null) return [];
+        const result: ClientEntry[] = this.client_list.slice(0);
+        if(!deep) return result;
 
-        const self = this;
-        this.channelTree.clients.forEach(function (entry) {
-            let current = entry.currentChannel();
-            if(deep) {
-                while(current) {
-                    if(current == self) {
-                        result.push(entry);
-                        break;
-                    }
-                    current = current.parent_channel();
-                }
-            } else
-            if(current == self)
-                result.push(entry);
-        });
-        return result;
+        return this.children(true).map(e => e.clients(false)).reduce((prev, cur) => {
+            prev.push(...cur);
+            return cur;
+        }, result);
     }
 
     clients_ordered() : ClientEntry[] {
-        const clients = this.clients(false);
-
-        clients.sort((a, b) => {
-            if(a.properties.client_talk_power < b.properties.client_talk_power)
-                return 1;
-            if(a.properties.client_talk_power > b.properties.client_talk_power)
-                return -1;
-
-            if(a.properties.client_nickname > b.properties.client_nickname)
-                return 1;
-            if(a.properties.client_nickname < b.properties.client_nickname)
-                return -1;
-
-            return 0;
-        });
-        return clients;
-    }
-
-    update_family_index(enforce?: boolean) {
-        const current_index = this._family_index;
-        const new_index = this.calculate_family_index(true);
-        if(current_index == new_index && !enforce) return;
-
-        this._tag_channel.css("z-index", this._family_index);
-        this._tag_channel.css("padding-left", ((this._family_index + 1) * 16 + 10) + "px");
+        return this.client_list;
     }
 
     calculate_family_index(enforce_recalculate: boolean = false) : number {
@@ -242,235 +335,13 @@ export class ChannelEntry {
         return this._family_index;
     }
 
-    private initializeTag() {
-        const tag_channel = $.spawn("div").addClass("tree-entry channel");
+    protected onSelect(singleSelect: boolean) {
+        super.onSelect(singleSelect);
+        if(!singleSelect) return;
 
-        {
-            const container_entry = $.spawn("div").addClass("container-channel");
-
-            container_entry.attr("channel-id", this.channelId);
-            container_entry.addClass(this._channel_name_alignment);
-
-            /* unread marker */
-            {
-                container_entry.append(
-                    $.spawn("div")
-                        .addClass("marker-text-unread hidden")
-                        .attr("conversation", this.channelId)
-                );
-            }
-
-            /* channel icon (type) */
-            {
-                container_entry.append(
-                    $.spawn("div")
-                    .addClass("show-channel-normal-only channel-type icon client-channel_green_subscribed")
-                );
-            }
-
-            /* channel name */
-            {
-                container_entry.append(
-                    $.spawn("div")
-                    .addClass("container-channel-name")
-                    .append(
-                        $.spawn("a")
-                        .addClass("channel-name")
-                        .text(this.channelName())
-                    )
-                )
-            }
-
-            /* all icons (last element) */
-            {
-                //Icons
-                let container_icons = $.spawn("span").addClass("icons");
-
-                //Default icon (5)
-                container_icons.append(
-                    $.spawn("div")
-                    .addClass("show-channel-normal-only icon_entry icon_default icon client-channel_default")
-                    .attr("title", tr("Default channel"))
-                );
-
-                //Password icon (4)
-                container_icons.append(
-                    $.spawn("div")
-                    .addClass("show-channel-normal-only icon_entry icon_password icon client-register")
-                    .attr("title", tr("The channel is password protected"))
-                );
-
-                //Music icon (3)
-                container_icons.append(
-                    $.spawn("div")
-                    .addClass("show-channel-normal-only icon_entry icon_music icon client-music")
-                    .attr("title", tr("Music quality"))
-                );
-
-                //Channel moderated (2)
-                container_icons.append(
-                    $.spawn("div")
-                    .addClass("show-channel-normal-only icon_entry icon_moderated icon client-moderated")
-                    .attr("title", tr("Channel is moderated"))
-                );
-
-                //Channel Icon (1)
-                container_icons.append(
-                    $.spawn("div")
-                    .addClass("show-channel-normal-only icon_entry channel_icon")
-                    .attr("title", tr("Channel icon"))
-                );
-
-                //Default no sound (0)
-                let container = $.spawn("div")
-                    .css("position", "relative")
-                    .addClass("icon_no_sound");
-
-                let noSound = $.spawn("div")
-                    .addClass("icon_entry icon client-conflict-icon")
-                    .attr("title", "You don't support the channel codec");
-
-                let bg = $.spawn("div")
-                    .width(10)
-                    .height(14)
-                    .css("background", "red")
-                    .css("position", "absolute")
-                    .css("top", "1px")
-                    .css("left", "3px")
-                    .css("z-index", "-1");
-                bg.appendTo(container);
-                noSound.appendTo(container);
-                container_icons.append(container);
-
-                container_icons.appendTo(container_entry);
-            }
-
-            tag_channel.append(this._tag_channel = container_entry);
-            this.update_family_index(true);
-        }
-        {
-            const container_client = $.spawn("div").addClass("container-clients");
-
-
-            tag_channel.append(this._tag_clients = container_client);
-        }
-        {
-            const container_children = $.spawn("div").addClass("container-children");
-
-
-            tag_channel.append(this._tag_siblings = container_children);
-        }
-
-        /*
-        setInterval(() => {
-            let color = (Math.random() * 10000000).toString(16).substr(0, 6);
-            tag_channel.css("background", "#" + color);
-        }, 150);
-        */
-
-        this._tag_root = tag_channel;
-    }
-
-    rootTag() : JQuery<HTMLElement> {
-        return this._tag_root;
-    }
-
-    channelTag() : JQuery<HTMLElement> {
-        return this._tag_channel;
-    }
-
-    siblingTag() : JQuery<HTMLElement> {
-        return this._tag_siblings;
-    }
-    clientTag() : JQuery<HTMLElement>{
-        return this._tag_clients;
-    }
-
-    private _reorder_timer: number;
-    reorderClients(sync?: boolean) {
-        if(this._reorder_timer) {
-            if(!sync) return;
-            clearTimeout(this._reorder_timer);
-            this._reorder_timer = undefined;
-        } else if(!sync) {
-            this._reorder_timer = setTimeout(() => {
-                this._reorder_timer = undefined;
-                this.reorderClients(true);
-            }, 5) as any;
-            return;
-        }
-
-        let clients = this.clients();
-
-        if(clients.length > 1) {
-            clients.sort((a, b) => {
-                if(a.properties.client_talk_power < b.properties.client_talk_power)
-                    return 1;
-                if(a.properties.client_talk_power > b.properties.client_talk_power)
-                    return -1;
-
-                if(a.properties.client_nickname > b.properties.client_nickname)
-                    return 1;
-                if(a.properties.client_nickname < b.properties.client_nickname)
-                    return -1;
-
-                return 0;
-            });
-            clients.reverse();
-
-            for(let index = 0; index + 1 < clients.length; index++)
-                clients[index].tag.before(clients[index + 1].tag);
-
-            log.debug(LogCategory.CHANNEL, tr("Reordered channel clients: %d"), clients.length);
-            for(let client of clients) {
-                log.debug(LogCategory.CHANNEL, "- %i %s", client.properties.client_talk_power, client.properties.client_nickname);
-            }
-        }
-    }
-
-    initializeListener() {
-        const tag_channel = this.channelTag();
-        tag_channel.on('click', () => this.channelTree.onSelect(this));
-        tag_channel.on('dblclick', () => {
-            if($.isArray(this.channelTree.currently_selected)) { //Multiselect
-                return;
-            }
-            this.joinChannel()
-        });
-
-        let last_touch: number = 0;
-        let touch_start: number = 0;
-        tag_channel.on('touchend', event => {
-            /* if over 250ms then its not a click its more a drag */
-            if(Date.now() - touch_start > 250) {
-                touch_start = 0;
-                return;
-            }
-            if(Date.now() - last_touch > 750) {
-                last_touch = Date.now();
-                return;
-            }
-            last_touch = Date.now();
-            /* double touch */
-            tag_channel.trigger('dblclick');
-        });
-        tag_channel.on('touchstart', event => {
-            touch_start = Date.now();
-        });
-
-        if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            this.channelTag().on("contextmenu", (event) => {
-                event.preventDefault();
-                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
-                    (this.channelTree.currently_selected_context_callback || ((_) => null))(event);
-                    return;
-                }
-
-                this.channelTree.onSelect(this, true);
-                this.showContextMenu(event.pageX, event.pageY, () => {
-                    this.channelTree.onSelect(undefined, true);
-                });
-            });
+        if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
+            this.channelTree.client.side_bar.channel_conversations().set_current_channel(this.channelId);
+            this.channelTree.client.side_bar.show_channel_conversations();
         }
     }
 
@@ -653,76 +524,8 @@ export class ChannelEntry {
         );
     }
 
-    handle_frame_resized() {
-        if(this._channel_name_formatted === "align-repetitive")
-            this.__updateChannelName();
-    }
-
-    private static NAME_ALIGNMENTS: string[] = ["align-left", "align-center", "align-right", "align-repetitive"];
-    private __updateChannelName() {
-        this._channel_name_formatted = undefined;
-
-        parse_type:
-        if(this.parent_channel() == null && this.properties.channel_name.charAt(0) == '[') {
-            let end = this.properties.channel_name.indexOf(']');
-            if(end == -1) break parse_type;
-
-            let options = this.properties.channel_name.substr(1, end - 1);
-            if(options.indexOf("spacer") == -1) break parse_type;
-            options = options.substr(0, options.indexOf("spacer"));
-
-            if(options.length == 0)
-                options = "l";
-            else if(options.length > 1)
-                options = options[0];
-
-            switch (options) {
-                case "r":
-                    this._channel_name_alignment = "align-right";
-                    break;
-                case "l":
-                    this._channel_name_alignment = "align-left";
-                    break;
-                case "c":
-                    this._channel_name_alignment = "align-center";
-                    break;
-                case "*":
-                    this._channel_name_alignment = "align-repetitive";
-                    break;
-                default:
-                    this._channel_name_alignment = undefined;
-                    break parse_type;
-            }
-
-            this._channel_name_formatted = this.properties.channel_name.substr(end + 1) || "";
-        }
-
-        this._tag_channel.find(".show-channel-normal-only").toggleClass("channel-normal", this._channel_name_formatted === undefined);
-
-        const tag_container_name = this._tag_channel.find(".container-channel-name");
-        tag_container_name.removeClass(ChannelEntry.NAME_ALIGNMENTS.join(" "));
-
-        const tag_name = tag_container_name.find(".channel-name");
-        let text = this._channel_name_formatted === undefined ? this.properties.channel_name : this._channel_name_formatted;
-
-        if(this._channel_name_formatted !== undefined) {
-            tag_container_name.addClass(this._channel_name_alignment);
-
-            if(this._channel_name_alignment == "align-repetitive" && text.length > 0) {
-                while(text.length < 1024 * 8)
-                    text += text;
-            }
-        }
-
-        tag_name.text(text);
-    }
-
-    recalculate_repetitive_name() {
-        if(this._channel_name_alignment == "align-repetitive")
-            this.__updateChannelName();
-    }
-
     updateVariables(...variables: {key: string, value: string}[]) {
+        /* devel-block(log-channel-property-updates) */
         let group = log.group(log.LogType.DEBUG, LogCategory.CHANNEL_PROPERTIES, tr("Update properties (%i) of %s (%i)"), variables.length, this.channelName(), this.getChannelId());
 
         {
@@ -735,6 +538,7 @@ export class ChannelEntry {
                 });
             log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Clannel update properties", entries);
         }
+        /* devel-block-end */
 
         let info_update = false;
         for(let variable of variables) {
@@ -743,36 +547,14 @@ export class ChannelEntry {
             JSON.map_field_to(this.properties, value, variable.key);
 
             if(key == "channel_name") {
-                this.__updateChannelName();
+                this.parsed_channel_name = new ParsedChannelName(value, this.hasParent());
                 info_update = true;
             } else if(key == "channel_order") {
                 let order = this.channelTree.findChannel(this.properties.channel_order);
                 this.channelTree.moveChannel(this, order, this.parent);
-            } else if(key == "channel_icon_id") {
-                /* For more detail lookup client::updateVariables and client_icon_id!
-                 * ATTENTION: This is required!
-                 */
-                this.properties.channel_icon_id = variable.value as any >>> 0;
-
-                let tag = this.channelTag().find(".icons .channel_icon");
-                (this.properties.channel_icon_id > 0 ? $.fn.show : $.fn.hide).apply(tag);
-                if(this.properties.channel_icon_id > 0) {
-                    tag.children().detach();
-                    this.channelTree.client.fileManager.icons.generateTag(this.properties.channel_icon_id).appendTo(tag);
-                }
-                info_update = true;
-            } else if(key == "channel_codec") {
-                (this.properties.channel_codec == 5 || this.properties.channel_codec == 3 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_music"));
-                this.channelTag().find(".icons .icon_no_sound").toggle(!(
-                    this.channelTree.client.serverConnection.support_voice() &&
-                    this.channelTree.client.serverConnection.voice_connection().decoding_supported(this.properties.channel_codec)
-                ));
-            } else if(key == "channel_flag_default") {
-                (this.properties.channel_flag_default ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_default"));
-            } else if(key == "channel_flag_password")
-                (this.properties.channel_flag_password ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_password"));
-            else if(key == "channel_needed_talk_power")
-                (this.properties.channel_needed_talk_power > 0 ? $.fn.show : $.fn.hide).apply(this.channelTag().find(".icons .icon_moderated"));
+            } else if(key === "channel_icon_id") {
+                this.properties.channel_icon_id = variable.value as any >>> 0; /* unsigned 32 bit number! */
+            }
             else if(key == "channel_description") {
                 this._cached_channel_description = undefined;
                 if(this._cached_channel_description_promise_resolve)
@@ -781,10 +563,6 @@ export class ChannelEntry {
                 this._cached_channel_description_promise_resolve = undefined;
                 this._cached_channel_description_promise_reject = undefined;
             }
-            if(key == "channel_maxclients" || key == "channel_maxfamilyclients" || key == "channel_flag_private" || key == "channel_flag_password") {
-                this.updateChannelTypeIcon();
-                info_update = true;
-            }
             if(key == "channel_flag_conversation_private") {
                 const conversations = this.channelTree.client.side_bar.channel_conversations();
                 const conversation = conversations.conversation(this.channelId, false);
@@ -792,7 +570,15 @@ export class ChannelEntry {
                     conversation.set_flag_private(this.properties.channel_flag_conversation_private);
             }
         }
+        /* devel-block(log-channel-property-updates) */
         group.end();
+        /* devel-block-end */
+        {
+            let properties = {};
+            for(const property of variables)
+                properties[property.key] = this.properties[property.key];
+            this.events.fire("notify_properties_updated", { updated_properties: properties as any, channel_properties: this.properties });
+        }
 
         if(info_update) {
             const _client = this.channelTree.client.getClient();
@@ -800,28 +586,6 @@ export class ChannelEntry {
                 this.channelTree.client.side_bar.info_frame().update_channel_talk();
             //TODO chat channel!
         }
-    }
-
-    updateChannelTypeIcon() {
-        let tag = this.channelTag().find(".channel-type");
-        tag.removeAttr('class');
-        tag.addClass("show-channel-normal-only channel-type icon");
-
-        if(this._channel_name_formatted === undefined)
-            tag.addClass("channel-normal");
-
-        let type;
-        if(this.properties.channel_flag_password == true && !this._cachedPassword)
-            type = "yellow";
-        else if(
-            (!this.properties.channel_flag_maxclients_unlimited && this.clients().length >= this.properties.channel_maxclients) ||
-            (!this.properties.channel_flag_maxfamilyclients_unlimited && this.properties.channel_maxfamilyclients >= 0 && this.clients(true).length >= this.properties.channel_maxfamilyclients)
-        )
-            type = "red";
-        else
-            type = "green";
-
-        tag.addClass("client-channel_" + type + (this._flag_subscribed ? "_subscribed" : ""));
     }
 
     generate_bbcode() {
@@ -847,11 +611,12 @@ export class ChannelEntry {
             !this._cachedPassword &&
             !this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).granted(1)) {
             createInputModal(tr("Channel password"), tr("Channel password:"), () => true, text => {
-                if(typeof(text) == typeof(true)) return;
-                hashPassword(text as string).then(result => {
+                if(typeof(text) !== "string") return;
+
+                hashPassword(text).then(result => {
                     this._cachedPassword = result;
+                    this.events.fire("notify_cached_password_updated", { reason: "password-entered", new_hash: result });
                     this.joinChannel();
-                    this.updateChannelTypeIcon();
                 });
             }).open();
         } else if(this.channelTree.client.getClient().currentChannel() != this)
@@ -861,7 +626,7 @@ export class ChannelEntry {
                 if(error instanceof CommandResult) {
                     if(error.id == 781) { //Invalid password
                         this._cachedPassword = undefined;
-                        this.updateChannelTypeIcon();
+                        this.events.fire("notify_cached_password_updated", { reason: "password-miss-match" });
                     }
                 }
             });
@@ -890,7 +655,7 @@ export class ChannelEntry {
 
         if(inherited_subscription_mode) {
             this.subscribe_mode = ChannelSubscribeMode.INHERITED;
-            unsubscribe = this.flag_subscribed && !this.channelTree.client.client_status.channel_subscribe_all;
+            unsubscribe = this.flag_subscribed && !this.channelTree.client.isSubscribeToAllChannels();
         } else {
             this.subscribe_mode = ChannelSubscribeMode.UNSUBSCRIBED;
             unsubscribe = this.flag_subscribed;
@@ -918,7 +683,7 @@ export class ChannelEntry {
             return;
 
         this._flag_subscribed = flag;
-        this.updateChannelTypeIcon();
+        this.events.fire("notify_subscribe_state_changed", { channel_subscribed: flag });
     }
 
     get subscribe_mode() : ChannelSubscribeMode {
@@ -931,10 +696,6 @@ export class ChannelEntry {
 
         this._subscribe_mode = mode;
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), mode);
-    }
-
-    set flag_text_unread(flag: boolean) {
-        this._tag_channel.find(".marker-text-unread").toggleClass("hidden", !flag);
     }
 
     log_data() : server_log.base.Channel {

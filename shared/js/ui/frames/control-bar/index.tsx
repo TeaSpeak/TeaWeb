@@ -16,7 +16,7 @@ import {
     DirectoryBookmark,
     find_bookmark
 } from "tc-shared/bookmarks";
-import {IconManager} from "tc-shared/FileManager";
+import {icon_cache_loader, IconManager} from "tc-shared/FileManager";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {default_recorder} from "tc-shared/voice/RecorderProfile";
@@ -32,7 +32,7 @@ export interface ConnectionState {
 
 @ReactEventHandler(obj => obj.props.event_registry)
 class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_registry: Registry<InternalControlBarEvents> }, ConnectionState> {
-    protected default_state(): ConnectionState {
+    protected defaultState(): ConnectionState {
         return {
             connected: false,
             connectedAnywhere: false
@@ -84,7 +84,7 @@ class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_re
 
     @EventHandler<InternalControlBarEvents>("update_connect_state")
     private handleStateUpdate(state: ConnectionState) {
-        this.updateState(state);
+        this.setState(state);
     }
 }
 
@@ -96,7 +96,7 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Inter
         this.button_ref = React.createRef();
     }
 
-    protected default_state() {
+    protected defaultState() {
         return {};
     }
 
@@ -118,7 +118,7 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Inter
     private renderBookmark(bookmark: Bookmark) {
         return (
             <DropdownEntry key={bookmark.unique_id}
-                           icon={IconManager.generate_tag(IconManager.load_cached_icon(bookmark.last_icon_id || 0), {animate: false})}
+                           icon={icon_cache_loader.load_icon(bookmark.last_icon_id, bookmark.last_icon_server_id)}
                            text={bookmark.display_name}
                            onClick={BookmarkButton.onBookmarkClick.bind(undefined, bookmark.unique_id)}
                            onContextMenu={this.onBookmarkContextMenu.bind(this, bookmark.unique_id)}/>
@@ -146,7 +146,7 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Inter
         const bookmark = find_bookmark(bookmark_id) as Bookmark;
         if(!bookmark) return;
 
-        this.button_ref.current?.updateState({ dropdownForceShow: true });
+        this.button_ref.current?.setState({ dropdownForceShow: true });
         contextmenu.spawn_context_menu(event.pageX,  event.pageY, {
             type: contextmenu.MenuEntryType.ENTRY,
             name: tr("Connect"),
@@ -159,7 +159,7 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Inter
             callback: () => boorkmak_connect(bookmark, true),
             visible: !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION)
         }, contextmenu.Entry.CLOSE(() => {
-            this.button_ref.current?.updateState({ dropdownForceShow: false });
+            this.button_ref.current?.setState({ dropdownForceShow: false });
         }));
     }
 
@@ -177,7 +177,7 @@ export interface AwayState {
 
 @ReactEventHandler(obj => obj.props.event_registry)
 class AwayButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, AwayState> {
-    protected default_state(): AwayState {
+    protected defaultState(): AwayState {
         return {
             away: false,
             awayAnywhere: false,
@@ -226,7 +226,7 @@ class AwayButton extends ReactComponentBase<{ event_registry: Registry<InternalC
 
     @EventHandler<InternalControlBarEvents>("update_away_state")
     private handleStateUpdate(state: AwayState) {
-        this.updateState(state);
+        this.setState(state);
     }
 }
 
@@ -236,7 +236,7 @@ export interface ChannelSubscribeState {
 
 @ReactEventHandler(obj => obj.props.event_registry)
 class ChannelSubscribeButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, ChannelSubscribeState> {
-    protected default_state(): ChannelSubscribeState {
+    protected defaultState(): ChannelSubscribeState {
         return { subscribeEnabled: false };
     }
 
@@ -247,7 +247,7 @@ class ChannelSubscribeButton extends ReactComponentBase<{ event_registry: Regist
 
     @EventHandler<InternalControlBarEvents>("update_subscribe_state")
     private handleStateUpdate(state: ChannelSubscribeState) {
-        this.updateState(state);
+        this.setState(state);
     }
 }
 
@@ -258,7 +258,7 @@ export interface MicrophoneState {
 
 @ReactEventHandler(obj => obj.props.event_registry)
 class MicrophoneButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, MicrophoneState> {
-    protected default_state(): MicrophoneState {
+    protected defaultState(): MicrophoneState {
         return {
             enabled: false,
             muted: false
@@ -278,7 +278,7 @@ class MicrophoneButton extends ReactComponentBase<{ event_registry: Registry<Int
 
     @EventHandler<InternalControlBarEvents>("update_microphone_state")
     private handleStateUpdate(state: MicrophoneState) {
-        this.updateState(state);
+        this.setState(state);
     }
 }
 
@@ -288,7 +288,7 @@ export interface SpeakerState {
 
 @ReactEventHandler(obj => obj.props.event_registry)
 class SpeakerButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, SpeakerState> {
-    protected default_state(): SpeakerState {
+    protected defaultState(): SpeakerState {
         return {
             muted: false
         };
@@ -304,7 +304,7 @@ class SpeakerButton extends ReactComponentBase<{ event_registry: Registry<Intern
 
     @EventHandler<InternalControlBarEvents>("update_speaker_state")
     private handleStateUpdate(state: SpeakerState) {
-        this.updateState(state);
+        this.setState(state);
     }
 }
 
@@ -314,7 +314,7 @@ export interface QueryState {
 
 @ReactEventHandler(obj => obj.props.event_registry)
 class QueryButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, QueryState> {
-    protected default_state() {
+    protected defaultState() {
         return {
             queryShown: false
         };
@@ -340,7 +340,7 @@ class QueryButton extends ReactComponentBase<{ event_registry: Registry<Internal
 
     @EventHandler<InternalControlBarEvents>("update_query_state")
     private handleStateUpdate(state: QueryState) {
-        this.updateState(state);
+        this.setState(state);
     }
 }
 
@@ -352,7 +352,7 @@ export interface HostButtonState {
 
 @ReactEventHandler(obj => obj.props.event_registry)
 class HostButton extends ReactComponentBase<{ event_registry: Registry<InternalControlBarEvents> }, HostButtonState> {
-    protected default_state() {
+    protected defaultState() {
         return {
             url: undefined,
             target_url: undefined
@@ -382,7 +382,7 @@ class HostButton extends ReactComponentBase<{ event_registry: Registry<InternalC
 
     @EventHandler<InternalControlBarEvents>("update_host_button")
     private handleStateUpdate(state: HostButtonState) {
-        this.updateState(state);
+        this.setState(state);
     }
 }
 
@@ -446,6 +446,7 @@ export class ControlBar extends React.Component<ControlBarProperties, {}> {
         const events = target.events();
         events.off("notify_state_updated", this.connection_handler_callbacks.notify_state_updated);
         events.off("notify_connection_state_changed", this.connection_handler_callbacks.notify_connection_state_changed);
+        //FIXME: Add the host button here!
     }
 
     private registerConnectionHandlerEvents(target: ConnectionHandler) {
@@ -455,7 +456,6 @@ export class ControlBar extends React.Component<ControlBarProperties, {}> {
     }
 
     componentDidMount(): void {
-        console.error(server_connections.events());
         server_connections.events().on("notify_active_handler_changed", this.connection_manager_callbacks.active_handler_changed);
         this.event_registry.fire("set_connection_handler", { handler: server_connections.active_connection() });
     }

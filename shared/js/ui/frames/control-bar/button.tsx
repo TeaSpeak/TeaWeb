@@ -27,7 +27,7 @@ export interface ButtonProperties {
 }
 
 export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
-    protected default_state(): ButtonState {
+    protected defaultState(): ButtonState {
         return {
             switched: false,
             dropdownShowed: false,
@@ -66,13 +66,13 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
     }
 
     private onMouseEnter() {
-        this.updateState({
+        this.setState({
             dropdownShowed: true
         });
     }
 
     private onMouseLeave() {
-        this.updateState({
+        this.setState({
             dropdownShowed: false
         });
     }
@@ -81,6 +81,6 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
         const new_state = !(this.state.switched || this.props.switched);
         const result = this.props.onToggle?.call(undefined, new_state);
         if(this.props.autoSwitch)
-            this.updateState({ switched: typeof result === "boolean" ? result : new_state });
+            this.setState({ switched: typeof result === "boolean" ? result : new_state });
     }
 }

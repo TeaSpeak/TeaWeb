@@ -807,7 +807,6 @@ export class ConnectionHandler {
     }
 
     resize_elements() {
-        this.channelTree.handle_resized();
         this.invoke_resized_on_activate = false;
     }
 

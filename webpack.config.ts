@@ -111,7 +111,10 @@ export const config = async (target: "web" | "client") => { return {
                     {
                         loader: 'css-loader',
                         options: {
-                            modules: true,
+                            modules: {
+                                mode: "local",
+                                localIdentName: '[path][name]__[local]--[hash:base64:5]', //FIXME: Debug mode only!
+                            },
                             sourceMap: isDevelopment
                         }
                     },
@@ -140,6 +143,12 @@ export const config = async (target: "web" | "client") => { return {
                                     })]
                                 };
                             }
+                        }
+                    },
+                    {
+                        loader: "./webpack/DevelBlocks.js",
+                        options: {
+                            enabled: true
                         }
                     }
                 ]

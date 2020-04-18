@@ -1,0 +1,116 @@
+@import "../../../css/static/properties";
+@import "../../../css/static/mixin";
+
+html:root {
+    --channel-tree-entry-selected: #2d2d2d;
+    --channel-tree-entry-hovered: #393939;
+    --channel-tree-entry-color: #828282;
+
+    --channel-tree-entry-marker-unread: rgba(168, 20, 20, 0.5);
+}
+
+@if 0 {
+    /* the channel tree */
+    .channel-tree {
+
+        .tree-entry {
+            &.client {
+
+            }
+        }
+    }
+}
+
+.channelTree {
+    @include user-select(none);
+    width: 100%;
+
+    min-width: 10em;
+    min-height: 5em;
+
+    display: flex;
+    flex-direction: column;
+
+    flex-shrink: 0;
+    flex-grow: 1;
+
+    * {
+        font-family: sans-serif;
+        font-size: 12px;
+        white-space: pre;
+        line-height: 1;
+    }
+
+
+    .treeEntry {
+        position: absolute;
+        left: 0;
+        right: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        height: 18px;
+        padding-top: 1px;
+        padding-bottom: 1px;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        &:hover {
+            background-color: var(--channel-tree-entry-hovered);
+        }
+
+        &.selected {
+            background-color: var(--channel-tree-entry-selected);
+        }
+
+
+        .markerUnread {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+
+            width: 1px;
+            background-color: var(--channel-tree-entry-marker-unread);
+
+            opacity: 1;
+
+            &:before {
+                content: '';
+                position: absolute;
+
+                left: 0;
+                top: 0;
+                bottom: 0;
+
+                width: 24px;
+
+                background: linear-gradient(to right, var(--channel-tree-entry-marker-unread) 0%, rgba(0, 0, 0, 0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+            }
+
+            &.hidden {
+                opacity: 0;
+            }
+
+            @include transition(opacity $button_hover_animation_time);
+        }
+    }
+}
+
+.channelTreeContainer {
+    @include chat-scrollbar-vertical();
+
+    scroll-behavior: smooth;
+
+    position: relative;
+    height: 100%;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    overflow: hidden;
+    overflow-y: auto;
+}

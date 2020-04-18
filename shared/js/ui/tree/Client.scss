@@ -1,0 +1,104 @@
+@import "../../../css/static/mixin";
+
+.clientEntry {
+     cursor: pointer;
+
+     display: flex;
+     flex-direction: row;
+
+     align-items: center;
+
+     > div {
+         margin-right: 2px;
+     }
+
+     .clientName {
+         line-height: 16px;
+         min-width: 2em;
+
+         flex-grow: 0;
+         flex-shrink: 1;
+
+         padding-right: .25em;
+         color: var(--channel-tree-entry-color);
+
+         &:not(.edit) {
+             @include text-dotdotdot();
+         }
+
+         &.clientNameOwn {
+             font-weight: bold;
+         }
+
+         &.edit {
+             width: 100%;
+             font-weight: normal;
+
+             color: black;
+             background-color: white;
+
+             overflow-y: hidden;
+             overflow-x: hidden;
+         }
+     }
+
+     .clientAwayMessage {
+         color: var(--channel-tree-entry-color);
+     }
+
+     .containerIcons {
+         margin-right: 0; /* override from previous thing */
+         height: 100%;
+
+         position: absolute;
+         right: 0;
+         padding-right: 5px;
+         padding-left: 4px;
+
+         display: flex;
+         flex-direction: row;
+
+         align-items: center;
+
+         .containerIconsGroup {
+             display: flex;
+             flex-direction: row;
+
+             .containerHroupIcon {
+                 display: flex;
+                 flex-direction: column;
+                 justify-content: center;
+             }
+         }
+     }
+
+     &.selected {
+         &:focus-within {
+             .containerIcons {
+                 background-color: var(--channel-tree-entry-selected); /* overpaint the name change box */
+
+                 padding-left: 5px;
+                 z-index: 1001; /* show before client name */
+
+                 height: 18px;
+             }
+         }
+
+         .clientName {
+             &:focus {
+                 position: absolute;
+                 color: black;
+
+                 padding-top: 1px;
+                 padding-bottom: 1px;
+
+                 z-index: 1000;
+
+                 margin-right: -10px;
+                 margin-left: 18px;
+
+                 width: 100%;
+             }
+         }
+     }
+ }

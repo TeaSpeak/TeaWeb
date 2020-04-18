@@ -61,7 +61,7 @@ interface KeyActionEntryProperties {
 
 @ReactEventHandler(e => e.props.eventRegistry)
 class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyActionEntryState> {
-    protected default_state() : KeyActionEntryState {
+    protected defaultState() : KeyActionEntryState {
         return {
             assignedKey: undefined,
             selected: false,
@@ -133,7 +133,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
 
     @EventHandler<KeyMapEvents>("set_selected_action")
     private handleSelectedChange(event: KeyMapEvents["set_selected_action"]) {
-        this.updateState({
+        this.setState({
             selected: this.props.action === event.action
         });
     }
@@ -143,7 +143,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
         if(event.action !== this.props.action) return;
         if(event.query_type !== "general") return;
 
-        this.updateState({
+        this.setState({
             state: "loading"
         });
     }
@@ -153,12 +153,12 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
         if(event.action !== this.props.action) return;
 
         if(event.status === "success") {
-            this.updateState({
+            this.setState({
                 state: "loaded",
                 assignedKey: event.key
             });
         } else {
-            this.updateState({
+            this.setState({
                 state: "error",
                 error: event.status === "timeout" ? tr("query timeout") : event.error
             });
@@ -169,7 +169,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
     private handleSetKeymap(event: KeyMapEvents["set_keymap"]) {
         if(event.action !== this.props.action) return;
 
-        this.updateState({ state: "applying" });
+        this.setState({ state: "applying" });
     }
 
     @EventHandler<KeyMapEvents>("set_keymap_result")
@@ -177,12 +177,12 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
         if(event.action !== this.props.action) return;
 
         if(event.status === "success") {
-            this.updateState({
+            this.setState({
                 state: "loaded",
                 assignedKey: event.key
             });
         } else {
-            this.updateState({ state: "loaded" });
+            this.setState({ state: "loaded" });
             createErrorModal(tr("Failed to change key"), tra("Failed to change key for action \"{}\":{:br:}{}", this.props.action, event.status === "timeout" ? tr("timeout") : event.error));
         }
     }
@@ -195,7 +195,7 @@ interface KeyActionGroupProperties {
 }
 
 class KeyActionGroup extends ReactComponentBase<KeyActionGroupProperties, { collapsed: boolean }> {
-    protected default_state(): { collapsed: boolean } {
+    protected defaultState(): { collapsed: boolean } {
         return { collapsed: false }
     }
 
@@ -213,7 +213,7 @@ class KeyActionGroup extends ReactComponentBase<KeyActionGroupProperties, { coll
     }
 
     private toggleCollapsed() {
-        this.updateState({
+        this.setState({
             collapsed: !this.state.collapsed
         });
     }
@@ -224,7 +224,7 @@ interface KeyActionListProperties {
 }
 
 class KeyActionList extends ReactComponentBase<KeyActionListProperties, {}> {
-    protected default_state(): {} {
+    protected defaultState(): {} {
         return {};
     }
 
@@ -251,7 +251,7 @@ interface ButtonBarState {
 
 @ReactEventHandler(e => e.props.event_registry)
 class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEvents> }, ButtonBarState> {
-    protected default_state(): ButtonBarState {
+    protected defaultState(): ButtonBarState {
         return {
             active_action: undefined,
             loading: true,
@@ -271,7 +271,7 @@ class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEven
 
     @EventHandler<KeyMapEvents>("set_selected_action")
     private handleSetSelectedAction(event: KeyMapEvents["set_selected_action"]) {
-        this.updateState({
+        this.setState({
             active_action: event.action,
             loading: true
         }, () => {
@@ -281,7 +281,7 @@ class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEven
 
     @EventHandler<KeyMapEvents>("query_keymap_result")
     private handleQueryKeymapResult(event: KeyMapEvents["query_keymap_result"]) {
-        this.updateState({
+        this.setState({
             loading: false,
             has_key: event.status === "success" && !!event.key
         });

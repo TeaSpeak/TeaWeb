@@ -1,4 +1,4 @@
-import {Icon, IconManager} from "tc-shared/FileManager";
+import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/FileManager";
 import {spawnBookmarkModal} from "tc-shared/ui/modal/ModalBookmarks";
 import {
     add_server_to_bookmarks,
@@ -33,7 +33,7 @@ export interface MenuItem {
     delete_item(item: MenuItem | HRItem);
     items() : (MenuItem | HRItem)[];
 
-    icon(klass?: string | Promise<Icon> | Icon) : string;
+    icon(klass?: string | LocalIcon) : string; //FIXME: Native client must work as well!
     label(value?: string) : string;
     visible(value?: boolean) : boolean;
     disabled(value?: boolean) : boolean;
@@ -178,7 +178,7 @@ namespace html {
             return this;
         }
 
-        icon(klass?: string | Promise<Icon> | Icon): string {
+        icon(klass?: string | LocalIcon): string {
             this._label_icon_tag.children().remove();
             if(typeof(klass) === "string")
                 $.spawn("div").addClass("icon_em " + klass).appendTo(this._label_icon_tag);
@@ -288,7 +288,8 @@ export function rebuild_bookmarks() {
         } else {
             const bookmark = entry as Bookmark;
             const item = root.append_item(bookmark.display_name);
-            item.icon(IconManager.load_cached_icon(bookmark.last_icon_id || 0));
+
+            item.icon(icon_cache_loader.load_icon(bookmark.last_icon_id, bookmark.last_icon_server_id));
             item.click(() => boorkmak_connect(bookmark));
         }
     };

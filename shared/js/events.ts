@@ -1,4 +1,4 @@
-import {MusicClientEntry, SongInfo} from "tc-shared/ui/client";
+import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {guid} from "tc-shared/crypto/uid";
 import * as React from "react";
@@ -74,8 +74,8 @@ export class Registry<Events> {
         }
     }
 
-    off<T extends keyof Events>(handler: (event?: Event<Events, T>) => void);
-    off<T extends keyof Events>(event: T, handler: (event?: Event<Events, T>) => void);
+    off<T extends keyof Events>(handler: (event?) => void);
+    off<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
     off(event: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
     off(handler_or_events, handler?) {
         if(typeof handler_or_events === "function") {
@@ -107,36 +107,49 @@ export class Registry<Events> {
             this.connections[event].remove(target as any);
     }
 
-    fire<T extends keyof Events>(event_type: T, data?: Events[T]) {
+    fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean) {
         if(this.debug_prefix) console.log("[%s] Trigger event: %s", this.debug_prefix, event_type);
 
-        if(typeof data === "object" && 'type' in data) throw tr("The keyword 'type' is reserved for the event type and should not be passed as argument");
+        if(typeof data === "object" && 'type' in data && !overrideTypeKey) {
+            if((data as any).type !== event_type) {
+                debugger;
+                throw tr("The keyword 'type' is reserved for the event type and should not be passed as argument");
+            }
+        }
         const event = Object.assign(typeof data === "undefined" ? SingletonEvent.instance : data, {
             type: event_type,
             as: function () { return this; }
         });
 
+        this.fire_event(event_type as string, event);
+    }
+
+    private fire_event(type: string, data: any) {
         let invoke_count = 0;
-        for(const handler of (this.handler[event_type as string] || [])) {
-            handler(event);
+        for(const handler of (this.handler[type]?.slice(0) || [])) {
+            handler(data);
             invoke_count++;
 
             const reg_data = handler[this.registry_uuid];
             if(typeof reg_data === "object" && reg_data.singleshot)
-                this.handler[event_type as string].remove(handler);
+                this.handler[type].remove(handler);
         }
 
-        for(const evhandler of (this.connections[event_type as string] || [])) {
-            evhandler.fire(event_type as any, event as any);
+        for(const evhandler of (this.connections[type]?.slice(0) || [])) {
+            evhandler.fire_event(type, data);
             invoke_count++;
         }
         if(invoke_count === 0) {
-            console.warn(tr("Event handler (%s) triggered event %s which has no consumers."), this.debug_prefix, event_type);
+            console.warn(tr("Event handler (%s) triggered event %s which has no consumers."), this.debug_prefix, type);
         }
     }
 
-    fire_async<T extends keyof Events>(event_type: T, data?: Events[T]) {
-        setTimeout(() => this.fire(event_type, data));
+    fire_async<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
+        setTimeout(() => {
+            this.fire(event_type, data);
+            if(typeof callback === "function")
+                callback();
+        });
     }
 
     destroy() {
@@ -227,31 +240,6 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
     }
 }
 
-export namespace channel_tree {
-    export interface client {
-        "enter_view": {},
-        "left_view": {},
-
-        "property_update": {
-            properties: string[]
-        },
-
-        "music_status_update": {
-            player_buffered_index: number,
-            player_replay_index: number
-        },
-        "music_song_change": {
-            "song": SongInfo
-        },
-
-        /* TODO: Move this out of the music bots interface? */
-        "playlist_song_add": { song: PlaylistSong },
-        "playlist_song_remove": { song_id: number },
-        "playlist_song_reorder": { song_id: number, previous_song_id: number },
-        "playlist_song_loaded": { song_id: number, success: boolean, error_msg?: string, metadata?: string },
-    }
-}
-
 export namespace sidebar {
     export interface music {
         "open": {}, /* triggers when frame should be shown */
@@ -289,13 +277,13 @@ export namespace sidebar {
         "reorder_begin": { song_id: number; entry: JQuery },
         "reorder_end": { song_id: number; canceled: boolean; entry: JQuery; previous_entry?: number },
 
-        "player_time_update": channel_tree.client["music_status_update"],
-        "player_song_change": channel_tree.client["music_song_change"],
+        "player_time_update": ClientEvents["music_status_update"],
+        "player_song_change": ClientEvents["music_song_change"],
 
-        "playlist_song_add": channel_tree.client["playlist_song_add"] & { insert_effect?: boolean },
-        "playlist_song_remove": channel_tree.client["playlist_song_remove"],
-        "playlist_song_reorder": channel_tree.client["playlist_song_reorder"],
-        "playlist_song_loaded": channel_tree.client["playlist_song_loaded"] & { html_entry?: JQuery },
+        "playlist_song_add": ClientEvents["playlist_song_add"] & { insert_effect?: boolean },
+        "playlist_song_remove": ClientEvents["playlist_song_remove"],
+        "playlist_song_reorder": ClientEvents["playlist_song_reorder"],
+        "playlist_song_loaded": ClientEvents["playlist_song_loaded"] & { html_entry?: JQuery },
     }
 }
 
@@ -700,9 +688,11 @@ export namespace modal {
 }
 
 //Some test code
-const eclient = new Registry<channel_tree.client>();
+/*
+const eclient = new Registry<ClientEvents>();
 const emusic = new Registry<sidebar.music>();
 
 eclient.on("property_update", event => { event.as<"playlist_song_loaded">(); });
 eclient.connect("playlist_song_loaded", emusic);
 eclient.connect("playlist_song_loaded", emusic);
+ */

@@ -64,6 +64,9 @@ async function handle_message(command: string, data: any) : Promise<string | obj
 
             return {};
         case "encodeSamples":
+            if(!codec_instance)
+                return "codec not initialized/initialize failed";
+
             let encodeArray = new Float32Array(data.length);
             for(let index = 0; index < encodeArray.length; index++)
                 encodeArray[index] = data.data[index];
@@ -74,6 +77,9 @@ async function handle_message(command: string, data: any) : Promise<string | obj
             else
                 return { data: encodeResult, length: encodeResult.length };
         case "decodeSamples":
+            if(!codec_instance)
+                return "codec not initialized/initialize failed";
+
             let decodeArray = new Uint8Array(data.length);
             for(let index = 0; index < decodeArray.length; index++)
                 decodeArray[index] = data.data[index];

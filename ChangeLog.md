@@ -1,12 +1,22 @@
 # Changelog:
-* **11.03.20**
+* **18.04.20**
+    - Recoded the channel tree using React
+    - Heavily improved channel tree performance on large servers (fluent scroll & updates)
+    - Automatically scroll to channel tree selection
+    - Fixed client speak indicator
+    - Fixed the message unread indicator only shows up after the second message (as well increase visibility)
+    - Fixed the invalid initialisation of codec workers
+    - Improved context menu subcontainer selection
+    - Fixed client channel permission tab within the permission editor (previously you've been kick from the server)
+    
+* **11.04.20**
     - Only show the host message when its not empty
     
-* **10.03.20**
+* **10.04.20**
     - Improved key code displaying 
     - Added a keymap system (Hotkeys)
     
-* **09.03.20**
+* **09.04.20**
     - Using React for the client control bar
     - Saving last away state and message
     - Saving last query show state

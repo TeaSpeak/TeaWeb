@@ -492,7 +492,8 @@ export class PermissionManager extends AbstractCommandHandler {
 
     requestClientChannelPermissions(client_id: number, channel_id: number) : Promise<PermissionValue[]> {
         const keys: PermissionRequestKeys = {
-            client_id: client_id
+            client_id: client_id,
+            channel_id: channel_id
         };
         return this.execute_permission_request("requests_client_channel_permissions", keys, this.execute_client_channel_permission_request.bind(this));
     }

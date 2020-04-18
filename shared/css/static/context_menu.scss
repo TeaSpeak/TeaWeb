@@ -70,7 +70,8 @@
 		}
 
 		.sub-container {
-			padding-right: 3px;
+			margin-right: -3px;
+			padding-right: 24px;
 			position: relative;
 
 			&:hover {
@@ -85,7 +86,7 @@
 			left: 100%;
 			top: -4px;
 			position: absolute;
-			margin-left: 3px;
+			margin-left: 0;
 		}
 	}
 }

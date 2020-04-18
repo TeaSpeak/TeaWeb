@@ -140,8 +140,12 @@ export class Conversation {
             this._first_unread_message = undefined;
 
             const ctree = this.handle.handle.handle.channelTree;
-            if(ctree && ctree.tag_tree())
-                ctree.tag_tree().find(".marker-text-unread[conversation='" + this.channel_id + "']").addClass("hidden");
+            if(ctree && ctree.tag_tree()) {
+                if(this.channel_id === 0)
+                    ctree.server.setUnread(false);
+                else
+                    ctree.findChannel(this.channel_id).setUnread(false);
+            }
         }
         this._first_unread_message_pointer.html_element.detach();
     }
@@ -276,6 +280,9 @@ export class Conversation {
                     return; /* we already have that message */
                 }
             }
+            if(this._last_messages.length === 0)
+                _new_message = true;
+
             if(!spliced && this._last_messages.length < this._view_max_messages) {
                 this._last_messages.push(message);
             }

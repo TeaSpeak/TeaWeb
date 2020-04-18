@@ -8,7 +8,7 @@ import {
     save_bookmark
 } from "tc-shared/bookmarks";
 import {connection_log, Regex} from "tc-shared/ui/modal/ModalConnect";
-import {IconManager} from "tc-shared/FileManager";
+import {icon_cache_loader, IconManager} from "tc-shared/FileManager";
 import {profiles} from "tc-shared/profiles/ConnectionProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {Settings, settings} from "tc-shared/settings";
@@ -147,7 +147,7 @@ export function spawnBookmarkModal() {
                         const bookmark = entry as Bookmark;
                         container.append(
                             bookmark.last_icon_id ?
-                                IconManager.generate_tag(IconManager.load_cached_icon(bookmark.last_icon_id || 0), {animate: false}) :
+                                IconManager.generate_tag(icon_cache_loader.load_icon(bookmark.last_icon_id, bookmark.last_icon_server_id), {animate: false}) :
                                 $.spawn("div").addClass("icon-container icon_em")
                         );
                     } else {
