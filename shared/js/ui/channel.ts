@@ -176,7 +176,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     private _cached_channel_description_promise_resolve: any = undefined;
     private _cached_channel_description_promise_reject: any = undefined;
 
-    private _flag_collapsed: boolean; //TODO: Load from config!
+    private _flag_collapsed: boolean;
     private _flag_subscribed: boolean;
     private _subscribe_mode: ChannelSubscribeMode;
 
@@ -199,7 +199,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.client_property_listener = (event: ClientEvents["notify_properties_updated"]) => {
             if(typeof event.updated_properties.client_nickname !== "undefined" || typeof event.updated_properties.client_talk_power !== "undefined")
                 this.reorderClientList(true);
-        }
+        };
     }
 
     destroy() {
@@ -691,6 +691,8 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     get collapsed() : boolean {
+        if(typeof this._flag_collapsed === "undefined")
+            this._flag_collapsed = this.channelTree.client.settings.server(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId));
         return this._flag_collapsed;
     }
 
@@ -700,6 +702,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this._flag_collapsed = flag;
         this.events.fire("notify_collapsed_state_changed", { collapsed: flag });
         this.view.current?.forceUpdate();
+        this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_COLLAPSED(this.channelId), flag);
     }
 
     get flag_subscribed() : boolean {

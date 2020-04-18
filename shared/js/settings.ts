@@ -366,6 +366,13 @@ export class Settings extends StaticSettings {
         }
     };
 
+    static readonly FN_SERVER_CHANNEL_COLLAPSED: (channel_id: number) => SettingsKey<boolean> = channel => {
+        return {
+            key: 'channel_collapsed_' + channel,
+            default_value: false
+        }
+    };
+
     static readonly FN_PROFILE_RECORD: (name: string) => SettingsKey<any> = name => {
         return {
             key: 'profile_record' + name
