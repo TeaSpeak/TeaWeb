@@ -31,6 +31,8 @@ export interface ChannelTreeViewState {
     element_scroll_offset?: number; /* in px */
     scroll_offset: number; /* in px */
     view_height: number; /* in px */
+
+    tree_version: number;
 }
 
 type TreeEntry = ChannelEntry | ServerEntry | ClientEntry;
@@ -67,6 +69,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         return {
             scroll_offset: 0,
             view_height: 0,
+            tree_version: 0
         };
     }
 
@@ -236,6 +239,14 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     @EventHandler<ChannelTreeEvents>("notify_entry_move_end")
     private handleEntryMoveEnd() {
         this.handleTreeUpdate();
+    }
+
+    @EventHandler<ChannelTreeEvents>("notify_tree_reset")
+    private handleTreeReset() {
+        this.rebuild_tree();
+        this.setState({
+            tree_version: this.state.tree_version + 1
+        });
     }
 
     private onScroll() {

@@ -29,8 +29,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as cbar from "./ui/frames/control-bar";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
-import {ClientGlobalControlEvents, global_client_actions} from "tc-shared/events/GlobalEvents";
-import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
 
 /* required import for init */
 require("./proto").initialize();

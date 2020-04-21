@@ -28,6 +28,7 @@ let update_batches: {[key: number]:UpdateBatch} = {
     0: generate_batch(),
     1: generate_batch()
 };
+(window as any).update_batches = update_batches;
 
 export function BatchUpdateAssignment(type: BatchUpdateType) {
     return function (constructor: Function) {

@@ -1,5 +1,4 @@
 import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
-import {PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {guid} from "tc-shared/crypto/uid";
 import * as React from "react";
 
@@ -232,7 +231,11 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
         constructor.prototype.componentWillUnmount = function () {
             const registry = registry_callback(this);
             if(!registry) throw "Event registry returned for an event object is invalid";
-            registry.unregister_handler(this);
+            try {
+                registry.unregister_handler(this);
+            } catch (error) {
+                console.warn("Failed to unregister event handler: %o", error);
+            }
 
             if(typeof willUnmount === "function")
                 willUnmount.call(this, arguments);

@@ -32,7 +32,6 @@ import * as dns from "tc-backend/dns";
 import * as top_menu from "tc-shared/ui/frames/MenuBar";
 import {EventHandler, Registry} from "tc-shared/events";
 import {ServerLog} from "tc-shared/ui/frames/server_log";
-import {server} from "websocket";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -639,6 +638,7 @@ export class ConnectionHandler {
             this.serverConnection.disconnect();
 
         this.side_bar.private_conversations().clear_client_ids();
+        this.side_bar.channel_conversations().set_current_channel(0);
         this.hostbanner.update();
 
         if(auto_reconnect) {

@@ -42,6 +42,7 @@ export interface ChannelTreeEvents {
 
     notify_selection_changed: {},
     notify_root_channel_changed: {},
+    notify_tree_reset: {},
     notify_query_view_state_changed: { queries_shown: boolean },
 
     notify_entry_move_begin: {},
@@ -281,37 +282,6 @@ export class ChannelTree {
         this._tag_container.remove();
         this.selection.destroy();
         this.events.destroy();
-    }
-
-    showContextMenu(x: number, y: number, on_close: () => void = undefined) {
-        let channelCreate =
-            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_TEMPORARY).granted(1) ||
-            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT).granted(1) ||
-            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_PERMANENT).granted(1);
-
-        contextmenu.spawn_context_menu(x, y,
-            {
-                type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-channel_create",
-                name: tr("Create channel"),
-                invalidPermission: !channelCreate,
-                callback: () => this.spawnCreateChannel()
-            },
-            contextmenu.Entry.HR(),
-            {
-                type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-channel_collapse_all",
-                name: tr("Collapse all channels"),
-                callback: () => this.collapse_channels()
-            },
-            {
-                type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-channel_expand_all",
-                name: tr("Expend all channels"),
-                callback: () => this.expand_channels()
-            },
-            contextmenu.Entry.CLOSE(on_close)
-        );
     }
 
     initialiseHead(serverName: string, address: ServerAddress) {
@@ -572,6 +542,36 @@ export class ChannelTree {
         return undefined;
     }
 
+    showContextMenu(x: number, y: number, on_close: () => void = undefined) {
+        let channelCreate =
+            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_TEMPORARY).granted(1) ||
+            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_SEMI_PERMANENT).granted(1) ||
+            this.client.permissions.neededPermission(PermissionType.B_CHANNEL_CREATE_PERMANENT).granted(1);
+
+        contextmenu.spawn_context_menu(x, y,
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_create",
+                name: tr("Create channel"),
+                invalidPermission: !channelCreate,
+                callback: () => this.spawnCreateChannel()
+            },
+            contextmenu.Entry.HR(),
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_collapse_all",
+                name: tr("Collapse all channels"),
+                callback: () => this.collapse_channels()
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_expand_all",
+                name: tr("Expend all channels"),
+                callback: () => this.expand_channels()
+            },
+            contextmenu.Entry.CLOSE(on_close)
+        );
+    }
     private open_multiselect_context_menu(entries: ChannelTreeEntry<any>[], x: number, y: number) {
         const clients = entries.filter(e => e instanceof ClientEntry) as ClientEntry[];
         const channels = entries.filter(e => e instanceof ChannelEntry) as ChannelEntry[];
@@ -811,13 +811,9 @@ export class ChannelTree {
             this.channels = [];
             this.channel_last = undefined;
             this.channel_first = undefined;
+            this.events.fire("notify_tree_reset");
         } finally {
-            try {
-                this.events.fire_async("notify_root_channel_changed", undefined, () => flush_batched_updates(BatchUpdateType.CHANNEL_TREE));
-            } catch (e) {
-                flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
-                throw e;
-            }
+            flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }
     }
 
