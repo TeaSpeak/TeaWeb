@@ -165,7 +165,12 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         }
 
         return (
-            <div className={viewStyle.channelTreeContainer} onScroll={() => this.onScroll()} ref={this.ref_container} onMouseDown={e => this.onMouseDown(e as any)} onMouseMove={e => this.onMouseMove(e as any)} >
+            <div
+                 className={viewStyle.channelTreeContainer}
+                 onScroll={() => this.onScroll()}
+                 ref={this.ref_container}
+                 onMouseDown={e => this.onMouseDown(e)}
+                 onMouseMove={e => this.onMouseMove(e)} >
                 <div className={this.classList(viewStyle.channelTree, this.props.tree.isClientMoveActive() && viewStyle.move)} style={{height: (this.flat_tree.length * ChannelTreeView.EntryHeight) + "px"}}>
                     {elements}
                 </div>
@@ -181,7 +186,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
 
         this.flat_tree.push({
             entry: entry,
-            rendered: <ChannelEntryView key={"channel-" + entry.channelId} channel={entry} offset={this.build_top_offset += ChannelTreeView.EntryHeight} depth={depth} ref={entry.view} />
+            rendered: <ChannelEntryView key={this.state.tree_version + "-channel-" + entry.channelId} channel={entry} offset={this.build_top_offset += ChannelTreeView.EntryHeight} depth={depth} ref={entry.view} />
         });
 
         if(entry.collapsed) return;
@@ -191,7 +196,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.flat_tree.push(...clients.map(e => {
             return {
                 entry: e,
-                rendered: <ClientEntryView key={"client-" + e.clientId()} client={e} offset={this.build_top_offset += ChannelTreeView.EntryHeight} depth={depth + 1} ref={e.view} />
+                rendered: <ClientEntryView key={this.state.tree_version + "-client-" + e.clientId()} client={e} offset={this.build_top_offset += ChannelTreeView.EntryHeight} depth={depth + 1} ref={e.view} />
             };
         }));
         for (const channel of entry.children(false))
@@ -214,7 +219,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.build_top_offset = -ChannelTreeView.EntryHeight; /* because of the += */
         this.flat_tree = [{
             entry: tree.server,
-            rendered: <ServerEntryView key={"server"} server={tree.server} offset={this.build_top_offset += ChannelTreeView.EntryHeight} ref={tree.server.view} />
+            rendered: <ServerEntryView key={this.state.tree_version + "-server"} server={tree.server} offset={this.build_top_offset += ChannelTreeView.EntryHeight} ref={tree.server.view} />
         }];
 
         for (const channel of tree.rootChannel())
@@ -255,7 +260,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         });
     }
 
-    private onMouseDown(e: MouseEvent) {
+    private onMouseDown(e: React.MouseEvent) {
         if(e.button !== 0) return; /* left button only */
 
         this.mouse_move.down = true;
@@ -264,7 +269,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.registerDocumentMouseListener();
     }
 
-    private onMouseMove(e: MouseEvent) {
+    private onMouseMove(e: React.MouseEvent) {
         if(!this.mouse_move.down || this.mouse_move.fired) return;
         if(Math.abs((this.mouse_move.x - e.pageX) * (this.mouse_move.y - e.pageY)) > (this.props.moveThreshold || 9)) {
             this.mouse_move.fired = true;
@@ -321,6 +326,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             return undefined;
 
         const total_offset = container.scrollTop + pageY;
-        return this.flat_tree[Math.floor(total_offset / ChannelTreeView.EntryHeight)].entry;
+        return this.flat_tree[Math.floor(total_offset / ChannelTreeView.EntryHeight)]?.entry;
     }
 }

@@ -322,7 +322,7 @@ class ClientNameEdit extends ReactComponentBase<ClientNameEditProps, {}> {
             ref={this.ref_div}
             dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(this.props.initialName)}}
             onBlur={e => this.onBlur()}
-            onKeyPress={e => this.onKeyPress(e as any)}
+            onKeyPress={e => this.onKeyPress(e)}
         />
     }
 
@@ -330,7 +330,7 @@ class ClientNameEdit extends ReactComponentBase<ClientNameEditProps, {}> {
         this.props.editFinished(this.ref_div.current.textContent);
     }
 
-    private onKeyPress(event: KeyboardEvent) {
+    private onKeyPress(event: React.KeyboardEvent) {
         if(event.key === "Enter") {
             event.preventDefault();
             this.onBlur();
@@ -364,8 +364,8 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
             <div className={this.classList(clientStyle.clientEntry, viewStyle.treeEntry, this.props.client.isSelected() && viewStyle.selected)}
                  style={{ paddingLeft: (this.props.depth * 16 + 2) + "px", top: this.props.offset }}
                  onDoubleClick={() => this.onDoubleClick()}
-                 onMouseUp={e => this.onMouseUp(e as any)}
-                 onContextMenu={e => this.onContextMenu(e as any)}
+                 onMouseUp={e => this.onMouseUp(e)}
+                 onContextMenu={e => this.onContextMenu(e)}
             >
                 <UnreadMarker entry={this.props.client} />
                 <ClientSpeakIcon client={this.props.client} />
@@ -403,7 +403,7 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
         this.setState({ rename: false });
     }
 
-    private onMouseUp(event: MouseEvent) {
+    private onMouseUp(event: React.MouseEvent) {
         if(event.button !== 0) return; /* only left mouse clicks */
         const tree = this.props.client.channelTree;
         if(tree.isClientMoveActive()) return;
@@ -411,7 +411,7 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
         tree.events.fire("action_select_entries", { entries: [this.props.client], mode: "auto" });
     }
 
-    private onContextMenu(event: MouseEvent) {
+    private onContextMenu(event: React.MouseEvent) {
         if(settings.static(Settings.KEY_DISABLE_CONTEXT_MENU))
             return;
 

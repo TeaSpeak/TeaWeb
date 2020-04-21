@@ -77,8 +77,8 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
 
         return <div className={this.classList(serverStyle.serverEntry, viewStyle.treeEntry, this.props.server.isSelected() && viewStyle.selected )}
                     style={{ top: this.props.offset }}
-                    onMouseUp={e => this.onMouseUp(e as any)}
-                    onContextMenu={e => this.onContextMenu(e as any)}
+                    onMouseUp={e => this.onMouseUp(e)}
+                    onContextMenu={e => this.onContextMenu(e)}
         >
             <UnreadMarker entry={this.props.server} />
             <div className={"icon client-server_green " + serverStyle.server_type} />
@@ -87,7 +87,7 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
         </div>
     }
 
-    private onMouseUp(event: MouseEvent) {
+    private onMouseUp(event: React.MouseEvent) {
         if(event.button !== 0) return; /* only left mouse clicks */
         if(this.props.server.channelTree.isClientMoveActive()) return;
 
@@ -97,7 +97,7 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
         });
     }
 
-    private onContextMenu(event: MouseEvent) {
+    private onContextMenu(event: React.MouseEvent) {
         if(settings.static(Settings.KEY_DISABLE_CONTEXT_MENU))
             return;
 

@@ -660,6 +660,8 @@ export class ConnectionHandler {
                 this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
             }, 5000);
         }
+
+        this.serverConnection.updateConnectionState(ConnectionState.UNCONNECTED); /* Fix for the native client... */
     }
 
     cancel_reconnect(log_event: boolean) {

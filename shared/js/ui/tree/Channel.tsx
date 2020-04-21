@@ -244,9 +244,9 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
         const collapsed_indicator = this.props.channel.child_channel_head || this.props.channel.clients(false).length > 0;
         return <div className={this.classList(viewStyle.treeEntry, channelStyle.channelEntry, this.props.channel.isSelected() && viewStyle.selected)}
                     style={{ paddingLeft: this.props.depth * 16 + 2, top: this.props.offset }}
-                    onMouseUp={e => this.onMouseUp(e as any)}
+                    onMouseUp={e => this.onMouseUp(e)}
                     onDoubleClick={() => this.onDoubleClick()}
-                    onContextMenu={e => this.onContextMenu(e as any)}
+                    onContextMenu={e => this.onContextMenu(e)}
         >
             <UnreadMarker entry={this.props.channel} />
             {collapsed_indicator && <ChannelCollapsedIndicator key={"collapsed-indicator"} onToggle={() => this.onCollapsedToggle()} collapsed={this.props.channel.collapsed} />}
@@ -260,7 +260,7 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
         this.props.channel.collapsed = !this.props.channel.collapsed;
     }
 
-    private onMouseUp(event: MouseEvent) {
+    private onMouseUp(event: React.MouseEvent) {
         if(event.button !== 0) return; /* only left mouse clicks */
 
         const channel = this.props.channel;
@@ -279,7 +279,7 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
         channel.joinChannel();
     }
 
-    private onContextMenu(event: MouseEvent) {
+    private onContextMenu(event: React.MouseEvent) {
         if(settings.static(Settings.KEY_DISABLE_CONTEXT_MENU))
             return;
 

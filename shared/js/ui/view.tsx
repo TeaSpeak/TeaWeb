@@ -225,16 +225,13 @@ export class ChannelTree {
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
             this._tag_container.on("contextmenu", (event) => {
-                if(event.isDefaultPrevented()) return;
-
-                for(const element of document.elementsFromPoint(event.pageX, event.pageY))
-                    if(element.classList.contains("channelLine") || element.classList.contains("client"))
-                        return;
-
                 event.preventDefault();
-                if(this.selection.is_multi_select())
-                    this.open_multiselect_context_menu(this.selection.selected_entries, event.pageX, event.pageY);
-                else {
+
+                const entry = this.view.current?.getEntryFromPoint(event.pageX, event.pageY);
+                if(entry) {
+                    if(this.selection.is_multi_select())
+                        this.open_multiselect_context_menu(this.selection.selected_entries, event.pageX, event.pageY);
+                } else {
                     this.selection.clear_selection();
                     this.showContextMenu(event.pageX, event.pageY);
                 }
