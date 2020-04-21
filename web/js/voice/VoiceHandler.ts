@@ -77,10 +77,7 @@ export namespace codec {
                             this.entries[index].instance.initialise().then((flag) => {
                                 //TODO test success flag
                                 this.ownCodec(clientId, callback_encoded, false).then(resolve).catch(reject);
-                            }).catch(error => {
-                                log.error(LogCategory.VOICE, tr("Could not initialize codec!\nError: %o"), error);
-                                reject(typeof(error) === 'string' ? error : tr("Could not initialize codec!"));
-                            });
+                            }).catch(reject);
                         }
                         return;
                     } else if(this.entries[index].owner == 0) {
@@ -388,8 +385,9 @@ export class VoiceConnection extends AbstractVoiceConnection {
         let config: RTCConfiguration = {};
         config.iceServers = [];
         config.iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
+        //config.iceServers.push({ urls: "stun:stun.teaspeak.de:3478" });
         this.rtcPeerConnection = new RTCPeerConnection(config);
-        const dataChannelConfig = { ordered: true, maxRetransmits: 0 };
+        const dataChannelConfig = { ordered: false, maxRetransmits: 0 };
 
         this.dataChannel = this.rtcPeerConnection.createDataChannel('main', dataChannelConfig);
         this.dataChannel.onmessage = this.on_data_channel_message.bind(this);
@@ -401,6 +399,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
         sdpConstraints.offerToReceiveVideo = false;
         sdpConstraints.voiceActivityDetection = true;
 
+        this.rtcPeerConnection.onicegatheringstatechange = () => console.log("ICE gathering state changed to %s", this.rtcPeerConnection.iceGatheringState);
+        this.rtcPeerConnection.oniceconnectionstatechange = () => console.log("ICE connection state changed to %s", this.rtcPeerConnection.iceConnectionState);
         this.rtcPeerConnection.onicecandidate = this.on_local_ice_candidate.bind(this);
         if(this.local_audio_stream) { //May a typecheck?
             this.rtcPeerConnection.addStream(this.local_audio_stream.stream);
@@ -431,8 +431,26 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.connection.client.update_voice_status(undefined);
     }
 
+    private registerRemoteICECandidate(candidate: RTCIceCandidate) {
+        if(candidate.candidate === "") {
+            console.log("Adding end candidate");
+            this.rtcPeerConnection.addIceCandidate(null).catch(error => {
+                log.info(LogCategory.VOICE, tr("Failed to add remote cached ice candidate finish: %o"), error);
+            });
+            return;
+        }
+
+        const pcandidate = new RTCIceCandidate(candidate);
+        if(pcandidate.protocol !== "tcp") return; /* UDP does not work currently */
+
+        log.info(LogCategory.VOICE, tr("Add remote ice! (%o)"), pcandidate);
+        this.rtcPeerConnection.addIceCandidate(pcandidate).catch(error => {
+            log.info(LogCategory.VOICE, tr("Failed to add remote cached ice candidate %o: %o"), candidate, error);
+        });
+    }
+
     private _ice_use_cache: boolean = true;
-    private _ice_cache: any[] = [];
+    private _ice_cache: RTCIceCandidate[] = [];
     handleControlPacket(json) {
         if(json["request"] === "answer") {
             const session_description = new RTCSessionDescription(json["msg"]);
@@ -440,24 +458,20 @@ export class VoiceConnection extends AbstractVoiceConnection {
             this.rtcPeerConnection.setRemoteDescription(session_description).then(() => {
                 log.info(LogCategory.VOICE, tr("Answer applied successfully. Applying ICE candidates (%d)."), this._ice_cache.length);
                 this._ice_use_cache = false;
-                for(let msg of this._ice_cache) {
-                    this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(msg)).catch(error => {
-                        log.info(LogCategory.VOICE, tr("Failed to add remote cached ice candidate %s: %o"), msg, error);
-                    });
-                }
+
+                for(let candidate of this._ice_cache)
+                    this.registerRemoteICECandidate(candidate);
                 this._ice_cache = [];
             }).catch(error => {
                 log.info(LogCategory.VOICE, tr("Failed to apply remote description: %o"), error); //FIXME error handling!
             });
-        } else if(json["request"] === "ice") {
+        } else if(json["request"] === "ice" || json["request"] === "ice_finish") {
+            const candidate = new RTCIceCandidate(json["msg"]);
             if(!this._ice_use_cache) {
-                log.info(LogCategory.VOICE, tr("Add remote ice! (%o)"), json["msg"]);
-                this.rtcPeerConnection.addIceCandidate(new RTCIceCandidate(json["msg"])).catch(error => {
-                    log.info(LogCategory.VOICE, tr("Failed to add remote ice candidate %s: %o"), json["msg"], error);
-                });
+                this.registerRemoteICECandidate(candidate);
             } else {
                 log.info(LogCategory.VOICE, tr("Cache remote ice! (%o)"), json["msg"]);
-                this._ice_cache.push(json["msg"]);
+                this._ice_cache.push(candidate);
             }
         } else if(json["request"] == "status") {
             if(json["state"] == "failed") {
@@ -472,22 +486,25 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 }
                 //TODO handle fail specially when its not allowed to reconnect
             }
+        } else {
+            log.warn(LogCategory.NETWORKING, tr("Received unknown web client control packet: %s"), json["request"]);
         }
     }
 
     private on_local_ice_candidate(event: RTCPeerConnectionIceEvent) {
         if (event) {
-            //if(event.candidate && event.candidate.protocol !== "udp")
-            //    return;
+            if(event.candidate && event.candidate.protocol !== "tcp")
+                return;
 
-            log.info(LogCategory.VOICE, tr("Gathered local ice candidate %o."), event.candidate);
             if(event.candidate) {
+                log.info(LogCategory.VOICE, tr("Gathered local ice candidate for stream %d: %s"), event.candidate.sdpMLineIndex, event.candidate.candidate);
                 this.connection.sendData(JSON.stringify({
                     type: 'WebRTC',
                     request: "ice",
                     msg: event.candidate,
                 }));
             } else {
+                log.info(LogCategory.VOICE, tr("Local ICE candidate gathering finish."));
                 this.connection.sendData(JSON.stringify({
                     type: 'WebRTC',
                     request: "ice_finish"

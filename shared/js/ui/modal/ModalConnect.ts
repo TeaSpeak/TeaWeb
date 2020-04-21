@@ -5,7 +5,7 @@ import * as loader from "tc-loader";
 import {createModal} from "tc-shared/ui/elements/Modal";
 import {ConnectionProfile, default_profile, find_profile, profiles} from "tc-shared/profiles/ConnectionProfile";
 import {KeyCode} from "tc-shared/PPTListener";
-import {IconManager} from "tc-shared/FileManager";
+import {icon_cache_loader, IconManager} from "tc-shared/FileManager";
 import * as i18nc from "tc-shared/i18n/country";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
@@ -15,7 +15,10 @@ export namespace connection_log {
     //TODO: Save password data
     export type ConnectionData = {
         name: string;
+
         icon_id: number;
+        server_unique_id: string;
+
         country: string;
         clients_online: number;
         clients_total: number;
@@ -45,6 +48,7 @@ export namespace connection_log {
                 country: 'unknown',
                 name: 'Unknown',
                 icon_id: 0,
+                server_unique_id: "unknown",
                 total_connection: 0,
 
                 flag_password: false,
@@ -289,7 +293,7 @@ export function spawnConnectModal(options: {
                     })
                 ).append(
                     $.spawn("div").addClass("column name").append([
-                        IconManager.generate_tag(IconManager.load_cached_icon(entry.icon_id)),
+                        IconManager.generate_tag(icon_cache_loader.load_icon(entry.icon_id, entry.server_unique_id)),
                         $.spawn("a").text(entry.name)
                     ])
                 ).append(

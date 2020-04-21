@@ -1155,6 +1155,8 @@ $bot_thumbnail_height: 9em;
 				overflow-x: hidden;
 				overflow-y: auto;
 
+				@include chat-scrollbar-vertical();
+
 				display: flex;
 				flex-direction: row;
 				justify-content: stretch;

@@ -69,7 +69,7 @@ declare global {
         readonly webkitAudioContext: typeof AudioContext;
         readonly AudioContext: typeof OfflineAudioContext;
         readonly OfflineAudioContext: typeof OfflineAudioContext;
-        readonly webkitOfflineAudioContext: typeof webkitOfflineAudioContext;
+        readonly webkitOfflineAudioContext: typeof OfflineAudioContext;
         readonly RTCPeerConnection: typeof RTCPeerConnection;
         readonly Pointer_stringify: any;
         readonly jsrender: any;

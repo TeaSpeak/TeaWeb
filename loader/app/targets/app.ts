@@ -191,7 +191,6 @@ const loader_style = {
             "css/static/overlay-image-preview.css",
             "css/static/music/info_plate.css",
             "css/static/frame/SelectInfo.css",
-            "css/static/control_bar.css",
             "css/static/context_menu.css",
             "css/static/frame-chat.css",
             "css/static/connection_handlers.css",
@@ -344,10 +343,6 @@ loader.register_task(loader.Stage.SETUP, {
         {
             const container = document.createElement("div");
             container.setAttribute('id', "mouse-move");
-
-            const inner_container = document.createElement("div");
-            inner_container.classList.add("container");
-            container.append(inner_container);
 
             body.append(container);
         }

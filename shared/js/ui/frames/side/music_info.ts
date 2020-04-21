@@ -1,6 +1,6 @@
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
 import * as events from "tc-shared/events";
-import {MusicClientEntry, SongInfo} from "tc-shared/ui/client";
+import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {voice} from "tc-shared/connection/ConnectionBase";
 import PlayerState = voice.PlayerState;
 import {LogCategory} from "tc-shared/log";
@@ -328,9 +328,9 @@ export class MusicInfo {
         });
 
         /* bot property listener */
-        const callback_property = event => this.events.fire("bot_property_update", { properties: event.properties });
-        const callback_time_update = event => this.events.fire("player_time_update", event);
-        const callback_song_change = event => this.events.fire("player_song_change", event);
+        const callback_property = (event: ClientEvents["notify_properties_updated"]) => this.events.fire("bot_property_update", { properties: Object.keys(event.updated_properties) });
+        const callback_time_update = (event: ClientEvents["music_status_update"]) => this.events.fire("player_time_update", event, true);
+        const callback_song_change = (event: ClientEvents["music_song_change"]) => this.events.fire("player_song_change", event, true);
         this.events.on("bot_change", event => {
             if(event.old) {
                 event.old.events.off(callback_property);
@@ -339,7 +339,7 @@ export class MusicInfo {
                 event.old.events.disconnect_all(this.events);
             }
             if(event.new) {
-                event.new.events.on("property_update", callback_property);
+                event.new.events.on("notify_properties_updated", callback_property);
 
                 event.new.events.on("music_status_update", callback_time_update);
                 event.new.events.on("music_song_change", callback_song_change);
@@ -736,7 +736,7 @@ export class MusicInfo {
         this._current_bot.updateClientVariables(true).catch(error => {
             log.warn(LogCategory.CLIENT, tr("Failed to update music bot variables: %o"), error);
         }).then(() => {
-            this.handle.handle.serverConnection.command_helper.request_playlist_songs(this._current_bot.properties.client_playlist_id).then(songs => {
+            this.handle.handle.serverConnection.command_helper.request_playlist_songs(this._current_bot.properties.client_playlist_id, false).then(songs => {
                 this.playlist_subscribe(false); /* we're allowed to see the playlist */
                 if(!songs) {
                     this._container_playlist.find(".overlay-empty").removeClass("hidden");

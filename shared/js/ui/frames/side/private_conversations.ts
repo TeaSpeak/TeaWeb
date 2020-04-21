@@ -543,7 +543,7 @@ export class PrivateConveration {
             } else {
                 const ctree = this.handle.handle.handle.channelTree;
                 if(ctree && ctree.tag_tree() && this.client_id)
-                    ctree.tag_tree().find(".marker-text-unread[private-conversation='" + this.client_id + "']").addClass("hidden");
+                    ctree.findClient(this.client_id)?.setUnread(false);
 
                 if(this._spacer_unread_message) {
                     this._destroy_view_entry(this._spacer_unread_message.tag_unread);

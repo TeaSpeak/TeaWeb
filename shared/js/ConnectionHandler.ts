@@ -279,7 +279,9 @@ export class ConnectionHandler {
         }
 
         const original_address = {host: server_address.host, port: server_address.port};
-        if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
+        if(server_address.host === "localhost") {
+            server_address.host = "127.0.0.1";
+        } else if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
             const id = ++this._connect_initialize_id;
             this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVE, {});
             try {
@@ -636,6 +638,7 @@ export class ConnectionHandler {
             this.serverConnection.disconnect();
 
         this.side_bar.private_conversations().clear_client_ids();
+        this.side_bar.channel_conversations().set_current_channel(0);
         this.hostbanner.update();
 
         if(auto_reconnect) {
@@ -657,6 +660,8 @@ export class ConnectionHandler {
                 this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
             }, 5000);
         }
+
+        this.serverConnection.updateConnectionState(ConnectionState.UNCONNECTED); /* Fix for the native client... */
     }
 
     cancel_reconnect(log_event: boolean) {
@@ -807,7 +812,6 @@ export class ConnectionHandler {
     }
 
     resize_elements() {
-        this.channelTree.handle_resized();
         this.invoke_resized_on_activate = false;
     }
 

@@ -21,6 +21,7 @@ import {spawnPoke} from "tc-shared/ui/modal/ModalPoke";
 import {PrivateConversationState} from "tc-shared/ui/frames/side/private_conversations";
 import {Conversation} from "tc-shared/ui/frames/side/conversations";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
+import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {
@@ -137,7 +138,13 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
     handle_command(command: ServerCommand) : boolean {
         if(this[command.command]) {
-            this[command.command](command.arguments);
+            /* batch all updates the command applies to the channel tree */
+            batch_updates(BatchUpdateType.CHANNEL_TREE);
+            try {
+                this[command.command](command.arguments);
+            } finally {
+                flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
+            }
             return true;
         }
 
@@ -297,24 +304,25 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     private createChannelFromJson(json, ignoreOrder: boolean = false) {
         let tree = this.connection.client.channelTree;
 
-        let channel = new ChannelEntry(parseInt(json["cid"]), json["channel_name"], tree.findChannel(json["cpid"]));
-        tree.insertChannel(channel);
+        let channel = new ChannelEntry(parseInt(json["cid"]), json["channel_name"]);
+        let parent, previous;
         if(json["channel_order"] !== "0") {
-            let prev = tree.findChannel(json["channel_order"]);
-            if(!prev && json["channel_order"] != 0) {
+            previous = tree.findChannel(json["channel_order"]);
+            if(!previous && json["channel_order"] != 0) {
                 if(!ignoreOrder) {
                     log.error(LogCategory.NETWORKING, tr("Invalid channel order id!"));
                     return;
                 }
             }
-
-            let parent = tree.findChannel(json["cpid"]);
-            if(!parent && json["cpid"] != 0) {
-                log.error(LogCategory.NETWORKING, tr("Invalid channel parent"));
-                return;
-            }
-            tree.moveChannel(channel, prev, parent); //TODO test if channel exists!
         }
+
+        parent = tree.findChannel(json["cpid"]);
+        if(!parent && json["cpid"] != 0) {
+            log.error(LogCategory.NETWORKING, tr("Invalid channel parent"));
+            return;
+        }
+
+        tree.insertChannel(channel, previous, parent);
         if(ignoreOrder) {
             for(let ch of tree.channels) {
                 if(ch.properties.channel_order == channel.channelId) {
@@ -340,16 +348,30 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         channel.updateVariables(...updates);
     }
 
+    private batch_update_finished_timeout;
     handleCommandChannelList(json) {
-        this.connection.client.channelTree.hide_channel_tree(); /* dont perform channel inserts on the dom to prevent style recalculations */
-        log.debug(LogCategory.NETWORKING, tr("Got %d new channels"), json.length);
+        if(this.batch_update_finished_timeout) {
+            clearTimeout(this.batch_update_finished_timeout);
+            this.batch_update_finished_timeout = 0;
+            /* batch update is still active */
+        } else {
+            batch_updates(BatchUpdateType.CHANNEL_TREE);
+        }
+
         for(let index = 0; index < json.length; index++)
             this.createChannelFromJson(json[index], true);
+
+        this.batch_update_finished_timeout = setTimeout(() => {
+        }, 500);
     }
 
 
     handleCommandChannelListFinished(json) {
-        this.connection.client.channelTree.show_channel_tree();
+        if(this.batch_update_finished_timeout) {
+            clearTimeout(this.batch_update_finished_timeout);
+            this.batch_update_finished_timeout = 0;
+            flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
+        }
     }
 
     handleCommandChannelCreate(json) {
@@ -795,7 +817,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
                 const client = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
                 if(client) /* the client itself might be invisible */
-                    client.flag_text_unread = conversation.is_unread();
+                    client.setUnread(conversation.is_unread());
             } else {
                 this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
             }
@@ -822,7 +844,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 message: json["msg"]
             });
             if(conversation.is_unread() && channel)
-                channel.flag_text_unread = true;
+                channel.setUnread(true);
         } else if(mode == 3) {
             this.connection_handler.log.log(server_log.Type.GLOBAL_MESSAGE, {
                 message: json["msg"],
@@ -844,7 +866,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
                 message: json["msg"]
             });
-            this.connection_handler.channelTree.server.flag_text_unread = conversation.is_unread();
+            this.connection_handler.channelTree.server.setUnread(conversation.is_unread());
         }
     }
 
@@ -1000,14 +1022,19 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     }
 
     handleNotifyChannelSubscribed(json) {
-        for(const entry of json) {
-            const channel = this.connection.client.channelTree.findChannel(entry["cid"]);
-            if(!channel) {
-                console.warn(tr("Received channel subscribed for not visible channel (cid: %d)"), entry['cid']);
-                continue;
-            }
+        batch_updates(BatchUpdateType.CHANNEL_TREE);
+        try {
+            for(const entry of json) {
+                const channel = this.connection.client.channelTree.findChannel(parseInt(entry["cid"]));
+                if(!channel) {
+                    console.warn(tr("Received channel subscribed for not visible channel (cid: %d)"), entry['cid']);
+                    continue;
+                }
 
-            channel.flag_subscribed = true;
+                channel.flag_subscribed = true;
+            }
+        } finally {
+            flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }
     }
 

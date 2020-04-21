@@ -50,6 +50,8 @@ export abstract class AbstractServerConnection {
 
     //FIXME: Remove this this is currently only some kind of hack
     updateConnectionState(state: ConnectionState) {
+        if(state === this.connection_state_) return;
+
         const old_state = this.connection_state_;
         this.connection_state_ = state;
         if(this.onconnectionstatechanged)

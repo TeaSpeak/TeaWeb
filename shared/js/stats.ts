@@ -242,3 +242,20 @@ namespace connection {
         handler["notifyusercount"] = handle_notify_user_count;
     }
 }
+
+
+
+{
+    var X; /* just declare the identifier so we'll not getting a reference error */
+    const A = () => {
+        console.log("Variable X: %o", X);
+    };
+
+    {
+        class X {
+
+        }
+        A();
+    }
+    A();
+}

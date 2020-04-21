@@ -64,18 +64,18 @@ export function spawnPermissionEdit<T extends keyof OptionMap>(connection: Conne
             const permission_editor: AbstractPermissionEditor = (() => {
                 const editor = new HTMLPermissionEditor();
                 editor.initialize(connection.permissions.groupedPermissions());
-                editor.icon_resolver = id => connection.fileManager.icons.resolve_icon(id).then(async icon => {
-                    if(!icon)
-                        return undefined;
+                editor.icon_resolver = async id => {
+                    const icon = connection.fileManager.icons.load_icon(id);
+                    await icon.await_loading();
 
                     const tag = document.createElement("img");
                     await new Promise((resolve, reject) => {
                         tag.onerror = reject;
                         tag.onload = resolve;
-                        tag.src = icon.url;
+                        tag.src = icon.loaded_url || "nope";
                     });
                     return tag;
-                });
+                };
                 editor.icon_selector = current_icon => new Promise<number>(resolve => {
                     spawnIconSelect(connection, id => resolve(new Int32Array([id])[0]), current_icon);
                 });

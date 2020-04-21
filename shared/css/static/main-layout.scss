@@ -74,6 +74,14 @@ $animation_length: .5s;
 
 					flex-grow: 1;
 					flex-shrink: 1;
+
+					.channel-tree-container {
+						height: 100%;
+						flex-grow: 1;
+						flex-shrink: 1;
+						overflow: hidden;
+						overflow-y: auto;
+					}
 				}
 			}
 
@@ -254,22 +262,6 @@ $animation_seperator_length: .1s;
 
 	> img {
 		position: absolute;
-	}
-}
-
-#mouse-move {
-	display: none;
-	position: absolute;
-	z-index: 10000;
-
-	.container {
-		position: relative;
-		display: block;
-
-		border: 2px solid gray;
-		-webkit-border-radius: 2px;
-		-moz-border-radius: 2px;
-		border-radius: 2px;
 	}
 }
 

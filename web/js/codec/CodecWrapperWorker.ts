@@ -54,19 +54,22 @@ export class CodecWrapperWorker extends BasicCodec {
 
     async initialise() : Promise<Boolean> {
         if(this._initialized) return;
+        if(this._initialize_promise)
+            return await this._initialize_promise;
 
         this._initialize_promise = this.spawn_worker().then(() => this.execute("initialise", {
             type: this.type,
             channelCount: this.channelCount,
         })).then(result => {
-            if(result.success)
+            if(result.success) {
+                this._initialized = true;
                 return Promise.resolve(true);
+            }
 
             log.error(LogCategory.VOICE, tr("Failed to initialize codec %s: %s"), CodecType[this.type], result.error);
             return Promise.reject(result.error);
         });
 
-        this._initialized = true;
         await this._initialize_promise;
     }
 
@@ -81,6 +84,8 @@ export class CodecWrapperWorker extends BasicCodec {
     }
 
     async decode(data: Uint8Array): Promise<AudioBuffer> {
+        if(!this.initialized()) throw "codec not initialized/initialize failed";
+
         const result = await this.execute("decodeSamples", { data: data, length: data.length });
         if(result.timings.downstream > 5 || result.timings.upstream > 5 || result.timings.handle > 5)
             log.warn(LogCategory.VOICE, tr("Worker message stock time: {downstream: %dms, handle: %dms, upstream: %dms}"), result.timings.downstream, result.timings.handle, result.timings.upstream);
@@ -102,6 +107,8 @@ export class CodecWrapperWorker extends BasicCodec {
     }
 
     async encode(data: AudioBuffer) : Promise<Uint8Array> {
+        if(!this.initialized()) throw "codec not initialized/initialize failed";
+
         let buffer = new Float32Array(this.channelCount * data.length);
         for (let offset = 0; offset < data.length; offset++) {
             for (let channel = 0; channel < this.channelCount; channel++)

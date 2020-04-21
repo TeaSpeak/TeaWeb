@@ -14,6 +14,10 @@ import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {connection_log} from "tc-shared/ui/modal/ModalConnect";
 import * as top_menu from "./frames/MenuBar";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
+import { ServerEntry as ServerEntryView } from "./tree/Server";
+import * as React from "react";
+import {Registry} from "tc-shared/events";
+import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 
 export class ServerProperties {
     virtualserver_host: string = "";
@@ -122,10 +126,20 @@ export interface ServerAddress {
     port: number;
 }
 
-export class ServerEntry {
+export interface ServerEvents extends ChannelTreeEntryEvents {
+    notify_properties_updated: {
+        updated_properties: {[Key in keyof ServerProperties]: ServerProperties[Key]};
+        server_properties: ServerProperties
+    }
+}
+
+export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
     remote_address: ServerAddress;
     channelTree: ChannelTree;
     properties: ServerProperties;
+
+    readonly events: Registry<ServerEvents>;
+    readonly view: React.Ref<ServerEntryView>;
 
     private info_request_promise: Promise<void> = undefined;
     private info_request_promise_resolve: any = undefined;
@@ -138,56 +152,22 @@ export class ServerEntry {
 
     lastInfoRequest: number = 0;
     nextInfoRequest: number = 0;
-    private _htmlTag: JQuery<HTMLElement>;
     private _destroyed = false;
 
     constructor(tree, name, address: ServerAddress) {
+        super();
+
+        this.events = new Registry<ServerEvents>();
+        this.view = React.createRef();
+
         this.properties = new ServerProperties();
         this.channelTree = tree;
-        this.remote_address = Object.assign({}, address); /* close the address because it might get changed due to the DNS resolve */
+        this.remote_address = Object.assign({}, address); /* copy the address because it might get changed due to the DNS resolve */
         this.properties.virtualserver_name = name;
-    }
-
-    get htmlTag() {
-        if(this._destroyed) throw "destoryed";
-        if(this._htmlTag) return this._htmlTag;
-
-        let tag = $.spawn("div").addClass("tree-entry server");
-
-        /* unread marker */
-        {
-            tag.append(
-                $.spawn("div")
-                    .addClass("marker-text-unread hidden")
-                    .attr("conversation", 0)
-            );
-        }
-
-        tag.append(
-            $.spawn("div")
-            .addClass("server_type icon client-server_green")
-        );
-
-        tag.append(
-            $.spawn("div")
-            .addClass("name")
-            .text(this.properties.virtualserver_name)
-        );
-
-        tag.append(
-            $.spawn("div")
-            .addClass("icon_property icon_empty")
-        );
-
-        return this._htmlTag = tag;
     }
 
     destroy() {
         this._destroyed = true;
-        if(this._htmlTag) {
-            this._htmlTag.remove();
-            this._htmlTag = undefined;
-        }
         this.info_request_promise = undefined;
         this.info_request_promise_resolve = undefined;
         this.info_request_promise_reject = undefined;
@@ -196,33 +176,22 @@ export class ServerEntry {
         this.remote_address = undefined;
     }
 
-    initializeListener(){
-        this._htmlTag.on('click' ,() => {
-            this.channelTree.onSelect(this);
-            this.updateProperties(); /* just prepare to show some server info */
-        });
+    protected onSelect(singleSelect: boolean) {
+        super.onSelect(singleSelect);
+        if(!singleSelect) return;
 
-        if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
-            this.htmlTag.on("contextmenu", (event) => {
-                event.preventDefault();
-                if($.isArray(this.channelTree.currently_selected)) { //Multiselect
-                    (this.channelTree.currently_selected_context_callback || ((_) => null))(event);
-                    return;
-                }
-
-                this.channelTree.onSelect(this, true);
-                this.spawnContextMenu(event.pageX, event.pageY, () => { this.channelTree.onSelect(undefined, true); });
-            });
+        if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
+            this.channelTree.client.side_bar.channel_conversations().set_current_channel(0);
+            this.channelTree.client.side_bar.show_channel_conversations();
         }
     }
 
-    spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
-        let trigger_close = true;
-        contextmenu.spawn_context_menu(x, y, {
+    contextMenuItems() : contextmenu.MenuEntry[] {
+        return [
+            {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Show server info"),
                 callback: () => {
-                    trigger_close = false;
                     openServerInfo(this);
                 },
                 icon_class: "client-about"
@@ -277,7 +246,28 @@ export class ServerEntry {
                 visible: false, //TODO: Enable again as soon the new design is finished
                 callback: () => spawnAvatarList(this.channelTree.client)
             },
-            contextmenu.Entry.CLOSE(() => trigger_close ? on_close() : {})
+            {
+                type: contextmenu.MenuEntryType.HR,
+                name: ''
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_collapse_all",
+                name: tr("Collapse all channels"),
+                callback: () => this.channelTree.collapse_channels()
+            },
+            {
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-channel_expand_all",
+                name: tr("Expend all channels"),
+                callback: () => this.channelTree.expand_channels()
+            },
+        ];
+    }
+
+    spawnContextMenu(x: number, y: number, on_close: () => void = () => {}) {
+        contextmenu.spawn_context_menu(x, y, ...this.contextMenuItems(),
+            contextmenu.Entry.CLOSE(on_close)
         );
     }
 
@@ -295,12 +285,11 @@ export class ServerEntry {
             log.table(LogType.DEBUG, LogCategory.PERMISSIONS, "Server update properties", entries);
         }
 
-        let update_bannner = false, update_button = false;
+        let update_bannner = false, update_button = false, update_bookmarks = false;
         for(let variable of variables) {
             JSON.map_field_to(this.properties, variable.value, variable.key);
 
             if(variable.key == "virtualserver_name") {
-                this.htmlTag.find(".name").text(variable.value);
                 this.channelTree.client.tag_connection_handler.find(".server-name").text(variable.value);
                 server_connections.update_ui();
             } else if(variable.key == "virtualserver_icon_id") {
@@ -308,30 +297,38 @@ export class ServerEntry {
                  * ATTENTION: This is required!
                  */
                 this.properties.virtualserver_icon_id = variable.value as any >>> 0;
-
-                const bmarks = bookmarks.bookmarks_flat()
-                    .filter(e => e.server_properties.server_address === this.remote_address.host && e.server_properties.server_port == this.remote_address.port)
-                    .filter(e => e.last_icon_id !== this.properties.virtualserver_icon_id);
-                if(bmarks.length > 0) {
-                    bmarks.forEach(e => {
-                        e.last_icon_id = this.properties.virtualserver_icon_id;
-                    });
-                    bookmarks.save_bookmark();
-                    top_menu.rebuild_bookmarks();
-
-                    control_bar_instance()?.events().fire("update_state", { state: "bookmarks" });
-                }
-
-                if(this.channelTree.client.fileManager && this.channelTree.client.fileManager.icons)
-                    this.htmlTag.find(".icon_property").replaceWith(this.channelTree.client.fileManager.icons.generateTag(this.properties.virtualserver_icon_id).addClass("icon_property"));
+                update_bookmarks = true;
             } else if(variable.key.indexOf('hostbanner') != -1) {
                 update_bannner = true;
             } else if(variable.key.indexOf('hostbutton') != -1) {
                 update_button = true;
             }
         }
+        {
+            let properties = {};
+            for(const property of variables)
+                properties[property.key] = this.properties[property.key];
+            this.events.fire("notify_properties_updated", { updated_properties: properties as any, server_properties: this.properties });
+        }
+        if(update_bookmarks) {
+            const bmarks = bookmarks.bookmarks_flat()
+                .filter(e => e.server_properties.server_address === this.remote_address.host && e.server_properties.server_port == this.remote_address.port)
+                .filter(e => e.last_icon_id !== this.properties.virtualserver_icon_id || e.last_icon_server_id !== this.properties.virtualserver_unique_identifier);
+            if(bmarks.length > 0) {
+                bmarks.forEach(e => {
+                    e.last_icon_id = this.properties.virtualserver_icon_id;
+                    e.last_icon_server_id = this.properties.virtualserver_unique_identifier;
+                });
+                bookmarks.save_bookmark();
+                top_menu.rebuild_bookmarks();
+
+                control_bar_instance()?.events().fire("update_state", { state: "bookmarks" });
+            }
+        }
+
         if(update_bannner)
             this.channelTree.client.hostbanner.update();
+
         if(update_button)
             control_bar_instance()?.events().fire("server_updated", { handler: this.channelTree.client, category: "hostbanner" });
 
@@ -353,6 +350,7 @@ export class ServerEntry {
             flag_password: this.properties.virtualserver_flag_password,
             name: this.properties.virtualserver_name,
             icon_id: this.properties.virtualserver_icon_id,
+            server_unique_id: this.properties.virtualserver_unique_identifier,
 
             password_hash: undefined /* we've here no clue */
         });
@@ -413,7 +411,11 @@ export class ServerEntry {
         return this.properties.virtualserver_uptime + (new Date().getTime() - this.lastInfoRequest) / 1000;
     }
 
-    set flag_text_unread(flag: boolean) {
-        this._htmlTag.find(".marker-text-unread").toggleClass("hidden", !flag);
+    reset() {
+        this.properties = new ServerProperties();
+        this._info_connection_promise = undefined;
+        this._info_connection_promise_reject = undefined;
+        this._info_connection_promise_resolve = undefined;
+        this._info_connection_promise_timestamp = undefined;
     }
 }

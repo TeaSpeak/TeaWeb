@@ -13,3 +13,5 @@ export function fix_declare_global(nodes: ts.Node[]) : ts.Node[] {
 
     return [];
 }
+
+SyntaxKind.PlusEqualsToken

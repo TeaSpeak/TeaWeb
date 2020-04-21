@@ -156,7 +156,8 @@ export class Settings extends StaticSettings {
 
     static readonly KEY_DISABLE_CONTEXT_MENU: SettingsKey<boolean> = {
         key: 'disableContextMenu',
-        description: 'Disable the context menu for the channel tree which allows to debug the DOM easier'
+        description: 'Disable the context menu for the channel tree which allows to debug the DOM easier',
+        default_value: false
     };
 
     static readonly KEY_DISABLE_GLOBAL_CONTEXT_MENU: SettingsKey<boolean> = {
@@ -365,6 +366,13 @@ export class Settings extends StaticSettings {
         }
     };
 
+    static readonly FN_SERVER_CHANNEL_COLLAPSED: (channel_id: number) => SettingsKey<boolean> = channel => {
+        return {
+            key: 'channel_collapsed_' + channel,
+            default_value: false
+        }
+    };
+
     static readonly FN_PROFILE_RECORD: (name: string) => SettingsKey<any> = name => {
         return {
             key: 'profile_record' + name
@@ -485,14 +493,15 @@ export class ServerSettings extends SettingsBase {
 
     server?<T>(key: string | SettingsKey<T>, _default?: T) : T {
         if(this._destroyed) throw "destroyed";
-        return StaticSettings.resolveKey(Settings.keyify(key), _default, key => this.cacheServer[key]);
+        const kkey = Settings.keyify(key);
+        return StaticSettings.resolveKey(kkey, typeof _default === "undefined" ? kkey.default_value : _default, key => this.cacheServer[key]);
     }
 
     changeServer<T>(key: string | SettingsKey<T>, value?: T) {
         if(this._destroyed) throw "destroyed";
         key = Settings.keyify(key);
 
-        if(this.cacheServer[key.key] == value) return;
+        if(this.cacheServer[key.key] === value) return;
 
         this._server_settings_updated = true;
         this.cacheServer[key.key] = StaticSettings.transformOtS(value);

@@ -68,6 +68,7 @@ export interface Bookmark {
     connect_profile: string;
 
     last_icon_id?: number;
+    last_icon_server_id?: string;
 }
 
 export interface DirectoryBookmark {
