@@ -2,7 +2,10 @@ import {createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal"
 import {
     Bookmark,
     bookmarks,
-    BookmarkType, boorkmak_connect, create_bookmark, create_bookmark_directory,
+    BookmarkType,
+    boorkmak_connect,
+    create_bookmark,
+    create_bookmark_directory,
     delete_bookmark,
     DirectoryBookmark,
     save_bookmark
@@ -12,8 +15,8 @@ import {icon_cache_loader, IconManager} from "tc-shared/FileManager";
 import {profiles} from "tc-shared/profiles/ConnectionProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {Settings, settings} from "tc-shared/settings";
-import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 import * as i18nc from "tc-shared/i18n/country";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import * as top_menu from "../frames/MenuBar";
@@ -107,8 +110,11 @@ export function spawnBookmarkModal() {
                     input_server_address.val(address);
 
                     let profile = input_connect_profile.find("option[value='" + entry.connect_profile + "']");
-                    if(profile.length == 0)
+                    console.error("%o - %s", profile, entry.connect_profile);
+                    if(profile.length == 0) {
+                        log.warn(LogCategory.GENERAL, tr("Failed to find bookmark profile %s. Displaying default one."), entry.connect_profile);
                         profile = input_connect_profile.find("option[value=default]");
+                    }
                     profile.prop("selected", true);
 
                     input_server_password.val(entry.server_properties.server_password_hash || entry.server_properties.server_password ? "WolverinDEV" : "");
@@ -287,6 +293,7 @@ export function spawnBookmarkModal() {
                     if(event.type === "change" && valid) {
                         selected_bookmark.display_name = name;
                         label_bookmark_name.text(name);
+                        save_bookmark(selected_bookmark);
                     }
                 });
 
@@ -306,10 +313,17 @@ export function spawnBookmarkModal() {
                             entry.server_properties.server_address = address;
                             entry.server_properties.server_port = 9987;
                         }
+                        save_bookmark(selected_bookmark);
 
                         label_server_address.text(entry.server_properties.server_address + (entry.server_properties.server_port == 9987 ? "" : (" " + entry.server_properties.server_port)));
                         update_connect_info();
                     }
+                });
+
+                input_server_password.on("change keydown", event => {
+                    const password = input_server_password.val() as string;
+                    (selected_bookmark as Bookmark).server_properties.server_password = password;
+                    save_bookmark(selected_bookmark);
                 });
 
                 input_connect_profile.on('change', event => {
@@ -317,6 +331,7 @@ export function spawnBookmarkModal() {
                     const profile = profiles().find(e => e.id === id);
                     if(profile) {
                         (selected_bookmark as Bookmark).connect_profile = id;
+                        save_bookmark(selected_bookmark);
                     } else {
                         log.warn(LogCategory.GENERAL, tr("Failed to change connect profile for profile %s to %s"), selected_bookmark.unique_id, id);
                     }

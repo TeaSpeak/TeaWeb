@@ -2,6 +2,7 @@
 * **21.04.20**
     - Clicking on the music bot does not longer results in the insufficient permission sound when the client has no permissions
     - Fixed permission editor overflow
+    - Fixed the bookmark edit window (bookmarks have failed to save)
     
 * **18.04.20**
     - Recoded the channel tree using React
