@@ -77,7 +77,7 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
 
         return <div className={this.classList(serverStyle.serverEntry, viewStyle.treeEntry, this.props.server.isSelected() && viewStyle.selected )}
                     style={{ top: this.props.offset }}
-                    onMouseDown={e => this.onMouseDown(e as any)}
+                    onMouseUp={e => this.onMouseUp(e as any)}
                     onContextMenu={e => this.onContextMenu(e as any)}
         >
             <UnreadMarker entry={this.props.server} />
@@ -87,8 +87,9 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
         </div>
     }
 
-    private onMouseDown(event: MouseEvent) {
+    private onMouseUp(event: MouseEvent) {
         if(event.button !== 0) return; /* only left mouse clicks */
+        if(this.props.server.channelTree.isClientMoveActive()) return;
 
         this.props.server.channelTree.events.fire("action_select_entries", {
             entries: [ this.props.server ],

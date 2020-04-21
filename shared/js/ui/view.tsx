@@ -9,7 +9,6 @@ import {Sound} from "tc-shared/sound/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
 import * as server_log from "tc-shared/ui/frames/server_log";
 import {ServerAddress, ServerEntry} from "tc-shared/ui/server";
-import {ClientMover} from "tc-shared/ui/client_move";
 import {ChannelEntry, ChannelSubscribeMode} from "tc-shared/ui/channel";
 import {ClientEntry, LocalClientEntry, MusicClientEntry} from "tc-shared/ui/client";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
@@ -27,6 +26,7 @@ import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tra} from "tc-shared/i18n/localize";
+import {TreeEntryMove} from "tc-shared/ui/tree/TreeEntryMove";
 
 export interface ChannelTreeEvents {
     action_select_entries: {
@@ -41,7 +41,11 @@ export interface ChannelTreeEvents {
     },
 
     notify_selection_changed: {},
-    notify_root_channel_changed: {}
+    notify_root_channel_changed: {},
+    notify_query_view_state_changed: { queries_shown: boolean },
+
+    notify_entry_move_begin: {},
+    notify_entry_move_end: {}
 }
 
 export class ChannelTreeEntrySelect {
@@ -187,9 +191,8 @@ export class ChannelTree {
     channels: ChannelEntry[] = [];
     clients: ClientEntry[] = [];
 
-    readonly client_mover: ClientMover;
-
     readonly view: React.RefObject<ChannelTreeView>;
+    readonly view_move: React.RefObject<TreeEntryMove>;
     readonly selection: ChannelTreeEntrySelect;
 
     private readonly _tag_container: JQuery;
@@ -206,14 +209,17 @@ export class ChannelTree {
         this.events = new Registry<ChannelTreeEvents>();
         this.client = client;
         this.view = React.createRef();
+        this.view_move = React.createRef();
 
         this.server = new ServerEntry(this, "undefined", undefined);
         this.selection = new ChannelTreeEntrySelect(this);
 
         this._tag_container = $.spawn("div").addClass("channel-tree-container");
-        ReactDOM.render(<ChannelTreeView tree={this} ref={this.view} />, this._tag_container[0]);
+        ReactDOM.render([
+            <ChannelTreeView key={"tree"} onMoveStart={(a,b) => this.onChannelEntryMove(a, b)} tree={this} ref={this.view} />,
+            <TreeEntryMove key={"move"} onMoveEnd={(point) => this.onMoveEnd(point.x, point.y)} ref={this.view_move} />
+        ], this._tag_container[0]);
 
-        this.client_mover = new ClientMover(this);
         this.reset();
 
         if(!settings.static(Settings.KEY_DISABLE_CONTEXT_MENU, false)) {
@@ -291,6 +297,7 @@ export class ChannelTree {
                 invalidPermission: !channelCreate,
                 callback: () => this.spawnCreateChannel()
             },
+            contextmenu.Entry.HR(),
             {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-channel_collapse_all",
@@ -1001,20 +1008,9 @@ export class ChannelTree {
         if(this._show_queries == flag) return;
         this._show_queries = flag;
 
-        //TODO: FIXME!
-        /*
-        const channels: ChannelEntry[] = []
-        for(const client of this.clients)
-            if(client.properties.client_type == ClientType.CLIENT_QUERY) {
-                if(this._show_queries)
-                    client.tag.show();
-                else
-                    client.tag.hide();
-                if(channels.indexOf(client.currentChannel()) == -1)
-                    channels.push(client.currentChannel());
-            }
-         */
+        this.events.fire("notify_query_view_state_changed", { queries_shown: flag });
     }
+    areServerQueriesShown() { return this._show_queries; }
 
     get_first_channel?() : ChannelEntry {
         return this.channel_first;
@@ -1080,5 +1076,54 @@ export class ChannelTree {
             for(const child of root.children(false))
                 this.collapse_channels(child);
         }
+    }
+
+    private onChannelEntryMove(start, current) {
+        const move = this.view_move.current;
+        if(!move) return;
+
+        const target = this.view.current.getEntryFromPoint(start.x, start.y);
+        if(target && this.selection.selected_entries.findIndex(e => e === target) === -1)
+            this.events.fire("action_select_entries", { mode: "auto", entries: [ target ]});
+
+        const selection = this.selection.selected_entries;
+        if(selection.length === 0 || selection.filter(e => !(e instanceof ClientEntry)).length > 0)
+            return;
+
+        move.enableEntryMove(this.view.current, selection.map(e => e as ClientEntry).map(e => e.clientNickName()).join(","), start, current, () => {
+            this.events.fire("notify_entry_move_begin");
+        });
+    }
+
+    private onMoveEnd(x: number, y: number) {
+        batch_updates(BatchUpdateType.CHANNEL_TREE);
+        try {
+            this.events.fire("notify_entry_move_end");
+
+            const selection = this.selection.selected_entries.filter(e => e instanceof ClientEntry) as ClientEntry[];
+            if(selection.length === 0) return;
+            this.selection.clear_selection();
+
+            const target = this.view.current.getEntryFromPoint(x, y);
+            let target_channel: ChannelEntry;
+            if(target instanceof ClientEntry)
+                target_channel = target.currentChannel();
+            else if(target instanceof ChannelEntry)
+                target_channel = target;
+            if(!target_channel) return;
+
+            selection.filter(e => e.currentChannel() !== target_channel).forEach(e => {
+                this.client.serverConnection.send_command("clientmove", {
+                    clid: e.clientId(),
+                    cid: target_channel.channelId
+                });
+            });
+        } finally {
+            flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
+        }
+    }
+
+    isClientMoveActive() {
+        return !!this.view_move.current?.isActive();
     }
 }

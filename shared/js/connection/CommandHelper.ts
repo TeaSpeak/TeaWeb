@@ -262,7 +262,7 @@ export class CommandHelper extends AbstractCommandHandler {
         });
     }
 
-    request_playlist_songs(playlist_id: number) : Promise<PlaylistSong[]> {
+    request_playlist_songs(playlist_id: number, process_result?: boolean) : Promise<PlaylistSong[]> {
         let bulked_response = false;
         let bulk_index = 0;
 
@@ -314,7 +314,7 @@ export class CommandHelper extends AbstractCommandHandler {
             };
             this.handler_boss.register_single_handler(single_handler);
 
-            this.connection.send_command("playlistsonglist", {playlist_id: playlist_id}).catch(error => {
+            this.connection.send_command("playlistsonglist", {playlist_id: playlist_id}, { process_result: process_result }).catch(error => {
                 this.handler_boss.remove_single_handler(single_handler);
                 if(error instanceof CommandResult) {
                     if(error.id == ErrorID.EMPTY_RESULT) {

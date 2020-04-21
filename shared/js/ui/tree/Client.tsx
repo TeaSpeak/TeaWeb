@@ -364,7 +364,7 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
             <div className={this.classList(clientStyle.clientEntry, viewStyle.treeEntry, this.props.client.isSelected() && viewStyle.selected)}
                  style={{ paddingLeft: (this.props.depth * 16 + 2) + "px", top: this.props.offset }}
                  onDoubleClick={() => this.onDoubleClick()}
-                 onMouseDown={e => this.onMouseDown(e as any)}
+                 onMouseUp={e => this.onMouseUp(e as any)}
                  onContextMenu={e => this.onContextMenu(e as any)}
             >
                 <UnreadMarker entry={this.props.client} />
@@ -403,10 +403,11 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
         this.setState({ rename: false });
     }
 
-    private onMouseDown(event: MouseEvent) {
+    private onMouseUp(event: MouseEvent) {
         if(event.button !== 0) return; /* only left mouse clicks */
-
         const tree = this.props.client.channelTree;
+        if(tree.isClientMoveActive()) return;
+
         tree.events.fire("action_select_entries", { entries: [this.props.client], mode: "auto" });
     }
 

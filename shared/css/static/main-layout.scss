@@ -257,22 +257,6 @@ $animation_seperator_length: .1s;
 	}
 }
 
-#mouse-move {
-	display: none;
-	position: absolute;
-	z-index: 10000;
-
-	.container {
-		position: relative;
-		display: block;
-
-		border: 2px solid gray;
-		-webkit-border-radius: 2px;
-		-moz-border-radius: 2px;
-		border-radius: 2px;
-	}
-}
-
 html, body {
 	overflow: hidden;
 }

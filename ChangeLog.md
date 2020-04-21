@@ -1,4 +1,8 @@
 # Changelog:
+* **21.04.20**
+    - Clicking on the music bot does not longer results in the insufficient permission sound when the client has no permissions
+    - Fixed permission editor overflow
+    
 * **18.04.20**
     - Recoded the channel tree using React
     - Heavily improved channel tree performance on large servers (fluent scroll & updates)

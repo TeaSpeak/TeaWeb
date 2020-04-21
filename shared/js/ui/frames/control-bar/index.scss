@@ -16,6 +16,7 @@ html:root {
     height: 100%;
     align-items: center;
     background: var(--menu-bar-background);
+    border-radius: 5px;
 
     /* tmp fix for ultra small devices */
     overflow-y: visible;

@@ -493,14 +493,15 @@ export class ServerSettings extends SettingsBase {
 
     server?<T>(key: string | SettingsKey<T>, _default?: T) : T {
         if(this._destroyed) throw "destroyed";
-        return StaticSettings.resolveKey(Settings.keyify(key), _default, key => this.cacheServer[key]);
+        const kkey = Settings.keyify(key);
+        return StaticSettings.resolveKey(kkey, typeof _default === "undefined" ? kkey.default_value : _default, key => this.cacheServer[key]);
     }
 
     changeServer<T>(key: string | SettingsKey<T>, value?: T) {
         if(this._destroyed) throw "destroyed";
         key = Settings.keyify(key);
 
-        if(this.cacheServer[key.key] == value) return;
+        if(this.cacheServer[key.key] === value) return;
 
         this._server_settings_updated = true;
         this.cacheServer[key.key] = StaticSettings.transformOtS(value);

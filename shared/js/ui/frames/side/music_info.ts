@@ -736,7 +736,7 @@ export class MusicInfo {
         this._current_bot.updateClientVariables(true).catch(error => {
             log.warn(LogCategory.CLIENT, tr("Failed to update music bot variables: %o"), error);
         }).then(() => {
-            this.handle.handle.serverConnection.command_helper.request_playlist_songs(this._current_bot.properties.client_playlist_id).then(songs => {
+            this.handle.handle.serverConnection.command_helper.request_playlist_songs(this._current_bot.properties.client_playlist_id, false).then(songs => {
                 this.playlist_subscribe(false); /* we're allowed to see the playlist */
                 if(!songs) {
                     this._container_playlist.find(".overlay-empty").removeClass("hidden");

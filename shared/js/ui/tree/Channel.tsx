@@ -244,7 +244,7 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
         const collapsed_indicator = this.props.channel.child_channel_head || this.props.channel.clients(false).length > 0;
         return <div className={this.classList(viewStyle.treeEntry, channelStyle.channelEntry, this.props.channel.isSelected() && viewStyle.selected)}
                     style={{ paddingLeft: this.props.depth * 16 + 2, top: this.props.offset }}
-                    onMouseDown={e => this.onMouseDown(e as any)}
+                    onMouseUp={e => this.onMouseUp(e as any)}
                     onDoubleClick={() => this.onDoubleClick()}
                     onContextMenu={e => this.onContextMenu(e as any)}
         >
@@ -260,10 +260,12 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
         this.props.channel.collapsed = !this.props.channel.collapsed;
     }
 
-    private onMouseDown(event: MouseEvent) {
+    private onMouseUp(event: MouseEvent) {
         if(event.button !== 0) return; /* only left mouse clicks */
 
         const channel = this.props.channel;
+        if(channel.channelTree.isClientMoveActive()) return;
+
         channel.channelTree.events.fire("action_select_entries", {
             entries: [ channel ],
             mode: "auto"
