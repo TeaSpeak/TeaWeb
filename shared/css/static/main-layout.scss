@@ -74,6 +74,14 @@ $animation_length: .5s;
 
 					flex-grow: 1;
 					flex-shrink: 1;
+
+					.channel-tree-container {
+						height: 100%;
+						flex-grow: 1;
+						flex-shrink: 1;
+						overflow: hidden;
+						overflow-y: auto;
+					}
 				}
 			}
 
