@@ -12,7 +12,6 @@ files=(
     "css/static/channel-tree.css"
     "css/static/connection_handlers.css"
     "css/static/context_menu.css"
-    "css/static/control_bar.css"
     "css/static/frame-chat.css"
     "css/static/server-log.css"
     "css/static/scroll.css"
