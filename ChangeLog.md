@@ -1,4 +1,7 @@
 # Changelog:
+* **25.04.20**
+    - Fixed missing channel tree update on talk power change
+    
 * **21.04.20**
     - Clicking on the music bot does not longer results in the insufficient permission sound when the client has no permissions
     - Fixed permission editor overflow

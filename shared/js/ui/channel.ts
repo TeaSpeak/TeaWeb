@@ -55,7 +55,7 @@ export class ChannelProperties {
     channel_maxclients: number = -1;
     channel_maxfamilyclients: number = -1;
 
-    channel_needed_talk_power: number = 1;
+    channel_needed_talk_power: number = 0;
 
     channel_flag_permanent: boolean = false;
     channel_flag_semi_permanent: boolean = false;

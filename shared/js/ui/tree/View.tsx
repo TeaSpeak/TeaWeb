@@ -14,7 +14,7 @@ import {ChannelEntryView as ChannelEntryView} from "./Channel";
 import {ServerEntry as ServerEntryView} from "./Server";
 import {ClientEntry as ClientEntryView} from "./Client";
 
-import {ChannelEntry} from "tc-shared/ui/channel";
+import {ChannelEntry, ChannelEvents} from "tc-shared/ui/channel";
 import {ServerEntry} from "tc-shared/ui/server";
 import {ClientEntry, ClientType} from "tc-shared/ui/client";
 
@@ -54,6 +54,8 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     private listener_client_change;
     private listener_channel_change;
     private listener_state_collapsed;
+    private listener_channel_properties;
+
     private update_timeout;
 
     private mouse_move: { x: number, y: number, down: boolean, fired: boolean } = { x: 0, y: 0, down: false, fired: false };
@@ -103,6 +105,10 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.listener_client_change = () => this.handleTreeUpdate();
         this.listener_channel_change = () => this.handleTreeUpdate();
         this.listener_state_collapsed = () => this.handleTreeUpdate();
+        this.listener_channel_properties = (event: ChannelEvents["notify_properties_updated"]) => {
+            if(typeof event.updated_properties.channel_needed_talk_power !== "undefined") /* talk power flags have changed */
+                this.handleTreeUpdate();
+        };
 
         this.document_mouse_listener = (e: MouseEvent) => {
             if(e.type !== "mouseleave" && e.button !== 0)
@@ -183,6 +189,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         entry.events.on("notify_clients_changed", this.listener_client_change);
         entry.events.on("notify_children_changed", this.listener_channel_change);
         entry.events.on("notify_collapsed_state_changed", this.listener_state_collapsed);
+        entry.events.on("notify_properties_updated", this.listener_channel_properties);
 
         this.flat_tree.push({
             entry: entry,
@@ -210,9 +217,10 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             while(index--) {
                 const entry = this.flat_tree[index].entry;
                 if(entry instanceof ChannelEntry) {
+                    entry.events.off("notify_properties_updated", this.listener_client_change);
                     entry.events.off("notify_clients_changed", this.listener_client_change);
                     entry.events.off("notify_children_changed", this.listener_channel_change);
-                    entry.events.off("notify_collapsed_state_changed", this.listener_state_collapsed);
+                    entry.events.off("notify_properties_updated", this.listener_channel_properties);
                 }
             }
         }

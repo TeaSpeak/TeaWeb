@@ -640,8 +640,22 @@ export class ChannelTree {
                     }
                 });
 
-                if (!music_entry) { //Music bots  cant be banned or kicked
+                if (!music_entry) { //Music bots  cant be poked, banned or kicked
                     client_menu.push({
+                        type: contextmenu.MenuEntryType.ENTRY,
+                        icon_class: "client-poke",
+                        name: tr("Poke clients"),
+                        callback: () => {
+                            this.selection.clear_selection();
+                            createInputModal(tr("Poke clients"), tr("Poke message:<br>"), text => true, result => {
+                                if (result) {
+                                    const elements = clients.map(e => { return { clid: e.clientId() } as any });
+                                    elements[0].msg = result;
+                                    this.client.serverConnection.send_command("clientpoke", elements);
+                                }
+                            }, {width: 400, maxLength: 255}).open();
+                        }
+                    }, {
                         type: contextmenu.MenuEntryType.ENTRY,
                         icon_class: "client-kick_server",
                         name: tr("Kick clients fom server"),
