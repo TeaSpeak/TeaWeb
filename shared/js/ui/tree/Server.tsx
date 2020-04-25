@@ -30,28 +30,29 @@ export class ServerEntry extends TreeEntry<ServerEntryProperties, ServerEntrySta
     private handle_connection_state_change;
 
     protected defaultState(): ServerEntryState {
-        return { connection_state: "disconnected" };
+        return { connection_state: this.props.server ? ServerEntry.connectionState2String(this.props.server.channelTree.client.connection_state) : "disconnected" };
+    }
+
+    private static connectionState2String(state: ConnectionState) {
+        switch (state) {
+            case ConnectionState.AUTHENTICATING:
+            case ConnectionState.CONNECTING:
+            case ConnectionState.INITIALISING:
+                return "connecting";
+
+            case ConnectionState.CONNECTED:
+                return "connected";
+
+            case ConnectionState.DISCONNECTING:
+            case ConnectionState.UNCONNECTED:
+                return "disconnected";
+        }
     }
 
     protected initialize() {
-        this.handle_connection_state_change = (event: ConnectionEvents["notify_connection_state_changed"]) => {
-            switch (event.new_state) {
-                case ConnectionState.AUTHENTICATING:
-                case ConnectionState.CONNECTING:
-                case ConnectionState.INITIALISING:
-                    this.setState({ connection_state: "connecting" });
-                    break;
-
-                case ConnectionState.CONNECTED:
-                    this.setState({ connection_state: "connected" });
-                    break;
-
-                case ConnectionState.DISCONNECTING:
-                case ConnectionState.UNCONNECTED:
-                    this.setState({ connection_state: "disconnected" });
-                    break;
-            }
-        }
+        this.handle_connection_state_change = (event: ConnectionEvents["notify_connection_state_changed"]) => this.setState({
+            connection_state: ServerEntry.connectionState2String(event.new_state)
+        });
     }
 
     shouldComponentUpdate(nextProps: Readonly<ServerEntryProperties>, nextState: Readonly<ServerEntryState>, nextContext: any): boolean {
