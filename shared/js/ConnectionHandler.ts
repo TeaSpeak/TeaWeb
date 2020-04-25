@@ -123,6 +123,7 @@ export class ConnectionHandler {
     private readonly event_registry: Registry<ConnectionEvents>;
     channelTree: ChannelTree;
 
+    connection_state: ConnectionState = ConnectionState.UNCONNECTED;
     serverConnection: AbstractServerConnection;
 
     fileManager: FileManager;
@@ -349,6 +350,7 @@ export class ConnectionHandler {
     @EventHandler<ConnectionEvents>("notify_connection_state_changed")
     private handleConnectionConnected(event: ConnectionEvents["notify_connection_state_changed"]) {
         if(event.new_state !== ConnectionState.CONNECTED) return;
+        this.connection_state = event.new_state;
 
         log.info(LogCategory.CLIENT, tr("Client connected"));
         this.log.log(server_log.Type.CONNECTION_CONNECTED, {
