@@ -254,6 +254,11 @@ interface ClientNameState {
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
 @ReactEventHandler<ClientName>(e => e.props.client.events)
 class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameState> {
+    protected initialize() {
+        this.updateGroups();
+        this.updateAwayMessage();
+    }
+
     protected defaultState(): ClientNameState {
         return {
             group_prefix: "",
@@ -268,38 +273,46 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
         </div>
     }
 
+    private updateGroups() {
+        let prefix_groups: string[] = [];
+        let suffix_groups: string[] = [];
+        for(const group_id of this.props.client.assignedServerGroupIds()) {
+            const group = this.props.client.channelTree.client.groups.serverGroup(group_id);
+            if(!group) continue;
+
+            if(group.properties.namemode == 1)
+                prefix_groups.push(group.name);
+            else if(group.properties.namemode == 2)
+                suffix_groups.push(group.name);
+        }
+
+        const channel_group = this.props.client.channelTree.client.groups.channelGroup(this.props.client.assignedChannelGroup());
+        if(channel_group) {
+            if(channel_group.properties.namemode == 1)
+                prefix_groups.push(channel_group.name);
+            else if(channel_group.properties.namemode == 2)
+                suffix_groups.splice(0, 0, channel_group.name);
+        }
+
+        this.setState({
+            group_suffix: suffix_groups.map(e => "[" + e + "]").join(""),
+            group_prefix: prefix_groups.map(e => "[" + e + "]").join("")
+        });
+    }
+
+    private updateAwayMessage() {
+        this.setState({
+            away_message: this.props.client.properties.client_away_message && " [" + this.props.client.properties.client_away_message + "]"
+        });
+    }
+
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesChanged(event: ClientEvents["notify_properties_updated"]) {
         if(typeof event.updated_properties.client_away !== "undefined" || typeof event.updated_properties.client_away_message !== "undefined") {
-            this.setState({
-                away_message: event.client_properties.client_away_message && " [" + event.client_properties.client_away_message + "]"
-            });
+            this.updateAwayMessage();
         }
         if(typeof event.updated_properties.client_servergroups !== "undefined" || typeof event.updated_properties.client_channel_group_id !== "undefined") {
-            let prefix_groups: string[] = [];
-            let suffix_groups: string[] = [];
-            for(const group_id of this.props.client.assignedServerGroupIds()) {
-                const group = this.props.client.channelTree.client.groups.serverGroup(group_id);
-                if(!group) continue;
-
-                if(group.properties.namemode == 1)
-                    prefix_groups.push(group.name);
-                else if(group.properties.namemode == 2)
-                    suffix_groups.push(group.name);
-            }
-
-            const channel_group = this.props.client.channelTree.client.groups.channelGroup(this.props.client.assignedChannelGroup());
-            if(channel_group) {
-                if(channel_group.properties.namemode == 1)
-                    prefix_groups.push(channel_group.name);
-                else if(channel_group.properties.namemode == 2)
-                    suffix_groups.splice(0, 0, channel_group.name);
-            }
-
-            this.setState({
-                group_suffix: suffix_groups.map(e => "[" + e + "]").join(""),
-                group_prefix: prefix_groups.map(e => "[" + e + "]").join("")
-            })
+            this.updateGroups();
         }
     }
 }
