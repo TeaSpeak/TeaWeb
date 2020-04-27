@@ -9,7 +9,6 @@ import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import * as log from "tc-shared/log";
 import * as image_preview from "../image_preview";
 
-declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 
 interface LoadedSongData {

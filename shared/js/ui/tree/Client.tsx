@@ -252,6 +252,7 @@ interface ClientNameState {
 
 /* group prefix & suffix, away message */
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
+@ReactEventHandler<ClientName>(e => e.props.client.events)
 class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameState> {
     protected defaultState(): ClientNameState {
         return {
