@@ -35,7 +35,7 @@ export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
     button_save.on('click', () => {
         if(__build.version !== "web") {
             /* Because pressing the close button is also a mouse action */
-            if(current_key_age + 1000 > Date.now() && current_key.key_code == "MOUSE2")
+            if(current_key_age + 1000 > Date.now() && current_key.key_code == "MOUSE1")
                 current_key = last_key;
         }
 
