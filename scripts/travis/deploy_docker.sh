@@ -35,7 +35,12 @@ git clone https://github.com/TeaSpeak/TeaDocker.git auto-build/teadocker || {
     exit 1
 }
 
-docker build -f auto-build/teadocker/web/travis.Dockerfile --build-arg WEB_VERSION="$git_rev" --build-arg WEB_ZIP="$zip_file" -t teaspeak/web:"$rolling_tag" auto-build/teadocker/web || {
+cp "$zip_file" auto-build/teadocker/web/files.zip || {
+    echo "Failed to copy Docker webclient files to the docker files build context"
+    exit 1
+}
+
+docker build -f auto-build/teadocker/web/travis.Dockerfile --build-arg WEB_VERSION="$git_rev" --build-arg WEB_ZIP=files.zip  -t teaspeak/web:"$rolling_tag" auto-build/teadocker/web || {
     echo "Failed to build dockerfile"
     exit 1
 }
