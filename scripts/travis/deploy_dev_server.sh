@@ -12,7 +12,7 @@ chmod 600 /tmp/sftp_key
     echo "Failed to write SSH key"
     exit 1
 }
-cd "$(dirname "$0")/.." || { echo "Failed to enter base dir"; exit 1; }
+cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
 
 file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "TeaWeb-release*.zip" -print)
 [[ $(echo "$file" | wc -l) -ne 1 ]] && {

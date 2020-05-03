@@ -44,7 +44,7 @@ if [[ ! -x ${GIT_RELEASE_EXECUTABLE} ]]; then
     fi
 fi
 
-cd "$(dirname "$0")/.." || { echo "Failed to enter base dir"; exit 1; }
+cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
 echo "Generating release"
 ${GIT_RELEASE_EXECUTABLE} release \
 	--repo "TeaWeb" \
