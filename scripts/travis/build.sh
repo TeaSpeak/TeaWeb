@@ -1,7 +1,8 @@
 #!/bin/bash
 
-LOG_FILE="auto-build/logs/build.log"
-PACKAGES_DIRECTORY="auto-build/packages/"
+cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
+source ./scripts/travis/properties.sh
+
 build_verbose=0
 build_release=1
 build_debug=0

@@ -2,6 +2,7 @@
 * **03.05.20**
     - Splitup the file transfer & management part
     - Added the ability to register a custom file transfer provider (required for the native client)
+    - Added DockerHub image deploy automatisation
     
 * **25.04.20**
     - Fixed missing channel tree update on talk power change
