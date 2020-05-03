@@ -123,7 +123,7 @@ function handle_failure() {
     exit 1
 }
 
-cd "$(dirname "$0")/.." || { echo "Failed to enter base dir"; exit 1; }
+cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
 error=""
 
 LOG_FILE="$(pwd)/$LOG_FILE"
