@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-PACKAGES_DIRECTORY="auto-build/packages/"
+cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
+source ./scripts/travis/properties.sh
+
 if [[ -z "${SSH_KEY}" ]]; then
     echo "Missing environment variable SSH_KEY. Please set it before using this script!"
     exit 1
@@ -12,7 +14,6 @@ chmod 600 /tmp/sftp_key
     echo "Failed to write SSH key"
     exit 1
 }
-cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
 
 file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "TeaWeb-release*.zip" -print)
 [[ $(echo "$file" | wc -l) -ne 1 ]] && {
@@ -26,16 +27,19 @@ file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "TeaWeb-release*.zip" -print
 #TeaSpeak-Travis-Web
 # ssh -oStrictHostKeyChecking=no $h TeaSpeak-Travis-Web@dev.web.teaspeak.de
 ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@dev.web.teaspeak.de rm "tmp-upload/*.zip" # Cleanup the old files
-[[ $? -ne 0 ]] && {
-    echo "Failed to delete the old .zip files"
+_exit_code=$?
+[[ $_exit_code -ne 0 ]] && {
+    echo "Failed to delete the old .zip files ($_exit_code)"
 }
 
 filename="TeaWeb-Release-$(git rev-parse --short HEAD).zip"
 sftp -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@dev.web.teaspeak.de << EOF
     put $file tmp-upload/$filename
 EOF
-[[ $? -ne 0 ]] && {
-    echo "Failed to upload the .zip file"
+_exit_code=$?
+[[ $_exit_code -ne 0 ]] && {
+    echo "Failed to upload the .zip file ($_exit_code)"
+    exit 1
 }
 ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@dev.web.teaspeak.de "./unpack.sh tmp-upload/$filename"
 exit $?
