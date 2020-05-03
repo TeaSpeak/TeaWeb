@@ -10,7 +10,7 @@ import * as i18n from "./i18n/localize";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "./i18n/localize";
-import {RequestFileUpload} from "tc-shared/FileManager";
+import {RequestFileUpload} from "tc-shared/file/FileManager";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {default_recorder, RecorderProfile, set_default_recorder} from "tc-shared/voice/RecorderProfile";

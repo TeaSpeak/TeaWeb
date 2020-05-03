@@ -2,7 +2,7 @@ import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
 import {LogCategory} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {base64_encode_ab} from "tc-shared/utils/buffers";
-import {media_image_type} from "tc-shared/FileManager";
+import {media_image_type} from "tc-shared/file/FileManager";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {ClientEntry} from "tc-shared/ui/client";
 import * as log from "tc-shared/log";

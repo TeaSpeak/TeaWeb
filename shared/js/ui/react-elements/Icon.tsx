@@ -1,5 +1,5 @@
 import * as React from "react";
-import {LocalIcon} from "tc-shared/FileManager";
+import {LocalIcon} from "tc-shared/file/FileManager";
 
 export interface IconProperties {
     icon: string | LocalIcon;

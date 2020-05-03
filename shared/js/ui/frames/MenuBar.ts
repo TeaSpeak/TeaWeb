@@ -1,4 +1,4 @@
-import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/FileManager";
+import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/file/FileManager";
 import {spawnBookmarkModal} from "tc-shared/ui/modal/ModalBookmarks";
 import {
     add_server_to_bookmarks,

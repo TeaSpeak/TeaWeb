@@ -1,6 +1,7 @@
 {
   "source_files": [
-    "**/*.ts"
+    "**/*.ts",
+    "**/*.tsx"
   ],
   "exclude": [
     "workers/**/*.ts"

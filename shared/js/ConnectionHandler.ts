@@ -19,7 +19,7 @@ import {InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {guid} from "tc-shared/crypto/uid";
 import * as bipc from "./BrowserIPC";
-import {FileManager, spawn_upload_transfer, UploadKey} from "tc-shared/FileManager";
+import {FileManager, transfer_provider, UploadKey} from "tc-shared/file/FileManager";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {Frame} from "tc-shared/ui/frames/chat_frame";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
@@ -900,7 +900,7 @@ export class ConnectionHandler {
                     }
 
                     try {
-                        await spawn_upload_transfer(key).put_data(data);
+                        await transfer_provider().spawn_upload_transfer(key).put_data(data);
                     } catch(error) {
                         log.error(LogCategory.GENERAL, tr("Failed to upload avatar: %o"), error);
 

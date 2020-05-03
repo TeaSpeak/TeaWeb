@@ -10,7 +10,7 @@ import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import PermissionType from "tc-shared/permission/PermissionType";
-import {icon_cache_loader, IconManager} from "tc-shared/FileManager";
+import {icon_cache_loader, IconManager} from "tc-shared/file/FileManager";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import {
