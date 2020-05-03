@@ -7,7 +7,7 @@ export interface Event<Events, T = keyof Events> {
     as<T extends keyof Events>() : Events[T];
 }
 
-interface SingletonEvents {
+export interface SingletonEvents {
     "singletone-instance": never;
 }
 

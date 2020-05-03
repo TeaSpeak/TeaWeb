@@ -1,5 +1,6 @@
 import * as ts from "typescript";
 import {SyntaxKind} from "typescript";
+import * as webpack from "webpack";
 
 interface Array<T> {
     last?(): T;
@@ -321,6 +322,9 @@ generators[SyntaxKind.PropertyDeclaration] = (settings, stack, node: ts.Property
 
 /* class types */
 generators[SyntaxKind.ClassDeclaration] = (settings, stack, node: ts.ClassDeclaration) => {
+    if((stack.flag_namespace || settings.module_mode) && !has_modifier(node.modifiers, SyntaxKind.ExportKeyword))
+        return;
+
     const members = [] as ts.Node[];
     {
         stack.push({
@@ -350,7 +354,15 @@ generators[SyntaxKind.ClassDeclaration] = (settings, stack, node: ts.ClassDeclar
     });
     */
 
-    return ts.createClassDeclaration(node.decorators, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, node.typeParameters, node.heritageClauses, members as any);
+    const decorators = node.decorators?.map(e => {
+        let text: string;
+        if(e.getSourceFile())
+            text = e.getText();
+        else
+            text = "*synthetic added annotation*";
+        return ts.createIdentifier("/* " + text.replace("*/", "* /") + " */");
+    });
+    return ts.createClassDeclaration(decorators as any, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, node.typeParameters, node.heritageClauses, members as any);
 };
 
 generators[SyntaxKind.PropertySignature] = (settings, stack, node: ts.PropertySignature) => {
@@ -428,8 +440,14 @@ generators[SyntaxKind.EnumMember] = (settings, stack, node: ts.EnumMember) => {
 
 generators[SyntaxKind.EnumDeclaration] = (settings, stack, node: ts.EnumDeclaration) => {
     const members: any[] = [];
-    for(const member of node.members)
-        members.push(generators[SyntaxKind.EnumMember](settings, stack, member));
+
+    let uninitialized_index = 0;
+    for(const member of node.members) {
+        let initializer = member.initializer;
+        if(!initializer)
+            initializer = ts.createIdentifier((uninitialized_index++).toString());
+        members.push(ts.createEnumMember(member.name, initializer));
+    }
     return ts.createEnumDeclaration(undefined, append_export(append_declare(node.modifiers, !stack.flag_declare), stack.flag_namespace), node.name, members);
 };
 
