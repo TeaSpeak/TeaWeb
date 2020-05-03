@@ -113,7 +113,7 @@ source_files.forEach(file => {
 
         console.log("Compile %s (%s)", _file, relpath);
         const decl_nodes = decl.generate(source, {
-            remove_private: false,
+            remove_private: true,
             module_mode: module_mode
         });
 

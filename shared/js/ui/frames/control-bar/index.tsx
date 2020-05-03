@@ -16,11 +16,11 @@ import {
     DirectoryBookmark,
     find_bookmark
 } from "tc-shared/bookmarks";
-import {icon_cache_loader, IconManager} from "tc-shared/file/FileManager";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {default_recorder} from "tc-shared/voice/RecorderProfile";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import {icon_cache_loader} from "tc-shared/file/Icons";
 
 const cssStyle = require("./index.scss");
 const cssButtonStyle = require("./button.scss");

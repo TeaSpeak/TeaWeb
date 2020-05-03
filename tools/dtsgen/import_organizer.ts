@@ -248,6 +248,11 @@ function analyze_type_node(node: ts.TypeNode | ts.LeftHandSideExpression, data: 
             break;
 
         case SyntaxKind.PropertyAccessExpression:
+            let pae = node as ts.PropertyAccessExpression;
+            while(pae.expression.kind == SyntaxKind.PropertyAccessExpression)
+                pae = pae.expression as ts.PropertyAccessExpression;
+
+            analyze_type_node(pae.expression, data);
             break;
 
         default:

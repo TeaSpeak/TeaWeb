@@ -214,7 +214,7 @@ class ChannelEntryName extends ReactComponentBase<ChannelEntryNameProperties, {}
     }
 }
 
-interface ChannelEntryViewProperties {
+export interface ChannelEntryViewProperties {
     channel: ChannelEntryController;
     depth: number;
     offset: number;

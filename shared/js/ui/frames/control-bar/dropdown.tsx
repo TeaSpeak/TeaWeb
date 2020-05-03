@@ -1,7 +1,7 @@
 import * as React from "react";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {IconRenderer} from "tc-shared/ui/react-elements/Icon";
-import {LocalIcon} from "tc-shared/file/FileManager";
+import {LocalIcon} from "tc-shared/file/Icons";
 const cssStyle = require("./button.scss");
 
 export interface DropdownEntryProperties {

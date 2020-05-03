@@ -1,4 +1,3 @@
-import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/file/FileManager";
 import {spawnBookmarkModal} from "tc-shared/ui/modal/ModalBookmarks";
 import {
     add_server_to_bookmarks,
@@ -24,6 +23,7 @@ import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import * as loader from "tc-loader";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
+import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/file/Icons";
 
 export interface HRItem { }
 

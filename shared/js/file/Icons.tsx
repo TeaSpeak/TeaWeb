@@ -21,7 +21,7 @@ export interface IconManagerEvents {
 }
 
 //TODO: Invalidate icon after certain time if loading has failed and try to redownload (only if an icon loader has been set!)
-type IconLoader = (icon?: LocalIcon) => Promise<Response>;
+export type IconLoader = (icon?: LocalIcon) => Promise<Response>;
 export class LocalIcon {
     readonly icon_id: number;
     readonly server_unique_id: string;

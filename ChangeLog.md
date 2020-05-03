@@ -3,6 +3,8 @@
     - Splitup the file transfer & management part
     - Added the ability to register a custom file transfer provider (required for the native client)
     - Added DockerHub image deploy automatisation
+    - Fixed enum member declaration for the dts generator
+    - Hiding non exported classes from `.d.ts` files
     
 * **25.04.20**
     - Fixed missing channel tree update on talk power change
