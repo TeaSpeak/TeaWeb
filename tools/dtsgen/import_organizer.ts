@@ -242,6 +242,14 @@ function analyze_type_node(node: ts.TypeNode | ts.LeftHandSideExpression, data: 
             analyze_type_node(parenthesized.type, data);
             break;
 
+        case SyntaxKind.MappedType:
+            const mt = node as ts.MappedTypeNode;
+            analyze_type_node(mt.type, data);
+            break;
+
+        case SyntaxKind.PropertyAccessExpression:
+            break;
+
         default:
             throw "Unknown type " + SyntaxKind[node.kind] + ". Extend me :)";
     }

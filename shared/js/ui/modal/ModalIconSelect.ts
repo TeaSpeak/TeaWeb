@@ -1,7 +1,7 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import {FileEntry, spawn_upload_transfer, UploadKey} from "tc-shared/FileManager";
+import {FileEntry, spawn_upload_transfer, UploadKey} from "tc-shared/file/FileManager";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
