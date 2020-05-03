@@ -45,7 +45,7 @@ docker build -f auto-build/teadocker/web/travis.Dockerfile --build-arg WEB_VERSI
     exit 1
 }
 
-docker tag teaspeak/web:latest teaspeak/web:"$git_rev" || {
+docker tag teaspeak/web:"$rolling_tag" teaspeak/web:"$git_rev" || {
     echo "Failed to tag docker release"
     exit 1
 }
