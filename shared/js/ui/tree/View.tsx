@@ -35,7 +35,7 @@ export interface ChannelTreeViewState {
     tree_version: number;
 }
 
-type TreeEntry = ChannelEntry | ServerEntry | ClientEntry;
+export type TreeEntry = ChannelEntry | ServerEntry | ClientEntry;
 type FlatTreeEntry = {
     rendered: any;
     entry: TreeEntry;
