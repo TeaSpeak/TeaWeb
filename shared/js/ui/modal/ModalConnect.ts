@@ -5,10 +5,10 @@ import * as loader from "tc-loader";
 import {createModal} from "tc-shared/ui/elements/Modal";
 import {ConnectionProfile, default_profile, find_profile, profiles} from "tc-shared/profiles/ConnectionProfile";
 import {KeyCode} from "tc-shared/PPTListener";
-import {icon_cache_loader, IconManager} from "tc-shared/file/FileManager";
 import * as i18nc from "tc-shared/i18n/country";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {icon_cache_loader, IconManager} from "tc-shared/file/Icons";
 
 //FIXME: Move this shit out of this file!
 export namespace connection_log {

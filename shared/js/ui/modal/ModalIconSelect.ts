@@ -1,7 +1,7 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import {FileEntry, spawn_upload_transfer, UploadKey} from "tc-shared/file/FileManager";
+import {FileEntry, UploadKey} from "tc-shared/file/FileManager";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
@@ -9,6 +9,7 @@ import {tra} from "tc-shared/i18n/localize";
 import {arrayBufferBase64} from "tc-shared/utils/buffers";
 import {Settings, settings} from "tc-shared/settings";
 import * as crc32 from "tc-shared/crypto/crc32";
+import {transfer_provider} from "tc-shared/file/FileManager";
 
 export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
     selected_icon = selected_icon || 0;
@@ -414,7 +415,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
                 bar.set_value(50);
                 bar.set_message(tr("uploading"));
 
-                const connection = spawn_upload_transfer(upload_key);
+                const connection = transfer_provider().spawn_upload_transfer(upload_key);
                 try {
                     await connection.put_data(icon.file)
                 } catch(error) {

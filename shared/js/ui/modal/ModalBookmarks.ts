@@ -11,7 +11,6 @@ import {
     save_bookmark
 } from "tc-shared/bookmarks";
 import {connection_log, Regex} from "tc-shared/ui/modal/ModalConnect";
-import {icon_cache_loader, IconManager} from "tc-shared/file/FileManager";
 import {profiles} from "tc-shared/profiles/ConnectionProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {Settings, settings} from "tc-shared/settings";
@@ -21,6 +20,7 @@ import * as i18nc from "tc-shared/i18n/country";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import * as top_menu from "../frames/MenuBar";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
+import {icon_cache_loader, IconManager} from "tc-shared/file/Icons";
 
 export function spawnBookmarkModal() {
     let modal: Modal;

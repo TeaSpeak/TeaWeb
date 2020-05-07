@@ -3,7 +3,7 @@ import {LogCategory} from "tc-shared/log";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {IconManager} from "tc-shared/file/Icons";
 import {AvatarManager} from "tc-shared/file/Avatars";
