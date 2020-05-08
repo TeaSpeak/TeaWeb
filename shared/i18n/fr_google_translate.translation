@@ -2683,12 +2683,12 @@
       }
     },
     {
-      "translated": "Toke utilisé avec succès!",
+      "translated": "Token utilisé avec succès!",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Toke successfully used!"
+        "message": "Token successfully used!"
       }
     },
     {
