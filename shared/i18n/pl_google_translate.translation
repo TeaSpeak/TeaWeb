@@ -2575,12 +2575,12 @@
       }
     },
     {
-      "translated": "Z powodzeniem użyto toke!",
+      "translated": "Z powodzeniem użyto token!",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Toke successfully used!"
+        "message": "Token successfully used!"
       }
     },
     {
