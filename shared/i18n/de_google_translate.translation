@@ -2536,12 +2536,12 @@
       }
     },
     {
-      "translated": "Toke erfolgreich eingesetzt!",
+      "translated": "Token erfolgreich eingesetzt!",
       "flags": [
         "google-translate"
       ],
       "key": {
-        "message": "Toke successfully used!"
+        "message": "Token successfully used!"
       }
     },
     {
