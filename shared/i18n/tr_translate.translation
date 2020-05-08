@@ -2575,12 +2575,12 @@
       }
     },
     {
-      "translated": "Toke başarıyla kullanıldı!",
+      "translated": "Token başarıyla kullanıldı!",
       "flags": [
         "human-modified"
       ],
       "key": {
-        "message": "Toke successfully used!"
+        "message": "Token successfully used!"
       }
     },
     {
