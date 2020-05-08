@@ -2165,7 +2165,7 @@
         },
         {
             "key": {
-                "message": "Toke successfully used!"
+                "message": "Token successfully used!"
             },
             "translated": "A token sikeresen felhasználva!",
             "flags": [
