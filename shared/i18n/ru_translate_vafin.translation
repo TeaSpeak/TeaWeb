@@ -2652,7 +2652,7 @@
         "google-translate"
       ],
       "key": {
-        "message": "Toke successfully used!"
+        "message": "Token successfully used!"
       }
     },
     {
