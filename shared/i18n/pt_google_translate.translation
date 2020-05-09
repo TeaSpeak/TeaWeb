@@ -373,7 +373,7 @@
       "key": {
         "message": "Client %s rejected the connect offer (%s)."
       },
-      "translated": "O cliente% s rejeitou a oferta de conexão (%s).",
+      "translated": "O cliente %s rejeitou a oferta de conexão (%s).",
       "flags": [
         "google-translated"
       ]
@@ -382,7 +382,7 @@
       "key": {
         "message": "Client %s accepted the connect offer (%s), but offer has already been accepted."
       },
-      "translated": "O cliente% s aceitou a oferta de conexão (%s), mas a oferta já foi aceite.",
+      "translated": "O cliente %s aceitou a oferta de conexão (%s), mas a oferta já foi aceite.",
       "flags": [
         "google-translated"
       ]
@@ -391,7 +391,7 @@
       "key": {
         "message": "Client %s accepted the connect offer (%s). Request local acceptance."
       },
-      "translated": "O cliente% s aceitou a oferta de conexão (%s). Solicitar aceitação local.",
+      "translated": "O cliente %s aceitou a oferta de conexão (%s). Solicitar aceitação local.",
       "flags": [
         "google-translated"
       ]
@@ -499,7 +499,7 @@
       "key": {
         "message": "Invoking method %s with arguments: %o"
       },
-      "translated": "Invocando o método% s com argumentos: %o",
+      "translated": "Invocando o método %s com argumentos: %o",
       "flags": [
         "google-translated"
       ]
@@ -823,7 +823,7 @@
       "key": {
         "message": "Could not load avatar for id %s. Reason: %s"
       },
-      "translated": "Não foi possível carregar o avatar para o ID% s. Razão: %s",
+      "translated": "Não foi possível carregar o avatar para o ID %s. Razão: %s",
       "flags": [
         "google-translated"
       ]
@@ -1003,7 +1003,7 @@
       "key": {
         "message": "Replaying sound %s (Sound volume: %o | Master volume %o)"
       },
-      "translated": "Reproduzindo som %s (volume do som:% o | volume principal %o)",
+      "translated": "Reproduzindo som %s (volume do som: %o | volume principal %o)",
       "flags": [
         "google-translated"
       ]
@@ -3370,7 +3370,7 @@
       "key": {
         "message": "Reordered channel clients: %d"
       },
-      "translated": "Clientes de canal reordenados:% d",
+      "translated": "Clientes de canal reordenados: %d",
       "flags": [
         "google-translated"
       ]
@@ -3379,7 +3379,7 @@
       "key": {
         "message": "Switch to channel"
       },
-      "translated": "Mudar para o canal",
+      "translated": "alterar para o canal",
       "flags": [
         "google-translated"
       ]
@@ -3685,7 +3685,7 @@
       "key": {
         "message": "Change description"
       },
-      "translated": "Mudar descrição",
+      "translated": "alterar descrição",
       "flags": [
         "google-translated"
       ]
@@ -3838,7 +3838,7 @@
       "key": {
         "message": "Change name"
       },
-      "translated": "Mudar nome",
+      "translated": "alterar nome",
       "flags": [
         "google-translated"
       ]
@@ -3847,7 +3847,7 @@
       "key": {
         "message": "Change description"
       },
-      "translated": "Mudar descrição",
+      "translated": "alterar descrição",
       "flags": [
         "google-translated"
       ]
@@ -3874,7 +3874,7 @@
       "key": {
         "message": "Changing own description to %s"
       },
-      "translated": "Alterando a descrição própria para% s",
+      "translated": "Alterando a descrição própria para %s",
       "flags": [
         "google-translated"
       ]
@@ -5863,7 +5863,7 @@
       "key": {
         "message": "Failed to add ban: %o"
       },
-      "translated": "Falha ao adicionar ban:% o",
+      "translated": "Falha ao adicionar ban: %o",
       "flags": [
         "google-translated"
       ]
@@ -9220,7 +9220,7 @@
       "key": {
         "message": "Overridden by the server with Encrypted!"
       },
-      "translated": "Substituído pelo servidor com Criptografado!",
+      "translated": "Substituído pelo servidor com encriptado!",
       "flags": [
         "google-translated"
       ]
@@ -9229,7 +9229,7 @@
       "key": {
         "message": "Unencrypted"
       },
-      "translated": "Não criptografado",
+      "translated": "Não encriptado",
       "flags": [
         "google-translated"
       ]
@@ -9238,7 +9238,7 @@
       "key": {
         "message": "Encrypted"
       },
-      "translated": "Criptografado",
+      "translated": "encriptado",
       "flags": [
         "google-translated"
       ]
@@ -10201,7 +10201,7 @@
       "key": {
         "message": "Invalid channel move (different parents! (%o|%o)"
       },
-      "translated": "Mover de canal inválido (Parentalidades diferentes! (% O |% o)",
+      "translated": "Mover de canal inválido (Parentalidades diferentes! (%O|%o)",
       "flags": [
         "google-translated"
       ]
@@ -14350,7 +14350,7 @@
       "key": {
         "message": "Failed to setup voice bridge (%s). Allow reconnect: %s"
       },
-      "translated": "Falha ao configurar a ponte de voz (% s). Permitir reconexão: %s",
+      "translated": "Falha ao configurar a ponte de voz (%s). Permitir reconexão: %s",
       "flags": [
         "google-translated"
       ]
@@ -15124,7 +15124,7 @@
       "key": {
         "message": "Switch to channel chat"
       },
-      "translated": "Mudar para o chat do canal",
+      "translated": "alterar para o chat do canal",
       "flags": [
         "google-translated"
       ]
@@ -16861,7 +16861,7 @@
       "key": {
         "message": "Flood point count which will be reduced each server tick."
       },
-      "translated": "Contagem de pontos de flood que será reduzida a cada tick de servidor.",
+      "translated": "Contagem de pontos de flood que será reduzida a cada tick do servidor.",
       "flags": [
         "google-translated"
       ]
@@ -16915,7 +16915,7 @@
       "key": {
         "message": "Channel voice data encryption"
       },
-      "translated": "Criptografia de dados de voz do canal",
+      "translated": "Dados de voz encriptados do canal",
       "flags": [
         "google-translated"
       ]
@@ -16969,7 +16969,7 @@
       "key": {
         "message": "Level &nbsp;<b>0 - 23</b> generated in seconds"
       },
-      "translated": "Nível & nbsp; <b> 0 - 23 </b> gerado em segundos",
+      "translated": "Nível &nbsp;<b>0 - 23</b> gerado em segundos",
       "flags": [
         "google-translated"
       ]
@@ -16978,7 +16978,7 @@
       "key": {
         "message": "Level <b>24 - 29</b> generated in minutes"
       },
-      "translated": "Nível <b> 24 - 29 </b> gerado em minutos",
+      "translated": "Nível <b>24 - 29</b> gerado em minutos",
       "flags": [
         "google-translated"
       ]
@@ -16987,7 +16987,7 @@
       "key": {
         "message": "Level <b>29 - 34</b> generated in hours"
       },
-      "translated": "Nível <b> 29 - 34 </b> gerado em horas",
+      "translated": "Nível <b>29 - 34</b> gerado em horas",
       "flags": [
         "google-translated"
       ]
@@ -16996,7 +16996,7 @@
       "key": {
         "message": "Level <b>35 - 39</b> generated in days"
       },
-      "translated": "Nível <b> 35 - 39 </b> gerado em dias",
+      "translated": "Nível <b>35 - 39</b> gerado em dias",
       "flags": [
         "google-translated"
       ]
@@ -17005,7 +17005,7 @@
       "key": {
         "message": "Level <b>40 - 43</b> generated in months"
       },
-      "translated": "Nível <b> 40 - 43 </b> gerado em meses",
+      "translated": "Nível <b>40 - 43</b> gerado em meses",
       "flags": [
         "google-translated"
       ]
@@ -17014,7 +17014,7 @@
       "key": {
         "message": "Level <b>44 - 23</b> generated in years"
       },
-      "translated": "Nível <b> 44 - 23 </b> gerado em anos",
+      "translated": "Nível <b>44 - 23</b> gerado em anos",
       "flags": [
         "google-translated"
       ]
@@ -17131,7 +17131,7 @@
       "key": {
         "message": "Complains until ban"
       },
-      "translated": "Reclama até a ban",
+      "translated": "Reclamações até ao ban",
       "flags": [
         "google-translated"
       ]
@@ -17140,7 +17140,7 @@
       "key": {
         "message": "Amount of complains against one user until he receives an automated ban."
       },
-      "translated": "Quantidade de reclamações contra um usuário até que ele receba uma ban automática.",
+      "translated": "Quantidade de reclamações contra um usuário até que ele receba um ban automático.",
       "flags": [
         "google-translated"
       ]
@@ -17158,7 +17158,7 @@
       "key": {
         "message": "Amount of complains against one user until he receives an automated ban."
       },
-      "translated": "Quantidade de reclamações contra um usuário até que ele receba uma ban automática.",
+      "translated": "Quantidade de reclamações contra um usuário até que ele receba um ban automático.",
       "flags": [
         "google-translated"
       ]
@@ -17221,7 +17221,7 @@
       "key": {
         "message": "Dim factor in '%' for priority speakers."
       },
-      "translated": "Dim factor em '%' para oradores prioritários.",
+      "translated": "Dim factor em '%' para speakers prioritários.",
       "flags": [
         "google-translated"
       ]
@@ -17275,7 +17275,7 @@
       "key": {
         "message": "Application"
       },
-      "translated": "subscrição",
+      "translated": "Subscrição",
       "flags": [
         "google-translated"
       ]
@@ -17302,7 +17302,7 @@
       "key": {
         "message": "Chat"
       },
-      "translated": "conversação",
+      "translated": "Conversação",
       "flags": [
         "google-translated"
       ]
@@ -17329,7 +17329,7 @@
       "key": {
         "message": "Speaker"
       },
-      "translated": "Alto falante",
+      "translated": "Altifalante",
       "flags": [
         "google-translated"
       ]
@@ -17365,7 +17365,7 @@
       "key": {
         "message": "TeaForo connection"
       },
-      "translated": "Conexão TeaForo",
+      "translated": "Conexão TeaForum",
       "flags": [
         "google-translated"
       ]
@@ -17410,7 +17410,7 @@
       "key": {
         "message": "German"
       },
-      "translated": "alemão",
+      "translated": "Alemão",
       "flags": [
         "google-translated"
       ]
@@ -17428,7 +17428,7 @@
       "key": {
         "message": "Attention: Changing the client language require a client restart!"
       },
-      "translated": "Atenção: Alterar o idioma do cliente requer uma reinicialização do cliente!",
+      "translated": "Atenção: Alterar o idioma do cliente requer a reinicialização do cliente!",
       "flags": [
         "google-translated"
       ]
@@ -17455,7 +17455,7 @@
       "key": {
         "message": "Fixed chat timestamp (Disables \"2 seconds ago\"... etc)"
       },
-      "translated": "registo de data e hora do conversação fixo (desativa \"2 segundos atrás\" ... etc)",
+      "translated": "Registo de data e hora da conversação fixo (desativa \"2 segundos atrás\"... etc)",
       "flags": [
         "google-translated"
       ]
@@ -17464,7 +17464,7 @@
       "key": {
         "message": "Colloquial chat timestamp (Enables \"Yesterday at ...\" or \"Today at ...\")"
       },
-      "translated": "registo de data e hora do conversação coloquial (Ativa \"Ontem às ...\" ou \"Hoje às ...\")",
+      "translated": "Registo de data e hora da conversação coloquial (Ativa \"Ontem às ...\" ou \"Hoje às ...\")",
       "flags": [
         "google-translated"
       ]
@@ -17491,7 +17491,7 @@
       "key": {
         "message": "Colored emojies within chat"
       },
-      "translated": "Emojis coloridos no conversação",
+      "translated": "Emojis coloridos na conversação",
       "flags": [
         "google-translated"
       ]
@@ -17518,7 +17518,7 @@
       "key": {
         "message": "Enable the BBCode syntax for your chat."
       },
-      "translated": "Ative a sintaxe BBCode para o seu conversação.",
+      "translated": "Ative a sintaxe BBCode para a sua conversação.",
       "flags": [
         "google-translated"
       ]
@@ -17527,7 +17527,7 @@
       "key": {
         "message": "Chat-icon size:"
       },
-      "translated": "Tamanho do ícone do conversação:",
+      "translated": "Tamanho do ícone da conversação:",
       "flags": [
         "google-translated"
       ]
@@ -17554,7 +17554,7 @@
       "key": {
         "message": "Play test Sound"
       },
-      "translated": "Reproduzir teste de som",
+      "translated": "Reproduzir som de teste",
       "flags": [
         "google-translated"
       ]
@@ -17671,7 +17671,7 @@
       "key": {
         "message": "Username"
       },
-      "translated": "Nome do usuário",
+      "translated": "Nome de usuário",
       "flags": [
         "google-translated"
       ]
@@ -17689,7 +17689,7 @@
       "key": {
         "message": "Login"
       },
-      "translated": "Conecte-se",
+      "translated": "Conectar",
       "flags": [
         "google-translated"
       ]
@@ -17698,7 +17698,7 @@
       "key": {
         "message": "Select your Microphone Device"
       },
-      "translated": "Selecione seu dispositivo de microfone",
+      "translated": "Selecione o seu dispositivo de microfone",
       "flags": [
         "google-translated"
       ]
@@ -17797,7 +17797,7 @@
       "key": {
         "message": "Reload"
       },
-      "translated": "recarregar",
+      "translated": "Recarregar",
       "flags": [
         "google-translated"
       ]
@@ -17851,7 +17851,7 @@
       "key": {
         "message": "Change Avatar"
       },
-      "translated": "Mudar Avatar",
+      "translated": "alterar Avatar",
       "flags": [
         "google-translated"
       ]
@@ -17977,7 +17977,7 @@
       "key": {
         "message": "Generate a new one or import one."
       },
-      "translated": "Gere um novo ou importe um.",
+      "translated": "Gerar um novo ou importe um.",
       "flags": [
         "google-translated"
       ]
@@ -18022,7 +18022,7 @@
       "key": {
         "message": "Setup your connection"
       },
-      "translated": "Configure sua conexão",
+      "translated": "Configure a sua conexão",
       "flags": [
         "google-translated"
       ]
@@ -18040,7 +18040,7 @@
       "key": {
         "message": "Import from text"
       },
-      "translated": "Importar de texto",
+      "translated": "Importar do texto",
       "flags": [
         "google-translated"
       ]
@@ -18130,7 +18130,7 @@
       "key": {
         "message": "The number of threads used to improve your identity"
       },
-      "translated": "O número de threads usados para melhorar sua identidade",
+      "translated": "O número de threads usados para melhorar a sua identidade",
       "flags": [
         "google-translated"
       ]
@@ -18175,7 +18175,7 @@
       "key": {
         "message": "Hashes/second:"
       },
-      "translated": "Hashes / segundo:",
+      "translated": "Hashes/segundo:",
       "flags": [
         "google-translated"
       ]
@@ -18238,7 +18238,7 @@
       "key": {
         "message": "Apply"
       },
-      "translated": "Aplique",
+      "translated": "Aplicar",
       "flags": [
         "google-translated"
       ]
@@ -18256,7 +18256,7 @@
       "key": {
         "message": "Save"
       },
-      "translated": "Salve ",
+      "translated": "Guardar",
       "flags": [
         "google-translated"
       ]
@@ -18499,7 +18499,7 @@
       "key": {
         "message": "filter permissions"
       },
-      "translated": "permissões de filtro",
+      "translated": "Filtrar permissões",
       "flags": [
         "google-translated"
       ]
@@ -18589,7 +18589,7 @@
       "key": {
         "message": "filter permissions"
       },
-      "translated": "permissões de filtro",
+      "translated": "filtrar permissões",
       "flags": [
         "google-translated"
       ]
@@ -18751,7 +18751,7 @@
       "key": {
         "message": "You dont have permission to create bans"
       },
-      "translated": "Você não tem permissão para criar banimentos",
+      "translated": "Você não tem permissão para criar bans",
       "flags": [
         "google-translated"
       ]
@@ -18778,7 +18778,7 @@
       "key": {
         "message": "IP to ban"
       },
-      "translated": "IP para proibir",
+      "translated": "IP a banir",
       "flags": [
         "google-translated"
       ]
@@ -18796,7 +18796,7 @@
       "key": {
         "message": "Wildcard IPv4"
       },
-      "translated": "Curinga IPv4",
+      "translated": "Wildcard IPv4",
       "flags": [
         "google-translated"
       ]
@@ -18805,7 +18805,7 @@
       "key": {
         "message": "Wildcard IPv6"
       },
-      "translated": "Curinga IPv6",
+      "translated": "Wildcard IPv6",
       "flags": [
         "google-translated"
       ]
@@ -18886,7 +18886,7 @@
       "key": {
         "message": "Use this ban as a global ban"
       },
-      "translated": "Use esta ban como uma ban global",
+      "translated": "Use este ban como um ban global",
       "flags": [
         "google-translated"
       ]
@@ -18931,7 +18931,7 @@
       "key": {
         "message": "Wildcard IPv4"
       },
-      "translated": "Curinga IPv4",
+      "translated": "Wildcard IPv4",
       "flags": [
         "google-translated"
       ]
@@ -18940,7 +18940,7 @@
       "key": {
         "message": "Wildcard IPv6"
       },
-      "translated": "Curinga IPv6",
+      "translated": "Wildcard IPv6",
       "flags": [
         "google-translated"
       ]
@@ -19066,7 +19066,7 @@
       "key": {
         "message": "Name/IP/UID/HWID"
       },
-      "translated": "Nome / IP / UID / HWID",
+      "translated": "Nome/IP/UID/HWID",
       "flags": [
         "google-translated"
       ]
@@ -19102,7 +19102,7 @@
       "key": {
         "message": "Highlight own bans"
       },
-      "translated": "Realçar banimentos próprias",
+      "translated": "Realçar bans próprios",
       "flags": [
         "google-translated"
       ]
@@ -19147,7 +19147,7 @@
       "key": {
         "message": "Highlight cause"
       },
-      "translated": "Destaque a causa",
+      "translated": "Destacar causa",
       "flags": [
         "google-translated"
       ]
@@ -19246,7 +19246,7 @@
       "key": {
         "message": "Interpret IP/Name as:"
       },
-      "translated": "Interpretar IP / Nome como:",
+      "translated": "Interpretar IP/Nome como:",
       "flags": [
         "google-translated"
       ]
@@ -19255,7 +19255,7 @@
       "key": {
         "message": "Wildcard IPv4"
       },
-      "translated": "Curinga IPv4",
+      "translated": "Wildcard IPv4",
       "flags": [
         "google-translated"
       ]
@@ -19264,7 +19264,7 @@
       "key": {
         "message": "Wildcard IPv6"
       },
-      "translated": "Curinga IPv6",
+      "translated": "Wildcard IPv6",
       "flags": [
         "google-translated"
       ]
@@ -19336,7 +19336,7 @@
       "key": {
         "message": "Use this ban as a global ban"
       },
-      "translated": "Use esta ban como uma ban global",
+      "translated": "Use este ban como um ban global",
       "flags": [
         "google-translated"
       ]
@@ -19354,7 +19354,7 @@
       "key": {
         "message": "OK"
       },
-      "translated": "Está bem",
+      "translated": "Ok",
       "flags": [
         "google-translated"
       ]
@@ -19471,7 +19471,7 @@
       "key": {
         "message": "Livetime:"
       },
-      "translated": "Tempo de vida:",
+      "translated": "Tempo live:",
       "flags": [
         "google-translated"
       ]
@@ -19633,7 +19633,7 @@
       "key": {
         "message": "Current Queries:"
       },
-      "translated": "queries atuais:",
+      "translated": "Queries atuais:",
       "flags": [
         "google-translated"
       ]
@@ -19732,7 +19732,7 @@
       "key": {
         "message": "Voice Data Encryption:"
       },
-      "translated": "Criptografia de dados de voz:",
+      "translated": "Dados de voz encriptados:",
       "flags": [
         "google-translated"
       ]
@@ -19741,7 +19741,7 @@
       "key": {
         "message": "(Overridden by the server with Encrypted)"
       },
-      "translated": "(Substituído pelo servidor com Criptografado)",
+      "translated": "(Substituído pelo servidor com encriptado)",
       "flags": [
         "google-translated"
       ]
@@ -19750,7 +19750,7 @@
       "key": {
         "message": "(Overridden by the server with Unencrypted)"
       },
-      "translated": "(Substituído pelo servidor por Unencrypted)",
+      "translated": "(Substituído pelo servidor não encriptado)",
       "flags": [
         "google-translated"
       ]
@@ -19804,7 +19804,7 @@
       "key": {
         "message": "Connect directly"
       },
-      "translated": "Conecte-se diretamente",
+      "translated": "Conectar diretamente",
       "flags": [
         "google-translated"
       ]
@@ -19957,7 +19957,7 @@
       "key": {
         "message": "Delete account"
       },
-      "translated": "Deletar conta",
+      "translated": "Apagar conta",
       "flags": [
         "google-translated"
       ]
@@ -19984,7 +19984,7 @@
       "key": {
         "message": "Change password"
       },
-      "translated": "Mudar senha",
+      "translated": "alterar senha",
       "flags": [
         "google-translated"
       ]
@@ -20029,7 +20029,7 @@
       "key": {
         "message": "ID"
       },
-      "translated": "EU IRIA",
+      "translated": "ID",
       "flags": [
         "google-translated"
       ]
@@ -20047,7 +20047,7 @@
       "key": {
         "message": "Creator"
       },
-      "translated": "O Criador",
+      "translated": "Criador",
       "flags": [
         "google-translated"
       ]
@@ -20092,7 +20092,7 @@
       "key": {
         "message": "Playlist is in use by bot "
       },
-      "translated": "A playlist está sendo usada pelo bot",
+      "translated": "A playlist está a ser usada pelo bot",
       "flags": [
         "google-translated"
       ]
@@ -20101,7 +20101,7 @@
       "key": {
         "message": "Playlist isnt use"
       },
-      "translated": "A playlist não é usada",
+      "translated": "A playlist não está em uso",
       "flags": [
         "google-translated"
       ]
@@ -20164,7 +20164,7 @@
       "key": {
         "message": "ID"
       },
-      "translated": "EU IRIA",
+      "translated": "ID",
       "flags": [
         "google-translated"
       ]
@@ -20263,7 +20263,7 @@
       "key": {
         "message": "Delete played song:"
       },
-      "translated": "Excluir música tocada:",
+      "translated": "Excluir música reproduzida:",
       "flags": [
         "google-translated"
       ]
@@ -20290,7 +20290,7 @@
       "key": {
         "message": "Access/modify powers"
       },
-      "translated": "Acessar / modificar poderes",
+      "translated": "Acessar/modificar poderes",
       "flags": [
         "google-translated"
       ]
@@ -20317,7 +20317,7 @@
       "key": {
         "message": "Song management powers"
       },
-      "translated": "Poderes de gerenciamento de músicas",
+      "translated": "Poder de gerenciamento de músicas",
       "flags": [
         "google-translated"
       ]
@@ -20353,7 +20353,7 @@
       "key": {
         "message": "Save"
       },
-      "translated": "Salve ",
+      "translated": "Guardar",
       "flags": [
         "google-translated"
       ]
@@ -20398,7 +20398,7 @@
       "key": {
         "message": "Display metdata here!"
       },
-      "translated": "Exibir metdados aqui!",
+      "translated": "Exibir metadados aqui!",
       "flags": [
         "google-translated"
       ]
@@ -20443,7 +20443,7 @@
       "key": {
         "message": "Your bookmarks"
       },
-      "translated": "Seus favoritos",
+      "translated": "Os seus favoritos",
       "flags": [
         "google-translated"
       ]
@@ -20452,7 +20452,7 @@
       "key": {
         "message": "Your bookmarks"
       },
-      "translated": "Seus favoritos",
+      "translated": "Os seus favoritos",
       "flags": [
         "google-translated"
       ]
@@ -20497,7 +20497,7 @@
       "key": {
         "message": "Your bookmarks"
       },
-      "translated": "Seus favoritos",
+      "translated": "Os seus favoritos",
       "flags": [
         "google-translated"
       ]
@@ -20668,7 +20668,7 @@
       "key": {
         "message": "Your connection"
       },
-      "translated": "Sua conexão",
+      "translated": "A sua conexão",
       "flags": [
         "google-translated"
       ]
@@ -20695,7 +20695,7 @@
       "key": {
         "message": "Upload"
       },
-      "translated": "Envio",
+      "translated": "Upload",
       "flags": [
         "google-translated"
       ]
@@ -20713,7 +20713,7 @@
       "key": {
         "message": "Reload"
       },
-      "translated": "recarregar",
+      "translated": "Recarregar",
       "flags": [
         "google-translated"
       ]
@@ -20776,7 +20776,7 @@
       "key": {
         "message": "Username"
       },
-      "translated": "Nome do usuário",
+      "translated": "Nome de usuário",
       "flags": [
         "google-translated"
       ]
@@ -20794,7 +20794,7 @@
       "key": {
         "message": "Date"
       },
-      "translated": "Encontro",
+      "translated": "Data",
       "flags": [
         "google-translated"
       ]
@@ -20803,7 +20803,7 @@
       "key": {
         "message": "Username"
       },
-      "translated": "Nome do usuário",
+      "translated": "Nome de usuário",
       "flags": [
         "google-translated"
       ]
@@ -20866,7 +20866,7 @@
       "key": {
         "message": "Download"
       },
-      "translated": "Baixar",
+      "translated": "Download",
       "flags": [
         "google-translated"
       ]
@@ -20983,7 +20983,7 @@
       "key": {
         "message": "E-Mail:"
       },
-      "translated": "O email:",
+      "translated": "Email:",
       "flags": [
         "google-translated"
       ]
@@ -21019,7 +21019,7 @@
       "key": {
         "message": "Press any key which you want to use."
       },
-      "translated": "Pressione qualquer tecla que você deseja usar.",
+      "translated": "Pressione a tecla que deseja usar.",
       "flags": [
         "google-translated"
       ]
@@ -21073,7 +21073,7 @@
       "key": {
         "message": "Packets"
       },
-      "translated": "Pacotes",
+      "translated": "Packets",
       "flags": [
         "google-translated"
       ]
@@ -21091,7 +21091,7 @@
       "key": {
         "message": "TeaForo Connection"
       },
-      "translated": "Conexão TeaForo",
+      "translated": "Conexão TeaForum",
       "flags": [
         "google-translated"
       ]
@@ -21109,7 +21109,7 @@
       "key": {
         "message": "Build timestamp:"
       },
-      "translated": "Criar carimbo de data / hora:",
+      "translated": "Criar timestamp:",
       "flags": [
         "google-translated"
       ]
@@ -21190,7 +21190,7 @@
       "key": {
         "message": "Manage client server groups"
       },
-      "translated": "Gerenciar grupos de servidores clientes",
+      "translated": "Gerenciar clientes de grupos de servidores",
       "flags": [
         "google-translated"
       ]
@@ -21208,7 +21208,7 @@
       "key": {
         "message": "Downstream"
       },
-      "translated": "Rio abaixo",
+      "translated": "Downstream",
       "flags": [
         "google-translated"
       ]
@@ -21217,7 +21217,7 @@
       "key": {
         "message": "Upstream"
       },
-      "translated": "Rio acima",
+      "translated": "Upstream",
       "flags": [
         "google-translated"
       ]
@@ -21226,7 +21226,7 @@
       "key": {
         "message": "Transmitted Packets"
       },
-      "translated": "Pacotes transmitidos",
+      "translated": "Packets transmitidos",
       "flags": [
         "google-translated"
       ]
@@ -21235,7 +21235,7 @@
       "key": {
         "message": "Downstream"
       },
-      "translated": "Rio abaixo",
+      "translated": "Downstream",
       "flags": [
         "google-translated"
       ]
@@ -21244,7 +21244,7 @@
       "key": {
         "message": "Upstream"
       },
-      "translated": "Rio acima",
+      "translated": "Upstream",
       "flags": [
         "google-translated"
       ]
@@ -21262,7 +21262,7 @@
       "key": {
         "message": "Downstream"
       },
-      "translated": "Rio abaixo",
+      "translated": "Downstream",
       "flags": [
         "google-translated"
       ]
@@ -21271,7 +21271,7 @@
       "key": {
         "message": "Upstream"
       },
-      "translated": "Rio acima",
+      "translated": "Upstream",
       "flags": [
         "google-translated"
       ]
@@ -21280,7 +21280,7 @@
       "key": {
         "message": "Used/Max file transfer quota"
       },
-      "translated": "Quota de transferência de arquivo usada / máxima",
+      "translated": "Quota de transferência de arquivo usada/máxima",
       "flags": [
         "google-translated"
       ]
@@ -21289,7 +21289,7 @@
       "key": {
         "message": "Downstream"
       },
-      "translated": "Rio abaixo",
+      "translated": "Downstream",
       "flags": [
         "google-translated"
       ]
@@ -21298,7 +21298,7 @@
       "key": {
         "message": "Upstream"
       },
-      "translated": "Rio acima",
+      "translated": "Upstream",
       "flags": [
         "google-translated"
       ]
@@ -21316,7 +21316,7 @@
       "key": {
         "message": "Downstream"
       },
-      "translated": "Rio abaixo",
+      "translated": "Downstream",
       "flags": [
         "google-translated"
       ]
@@ -21325,7 +21325,7 @@
       "key": {
         "message": "Upstream"
       },
-      "translated": "Rio acima",
+      "translated": "Upstream",
       "flags": [
         "google-translated"
       ]
@@ -21343,7 +21343,7 @@
       "key": {
         "message": "Downstream"
       },
-      "translated": "Rio abaixo",
+      "translated": "Downstream",
       "flags": [
         "google-translated"
       ]
@@ -21352,7 +21352,7 @@
       "key": {
         "message": "Upstream"
       },
-      "translated": "Rio acima",
+      "translated": "Upstream",
       "flags": [
         "google-translated"
       ]
@@ -21397,7 +21397,7 @@
       "key": {
         "message": "Audio encrypted"
       },
-      "translated": "Áudio criptografado",
+      "translated": "Áudio encriptado",
       "flags": [
         "google-translated"
       ]
@@ -21469,7 +21469,7 @@
       "key": {
         "message": "First run"
       },
-      "translated": "Primeira corrida",
+      "translated": "Primeira execução",
       "flags": [
         "google-translated"
       ]
@@ -21532,7 +21532,7 @@
       "key": {
         "message": "Average packet loss"
       },
-      "translated": "Perda média de pacotes",
+      "translated": "Perda média de Packets",
       "flags": [
         "google-translated"
       ]
@@ -21559,7 +21559,7 @@
       "key": {
         "message": "Voice data encryption"
       },
-      "translated": "Criptografia de dados de voz",
+      "translated": "Encriptação de dados de voz",
       "flags": [
         "google-translated"
       ]
@@ -21577,7 +21577,7 @@
       "key": {
         "message": "Complains until ban"
       },
-      "translated": "Reclama até a ban",
+      "translated": "Reclamações até ao ban",
       "flags": [
         "google-translated"
       ]
@@ -21595,7 +21595,7 @@
       "key": {
         "message": "Transmitted packets"
       },
-      "translated": "Pacotes transmitidos",
+      "translated": "Packets transmitidos",
       "flags": [
         "google-translated"
       ]
@@ -21613,7 +21613,7 @@
       "key": {
         "message": "Download bandwidth"
       },
-      "translated": "Baixar largura de banda",
+      "translated": "largura de banda de download",
       "flags": [
         "google-translated"
       ]
@@ -21640,7 +21640,7 @@
       "key": {
         "message": "Download bandwidth"
       },
-      "translated": "Baixar largura de banda",
+      "translated": "largura de banda de download",
       "flags": [
         "google-translated"
       ]
@@ -21667,7 +21667,7 @@
       "key": {
         "message": "Download bandwidth"
       },
-      "translated": "Baixar largura de banda",
+      "translated": "Largura de banda de download",
       "flags": [
         "google-translated"
       ]
@@ -21694,7 +21694,7 @@
       "key": {
         "message": "Download bandwidth"
       },
-      "translated": "Baixar largura de banda",
+      "translated": "Largura de banda de download",
       "flags": [
         "google-translated"
       ]
@@ -21721,7 +21721,7 @@
       "key": {
         "message": "Download bandwidth"
       },
-      "translated": "Baixar largura de banda",
+      "translated": "Largura de banda de download",
       "flags": [
         "google-translated"
       ]
@@ -21748,7 +21748,7 @@
       "key": {
         "message": "Microphone setup"
       },
-      "translated": "Configuração do microfone",
+      "translated": "Configuração de microfone",
       "flags": [
         "google-translated"
       ]
@@ -21757,7 +21757,7 @@
       "key": {
         "message": "Speaker setup"
       },
-      "translated": "Configuração do altifalante",
+      "translated": "Configuração de altifalantes",
       "flags": [
         "google-translated"
       ]
@@ -21775,7 +21775,7 @@
       "key": {
         "message": "Welcome dear TeaSpeak user."
       },
-      "translated": "Bem-vindo, querido usuário do TeaSpeak.",
+      "translated": "Bem-vindo usuário do TeaSpeak.",
       "flags": [
         "google-translated"
       ]
@@ -21784,7 +21784,7 @@
       "key": {
         "message": "We would like to setup a few things before you're ready to go.<br>"
       },
-      "translated": "Gostaríamos de configurar algumas coisas antes que você esteja pronto para ir. <br>",
+      "translated": "Gostaríamos de configurar algumas coisas antes de estar pronto para avançar. <br>",
       "flags": [
         "google-translated"
       ]
@@ -21793,7 +21793,7 @@
       "key": {
         "message": "Dont worry! We'll guide you thru the basic setup process."
       },
-      "translated": "Não se preocupe! Guiaremos você pelo processo de configuração básica.",
+      "translated": "Não se preocupe! Iremos guiá-lo pelo processo de configuração básica.",
       "flags": [
         "google-translated"
       ]
@@ -21802,7 +21802,7 @@
       "key": {
         "message": "Together we'll go thru these steps:"
       },
-      "translated": "Juntos, seguiremos estas etapas:",
+      "translated": "Juntos seguiremos as seguintes etapas:",
       "flags": [
         "google-translated"
       ]
@@ -21820,7 +21820,7 @@
       "key": {
         "message": "Microphone configuration"
       },
-      "translated": "Configuração do microfone",
+      "translated": "Configuração de microfone",
       "flags": [
         "google-translated"
       ]
@@ -21838,7 +21838,7 @@
       "key": {
         "message": "Speaker configuration"
       },
-      "translated": "Configuração do altifalante",
+      "translated": "Configuração de altifalantes",
       "flags": [
         "google-translated"
       ]
@@ -21856,7 +21856,7 @@
       "key": {
         "message": "Congratulations,<br>your done setting up TeaSpeak"
       },
-      "translated": "Parabéns, você terminou de configurar o TeaSpeak",
+      "translated": "Parabéns, terminou de configurar o TeaSpeak",
       "flags": [
         "google-translated"
       ]
@@ -21865,7 +21865,7 @@
       "key": {
         "message": "You're done setting up your client. But dont worry,<br>"
       },
-      "translated": "Você terminou de configurar seu cliente. Mas não se preocupe, <br>",
+      "translated": "Terminou de configurar o cliente. Mas não se preocupe,<br>",
       "flags": [
         "google-translated"
       ]
@@ -21874,7 +21874,7 @@
       "key": {
         "message": "your could find all these settings within the settings menu<br>"
       },
-      "translated": "você pode encontrar todas essas configurações no menu de configurações <br>",
+      "translated": "pode encontrar todas essas configurações no menu de configurações<br>",
       "flags": [
         "google-translated"
       ]
@@ -21883,7 +21883,7 @@
       "key": {
         "message": "To open the client settings click on \"tools\" and than \"settings\"<br>"
       },
-      "translated": "Para abrir as configurações do cliente, clique em \"ferramentas\" e depois em \"configurações\" <br>",
+      "translated": "Para abrir as configurações do cliente, clique em \"ferramentas\" e depois em \"configurações\"<br>",
       "flags": [
         "google-translated"
       ]
@@ -21910,7 +21910,7 @@
       "key": {
         "message": "Music bot is priority speaker"
       },
-      "translated": "O bot de música é o orador prioritário",
+      "translated": "O bot de música é o speaker prioritário",
       "flags": [
         "google-translated"
       ]
@@ -21991,7 +21991,7 @@
       "key": {
         "message": "Send a channel message when the song changes"
       },
-      "translated": "Envie uma mensagem do canal quando a música mudar",
+      "translated": "Envie uma mensagem do canal quando a música alterar",
       "flags": [
         "google-translated"
       ]
