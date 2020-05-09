@@ -4342,7 +4342,7 @@
       "key": {
         "message": "Connection closed"
       },
-      "translated": "Conexão fechada",
+      "translated": "Conexão encerrada",
       "flags": [
         "google-translated"
       ]
@@ -4351,7 +4351,7 @@
       "key": {
         "message": "The connection was closed by remote host"
       },
-      "translated": "A conexão foi fechada pelo host remoto",
+      "translated": "A conexão foi encerrada pelo host remoto",
       "flags": [
         "google-translated"
       ]
@@ -4927,7 +4927,7 @@
       "key": {
         "message": "Failed to fetch recaptcha javascript source: %o"
       },
-      "translated": "Falha ao buscar a fonte javascript recaptcha: %o",
+      "translated": "Falha ao procurar a fonte javascript recaptcha: %o",
       "flags": [
         "google-translated"
       ]
@@ -11011,7 +11011,7 @@
       "key": {
         "message": "Result for query %s (%s): %o"
       },
-      "translated": "Resultado da consulta %s (%s): %o",
+      "translated": "Resultado da query %s (%s): %o",
       "flags": [
         "google-translated"
       ]
@@ -11020,7 +11020,7 @@
       "key": {
         "message": "Failed to parse SRV record %s. Invalid split length."
       },
-      "translated": "Falha ao analisar o registo SRV% s. Comprimento de divisão inválido.",
+      "translated": "Falha ao analisar o registo SRV %s. Comprimento de divisão inválido.",
       "flags": [
         "google-translated"
       ]
@@ -11029,7 +11029,7 @@
       "key": {
         "message": "Failed to parse SRV record %s. Malformed data."
       },
-      "translated": "Falha ao analisar o registo SRV% s. Dados malformados.",
+      "translated": "Falha ao analisar o registo SRV %s. Dados malformados.",
       "flags": [
         "google-translated"
       ]
@@ -11038,7 +11038,7 @@
       "key": {
         "message": "resolver is already resolving"
       },
-      "translated": "resolvedor já está resolvendo",
+      "translated": "já se encontra a resolver",
       "flags": [
         "google-translated"
       ]
@@ -11047,7 +11047,7 @@
       "key": {
         "message": "already resolving"
       },
-      "translated": "já resolvendo",
+      "translated": "já se encontra a resolver",
       "flags": [
         "google-translated"
       ]
@@ -11065,7 +11065,7 @@
       "key": {
         "message": "Start resolving %s:%d"
       },
-      "translated": "Comece a resolver% s:% d",
+      "translated": "Comece a resolver %s:%d",
       "flags": [
         "google-translated"
       ]
@@ -11074,7 +11074,7 @@
       "key": {
         "message": " Executing resolver %s"
       },
-      "translated": " Executando o resolvedor% s",
+      "translated": " Executando o resolvedor %s",
       "flags": [
         "google-translated"
       ]
@@ -11083,7 +11083,7 @@
       "key": {
         "message": " Resolver %s returned an empty response."
       },
-      "translated": " O resolvedor% s retornou uma resposta vazia.",
+      "translated": " O resolvedor %s retornou uma resposta vazia.",
       "flags": [
         "google-translated"
       ]
@@ -11092,7 +11092,7 @@
       "key": {
         "message": " Successfully resolved address %s:%d to %s:%d via resolver %s"
       },
-      "translated": " Endereço resolvido com sucesso% s:% d para% s:% d pelo resolvedor% s",
+      "translated": " Endereço resolvido com sucesso %s:%d para %s:%d pelo resolvedor %s",
       "flags": [
         "google-translated"
       ]
@@ -11101,7 +11101,7 @@
       "key": {
         "message": " Resolver %s ran into an error: %o"
       },
-      "translated": " O resolvedor% s encontrou um erro:% o",
+      "translated": " O resolvedor %s encontrou um erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -11155,7 +11155,7 @@
       "key": {
         "message": "Failed to improve identity.<br>Error:"
       },
-      "translated": "Falha ao melhorar a identidade. <br> Erro:",
+      "translated": "Falha ao melhorar a identidade.<br>Erro:",
       "flags": [
         "google-translated"
       ]
@@ -11164,7 +11164,7 @@
       "key": {
         "message": "Identity successfully improved"
       },
-      "translated": "Identidade melhorada com sucesso",
+      "translated": "Identidade aprimorada com sucesso",
       "flags": [
         "google-translated"
       ]
@@ -11182,7 +11182,7 @@
       "key": {
         "message": "Failed to improve identity"
       },
-      "translated": "Falha ao melhorar a identidade",
+      "translated": "Falha ao aprimorar identidade",
       "flags": [
         "google-translated"
       ]
@@ -11191,7 +11191,7 @@
       "key": {
         "message": "Failed to improve identity.<br>Error:"
       },
-      "translated": "Falha ao melhorar a identidade. <br> Erro:",
+      "translated": "Falha ao aprimorar identidade.<br>Erro:",
       "flags": [
         "google-translated"
       ]
@@ -11218,7 +11218,7 @@
       "key": {
         "message": "Failed to parse identity: "
       },
-      "translated": "Falha ao analisar a identidade:",
+      "translated": "Falha ao analisar identidade:",
       "flags": [
         "google-translated"
       ]
@@ -11236,7 +11236,7 @@
       "key": {
         "message": "Failed to read give identity file: %o"
       },
-      "translated": "Falha ao ler fornecer arquivo de identidade:% o",
+      "translated": "Falha ao ler fornecer arquivo de identidade: %o",
       "flags": [
         "google-translated"
       ]
@@ -11263,7 +11263,7 @@
       "key": {
         "message": "Copy text to clipboard: %s"
       },
-      "translated": "Copiar texto para a área de transferência:% s",
+      "translated": "Copiar texto para a área de transferência: %s",
       "flags": [
         "google-translated"
       ]
@@ -11272,7 +11272,7 @@
       "key": {
         "message": "Chat message contains URL: %o"
       },
-      "translated": "A mensagem de conversação contém o URL:% o",
+      "translated": "A mensagem de conversação contém o URL: %o",
       "flags": [
         "google-translated"
       ]
@@ -11281,7 +11281,7 @@
       "key": {
         "message": "Render Markdown token: %o"
       },
-      "translated": "Renderizar token de Markdown:% o",
+      "translated": "Renderizar token de Markdown: %o",
       "flags": [
         "google-translated"
       ]
@@ -11290,7 +11290,7 @@
       "key": {
         "message": "Missing markdown to bbcode renderer for token %s: %o"
       },
-      "translated": "Remarcação ausente no renderizador bbcode para o token% s:% o",
+      "translated": "Remarcação ausente no renderizador bbcode para o token %s: %o",
       "flags": [
         "google-translated"
       ]
@@ -11398,7 +11398,7 @@
       "key": {
         "message": "Failed to parse given permission value string: %s"
       },
-      "translated": "Falha ao analisar a cadeia de valor de permissão fornecida:% s",
+      "translated": "Falha ao analisar a cadeia de valor de permissão fornecida: %s",
       "flags": [
         "google-translated"
       ]
@@ -11407,7 +11407,7 @@
       "key": {
         "message": "Failed to parse given permission granted value string: %s"
       },
-      "translated": "Falha ao analisar a cadeia de valor de permissão concedida:% s",
+      "translated": "Falha ao analisar a cadeia de valor de permissão concedida: %s",
       "flags": [
         "google-translated"
       ]
@@ -11470,7 +11470,7 @@
       "key": {
         "message": "Expend all"
       },
-      "translated": "Gastar tudo",
+      "translated": "Despender tudo",
       "flags": [
         "google-translated"
       ]
@@ -11515,7 +11515,7 @@
       "key": {
         "message": "Copy permission name"
       },
-      "translated": "Nome da permissão de cópia",
+      "translated": "Copiar nome da permissão",
       "flags": [
         "google-translated"
       ]
@@ -11542,7 +11542,7 @@
       "key": {
         "message": "Expend all"
       },
-      "translated": "Gastar tudo",
+      "translated": "Despender tudo",
       "flags": [
         "google-translated"
       ]
@@ -11560,7 +11560,7 @@
       "key": {
         "message": "Failed to generate empty icon preview: %o"
       },
-      "translated": "Falha ao gerar a visualização vazia do ícone:% o",
+      "translated": "Falha ao gerar a visualização vazia do ícone: %o",
       "flags": [
         "google-translated"
       ]
@@ -11569,7 +11569,7 @@
       "key": {
         "message": "Selected new icon %s"
       },
-      "translated": "Novo ícone selecionado% s",
+      "translated": "Novo ícone selecionado %s",
       "flags": [
         "google-translated"
       ]
@@ -11578,7 +11578,7 @@
       "key": {
         "message": "Failed to set icon permission within permission editor: %o"
       },
-      "translated": "Falha ao definir a permissão do ícone no editor de permissão:% o",
+      "translated": "Falha ao definir a permissão do ícone no editor de permissão: %o",
       "flags": [
         "google-translated"
       ]
@@ -11596,7 +11596,7 @@
       "key": {
         "message": "Failed to select an icon for the icon permission: %o"
       },
-      "translated": "Falha ao selecionar um ícone para a permissão de ícone:% o",
+      "translated": "Falha ao selecionar um ícone para a permissão de ícone: %o",
       "flags": [
         "google-translated"
       ]
@@ -11605,7 +11605,7 @@
       "key": {
         "message": "Failed to remove icon permission within permission editor: %o"
       },
-      "translated": "Falha ao remover a permissão do ícone no editor de permissão:% o",
+      "translated": "Falha ao remover a permissão do ícone no editor de permissão: %o",
       "flags": [
         "google-translated"
       ]
@@ -11623,7 +11623,7 @@
       "key": {
         "message": "Expend all"
       },
-      "translated": "Gastar tudo",
+      "translated": "Despender tudo",
       "flags": [
         "google-translated"
       ]
@@ -11650,7 +11650,7 @@
       "key": {
         "message": "Received an unparsable icon within icon list (%o)"
       },
-      "translated": "Recebeu um ícone não analisável na lista de ícones (% o)",
+      "translated": "Recebeu um ícone não analisável na lista de ícones (%o)",
       "flags": [
         "google-translated"
       ]
@@ -11659,7 +11659,7 @@
       "key": {
         "message": "Failed to fetch icon list. Error: %o"
       },
-      "translated": "Falha ao buscar a lista de ícones. Erro:% o",
+      "translated": "Falha ao procurar a lista de ícones. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -11668,7 +11668,7 @@
       "key": {
         "message": "Failed to fetch icon list"
       },
-      "translated": "Falha ao buscar a lista de ícones",
+      "translated": "Falha ao procurar a lista de ícones",
       "flags": [
         "google-translated"
       ]
@@ -11677,7 +11677,7 @@
       "key": {
         "message": "UI selected icon length does not equal with 1! (%o)"
       },
-      "translated": "O comprimento do ícone selecionado da interface do usuário não é igual a 1! (% o)",
+      "translated": "O comprimento do ícone selecionado da interface do usuário não é igual a 1! (%o)",
       "flags": [
         "google-translated"
       ]
@@ -11686,7 +11686,7 @@
       "key": {
         "message": "Failed to delete icon %d: %o"
       },
-      "translated": "Falha ao excluir o ícone% d:% o",
+      "translated": "Falha ao excluir o ícone %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -11704,7 +11704,7 @@
       "key": {
         "message": "Failed to load file %s: File is too big!"
       },
-      "translated": "Falha ao carregar o arquivo% s: o arquivo é muito grande!",
+      "translated": "Falha ao carregar o arquivo %s: o arquivo é muito grande!",
       "flags": [
         "google-translated"
       ]
@@ -11722,7 +11722,7 @@
       "key": {
         "message": "Failed to load file %s: Your browser does not support file sizes!"
       },
-      "translated": "Falha ao carregar o arquivo% s: seu navegador não suporta tamanhos de arquivo!",
+      "translated": "Falha ao carregar o arquivo %s: seu navegador não suporta tamanhos de arquivo!",
       "flags": [
         "google-translated"
       ]
@@ -11740,7 +11740,7 @@
       "key": {
         "message": "Failed to load file %s: Image failed to load"
       },
-      "translated": "Falha ao carregar o arquivo% s: falha ao carregar a imagem",
+      "translated": "Falha ao carregar o arquivo %s: falha ao carregar a imagem",
       "flags": [
         "google-translated"
       ]
@@ -11758,7 +11758,7 @@
       "key": {
         "message": "Failed to load file %s: Result is not an media string (%o)"
       },
-      "translated": "Falha ao carregar o arquivo% s: o resultado não é uma sequência de mídia (% o)",
+      "translated": "Falha ao carregar o arquivo %s: o resultado não é uma sequência de mídia (%o)",
       "flags": [
         "google-translated"
       ]
@@ -11776,7 +11776,7 @@
       "key": {
         "message": "Failed to load file %s: Invalid data media type (%o)"
       },
-      "translated": "Falha ao carregar o arquivo% s: tipo de mídia de dados inválido (% o)",
+      "translated": "Falha ao carregar o arquivo %s: tipo de mídia de dados inválido (%o)",
       "flags": [
         "google-translated"
       ]
@@ -11794,7 +11794,7 @@
       "key": {
         "message": "Given image has type %s"
       },
-      "translated": "A imagem fornecida tem o tipo% s",
+      "translated": "A imagem fornecida tem o tipo %s",
       "flags": [
         "google-translated"
       ]
@@ -11803,7 +11803,7 @@
       "key": {
         "message": "Failed to load file %s: Mimetype isnt base64 encoded (%o)"
       },
-      "translated": "Falha ao carregar o arquivo% s: o Mimetype não é codificado em base64 (% o)",
+      "translated": "Falha ao carregar o arquivo %s: o Mimetype não é codificado em base64 (%o)",
       "flags": [
         "google-translated"
       ]
@@ -11821,7 +11821,7 @@
       "key": {
         "message": "Failed to load file %s: Image failed to load"
       },
-      "translated": "Falha ao carregar o arquivo% s: falha ao carregar a imagem",
+      "translated": "Falha ao carregar o arquivo %s: falha ao carregar a imagem",
       "flags": [
         "google-translated"
       ]
@@ -11839,7 +11839,7 @@
       "key": {
         "message": "Failed to load file %s: Invalid bounds: %s"
       },
-      "translated": "Falha ao carregar o arquivo% s: limites inválidos:% s",
+      "translated": "Falha ao carregar o arquivo %s: limites inválidos: %s",
       "flags": [
         "google-translated"
       ]
@@ -11866,7 +11866,7 @@
       "key": {
         "message": "waiting"
       },
-      "translated": "esperando",
+      "translated": "aguardando",
       "flags": [
         "google-translated"
       ]
@@ -11920,7 +11920,7 @@
       "key": {
         "message": "Failed to initialize upload: %o"
       },
-      "translated": "Falha ao inicializar o upload:% o",
+      "translated": "Falha ao inicializar o upload: %o",
       "flags": [
         "google-translated"
       ]
@@ -11947,7 +11947,7 @@
       "key": {
         "message": "Icon upload failed for icon %s: %o"
       },
-      "translated": "Falha no upload do ícone para o ícone% s:% o",
+      "translated": "Falha no upload do ícone para o ícone %s: %o",
       "flags": [
         "google-translated"
       ]
@@ -12019,7 +12019,7 @@
       "key": {
         "message": "Failed to select icon: %o"
       },
-      "translated": "Falha ao selecionar o ícone:% o",
+      "translated": "Falha ao selecionar o ícone: %o",
       "flags": [
         "google-translated"
       ]
@@ -12028,7 +12028,7 @@
       "key": {
         "message": "Expend all"
       },
-      "translated": "Gastar tudo",
+      "translated": "Despender tudo",
       "flags": [
         "google-translated"
       ]
@@ -12046,7 +12046,7 @@
       "key": {
         "message": "Failed to load icon for permission editor: %o"
       },
-      "translated": "Falha ao carregar o ícone do editor de permissão:% o",
+      "translated": "Falha ao carregar o ícone do editor de permissão: %o",
       "flags": [
         "google-translated"
       ]
@@ -12091,7 +12091,7 @@
       "key": {
         "message": "Expend all"
       },
-      "translated": "Gastar tudo",
+      "translated": "Despender tudo",
       "flags": [
         "google-translated"
       ]
@@ -12136,7 +12136,7 @@
       "key": {
         "message": "Copy permission name"
       },
-      "translated": "Nome da permissão de cópia",
+      "translated": "Copiar nome da permissão",
       "flags": [
         "google-translated"
       ]
@@ -12145,7 +12145,7 @@
       "key": {
         "message": "Failed to load icon for permission editor: %o"
       },
-      "translated": "Falha ao carregar o ícone do editor de permissão:% o",
+      "translated": "Falha ao carregar o ícone do editor de permissão: %o",
       "flags": [
         "google-translated"
       ]
@@ -12208,7 +12208,7 @@
       "key": {
         "message": "Changing server properties %o"
       },
-      "translated": "Alterando as propriedades do servidor% o",
+      "translated": "Alterando as propriedades do servidor %o",
       "flags": [
         "google-translated"
       ]
@@ -12217,7 +12217,7 @@
       "key": {
         "message": "Changed properties: %o"
       },
-      "translated": "Propriedades alteradas:% o",
+      "translated": "Propriedades alteradas: %o",
       "flags": [
         "google-translated"
       ]
@@ -12244,7 +12244,7 @@
       "key": {
         "message": "Update properties (%i)"
       },
-      "translated": "Atualizar propriedades (% i)",
+      "translated": "Atualizar propriedades (%i)",
       "flags": [
         "google-translated"
       ]
@@ -12253,7 +12253,7 @@
       "key": {
         "message": "Failed to disconnect on server connection destroy: %o"
       },
-      "translated": "Falha ao desconectar na destruição da conexão do servidor:% o",
+      "translated": "Falha ao desconectar na destruição da conexão do servidor: %o",
       "flags": [
         "google-translated"
       ]
@@ -12262,7 +12262,7 @@
       "key": {
         "message": "Failed to reject command promise: %o"
       },
-      "translated": "Falha ao rejeitar a promessa do comando:% o",
+      "translated": "Falha ao rejeitar a promessa do comando: %o",
       "flags": [
         "google-translated"
       ]
@@ -12271,7 +12271,7 @@
       "key": {
         "message": "Failed to close old connection properly. Error: %o"
       },
-      "translated": "Falha ao fechar a conexão antiga corretamente. Erro:% o",
+      "translated": "Falha ao fechar a conexão antiga corretamente. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -12289,7 +12289,7 @@
       "key": {
         "message": "Failed to close connection after timeout had been triggered! (%o)"
       },
-      "translated": "Falha ao fechar a conexão após o tempo limite ter sido acionado! (% o)",
+      "translated": "Falha ao fechar a conexão após o tempo limite ter sido acionado! (%o)",
       "flags": [
         "google-translated"
       ]
@@ -12298,7 +12298,7 @@
       "key": {
         "message": "Proxy socket send an error while connecting. Pending sockets: %d. Any succeed: %s"
       },
-      "translated": "O soquete de proxy envia um erro durante a conexão. Soquetes pendentes:% d. Qualquer sucesso:% s",
+      "translated": "O socket de proxy envia um erro durante a conexão. sockets pendentes: %d. Qualquer sucesso: %s",
       "flags": [
         "google-translated"
       ]
@@ -12325,7 +12325,7 @@
       "key": {
         "message": "Proxy socket connected. Pending sockets: %d. Any succeed before: %s"
       },
-      "translated": "Soquete de proxy conectado. Soquetes pendentes:% d. Qualquer sucesso antes:% s",
+      "translated": "socket de proxy conectado. sockets pendentes: %d. Qualquer sucesso antes: %s",
       "flags": [
         "google-translated"
       ]
@@ -12352,7 +12352,7 @@
       "key": {
         "message": "Direct socket send an error while connecting. Pending sockets: %d. Any succeed: %s"
       },
-      "translated": "O soquete direto envia um erro durante a conexão. Soquetes pendentes:% d. Qualquer sucesso:% s",
+      "translated": "O socket direto envia um erro durante a conexão. sockets pendentes: %d. Qualquer sucesso: %s",
       "flags": [
         "google-translated"
       ]
@@ -12379,7 +12379,7 @@
       "key": {
         "message": "Direct socket connected. Pending sockets: %d. Any succeed before: %s"
       },
-      "translated": "Soquete direto conectado. Soquetes pendentes:% d. Qualquer sucesso antes:% s",
+      "translated": "socket direto conectado. sockets pendentes: %d. Qualquer sucesso antes: %s",
       "flags": [
         "google-translated"
       ]
@@ -12406,7 +12406,7 @@
       "key": {
         "message": "Failed to connect to %s, but we're already obsolete."
       },
-      "translated": "Falha ao conectar-se a% s, mas já estamos obsoletos.",
+      "translated": "Falha ao conectar-se a %s, mas já estamos obsoletos.",
       "flags": [
         "google-translated"
       ]
@@ -12415,7 +12415,7 @@
       "key": {
         "message": "Failed to cleanup connection after unsuccessful connect attempt: %o"
       },
-      "translated": "Falha na limpeza da conexão após tentativa malsucedida de conexão:% o",
+      "translated": "Falha na limpeza da conexão após tentativa mal sucedida de conexão: %o",
       "flags": [
         "google-translated"
       ]
@@ -12424,7 +12424,7 @@
       "key": {
         "message": "Successfully connected to %s, but we're already obsolete. Closing connections"
       },
-      "translated": "Conectado com sucesso a% s, mas já estamos obsoletos. Encerrando conexões",
+      "translated": "Conectado com sucesso a %s, mas já estamos obsoletos. Encerrando conexões",
       "flags": [
         "google-translated"
       ]
@@ -12433,7 +12433,7 @@
       "key": {
         "message": "Established a TCP connection to %s via proxy to %s"
       },
-      "translated": "Estabeleceu uma conexão TCP com% s via proxy para% s",
+      "translated": "Estabeleceu uma conexão TCP com %s via proxy para %s",
       "flags": [
         "google-translated"
       ]
@@ -12442,7 +12442,7 @@
       "key": {
         "message": "Established a TCP connection to %s directly"
       },
-      "translated": "Estabeleceu uma conexão TCP com% s diretamente",
+      "translated": "Estabeleceu uma conexão TCP com %s diretamente",
       "flags": [
         "google-translated"
       ]
@@ -12451,7 +12451,7 @@
       "key": {
         "message": "Received web socket error: (%o)"
       },
-      "translated": "Erro de soquete da Web recebido: (% o)",
+      "translated": "Erro de socket da Web recebido: (%o)",
       "flags": [
         "google-translated"
       ]
@@ -12460,7 +12460,7 @@
       "key": {
         "message": "Received unexpected error while connecting: %o"
       },
-      "translated": "Erro inesperado recebido ao conectar:% o",
+      "translated": "Erro inesperado recebido ao conectar: %o",
       "flags": [
         "google-translated"
       ]
@@ -12469,7 +12469,7 @@
       "key": {
         "message": "Failed to cleanup connection after unsuccessful connect attempt: %o"
       },
-      "translated": "Falha na limpeza da conexão após tentativa malsucedida de conexão:% o",
+      "translated": "Falha na limpeza da conexão após tentativa mal sucedida de conexão: %o",
       "flags": [
         "google-translated"
       ]
@@ -12487,7 +12487,7 @@
       "key": {
         "message": "Connection closed"
       },
-      "translated": "Conexão fechada",
+      "translated": "Conexão encerrada",
       "flags": [
         "google-translated"
       ]
@@ -12514,7 +12514,7 @@
       "key": {
         "message": "Handling command '%s'"
       },
-      "translated": "Comando de manipulação '% s'",
+      "translated": "Comando de manipulação '%s'",
       "flags": [
         "google-translated"
       ]
@@ -12523,7 +12523,7 @@
       "key": {
         "message": "Handling command '%s'"
       },
-      "translated": "Comando de manipulação '% s'",
+      "translated": "Comando de manipulação '%s'",
       "flags": [
         "google-translated"
       ]
@@ -12550,7 +12550,7 @@
       "key": {
         "message": "Received pong which is older than the last request. Delay may over %oms? (Index: %o, Current index: %o)"
       },
-      "translated": "Pong recebido mais antigo que o último pedido. O atraso pode ultrapassar% oms? (Índice:% o, índice atual:% o)",
+      "translated": "Pong recebido mais antigo que o último pedido. O atraso pode ultrapassar %oms? (Índice: %o, índice atual: %o)",
       "flags": [
         "google-translated"
       ]
@@ -12559,7 +12559,7 @@
       "key": {
         "message": "Received new pong. Updating ping to: JS: %o Native: %o"
       },
-      "translated": "Recebeu novo pong. Atualizando o ping para: JS:% o Nativo:% o",
+      "translated": "Recebeu novo pong. Atualizando o ping para: JS: %o Nativo: %o",
       "flags": [
         "google-translated"
       ]
@@ -12568,7 +12568,7 @@
       "key": {
         "message": "Unknown command type %o"
       },
-      "translated": "Tipo de comando desconhecido% o",
+      "translated": "Tipo de comando desconhecido %o",
       "flags": [
         "google-translated"
       ]
@@ -12577,7 +12577,7 @@
       "key": {
         "message": "Received unknown message of type %s. Dropping message"
       },
-      "translated": "Mensagem desconhecida recebida do tipo% s. Soltando mensagem",
+      "translated": "Mensagem desconhecida recebida do tipo %s. Soltando mensagem",
       "flags": [
         "google-translated"
       ]
@@ -12586,7 +12586,7 @@
       "key": {
         "message": "Tried to send on a invalid socket (%s)"
       },
-      "translated": "Tentou enviar em um soquete inválido (% s)",
+      "translated": "Tentou enviar em um socket inválido (%s)",
       "flags": [
         "google-translated"
       ]
@@ -12631,7 +12631,7 @@
       "key": {
         "message": "Failed to fetch conversation history. %o"
       },
-      "translated": "Falha ao buscar o histórico de conversas. % o",
+      "translated": "Falha ao procurar o histórico de conversas. %o",
       "flags": [
         "google-translated"
       ]
@@ -12640,7 +12640,7 @@
       "key": {
         "message": "Failed to fetch conversation history. %o"
       },
-      "translated": "Falha ao buscar o histórico de conversas. % o",
+      "translated": "Falha ao procurar o histórico de conversas. %o",
       "flags": [
         "google-translated"
       ]
@@ -12649,7 +12649,7 @@
       "key": {
         "message": "Failed to delete conversation message for conversation %o: %o"
       },
-      "translated": "Falha ao excluir a mensagem de conversa da conversa% o:% o",
+      "translated": "Falha ao excluir a mensagem de conversa da conversa %o: %o",
       "flags": [
         "google-translated"
       ]
@@ -12667,7 +12667,7 @@
       "key": {
         "message": "Failed to delete conversation message{:br:}Error: {}"
       },
-      "translated": "Falha ao excluir a mensagem de conversa {: br:} Erro: {}",
+      "translated": "Falha ao excluir a mensagem de conversa{:br:}Erro: {}",
       "flags": [
         "google-translated"
       ]
@@ -12676,7 +12676,7 @@
       "key": {
         "message": "Deleting text message %o"
       },
-      "translated": "Excluindo mensagem de texto% o",
+      "translated": "Excluindo mensagem de texto %o",
       "flags": [
         "google-translated"
       ]
@@ -12685,7 +12685,7 @@
       "key": {
         "message": "*italic*, **bold**, ~~strikethrough~~, `code`, and more..."
       },
-      "translated": "* itálico *, ** negrito **, ~~ tachado ~~, `code` e mais ...",
+      "translated": "*itálico*, **negrito**, ~~tachado~~, `code` e mais...",
       "flags": [
         "google-translated"
       ]
@@ -12730,7 +12730,7 @@
       "key": {
         "message": "Failed to query playlist info for playlist %d: %o"
       },
-      "translated": "Falha ao consultar as informações da playlist para a playlist% d:% o",
+      "translated": "Falha ao consultar as informações da playlist para a playlist %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -12748,7 +12748,7 @@
       "key": {
         "message": "Failed to change playlist status %s for playlist %d: %o"
       },
-      "translated": "Falha ao alterar o status da playlist% s para a playlist% d:% o",
+      "translated": "Falha ao alterar o status da playlist %s para a playlist %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -12766,7 +12766,7 @@
       "key": {
         "message": "Failed to change bot setting %s: %o"
       },
-      "translated": "Falha ao alterar a configuração do bot% s:% o",
+      "translated": "Falha ao alterar a configuração do bot %s: %o",
       "flags": [
         "google-translated"
       ]
@@ -12775,7 +12775,7 @@
       "key": {
         "message": "Failed to query playlist general permissions for playlist %d: %o"
       },
-      "translated": "Falha ao consultar as permissões gerais da playlist para a playlist% d:% o",
+      "translated": "Falha ao consultar as permissões gerais da playlist para a playlist %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -12784,7 +12784,7 @@
       "key": {
         "message": "Failed to set playlist general permissions for playlist %d and permission %d: %o"
       },
-      "translated": "Falha ao definir permissões gerais da playlist para a playlist% de permissão% d:% o",
+      "translated": "Falha ao definir permissões gerais da playlist para a playlist %d e permissão %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -12793,7 +12793,7 @@
       "key": {
         "message": "Failed to query playlist client permissions for playlist %d and client %d: %o"
       },
-      "translated": "Falha ao consultar as permissões do cliente da playlist para a playlist% de cliente% d:% o",
+      "translated": "Falha ao consultar as permissões do cliente da playlist para a playlist %d e cliente %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -12802,7 +12802,7 @@
       "key": {
         "message": "Failed to set playlist client permissions for playlist %d, permission %d and client id %d: %o"
       },
-      "translated": "Falha ao definir permissões de cliente da playlist para a playlist% d, permissão% de ID do cliente% d:% o",
+      "translated": "Falha ao definir permissões de cliente da playlist para a playlist %d, permissão %d e ID do cliente %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -12811,7 +12811,7 @@
       "key": {
         "message": "Failed to query special client list for playlist %d: %o"
       },
-      "translated": "Falha ao consultar a lista de clientes especiais para a playlist% d:% o",
+      "translated": "Falha ao consultar a lista de clientes especiais para a playlist %d: %o",
       "flags": [
         "google-translated"
       ]
@@ -12820,7 +12820,7 @@
       "key": {
         "message": "Failed to lookup search text \"%s\": %o"
       },
-      "translated": "Falha na pesquisa do texto de pesquisa \"% s\":% o",
+      "translated": "Falha na pesquisa do texto de pesquisa \"%s\": %o",
       "flags": [
         "google-translated"
       ]
@@ -12829,7 +12829,7 @@
       "key": {
         "message": "Failed to execute permfind for permission %s: %o"
       },
-      "translated": "Falha ao executar permfind para a permissão% s:% o",
+      "translated": "Falha ao executar permfind para a permissão %s: %o",
       "flags": [
         "google-translated"
       ]
@@ -13153,7 +13153,7 @@
       "key": {
         "message": "Failed to perform client search.<br>Search resulted in a timeout."
       },
-      "translated": "Falha ao executar a pesquisa do cliente. <br> A pesquisa resultou em um tempo limite.",
+      "translated": "Falha ao executar a pesquisa do cliente.<br>A pesquisa resultou em um tempo limite.",
       "flags": [
         "google-translated"
       ]
@@ -13180,7 +13180,7 @@
       "key": {
         "message": "Query timeout"
       },
-      "translated": "Tempo query Expirado",
+      "translated": "Tempo query expirado",
       "flags": [
         "google-translated"
       ]
@@ -13261,7 +13261,7 @@
       "key": {
         "message": "Missing permission needed mapping for %s"
       },
-      "translated": "Permissão ausente no mapeamento necessário para% s",
+      "translated": "Permissão ausente no mapeamento necessário para %s",
       "flags": [
         "google-translated"
       ]
@@ -13324,7 +13324,7 @@
       "key": {
         "message": "Failed to update current song for side bar: %o"
       },
-      "translated": "Falha ao atualizar a música atual da barra lateral:% o",
+      "translated": "Falha ao atualizar a música atual da barra lateral: %o",
       "flags": [
         "google-translated"
       ]
@@ -13360,7 +13360,7 @@
       "key": {
         "message": "Invalid music bot action event detected: %s. This should not happen!"
       },
-      "translated": "Evento de ação de bot de música inválido detectado:% s. Isso não deveria acontecer!",
+      "translated": "Evento de ação de bot de música inválido detectado: %s. Isso não deveria acontecer!",
       "flags": [
         "google-translated"
       ]
@@ -13369,7 +13369,7 @@
       "key": {
         "message": "Failed to perform action %s on bot: %o"
       },
-      "translated": "Falha ao executar a ação% s no bot:% o",
+      "translated": "Falha ao executar a ação %s no bot: %o",
       "flags": [
         "google-translated"
       ]
@@ -13396,7 +13396,7 @@
       "key": {
         "message": "Failed to set current song on bot: %o"
       },
-      "translated": "Falha ao definir a música atual no bot:% o",
+      "translated": "Falha ao definir a música atual no bot: %o",
       "flags": [
         "google-translated"
       ]
@@ -13441,7 +13441,7 @@
       "key": {
         "message": "Failed to add song to bot playlist: %o"
       },
-      "translated": "Falha ao adicionar música à playlist bot:% o",
+      "translated": "Falha ao adicionar música à playlist bot: %o",
       "flags": [
         "google-translated"
       ]
@@ -13468,7 +13468,7 @@
       "key": {
         "message": "Failed to delete song from bot playlist: %o"
       },
-      "translated": "Falha ao excluir a música da playlist bot:% o",
+      "translated": "Falha ao excluir a música da playlist bot: %o",
       "flags": [
         "google-translated"
       ]
@@ -13495,7 +13495,7 @@
       "key": {
         "message": "Failed to subscribe to displayed bot within the side bar: %o"
       },
-      "translated": "Falha ao subscrever o bot exibido na barra lateral:% o",
+      "translated": "Falha ao subscrever o bot exibido na barra lateral: %o",
       "flags": [
         "google-translated"
       ]
@@ -13549,7 +13549,7 @@
       "key": {
         "message": "Failed to add song to bot playlist: %o"
       },
-      "translated": "Falha ao adicionar música à playlist bot:% o",
+      "translated": "Falha ao adicionar música à playlist bot: %o",
       "flags": [
         "google-translated"
       ]
@@ -13576,7 +13576,7 @@
       "key": {
         "message": "Failed to update music bot variables: %o"
       },
-      "translated": "Falha ao atualizar as variáveis do bot de música:% o",
+      "translated": "Falha ao atualizar as variáveis do bot de música: %o",
       "flags": [
         "google-translated"
       ]
@@ -13585,7 +13585,7 @@
       "key": {
         "message": "Failed to load bot playlist: %o"
       },
-      "translated": "Falha ao carregar a playlist de bot:% o",
+      "translated": "Falha ao carregar a playlist de bot: %o",
       "flags": [
         "google-translated"
       ]
@@ -13594,7 +13594,7 @@
       "key": {
         "message": "Failed to unsubscribe from last playlist: %o"
       },
-      "translated": "Falha ao cancelar a subscrição da última playlist:% o",
+      "translated": "Falha ao cancelar a subscrição da última playlist: %o",
       "flags": [
         "google-translated"
       ]
@@ -13603,7 +13603,7 @@
       "key": {
         "message": "Failed to subscribe to bots playlist: %o"
       },
-      "translated": "Falha ao Subscrever na playlist de bots:% o",
+      "translated": "Falha ao Subscrever na playlist de bots: %o",
       "flags": [
         "google-translated"
       ]
@@ -13657,7 +13657,7 @@
       "key": {
         "message": "Away"
       },
-      "translated": "Longe",
+      "translated": "Ausente",
       "flags": [
         "google-translated"
       ]
@@ -13666,7 +13666,7 @@
       "key": {
         "message": "Client local muted"
       },
-      "translated": "Local do cliente desativado",
+      "translated": "Client local silenciado",
       "flags": [
         "google-translated"
       ]
@@ -13675,7 +13675,7 @@
       "key": {
         "message": "Speakers/Headphones disabled"
       },
-      "translated": "altifalantes / fones de ouvido desativados",
+      "translated": "Altifalantes/fones de ouvido desativados",
       "flags": [
         "google-translated"
       ]
@@ -13693,7 +13693,7 @@
       "key": {
         "message": "Speakers/Headphones Muted"
       },
-      "translated": "altifalantes / fones de ouvido silenciados",
+      "translated": "Altifalantes/fones de ouvido silenciados",
       "flags": [
         "google-translated"
       ]
@@ -13702,7 +13702,7 @@
       "key": {
         "message": "Microphone Muted"
       },
-      "translated": "Microfone sem som",
+      "translated": "Microfone silenciado",
       "flags": [
         "google-translated"
       ]
@@ -13720,7 +13720,7 @@
       "key": {
         "message": "Missing server group id!"
       },
-      "translated": "ID do grupo de servidores ausente!",
+      "translated": "ID do grupo de servidores em falta!",
       "flags": [
         "google-translated"
       ]
@@ -13756,7 +13756,7 @@
       "key": {
         "message": "Missing channel group id!"
       },
-      "translated": "ID do grupo de canais ausente!",
+      "translated": "ID do grupo de canais em falta!",
       "flags": [
         "google-translated"
       ]
@@ -13837,7 +13837,7 @@
       "key": {
         "message": "Failed to fetch usernames from avatar names. Error: %o"
       },
-      "translated": "Falha ao buscar nomes de usuário nos nomes de avatar. Erro:% o",
+      "translated": "Falha ao procurar nomes de usuário nos nomes de avatar. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -13846,7 +13846,7 @@
       "key": {
         "message": "Failed to fetch usernames"
       },
-      "translated": "Falha ao buscar nomes de usuário",
+      "translated": "Falha ao procurar nomes de usuário",
       "flags": [
         "google-translated"
       ]
@@ -13855,7 +13855,7 @@
       "key": {
         "message": "Failed to fetch usernames related to their avatar names"
       },
-      "translated": "Falha ao buscar nomes de usuário relacionados aos nomes de avatar",
+      "translated": "Falha ao procurar nomes de usuário relacionados aos nomes de avatar",
       "flags": [
         "google-translated"
       ]
@@ -13864,7 +13864,7 @@
       "key": {
         "message": "Failed to receive avatar list. Error: %o"
       },
-      "translated": "Falha ao receber a lista de avatar. Erro:% o",
+      "translated": "Falha ao receber a lista de avatar. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -13891,7 +13891,7 @@
       "key": {
         "message": "Manage the Virtual Server"
       },
-      "translated": "Gerenciar o servidor virtual",
+      "translated": "Gerenciar servidor virtual",
       "flags": [
         "google-translated"
       ]
@@ -13900,7 +13900,7 @@
       "key": {
         "message": "Welcome message edited: %o"
       },
-      "translated": "Mensagem de boas-vindas editada:% o",
+      "translated": "Mensagem de boas-vindas editada: %o",
       "flags": [
         "google-translated"
       ]
@@ -13918,7 +13918,7 @@
       "key": {
         "message": "Failed to refresh server properties: %o"
       },
-      "translated": "Falha ao atualizar as propriedades do servidor:% o",
+      "translated": "Falha ao atualizar as propriedades do servidor: %o",
       "flags": [
         "google-translated"
       ]
@@ -13936,7 +13936,7 @@
       "key": {
         "message": "Failed to refresh server properties.{:br:}Error: {}"
       },
-      "translated": "Falha ao atualizar as propriedades do servidor. {: Br:} Erro: {}",
+      "translated": "Falha ao atualizar as propriedades do servidor.{:br:}Erro: {}",
       "flags": [
         "google-translated"
       ]
@@ -13963,7 +13963,7 @@
       "key": {
         "message": "Query"
       },
-      "translated": "Inquerir",
+      "translated": "Query",
       "flags": [
         "google-translated"
       ]
@@ -14098,7 +14098,7 @@
       "key": {
         "message": "Missing link generator"
       },
-      "translated": "Gerador de link ausente",
+      "translated": "Gerador de link em falta",
       "flags": [
         "google-translated"
       ]
@@ -14107,7 +14107,7 @@
       "key": {
         "message": "Release again! (%o)"
       },
-      "translated": "Solte novamente! (% o)",
+      "translated": "Solte novamente! (%o)",
       "flags": [
         "google-translated"
       ]
@@ -14143,7 +14143,7 @@
       "key": {
         "message": "Failed to initialize the opus codec. Error: %o"
       },
-      "translated": "Falha ao inicializar o codec opus. Erro:% o",
+      "translated": "Falha ao inicializar o codec opus. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -14152,7 +14152,7 @@
       "key": {
         "message": "Failed to initialize already disabled codec. Error: %o"
       },
-      "translated": "Falha ao inicializar o codec já desativado. Erro:% o",
+      "translated": "Falha ao inicializar o codec já desativado. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -14170,7 +14170,7 @@
       "key": {
         "message": "Could not initialize codec!\nError: %o"
       },
-      "translated": "Não foi possível inicializar o codec!\nErro:% o",
+      "translated": "Não foi possível inicializar o codec!\nErro: %o",
       "flags": [
         "google-translated"
       ]
@@ -14188,7 +14188,7 @@
       "key": {
         "message": "Failed to release voice recorder: %o"
       },
-      "translated": "Falha ao liberar o gravador de voz:% o",
+      "translated": "Falha ao liberar o gravador de voz: %o",
       "flags": [
         "google-translated"
       ]
@@ -14215,7 +14215,7 @@
       "key": {
         "message": "Failed to release own consumer from old input: %o"
       },
-      "translated": "Falha ao liberar o próprio consumidor da entrada antiga:% o",
+      "translated": "Falha ao liberar o próprio consumidor da entrada antiga: %o",
       "flags": [
         "google-translated"
       ]
@@ -14224,7 +14224,7 @@
       "key": {
         "message": "Successfully set/updated to the new input for the recorder"
       },
-      "translated": "Definido / atualizado com sucesso para a nova entrada do gravador",
+      "translated": "Definido/atualizado com sucesso para a nova entrada do gravador",
       "flags": [
         "google-translated"
       ]
@@ -14233,7 +14233,7 @@
       "key": {
         "message": "Failed to set consumer to the new recorder input: %o"
       },
-      "translated": "Falha ao definir o consumidor para a nova entrada do gravador:% o",
+      "translated": "Falha ao definir o consumidor para a nova entrada do gravador: %o",
       "flags": [
         "google-translated"
       ]
@@ -14242,7 +14242,7 @@
       "key": {
         "message": "Failed to send voice packet. Error: %o"
       },
-      "translated": "Falha ao enviar pacote de voz. Erro:% o",
+      "translated": "Falha ao enviar pacote de voz. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -14269,7 +14269,7 @@
       "key": {
         "message": "Adding native audio stream (%o)!"
       },
-      "translated": "Adicionando fluxo de áudio nativo (% o)!",
+      "translated": "Adicionando fluxo de áudio nativo (%o)!",
       "flags": [
         "google-translated"
       ]
@@ -14278,7 +14278,7 @@
       "key": {
         "message": "Could not create ice offer! error: %o"
       },
-      "translated": "Não foi possível criar a oferta de gelo! erro:% o",
+      "translated": "Não foi possível criar a oferta de gelo! erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -14287,7 +14287,7 @@
       "key": {
         "message": "Received answer to our offer. Answer: %o"
       },
-      "translated": "Resposta recebida à nossa oferta. Resposta:% o",
+      "translated": "Resposta recebida à nossa oferta. Resposta: %o",
       "flags": [
         "google-translated"
       ]
@@ -14296,7 +14296,7 @@
       "key": {
         "message": "Answer applied successfully. Applying ICE candidates (%d)."
       },
-      "translated": "Resposta aplicada com sucesso. Aplicando candidatos a ICE (% d).",
+      "translated": "Resposta aplicada com sucesso. Aplicando candidatos a ICE (%d).",
       "flags": [
         "google-translated"
       ]
@@ -14305,7 +14305,7 @@
       "key": {
         "message": "Failed to add remote cached ice candidate %s: %o"
       },
-      "translated": "Falha ao adicionar candidato a gelo em cache remoto% s:% o",
+      "translated": "Falha ao adicionar candidato a gelo em cache remoto %s: %o",
       "flags": [
         "google-translated"
       ]
@@ -14314,7 +14314,7 @@
       "key": {
         "message": "Failed to apply remote description: %o"
       },
-      "translated": "Falha ao aplicar a descrição remota:% o",
+      "translated": "Falha ao aplicar a descrição remota: %o",
       "flags": [
         "google-translated"
       ]
@@ -14323,7 +14323,7 @@
       "key": {
         "message": "Add remote ice! (%o)"
       },
-      "translated": "Adicione gelo remoto! (% o)",
+      "translated": "Adicione gelo remoto! (%o)",
       "flags": [
         "google-translated"
       ]
@@ -14332,7 +14332,7 @@
       "key": {
         "message": "Failed to add remote ice candidate %s: %o"
       },
-      "translated": "Falha ao adicionar candidato a gelo remoto% s:% o",
+      "translated": "Falha ao adicionar candidato a gelo remoto %s: %o",
       "flags": [
         "google-translated"
       ]
@@ -14341,7 +14341,7 @@
       "key": {
         "message": "Cache remote ice! (%o)"
       },
-      "translated": "Cache de gelo remoto! (% o)",
+      "translated": "Cache de gelo remoto! (%o)",
       "flags": [
         "google-translated"
       ]
@@ -14350,7 +14350,7 @@
       "key": {
         "message": "Failed to setup voice bridge (%s). Allow reconnect: %s"
       },
-      "translated": "Falha ao configurar a ponte de voz (% s). Permitir reconexão:% s",
+      "translated": "Falha ao configurar a ponte de voz (% s). Permitir reconexão: %s",
       "flags": [
         "google-translated"
       ]
@@ -14359,7 +14359,7 @@
       "key": {
         "message": "Gathered local ice candidate %o."
       },
-      "translated": "Reuniu candidato a gelo local% o.",
+      "translated": "Reuniu candidato a gelo local %o.",
       "flags": [
         "google-translated"
       ]
@@ -14368,7 +14368,7 @@
       "key": {
         "message": "Local offer created. Setting up local description. (%o)"
       },
-      "translated": "Oferta local criada. Configurando descrição local. (% o)",
+      "translated": "Oferta local criada. Configurando descrição local. (%o)",
       "flags": [
         "google-translated"
       ]
@@ -14386,7 +14386,7 @@
       "key": {
         "message": "Failed to apply local description: %o"
       },
-      "translated": "Falha ao aplicar a descrição local:% o",
+      "translated": "Falha ao aplicar a descrição local: %o",
       "flags": [
         "google-translated"
       ]
@@ -14395,7 +14395,7 @@
       "key": {
         "message": "Got new data channel! (%s)"
       },
-      "translated": "Tem um novo canal de dados! (% s)",
+      "translated": "Tem um novo canal de dados! (%s)",
       "flags": [
         "google-translated"
       ]
@@ -14404,7 +14404,7 @@
       "key": {
         "message": "Having voice from unknown audio client? (ClientID: %o)"
       },
-      "translated": "Tendo voz de cliente de áudio desconhecido? (ClientID:% o)",
+      "translated": "Tendo voz de cliente de áudio desconhecido? (ClientID: %o)",
       "flags": [
         "google-translated"
       ]
@@ -14413,7 +14413,7 @@
       "key": {
         "message": "Could not playback codec %o"
       },
-      "translated": "Não foi possível reproduzir o codec% o",
+      "translated": "Não foi possível reproduzir o codec %o",
       "flags": [
         "google-translated"
       ]
@@ -14422,7 +14422,7 @@
       "key": {
         "message": "Could not playback client's (%o) audio (%o)"
       },
-      "translated": "Não foi possível reproduzir o áudio (% o) do cliente (% o)",
+      "translated": "Não foi possível reproduzir o áudio (%o) do cliente (%o)",
       "flags": [
         "google-translated"
       ]
@@ -14530,7 +14530,7 @@
       "key": {
         "message": "Failed to parse playlist entry: %o"
       },
-      "translated": "Falha ao analisar a entrada da playlist:% o",
+      "translated": "Falha ao analisar a entrada da playlist: %o",
       "flags": [
         "google-translated"
       ]
@@ -14548,7 +14548,7 @@
       "key": {
         "message": "Failed to parse playlist song entry: %o"
       },
-      "translated": "Falha ao analisar a entrada da música da playlist:% o",
+      "translated": "Falha ao analisar a entrada da música da playlist: %o",
       "flags": [
         "google-translated"
       ]
@@ -14575,7 +14575,7 @@
       "key": {
         "message": "Failed to parse server group client list: %o"
       },
-      "translated": "Falha ao analisar a lista de clientes do grupo de servidores:% o",
+      "translated": "Falha ao analisar a lista de clientes do grupo de servidores: %o",
       "flags": [
         "google-translated"
       ]
@@ -14593,7 +14593,7 @@
       "key": {
         "message": "Failed to parse playlist info: %o"
       },
-      "translated": "Falha ao analisar as informações da playlist:% o",
+      "translated": "Falha ao analisar as informações da playlist: %o",
       "flags": [
         "google-translated"
       ]
@@ -14647,7 +14647,7 @@
       "key": {
         "message": "[AudioController] Got empty or undefined buffer! Dropping it"
       },
-      "translated": "[AudioController] Tem buffer vazio ou indefinido! Deixando cair",
+      "translated": "[AudioController] Possui buffer vazio ou indefinido! Deixando cair",
       "flags": [
         "google-translated"
       ]
@@ -14665,7 +14665,7 @@
       "key": {
         "message": "[AudioController] Source sample rate isn't equal to playback sample rate! (%o | %o)"
       },
-      "translated": "[AudioController] A taxa de amostragem da fonte não é igual à taxa de amostragem da reprodução! (% o |% o)",
+      "translated": "[AudioController] A taxa de amostragem da fonte não é igual à taxa de amostragem da reprodução! (%o | %o)",
       "flags": [
         "google-translated"
       ]
@@ -14728,7 +14728,7 @@
       "key": {
         "message": "Failed to initialize codec %s: %s"
       },
-      "translated": "Falha ao inicializar o codec% s:% s",
+      "translated": "Falha ao inicializar o codec %s: %s",
       "flags": [
         "google-translated"
       ]
@@ -14737,7 +14737,7 @@
       "key": {
         "message": "Worker message stock time: {downstream: %dms, handle: %dms, upstream: %dms}"
       },
-      "translated": "Tempo de estoque das mensagens do trabalhador: {downstream:% dms, identificador:% dms, upstream:% dms}",
+      "translated": "Tempo de stock das mensagens do worker: {downstream: %dms, identificador: %dms, upstream: %dms}",
       "flags": [
         "google-translated"
       ]
@@ -14746,7 +14746,7 @@
       "key": {
         "message": "unknown decode error"
       },
-      "translated": "erro de decodificação desconhecido",
+      "translated": "erro de descodificação desconhecido",
       "flags": [
         "google-translated"
       ]
@@ -14755,7 +14755,7 @@
       "key": {
         "message": "Worker message stock time: {downstream: %dms, handle: %dms, upstream: %dms}"
       },
-      "translated": "Tempo de estoque das mensagens do trabalhador: {downstream:% dms, identificador:% dms, upstream:% dms}",
+      "translated": "Tempo de stock das mensagens do worker: {downstream: %dms, identificador: %dms, upstream: %dms}",
       "flags": [
         "google-translated"
       ]
@@ -14773,7 +14773,7 @@
       "key": {
         "message": "Invalid worker token!"
       },
-      "translated": "Token de trabalhador inválido!",
+      "translated": "Token de worker inválido!",
       "flags": [
         "google-translated"
       ]
@@ -14782,7 +14782,7 @@
       "key": {
         "message": "Costume callback! (%o)"
       },
-      "translated": "Retorno de chamada de traje! (% o)",
+      "translated": "Retorno de chamada! (%o)",
       "flags": [
         "google-translated"
       ]
@@ -14791,7 +14791,7 @@
       "key": {
         "message": "Received worker execute result for unknown token (%s)"
       },
-      "translated": "Trabalhador recebido executa resultado para token desconhecido (% s)",
+      "translated": "Recebida execução de worker para token de resultado desconhecido (%s)",
       "flags": [
         "google-translated"
       ]
@@ -14800,7 +14800,7 @@
       "key": {
         "message": "Received error from codec worker. Closing worker."
       },
-      "translated": "Erro recebido do trabalhador do codec. Trabalhador de fechamento.",
+      "translated": "Erro recebido do worker do codec. Encerrando worker.",
       "flags": [
         "google-translated"
       ]
@@ -14809,7 +14809,7 @@
       "key": {
         "message": "worker does not exists"
       },
-      "translated": "trabalhador não existe",
+      "translated": "worker não existe",
       "flags": [
         "google-translated"
       ]
@@ -14827,7 +14827,7 @@
       "key": {
         "message": "Could not resample PCM data for codec. Error: %o"
       },
-      "translated": "Não foi possível amostrar novamente os dados do PCM para codec. Erro:% o",
+      "translated": "Não foi possível samplar novamente os dados do PCM para codec. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -14836,7 +14836,7 @@
       "key": {
         "message": "Could not encode PCM data for codec. Error: %o"
       },
-      "translated": "Não foi possível codificar os dados do PCM para o codec. Erro:% o",
+      "translated": "Não foi possível codificar os dados do PCM para o codec. Erro: %o",
       "flags": [
         "google-translated"
       ]
@@ -14845,7 +14845,7 @@
       "key": {
         "message": "Voice buffer stalled in WorkerPipe longer then expected: %d"
       },
-      "translated": "O buffer de voz parou no WorkerPipe por mais tempo do que o esperado:% d",
+      "translated": "O buffer de voz parou no WorkerPipe por mais tempo do que o esperado: %d",
       "flags": [
         "google-translated"
       ]
@@ -14854,7 +14854,7 @@
       "key": {
         "message": "The target sample rate is outside the range [3000, 384000]."
       },
-      "translated": "A taxa de amostra alvo está fora do intervalo [3000, 384000].",
+      "translated": "A taxa de alvo sample está fora do intervalo [3000, 384000].",
       "flags": [
         "google-translated"
       ]
@@ -14906,9 +14906,9 @@
     },
     {
       "key": {
-        "message": "Remove current server to bookmarks"
+        "message": "Remove current server from bookmarks"
       },
-      "translated": "Remover servidor atual para favoritos",
+      "translated": "Remover servidor atual dos favoritos",
       "flags": [
         "google-translated"
       ]
@@ -14926,7 +14926,7 @@
       "key": {
         "message": "Go online"
       },
-      "translated": "Fique online",
+      "translated": "Ficar online",
       "flags": [
         "google-translated"
       ]
@@ -14935,7 +14935,7 @@
       "key": {
         "message": "Set away on this server"
       },
-      "translated": "Afastado neste servidor",
+      "translated": "Ficar ausente neste servidor",
       "flags": [
         "google-translated"
       ]
@@ -14953,7 +14953,7 @@
       "key": {
         "message": "Set away for all servers"
       },
-      "translated": "Afastado para todos os servidores",
+      "translated": "Ficar ausente para todos os servidores",
       "flags": [
         "google-translated"
       ]
@@ -14962,7 +14962,7 @@
       "key": {
         "message": "Set away message for all servers"
       },
-      "translated": "Separar mensagem para todos os servidores",
+      "translated": "Alterar mensagem de ausencia para todos os servidores",
       "flags": [
         "google-translated"
       ]
@@ -14971,7 +14971,7 @@
       "key": {
         "message": "Go online for all servers"
       },
-      "translated": "Fique online para todos os servidores",
+      "translated": "Ficar online para todos os servidores",
       "flags": [
         "google-translated"
       ]
@@ -14980,7 +14980,7 @@
       "key": {
         "message": "Mute/unmute microphone"
       },
-      "translated": "Silenciar / ativar o som do microfone",
+      "translated": "Silenciar/ativar o som do microfone",
       "flags": [
         "google-translated"
       ]
@@ -14989,7 +14989,7 @@
       "key": {
         "message": "Mute/unmute headphones"
       },
-      "translated": "Silenciar / reativar fones de ouvido",
+      "translated": "Silenciar/ativar fones de ouvido",
       "flags": [
         "google-translated"
       ]
@@ -15007,7 +15007,7 @@
       "key": {
         "message": "Mute/unmute microphone"
       },
-      "translated": "Silenciar / ativar o som do microfone",
+      "translated": "Silenciar/ativar o som do microfone",
       "flags": [
         "google-translated"
       ]
@@ -15016,7 +15016,7 @@
       "key": {
         "message": "Mute/unmute microphone"
       },
-      "translated": "Silenciar / ativar o som do microfone",
+      "translated": "Silenciar/ativar o som do microfone",
       "flags": [
         "google-translated"
       ]
@@ -15025,7 +15025,7 @@
       "key": {
         "message": "Mute/unmute headphones"
       },
-      "translated": "Silenciar / reativar fones de ouvido",
+      "translated": "Silenciar/ativar fones de ouvido",
       "flags": [
         "google-translated"
       ]
@@ -15034,7 +15034,7 @@
       "key": {
         "message": "Mute/unmute headphones"
       },
-      "translated": "Silenciar / reativar fones de ouvido",
+      "translated": "Silenciar/ativar fones de ouvido",
       "flags": [
         "google-translated"
       ]
@@ -15052,7 +15052,7 @@
       "key": {
         "message": "Show/hide server queries"
       },
-      "translated": "Mostrar / ocultar queries do servidor",
+      "translated": "Mostrar/ocultar queries do servidor",
       "flags": [
         "google-translated"
       ]
@@ -15079,7 +15079,7 @@
       "key": {
         "message": "Hostbutton"
       },
-      "translated": "Botão Host",
+      "translated": "Hostbutton",
       "flags": [
         "google-translated"
       ]
@@ -15115,7 +15115,7 @@
       "key": {
         "message": "Your ping"
       },
-      "translated": "Seu ping",
+      "translated": "Ping",
       "flags": [
         "google-translated"
       ]
@@ -15142,7 +15142,7 @@
       "key": {
         "message": "Private chats"
       },
-      "translated": "conversação privado",
+      "translated": "Chats privados",
       "flags": [
         "google-translated"
       ]
@@ -15151,7 +15151,7 @@
       "key": {
         "message": "Private chats"
       },
-      "translated": "conversação privado",
+      "translated": "Chats privados",
       "flags": [
         "google-translated"
       ]
@@ -15169,7 +15169,7 @@
       "key": {
         "message": "You&nbsp;dont&nbsp;have any&nbsp;chats&nbsp;yet!"
       },
-      "translated": "Você ainda não tem nenhum conversação!",
+      "translated": "Você ainda não tem nenhuma conversação!",
       "flags": [
         "google-translated"
       ]
@@ -15187,7 +15187,7 @@
       "key": {
         "message": "Type your message here..."
       },
-      "translated": "Digite sua mensagem aqui ...",
+      "translated": "Digite a sua mensagem aqui ...",
       "flags": [
         "google-translated"
       ]
@@ -15196,7 +15196,7 @@
       "key": {
         "message": "Scroll to new messages"
       },
-      "translated": "Role para novas mensagens",
+      "translated": "Use o scroll para ver novas mensagens",
       "flags": [
         "google-translated"
       ]
@@ -15223,7 +15223,7 @@
       "key": {
         "message": "The target server does not support channel chats."
       },
-      "translated": "O servidor de destino não suporta conversaçãos no canal.",
+      "translated": "O servidor de destino não suporta conversacões no canal.",
       "flags": [
         "google-translated"
       ]
@@ -15232,7 +15232,7 @@
       "key": {
         "message": "You're only able to write in your own channel"
       },
-      "translated": "Você só pode escrever em seu próprio canal",
+      "translated": "Você só pode escrever no seu próprio canal",
       "flags": [
         "google-translated"
       ]
@@ -15313,7 +15313,7 @@
       "key": {
         "message": "Full Info"
       },
-      "translated": "Informações completas",
+      "translated": "Informação completa",
       "flags": [
         "google-translated"
       ]
@@ -15322,7 +15322,7 @@
       "key": {
         "message": "Fetching playlist..."
       },
-      "translated": "Buscando playlist ...",
+      "translated": "Procurando playlist...",
       "flags": [
         "google-translated"
       ]
@@ -15349,7 +15349,7 @@
       "key": {
         "message": "An error occurred while fetching the playlist"
       },
-      "translated": "Ocorreu um erro ao buscar a playlist",
+      "translated": "Ocorreu um erro ao procurar a playlist",
       "flags": [
         "google-translated"
       ]
@@ -15367,7 +15367,7 @@
       "key": {
         "message": "The playlist is currently empty."
       },
-      "translated": "A playlist está vazia no momento.",
+      "translated": "A playlist está vazia de momento.",
       "flags": [
         "google-translated"
       ]
@@ -15493,7 +15493,7 @@
       "key": {
         "message": "No connections yet made"
       },
-      "translated": "Ainda não foram feitas ligações",
+      "translated": "Ainda não foram feitas conexões",
       "flags": [
         "google-translated"
       ]
@@ -15664,7 +15664,7 @@
       "key": {
         "message": "Required power to talk in this channel"
       },
-      "translated": "Potência necessária para falar neste canal",
+      "translated": "Poder necessário para falar neste canal",
       "flags": [
         "google-translated"
       ]
@@ -15754,7 +15754,7 @@
       "key": {
         "message": "Required power to talk in this channel"
       },
-      "translated": "Potência necessária para falar neste canal",
+      "translated": "Poder necessário para falar neste canal",
       "flags": [
         "google-translated"
       ]
@@ -15781,7 +15781,7 @@
       "key": {
         "message": "Max users which could join the channel"
       },
-      "translated": "Máximo de usuários que podem participar do canal",
+      "translated": "Máximo de usuários que podem participar no canal",
       "flags": [
         "google-translated"
       ]
@@ -15790,7 +15790,7 @@
       "key": {
         "message": "Family Max users"
       },
-      "translated": "Usuários Family Max",
+      "translated": "Máximo de usuários de familia",
       "flags": [
         "google-translated"
       ]
@@ -15898,7 +15898,7 @@
       "key": {
         "message": "For bad internet connection, lower settings are recommend to reduce bandwidth."
       },
-      "translated": "Para uma conexão ruim à Internet, recomenda-se configurações mais baixas para reduzir a largura de banda.",
+      "translated": "Para uma conexão de baixa qualidade à Internet, recomenda-se configurações mais baixas para reduzir a largura de banda.",
       "flags": [
         "google-translated"
       ]
@@ -15925,7 +15925,7 @@
       "key": {
         "message": "Required power to join this channel"
       },
-      "translated": "Potência necessária para ingressar neste canal",
+      "translated": "Poder necessário para ingressar neste canal",
       "flags": [
         "google-translated"
       ]
@@ -15943,7 +15943,7 @@
       "key": {
         "message": "Required power to see this channel"
       },
-      "translated": "Potência necessária para ver este canal",
+      "translated": "Poder necessário para ver este canal",
       "flags": [
         "google-translated"
       ]
@@ -15961,7 +15961,7 @@
       "key": {
         "message": "Required power to see the channel description"
       },
-      "translated": "Potência necessária para ver a descrição do canal",
+      "translated": "Poder necessário para ver a descrição do canal",
       "flags": [
         "google-translated"
       ]
@@ -15970,7 +15970,7 @@
       "key": {
         "message": "Subscribe"
       },
-      "translated": "Se inscrever",
+      "translated": "Inscrever",
       "flags": [
         "google-translated"
       ]
@@ -15979,7 +15979,7 @@
       "key": {
         "message": "Required power to subscribe to this channel"
       },
-      "translated": "Energia necessária para se inscrever neste canal",
+      "translated": "Poder necessário para se inscrever neste canal",
       "flags": [
         "google-translated"
       ]
@@ -15988,7 +15988,7 @@
       "key": {
         "message": "Required power to delete this channel"
       },
-      "translated": "Energia necessária para excluir este canal",
+      "translated": "Poder necessário para excluir este canal",
       "flags": [
         "google-translated"
       ]
@@ -15997,7 +15997,7 @@
       "key": {
         "message": "File transfer needed powers:"
       },
-      "translated": "Transferência necessária de arquivos:",
+      "translated": "Poder de transferência de arquivos necessário:",
       "flags": [
         "google-translated"
       ]
@@ -16006,7 +16006,7 @@
       "key": {
         "message": "Browse"
       },
-      "translated": "Squeaky toy",
+      "translated": "Procurar",
       "flags": [
         "google-translated"
       ]
@@ -16024,7 +16024,7 @@
       "key": {
         "message": "Required power to upload files"
       },
-      "translated": "Energia necessária para fazer upload de arquivos",
+      "translated": "Poder necessário para fazer upload de arquivos",
       "flags": [
         "google-translated"
       ]
@@ -16033,7 +16033,7 @@
       "key": {
         "message": "Download"
       },
-      "translated": "Baixar",
+      "translated": "Download",
       "flags": [
         "google-translated"
       ]
@@ -16042,7 +16042,7 @@
       "key": {
         "message": "Required power to download files"
       },
-      "translated": "Energia necessária para baixar arquivos",
+      "translated": "Poder necessário para fazer download arquivos",
       "flags": [
         "google-translated"
       ]
@@ -16069,7 +16069,7 @@
       "key": {
         "message": "Required power to create a directory"
       },
-      "translated": "Energia necessária para criar um diretório",
+      "translated": "Poder necessário para criar um diretório",
       "flags": [
         "google-translated"
       ]
@@ -16078,7 +16078,7 @@
       "key": {
         "message": "Required power to delete a directory or file"
       },
-      "translated": "Energia necessária para excluir um diretório ou arquivo",
+      "translated": "Poder necessário para excluir um diretório ou arquivo",
       "flags": [
         "google-translated"
       ]
@@ -16087,7 +16087,7 @@
       "key": {
         "message": "Other Settings"
       },
-      "translated": "Outros ajustes",
+      "translated": "Outras defenições",
       "flags": [
         "google-translated"
       ]
@@ -16105,7 +16105,7 @@
       "key": {
         "message": "Delete delay:"
       },
-      "translated": "Excluir atraso:",
+      "translated": "Excluir delay:",
       "flags": [
         "google-translated"
       ]
@@ -16132,7 +16132,7 @@
       "key": {
         "message": "Encrypt voice data:"
       },
-      "translated": "Criptografar dados de voz:",
+      "translated": "Dados de voz encriptados:",
       "flags": [
         "google-translated"
       ]
@@ -16168,7 +16168,7 @@
       "key": {
         "message": "Edit icon"
       },
-      "translated": "Ícone de edição",
+      "translated": "Editar Ícone",
       "flags": [
         "google-translated"
       ]
@@ -16177,7 +16177,7 @@
       "key": {
         "message": "Remove icon"
       },
-      "translated": "Ícone Remover",
+      "translated": "Remover Ícone",
       "flags": [
         "google-translated"
       ]
@@ -16240,7 +16240,7 @@
       "key": {
         "message": "Host"
       },
-      "translated": "Hospedeiro",
+      "translated": "Host",
       "flags": [
         "google-translated"
       ]
@@ -16249,7 +16249,7 @@
       "key": {
         "message": "Networking"
       },
-      "translated": "Trabalho em rede",
+      "translated": "Rede",
       "flags": [
         "google-translated"
       ]
@@ -16303,7 +16303,7 @@
       "key": {
         "message": "Enter a message..."
       },
-      "translated": "Digite uma mensagem ...",
+      "translated": "Digite uma mensagem...",
       "flags": [
         "google-translated"
       ]
@@ -16375,7 +16375,7 @@
       "key": {
         "message": "URL which will be opened when the client clicks on the host banner"
       },
-      "translated": "URL que será aberta quando o cliente clicar no banner do host",
+      "translated": "URL que será aberto quando o cliente clicar no banner do host",
       "flags": [
         "google-translated"
       ]
@@ -16456,7 +16456,7 @@
       "key": {
         "message": "Time in seconds which determine in which interval the client reloads the hostbanner.<br>A value of 0 means no reload."
       },
-      "translated": "Tempo em segundos que determina em qual intervalo o cliente recarrega o hostbanner. <br> Um valor 0 significa que não há recarga.",
+      "translated": "Tempo em segundos que determina em qual intervalo o cliente recarrega o hostbanner.<br>Um valor 0 significa que não há recarga.",
       "flags": [
         "google-translated"
       ]
@@ -16492,7 +16492,7 @@
       "key": {
         "message": "Host Button"
       },
-      "translated": "Botão Host",
+      "translated": "botão Host",
       "flags": [
         "google-translated"
       ]
@@ -16510,7 +16510,7 @@
       "key": {
         "message": "URL which will be opened when the client clicks on the host button"
       },
-      "translated": "URL que será aberta quando o cliente clicar no botão host",
+      "translated": "URL que será aberta quando o cliente clicar no botão Host",
       "flags": [
         "google-translated"
       ]
@@ -16582,7 +16582,7 @@
       "key": {
         "message": "Binding"
       },
-      "translated": "Obrigatório",
+      "translated": "Ligação",
       "flags": [
         "google-translated"
       ]
@@ -16591,7 +16591,7 @@
       "key": {
         "message": "Host"
       },
-      "translated": "Hospedeiro",
+      "translated": "Host",
       "flags": [
         "google-translated"
       ]
@@ -16600,7 +16600,7 @@
       "key": {
         "message": "A comma separated set of IP's where the server is listening on."
       },
-      "translated": "Um conjunto de IPs separados por vírgula em que o servidor está escutando.",
+      "translated": "Um conjunto de IPs separados por vírgula em que o servidor está activo.",
       "flags": [
         "google-translated"
       ]
@@ -16618,7 +16618,7 @@
       "key": {
         "message": "Note: If you change this you need to restart the virtual server!"
       },
-      "translated": "Nota: Se você alterar isso, precisará reiniciar o servidor virtual!",
+      "translated": "Nota: Se você alterar isto, precisará de reiniciar o servidor virtual!",
       "flags": [
         "google-translated"
       ]
@@ -16636,7 +16636,7 @@
       "key": {
         "message": "The port where the server should be listening to."
       },
-      "translated": "A porta em que o servidor deve estar ouvindo.",
+      "translated": "A porta em que o servidor deve estar activo.",
       "flags": [
         "google-translated"
       ]
@@ -16690,7 +16690,7 @@
       "key": {
         "message": "Bytes/s"
       },
-      "translated": "Bytes / s",
+      "translated": "Bytes/s",
       "flags": [
         "google-translated"
       ]
@@ -16699,7 +16699,7 @@
       "key": {
         "message": "Quota"
       },
-      "translated": "Contingente",
+      "translated": "Quota",
       "flags": [
         "google-translated"
       ]
@@ -16708,7 +16708,7 @@
       "key": {
         "message": "Max amount of data in megabytes which could be downloaded."
       },
-      "translated": "Quantidade máxima de dados em megabytes que podem ser baixados.",
+      "translated": "Quantidade máxima de dados em megabytes que podem ser transferidos.",
       "flags": [
         "google-translated"
       ]
@@ -16717,7 +16717,7 @@
       "key": {
         "message": "The quota will be reset on every new month"
       },
-      "translated": "A cota será redefinida a cada novo mês",
+      "translated": "A quota será redefinida a cada novo mês",
       "flags": [
         "google-translated"
       ]
@@ -16726,7 +16726,7 @@
       "key": {
         "message": "MiB/mo"
       },
-      "translated": "MiB / mês",
+      "translated": "MiB/mês",
       "flags": [
         "google-translated"
       ]
@@ -16735,7 +16735,7 @@
       "key": {
         "message": "Quota this month"
       },
-      "translated": "Cota este mês",
+      "translated": "Quota este mês",
       "flags": [
         "google-translated"
       ]
@@ -16744,7 +16744,7 @@
       "key": {
         "message": "Quota total"
       },
-      "translated": "Total da cota",
+      "translated": "Total da quota",
       "flags": [
         "google-translated"
       ]
@@ -16780,7 +16780,7 @@
       "key": {
         "message": "Bytes/s"
       },
-      "translated": "Bytes / s",
+      "translated": "Bytes/s",
       "flags": [
         "google-translated"
       ]
@@ -16789,7 +16789,7 @@
       "key": {
         "message": "Quota"
       },
-      "translated": "Contingente",
+      "translated": "Quota",
       "flags": [
         "google-translated"
       ]
@@ -16807,7 +16807,7 @@
       "key": {
         "message": "The quota will be reset on every new month"
       },
-      "translated": "A cota será redefinida a cada novo mês",
+      "translated": "A Quota será redefinida a cada mês",
       "flags": [
         "google-translated"
       ]
@@ -16816,7 +16816,7 @@
       "key": {
         "message": "MiB/mo"
       },
-      "translated": "MiB / mês",
+      "translated": "MiB/mês",
       "flags": [
         "google-translated"
       ]
@@ -16825,7 +16825,7 @@
       "key": {
         "message": "Quota this month"
       },
-      "translated": "Cota este mês",
+      "translated": "Quota este mês",
       "flags": [
         "google-translated"
       ]
@@ -16834,7 +16834,7 @@
       "key": {
         "message": "Quota total"
       },
-      "translated": "Total da cota",
+      "translated": "Total da Quota",
       "flags": [
         "google-translated"
       ]
@@ -16843,7 +16843,7 @@
       "key": {
         "message": "Anti Flood"
       },
-      "translated": "Anti inundação",
+      "translated": "Anti flood",
       "flags": [
         "google-translated"
       ]
@@ -16852,7 +16852,7 @@
       "key": {
         "message": "Reduced points every ½ seconds."
       },
-      "translated": "Pontos reduzidos a cada ½ segundo.",
+      "translated": "Pontos reduzidos a cada ½ segundos.",
       "flags": [
         "google-translated"
       ]
@@ -16861,7 +16861,7 @@
       "key": {
         "message": "Flood point count which will be reduced each server tick."
       },
-      "translated": "Contagem de pontos de inundação que será reduzida a cada tick de servidor.",
+      "translated": "Contagem de pontos de flood que será reduzida a cada tick de servidor.",
       "flags": [
         "google-translated"
       ]
@@ -20299,7 +20299,7 @@
       "key": {
         "message": "View power"
       },
-      "translated": "Ver potência",
+      "translated": "Ver Poder",
       "flags": [
         "google-translated"
       ]
@@ -21280,7 +21280,7 @@
       "key": {
         "message": "Used/Max file transfer quota"
       },
-      "translated": "Cota de transferência de arquivo usada / máxima",
+      "translated": "Quota de transferência de arquivo usada / máxima",
       "flags": [
         "google-translated"
       ]
