@@ -6007,7 +6007,7 @@
             "key": {
                 "message": "Enter bookmarks name"
             },
-            "translated": "Adja meg a könyvjelzők nevét",
+            "translated": "Adja meg a könyvjelző nevét",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -6017,7 +6017,7 @@
             "key": {
                 "message": "Please enter the bookmarks name:<br>"
             },
-            "translated": "Adja meg a könyvjelzők nevét:<br>",
+            "translated": "Adja meg a könyvjelző nevét:<br>",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -25428,6 +25428,16 @@
                 "message": "Mute headphones"
             },
             "translated": "Hangszóró némítása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Delete"
+            },
+            "translated": "Törlés",
             "flags": [
                 "google-translated",
                 "human-verified"
