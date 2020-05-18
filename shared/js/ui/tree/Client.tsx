@@ -314,6 +314,9 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
         if(typeof event.updated_properties.client_servergroups !== "undefined" || typeof event.updated_properties.client_channel_group_id !== "undefined") {
             this.updateGroups();
         }
+        if(typeof event.updated_properties.client_nickname !== "undefined") {
+            this.forceUpdate();
+        }
     }
 }
 
