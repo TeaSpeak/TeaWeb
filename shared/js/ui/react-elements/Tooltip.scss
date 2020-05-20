@@ -1,0 +1,43 @@
+@import "../../../css/static/mixin";
+
+.container {
+    color: #999999;
+    background-color: #232222;
+
+    position: fixed;
+    z-index: 1000000;
+
+    pointer-events: none;
+
+    padding: .25em;
+    transform: translate(-50%, -100%); /* translate up, center */
+
+    text-align: center;
+    border-right: 3px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+    opacity: 0;
+    @include transition(opacity .5s ease-in-out);
+
+    &:after {
+        content: '';
+        position: absolute;
+
+        width: 0;
+        height: 0;
+
+        left: calc(50% - .5em);
+        bottom: -.4em;
+
+        border-style: solid;
+        border-width: .5em .5em 0 .5em;
+        border-color: #232222 transparent transparent transparent;
+    }
+
+    &.shown {
+        opacity: 1;
+    }
+}
