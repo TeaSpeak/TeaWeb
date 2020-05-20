@@ -28,6 +28,7 @@ import * as hex from "tc-shared/crypto/hex";
 import { ClientEntry as ClientEntryView } from "./tree/Client";
 import * as React from "react";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
+import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "tc-shared/ui/modal/ModalChangeVolumeNew";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -145,7 +146,8 @@ export interface ClientEvents extends ChannelTreeEntryEvents {
         client_properties: ClientProperties
     },
     notify_mute_state_change: { muted: boolean }
-    notify_speak_state_change: { speaking: boolean }
+    notify_speak_state_change: { speaking: boolean },
+    "notify_audio_level_changed": { newValue: number },
 
     "music_status_update": {
         player_buffered_index: number,
@@ -515,8 +517,8 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-change_nickname",
                 name:   (contextmenu.get_provider().html_format_enabled() ? "<b>" : "") +
-                        tr("Open text chat") +
-                        (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
+                    tr("Open text chat") +
+                    (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 callback: () => {
                     this.open_text_chat();
                 }
@@ -657,15 +659,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-volume",
                 name: tr("Change Volume"),
-                callback: () => {
-                    spawnChangeVolume(this, true, this._audio_volume, undefined, volume => {
-                        this._audio_volume = volume;
-                        this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
-                        if(this._audio_handle)
-                            this._audio_handle.set_volume(volume);
-                        //TODO: Update in info
-                    });
-                }
+                callback: () => spawnClientVolumeChange(this)
             },
             {
                 type: contextmenu.MenuEntryType.ENTRY,
@@ -933,6 +927,22 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         this._info_connection_promise_resolve = undefined;
         this._info_connection_promise_reject = undefined;
     }
+
+    setAudioVolume(value: number) {
+        if(this._audio_volume == value)
+            return;
+
+        this._audio_volume = value;
+
+        this.get_audio_handle()?.set_volume(value);
+        this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), value);
+
+        this.events.fire("notify_audio_level_changed", { newValue: value });
+    }
+
+    getAudioVolume() {
+        return this._audio_volume;
+    }
 }
 
 export class LocalClientEntry extends ClientEntry {
@@ -952,8 +962,8 @@ export class LocalClientEntry extends ClientEntry {
             ...this.contextmenu_info(), {
 
                 name:   (contextmenu.get_provider().html_format_enabled() ? "<b>" : "") +
-                        tr("Change name") +
-                        (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
+                    tr("Change name") +
+                    (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 icon_class: "client-change_nickname",
                 callback: () =>_self.openRename(),
                 type: contextmenu.MenuEntryType.ENTRY
@@ -1106,8 +1116,8 @@ export class MusicClientEntry extends ClientEntry {
         contextmenu.spawn_context_menu(x, y,
             ...this.contextmenu_info(), {
                 name: (contextmenu.get_provider().html_format_enabled() ? "<b>" : "") +
-                      tr("Change bot name") +
-                      (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
+                    tr("Change bot name") +
+                    (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 icon_class: "client-change_nickname",
                 disabled: false,
                 callback: () => {
@@ -1224,12 +1234,7 @@ export class MusicClientEntry extends ClientEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-volume",
                 name: tr("Change local volume"),
-                callback: () => {
-                    spawnChangeVolume(this, true, this._audio_handle.get_volume(), undefined, volume => {
-                        this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), volume);
-                        this._audio_handle.set_volume(volume);
-                    });
-                }
+                callback: () => spawnClientVolumeChange(this)
             },
             {
                 type: contextmenu.MenuEntryType.ENTRY,
@@ -1240,17 +1245,7 @@ export class MusicClientEntry extends ClientEntry {
                     if(max_volume < 0)
                         max_volume = 100;
 
-                    spawnChangeVolume(this, false, this.properties.player_volume, max_volume / 100, value => {
-                        if(typeof(value) !== "number")
-                            return;
-
-                        this.channelTree.client.serverConnection.send_command("clientedit", {
-                            clid: this.clientId(),
-                            player_volume: value,
-                        }).then(() => {
-                            //TODO: Update in info
-                        });
-                    });
+                    spawnMusicBotVolumeChange(this, max_volume / 100);
                 }
             },
             {
@@ -1274,11 +1269,11 @@ export class MusicClientEntry extends ClientEntry {
                 callback: () => {
                     const tag = $.spawn("div").append(formatMessage(tr("Do you really want to delete {0}"), this.createChatTag(false)));
                     spawnYesNo(tr("Are you sure?"), $.spawn("div").append(tag), result => {
-                       if(result) {
-                           this.channelTree.client.serverConnection.send_command("musicbotdelete", {
-                               bot_id: this.properties.client_database_id
-                           });
-                       }
+                        if(result) {
+                            this.channelTree.client.serverConnection.send_command("musicbotdelete", {
+                                bot_id: this.properties.client_database_id
+                            });
+                        }
                     });
                 },
                 type: contextmenu.MenuEntryType.ENTRY
@@ -1294,7 +1289,7 @@ export class MusicClientEntry extends ClientEntry {
     handlePlayerInfo(json) {
         if(json) {
             const info = new MusicClientPlayerInfo();
-           JSON.map_to(info, json);
+            JSON.map_to(info, json);
             if(this._info_promise_resolve)
                 this._info_promise_resolve(info);
             this._info_promise_reject = undefined;
