@@ -1,16 +1,16 @@
 {
-    "info": {
+       "info": {
         "contributors": [
             {
                 "name": "Google Translate, via script by Markus Hadenfeldt",
                 "email": "gtr.i18n.client@teaspeak.de"
             },
             {
-                "name": "Silverhost.xyz csapata",
+                "name": "Ifj. Madarász László (Silverhost.xyz csapata)",
                 "email": "info@silverhost.hu"
-            }
+            },
         ],
-        "name": "Silverhost.xyz csapata ellenőrizte és javította a forditást"
+        "name": "Magyar (fordította: Ifj. Madarász László)"
     },
     "translations": [
         {
@@ -6007,7 +6007,7 @@
             "key": {
                 "message": "Enter bookmarks name"
             },
-            "translated": "Adja meg a könyvjelzők nevét",
+            "translated": "Adja meg a könyvjelző nevét",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -6017,7 +6017,7 @@
             "key": {
                 "message": "Please enter the bookmarks name:<br>"
             },
-            "translated": "Adja meg a könyvjelzők nevét:<br>",
+            "translated": "Adja meg a könyvjelző nevét:<br>",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -8747,7 +8747,7 @@
             "key": {
                 "message": "years"
             },
-            "translated": "évek",
+            "translated": "év",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -8757,7 +8757,7 @@
             "key": {
                 "message": "days"
             },
-            "translated": "napok",
+            "translated": "nap",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -8767,7 +8767,7 @@
             "key": {
                 "message": "hours"
             },
-            "translated": "órák",
+            "translated": "óra",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -8777,7 +8777,7 @@
             "key": {
                 "message": "minutes"
             },
-            "translated": "percek",
+            "translated": "perc",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -8787,7 +8787,7 @@
             "key": {
                 "message": "seconds"
             },
-            "translated": "másodpercek",
+            "translated": "másodperc",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -12607,7 +12607,7 @@
             "key": {
                 "message": "years"
             },
-            "translated": "évek",
+            "translated": "év",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -12617,7 +12617,7 @@
             "key": {
                 "message": "days"
             },
-            "translated": "napok",
+            "translated": "nap",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -12627,7 +12627,7 @@
             "key": {
                 "message": "hours"
             },
-            "translated": "órák",
+            "translated": "óra",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -12637,7 +12637,7 @@
             "key": {
                 "message": "minutes"
             },
-            "translated": "percek",
+            "translated": "perc",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -12647,7 +12647,7 @@
             "key": {
                 "message": "seconds"
             },
-            "translated": "másodpercek",
+            "translated": "másodperc",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -12727,7 +12727,7 @@
             "key": {
                 "message": "Expend group"
             },
-            "translated": "Felhasznált csoport",
+            "translated": "Csoport kibontása",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -12747,7 +12747,7 @@
             "key": {
                 "message": "Expend all"
             },
-            "translated": "Felhasznál mindent",
+            "translated": "Az összes kibontása",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -13437,7 +13437,7 @@
             "key": {
                 "message": "Expend all"
             },
-            "translated": "Összes kibontása ",
+            "translated": " AZ összes kibontása ",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -19307,7 +19307,7 @@
             "key": {
                 "message": "Disabled backrounds within the hostbanner"
             },
-            "translated": "Háttérképek nincsenek engedélyezve a hostbanner-en belül",
+            "translated": "Háttérképek kikapcsolása a hostbanner-en belül",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -23377,7 +23377,7 @@
             "key": {
                 "message": "Save Key"
             },
-            "translated": "Mentés kulcs",
+            "translated": "Kulcs mentése",
             "flags": [
                 "google-translated",
                 "human-verified"
@@ -25078,6 +25078,366 @@
                 "message": "Refresh"
             },
             "translated": "Frissítés",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+                "message": "Settings"
+            },
+            "translated": "Beállitások",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+                "message": "Keymap"
+            },
+            "translated": "Billentyűzet kiosztása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+        {
+            "key": {
+                "message": "Server connection"
+            },
+            "translated": "Szerver kapcsolat",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Disconnect from the current server"
+            },
+            "translated": "Lecsatlakozás a jelenlegi szerverről",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Disconnect all connected servers"
+            },
+            "translated": "Lecsatlakozás az összes csatlakozott szerverről",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Toggle your microphone status"
+            },
+            "translated": "Mikrofon állapotának váltása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Enable your microphone"
+            },
+            "translated": "Mikrofon engedélyezése",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Disable your microphone"
+            },
+            "translated": "Mikrofon tiltása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Toggle your speaker status"
+            },
+            "translated": "Hangszóró állapotának váltása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Enable your speakers"
+            },
+            "translated": "Hangszóró engedélyezése",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Disable your speakers"
+            },
+            "translated": "Hangszóró tiltása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Toggle your away state"
+            },
+            "translated": "Távollét állapotának váltása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Enable away for the current server"
+            },
+            "translated": "Távollét engedélyezése a jelenlegi szerveren",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Disable away for the current server"
+            },
+            "translated": "Távollét tiltása a jelenlegi szerveren",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Toggle your away state for every server"
+            },
+            "translated": "Távollét állapotának váltása az összes szerveren",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Enable away for every server"
+            },
+            "translated": "Távollét engedélyezése az összes szerveren",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Disable away for every server"
+            },
+            "translated": "Távollét tiltása az összes szerveren",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Clear Key"
+            },
+            "translated": "Kulcs törlése (a jelenleg kiválasztott kulcs)",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Not connected to any server"
+            },
+            "translated": "Nincs csatlakozva egy szerverhez sem",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "TeaSpeak official Test-Server"
+            },
+            "translated": "TeaSpeak hivatalos Teszt-Szervere",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "TeaSpeak official Test-Server"
+            },
+            "translated": "TeaSpeak hivatalos Teszt-Szervere",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Collapse sub channels"
+            },
+            "translated": "Alcsatronák összecsukása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Expend sub channels"
+            },
+            "translated": "Alcsatronák kibontása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Set away on all servers"
+            },
+            "translated": "Távollét bekapcsolása az összes szerveren",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "You're successfully connected with you forum account"
+            },
+            "translated": "Sikeresen csatlakoztál a fórum fiókoddal",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Username:"
+            },
+            "translated": "Felhasználónév:",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Premium:"
+            },
+            "translated": "Prémium fiók:",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Settings"
+            },
+            "translated": "Beállitások",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Extra Small"
+            },
+            "translated": "Nagyon kicsi",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Small"
+            },
+            "translated": "Kicsi",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Normal"
+            },
+            "translated": "Normál",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },		
+		{
+            "key": {
+                "message": "Large"
+            },
+            "translated": "Nagy",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Extra Large"
+            },
+            "translated": "Nagyon nagy",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Default TeaSpeak repository"
+            },
+            "translated": "Alapértelmezett TeaSpeak tároló/raktár",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Mute headphones"
+            },
+            "translated": "Hangszóró némítása",
+            "flags": [
+                "google-translated",
+                "human-verified"
+            ]
+        },
+		{
+            "key": {
+                "message": "Delete"
+            },
+            "translated": "Törlés",
             "flags": [
                 "google-translated",
                 "human-verified"

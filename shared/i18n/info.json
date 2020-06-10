@@ -99,25 +99,25 @@
     }, {
       "key": "hu_gt",
       "country_code": "hu",
-      "path": "hu_google_translate.translation",
+      "path": "hu_translate.translation",
 
-      "name": "Auto translated messages for language hu (Hungarian)",
+      "name": "Magyar (fordította: Ifj. Madarász László)",
       "contributors": [
-        {
-          "name": "Google Translate, via script by Markus Hadenfeldt",
-          "email": "gtr.i18n.client@teaspeak.de"
-        }
+            {
+                "name": "Ifj. Madarász László (Silverhost.xyz csapata)",
+                "email": "info@silverhost.hu"
+            }
       ]
     }, {
       "key": "pt_gt",
       "country_code": "pt",
-      "path": "pt_google_translate.translation",
+      "path": "pt_translate.translation",
 
-      "name": "Auto translated messages for language pt (Portuguese)",
+      "name": "Portuguese / Português",
       "contributors": [
         {
-          "name": "Google Translate, via script by Markus Hadenfeldt",
-          "email": "gtr.i18n.client@teaspeak.de"
+          "name": "Translated by yamano",
+          "email": "support@cyberlimbo.com"
         }
       ]
     }
