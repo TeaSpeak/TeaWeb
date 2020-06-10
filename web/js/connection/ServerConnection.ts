@@ -384,7 +384,7 @@ export class ServerConnection extends AbstractServerConnection {
                     this._ping.last_response = 'now' in performance ? performance.now() : Date.now();
                     this._ping.value = this._ping.last_response - this._ping.last_request;
                     this._ping.value_native = parseInt(json["ping_native"]) / 1000; /* we're getting it in microseconds and not milliseconds */
-                    log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
+                    //log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                 }
             } else {
                 log.warn(LogCategory.NETWORKING, tr("Unknown command type %o"), json["type"]);

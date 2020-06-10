@@ -21,9 +21,9 @@ export enum ModalState {
     DESTROYED
 }
 
-export class ModalController {
+export class ModalController<InstanceType extends Modal = Modal> {
     readonly events: Registry<ModalEvents>;
-    readonly modalInstance: Modal;
+    readonly modalInstance: InstanceType;
 
     private initializedPromise: Promise<void>;
 
@@ -31,7 +31,7 @@ export class ModalController {
     private refModal: React.RefObject<ModalImpl>;
     private modalState_: ModalState = ModalState.HIDDEN;
 
-    constructor(instance: Modal) {
+    constructor(instance: InstanceType) {
         this.modalInstance = instance;
         instance["__modal_controller"] = this;
 
@@ -170,6 +170,6 @@ class ModalImpl extends React.PureComponent<{ controller: ModalController  }, { 
     }
 }
 
-export function spawnReactModal<ModalClass extends Modal>(modalClass: new () => ModalClass) : ModalController {
-    return new ModalController(new modalClass());
+export function spawnReactModal<ModalClass extends Modal, T>(modalClass: new (T) => ModalClass, properties?: T) : ModalController<ModalClass> {
+    return new ModalController(new modalClass(properties));
 }

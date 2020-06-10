@@ -1,15 +1,15 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import {FileEntry, UploadKey} from "tc-shared/file/FileManager";
-import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
-import {tra} from "tc-shared/i18n/localize";
+import {tra, traj} from "tc-shared/i18n/localize";
 import {arrayBufferBase64} from "tc-shared/utils/buffers";
 import {Settings, settings} from "tc-shared/settings";
 import * as crc32 from "tc-shared/crypto/crc32";
-import {transfer_provider} from "tc-shared/file/FileManager";
+import {FileInfo} from "tc-shared/file/FileManager";
+import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
 
 export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
     selected_icon = selected_icon || 0;
@@ -89,7 +89,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
             container_icons_remote.detach().empty();
 
             const chunk_size = 50;
-            const icon_chunks: FileEntry[][] = [];
+            const icon_chunks: FileInfo[][] = [];
             let index = 0;
             while(icons.length > index) {
                 icon_chunks.push(icons.slice(index, index + chunk_size));
@@ -388,54 +388,53 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
                 bar.set_value(25);
                 bar.set_message(tr("initializing"));
 
-                let upload_key: UploadKey;
-                try {
-                    upload_key = await client.fileManager.upload_file({
-                        channel: undefined,
-                        channel_password: undefined,
-                        name: '/icon_' + icon.icon_id,
-                        overwrite: false,
-                        path: '',
-                        size: icon.file.size
-                    })
-                } catch(error) {
-                    if(error instanceof CommandResult && error.id == ErrorID.FILE_ALREADY_EXISTS) {
-                        if(!settings.static_global(Settings.KEY_DISABLE_COSMETIC_SLOWDOWN, false))
-                            await new Promise(resolve => setTimeout(resolve, 500 + Math.floor(Math.random() * 500)));
-                        bar.set_message(tr("icon already exists"));
-                        bar.set_value(100);
-                        icon.upload_state = "uploaded";
-                        return;
+                const transfer = client.fileManager.initializeFileUpload({
+                    channel: 0,
+                    channelPassword: undefined,
+
+                    path: "",
+                    name: "/icon_" + icon.icon_id,
+
+                    source: async () => await TransferProvider.provider().createBrowserFileSource(icon.file)
+                });
+
+                transfer.events.on("notify_state_updated", event => {
+                    switch (event.newState) {
+                        case FileTransferState.PENDING:
+                            bar.set_value(10);
+                            bar.set_message(tr("pending"));
+                            break;
+                        case FileTransferState.INITIALIZING:
+                        case FileTransferState.CONNECTING:
+                            bar.set_value(30);
+                            bar.set_message(tr("connecting"));
+                            break;
+                        case FileTransferState.RUNNING:
+                            bar.set_value(50);
+                            bar.set_message(tr("uploading"));
+                            break;
+
+                        case FileTransferState.FINISHED:
+                            bar.set_value(100);
+                            bar.set_message(tr("upload completed"));
+                            icon.upload_state = "uploaded";
+                            break;
+
+                        case FileTransferState.ERRORED:
+                            log.warn(LogCategory.FILE_TRANSFER, tr("Failed to upload icon %s: %o"), icon.file.name, transfer.currentError());
+                            bar.set_value(100);
+                            bar.set_error(tr("upload failed: ") + transfer.currentErrorMessage());
+                            icon.upload_state = "error";
+                            break;
+
+                        case FileTransferState.CANCELED:
+                            bar.set_value(100);
+                            bar.set_error(tr("upload canceled"));
+                            icon.upload_state = "error";
+                            break;
                     }
-                    console.error(tr("Failed to initialize upload: %o"), error);
-                    bar.set_error(tr("failed to initialize upload"));
-                    icon.upload_state = "error";
-                    return;
-                }
-                bar.set_value(50);
-                bar.set_message(tr("uploading"));
-
-                const connection = transfer_provider().spawn_upload_transfer(upload_key);
-                try {
-                    await connection.put_data(icon.file)
-                } catch(error) {
-                    console.error(tr("Icon upload failed for icon %s: %o"), icon.file.name, error);
-                    if(typeof(error) === "string")
-                        bar.set_error(tr("upload failed: ") + error);
-                    else if(typeof(error.message) === "string")
-                        bar.set_error(tr("upload failed: ") + error.message);
-                    else
-                        bar.set_error(tr("upload failed"));
-                    icon.upload_state = "error";
-                    return;
-                }
-
-                const time_end = Date.now();
-                if(!settings.static_global(Settings.KEY_DISABLE_COSMETIC_SLOWDOWN, false))
-                    await new Promise(resolve => setTimeout(resolve, Math.max(0, 1000 - (time_end - time_begin))));
-                bar.set_value(100);
-                bar.set_message(tr("upload completed"));
-                icon.upload_state = "uploaded";
+                });
+                await transfer.awaitFinished();
             };
         };
     }
@@ -467,7 +466,7 @@ export function spawnIconUpload(client: ConnectionHandler) {
     const update_upload_button = () => {
         const icon_count = icons.filter(e => e.state === "valid").length;
         button_upload.empty();
-        tra("Upload icons ({})", icon_count).forEach(e => e.appendTo(button_upload));
+        traj("Upload icons ({})", icon_count).forEach(e => e.appendTo(button_upload));
         button_upload.prop("disabled", icon_count == 0);
     };
     update_upload_button();

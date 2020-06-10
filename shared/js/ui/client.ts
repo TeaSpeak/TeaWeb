@@ -19,7 +19,6 @@ import {spawnPermissionEdit} from "tc-shared/ui/modal/permission/ModalPermission
 import {createServerGroupAssignmentModal} from "tc-shared/ui/modal/ModalGroupAssignment";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
-import {spawnChangeVolume} from "tc-shared/ui/modal/ModalChangeVolume";
 import {spawnChangeLatency} from "tc-shared/ui/modal/ModalChangeLatency";
 import {spawnPlaylistEdit} from "tc-shared/ui/modal/ModalPlaylistEdit";
 import {formatMessage} from "tc-shared/ui/frames/chat";

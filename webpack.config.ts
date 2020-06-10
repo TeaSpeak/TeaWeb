@@ -97,7 +97,7 @@ export const config = async (target: "web" | "client") => { return {
     module: {
         rules: [
             {
-                test: /\.s[ac]ss$/,
+                test: /\.(s[ac]|c)ss$/,
                 loader: [
                     'style-loader',
                     /*
@@ -138,7 +138,8 @@ export const config = async (target: "web" | "client") => { return {
                             getCustomTransformers: (prog: ts.Program) => {
                                 return {
                                     before: [trtransformer(prog, {
-                                        optimized: true,
+                                        optimized: false,
+                                        verbose: true,
                                         target_file: path.join(__dirname, "dist", "translations.json")
                                     })]
                                 };
@@ -158,6 +159,10 @@ export const config = async (target: "web" | "client") => { return {
                 loader: [
                     "./webpack/WatLoader.js"
                 ]
+            },
+            {
+                test: /\.svg$/,
+                loader: 'svg-inline-loader'
             }
         ],
     },

@@ -20,6 +20,7 @@ import {Registry} from "tc-shared/events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import { ChannelEntryView as ChannelEntryView } from "./tree/Channel";
 import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
+import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 
 export enum ChannelType {
     PERMANENT,
@@ -170,7 +171,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     //HTML DOM elements
     private _destroyed = false;
 
-    private _cachedPassword: string;
+    private cachedPasswordHash: string;
     private _cached_channel_description: string = undefined;
     private _cached_channel_description_promise: Promise<string> = undefined;
     private _cached_channel_description_promise_resolve: any = undefined;
@@ -390,6 +391,12 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 icon_class: "client-channel_switch",
                 name: bold(tr("Switch to channel")),
                 callback: () => this.joinChannel()
+            },{
+                type: contextmenu.MenuEntryType.ENTRY,
+                icon_class: "client-filetransfer",
+                name: bold(tr("Open channel file browser")),
+                callback: () => spawnFileTransferModal(this.getChannelId()),
+                visible: false /* FIXME: Enable this */
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-channel_switch",
@@ -623,32 +630,47 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     joinChannel() {
-        if(this.properties.channel_flag_password == true &&
-            !this._cachedPassword &&
-            !this.channelTree.client.permissions.neededPermission(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).granted(1)) {
-            createInputModal(tr("Channel password"), tr("Channel password:"), () => true, text => {
-                if(typeof(text) !== "string") return;
-
-                hashPassword(text).then(result => {
-                    this._cachedPassword = result;
-                    this.events.fire("notify_cached_password_updated", { reason: "password-entered", new_hash: result });
-                    this.joinChannel();
-                });
-            }).open();
-        } else if(this.channelTree.client.getClient().currentChannel() != this)
-            this.channelTree.client.getServerConnection().command_helper.joinChannel(this, this._cachedPassword).then(() => {
-                this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
-            }).catch(error => {
-                if(error instanceof CommandResult) {
-                    if(error.id == 781) { //Invalid password
-                        this._cachedPassword = undefined;
-                        this.events.fire("notify_cached_password_updated", { reason: "password-miss-match" });
-                    }
-                }
+        if(this.properties.channel_flag_password === true && !this.cachedPasswordHash) {
+            this.requestChannelPassword(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).then(password => {
+                this.joinChannel();
             });
+            return;
+        }
+
+        this.channelTree.client.getServerConnection().command_helper.joinChannel(this, this.cachedPasswordHash).then(() => {
+            this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
+        }).catch(error => {
+            if(error instanceof CommandResult) {
+                if(error.id == 781) { //Invalid password
+                    this.invalidateCachedPassword();
+                }
+            }
+        });
     }
 
-    cached_password() { return this._cachedPassword; }
+    async requestChannelPassword(ignorePermission: PermissionType) : Promise<{ hash: string } | undefined> {
+        if(this.cachedPasswordHash)
+            return { hash: this.cachedPasswordHash };
+
+        if(this.channelTree.client.permissions.neededPermission(ignorePermission).granted(1))
+            return { hash: "having ignore permission" };
+
+        const password = await new Promise(resolve => createInputModal(tr("Channel password"), tr("Channel password:"), () => true, resolve).open())
+        if(typeof(password) !== "string" || !password)
+            return;
+
+        const hash = await hashPassword(password);
+        this.cachedPasswordHash = hash;
+        this.events.fire("notify_cached_password_updated", { reason: "password-entered", new_hash: hash });
+        return { hash: this.cachedPasswordHash };
+    }
+
+    invalidateCachedPassword() {
+        this.cachedPasswordHash = undefined;
+        this.events.fire("notify_cached_password_updated", { reason: "password-miss-match" });
+    }
+
+    cached_password() { return this.cachedPasswordHash; }
 
     async subscribe() : Promise<void> {
         if(this.subscribe_mode == ChannelSubscribeMode.SUBSCRIBED)

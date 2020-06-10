@@ -6,6 +6,7 @@ import {ServerSettings, Settings, settings, StaticSettings} from "tc-shared/sett
 import {Sound, SoundManager} from "tc-shared/sound/Sounds";
 import {LocalClientEntry} from "tc-shared/ui/client";
 import * as server_log from "tc-shared/ui/frames/server_log";
+import {ServerLog} from "tc-shared/ui/frames/server_log";
 import {ConnectionProfile, default_profile, find_profile} from "tc-shared/profiles/ConnectionProfile";
 import {ServerAddress} from "tc-shared/ui/server";
 import * as log from "tc-shared/log";
@@ -16,10 +17,8 @@ import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
 import * as htmltags from "./ui/htmltags";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
-import {guid} from "tc-shared/crypto/uid";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import * as bipc from "./BrowserIPC";
-import {FileManager, transfer_provider, UploadKey} from "tc-shared/file/FileManager";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {Frame} from "tc-shared/ui/frames/chat_frame";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
@@ -31,7 +30,11 @@ import * as connection from "tc-backend/connection";
 import * as dns from "tc-backend/dns";
 import * as top_menu from "tc-shared/ui/frames/MenuBar";
 import {EventHandler, Registry} from "tc-shared/events";
-import {ServerLog} from "tc-shared/ui/frames/server_log";
+import {FileManager} from "tc-shared/file/FileManager";
+import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
+import {guid} from "tc-shared/crypto/uid";
+import {traj} from "tc-shared/i18n/localize";
+import {md5} from "tc-shared/crypto/md5";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -871,51 +874,35 @@ export class ConnectionHandler {
             } else {
                 log.info(LogCategory.CLIENT, tr("Uploading new avatar"));
                 (async () => {
-                    let key: UploadKey;
-                    try {
-                        key = await this.fileManager.upload_file({
-                            size: data.byteLength,
-                            path: '',
-                            name: '/avatar',
-                            overwrite: true,
-                            channel: undefined,
-                            channel_password: undefined
-                        });
-                    } catch(error) {
-                        log.error(LogCategory.GENERAL, tr("Failed to initialize avatar upload: %o"), error);
-                        let message;
-                        if(error instanceof CommandResult) {
-                            //TODO: Resolve permission name
-                            //i_client_max_avatar_filesize
-                            if(error.id == ErrorID.PERMISSION_ERROR) {
-                                message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Missing permission {0}"), error["failed_permid"]);
-                            } else {
-                                message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Error: {0}"), error.extra_message || error.message);
-                            }
+                    const transfer = this.fileManager.initializeFileUpload({
+                        name: "/avatar",
+                        path: "",
+
+                        channel: 0,
+                        channelPassword: undefined,
+
+                        source: async () => await TransferProvider.provider().createBufferSource(data)
+                    });
+
+                    await transfer.awaitFinished();
+
+                    if(transfer.transferState() !== FileTransferState.FINISHED) {
+                        if(transfer.transferState() === FileTransferState.ERRORED) {
+                            log.warn(LogCategory.FILE_TRANSFER, tr("Failed to upload clients avatar: %o"), transfer.currentError());
+                            createErrorModal(tr("Failed to upload avatar"), traj("Failed to upload avatar:{:br:}{0}", transfer.currentErrorMessage())).open();
+                            return;
+                        } else if(transfer.transferState() === FileTransferState.CANCELED) {
+                            createErrorModal(tr("Failed to upload avatar"), tr("Your avatar upload has been canceled.")).open();
+                            return;
+                        } else {
+                            createErrorModal(tr("Failed to upload avatar"), tr("Avatar upload finished with an unknown finished state.")).open();
+                            return;
                         }
-                        if(!message)
-                            message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
-                        createErrorModal(tr("Failed to upload avatar"), message).open();
-                        return;
                     }
 
-                    try {
-                        await transfer_provider().spawn_upload_transfer(key).put_data(data);
-                    } catch(error) {
-                        log.error(LogCategory.GENERAL, tr("Failed to upload avatar: %o"), error);
-
-                        let message;
-                        if(typeof(error) === "string")
-                            message = formatMessage(tr("Failed to upload avatar.{:br:}Error: {0}"), error);
-
-                        if(!message)
-                            message = formatMessage(tr("Failed to initialize avatar upload.{:br:}Lookup the console for more details"));
-                        createErrorModal(tr("Failed to upload avatar"), message).open();
-                        return;
-                    }
                     try {
                         await this.serverConnection.send_command('clientupdate', {
-                            client_flag_avatar: guid()
+                            client_flag_avatar: md5(new Uint8Array(data))
                         });
                     } catch(error) {
                         log.error(LogCategory.GENERAL, tr("Failed to update avatar flag: %o"), error);

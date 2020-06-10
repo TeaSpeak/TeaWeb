@@ -1,8 +1,9 @@
 import * as React from "react";
+import {ReactElement} from "react";
 const cssStyle = require("./Checkbox.scss");
 
 export interface CheckboxProperties {
-    label?: string;
+    label?: ReactElement | string;
     disabled?: boolean;
     onChange?: (value: boolean) => void;
     initialValue?: boolean;
@@ -11,7 +12,8 @@ export interface CheckboxProperties {
 }
 
 export interface CheckboxState {
-    checked: boolean;
+    checked?: boolean;
+    disabled?: boolean;
 }
 
 export class Checkbox extends React.Component<CheckboxProperties, CheckboxState> {
@@ -19,17 +21,20 @@ export class Checkbox extends React.Component<CheckboxProperties, CheckboxState>
         super(props);
 
         this.state = {
-            checked: this.props.initialValue
+            checked: this.props.initialValue,
+            disabled: this.props.disabled
         };
     }
 
     render() {
-        const disabledClass = this.props.disabled ? cssStyle.disabled : "";
+        const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : this.props.disabled;
+        const checked = typeof this.state.checked === "boolean" ? this.state.checked : this.props.initialValue;
+        const disabledClass = disabled ? cssStyle.disabled : "";
 
         return (
             <label className={cssStyle.labelCheckbox + " " + disabledClass}>
                 <div className={cssStyle.checkbox + " " + disabledClass}>
-                    <input type={"checkbox"} checked={this.state.checked} disabled={this.props.disabled} onChange={() => this.onStateChange()} />
+                    <input type={"checkbox"} checked={checked} disabled={disabled} onChange={() => this.onStateChange()} />
                     <div className={cssStyle.mark} />
                 </div>
                 {this.props.label ? <a>{this.props.label}</a> : undefined}

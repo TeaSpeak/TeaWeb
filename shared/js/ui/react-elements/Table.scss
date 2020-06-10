@@ -1,0 +1,73 @@
+.container {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    min-height: 5em;
+
+    .dynamicColumn {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        min-width: 2em;
+    }
+
+    .fixedColumn {
+        flex-grow: 0;
+        flex-shrink: 0;
+    }
+
+    .header {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+    }
+
+    .body {
+        flex-shrink: 1;
+        flex-grow: 1;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+
+        min-height: 3em;
+        overflow-y: scroll;
+        overflow-x: hidden;
+
+        .headerSpacer {
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            visibility: hidden;
+        }
+
+        .row {
+            position: relative;
+            width: 100%;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            flex-shrink: 0;
+            flex-grow: 0;
+        }
+    }
+
+}

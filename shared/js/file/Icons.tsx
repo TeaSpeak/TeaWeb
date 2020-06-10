@@ -3,12 +3,14 @@ import {LogCategory} from "tc-shared/log";
 import {Registry} from "tc-shared/events";
 import {format_time} from "tc-shared/ui/frames/chat";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
-import {
-    DownloadKey,
-    FileEntry,
-    FileManager, transfer_provider
-} from "tc-shared/file/FileManager";
 import {image_type, ImageCache, ImageType, media_image_type} from "tc-shared/file/ImageCache";
+import {FileInfo, FileManager} from "tc-shared/file/FileManager";
+import {
+    FileDownloadTransfer,
+    FileTransferState, ResponseTransferTarget, TransferProvider,
+    TransferTargetType
+} from "tc-shared/file/Transfer";
+import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 
 const icon_cache: ImageCache = new ImageCache("icons");
 export interface IconManagerEvents {
@@ -215,6 +217,15 @@ window.addEventListener("beforeunload", () => {
     icon_cache_loader.clear_memory_cache();
 });
 
+(window as any).flush_icon_cache = async () => {
+    icon_cache_loader.clear_memory_cache();
+    await icon_cache_loader.clear_cache();
+
+    server_connections.all_connections().forEach(e => {
+        e.fileManager.icons.flush_cache();
+    });
+};
+
 type IconManagerLoadingData = {
     result: "success" | "error" | "unset";
     next_retry?: number;
@@ -238,17 +249,21 @@ export class IconManager {
         if(id <= 1000)
             throw "invalid id!";
 
-        await this.handle.delete_file({
+        await this.handle.deleteFile({
             name: '/icon_' + id
         });
     }
 
-    iconList() : Promise<FileEntry[]> {
+    iconList() : Promise<FileInfo[]> {
         return this.handle.requestFileList("/icons");
     }
 
-    create_icon_download(id: number) : Promise<DownloadKey> {
-        return this.handle.download_file("", "/icon_" + id);
+    createIconDownload(id: number) : FileDownloadTransfer {
+        return this.handle.initializeFileDownload({
+            path: "",
+            name: "/icon_" + id,
+            targetSupplier: async () => await TransferProvider.provider().createResponseTarget()
+        });
     }
 
     private async server_icon_loader(icon: LocalIcon) : Promise<Response> {
@@ -262,9 +277,20 @@ export class IconManager {
         }
 
         try {
-            let download_key: DownloadKey;
+            let transfer = this.createIconDownload(icon.icon_id);
+
             try {
-                download_key = await this.create_icon_download(icon.icon_id);
+                await transfer.awaitFinished();
+
+                if(transfer.transferState() === FileTransferState.CANCELED) {
+                    throw tr("download canceled");
+                } else if(transfer.transferState() === FileTransferState.ERRORED) {
+                    throw transfer.currentError();
+                } else if(transfer.transferState() === FileTransferState.FINISHED) {
+
+                } else {
+                    throw tr("Unknown transfer finished state");
+                }
             } catch(error) {
                 if(error instanceof CommandResult) {
                     if(error.id === ErrorID.FILE_NOT_FOUND)
@@ -275,20 +301,21 @@ export class IconManager {
                         throw error.extra_message || error.message;
                 }
                 log.error(LogCategory.CLIENT, tr("Could not request download for icon %d: %o"), icon.icon_id, error);
+                if(error === transfer.currentError())
+                    throw transfer.currentErrorMessage();
                 throw typeof error === "string" ? error : tr("Failed to initialize icon download");
             }
 
-            const downloader = transfer_provider().spawn_download_transfer(download_key);
-            let response: Response;
-            try {
-                response = await downloader.request_file();
-            } catch(error) {
-                log.error(LogCategory.CLIENT, tr("Could not download icon %d: %o"), icon.icon_id, error);
-                throw "failed to download icon";
-            }
+            /* could only be tested here, because before we don't know which target we have */
+            if(transfer.target.type !== TransferTargetType.RESPONSE)
+                throw "unsupported transfer target";
+
+            const response = transfer.target as ResponseTransferTarget;
+            if(!response.hasResponse())
+                throw tr("Transfer has no response");
 
             loading_data.result = "success";
-            return response;
+            return response.getResponse();
         } catch (error) {
             loading_data.result = "error";
             loading_data.error = error as string;
@@ -365,7 +392,7 @@ export class IconManager {
     }
 
     load_icon(id: number) : LocalIcon {
-        const server_uid = this.handle.handle.channelTree.server.properties.virtualserver_unique_identifier;
+        const server_uid = this.handle.connectionHandler.channelTree.server.properties.virtualserver_unique_identifier;
         let icon = icon_cache_loader.load_icon(id, server_uid, this.server_icon_loader.bind(this));
         if(icon.status !== "loading" && icon.status !== "loaded") {
             this.server_icon_loader(icon).then(response => {
@@ -375,5 +402,9 @@ export class IconManager {
             })
         }
         return icon;
+    }
+
+    flush_cache() {
+        this.loading_timestamps = {};
     }
 }

@@ -1,195 +1,69 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult, ErrorCode, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {IconManager} from "tc-shared/file/Icons";
 import {AvatarManager} from "tc-shared/file/Avatars";
+import {
+    CancelReason,
+    FileDownloadTransfer,
+    FileTransfer,
+    FileTransferDirection,
+    FileTransferState,
+    FileUploadTransfer,
+    FinishedFileTransfer,
+    InitializedTransferProperties,
+    TransferProvider,
+    TransferSourceSupplier,
+    TransferTargetSupplier,
+} from "tc-shared/file/Transfer";
+import {Registry} from "tc-shared/events";
+import {tra} from "tc-shared/i18n/localize";
 
-export class FileEntry {
+export enum FileType {
+    DIRECTORY = 0,
+    FILE = 1
+}
+
+export interface FileInfo {
     name: string;
+    type: FileType;
+
     datetime: number;
-    type: number;
     size: number;
+
+    empty: boolean;
 }
 
-export class FileListRequest {
+type PendingFileList = {
     path: string;
-    entries: FileEntry[];
+    channelId: number;
 
-    callback: (entries: FileEntry[]) => void;
+    currentFiles: FileInfo[];
+
+    resultPromise: Promise<FileInfo[]>;
+    callbackResolve: (files: FileInfo[]) => void;
+    callbackReject: (error) => void;
 }
 
-export interface TransferKey {
-    client_transfer_id: number;
-    server_transfer_id: number;
+type PendingFileInfo = {
+    returnCode: string;
 
-    key: string;
-
-    file_path: string;
-    file_name: string;
-
-    peer: {
-        hosts: string[],
-        port: number;
-    };
-
-    total_size: number;
+    finished: boolean;
+    currentFiles: FileInfo[];
 }
 
-export interface UploadOptions {
-    name: string;
-    path: string;
+class FileCommandHandler extends AbstractCommandHandler {
+    readonly manager: FileManager;
+    readonly pendingFileLists: PendingFileList[] = [];
+    readonly pendingFileInfos: PendingFileInfo[] = [];
+    private fileInfoCodeIndex = 0;
 
-    channel?: ChannelEntry;
-    channel_password?: string;
-
-    size: number;
-    overwrite: boolean;
-}
-
-export interface DownloadTransfer {
-    get_key() : DownloadKey;
-
-    request_file() : Promise<Response>;
-}
-
-export interface UploadTransfer {
-    get_key(): UploadKey;
-
-    put_data(data: BlobPart | File) : Promise<void>;
-}
-
-export type DownloadKey = TransferKey;
-export type UploadKey = TransferKey;
-
-export interface TransferProvider {
-    spawn_download_transfer(key: DownloadKey) : DownloadTransfer;
-    spawn_upload_transfer(key: UploadKey) : UploadTransfer;
-}
-
-let transfer_provider_: TransferProvider = new class implements TransferProvider {
-    spawn_download_transfer(key: TransferKey): DownloadTransfer {
-        return new RequestFileDownload(key);
-    }
-
-    spawn_upload_transfer(key: TransferKey): UploadTransfer {
-        return new RequestFileUpload(key);
-    }
-};
-
-export function transfer_provider() : TransferProvider {
-    return transfer_provider_;
-}
-
-export function set_transfer_provider(provider: TransferProvider) {
-    transfer_provider_ = provider;
-}
-
-export class RequestFileDownload implements DownloadTransfer {
-    readonly transfer_key: DownloadKey;
-
-    constructor(key: DownloadKey) {
-        this.transfer_key = key;
-    }
-
-    async request_file() : Promise<Response> {
-        return await this.try_fetch("https://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
-    }
-
-    private async try_fetch(url: string) : Promise<Response> {
-        const response = await fetch(url, {
-            method: 'GET',
-            cache: "no-cache",
-            mode: 'cors',
-            headers: {
-                'transfer-key': this.transfer_key.key,
-                'download-name': this.transfer_key.file_name,
-                'Access-Control-Allow-Headers': '*',
-                'Access-Control-Expose-Headers': '*'
-            }
-        });
-        if(!response.ok) {
-            debugger;
-            throw (response.type == 'opaque' || response.type == 'opaqueredirect' ? "invalid cross origin flag! May target isn't a TeaSpeak server?" : response.statusText || "response is not ok");
-        }
-        return response;
-    }
-
-    get_key(): DownloadKey {
-        return this.transfer_key;
-    }
-}
-
-export class RequestFileUpload implements UploadTransfer {
-    readonly transfer_key: UploadKey;
-    constructor(key: DownloadKey) {
-        this.transfer_key = key;
-    }
-
-    get_key(): UploadKey {
-        return this.transfer_key;
-    }
-
-    async put_data(data: BlobPart | File) : Promise<void> {
-        const form_data = new FormData();
-
-        if(data instanceof File) {
-            if(data.size != this.transfer_key.total_size)
-                throw "invalid size";
-
-            form_data.append("file", data);
-        } else if(typeof(data) === "string") {
-            if(data.length != this.transfer_key.total_size)
-                throw "invalid size";
-            form_data.append("file", new Blob([data], { type: "application/octet-stream" }));
-        } else {
-            const buffer = data as BufferSource;
-            if(buffer.byteLength != this.transfer_key.total_size)
-                throw "invalid size";
-
-            form_data.append("file", new Blob([buffer], { type: "application/octet-stream" }));
-        }
-
-        await this.try_put(form_data, "https://" + this.transfer_key.peer.hosts[0] + ":" + this.transfer_key.peer.port);
-    }
-
-    private async try_put(data: FormData, url: string) : Promise<void> {
-        const response = await fetch(url, {
-            method: 'POST',
-            cache: "no-cache",
-            mode: 'cors',
-            body: data,
-            headers: {
-                'transfer-key': this.transfer_key.key,
-                'Access-Control-Allow-Headers': '*',
-                'Access-Control-Expose-Headers': '*'
-            }
-        });
-        if(!response.ok)
-            throw (response.type == 'opaque' || response.type == 'opaqueredirect' ? "invalid cross origin flag! May target isn't a TeaSpeak server?" : response.statusText || "response is not ok");
-    }
-}
-
-export class FileManager extends AbstractCommandHandler {
-    handle: ConnectionHandler;
-    icons: IconManager;
-    avatars: AvatarManager;
-
-    private listRequests: FileListRequest[] = [];
-    private pending_download_requests: DownloadKey[] = [];
-    private pending_upload_requests: UploadKey[] = [];
-
-    private transfer_counter : number = 1;
-
-    constructor(client: ConnectionHandler) {
-        super(client.serverConnection);
-
-        this.handle = client;
-        this.icons = new IconManager(this);
-        this.avatars = new AvatarManager(this);
+    constructor(manager: FileManager) {
+        super(manager.connectionHandler.serverConnection);
+        this.manager = manager;
 
         this.connection.command_handler_boss().register_handler(this);
     }
@@ -197,220 +71,418 @@ export class FileManager extends AbstractCommandHandler {
     destroy() {
         if(this.connection) {
             const hboss = this.connection.command_handler_boss();
-            if(hboss)
-                hboss.unregister_handler(this);
+            if(hboss) hboss.unregister_handler(this);
         }
+    }
 
-        this.listRequests = undefined;
-        this.pending_download_requests = undefined;
-        this.pending_upload_requests = undefined;
+    registerFileList(path: string, channelId: number, callbackExecute: (resolve, reject) => void) : Promise<FileInfo[]> {
+        const knownQuery = this.pendingFileLists.find(e => e.path === path && e.channelId === channelId);
+        if(knownQuery) return knownQuery.resultPromise;
 
-        this.icons && this.icons.destroy();
-        this.icons = undefined;
+        const query = {} as PendingFileList;
 
-        this.avatars && this.avatars.destroy();
-        this.avatars = undefined;
+        query.path = path;
+        query.channelId = channelId;
+        query.currentFiles = [];
+
+        this.pendingFileLists.push(query);
+
+        query.resultPromise = new Promise<FileInfo[]>((resolve, reject) => {
+            const cleanup = () => {
+                this.pendingFileLists.remove(query);
+            };
+
+            query.callbackReject = error => { cleanup(); reject(error); };
+            query.callbackResolve = result => { cleanup(); resolve(result); };
+            callbackExecute(query.callbackResolve, query.callbackReject);
+        });
+
+        return query.resultPromise;
+    }
+
+    registerFileInfo() : string {
+        const query = {} as PendingFileInfo;
+
+        query.currentFiles = [];
+        query.finished = false;
+        query.returnCode = "finfo-" + ++this.fileInfoCodeIndex;
+
+        this.pendingFileInfos.push(query);
+        return query.returnCode;
+    }
+
+    finishFileInfo(returnCode: string) : FileInfo[] | "unknown-request" | "unfinished-request" {
+        const qIndex = this.pendingFileInfos.findIndex(e => e.returnCode === returnCode);
+        if(qIndex === -1) return "unknown-request";
+
+        const [ query ] = this.pendingFileInfos.splice(qIndex, 1);
+        if(!query.finished) return "unfinished-request";
+
+        return query.currentFiles;
     }
 
     handle_command(command: ServerCommand): boolean {
         switch (command.command) {
-            case "notifyfilelist":
-                this.notifyFileList(command.arguments);
-                return true;
-            case "notifyfilelistfinished":
-                this.notifyFileListFinished(command.arguments);
-                return true;
             case "notifystartdownload":
-                this.notifyStartDownload(command.arguments);
+                this.handleCommandNotifyStartDownload(command.arguments);
                 return true;
+
             case "notifystartupload":
-                this.notifyStartUpload(command.arguments);
+                this.handleCommandNotifyStartUpload(command.arguments);
                 return true;
+
+            case "notifyfilelist":
+                this.handleNotifyFileList(command.arguments);
+                return true;
+
+            case "notifyfilelistfinished":
+                this.handleNotifyFileListFinished(command.arguments);
+                return true;
+
+            case "notifyfileinfo":
+                this.handleNotifyFileInfo(command.arguments);
+                return true;
+
+            case "notifyfiletransferstarted":
+                this.handleNotifyTransferStarted(command.arguments);
+                return true;
+
+            case "notifyfileinfofinished":
+                this.handleNotifyFileInfoFinished(command.arguments);
+                return true;
+
+            case "notifyfiletransferprogress":
+                this.handleNotifyFileTransferProgress(command.arguments);
+                return true;
+
+            case "notifystatusfiletransfer":
+                this.handleNotifyStatusFileTransfer(command.arguments);
+                return true;
+
         }
         return false;
     }
 
+    private handleCommandNotifyStartDownload(command: any[]) {
+        const data = command[0];
 
-    /******************************** File list ********************************/
-    //TODO multiple requests (same path)
-    requestFileList(path: string, channel?: ChannelEntry, password?: string) : Promise<FileEntry[]> {
-        const _this = this;
-        return new Promise((accept, reject) => {
-            let req = new FileListRequest();
-            req.path = path;
-            req.entries = [];
-            req.callback = accept;
-            _this.listRequests.push(req);
+        const transfer = this.manager.findTransfer(parseInt(data["clientftfid"]));
+        if(!transfer) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
+            return;
+        }
 
-            _this.handle.serverConnection.send_command("ftgetfilelist", {"path": path, "cid": (channel ? channel.channelId : "0"), "cpw": (password ? password : "")}).then(() => {}).catch(reason => {
-                _this.listRequests.remove(req);
-                if(reason instanceof CommandResult) {
-                    if(reason.id == 0x0501) {
-                        accept([]); //Empty result
-                        return;
-                    }
+        const properties = {
+            fileSize: parseInt(data["size"]),
+            seekOffset: parseInt(data["seekpos"]),
+
+            protocol: parseInt(data["proto"]),
+
+            addresses: (!data["ip"] ? "0.0.0.0" : data["ip"]).split(",").filter(e => !!e).map(e => {
+                return {
+                    serverAddress: e,
+                    serverPort: parseInt(data["port"])
+                };
+            }),
+
+            serverTransferId: parseInt(data["serverftfid"]),
+            transferKey: data["ftkey"]
+        };
+        this.fixIPAddresses(properties);
+
+        transfer.lastStateUpdate = Date.now();
+        transfer.setProperties(properties);
+    }
+
+    private fixIPAddresses(properties: InitializedTransferProperties) {
+        for(const address of properties.addresses)
+            if(address.serverAddress === '0.0.0.0')
+                address.serverAddress = this.manager.connectionHandler.serverConnection.remote_address().host;
+
+    }
+
+    private handleCommandNotifyStartUpload(command: any[]) {
+        const data = command[0];
+
+        const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
+        if(!transfer) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
+            return;
+        }
+
+        const properties = {
+            seekOffset: parseInt(data["seekpos"]),
+            fileSize: transfer.fileSize,
+            protocol: parseInt(data["proto"]),
+
+            addresses: (!data["ip"] ? "0.0.0.0" : data["ip"]).split(",").filter(e => !!e).map(e => {
+                return {
+                    serverAddress: e,
+                    serverPort: parseInt(data["port"])
+                };
+            }),
+
+            serverTransferId: parseInt(data["serverftfid"]),
+            transferKey: data["ftkey"]
+        };
+        this.fixIPAddresses(properties);
+
+        transfer.lastStateUpdate = Date.now();
+        transfer.setProperties(properties);
+    }
+
+    private handleNotifyTransferStarted(data) {
+        data = data[0];
+
+        const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
+        if(!transfer) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer start notification for unknown transfer (%s)"), data["clientftfid"]);
+            return;
+        }
+
+        /* the server is some knowledge ahead of us (usually happens when we use fetch) */
+        if(transfer.transferState() === FileTransferState.CONNECTING)
+            transfer.setTransferState(FileTransferState.RUNNING);
+    }
+
+
+    private handleNotifyFileTransferProgress(data) {
+        data = data[0];
+
+        const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
+        if(!transfer) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer progress notification for unknown transfer (%s)"), data["clientftfid"]);
+            return;
+        }
+
+        transfer.lastStateUpdate = Date.now();
+        transfer.updateProgress({
+            timestamp: Date.now(),
+
+            file_bytes_transferred: parseInt(data["file_bytes_transferred"]),
+            file_current_offset: parseInt(data["file_current_offset"]),
+            file_start_offset: parseInt(data["file_start_offset"]),
+            file_total_size: parseInt(data["file_total_size"]),
+            network_bytes_received: parseInt(data["network_bytes_received"]),
+            network_bytes_send: parseInt(data["network_bytes_send"]),
+
+            network_current_speed: parseInt(data["network_current_speed"]),
+            network_average_speed: parseInt(data["network_average_speed"])
+        });
+    }
+
+    private handleNotifyStatusFileTransfer(data) {
+        data = data[0];
+
+        const transfer = this.manager.findTransfer(parseInt(data["clientftfid"])) as FileUploadTransfer;
+        if(!transfer) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file transfer status notification for unknown transfer (%s)"), data["clientftfid"]);
+            return;
+        }
+
+        transfer.lastStateUpdate = Date.now();
+        const code = parseInt(data["status"]) as ErrorCode;
+        if(code !== ErrorCode.FILE_TRANSFER_COMPLETE) {
+            transfer.setFailed({
+                error: "status",
+
+                extraMessage: data["msg"],
+                status: code
+            }, data["msg"]);
+        } else {
+            /* We're not setting finished here. Even thou the server has finished the transfer, we might still have some work left.
+            *  This only applies to downloads since when we're uploading and the server is happy everybody is happy
+            **/
+            if(transfer.direction === FileTransferDirection.UPLOAD)
+                transfer.setTransferState(FileTransferState.FINISHED);
+        }
+    }
+
+    private handleNotifyFileList(data: any[]) {
+        const query = this.pendingFileLists.find(e => e.path === data[0]["path"] && (e.channelId === parseInt(data[0]["cid"]) || e.channelId === undefined && !data[0]["cid"]));
+        if(!query) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file list for not request path: %s (channel %s)"), data[0]["path"], data[0]["cid"]);
+            return;
+        }
+
+        for(const entry of data) {
+            query.currentFiles.push({
+                datetime: parseInt(entry["datetime"]),
+                name: entry["name"],
+                size: parseInt(entry["size"]),
+                type: parseInt(entry["type"]),
+                empty: entry["empty"] === "1"
+            });
+        }
+    }
+
+    private handleNotifyFileListFinished(data) {
+        const query = this.pendingFileLists.find(e => e.path === data[0]["path"] && (e.channelId === parseInt(data[0]["cid"]) || e.channelId === undefined && !data[0]["cid"]));
+        if(!query) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file list finish for not request path: %s (channel %s)"), data[0]["path"], data[0]["cid"]);
+            return;
+        }
+
+        query.callbackResolve(query.currentFiles);
+    }
+
+    private handleNotifyFileInfo(data: any[]) {
+        const query = this.pendingFileInfos.find(e => e.returnCode === data[0]["return_code"]);
+        if(!query) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file info for unknown return code: %s"), data[0]["return_code"]);
+            return;
+        }
+        if(query.finished) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file info for already finished return code: %s"), data[0]["return_code"]);
+            return;
+        }
+
+        for(const entry of data) {
+            query.currentFiles.push({
+                datetime: parseInt(entry["datetime"]),
+                name: entry["name"],
+                size: parseInt(entry["size"]),
+                type: parseInt(entry["type"]),
+                empty: entry["empty"] === "1"
+            });
+        }
+    }
+
+    private handleNotifyFileInfoFinished(data) {
+        const query = this.pendingFileInfos.find(e => e.returnCode === data[0]["return_code"]);
+        if(!query) {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received file info for unknown return code: %s"), data[0]["return_code"]);
+            return;
+        }
+
+        query.finished = true;
+    }
+}
+
+export type InitializeUploadOptions = {
+    path: string;
+    name: string;
+
+    channel?: number;
+    channelPassword?: string;
+
+    source: TransferSourceSupplier;
+};
+
+export type InitializeDownloadOptions = {
+    path: string;
+    name: string;
+
+    channel?: number;
+    channelPassword?: string;
+
+    targetSupplier: TransferTargetSupplier;
+};
+
+export interface FileManagerEvents {
+    notify_transfer_registered: {
+        transfer: FileTransfer
+    }
+}
+
+export class FileManager {
+    private static readonly MAX_CONCURRENT_TRANSFERS = 6;
+
+    readonly connectionHandler: ConnectionHandler;
+    readonly icons: IconManager;
+    readonly avatars: AvatarManager;
+    readonly events : Registry<FileManagerEvents>;
+    readonly finishedTransfers: FinishedFileTransfer[] = [];
+
+    private readonly commandHandler: FileCommandHandler;
+    private readonly registeredTransfers_: ({ transfer: FileTransfer, executeCallback: () => Promise<void>, finishPromise: Promise<void> })[] = [];
+    private clientTransferIdIndex = 0;
+    private scheduledTransferUpdate;
+    private transerUpdateIntervalId;
+
+    constructor(connection) {
+        this.connectionHandler = connection;
+        this.commandHandler = new FileCommandHandler(this);
+
+        this.events = new Registry<FileManagerEvents>();
+        this.icons = new IconManager(this);
+        this.avatars = new AvatarManager(this);
+
+        this.transerUpdateIntervalId = setInterval(() => this.scheduleTransferUpdate(), 1000);
+    }
+
+    destroy() {
+        this.commandHandler.destroy();
+        this.registeredTransfers_.forEach(e => e.transfer.requestCancel(CancelReason.SERVER_DISCONNECTED));
+        /* all transfers should be unregistered now, or will be soonly */
+
+        this.icons.destroy();
+        this.avatars.destroy();
+        clearInterval(this.transerUpdateIntervalId);
+    }
+
+    requestFileList(path: string, channelId?: number, channelPassword?: string) : Promise<FileInfo[]> {
+        return this.commandHandler.registerFileList(path, channelId | 0, (resolve, reject) => {
+            this.connectionHandler.serverConnection.send_command("ftgetfilelist", {
+                path: path,
+                cid: channelId || "0",
+                cpw: channelPassword
+            }).then(() => {
+                reject(tr("Missing server file list response"));
+            }).catch(error => {
+                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                    resolve([]);
+                    return;
                 }
-                reject(reason);
+                reject(error);
             });
         });
     }
 
-    private notifyFileList(json) {
-        let entry : FileListRequest = undefined;
+    requestFileInfo(files: { channelId?: number, channelPassword?: string, path: string }[]) : Promise<(FileInfo | CommandResult)[]> {
+        if(files.length === 0)
+            return Promise.resolve([]);
 
-        for(let e of this.listRequests) {
-            if(e.path == json[0]["path"]){
-                entry = e;
-                break;
+        const returnCode = this.commandHandler.registerFileInfo();
+        const infos = files.map(e => {
+            return {
+                cid: e.channelId | 0,
+                cpw: e.channelPassword,
+                name: e.path
+            };
+        });
+        infos[0]["return_code"] = returnCode;
+
+        return this.connectionHandler.serverConnection.send_command("ftgetfileinfo", infos, { flagset: ["as-list"] }).then(cmdResult => {
+            const bulks = cmdResult.getBulks();
+            if(bulks.length != files.length)
+                return Promise.reject(tr("response bulk miss match"));
+
+            const infos = this.commandHandler.finishFileInfo(returnCode);
+            if(!Array.isArray(infos)) {
+                if(infos === "unfinished-request")
+                    return Promise.reject(tr("the server failed to full fill the request"));
+                else
+                    return Promise.reject(tr("request gone away while parsing response"));
             }
-        }
 
-        if(!entry) {
-            log.error(LogCategory.CLIENT, tr("Invalid file list entry. Path: %s"), json[0]["path"]);
-            return;
-        }
-        for(let e of (json as Array<FileEntry>)) {
-            e.datetime = parseInt(e.datetime + "");
-            e.size = parseInt(e.size + "");
-            e.type = parseInt(e.type + "");
-            entry.entries.push(e);
-        }
-    }
+            let result: (FileInfo | CommandResult)[] = [];
+            for(let index = 0; index < files.length; index++) {
+                if(bulks[index].id === 0) {
+                    const info = infos.pop_front();
+                    if(!info)
+                        return Promise.reject(tr("Missing info for bulk ") + index);
 
-    private notifyFileListFinished(json) {
-        let entry : FileListRequest = undefined;
-
-        for(let e of this.listRequests) {
-            if(e.path == json[0]["path"]){
-                entry = e;
-                this.listRequests.remove(e);
-                break;
+                    result.push(info);
+                } else {
+                    result.push(bulks[index]);
+                }
             }
-        }
-
-        if(!entry) {
-            log.error(LogCategory.CLIENT, tr("Invalid file list entry finish. Path: "), json[0]["path"]);
-            return;
-        }
-        entry.callback(entry.entries);
-    }
-
-
-    /******************************** File download/upload ********************************/
-    download_file(path: string, file: string, channel?: ChannelEntry, password?: string) : Promise<DownloadKey> {
-        const transfer_data: DownloadKey = {
-            file_name: file,
-            file_path: path,
-            client_transfer_id: this.transfer_counter++
-        } as any;
-
-        this.pending_download_requests.push(transfer_data);
-        return new Promise<DownloadKey>((resolve, reject) => {
-            transfer_data["_callback"] = resolve;
-            this.handle.serverConnection.send_command("ftinitdownload", {
-                "path": path,
-                "name": file,
-                "cid": (channel ? channel.channelId : "0"),
-                "cpw": (password ? password : ""),
-                "clientftfid": transfer_data.client_transfer_id,
-                "seekpos": 0,
-                "proto": 1
-            }, {process_result: false}).catch(reason => {
-                this.pending_download_requests.remove(transfer_data);
-                reject(reason);
-            })
+            return result;
         });
     }
 
-    upload_file(options: UploadOptions) : Promise<UploadKey> {
-        const transfer_data: UploadKey = {
-            file_path: options.path,
-            file_name: options.name,
-            client_transfer_id: this.transfer_counter++,
-            total_size: options.size
-        } as any;
-
-        this.pending_upload_requests.push(transfer_data);
-        return new Promise<UploadKey>((resolve, reject) => {
-            transfer_data["_callback"] = resolve;
-            this.handle.serverConnection.send_command("ftinitupload", {
-                "path": options.path,
-                "name": options.name,
-                "cid": (options.channel ? options.channel.channelId : "0"),
-                "cpw": options.channel_password || "",
-                "clientftfid": transfer_data.client_transfer_id,
-                "size": options.size,
-                "overwrite": options.overwrite,
-                "resume": false,
-                "proto": 1
-            }).catch(reason => {
-                this.pending_upload_requests.remove(transfer_data);
-                reject(reason);
-            })
-        });
-    }
-
-    private notifyStartDownload(json) {
-        json = json[0];
-
-        let clientftfid = parseInt(json["clientftfid"]);
-        let transfer: DownloadKey;
-        for(let e of this.pending_download_requests)
-            if(e.client_transfer_id == clientftfid) {
-                transfer = e;
-                break;
-            }
-
-        transfer.server_transfer_id = parseInt(json["serverftfid"]);
-        transfer.key = json["ftkey"];
-        transfer.total_size = json["size"];
-
-        transfer.peer = {
-            hosts: (json["ip"] || "").split(","),
-            port: parseInt(json["port"])
-        };
-
-        if(transfer.peer.hosts.length == 0)
-            transfer.peer.hosts.push("0.0.0.0");
-
-        if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
-            transfer.peer.hosts[0] = this.handle.serverConnection.remote_address().host;
-
-        (transfer["_callback"] as (val: DownloadKey) => void)(transfer);
-        this.pending_download_requests.remove(transfer);
-    }
-
-    private notifyStartUpload(json) {
-        json = json[0];
-
-        let transfer: UploadKey;
-        let clientftfid = parseInt(json["clientftfid"]);
-        for(let e of this.pending_upload_requests)
-            if(e.client_transfer_id == clientftfid) {
-                transfer = e;
-                break;
-            }
-
-        transfer.server_transfer_id = parseInt(json["serverftfid"]);
-        transfer.key = json["ftkey"];
-
-        transfer.peer = {
-            hosts: (json["ip"] || "").split(","),
-            port: parseInt(json["port"])
-        };
-
-        if(transfer.peer.hosts.length == 0)
-            transfer.peer.hosts.push("0.0.0.0");
-
-        if(transfer.peer.hosts[0].length == 0 || transfer.peer.hosts[0] == '0.0.0.0')
-            transfer.peer.hosts[0] = this.handle.serverConnection.remote_address().host;
-
-        (transfer["_callback"] as (val: UploadKey) => void)(transfer);
-        this.pending_upload_requests.remove(transfer);
-    }
-
-    /** File management **/
-    async delete_file(props: {
+    async deleteFile(props: {
         name: string,
         path?: string;
         cid?: number;
@@ -419,15 +491,238 @@ export class FileManager extends AbstractCommandHandler {
         if(!props.name)
             throw "invalid name!";
 
-        try {
-            await this.handle.serverConnection.send_command("ftdeletefile", {
-                cid: props.cid || 0,
-                cpw: props.cpw,
-                path: props.path || "",
-                name: props.name
+        await this.connectionHandler.serverConnection.send_command("ftdeletefile", {
+            cid: props.cid || 0,
+            cpw: props.cpw,
+            path: props.path || "",
+            name: props.name
+        });
+    }
+
+    registeredTransfers() : FileTransfer[] {
+        return this.registeredTransfers_.map(e => e.transfer);
+    }
+
+    findTransfer(id: number) : FileTransfer;
+    findTransfer(channelId: number, path: string, name: string) : FileTransfer;
+
+    findTransfer(channelIdOrId: number, path?: string, name?: string) : FileTransfer {
+        if(typeof path !== "string")
+            return this.registeredTransfers_.find(e => e.transfer.clientTransferId === channelIdOrId)?.transfer;
+        else
+            return this.registeredTransfers_.find(e =>
+                e.transfer.properties.channel_id === channelIdOrId &&
+                e.transfer.properties.name === name &&
+                e.transfer.properties.path === path
+            )?.transfer;
+    }
+
+    initializeFileDownload(options: InitializeDownloadOptions) : FileDownloadTransfer {
+        const transfer = new FileDownloadTransfer(FileTransferDirection.DOWNLOAD, ++this.clientTransferIdIndex, {
+            channel_id: options.channel | 0,
+            name: options.name,
+            path: options.path
+        }, options.targetSupplier);
+
+        const initializeCallback = async () => {
+            try {
+                await this.connectionHandler.serverConnection.send_command("ftinitdownload", {
+                    "path": options.path,
+                    "name": options.name,
+                    "cid": options.channel ? options.channel : "0",
+                    "cpw": options.channelPassword,
+                    "clientftfid": transfer.clientTransferId,
+                    "seekpos": 0,
+                    "proto": 1
+                }, {process_result: false});
+
+                if(transfer.transferState() === FileTransferState.INITIALIZING)
+                    throw tr("missing transfer start notify");
+
+            } catch (error) {
+                transfer.setFailed({
+                    error: "initialize",
+                    commandResult: error
+                }, error instanceof CommandResult ? error.formattedMessage() : typeof error === "string" ? error : tr("Lookup the console"));
+            }
+        };
+
+        this.registerTransfer(transfer, initializeCallback);
+        return transfer;
+    }
+
+    initializeFileUpload(options: InitializeUploadOptions) : FileUploadTransfer {
+        const transfer = new FileUploadTransfer(FileTransferDirection.DOWNLOAD, ++this.clientTransferIdIndex, {
+            channel_id: options.channel | 0,
+            name: options.name,
+            path: options.path
+        }, options.source);
+
+        const initializeCallback = async () => {
+            try {
+                transfer.source = await transfer.sourceSupplier(transfer);
+                if(!transfer.source)
+                    throw tr("Failed to create transfer source");
+
+                transfer.fileSize = await transfer.source.fileSize();
+                await this.connectionHandler.serverConnection.send_command("ftinitupload", {
+                    "path": options.path,
+                    "name": options.name,
+                    "cid": options.channel ? options.channel : "0",
+                    "cpw": options.channelPassword,
+                    "clientftfid": transfer.clientTransferId,
+                    "size": transfer.fileSize,
+                    "overwrite": true,
+                    "resume": false,
+                    "proto": 1
+                });
+
+                if(transfer.transferState() === FileTransferState.INITIALIZING)
+                    throw tr("missing transfer start notify");
+
+            } catch (error) {
+                transfer.setFailed({
+                    error: "initialize",
+                    commandResult: error
+                }, error instanceof CommandResult ? error.formattedMessage() : typeof error === "string" ? error : tr("Lookup the console"));
+            }
+        };
+
+        this.registerTransfer(transfer, initializeCallback);
+        return transfer;
+    }
+
+    private registerTransfer(transfer: FileTransfer, callbackInitialize: (transfer: FileTransfer) => Promise<void>) {
+        transfer.lastStateUpdate = Date.now();
+        this.registeredTransfers_.push({
+            transfer: transfer,
+            executeCallback: async () => {
+                await callbackInitialize(transfer); /* noexcept */
+                if(transfer.transferState() !== FileTransferState.CONNECTING)
+                    return;
+                
+                try {
+                    const provider = TransferProvider.provider();
+                    if(!provider) {
+                        transfer.setFailed({
+                            error: "connection",
+                            reason: "missing-provider"
+                        }, tr("Missing transfer provider"));
+                        return;
+                    }
+
+                    if(transfer instanceof FileDownloadTransfer)
+                        provider.executeFileDownload(transfer);
+                    else if(transfer instanceof FileUploadTransfer)
+                        provider.executeFileUpload(transfer);
+                    else
+                        throw tr("unknown transfer type");
+                } catch (error) {
+                    const message = typeof error === "string" ? error : error instanceof Error ? error.message : tr("Unknown error");
+                    transfer.setFailed({
+                        error: "connection",
+                        reason: "provider-initialize-error",
+                        extraMessage: message
+                    }, message);
+                }
+            },
+            finishPromise: new Promise(resolve => {
+                const unregisterTransfer = () => {
+                    transfer.events.off("notify_state_updated", stateListener);
+                    transfer.events.off("action_request_cancel", cancelListener);
+
+                    const index = this.registeredTransfers_.findIndex(e => e.transfer === transfer);
+                    if(index === -1) {
+                        log.error(LogCategory.FILE_TRANSFER, tr("Missing file transfer in file transfer list!"));
+                        return;
+                    } else {
+                        this.registeredTransfers_.splice(index, 1);
+                        this.scheduleTransferUpdate();
+                    }
+
+                    /* register transfer for the finished/completed transfers */
+                    const state = transfer.transferState();
+                    if(state === FileTransferState.FINISHED || state === FileTransferState.ERRORED || state === FileTransferState.CANCELED) {
+                        this.finishedTransfers.push({
+                            state: state,
+
+                            clientTransferId: transfer.clientTransferId,
+                            direction: transfer.direction,
+                            properties: transfer.properties,
+                            timings: Object.assign({}, transfer.timings),
+
+                            bytesTransferred: state === FileTransferState.FINISHED ? transfer.transferProperties().fileSize - transfer.transferProperties().seekOffset : 0,
+
+                            transferError: transfer.currentError(),
+                            transferErrorMessage: transfer.currentErrorMessage(),
+                        });
+                    } else {
+                        log.warn(LogCategory.FILE_TRANSFER, tra("File transfer finished callback called with invalid transfer state ({0})", FileTransferState[state]));
+                    }
+                };
+
+                const stateListener = () => {
+                    if(transfer.isFinished()) {
+                        unregisterTransfer();
+                        resolve();
+                    }
+                };
+
+                const cancelListener = () => {
+                    unregisterTransfer();
+                    transfer.events.fire_async("notify_transfer_canceled", {}, resolve);
+                };
+
+                transfer.events.on("notify_state_updated", stateListener);
+                transfer.events.on("action_request_cancel", cancelListener);
             })
-        } catch(error) {
-            throw error;
+        });
+
+        this.events.fire("notify_transfer_registered", { transfer: transfer });
+        this.scheduleTransferUpdate();
+    }
+
+    private scheduleTransferUpdate() {
+        if(this.scheduledTransferUpdate)
+            return;
+
+        this.scheduledTransferUpdate = setTimeout(() => {
+            this.scheduledTransferUpdate = undefined;
+            this.updateRegisteredTransfers();
+        }, 0);
+    }
+
+    private updateRegisteredTransfers() {
+        /* drop timeouted transfers */
+        {
+            const timeout = Date.now() - 10 * 1000;
+            const timeouted = this.registeredTransfers_.filter(e => e.transfer.lastStateUpdate < timeout).filter(e => e.transfer.isRunning());
+            timeouted.forEach(e => {
+                e.transfer.setFailed({
+                    error: "timeout"
+                }, tr("Timed out"));
+            });
+        }
+
+        /* check if we could start a new transfer */
+        {
+            let pendingTransfers = this.registeredTransfers_.filter(e => e.transfer.isPending());
+            let runningTransfers = this.registeredTransfers_.filter(e => e.transfer.isRunning());
+            while(runningTransfers.length < FileManager.MAX_CONCURRENT_TRANSFERS && pendingTransfers.length > 0) {
+                const transfer = pendingTransfers.pop_front();
+                runningTransfers.push(transfer);
+
+                transfer.transfer.setTransferState(FileTransferState.INITIALIZING);
+                setTimeout(transfer.executeCallback, 0);
+            }
+
+            if(runningTransfers.length !== 0) {
+                /* start a new transfer as soon the old has been finished */
+                Promise.race([runningTransfers.map(e => e.finishPromise)]).then(() => {
+                    this.scheduleTransferUpdate();
+                });
+            }
         }
     }
 }
+

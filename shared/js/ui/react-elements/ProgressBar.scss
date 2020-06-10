@@ -1,0 +1,53 @@
+@import "../../../css/static/mixin";
+@import "../../../css/static/properties";
+
+.container {
+    position: relative;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+
+    height: 1.4em;
+    border-radius: 0.2em;
+
+    overflow: hidden;
+
+    background-color: #242527;
+    -webkit-box-shadow: inset 0 0 2px 0 rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: inset 0 0 2px 0 rgba(0, 0, 0, 0.75);
+    box-shadow: inset 0 0 2px 0 rgba(0, 0, 0, 0.75);
+
+    .filler {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        bottom: 0;
+
+        @include transition($button_hover_animation_time ease-in-out);
+    }
+
+    .text {
+        align-self: center;
+        z-index: 1;
+    }
+
+    &.type-normal {
+        .filler {
+            background-color: #4370a299;
+        }
+    }
+
+    &.type-error {
+        .filler {
+            background-color: #a1000099;
+        }
+    }
+
+    &.type-success {
+        .filler {
+            background-color: #2b854199;
+        }
+    }
+}

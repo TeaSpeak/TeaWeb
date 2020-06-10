@@ -95,6 +95,46 @@ export function formatMessage(pattern: string, ...objects: any[]) : JQuery[] {
     return result;
 }
 
+export function formatMessageString(pattern: string, ...args: string[]) : string {
+    let begin = 0, found = 0;
+
+    let result: string[] = [];
+    do {
+        found = pattern.indexOf('{', found);
+        if(found == -1 || pattern.length <= found + 1) {
+            result.push(pattern.substr(begin));
+            break;
+        }
+
+        if(found > 0 && pattern[found - 1] == '\\') {
+            //TODO remove the escape!
+            found++;
+            continue;
+        }
+
+        result.push(pattern.substr(begin, found - begin)); //Append the text
+
+        let offset = 0;
+        let number;
+        while ("0123456789".includes(pattern[found + 1 + offset])) offset++;
+        number = parseInt(offset > 0 ? pattern.substr(found + 1, offset) : "0");
+        if(pattern[found + offset + 1] != '}') {
+            found++;
+            continue;
+        }
+
+        if(args.length < number)
+            log.warn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
+
+        result.push(args[number]);
+
+        found = found + 1 + offset;
+        begin = found + 1;
+    } while(found++);
+
+    return result.join("");
+}
+
 //TODO: Remove this (only legacy)
 export function bbcode_chat(message: string) : JQuery[] {
     return bbcode.format(message, {

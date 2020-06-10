@@ -39,7 +39,7 @@ interface VolumeChangeModalState {
 }
 
 @ReactEventHandler(e => e.props.events)
-class VolumeChangeModal extends React.Component<{ clientName: string, remote: boolean, events: Registry<VolumeChangeEvents> }, VolumeChangeModalState> {
+class VolumeChangeModal extends React.Component<{ clientName: string, maxVolume?: number, remote: boolean, events: Registry<VolumeChangeEvents> }, VolumeChangeModalState> {
     private readonly refSlider = React.createRef<Slider>();
 
     private originalValue: number;
@@ -141,7 +141,7 @@ class VolumeChangeModal extends React.Component<{ clientName: string, remote: bo
 
     private onApplyClick() {
         this.props.events.fire("apply-volume", {
-             newValue: this.state.volumeModifier,
+            newValue: this.state.volumeModifier,
             origin: "user-input"
         });
     }
@@ -275,7 +275,7 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
 
     const modal = spawnReactModal(class extends Modal {
         renderBody() {
-            return <VolumeChangeModal remote={true} clientName={client.clientNickName()} events={events} />;
+            return <VolumeChangeModal remote={true} clientName={client.clientNickName()} maxVolume={maxValue} events={events} />;
         }
 
         title(): string {

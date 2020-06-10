@@ -10,7 +10,6 @@ import * as i18n from "./i18n/localize";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "./i18n/localize";
-import {RequestFileUpload} from "tc-shared/file/FileManager";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {default_recorder, RecorderProfile, set_default_recorder} from "tc-shared/voice/RecorderProfile";
@@ -30,6 +29,11 @@ import * as ReactDOM from "react-dom";
 import * as cbar from "./ui/frames/control-bar";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import {
+    FileTransferState,
+    TransferProvider,
+} from "tc-shared/file/Transfer";
+import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 
 /* required import for init */
 require("./proto").initialize();
@@ -351,6 +355,7 @@ function main() {
     server_connections.set_active_connection(server_connections.all_connections()[0]);
 
 
+    /*
     (window as any).test_upload = (message?: string) => {
         message = message || "Hello World";
 
@@ -374,6 +379,38 @@ function main() {
                 console.error(error);
             });
         })
+    };
+    */
+    (window as any).test_download = async () => {
+        const connection = server_connections.active_connection();
+        const download = connection.fileManager.initializeFileDownload({
+            targetSupplier: async () => await TransferProvider.provider().createDownloadTarget(),
+            name: "HomeStudent2019Retail.img",
+            path: "/",
+            channel: 4
+        });
+
+        console.log("Download stated");
+        await download.awaitFinished();
+        console.log("Download finished (%s)", FileTransferState[download.transferState()]);
+        //console.log(await (download.target as ResponseTransferTarget).getResponse().blob());
+        console.log("Have buffer");
+    };
+
+    (window as any).test_upload = async () => {
+        const connection = server_connections.active_connection();
+        const download = connection.fileManager.initializeFileUpload({
+            source: async () => await TransferProvider.provider().createTextSource("Hello my lovely world...."),
+            name: "test-upload.txt",
+            path: "/",
+            channel: 4
+        });
+
+        console.log("Download stated");
+        await download.awaitFinished();
+        console.log("Download finished (%s)", FileTransferState[download.transferState()]);
+        //console.log(await (download.target as ResponseTransferTarget).getResponse().blob());
+        console.log("Have buffer");
     };
 
     /* schedule it a bit later then the main because the main function is still within the loader */
@@ -436,11 +473,13 @@ function main() {
      */
 
 
-    /* for testing */
     if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
         const modal = openModalNewcomer();
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
+
+    (window as any).spawnFileTransferModal = spawnFileTransferModal;
+    spawnFileTransferModal(0);
 }
 
 const task_teaweb_starter: loader.Task = {
