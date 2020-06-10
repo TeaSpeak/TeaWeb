@@ -479,7 +479,6 @@ function main() {
     }
 
     (window as any).spawnFileTransferModal = spawnFileTransferModal;
-    spawnFileTransferModal(0);
 }
 
 const task_teaweb_starter: loader.Task = {
