@@ -391,8 +391,8 @@ export class FileDownloadTransfer extends FileTransfer {
     public readonly targetSupplier: TransferTargetSupplier;
     public target: TransferTarget;
 
-    constructor(direction, clientTransferId, properties: TransferProperties, targetSupplier) {
-        super(direction, clientTransferId, properties);
+    constructor(clientTransferId, properties: TransferProperties, targetSupplier) {
+        super(FileTransferDirection.DOWNLOAD, clientTransferId, properties);
         this.targetSupplier = targetSupplier;
     }
 }
@@ -402,8 +402,8 @@ export class FileUploadTransfer extends FileTransfer {
     public source: TransferSource;
     public fileSize: number;
 
-    constructor(direction, clientTransferId, properties: TransferProperties, sourceSupplier) {
-        super(direction, clientTransferId, properties);
+    constructor(clientTransferId, properties: TransferProperties, sourceSupplier) {
+        super(FileTransferDirection.UPLOAD, clientTransferId, properties);
         this.sourceSupplier = sourceSupplier;
     }
 }

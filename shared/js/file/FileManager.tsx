@@ -518,7 +518,7 @@ export class FileManager {
     }
 
     initializeFileDownload(options: InitializeDownloadOptions) : FileDownloadTransfer {
-        const transfer = new FileDownloadTransfer(FileTransferDirection.DOWNLOAD, ++this.clientTransferIdIndex, {
+        const transfer = new FileDownloadTransfer(++this.clientTransferIdIndex, {
             channel_id: options.channel | 0,
             name: options.name,
             path: options.path
@@ -556,7 +556,7 @@ export class FileManager {
     }
 
     initializeFileUpload(options: InitializeUploadOptions) : FileUploadTransfer {
-        const transfer = new FileUploadTransfer(FileTransferDirection.DOWNLOAD, ++this.clientTransferIdIndex, {
+        const transfer = new FileUploadTransfer( ++this.clientTransferIdIndex, {
             channel_id: options.channel | 0,
             name: options.name,
             path: options.path
