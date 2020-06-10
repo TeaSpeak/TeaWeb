@@ -2,6 +2,7 @@ export interface Config {
     loader_groups: boolean;
     verbose: boolean;
     error: boolean;
+    baseUrl: string;
 }
 
 export enum BackendType {

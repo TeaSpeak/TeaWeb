@@ -79,7 +79,7 @@ function load_style_url(url: string) : Promise<void> {
         };
 
         document.getElementById("style").appendChild(tag);
-        tag.href = url;
+        tag.href = config.baseUrl + url;
     })).then(result => {
         /* cleanup memory */
         _style_promises[url] = Promise.resolve(); /* this promise does not holds the whole script tag and other memory */

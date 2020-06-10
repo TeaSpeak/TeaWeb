@@ -17,12 +17,15 @@ export interface Config {
     loader_groups: boolean;
     verbose: boolean;
     error: boolean;
+
+    baseUrl: string;
 }
 
 export let config: Config = {
     loader_groups: false,
     verbose: false,
-    error: true
+    error: true,
+    baseUrl: "./"
 };
 
 export type Task = {
