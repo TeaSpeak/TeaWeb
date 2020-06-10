@@ -255,6 +255,11 @@ function analyze_type_node(node: ts.TypeNode | ts.LeftHandSideExpression, data: 
             analyze_type_node(pae.expression, data);
             break;
 
+        case SyntaxKind.ConstructorType:
+            let ct = node as ts.ConstructorTypeNode;
+            analyze_type_node(ct.type, data);
+            break;
+
         default:
             throw "Unknown type " + SyntaxKind[node.kind] + ". Extend me :)";
     }
