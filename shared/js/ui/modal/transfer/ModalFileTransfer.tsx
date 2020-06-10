@@ -212,7 +212,7 @@ class FileTransferModal extends Modal {
 
     renderBody() {
         const path = this.defaultChannelId ? "/" + channelPathPrefix + this.defaultChannelId + "/" : "/";
-        return <div className={cssStyle.container} style={{width: "600px"}}>
+        return <div className={cssStyle.container}>
             <NavigationBar events={this.remoteBrowseEvents} currentPath={path} />
             <FileBrowser events={this.remoteBrowseEvents} currentPath={path} />
             <TransferInfo events={this.transferInfoEvents} />

@@ -526,6 +526,10 @@ export class FileManager {
 
         const initializeCallback = async () => {
             try {
+                transfer.target = await transfer.targetSupplier(transfer);
+                if(!transfer.target)
+                    throw tr("Failed to create transfer target");
+
                 await this.connectionHandler.serverConnection.send_command("ftinitdownload", {
                     "path": options.path,
                     "name": options.name,

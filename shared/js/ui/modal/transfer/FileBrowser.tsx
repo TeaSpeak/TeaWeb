@@ -426,7 +426,7 @@ const FileSize = (props: { path: string, events: Registry<FileBrowserEvents>, fi
         setSize(event.fileSize);
     });
 
-    if(size < 0 && props.file.size < 0)
+    if(size < 0 && (props.file.size < 0 || typeof props.file.size === "undefined"))
         return <a key={"size-invalid"}><Translatable>unknown</Translatable></a>;
     return <a key={"size"}>{network.format_bytes(size >= 0 ? size : props.file.size, { unit: "B", time: "", exact: false })}</a>;
 };
@@ -439,7 +439,6 @@ const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<F
         if(event.path !== props.file.path || event.name !== props.file.name)
             return;
 
-        console.error(props.file.transfer);
         setTransferStatus("pending");
     });
 
@@ -456,7 +455,6 @@ const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<F
         if(event.id !== props.file.transfer?.id)
             return;
 
-        console.error("Progress: " + event.progress);
         setTransferProgress(event.progress);
         setTransferStatus(event.status);
     });
@@ -609,43 +607,11 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
                 event.preventDefault();
                 setDropHovered(true);
             }}
-            onDrop={event => {
-                const types = event.dataTransfer.types;
-                if(types.length !== 1)
-                    return;
-
-                if(props.row.userData.type !== FileType.DIRECTORY) {
-                    event.stopPropagation();
-                    return;
-                }
-
-                if(types[0] === FileTransferUrlMediaType) {
-                    /* TODO: If cross move upload! */
-                    console.error(event.dataTransfer.getData(FileTransferUrlMediaType));
-                    const fileUrls = event.dataTransfer.getData(FileTransferUrlMediaType).split("&").map(e => decodeURIComponent(e));
-                    for(const fileUrl of fileUrls) {
-                        const name = fileUrl.split("/").last();
-                        const oldPath = fileUrl.split("/").slice(0, -1).join("/") + "/";
-
-                        props.events.fire("action_rename_file", {
-                            newPath: props.row.userData.path + props.row.userData.name + "/",
-                            oldPath: oldPath,
-                            oldName: name,
-                            newName: name
-                        });
-                    }
-                } else if(types[0] === "Files") {
-                    props.events.fire("action_start_upload", { path: props.row.userData.path + props.row.userData.name, mode: "files", files: [...event.dataTransfer.files] });
-                } else {
-                    log.warn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
-                    event.preventDefault();
-                    return;
-                }
-                event.preventDefault();
-            }}
 
             onDragLeave={() => setDropHovered(false)}
             onDragEnd={() => props.events.fire("notify_drag_ended")}
+
+            x-drag-upload-path={props.row.userData.type === FileType.DIRECTORY ? props.row.userData.path + props.row.userData.name + "/" : undefined}
         >
             <FileTransferIndicator events={props.events} file={props.row.userData} />
         </TableRowElement>
@@ -772,6 +738,23 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
                 onHeaderContextMenu={e => this.onHeaderContextMenu(e)}
                 onBodyContextMenu={e => this.onBodyContextMenu(e)}
+                onDrop={e => this.onDrop(e)}
+                onDragOver={event => {
+                    const types = event.dataTransfer.types;
+                    if(types.length !== 1)
+                        return;
+
+                    if(types[0] === FileTransferUrlMediaType) {
+                        /* TODO: Detect if its remote move or internal move */
+                        event.dataTransfer.effectAllowed = "move";
+                    } else if(types[0] === "Files") {
+                        event.dataTransfer.effectAllowed = "copy";
+                    } else {
+                        return;
+                    }
+
+                    event.preventDefault();
+                }}
 
                 renderRow={(row: TableRow<ListedFileInfo>, columns, uniqueId) => <FileListEntry columns={columns} row={row} key={uniqueId} events={this.props.events} />}
             />
@@ -784,6 +767,46 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
         this.props.events.fire("query_files", {
             path: this.currentPath
         });
+    }
+
+    private onDrop(event: React.DragEvent) {
+        const types = event.dataTransfer.types;
+        if(types.length !== 1)
+            return;
+
+        event.stopPropagation();
+        let targetPath;
+        {
+            let currentTarget = event.target as HTMLElement;
+            while(currentTarget && !currentTarget.hasAttribute("x-drag-upload-path"))
+                currentTarget = currentTarget.parentElement;
+            targetPath = currentTarget?.getAttribute("x-drag-upload-path") || this.currentPath;
+            console.log("Target: %o %s", currentTarget, targetPath);
+        }
+
+        if(types[0] === FileTransferUrlMediaType) {
+            /* TODO: If cross move upload! */
+            console.error(event.dataTransfer.getData(FileTransferUrlMediaType));
+            const fileUrls = event.dataTransfer.getData(FileTransferUrlMediaType).split("&").map(e => decodeURIComponent(e));
+            for(const fileUrl of fileUrls) {
+                const name = fileUrl.split("/").last();
+                const oldPath = fileUrl.split("/").slice(0, -1).join("/") + "/";
+
+                this.props.events.fire("action_rename_file", {
+                    newPath: targetPath,
+                    oldPath: oldPath,
+                    oldName: name,
+                    newName: name
+                });
+            }
+        } else if(types[0] === "Files") {
+            this.props.events.fire("action_start_upload", { path: targetPath, mode: "files", files: [...event.dataTransfer.files] });
+        } else {
+            log.warn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
+            event.preventDefault();
+            return;
+        }
+        event.preventDefault();
     }
 
     private onHeaderContextMenu(event: React.MouseEvent) {
@@ -1038,7 +1061,7 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
             }
         } else {
             element.transfer.status = event.status;
-            if(element.mode === "uploading") {
+            if(element.mode === "uploading" && event.status === "finished") {
                 /* upload finished, the element rerenders already with the correct values */
                 element.size = event.fileSize;
                 element.mode = "normal";

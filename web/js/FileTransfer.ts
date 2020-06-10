@@ -60,16 +60,15 @@ TransferProvider.setProvider(new class extends TransferProvider {
     }
 
     executeFileDownload(transfer: FileDownloadTransfer) {
-        transfer.targetSupplier(transfer).then(target => {
-            if(!target) throw tr("transfer target is undefined");
-            transfer.target = target;
+        try {
+            if(!transfer.target) throw tr("transfer target is undefined");
 
             let response: Promise<void>;
             transfer.setTransferState(FileTransferState.CONNECTING);
-            if(target instanceof ResponseTransferTargetImpl) {
-                response = responseFileDownload(transfer, target);
-            } else if(target instanceof DownloadTransferTargetImpl) {
-                response = downloadFileDownload(transfer, target);
+            if(transfer.target instanceof ResponseTransferTargetImpl) {
+                response = responseFileDownload(transfer, transfer.target);
+            } else if(transfer.target instanceof DownloadTransferTargetImpl) {
+                response = downloadFileDownload(transfer, transfer.target);
             } else {
                 transfer.setFailed({
                     error: "io",
@@ -93,7 +92,7 @@ TransferProvider.setProvider(new class extends TransferProvider {
                     extraMessage: typeof error === "string" ? error : tr("Lookup the console")
                 }, typeof error === "string" ? error : tr("Lookup the console"));
             });
-        }).catch(error => {
+        } catch (error) {
             if(typeof error !== "string")
                 log.error(LogCategory.FILE_TRANSFER, tr("Failed to initialize transfer target: %o"), error);
 
@@ -102,7 +101,7 @@ TransferProvider.setProvider(new class extends TransferProvider {
                 reason: "failed-to-initialize-target",
                 extraMessage: typeof error === "string" ? error : tr("Lookup the console")
             }, typeof error === "string" ? error : tr("Lookup the console"));
-        });
+        }
     }
 
     targetSupported(type: TransferTargetType) {

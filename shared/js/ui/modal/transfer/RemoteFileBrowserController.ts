@@ -10,14 +10,23 @@ import * as ppt from "tc-backend/ppt";
 import {SpecialKey} from "tc-shared/PPTListener";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tra, traj} from "tc-shared/i18n/localize";
-import {FileTransfer, FileTransferState, FileUploadTransfer, TransferProvider} from "tc-shared/file/Transfer";
+import {
+    FileTransfer,
+    FileTransferState,
+    FileUploadTransfer,
+    TransferProvider,
+    TransferTargetType
+} from "tc-shared/file/Transfer";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {
     avatarsPathPrefix,
     channelPathPrefix,
     FileBrowserEvents,
-    iconPathPrefix, ListedFileInfo, PathInfo
+    iconPathPrefix,
+    ListedFileInfo,
+    PathInfo
 } from "tc-shared/ui/modal/transfer/ModalFileTransfer";
+import {Settings, settings} from "tc-shared/settings";
 
 function parsePath(path: string, connection: ConnectionHandler) : PathInfo {
     if(path === "/" || !path) {
@@ -649,6 +658,17 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     events.on("action_start_download", event => {
         event.files.forEach(file => {
             try {
+                let targetSupplier;
+                if(__build.target === "client" && TransferProvider.provider().targetSupported(TransferTargetType.FILE)) {
+                    const target = TransferProvider.provider().createFileTarget(undefined, file.name);
+                    targetSupplier = async () => target;
+                } else if(TransferProvider.provider().targetSupported(TransferTargetType.DOWNLOAD)) {
+                    targetSupplier = async () => await TransferProvider.provider().createDownloadTarget();
+                } else {
+                    createErrorModal(tr("Failed to create transfer target"), tr("Failed to create transfer target.\nAll targets are unsupported")).open();
+                    return;
+                }
+
                 const fileName = file.name;
                 const info = parsePath(file.path, connection);
                 const transfer = connection.fileManager.initializeFileDownload({
@@ -656,7 +676,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     path: info.type === "channel" ? info.path : "",
                     name: info.type === "channel" ? file.name : "/" + file.name,
                     channelPassword: info.channel?.cached_password(),
-                    targetSupplier: async () => TransferProvider.provider().createDownloadTarget()
+                    targetSupplier: targetSupplier
                 });
                 transfer.awaitFinished().then(() => {
                     if(transfer.transferState() === FileTransferState.ERRORED) {
@@ -736,12 +756,12 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                         break;
 
                     case FileTransferState.RUNNING:
-                        events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: "transferring", fileSize: transfer.transferProperties().fileSize });
+                        events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: "transferring" });
                         break;
 
                     case FileTransferState.FINISHED:
                     case FileTransferState.CANCELED:
-                        events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: "finished" });
+                        events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: "finished", fileSize: transfer.transferProperties().fileSize });
                         break;
 
                     case FileTransferState.ERRORED:

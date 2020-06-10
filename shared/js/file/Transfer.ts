@@ -47,7 +47,8 @@ export type TransferSourceSupplier = (transfer: FileUploadTransfer) => Promise<T
 /* Transfer target types */
 export enum TransferTargetType {
     RESPONSE,
-    DOWNLOAD
+    DOWNLOAD,
+    FILE
 }
 
 export abstract class TransferTarget {
@@ -72,6 +73,18 @@ export abstract class ResponseTransferTarget extends TransferTarget {
     abstract hasResponse() : boolean;
     abstract getResponse() : Response;
 }
+
+export abstract class FileTransferTarget extends TransferTarget {
+    protected constructor() {
+        super(TransferTargetType.FILE);
+    }
+
+    abstract getFilePath() : string;
+
+    abstract hasFileName() : boolean;
+    abstract getFileName() : string;
+}
+
 export type TransferTargetSupplier = (transfer: FileDownloadTransfer) => Promise<TransferTarget>;
 
 export enum FileTransferState {
@@ -134,7 +147,7 @@ export interface TransferInitializeError {
 export interface TransferConnectError {
     error: "connection";
 
-    reason: "missing-provider" | "provider-initialize-error" | "network-error";
+    reason: "missing-provider" | "provider-initialize-error" | "handle-initialize-error" | "network-error";
     extraMessage?: string;
 }
 
@@ -410,6 +423,7 @@ export abstract class TransferProvider {
 
     async createResponseTarget() : Promise<ResponseTransferTarget> { throw tr("response target isn't supported"); }
     async createDownloadTarget(filename?: string) : Promise<DownloadTransferTarget> { throw tr("download target isn't supported"); }
+    async createFileTarget(path?: string, filename?: string) : Promise<FileTransferTarget> { throw tr("file target isn't supported"); }
 
     async createBufferSource(buffer: ArrayBuffer) : Promise<BufferTransferSource> { throw tr("buffer source isn't supported"); }
     async createTextSource(text: string) : Promise<TextTransferSource> { throw tr("text source isn't supported"); };

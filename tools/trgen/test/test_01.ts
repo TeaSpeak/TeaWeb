@@ -19,7 +19,7 @@ debugger;
 debugger;
 const zzz = true ? "yyy" : "bbb";
 
-const y = "";
+const zy = "";
 debugger;
 debugger;
 debugger;

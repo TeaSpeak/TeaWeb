@@ -135,7 +135,8 @@
                 overflow-y: auto;
                 overflow-x: auto;
 
-                display: block;
+                display: flex;
+                flex-direction: column;
             }
         }
     }

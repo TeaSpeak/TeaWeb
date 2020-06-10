@@ -35,6 +35,8 @@ export interface TableProperties {
 
     onHeaderContextMenu?: (event: React.MouseEvent) => void;
     onBodyContextMenu?: (event: React.MouseEvent) => void;
+    onDrop?: (event: React.DragEvent) => void;
+    onDragOver?: (event: React.DragEvent) => void;
 
     renderRow?: (row: TableRow, columns: TableColumn[], uniqueId: string) => React.ReactElement<TableRowElement>;
 }
@@ -140,7 +142,10 @@ export class Table extends React.Component<TableProperties, TableState> {
         }
 
         return (
-            <div className={cssStyle.container + " " + (this.props.className || " ")}>
+            <div
+                className={cssStyle.container + " " + (this.props.className || " ")}
+                onDrop={e => this.props.onDrop && this.props.onDrop(e)}
+                onDragOver={e => this.props.onDragOver && this.props.onDragOver(e)}>
                 <div
                     ref={this.refHeader}
                     className={cssStyle.header + " " + (this.props.headerClassName || " ")}
