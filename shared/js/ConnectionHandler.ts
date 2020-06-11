@@ -32,7 +32,6 @@ import * as top_menu from "tc-shared/ui/frames/MenuBar";
 import {EventHandler, Registry} from "tc-shared/events";
 import {FileManager} from "tc-shared/file/FileManager";
 import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
-import {guid} from "tc-shared/crypto/uid";
 import {traj} from "tc-shared/i18n/localize";
 import {md5} from "tc-shared/crypto/md5";
 
@@ -1069,5 +1068,10 @@ export interface ConnectionEvents {
     notify_connection_state_changed: {
         old_state: ConnectionState,
         new_state: ConnectionState
+    },
+
+    /* the handler has become visible/invisible for the client */
+    notify_visibility_changed: {
+        visible: boolean
     }
 }

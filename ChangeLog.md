@@ -1,6 +1,8 @@
 # Changelog:
 * **11.06.20**
     - Fixed channel tree deletions
+    - Removed layout recalculate bottleneck on connection handler switching
+    - Fixed empty channel tree on tab change, if the tree has some scroll offset
     
 * **10.06.20**
     - Finalize the channel file explorer

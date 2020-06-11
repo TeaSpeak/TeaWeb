@@ -92,6 +92,7 @@ namespace html {
         private _label: string;
         private _callback_click: () => any;
 
+        private visible_: boolean = true;
 
         constructor(label: string, mode: "side" | "down") {
             this._label = label;
@@ -167,9 +168,9 @@ namespace html {
 
         visible(value?: boolean): boolean {
             if(typeof(value) === "undefined")
-                return this.html_tag.is(':visible'); //FIXME!
+                return this.visible_;
 
-            this.html_tag.toggle(!!value);
+            this.html_tag.toggleClass("hidden", this.visible_ = !!value);
             return value;
         }
 

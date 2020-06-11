@@ -10,18 +10,6 @@ html:root {
     --channel-tree-entry-marker-unread: rgba(168, 20, 20, 0.5);
 }
 
-@if 0 {
-    /* the channel tree */
-    .channel-tree {
-
-        .tree-entry {
-            &.client {
-
-            }
-        }
-    }
-}
-
 .channelTree {
     @include user-select(none);
     width: 100%;
@@ -109,8 +97,6 @@ html:root {
 .channelTreeContainer {
     @include chat-scrollbar-vertical();
 
-    scroll-behavior: smooth;
-
     position: relative;
     height: 100%;
 
@@ -119,4 +105,8 @@ html:root {
 
     overflow: hidden;
     overflow-y: auto;
+
+    &.smoothScroll {
+        scroll-behavior: smooth;
+    }
 }
