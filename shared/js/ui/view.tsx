@@ -208,6 +208,8 @@ export class ChannelTree {
 
     constructor(client) {
         this.events = new Registry<ChannelTreeEvents>();
+        this.events.enable_debug("channel-tree");
+
         this.client = client;
         this.view = React.createRef();
         this.view_move = React.createRef();
@@ -305,15 +307,15 @@ export class ChannelTree {
         try {
             if(!this.channels.remove(channel))
                 log.warn(LogCategory.CHANNEL, tr("Deleting an unknown channel!"));
-            channel.children(false).forEach(e => this.deleteChannel(e));
 
+            channel.children(false).forEach(e => this.deleteChannel(e));
             if(channel.clients(false).length !== 0) {
                 log.warn(LogCategory.CHANNEL, tr("Deleting a non empty channel! This could cause some errors."));
                 for(const client of channel.clients(false))
                     this.deleteClient(client, false);
             }
 
-            const is_root_tree = !!channel.parent;
+            const is_root_tree = !channel.parent;
             this.unregisterChannelFromTree(channel);
             if(is_root_tree) this.events.fire("notify_root_channel_changed");
         } finally {
@@ -345,14 +347,14 @@ export class ChannelTree {
     }
 
     private unregisterChannelFromTree(channel: ChannelEntry, new_parent?: ChannelEntry) {
+        let oldChannelParent;
         if(channel.parent) {
             if(channel.parent.child_channel_head === channel)
                 channel.parent.child_channel_head = channel.channel_next;
 
             /* We need only trigger this once.
                If the new parent is equal to the old one with applying the "new" parent this event will get triggered */
-            if(new_parent !== channel.parent)
-                channel.parent.events.fire("notify_children_changed");
+            oldChannelParent = channel.parent;
         }
 
         if(channel.channel_previous)
@@ -370,6 +372,9 @@ export class ChannelTree {
         channel.channel_next = undefined;
         channel.channel_previous = undefined;
         channel.parent = undefined;
+
+        if(oldChannelParent && oldChannelParent !== new_parent)
+            oldChannelParent.events.fire("notify_children_changed");
     }
 
     moveChannel(channel: ChannelEntry, channel_previous: ChannelEntry, parent: ChannelEntry) {

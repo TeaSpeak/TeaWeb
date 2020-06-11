@@ -17,6 +17,8 @@ import {ClientEntry as ClientEntryView} from "./Client";
 import {ChannelEntry, ChannelEvents} from "tc-shared/ui/channel";
 import {ServerEntry} from "tc-shared/ui/server";
 import {ClientEntry, ClientType} from "tc-shared/ui/client";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 
 const viewStyle = require("./View.scss");
 
@@ -211,6 +213,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     }
 
     private rebuild_tree() {
+        log.debug(LogCategory.CHANNEL, tr("Rebuilding the channel tree"));
         const tree = this.props.tree;
         {
             let index = this.flat_tree.length;

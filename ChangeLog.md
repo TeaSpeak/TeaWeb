@@ -1,4 +1,7 @@
 # Changelog:
+* **11.06.20**
+    - Fixed channel tree deletions
+    
 * **10.06.20**
     - Finalize the channel file explorer
     - Reworked the file transfer system

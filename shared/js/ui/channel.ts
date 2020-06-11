@@ -488,9 +488,10 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 name: tr("Delete channel"),
                 invalidPermission: !flagDelete,
                 callback: () => {
+                    const client = this.channelTree.client;
                     this.channelTree.client.serverConnection.send_command("channeldelete", {cid: this.channelId}).then(() => {
-                        this.channelTree.client.sound.play(Sound.CHANNEL_DELETED);
-                    })
+                        client.sound.play(Sound.CHANNEL_DELETED);
+                    });
                 }
             },
             contextmenu.Entry.HR(),
