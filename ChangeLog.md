@@ -3,6 +3,9 @@
     - Fixed channel tree deletions
     - Removed layout recalculate bottleneck on connection handler switching
     - Fixed empty channel tree on tab change, if the tree has some scroll offset
+    - Added the ability to duplicate bookmarks
+    - Fixed issue [#106](https://github.com/TeaSpeak/TeaWeb/issues/106)
+    - Fixed issue [#90](https://github.com/TeaSpeak/TeaWeb/issues/90)
     
 * **10.06.20**
     - Finalize the channel file explorer

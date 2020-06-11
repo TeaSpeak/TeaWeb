@@ -293,15 +293,15 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
             };
 
             if(!result.startsWith("data:image/svg+xml")) {
-                if(image.naturalWidth > 32 && image.naturalHeight > 32) {
+                if(image.naturalWidth > 128 && image.naturalHeight > 128) {
                     width_error("width and height (max 32px). Given: " + image.naturalWidth + "x" + image.naturalHeight);
                     return;
                 }
-                if(image.naturalWidth > 32) {
+                if(image.naturalWidth > 128) {
                     width_error("width (max 32px)");
                     return;
                 }
-                if(image.naturalHeight > 32) {
+                if(image.naturalHeight > 128) {
                     width_error("height (max 32px)");
                     return;
                 }
