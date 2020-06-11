@@ -396,7 +396,6 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 icon_class: "client-filetransfer",
                 name: bold(tr("Open channel file browser")),
                 callback: () => spawnFileTransferModal(this.getChannelId()),
-                visible: false /* FIXME: Enable this */
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-channel_switch",
