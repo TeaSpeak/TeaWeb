@@ -314,7 +314,7 @@ function main() {
             return;
 
         if(event.target instanceof HTMLInputElement) {
-            if((!!event.target.value || __build.target === "client") && !event.target.disabled && !event.target.readOnly) {
+            if((!!event.target.value || __build.target === "client") && !event.target.disabled && !event.target.readOnly && event.target.type !== "number") {
                 spawn_context_menu(event.pageX, event.pageY, {
                     type: MenuEntryType.ENTRY,
                     name: tr("Copy"),
