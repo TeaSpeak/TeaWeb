@@ -121,6 +121,8 @@ const OPUS_ERROR_CODES = [
 ];
 
 class OpusWorker implements CodecWorker {
+    private static readonly kProcessBufferSize = 4096 * 2;
+
     private readonly channelCount: number;
     private readonly type: OpusType;
     private nativeHandle: any;
@@ -130,11 +132,8 @@ class OpusWorker implements CodecWorker {
     private fn_encode: any;
     private fn_reset: any;
 
-    private buffer_size = 4096 * 2;
-    private buffer: any;
-
-    private encode_buffer: Float32Array;
-    private decode_buffer: Uint8Array;
+    private nativeBufferPtr: number;
+    private processBuffer: Uint8Array;
 
     constructor(channelCount: number, type: OpusType) {
         this.channelCount = channelCount;
@@ -153,40 +152,39 @@ class OpusWorker implements CodecWorker {
 
         this.nativeHandle = this.fn_newHandle(this.channelCount, this.type);
 
-        this.buffer = Module._malloc(this.buffer_size);
-        this.encode_buffer = new Float32Array(Module.HEAPF32.buffer, this.buffer, Math.floor(this.buffer_size / 4));
-        this.decode_buffer = new Uint8Array(Module.HEAPU8.buffer, this.buffer, this.buffer_size);
+        this.nativeBufferPtr = Module._malloc(OpusWorker.kProcessBufferSize);
+        this.processBuffer = new Uint8Array(Module.HEAPU8.buffer, this.nativeBufferPtr, OpusWorker.kProcessBufferSize);
         return undefined;
     }
 
     deinitialise() { } //TODO
 
     decode(buffer: Uint8Array, responseBuffer: (length: number) => Uint8Array): number | string {
-        if (buffer.byteLength > this.decode_buffer.byteLength)
+        if (buffer.byteLength > this.processBuffer.byteLength)
             return "supplied data exceeds internal buffer";
 
-        this.decode_buffer.set(buffer);
+        this.processBuffer.set(buffer);
 
-        let result = this.fn_decode(this.nativeHandle, this.decode_buffer.byteOffset, buffer.byteLength, this.decode_buffer.byteLength);
+        let result = this.fn_decode(this.nativeHandle, this.processBuffer.byteOffset, buffer.byteLength, this.processBuffer.byteLength);
         if (result < 0) return OPUS_ERROR_CODES[-result] || "unknown decode error " + result;
 
         const resultByteLength = result * this.channelCount * 4;
         const resultBuffer = responseBuffer(resultByteLength);
-        resultBuffer.set(this.decode_buffer.subarray(0, resultByteLength), 0);
+        resultBuffer.set(this.processBuffer.subarray(0, resultByteLength), 0);
         return resultByteLength;
     }
 
     encode(buffer: Uint8Array, responseBuffer: (length: number) => Uint8Array): number | string {
-        if (buffer.byteLength > this.decode_buffer.byteLength)
+        if (buffer.byteLength > this.processBuffer.byteLength)
             return "supplied data exceeds internal buffer";
 
-        this.encode_buffer.set(buffer);
+        this.processBuffer.set(buffer);
 
-        let result = this.fn_encode(this.nativeHandle, this.encode_buffer.byteOffset, buffer.byteLength, this.encode_buffer.byteLength);
+        let result = this.fn_encode(this.nativeHandle, this.processBuffer.byteOffset, buffer.byteLength, this.processBuffer.byteLength);
         if (result < 0) return OPUS_ERROR_CODES[-result] || "unknown encode error " + result;
 
         const resultBuffer = responseBuffer(result);
-        resultBuffer.set(Module.HEAP8.subarray(this.encode_buffer.byteOffset, this.encode_buffer.byteOffset + result));
+        resultBuffer.set(this.processBuffer.subarray(0, result), 0);
         return result;
     }
 

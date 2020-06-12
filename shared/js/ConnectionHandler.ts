@@ -337,13 +337,12 @@ export class ConnectionHandler {
     getClient() : LocalClientEntry { return this._local_client; }
     getClientId() { return this._clientId; }
 
-    set clientId(id: number) {
-        this._clientId = id;
-        this._local_client["_clientId"] = id;
-    }
+    initializeLocalClient(clientId: number, acceptedName: string) {
+        this._clientId = clientId;
+        this._local_client["_clientId"] = clientId;
 
-    get clientId() {
-        return this._clientId;
+        this.channelTree.registerClient(this._local_client);
+        this._local_client.updateVariables( { key: "client_nickname", value: acceptedName });
     }
 
     getServerConnection() : AbstractServerConnection { return this.serverConnection; }

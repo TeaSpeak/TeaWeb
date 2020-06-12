@@ -87,7 +87,7 @@ int codec_opus_encode(OpusHandle *handle, uint8_t *buffer, size_t byte_length, s
     if(handle->channelCount == 2)
         sequenced2interleaved_intersecting<2>((float *) buffer, byte_length / (sizeof(float) * 2));
 
-    auto result = opus_encode_float(&*handle->encoder, (float *) buffer, byte_length / handle->channelCount, buffer, maxLength);
+    auto result = opus_encode_float(&*handle->encoder, (float *) buffer, byte_length / (handle->channelCount * sizeof(float)), buffer, maxLength);
     if (result < 0) return result;
     return result;
 }

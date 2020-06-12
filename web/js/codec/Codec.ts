@@ -35,7 +35,6 @@ export class BufferChunk {
 }
 
 export class CodecClientCache {
-    _last_access: number;
     _chunks: BufferChunk[] = [];
 
     bufferedSamples(max: number = 0) : number {
