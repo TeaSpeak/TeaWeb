@@ -251,7 +251,7 @@ export class InfoFrame {
                 client_id: selected_client.clientId()
             }, { create: false, attach: false }) : undefined;
 
-            const visibility = (selected_client && selected_client.clientId() !== this.handle.handle.clientId) ? "visible" : "hidden";
+            const visibility = (selected_client && selected_client.clientId() !== this.handle.handle.getClientId()) ? "visible" : "hidden";
             if(this._button_conversation.style.visibility !== visibility)
                 this._button_conversation.style.visibility = visibility;
             if(conversation) {

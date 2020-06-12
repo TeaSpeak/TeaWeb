@@ -53,9 +53,10 @@ export abstract class BasicCodec implements Codec {
 
 
     encodeSamples(cache: CodecClientCache, pcm: AudioBuffer) {
-        this._encodeResampler.resample(pcm).catch(error => log.error(LogCategory.VOICE, tr("Could not resample PCM data for codec. Error: %o"), error))
-            .then(buffer => this.encodeSamples0(cache, buffer as any)).catch(error => console.error(tr("Could not encode PCM data for codec. Error: %o"), error))
-
+        this._encodeResampler.resample(pcm)
+            .catch(error => log.error(LogCategory.VOICE, tr("Could not resample PCM data for codec. Error: %o"), error))
+            .then(buffer => this.encodeSamples0(cache, buffer as any))
+            .catch(error => console.error(tr("Could not encode PCM data for codec. Error: %o"), error))
     }
 
     private encodeSamples0(cache: CodecClientCache, buffer: AudioBuffer) {

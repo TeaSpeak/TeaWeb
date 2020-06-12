@@ -137,6 +137,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     private _type: VoiceEncodeType = VoiceEncodeType.NATIVE_ENCODE;
 
+    private localAudioStarted = false;
     /*
      * To ensure we're not sending any audio because the settings activates the input,
      * we self mute the audio stream
@@ -245,15 +246,15 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(this._audio_source)
             await this._audio_source.unmount();
 
-        this.handle_local_voice_ended();
+        this.handleLocalVoiceEnded();
         this._audio_source = recorder;
 
         if(recorder) {
             recorder.current_handler = this.connection.client;
 
             recorder.callback_unmount = this.on_recorder_yield.bind(this);
-            recorder.callback_start = this.handle_local_voice_started.bind(this);
-            recorder.callback_stop = this.handle_local_voice_ended.bind(this);
+            recorder.callback_start = this.handleLocalVoiceStarted.bind(this);
+            recorder.callback_stop = this.handleLocalVoiceEnded.bind(this);
 
             recorder.callback_input_change = async (old_input, new_input) => {
                 if(old_input) {
@@ -289,11 +290,16 @@ export class VoiceConnection extends AbstractVoiceConnection {
                             log.warn(LogCategory.VOICE, tr("Failed to set consumer to the new recorder input: %o"), e);
                         }
                     } else {
-                        //TODO: Error handling?
-                        await recorder.input.set_consumer({
-                            type: InputConsumerType.CALLBACK,
-                            callback_audio: buffer => this.handle_local_voice(buffer, false)
-                        } as CallbackInputConsumer);
+                        try {
+                            await recorder.input.set_consumer({
+                                type: InputConsumerType.CALLBACK,
+                                callback_audio: buffer => this.handleLocalVoiceBuffer(buffer, false)
+                            } as CallbackInputConsumer);
+
+                            log.debug(LogCategory.VOICE, tr("Successfully set/updated to the new input for the recorder"));
+                        } catch (e) {
+                            log.warn(LogCategory.VOICE, tr("Failed to set consumer to the new recorder input: %o"), e);
+                        }
                     }
                 }
             };
@@ -333,22 +339,27 @@ export class VoiceConnection extends AbstractVoiceConnection {
         const buffer = this.voice_send_queue.pop_front();
         if(!buffer)
             return;
-        this.send_voice_packet(buffer.data, buffer.codec);
+        this.sendVoicePacket(buffer.data, buffer.codec);
     }
 
-    send_voice_packet(encoded_data: Uint8Array, codec: number) {
+    private fillVoicePacketHeader(packet: Uint8Array, codec: number) {
+        packet[0] = this.chunkVPacketId++ < 5 ? 1 : 0; //Flag header
+        packet[1] = 0; //Flag fragmented
+        packet[2] = (this.voice_packet_id >> 8) & 0xFF; //HIGHT (voiceID)
+        packet[3] = (this.voice_packet_id >> 0) & 0xFF; //LOW   (voiceID)
+        packet[4] = codec; //Codec
+    }
+
+    sendVoicePacket(encoded_data: Uint8Array, codec: number) {
         if(this.dataChannel) {
             this.voice_packet_id++;
             if(this.voice_packet_id > 65535)
                 this.voice_packet_id = 0;
 
             let packet = new Uint8Array(encoded_data.byteLength + 5);
-            packet[0] = this.chunkVPacketId++ < 5 ? 1 : 0; //Flag header
-            packet[1] = 0; //Flag fragmented
-            packet[2] = (this.voice_packet_id >> 8) & 0xFF; //HIGHT (voiceID)
-            packet[3] = (this.voice_packet_id >> 0) & 0xFF; //LOW   (voiceID)
-            packet[4] = codec; //Codec
+            this.fillVoicePacketHeader(packet, codec);
             packet.set(encoded_data, 5);
+
             try {
                 this.dataChannel.send(packet);
             } catch (error) {
@@ -356,6 +367,20 @@ export class VoiceConnection extends AbstractVoiceConnection {
             }
         } else {
             log.warn(LogCategory.VOICE, tr("Could not transfer audio (not connected)"));
+        }
+    }
+
+    sendVoiceStopPacket(codec: number) {
+        if(!this.dataChannel)
+            return;
+
+        const packet = new Uint8Array(5);
+        this.fillVoicePacketHeader(packet, codec);
+
+        try {
+            this.dataChannel.send(packet);
+        } catch (error) {
+            log.warn(LogCategory.VOICE, tr("Failed to send voice packet. Error: %o"), error);
         }
     }
 
@@ -390,8 +415,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
         const dataChannelConfig = { ordered: false, maxRetransmits: 0 };
 
         this.dataChannel = this.rtcPeerConnection.createDataChannel('main', dataChannelConfig);
-        this.dataChannel.onmessage = this.on_data_channel_message.bind(this);
-        this.dataChannel.onopen = this.on_data_channel.bind(this);
+        this.dataChannel.onmessage = this.onMainDataChannelMessage.bind(this);
+        this.dataChannel.onopen = this.onMainDataChannelOpen.bind(this);
         this.dataChannel.binaryType = "arraybuffer";
 
         let sdpConstraints : RTCOfferOptions = {};
@@ -524,15 +549,15 @@ export class VoiceConnection extends AbstractVoiceConnection {
         });
     }
 
-    private on_data_channel(channel) {
+    private onMainDataChannelOpen(channel) {
         log.info(LogCategory.VOICE, tr("Got new data channel! (%s)"), this.dataChannel.readyState);
 
         this.connection.client.update_voice_status();
     }
 
-    private on_data_channel_message(message: MessageEvent) {
+    private onMainDataChannelMessage(message: MessageEvent) {
         const chandler = this.connection.client;
-        if(chandler.client_status.output_muted) /* we dont need to do anything with sound playback when we're not listening to it */
+        if(chandler.isSpeakerMuted() || chandler.isSpeakerDisabled()) /* we dont need to do anything with sound playback when we're not listening to it */
             return;
 
         let bin = new Uint8Array(message.data);
@@ -571,18 +596,18 @@ export class VoiceConnection extends AbstractVoiceConnection {
         }
     }
 
-    private handle_local_voice(data: AudioBuffer, head: boolean) {
+    private handleLocalVoiceBuffer(data: AudioBuffer, head: boolean) {
         const chandler = this.connection.client;
-        if(!chandler.connected)
+        if(!this.localAudioStarted || !chandler.connected)
             return false;
 
-        if(chandler.client_status.input_muted)
+        if(chandler.isMicrophoneMuted())
             return false;
 
         if(head)
             this.chunkVPacketId = 0;
 
-        let client = this.find_client(chandler.clientId);
+        let client = this.find_client(chandler.getClientId());
         if(!client) {
             log.error(LogCategory.VOICE, tr("Tried to send voice data, but local client hasn't a voice client handle"));
             return;
@@ -594,25 +619,31 @@ export class VoiceConnection extends AbstractVoiceConnection {
             .then(encoder => encoder.encodeSamples(client.get_codec_cache(codec), data));
     }
 
-    private handle_local_voice_ended() {
+    private handleLocalVoiceEnded() {
         const chandler = this.connection.client;
         const ch = chandler.getClient();
         if(ch) ch.speaking = false;
 
         if(!chandler.connected)
             return false;
-        if(chandler.client_status.input_muted)
+        if(chandler.isMicrophoneMuted())
             return false;
         log.info(LogCategory.VOICE, tr("Local voice ended"));
+        this.localAudioStarted = false;
 
-        if(this.dataChannel && this._encoder_codec >= 0)
-            this.send_voice_packet(new Uint8Array(0), this._encoder_codec);
+        if(this._type === VoiceEncodeType.NATIVE_ENCODE) {
+            setTimeout(() => {
+                /* first send all data, than send the stop signal */
+                this.sendVoiceStopPacket(this._encoder_codec);
+            }, 150);
+        } else {
+            this.sendVoiceStopPacket(this._encoder_codec);
+        }
     }
 
-    private handle_local_voice_started() {
+    private handleLocalVoiceStarted() {
         const chandler = this.connection.client;
-        if(chandler.client_status.input_muted) {
-            /* evail hack due to the settings :D */
+        if(chandler.isMicrophoneMuted()) {
             log.warn(LogCategory.VOICE, tr("Received local voice started event, even thou we're muted! Do not send any voice."));
             if(this.local_audio_mute)
                 this.local_audio_mute.gain.value = 0;
@@ -620,6 +651,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
         }
         if(this.local_audio_mute)
             this.local_audio_mute.gain.value = 1;
+
+        this.localAudioStarted = true;
         log.info(LogCategory.VOICE, tr("Local voice started"));
 
         const ch = chandler.getClient();
@@ -681,7 +714,6 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this._encoder_codec = codec;
     }
 }
-
 
 
 /* funny fact that typescript dosn't find this */

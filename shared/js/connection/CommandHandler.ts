@@ -191,10 +191,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         json = json[0]; //Only one bulk
 
-        this.connection_handler.channelTree.registerClient(this.connection_handler.getClient());
         this.connection.client.side_bar.channel_conversations().reset();
-        this.connection.client.clientId = parseInt(json["aclid"]);
-        this.connection.client.getClient().updateVariables( {key: "client_nickname", value: json["acn"]});
+        this.connection.client.initializeLocalClient(parseInt(json["aclid"]), json["acn"]);
 
         let updates: {
             key: string,
@@ -825,7 +823,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             const channel_id = typeof(json["cid"]) !== "undefined" ? parseInt(json["cid"]) : own_channel_id;
             const channel = this.connection_handler.channelTree.findChannel(channel_id) || this.connection_handler.getClient().currentChannel();
 
-            if(json["invokerid"] == this.connection.client.clientId)
+            if(json["invokerid"] == this.connection.client.getClientId())
                 this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
             else if(channel_id == own_channel_id) {
                 this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});

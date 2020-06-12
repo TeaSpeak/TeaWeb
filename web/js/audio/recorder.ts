@@ -407,6 +407,7 @@ class JavascriptInput implements AbstractInput {
         const callback = this._current_consumer as CallbackInputConsumer;
         if(callback.callback_audio)
             callback.callback_audio(event.inputBuffer);
+
         if(callback.callback_buffer) {
             log.warn(LogCategory.AUDIO, tr("AudioInput has callback buffer, but this isn't supported yet!"));
         }

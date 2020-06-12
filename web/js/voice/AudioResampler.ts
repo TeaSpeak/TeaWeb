@@ -2,7 +2,7 @@ import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 
 export class AudioResampler {
-    targetSampleRate: number;
+    readonly targetSampleRate: number;
     private _use_promise: boolean;
 
     constructor(targetSampleRate: number){
@@ -15,7 +15,7 @@ export class AudioResampler {
             log.warn(LogCategory.AUDIO, tr("Received empty buffer as input! Returning empty output!"));
             return Promise.resolve(buffer);
         }
-        //console.log("Encode from %i to %i", buffer.sampleRate, this.targetSampleRate);
+
         if(buffer.sampleRate == this.targetSampleRate)
             return Promise.resolve(buffer);
 
