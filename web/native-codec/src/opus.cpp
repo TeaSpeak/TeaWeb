@@ -3,6 +3,7 @@
 #include <string_view>
 #include <emscripten.h>
 #include <string>
+#include "./ilarvecon.cpp"
 
 typedef std::unique_ptr<OpusEncoder, decltype(opus_encoder_destroy)*> opus_encoder_t;
 typedef std::unique_ptr<OpusDecoder, decltype(opus_decoder_destroy)*> opus_decoder_t;
@@ -82,16 +83,22 @@ void codec_opus_deleteNativeHandle(OpusHandle *codec) {
 }
 
 EMSCRIPTEN_KEEPALIVE
-int codec_opus_encode(OpusHandle *handle, uint8_t *buffer, size_t length, size_t maxLength) {
-    auto result = opus_encode_float(&*handle->encoder, (float *) buffer, length / handle->channelCount, buffer, maxLength);
+int codec_opus_encode(OpusHandle *handle, uint8_t *buffer, size_t byte_length, size_t maxLength) {
+    if(handle->channelCount == 2)
+        sequenced2interleaved_intersecting<2>((float *) buffer, byte_length / (sizeof(float) * 2));
+
+    auto result = opus_encode_float(&*handle->encoder, (float *) buffer, byte_length / handle->channelCount, buffer, maxLength);
     if (result < 0) return result;
     return result;
 }
 
 EMSCRIPTEN_KEEPALIVE
-int codec_opus_decode(OpusHandle *handle, uint8_t *buffer, size_t length, size_t maxLength) {
-    auto result = opus_decode_float(&*handle->decoder, buffer, length, (float *) buffer, maxLength / sizeof(float) / handle->channelCount, false);
+int codec_opus_decode(OpusHandle *handle, uint8_t *buffer, size_t byte_length, size_t buffer_max_byte_length) {
+    auto result = opus_decode_float(&*handle->decoder, buffer, byte_length, (float *) buffer, buffer_max_byte_length / sizeof(float) / handle->channelCount, false);
     if (result < 0) return result;
+
+    if(handle->channelCount == 2)
+        interleaved2sequenced_intersecting<2>((float *) buffer, result);
     return result;
 }
 

@@ -1,6 +1,7 @@
 # Changelog:
 * **12.06.20**
     - Added a copy/paste menu for all HTML input elements
+    - Heavily improved web client audio de/encoding
     
 * **11.06.20**
     - Fixed channel tree deletions
