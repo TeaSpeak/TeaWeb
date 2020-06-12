@@ -255,8 +255,9 @@ interface ClientNameState {
 @ReactEventHandler<ClientName>(e => e.props.client.events)
 class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameState> {
     protected initialize() {
-        this.updateGroups();
-        this.updateAwayMessage();
+        this.state = {} as any;
+        this.updateGroups(this.state);
+        this.updateAwayMessage(this.state);
     }
 
     protected defaultState(): ClientNameState {
@@ -273,7 +274,7 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
         </div>
     }
 
-    private updateGroups() {
+    private updateGroups(state: ClientNameState) {
         let prefix_groups: string[] = [];
         let suffix_groups: string[] = [];
         for(const group_id of this.props.client.assignedServerGroupIds()) {
@@ -294,25 +295,28 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
                 suffix_groups.splice(0, 0, channel_group.name);
         }
 
-        this.setState({
-            group_suffix: suffix_groups.map(e => "[" + e + "]").join(""),
-            group_prefix: prefix_groups.map(e => "[" + e + "]").join("")
-        });
+        state.group_prefix = suffix_groups.map(e => "[" + e + "]").join("");
+        state.group_suffix = prefix_groups.map(e => "[" + e + "]").join("");
     }
 
-    private updateAwayMessage() {
-        this.setState({
-            away_message: this.props.client.properties.client_away_message && " [" + this.props.client.properties.client_away_message + "]"
-        });
+    private updateAwayMessage(state: ClientNameState) {
+        state.away_message = this.props.client.properties.client_away_message && " [" + this.props.client.properties.client_away_message + "]";
     }
 
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesChanged(event: ClientEvents["notify_properties_updated"]) {
+        const updatedState: ClientNameState = {} as any;
         if(typeof event.updated_properties.client_away !== "undefined" || typeof event.updated_properties.client_away_message !== "undefined") {
-            this.updateAwayMessage();
+            this.updateAwayMessage(updatedState);
         }
         if(typeof event.updated_properties.client_servergroups !== "undefined" || typeof event.updated_properties.client_channel_group_id !== "undefined") {
-            this.updateGroups();
+            this.updateGroups(updatedState);
+        }
+
+        if(Object.keys(updatedState).length > 0)
+            this.setState(updatedState);
+        else if(typeof event.updated_properties.client_nickname !== "undefined") {
+            this.forceUpdate();
         }
     }
 }

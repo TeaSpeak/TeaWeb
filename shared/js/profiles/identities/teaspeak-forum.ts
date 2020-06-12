@@ -1,6 +1,8 @@
 import {settings, Settings} from "tc-shared/settings";
 import * as loader from "tc-loader";
 import * as fidentity from "./TeaForumIdentity";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
 
 declare global {
     interface Window {
@@ -366,5 +368,25 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         if(_data && _data.is_expired()) {
             console.error(tr("TeaForo data is expired. TeaForo connection isn't available!"));
         }
+
+
+        setInterval(() => {
+            /* if we don't have any _data object set we could not renew anything */
+            if(_data) {
+                log.info(LogCategory.IDENTITIES, tr("Renewing TeaForo data."));
+                renew_data().then(status => {
+                    if(status === "success") {
+                        log.info(LogCategory.IDENTITIES,tr("TeaForo data has been successfully renewed."));
+                    } else {
+                        log.warn(LogCategory.IDENTITIES,tr("Failed to renew TeaForo data. New login required."));
+                        localStorage.removeItem("teaspeak-forum-data");
+                        localStorage.removeItem("teaspeak-forum-sign");
+                        localStorage.removeItem("teaspeak-forum-auth");
+                    }
+                }).catch(error => {
+                    console.warn(tr("Failed to renew TeaForo data. An error occurred: %o"), error);
+                });
+            }
+        }, 24 * 60 * 60 * 1000);
     }
-})
+});

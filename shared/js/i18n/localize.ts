@@ -4,7 +4,7 @@ import {guid} from "tc-shared/crypto/uid";
 import {StaticSettings} from "tc-shared/settings";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import * as loader from "tc-loader";
-import {formatMessage} from "tc-shared/ui/frames/chat";
+import {formatMessage, formatMessageString} from "tc-shared/ui/frames/chat";
 
 export interface TranslationKey {
     message: string;
@@ -69,9 +69,21 @@ export function tr(message: string, key?: string) {
     return translated;
 }
 
-export function tra(message: string, ...args: any[]) {
+export function tra(message: string, ...args: (string | number | boolean)[]) : string;
+export function tra(message: string, ...args: any[]) : JQuery[];
+export function tra(message: string, ...args: any[]) : any {
     message = /* @tr-ignore */ tr(message);
-    return formatMessage(message, ...args);
+    for(const element of args) {
+        if(typeof element !== "string" && typeof element !== "number" && typeof element !== "boolean")
+            return formatMessage(message, ...args);
+    }
+    if(message.indexOf("{:") !== -1)
+        return formatMessage(message, ...args);
+    return formatMessageString(message, ...args);
+}
+
+export function traj(message: string, ...args: any[]) : JQuery[] {
+    return tra(message, ...args, {});
 }
 
 async function load_translation_file(url: string, path: string) : Promise<TranslationFile> {

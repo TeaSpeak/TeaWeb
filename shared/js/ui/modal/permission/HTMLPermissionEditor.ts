@@ -74,34 +74,6 @@ class HTMLPermission {
     }
 
     private static number_filter_re = /^[-+]?([0-9]{0,9})$/;
-    private static number_filter = (event: KeyboardEvent) => {
-        if(event.ctrlKey)
-            return;
-
-        const target = <HTMLInputElement>event.target;
-        if(event.key === "Enter") {
-            target.blur();
-            return;
-        }
-
-        if('keyCode' in event) {
-            /* everything under 46 is a control key except 32 its space */
-            if(event.keyCode < 46 && event.keyCode != 32)
-                return;
-
-            if(!HTMLPermission.number_filter_re.test(target.value + String.fromCharCode(event.keyCode))) {
-                event.preventDefault();
-                return;
-            }
-        } else {
-            const e = <JQuery.Event>event; /* for some reason typescript deducts the event type to "never" */
-            if(!HTMLPermission.number_filter_re.test(e.key)) {
-                e.preventDefault();
-                return;
-            }
-        }
-    };
-
     private build_tag() {
         this.tag = $.spawn("div").addClass("entry permission").css('padding-left', this.index + "em").append([
             this.tag_name = $.spawn("div").addClass("column-name").text(this.permission.name),
@@ -136,13 +108,12 @@ class HTMLPermission {
         } else {
             this._tag_value = $.spawn("input").addClass("number");
             this._tag_value_input = this._tag_value;
-
-            this._tag_value_input.on('keydown', HTMLPermission.number_filter as any);
-            this._tag_value_input.on('change', event => {
+            this._tag_value_input.attr("type", "number");
+            this._tag_value_input.on('change blur', event => {
                  const str_value =  this._tag_value_input.val() as string;
                  const value = parseInt(str_value);
                  if(!HTMLPermission.number_filter_re.test(str_value) || isNaN(value)) {
-                     console.warn(tr("Failed to parse given permission value string: %s"), this._tag_value_input.val());
+                     console.warn(tr("Failed to parse given permission value string: %s"), str_value);
                      this._reset_value();
                      return;
                  }
@@ -193,7 +164,7 @@ class HTMLPermission {
             this._tag_negate = negate.tag;
             this._tag_negate_input = negate.input;
 
-            this._tag_negate_input.on('change', event => {
+            this._tag_negate_input.on('change blur', event => {
                 const value = this._tag_negate_input.prop('checked');
 
                 console.log("Negate value: %o", value);
@@ -219,12 +190,12 @@ class HTMLPermission {
             this._tag_granted = $.spawn("input").addClass("number");
             this._tag_granted_input = this._tag_granted;
 
-            this._tag_granted_input.on('keydown', HTMLPermission.number_filter as any);
+            this._tag_granted_input.attr("type", "number");
             this._tag_granted_input.on('change', event => {
                 const str_value =  this._tag_granted_input.val() as string;
                 const value = parseInt(str_value);
                 if(!HTMLPermission.number_filter_re.test(str_value) || Number.isNaN(value)) {
-                    console.warn(tr("Failed to parse given permission granted value string: %s"), this._tag_granted_input.val());
+                    console.warn(tr("Failed to parse given permission granted value string: %o"), str_value);
                     this._reset_value();
                     return;
                 }

@@ -354,6 +354,18 @@ export class Settings extends StaticSettings {
         default_value: "tea-web"
     };
 
+    static readonly KEY_TRANSFERS_SHOW_FINISHED: SettingsKey<boolean> = {
+        key: 'transfers_show_finished',
+        default_value: true,
+        description: "Show finished file transfers in the file transfer list"
+    };
+
+    static readonly KEY_TRANSFER_DOWNLOAD_FOLDER: SettingsKey<string> = {
+        key: "transfer_download_folder",
+        description: "The download folder for the file transfer downloads",
+        /* default_value: <users download directory> */
+    };
+
     static readonly FN_INVITE_LINK_SETTING: (name: string) => SettingsKey<string> = name => {
         return {
             key: 'invite_link_setting_' + name

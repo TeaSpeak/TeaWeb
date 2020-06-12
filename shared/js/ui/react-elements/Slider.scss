@@ -1,0 +1,75 @@
+@import "../../../css/static/properties";
+@import "../../../css/static/mixin";
+
+/* slider */
+$track_height: .6em;
+
+$thumb_width: .6em;
+$thumb_height: 2em;
+
+$tooltip_width: 4em;
+$tooltip_height: 1.8em;
+
+.container {
+    font-size: .8em;
+
+    position: relative;
+
+    margin-top: $thumb_height / 2 - $track_height / 2;
+    margin-bottom: $thumb_height / 2 - $track_height / 2;
+    margin-right: $thumb_width / 2;
+    margin-left: $thumb_width / 2;
+
+    height: $track_height;
+
+    cursor: pointer;
+
+    background-color: #242527;
+    border-radius: $border_radius_large;
+
+    overflow: visible;
+
+    .filler {
+        position: absolute;
+
+        left: 0;
+        top: 0;
+        bottom: 0;
+
+        background-color: #4370a2;
+        border-radius: $border_radius_large;
+
+        @include transition(background-color .15s ease-in-out);
+    }
+
+    .thumb {
+        position: absolute;
+
+        top: 0;
+        right: 0;
+
+        height: $thumb_height;
+        width: $thumb_width;
+
+        margin-left: -($thumb_width / 2);
+        margin-right: -($thumb_width / 2);
+
+        margin-top: -($thumb_height - $track_height) / 2;
+        margin-bottom: -($thumb_height - $track_height) / 2;
+
+        background-color: #808080;
+        @include transition(background-color .15s ease-in-out);
+    }
+
+    &.disabled {
+        pointer-events: none;
+
+        .thumb {
+            background-color: #4d4d4d!important;
+        }
+
+        .filler {
+            background-color: #3d618a;
+        }
+    }
+}

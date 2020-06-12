@@ -2,11 +2,18 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {ClientEntry} from "tc-shared/ui/client";
 import * as hex from "tc-shared/crypto/hex";
-import {
-    DownloadKey,
-    FileManager, transfer_provider
-} from "tc-shared/file/FileManager";
 import {image_type, ImageCache, ImageType, media_image_type} from "tc-shared/file/ImageCache";
+import {FileManager} from "tc-shared/file/FileManager";
+import {
+    FileDownloadTransfer,
+    FileTransferState,
+    ResponseTransferTarget, TransferProvider,
+    TransferTargetType
+} from "tc-shared/file/Transfer";
+import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {tra} from "tc-shared/i18n/localize";
+import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {icon_cache_loader} from "tc-shared/file/Icons";
 
 export class Avatar {
     client_avatar_id: string; /* the base64 uid thing from a-m */
@@ -47,11 +54,11 @@ export class AvatarManager {
     }
 
     async resolved_cached?(client_avatar_id: string, avatar_version?: string) : Promise<Avatar> {
-        let avatar: Avatar = this._cached_avatars[avatar_version];
-        if(avatar) {
-            if(typeof(avatar_version) !== "string" || avatar.avatar_id == avatar_version)
-                return avatar;
-            avatar = undefined;
+        let cachedAvatar: Avatar = this._cached_avatars[avatar_version];
+        if(cachedAvatar) {
+            if(typeof(avatar_version) !== "string" || cachedAvatar.avatar_id == avatar_version)
+                return cachedAvatar;
+            delete this._cached_avatars[avatar_version];
         }
 
         if(!AvatarManager.cache.setupped())
@@ -74,37 +81,66 @@ export class AvatarManager {
         };
     }
 
-    create_avatar_download(client_avatar_id: string) : Promise<DownloadKey> {
+    create_avatar_download(client_avatar_id: string) : FileDownloadTransfer {
         log.debug(LogCategory.GENERAL, "Requesting download for avatar %s", client_avatar_id);
-        return this.handle.download_file("", "/avatar_" + client_avatar_id);
+
+        return this.handle.initializeFileDownload({
+            path: "",
+            name: "/avatar_" + client_avatar_id,
+            targetSupplier: async () => await TransferProvider.provider().createResponseTarget()
+        });
     }
 
     private async _load_avatar(client_avatar_id: string, avatar_version: string) {
         try {
-            let download_key: DownloadKey;
+            let transfer = this.create_avatar_download(client_avatar_id);
+
             try {
-                download_key = await this.create_avatar_download(client_avatar_id);
+                await transfer.awaitFinished();
+
+                if(transfer.transferState() === FileTransferState.CANCELED) {
+                    throw tr("download canceled");
+                } else if(transfer.transferState() === FileTransferState.ERRORED) {
+                    throw transfer.currentError();
+                } else if(transfer.transferState() === FileTransferState.FINISHED) {
+
+                } else {
+                    throw tr("Unknown transfer finished state");
+                }
             } catch(error) {
-                log.error(LogCategory.GENERAL, tr("Could not request download for avatar %s: %o"), client_avatar_id, error);
-                throw "failed to request avatar download";
+                if(typeof error === "object" && 'error' in error && error.error === "initialize") {
+                    const commandResult = error.commandResult;
+                    if(commandResult instanceof CommandResult) {
+                        if(commandResult.id === ErrorID.FILE_NOT_FOUND)
+                            throw tr("Avatar could not be found");
+                        else if(commandResult.id === ErrorID.PERMISSION_ERROR)
+                            throw tr("No permissions to download avatar");
+                        else
+                            throw commandResult.message + (commandResult.extra_message ? " (" + commandResult.extra_message + ")" : "");
+                    }
+                }
+
+                log.error(LogCategory.CLIENT, tr("Could not request download for avatar %s: %o"), client_avatar_id, error);
+                if(error === transfer.currentError())
+                    throw transfer.currentErrorMessage();
+                throw typeof error === "string" ? error : tr("Avatar download failed");
             }
 
-            const downloader = transfer_provider().spawn_download_transfer(download_key);
-            let response: Response;
-            try {
-                response = await downloader.request_file();
-            } catch(error) {
-                log.error(LogCategory.GENERAL, tr("Could not download avatar %s: %o"), client_avatar_id, error);
-                throw "failed to download avatar";
-            }
+            /* could only be tested here, because before we don't know which target we have */
+            if(transfer.target.type !== TransferTargetType.RESPONSE)
+                throw "unsupported transfer target";
 
-            const type = image_type(response.headers.get('X-media-bytes'));
+            const response = transfer.target as ResponseTransferTarget;
+            if(!response.hasResponse())
+                throw tr("Transfer has no response");
+
+            const type = image_type(response.getResponse().headers.get('X-media-bytes'));
             const media = media_image_type(type);
 
-            await AvatarManager.cache.put_cache('avatar_' + client_avatar_id, response.clone(), "image/" + media, {
+            await AvatarManager.cache.put_cache('avatar_' + client_avatar_id, response.getResponse().clone(), "image/" + media, {
                 "X-avatar-version": avatar_version
             });
-            const url = await this._response_url(response.clone(), type);
+            const url = await this._response_url(response.getResponse().clone(), type);
 
             return this._cached_avatars[client_avatar_id] = {
                 client_avatar_id: client_avatar_id,
@@ -249,9 +285,9 @@ export class AvatarManager {
     generate_chat_tag(client: { id?: number; database_id?: number; }, client_unique_id: string, callback_loaded?: (successfully: boolean, error?: any) => any) : JQuery {
         let client_handle;
         if(typeof(client.id) == "number")
-            client_handle = this.handle.handle.channelTree.findClient(client.id);
+            client_handle = this.handle.connectionHandler.channelTree.findClient(client.id);
         if(!client_handle && typeof(client.id) == "number") {
-            client_handle = this.handle.handle.channelTree.find_client_by_dbid(client.database_id);
+            client_handle = this.handle.connectionHandler.channelTree.find_client_by_dbid(client.database_id);
         }
 
         if(client_handle && client_handle.clientUid() !== client_unique_id)
@@ -314,4 +350,14 @@ export class AvatarManager {
 
         return container;
     }
+
+    flush_cache() {
+        this._cached_avatars = undefined;
+        this._loading_promises = undefined;
+    }
 }
+(window as any).flush_avatar_cache = async () => {
+    server_connections.all_connections().forEach(e => {
+        e.fileManager.avatars.flush_cache();
+    });
+};

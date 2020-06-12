@@ -161,9 +161,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     }
 
     handleCommandResult(json) {
-        json = json[0]; //Only one bulk
-
-        let code : string = json["return_code"];
+        let code : string = json[0]["return_code"];
         if(!code || code.length == 0) {
             log.warn(LogCategory.NETWORKING, tr("Invalid return code! (%o)"), json);
             return;
@@ -512,7 +510,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     attach: true
                 });
                 if(conversation)
-                    client.flag_text_unread = conversation.is_unread();
+                    client.setUnread(conversation.is_unread());
             }
 
             if(client instanceof LocalClientEntry) {

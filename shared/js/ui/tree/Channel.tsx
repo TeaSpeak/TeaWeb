@@ -9,6 +9,7 @@ import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Settings, settings} from "tc-shared/settings";
 import {TreeEntry, UnreadMarker} from "tc-shared/ui/tree/TreeEntry";
+import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 
 const channelStyle = require("./Channel.scss");
 const viewStyle = require("./View.scss");
@@ -247,6 +248,7 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
                     onMouseUp={e => this.onMouseUp(e)}
                     onDoubleClick={() => this.onDoubleClick()}
                     onContextMenu={e => this.onContextMenu(e)}
+                    onMouseDown={e => this.onMouseDown(e)}
         >
             <UnreadMarker entry={this.props.channel} />
             {collapsed_indicator && <ChannelCollapsedIndicator key={"collapsed-indicator"} onToggle={() => this.onCollapsedToggle()} collapsed={this.props.channel.collapsed} />}
@@ -277,6 +279,13 @@ export class ChannelEntryView extends TreeEntry<ChannelEntryViewProperties, {}> 
         if(channel.channelTree.selection.is_multi_select()) return;
 
         channel.joinChannel();
+    }
+
+    private onMouseDown(event: React.MouseEvent) {
+        if(event.buttons !== 4)
+            return;
+
+        spawnFileTransferModal(this.props.channel.getChannelId());
     }
 
     private onContextMenu(event: React.MouseEvent) {

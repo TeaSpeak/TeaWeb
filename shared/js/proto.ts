@@ -6,6 +6,7 @@ declare global {
         last?(): T;
 
         pop_front(): T | undefined;
+        toggle(entry: T) : boolean;
     }
 
     interface JSON {
@@ -172,6 +173,18 @@ if (!Array.prototype.pop_front) {
     }
 }
 
+if (!Array.prototype.toggle) {
+    Array.prototype.toggle = function<T>(element: T): boolean {
+        const index = this.findIndex(e => e === element);
+        if(index === -1) {
+            this.push(element);
+            return true;
+        } else {
+            this.splice(index, 1);
+            return false;
+        }
+    }
+}
 
 if (!Array.prototype.last){
     Array.prototype.last = function(){

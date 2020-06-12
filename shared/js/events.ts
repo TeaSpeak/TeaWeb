@@ -1,6 +1,7 @@
 import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {guid} from "tc-shared/crypto/uid";
 import * as React from "react";
+import {useEffect} from "react";
 
 export interface Event<Events, T = keyof Events> {
     readonly type: T;
@@ -91,6 +92,20 @@ export class Registry<Events> {
         }
     }
 
+
+    /* special helper methods for react components */
+    reactUse<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void, condition?: boolean) {
+        if(typeof condition === "boolean" && !condition) {
+            useEffect(() => {});
+            return;
+        }
+        const handlers = this.handler[event as any] || (this.handler[event as any] = []);
+        useEffect(() => {
+            handlers.push(handler);
+            return () => handlers.remove(handler);
+        });
+    }
+
     connect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: Registry<EOther>) {
         for(const event of Array.isArray(events) ? events : [events])
             (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
@@ -178,8 +193,10 @@ export class Registry<Events> {
                 this.on(event, ev_handler);
             }
         }
-        if(Object.keys(registered_events).length === 0)
-            throw "no events found in event handler";
+        if(Object.keys(registered_events).length === 0) {
+            console.warn(tr("no events found in event handler"));
+            return;
+        }
 
         this.event_handler_objects.push({
             handlers: registered_events,
@@ -189,7 +206,8 @@ export class Registry<Events> {
 
     unregister_handler(handler: any) {
         const data = this.event_handler_objects.find(e => e.object === handler);
-        if(!data) throw "unknown event handler";
+        if(!data) return;
+
         this.event_handler_objects.remove(data);
 
         for(const key of Object.keys(data.handlers)) {

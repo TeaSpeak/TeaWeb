@@ -17,6 +17,9 @@ import {ClientEntry as ClientEntryView} from "./Client";
 import {ChannelEntry, ChannelEvents} from "tc-shared/ui/channel";
 import {ServerEntry} from "tc-shared/ui/server";
 import {ClientEntry, ClientType} from "tc-shared/ui/client";
+import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
+import {ConnectionEvents} from "tc-shared/ConnectionHandler";
 
 const viewStyle = require("./View.scss");
 
@@ -33,6 +36,7 @@ export interface ChannelTreeViewState {
     view_height: number; /* in px */
 
     tree_version: number;
+    smoothScroll: boolean;
 }
 
 export type TreeEntry = ChannelEntry | ServerEntry | ClientEntry;
@@ -55,8 +59,10 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     private listener_channel_change;
     private listener_state_collapsed;
     private listener_channel_properties;
+    private listener_tree_visibility_changed;
 
     private update_timeout;
+    private fixScrollTimer;
 
     private mouse_move: { x: number, y: number, down: boolean, fired: boolean } = { x: 0, y: 0, down: false, fired: false };
     private document_mouse_listener;
@@ -71,7 +77,8 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         return {
             scroll_offset: 0,
             view_height: 0,
-            tree_version: 0
+            tree_version: 0,
+            smoothScroll: false
         };
     }
 
@@ -93,11 +100,14 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             }
         });
         this.resize_observer.observe(this.ref_container.current);
+        this.props.tree.client.events().on("notify_visibility_changed", this.listener_tree_visibility_changed);
     }
 
     componentWillUnmount(): void {
         this.resize_observer.disconnect();
         this.resize_observer = undefined;
+
+        this.props.tree.client.events().off("notify_visibility_changed", this.listener_tree_visibility_changed);
     }
 
     protected initialize() {
@@ -118,6 +128,22 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
             this.mouse_move.fired = false;
 
             this.removeDocumentMouseListener();
+        };
+
+        this.listener_tree_visibility_changed = (event: ConnectionEvents["notify_visibility_changed"]) => {
+            clearTimeout(this.fixScrollTimer);
+            if(!event.visible) {
+                this.setState({ smoothScroll: false });
+                return;
+            }
+
+            this.fixScrollTimer = setTimeout(() => {
+                this.ref_container.current.scrollTop = this.state.scroll_offset;
+                this.fixScrollTimer = setTimeout(() => {
+                     this.setState({ smoothScroll: true });
+                }, 50);
+            }, 50);
+            console.log("Update scroll!");
         }
     }
 
@@ -172,7 +198,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
 
         return (
             <div
-                 className={viewStyle.channelTreeContainer}
+                 className={viewStyle.channelTreeContainer + " " + (this.state.smoothScroll ? viewStyle.smoothScroll : "")}
                  onScroll={() => this.onScroll()}
                  ref={this.ref_container}
                  onMouseDown={e => this.onMouseDown(e)}
@@ -211,6 +237,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     }
 
     private rebuild_tree() {
+        log.debug(LogCategory.CHANNEL, tr("Rebuilding the channel tree"));
         const tree = this.props.tree;
         {
             let index = this.flat_tree.length;

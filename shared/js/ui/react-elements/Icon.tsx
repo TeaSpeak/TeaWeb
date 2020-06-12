@@ -46,7 +46,7 @@ export class LocalIconRenderer extends React.Component<LoadedIconRenderer, {}> {
                     return <div className={"icon-container icon-empty"} title={this.props.title} />;
                 return <div className={"icon_em client-group_" + icon.icon_id} />;
             }
-            return <div key={"icon"} className={"icon-container"}><img src={icon.loaded_url} alt={this.props.title || ("icon " + icon.icon_id)} /></div>;
+            return <div key={"icon"} className={"icon-container"}><img style={{ maxWidth: "100%", maxHeight: "100%" }} src={icon.loaded_url} alt={this.props.title || ("icon " + icon.icon_id)} /></div>;
         } else if(icon.status === "loading")
             return <div key={"loading"} className={"icon-container"} title={this.props.title}><div className={"icon_loading"} /></div>;
         else if(icon.status === "error")

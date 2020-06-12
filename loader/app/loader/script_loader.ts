@@ -51,7 +51,7 @@ function load_script_url(url: string) : Promise<void> {
 
         document.getElementById("scripts").appendChild(script_tag);
 
-        script_tag.src = url;
+        script_tag.src = config.baseUrl + url;
     })).then(result => {
         /* cleanup memory */
         _script_promises[url] = Promise.resolve(); /* this promise does not holds the whole script tag and other memory */

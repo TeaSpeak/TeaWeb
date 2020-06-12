@@ -463,9 +463,18 @@
 			padding: .5em;
 			display: flex;
 			flex-direction: row;
-			justify-content: flex-end;
+			justify-content: flex-start;
+
+			.button-duplicate {
+				margin-right: auto;
+			}
 
 			button {
+				flex-shrink: 1;
+				flex-grow: 1;
+
+				min-width: 2em;
+
 				white-space: nowrap;
 				overflow: hidden;
 				text-overflow: ellipsis;

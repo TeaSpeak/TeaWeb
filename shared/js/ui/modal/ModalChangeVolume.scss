@@ -1,0 +1,54 @@
+@import "../../../css/static/mixin";
+
+.container {
+    width: 30em;
+    min-width: 8em;
+    flex-shrink: 1;
+    max-width: 100%;
+
+    padding: 1em;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    @include user-select(none);
+
+    > * {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+    }
+
+    .info {
+        margin-bottom: .5em;
+    }
+
+    .sliderContainer {
+        margin-bottom: 1em;
+
+        .slider {
+            width: 100%;
+        }
+
+        .value {
+            margin-left: .5em;
+            width: 3em;
+
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            text-align: right;
+        }
+    }
+
+    .buttons {
+        .reset  {
+            margin-right: auto;
+        }
+
+        .apply, .ok, .cancel {
+            margin-left: 1em;
+        }
+    }
+}

@@ -6,8 +6,10 @@ export interface ButtonProperties {
     color?: "green" | "blue" | "red" | "purple" | "brown" | "yellow" | "default";
     type?: "normal" | "small" | "extra-small";
 
+    className?: string;
     onClick?: () => void;
 
+    hidden?: boolean;
     disabled?: boolean;
 }
 
@@ -23,12 +25,15 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
     }
 
     render() {
+        if(this.props.hidden)
+            return null;
         return (
             <button
                 className={this.classList(
                     cssStyle.button,
                     cssStyle["color-" + this.props.color] || cssStyle["color-default"],
-                    cssStyle["type-" + this.props.type] || cssStyle["type-normal"]
+                    cssStyle["type-" + this.props.type] || cssStyle["type-normal"],
+                    this.props.className
                 )}
                 disabled={this.state.disabled || this.props.disabled}
                 onClick={this.props.onClick}

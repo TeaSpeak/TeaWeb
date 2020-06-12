@@ -5,7 +5,8 @@ import * as template_loader from "./template_loader";
 declare global {
     interface Window {
         tr(message: string) : string;
-        tra(message: string, ...args: any[]);
+        tra(message: string, ...args: (string | number | boolean)[]) : string;
+        tra(message: string, ...args: any[]) : JQuery[];
 
         log: any;
         StaticSettings: any;
@@ -16,12 +17,15 @@ export interface Config {
     loader_groups: boolean;
     verbose: boolean;
     error: boolean;
+
+    baseUrl: string;
 }
 
 export let config: Config = {
     loader_groups: false,
     verbose: false,
-    error: true
+    error: true,
+    baseUrl: "./"
 };
 
 export type Task = {

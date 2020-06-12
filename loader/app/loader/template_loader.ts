@@ -8,7 +8,7 @@ function load_template_url(url: string) : Promise<void> {
         return _template_promises[url];
 
     return (_template_promises[url] = (async () => {
-        const response = await $.ajax(url);
+        const response = await $.ajax(config.baseUrl + url);
 
         let node = document.createElement("html");
         node.innerHTML = response;

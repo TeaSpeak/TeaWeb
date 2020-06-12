@@ -1,0 +1,125 @@
+@import "../../../css/static/mixin";
+@import "../../../css/static/properties";
+
+.container {
+    border-radius: .2em;
+    border: 1px solid #111112;
+
+    background-color: #121213;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    color: #b3b3b3;
+
+    &.size-normal {
+        height: 2em;
+    }
+
+    &.size-large {
+        height: 2.5em;
+    }
+
+    &.size-small {
+        height: 1.7em;
+    }
+
+    @include placeholder(&) {
+        color: #606060;
+    };
+
+    .prefix {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        margin: 0;
+
+        line-height: initial;
+        align-self: center;
+        padding: 0 .5em;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        opacity: 1;
+
+        @include transition($button_hover_animation_time ease-in-out);
+    }
+
+    &.is-invalid {
+        background-color: #180d0d;
+        border-color: #721c1c;
+
+        background-image: unset!important;
+    }
+
+    &:focus, &:focus-within {
+        background-color: #131b22;
+        border-color: #284262;
+
+        color: #e1e2e3;
+
+        .prefix {
+            width: 0;
+            padding-left: 0;
+            padding-right: 0;
+            opacity: 0;
+        }
+    }
+
+    input, select, .inputBox {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        background: transparent;
+
+        border: none;
+        outline: none;
+        margin: 0;
+
+        color: #b3b3b3;
+
+        min-width: 2em;
+
+        &.editable {
+            cursor: text;
+        }
+    }
+
+    .inputBox {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .prefix + input {
+        padding-left: 0;
+    }
+
+
+    &:focus, &:focus-within {
+        .prefix + input {
+            padding-left: .5em;
+        }
+    }
+
+    &.disabled, &:disabled {
+        background-color: #1a1819;
+    }
+
+    &.noRightIcon {
+        input, select {
+            padding-right: .5em;
+        }
+    }
+
+    &.noLeftIcon {
+        input, select {
+            padding-left: .5em;
+        }
+    }
+
+    @include transition($button_hover_animation_time ease-in-out);
+}

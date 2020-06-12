@@ -34,6 +34,7 @@ export function spawnBookmarkModal() {
             const button_add_folder = template.find(".button-add-folder");
             const button_add_bookmark = template.find(".button-add-bookmark");
 
+            const button_duplicate = template.find(".button-duplicate");
             const button_connect = template.find(".button-connect");
             const button_connect_tab = template.find(".button-connect-tab");
 
@@ -56,6 +57,7 @@ export function spawnBookmarkModal() {
                 button_delete.prop("disabled", !selected_bookmark);
                 button_connect.prop("disabled", !selected_bookmark || selected_bookmark.type !== BookmarkType.ENTRY);
                 button_connect_tab.prop("disabled", !selected_bookmark || selected_bookmark.type !== BookmarkType.ENTRY);
+                button_duplicate.prop("disabled", !selected_bookmark || selected_bookmark.type !== BookmarkType.ENTRY);
             };
 
             const update_connect_info = () => {
@@ -110,7 +112,6 @@ export function spawnBookmarkModal() {
                     input_server_address.val(address);
 
                     let profile = input_connect_profile.find("option[value='" + entry.connect_profile + "']");
-                    console.error("%o - %s", profile, entry.connect_profile);
                     if(profile.length == 0) {
                         log.warn(LogCategory.GENERAL, tr("Failed to find bookmark profile %s. Displaying default one."), entry.connect_profile);
                         profile = input_connect_profile.find("option[value=default]");
@@ -281,6 +282,22 @@ export function spawnBookmarkModal() {
                     boorkmak_connect(selected_bookmark as Bookmark, false);
                     modal.close();
                 });
+
+                button_duplicate.on('click', event => {
+                    createInputModal(tr("Enter a bookmark name"), tr("Enter the bookmark name for the duplicate"), text => text.length > 0, result => {
+                        if(result) {
+                            if(!selected_bookmark) return;
+
+                            const original = selected_bookmark as Bookmark;
+                            const mark = create_bookmark(result as string,
+                                selected_bookmark ?
+                                    selected_bookmark.parent :
+                                    bookmarks(), original.server_properties, original.nickname);
+                            save_bookmark(mark);
+                            update_bookmark_list(mark.unique_id);
+                        }
+                    }).open();
+                });
             }
 
             /* inputs */
@@ -378,9 +395,6 @@ export function spawnBookmarkModal() {
             update_bookmark_list(undefined);
             update_buttons();
 
-            template.find(".container-bookmarks").on('keydown', event => {
-                console.error(event.key);
-            });
             template.find(".button-close").on('click', event => modal.close());
             return template.children();
         },

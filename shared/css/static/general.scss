@@ -110,9 +110,14 @@ button, input, optgroup, select, textarea {
 
 select {
 	-webkit-border-radius: 1px!important;
+	outline: none;
 
 	option {
-		color: black;
+		color: #999999;
+	}
+
+	&:focus {
+		outline: none !important;
 	}
 }
 

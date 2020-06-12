@@ -1,4 +1,28 @@
 # Changelog:
+* **12.06.20**
+    - Added a copy/paste menu for all HTML input elements
+    
+* **11.06.20**
+    - Fixed channel tree deletions
+    - Removed layout recalculate bottleneck on connection handler switching
+    - Fixed empty channel tree on tab change, if the tree has some scroll offset
+    - Added the ability to duplicate bookmarks
+    - Fixed issue [#106](https://github.com/TeaSpeak/TeaWeb/issues/106)
+    - Fixed issue [#90](https://github.com/TeaSpeak/TeaWeb/issues/90)
+    
+* **10.06.20**
+    - Finalize the channel file explorer
+    - Reworked the file transfer system
+    - Using an appropriate hash function for the avatar id generation
+    - Fixed icon over clipping for the channel tree and favorites
+    
+* **21.05.20**
+    - Updated the volume adjustment bar
+    
+* **18.05.20**
+    - Fixed client name change does not update the name in the channel tree
+    - Fixed hostbanner height
+    
 * **03.05.20**
     - Splitup the file transfer & management part
     - Added the ability to register a custom file transfer provider (required for the native client)

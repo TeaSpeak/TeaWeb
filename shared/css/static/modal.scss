@@ -842,45 +842,6 @@ $tooltip_height: 1.8em;
 
 		.tooltip {
 			display: none;
-
-			/*
-			position: absolute;
-			top: -($tooltip_height + .6em);
-			left: -($tooltip_width - $thumb_width) / 2;
-
-			line-height: 1em;
-
-			height: $tooltip_height;
-			width: $tooltip_width;
-
-			background-color: #232222;
-			border-radius: $border_radius_middle;
-
-			text-align: center;
-			display: flex;
-			flex-direction: column;
-			justify-content: space-around;
-
-			opacity: 0;
-			@include transition(opacity .5s ease-in-out);
-
-			&:before {
-				content: '';
-
-				position: absolute;
-
-				left: ($tooltip_width - $thumb_width) / 2 - .25em;
-				right: 0;
-				bottom: -.4em;
-
-				width: 0;
-				height: 0;
-
-				border-style: solid;
-				border-width: .5em .5em 0 .5em;
-				border-color: #232222 transparent transparent transparent;
-			}
-			 */
 		}
 	}
 

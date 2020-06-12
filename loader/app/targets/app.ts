@@ -1,4 +1,5 @@
 import * as loader from "../loader/loader";
+import {config} from "../loader/loader";
 
 declare global {
     interface Window {
@@ -74,7 +75,7 @@ const loader_javascript = {
 
         let manifest: Manifest;
         try {
-            const response = await fetch("js/manifest.json");
+            const response = await fetch(config.baseUrl + "js/manifest.json");
             if(!response.ok) throw response.status + " " + response.statusText;
 
             manifest = await response.json();

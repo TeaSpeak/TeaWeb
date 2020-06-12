@@ -68,15 +68,6 @@ export class ConnectionManager {
         handler.initialize_client_state(this.active_handler);
         this.connection_handlers.push(handler);
 
-        //FIXME: Load last status from last connection or via global variables!
-        /*
-        handler.set_away_status(this.default_server_state.away, false);
-        handler.client_status.input_muted = this.default_server_state.microphone_disabled;
-        handler.client_status.output_muted = this.default_server_state.speaker_disabled;
-        if(!this.default_server_state.microphone_disabled)
-            handler.acquire_recorder(default_recorder, true);
-         */
-
         handler.tag_connection_handler.appendTo(this._tag_connection_entries);
         this._tag.toggleClass("shown", this.connection_handlers.length > 1);
         this._update_scroll();
@@ -142,6 +133,9 @@ export class ConnectionManager {
             old_handler: old_handler,
             new_handler: handler
         });
+        old_handler?.events().fire("notify_visibility_changed", { visible: false });
+        handler?.events().fire("notify_visibility_changed", { visible: true });
+
         top_menu.update_state(); //FIXME: Top menu should listen to our events!
     }
 

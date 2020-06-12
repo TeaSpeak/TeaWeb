@@ -2,20 +2,19 @@ import * as moment from "moment";
 import * as loader from "tc-loader";
 import {settings, Settings} from "tc-shared/settings";
 import * as profiles from "tc-shared/profiles/ConnectionProfile";
-import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
+import {LogCategory} from "tc-shared/log";
 import * as bipc from "./BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
+import {tra} from "./i18n/localize";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
-import {tra} from "./i18n/localize";
-import {RequestFileUpload} from "tc-shared/file/FileManager";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {default_recorder, RecorderProfile, set_default_recorder} from "tc-shared/voice/RecorderProfile";
 import * as cmanager from "tc-shared/ui/frames/connection_handlers";
-import {server_connections, ConnectionManager} from "tc-shared/ui/frames/connection_handlers";
+import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
@@ -30,6 +29,11 @@ import * as ReactDOM from "react-dom";
 import * as cbar from "./ui/frames/control-bar";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
+import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
+import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
+import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import ContextMenuEvent = JQuery.ContextMenuEvent;
 
 /* required import for init */
 require("./proto").initialize();
@@ -63,7 +67,7 @@ function setup_close() {
                         if(e.serverConnection.connected())
                             return e.serverConnection.disconnect(tr("client closed"));
                         return Promise.resolve();
-                    }).map(e => e.catch(error => {
+                    }).map(e => e.catch(() => {
                         console.warn(tr("Failed to disconnect from server on client close: %o"), e);
                     }));
 
@@ -305,9 +309,34 @@ function main() {
     }
 
     /* context menu prevent */
-    $(document).on('contextmenu', event => {
+    $(document).on('contextmenu', (event: ContextMenuEvent) => {
         if(event.isDefaultPrevented())
             return;
+
+        if(event.target instanceof HTMLInputElement) {
+            if((!!event.target.value || __build.target === "client") && !event.target.disabled && !event.target.readOnly && event.target.type !== "number") {
+                spawn_context_menu(event.pageX, event.pageY, {
+                    type: MenuEntryType.ENTRY,
+                    name: tr("Copy"),
+                    callback: () => {
+                        copy_to_clipboard(event.target.value);
+                    },
+                    icon_class: "client-copy",
+                    visible: !!event.target.value
+                }, {
+                    type: MenuEntryType.ENTRY,
+                    name: tr("Paste"),
+                    callback: () => {
+                        const { clipboard } = __non_webpack_require__('electron');
+                        event.target.value = clipboard.readText();
+                    },
+                    icon_class: "client-copy",
+                    visible: __build.target === "client",
+                });
+            }
+            event.preventDefault();
+            return;
+        }
 
         if(!settings.static_global(Settings.KEY_DISABLE_GLOBAL_CONTEXT_MENU))
             event.preventDefault();
@@ -351,6 +380,7 @@ function main() {
     server_connections.set_active_connection(server_connections.all_connections()[0]);
 
 
+    /*
     (window as any).test_upload = (message?: string) => {
         message = message || "Hello World";
 
@@ -374,6 +404,38 @@ function main() {
                 console.error(error);
             });
         })
+    };
+    */
+    (window as any).test_download = async () => {
+        const connection = server_connections.active_connection();
+        const download = connection.fileManager.initializeFileDownload({
+            targetSupplier: async () => await TransferProvider.provider().createDownloadTarget(),
+            name: "HomeStudent2019Retail.img",
+            path: "/",
+            channel: 4
+        });
+
+        console.log("Download stated");
+        await download.awaitFinished();
+        console.log("Download finished (%s)", FileTransferState[download.transferState()]);
+        //console.log(await (download.target as ResponseTransferTarget).getResponse().blob());
+        console.log("Have buffer");
+    };
+
+    (window as any).test_upload = async () => {
+        const connection = server_connections.active_connection();
+        const download = connection.fileManager.initializeFileUpload({
+            source: async () => await TransferProvider.provider().createTextSource("Hello my lovely world...."),
+            name: "test-upload.txt",
+            path: "/",
+            channel: 4
+        });
+
+        console.log("Download stated");
+        await download.awaitFinished();
+        console.log("Download finished (%s)", FileTransferState[download.transferState()]);
+        //console.log(await (download.target as ResponseTransferTarget).getResponse().blob());
+        console.log("Have buffer");
     };
 
     /* schedule it a bit later then the main because the main function is still within the loader */
@@ -436,11 +498,12 @@ function main() {
      */
 
 
-    /* for testing */
     if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
         const modal = openModalNewcomer();
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
+
+    (window as any).spawnFileTransferModal = spawnFileTransferModal;
 }
 
 const task_teaweb_starter: loader.Task = {

@@ -1,0 +1,300 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    z-index: 1;
+    position: absolute;
+
+    bottom: .75em;
+    left: 0;
+    right: 0;
+    top: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    pointer-events: none;
+
+    @include user-select(none);
+
+    .overlay {
+        position: absolute;
+        background-color: #19191b;
+
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+
+        display: flex;
+        flex-direction: row;
+
+        z-index: 1;
+
+        opacity: 1;
+        @include transition($button_hover_animation_time ease-in-out);
+
+        &.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        &.noTransfers, &.querying, &.error {
+            justify-content: center;
+
+            a {
+                color: #595959;
+                align-self: center;
+                font-size: 1.2em;
+            }
+        }
+
+        &.extended {
+            justify-content: flex-start;
+        }
+    }
+
+    .expendedContainer {
+        height: 100%;
+        margin-top: auto;
+        background-color: #19191b;
+
+        overflow: hidden;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        position: relative;
+        padding: 1em;
+        pointer-events: all;
+
+        @include transition($button_hover_animation_time ease-in-out);
+
+        &.hidden {
+            padding: 0;
+            height: 0;
+        }
+
+        .overlay {
+            a {
+                font-size: 1.4em;
+            }
+        }
+
+        .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+
+            padding-bottom: .5em;
+
+            a {
+                font-weight: bold;
+                color: #cccccc;
+                font-size: 1.05em;
+            }
+
+            button {
+                align-self: center;
+                margin-left: auto;
+                font-size: .7em;
+            }
+
+            border-bottom: 1px solid #393939;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            position: relative;
+            overflow-y: auto;
+            overflow-x: hidden;
+
+            flex-shrink: 1;
+            flex-grow: 1;
+
+            min-height: 2em;
+
+            /* for the scroll bar */
+            padding-right: .5em;
+            margin-right: -.5em;
+
+            @include chat-scrollbar-vertical();
+
+            .noTransfers, .queryError, .querying {
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+
+                font-size: 1.2em;
+                padding: 1em;
+
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+
+                a {
+                    align-self: center;
+                    color: #595959;
+                }
+            }
+        }
+    }
+
+    .bottomContainer {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        height: 2em;
+        padding-left: 1em;
+        padding-right: 1em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        pointer-events: all;
+
+        .info {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            height: 1.5em;
+            min-width: 1.5em;
+
+            position: relative;
+
+            .runningTransfers {
+                padding-right: 1em;
+
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+
+        .expansionContainer {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            cursor: pointer;
+
+            height: 1.5em;
+            width: 1.5em;
+
+            svg {
+                align-self: center;
+
+                height: 1.4em;
+                fill: hsla(0, 0%, 21%, 1);
+
+                @include transform(rotate(-180deg));
+                @include transition($button_hover_animation_time ease-in-out);
+            }
+
+            &.expended {
+                svg {
+                    @include transform(rotate(-90deg));
+                    @include transition($button_hover_animation_time ease-in-out);
+                }
+            }
+
+            &:hover {
+                svg {
+                    fill: hsla(0, 0%, 25%, 1);
+                }
+            }
+        }
+    }
+
+    .transferEntryContainer {
+        margin-top: .5em;
+
+        position: relative;
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        height: 3.5em;
+        overflow: hidden;
+
+        opacity: 1;
+
+        @include transition($button_hover_animation_time ease-in-out);
+
+        &.hidden {
+            margin-top: 0;
+            height: 0;
+            opacity: 0;
+        }
+    }
+
+    .transferEntry {
+        position: absolute;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+
+        background-color: #19191b;
+        z-index: 1;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3.5em;
+
+        .image {
+            align-self: center;
+
+            flex-grow: 0;
+            flex-shrink: 0;
+
+            width: 3em;
+            height: 3em;
+
+            margin-left: .5em;
+            margin-right: 1em;
+        }
+
+        .info {
+            width: 100%;
+
+            flex-shrink: 1;
+            flex-grow: 1;
+            min-width: 2em;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            .name {
+                margin-top: .2em;
+                line-height: 1em;
+
+            }
+
+            .path {
+                margin-top: .1em;
+                line-height: 1em;
+                font-size: .75em;
+            }
+
+            .status {
+                margin-top: .3em;
+
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                > div {
+                    font-size: .7em;
+                }
+            }
+        }
+    }
+}

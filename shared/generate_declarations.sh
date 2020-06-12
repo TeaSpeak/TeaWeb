@@ -24,11 +24,5 @@ function generate_declaration() {
 
 #Generate the loader definitions first
 app_declaration="../declarations/shared-app/"
-loader_declaration_app="../declarations/loader/"
-# loader_declaration_certaccept="declarations/exports_loader_certaccept.d.ts"
-
 generate_declaration dtsconfig_app.json ${app_declaration}
-generate_declaration dtsconfig_loader_app.json ${loader_declaration_app}
-# generate_declaration dtsconfig_loader_certaccept.json ${loader_declaration_certaccept}
-
 exit 0

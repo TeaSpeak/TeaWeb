@@ -18,7 +18,8 @@ export enum LogCategory {
     IPC,
     IDENTITIES,
     STATISTICS,
-    DNS
+    DNS,
+    FILE_TRANSFER
 }
 
 export enum LogType {
@@ -30,22 +31,23 @@ export enum LogType {
 }
 
 let category_mapping = new Map<number, string>([
-    [LogCategory.CHANNEL,                   "Channel    "],
-    [LogCategory.CHANNEL_PROPERTIES,        "Channel    "],
-    [LogCategory.CLIENT,                    "Client     "],
-    [LogCategory.SERVER,                    "Server     "],
-    [LogCategory.BOOKMARKS,                 "Bookmark   "],
-    [LogCategory.PERMISSIONS,               "Permission "],
-    [LogCategory.GENERAL,                   "General    "],
-    [LogCategory.NETWORKING,                "Network    "],
-    [LogCategory.VOICE,                     "Voice      "],
-    [LogCategory.AUDIO,                     "Audio      "],
-    [LogCategory.CHANNEL,                   "Chat       "],
-    [LogCategory.I18N,                      "I18N       "],
-    [LogCategory.IDENTITIES,                "Identities "],
-    [LogCategory.IPC,                       "IPC        "],
-    [LogCategory.STATISTICS,                "Statistics "],
-    [LogCategory.DNS,                       "DNS        "]
+    [LogCategory.CHANNEL,                   "Channel      "],
+    [LogCategory.CHANNEL_PROPERTIES,        "Channel      "],
+    [LogCategory.CLIENT,                    "Client       "],
+    [LogCategory.SERVER,                    "Server       "],
+    [LogCategory.BOOKMARKS,                 "Bookmark     "],
+    [LogCategory.PERMISSIONS,               "Permission   "],
+    [LogCategory.GENERAL,                   "General      "],
+    [LogCategory.NETWORKING,                "Network      "],
+    [LogCategory.VOICE,                     "Voice        "],
+    [LogCategory.AUDIO,                     "Audio        "],
+    [LogCategory.CHANNEL,                   "Chat         "],
+    [LogCategory.I18N,                      "I18N         "],
+    [LogCategory.IDENTITIES,                "Identities   "],
+    [LogCategory.IPC,                       "IPC          "],
+    [LogCategory.STATISTICS,                "Statistics   "],
+    [LogCategory.DNS,                       "DNS          "],
+    [LogCategory.FILE_TRANSFER,             "FILE_TRANSFER"]
 ]);
 
 export let enabled_mapping = new Map<number, boolean>([
@@ -64,7 +66,8 @@ export let enabled_mapping = new Map<number, boolean>([
     [LogCategory.IDENTITIES,            true],
     [LogCategory.IPC,                   true],
     [LogCategory.STATISTICS,            true],
-    [LogCategory.DNS,                   true]
+    [LogCategory.DNS,                   true],
+    [LogCategory.FILE_TRANSFER,         true]
 ]);
 
 //Values will be overridden by initialize()

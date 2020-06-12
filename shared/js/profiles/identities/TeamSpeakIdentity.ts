@@ -219,7 +219,7 @@ export namespace CryptoHelper {
     }
 }
 
-class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
+export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
     identity: TeaSpeakIdentity;
     handler: HandshakeCommandHandler<TeaSpeakHandshakeHandler>;
 
