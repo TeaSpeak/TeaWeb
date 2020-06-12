@@ -2,18 +2,52 @@ import {BasicCodec} from "./BasicCodec";
 import {CodecType} from "./Codec";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
+import {
+    CWCommand,
+    CWCommandResponseType,
+    CWMessage, CWMessageCommand,
+    CWMessageErrorResponse,
+    CWMessageResponse
+} from "tc-backend/web/codec/CodecWorkerMessages";
 
-interface ExecuteResult {
-    result?: any;
-    error?: string;
+type MessageTimings = {
+    upstream: number;
+    downstream: number;
+    handle: number;
+};
 
+interface ExecuteResultBase {
     success: boolean;
 
-    timings: {
-        upstream: number;
-        downstream: number;
-        handle: number;
+    timings: MessageTimings
+}
+
+interface SuccessExecuteResult<T> extends ExecuteResultBase {
+    success: true;
+    result: T;
+}
+
+interface ErrorExecuteResult extends ExecuteResultBase {
+    success: false;
+    error: string;
+}
+type ExecuteResult<T = any> = SuccessExecuteResult<T> | ErrorExecuteResult;
+
+const cachedBufferSize = 1024 * 8;
+let cachedBuffers: ArrayBuffer[] = [];
+function nextCachedBuffer() : ArrayBuffer {
+    if(cachedBuffers.length === 0) {
+        return new ArrayBuffer(cachedBufferSize);
     }
+    return cachedBuffers.pop();
+}
+
+function freeCachedBuffer(buffer: ArrayBuffer) {
+    if(cachedBuffers.length > 32)
+        return;
+    else if(buffer.byteLength < cachedBufferSize)
+        return;
+    cachedBuffers.push(buffer);
 }
 
 export class CodecWrapperWorker extends BasicCodec {
@@ -27,10 +61,8 @@ export class CodecWrapperWorker extends BasicCodec {
     private pending_executes: {[key: string]: {
         timeout?: any;
 
-        timestamp_send: number,
-
+        timestampSend: number,
         resolve: (_: ExecuteResult) => void;
-        reject: (_: any) => void;
     }} = {};
 
     constructor(type: CodecType) {
@@ -61,7 +93,7 @@ export class CodecWrapperWorker extends BasicCodec {
             type: this.type,
             channelCount: this.channelCount,
         })).then(result => {
-            if(result.success) {
+            if(result.success === true) {
                 this._initialized = true;
                 return Promise.resolve(true);
             }
@@ -78,7 +110,7 @@ export class CodecWrapperWorker extends BasicCodec {
     }
 
     deinitialise() {
-        this.execute("deinitialise", {});
+        this.execute("finalize", {});
         this._initialized = false;
         this._initialize_promise = undefined;
     }
@@ -86,44 +118,52 @@ export class CodecWrapperWorker extends BasicCodec {
     async decode(data: Uint8Array): Promise<AudioBuffer> {
         if(!this.initialized()) throw "codec not initialized/initialize failed";
 
-        const result = await this.execute("decodeSamples", { data: data, length: data.length });
+        const cachedBuffer = nextCachedBuffer();
+        new Uint8Array(cachedBuffer).set(data);
+
+        const result = await this.execute("decode-payload", {
+            byteLength: data.byteLength,
+            buffer: cachedBuffer,
+            byteOffset: 0,
+            maxByteLength: cachedBuffer.byteLength
+        }, 5000, [ cachedBuffer ]);
         if(result.timings.downstream > 5 || result.timings.upstream > 5 || result.timings.handle > 5)
             log.warn(LogCategory.VOICE, tr("Worker message stock time: {downstream: %dms, handle: %dms, upstream: %dms}"), result.timings.downstream, result.timings.handle, result.timings.upstream);
 
-        if(!result.success) throw result.error || tr("unknown decode error");
+        if(result.success === false)
+            throw result.error;
 
-        let array = new Float32Array(result.result.length);
-        for(let index = 0; index < array.length; index++)
-            array[index] = result.result.data[index];
+        const chunkLength = result.result.byteLength / this.channelCount;
+        const audioBuffer = this._audioContext.createBuffer(this.channelCount, chunkLength / 4, this._codecSampleRate);
 
-        let audioBuf = this._audioContext.createBuffer(this.channelCount, array.length / this.channelCount, this._codecSampleRate);
-        for (let channel = 0; channel < this.channelCount; channel++) {
-            for (let offset = 0; offset < audioBuf.length; offset++) {
-                audioBuf.getChannelData(channel)[offset] = array[channel + offset * this.channelCount];
-            }
+        for(let channel = 0; channel < this.channelCount; channel++) {
+            const buffer = new Float32Array(result.result.buffer, result.result.byteOffset + chunkLength * channel, chunkLength / 4);
+            audioBuffer.copyToChannel(buffer, channel, 0);
         }
 
-        return audioBuf;
+        freeCachedBuffer(result.result.buffer);
+        return audioBuffer;
     }
 
     async encode(data: AudioBuffer) : Promise<Uint8Array> {
         if(!this.initialized()) throw "codec not initialized/initialize failed";
 
-        let buffer = new Float32Array(this.channelCount * data.length);
-        for (let offset = 0; offset < data.length; offset++) {
-            for (let channel = 0; channel < this.channelCount; channel++)
-                buffer[offset * this.channelCount + channel] = data.getChannelData(channel)[offset];
-        }
+        const buffer = nextCachedBuffer();
+        const f32Buffer = new Float32Array(buffer);
+        for(let channel = 0; channel < this.channelCount; channel++)
+            data.copyFromChannel(f32Buffer, channel, data.length * channel);
 
-        const result = await this.execute("encodeSamples", { data: buffer, length: buffer.length });
+        const result = await this.execute("encode-payload", { byteLength: data.length * this.channelCount * 4, buffer: buffer, byteOffset: 0, maxByteLength: buffer.byteLength });
+
         if(result.timings.downstream > 5 || result.timings.upstream > 5)
             log.warn(LogCategory.VOICE, tr("Worker message stock time: {downstream: %dms, handle: %dms, upstream: %dms}"), result.timings.downstream, result.timings.handle, result.timings.upstream);
-        if(!result.success) throw result.error || tr("unknown encode error");
 
-        let array = new Uint8Array(result.result.length);
-        for(let index = 0; index < array.length; index++)
-            array[index] = result.result.data[index];
-        return array;
+        if(result.success === false)
+            throw result.error;
+
+        const encodedResult = new Uint8Array(result.result.buffer, result.result.byteOffset, result.result.byteLength).slice(0);
+        freeCachedBuffer(result.result.buffer);
+        return encodedResult;
     }
 
     reset() : boolean {
@@ -132,85 +172,118 @@ export class CodecWrapperWorker extends BasicCodec {
         return true;
     }
 
-    private handle_worker_message(message: any) {
-        if(!message["token"]) {
-            log.error(LogCategory.VOICE, tr("Invalid worker token!"));
+    private handleWorkerMessage(message: CWMessage) {
+        if(message.type === "notify") {
+            log.warn(LogCategory.VOICE, tr("Received unknown notify from worker."));
             return;
-        }
-
-        if(message["token"] === "notify") {
-            /* currently not really used */
-             if(message["type"] == "chatmessage_server") {
-                //FIXME?
+        } else if(message.type === "error") {
+            const request = this.pending_executes[message.token];
+            if(typeof request !== "object") {
+                log.warn(LogCategory.VOICE, tr("Received worker execute error for unknown token (%s)"), message.token);
                 return;
             }
-            log.debug(LogCategory.VOICE, tr("Costume callback! (%o)"), message);
-            return;
-        }
+            delete this.pending_executes[message.token];
+            clearTimeout(request.timeout);
 
-        const request = this.pending_executes[message["token"]];
-        if(typeof request !== "object") {
-            log.error(LogCategory.VOICE, tr("Received worker execute result for unknown token (%s)"), message["token"]);
-            return;
-        }
-        delete this.pending_executes[message["token"]];
-
-        const result: ExecuteResult = {
-            success: message["success"],
-            error: message["error"],
-            result: message["result"],
-            timings: {
-                downstream: message["timestamp_received"] - request.timestamp_send,
-                handle: message["timestamp_send"] - message["timestamp_received"],
-                upstream: Date.now() - message["timestamp_send"]
+            const eresponse = message as CWMessageErrorResponse;
+            request.resolve({
+                success: false,
+                timings: {
+                    downstream: eresponse.timestampReceived - request.timestampSend,
+                    handle: eresponse.timestampSend - eresponse.timestampReceived,
+                    upstream: Date.now() - eresponse.timestampSend
+                },
+                error: eresponse.error
+            });
+        } else if(message.type === "success") {
+            const request = this.pending_executes[message.token];
+            if(typeof request !== "object") {
+                log.warn(LogCategory.VOICE, tr("Received worker execute result for unknown token (%s)"), message.token);
+                return;
             }
-        };
-        clearTimeout(request.timeout);
-        request.resolve(result);
+            delete this.pending_executes[message.token];
+            clearTimeout(request.timeout);
+
+            const response = message as CWMessageResponse;
+            request.resolve({
+                success: true,
+                timings: {
+                    downstream: response.timestampReceived - request.timestampSend,
+                    handle: response.timestampSend - response.timestampReceived,
+                    upstream: Date.now() - response.timestampSend
+                },
+                result: response.response
+            });
+        } else if(message.type === "command") {
+            log.warn(LogCategory.VOICE, tr("Received command %s from voice worker. This should never happen!"), (message as CWMessageCommand).command);
+            return;
+        } else {
+            log.warn(LogCategory.VOICE, tr("Received unknown message of type %s from voice worker. This should never happen!"), (message as any).type);
+            return;
+        }
     }
 
-    private handle_worker_error(error: any) {
+    private handleWorkerError() {
         log.error(LogCategory.VOICE, tr("Received error from codec worker. Closing worker."));
         for(const token of Object.keys(this.pending_executes)) {
-            this.pending_executes[token].reject(error);
+            this.pending_executes[token].resolve({
+                success: false,
+                error: tr("worker terminated with an error"),
+                timings: { downstream: 0, handle: 0, upstream: 0}
+            });
             delete this.pending_executes[token];
         }
 
         this._worker = undefined;
     }
 
-    private execute(command: string, data: any, timeout?: number) : Promise<ExecuteResult> {
-        return new Promise<any>((resolve, reject) => {
+    private execute<T extends keyof CWCommand>(command: T, data: CWCommand[T], timeout?: number, transfer?: Transferable[]) : Promise<ExecuteResult<CWCommandResponseType<T>>> {
+        return new Promise<ExecuteResult>(resolve => {
             if(!this._worker) {
-                reject(tr("worker does not exists"));
+                resolve({
+                    success: false,
+                    error: tr("worker does not exists"),
+                    timings: {
+                        downstream: 0,
+                        handle: 0,
+                        upstream: 0
+                    }
+                });
                 return;
             }
 
             const token = this._token_index++ + "_token";
 
-            const payload = {
-                token: token,
-                command: command,
-                data: data,
-            };
-
             this.pending_executes[token] = {
-                timeout: typeof timeout === "number" ? setTimeout(() => reject(tr("timeout for command ") + command), timeout) : undefined,
+                timeout: typeof timeout === "number" ? setTimeout(() => {
+                    delete this.pending_executes[token];
+                    resolve({
+                        success: false,
+                        error: tr("command timed out"),
+                        timings: { upstream: 0, handle: 0, downstream: 0 }
+                    })
+                }, timeout) : undefined,
                 resolve: resolve,
-                reject: reject,
-                timestamp_send: Date.now()
+                timestampSend: Date.now()
             };
 
-            this._worker.postMessage(payload);
+            this._worker.postMessage({
+                command: command,
+                type: "command",
+
+                payload: data,
+                token: token
+            } as CWMessageCommand, transfer);
         });
     }
 
     private async spawn_worker() : Promise<void> {
         this._worker = new Worker("tc-backend/web/workers/codec", { type: "module" });
-        this._worker.onmessage = event => this.handle_worker_message(event.data);
-        this._worker.onerror = event => this.handle_worker_error(event.error);
+        this._worker.onmessage = event => this.handleWorkerMessage(event.data);
+        this._worker.onerror = () => this.handleWorkerError();
 
         const result = await this.execute("global-initialize", {}, 15000);
-        if(!result.success) throw result.error;
+        if(result.success === false)
+            throw result.error;
     }
 }
