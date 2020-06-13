@@ -1,7 +1,13 @@
 @import "mixin";
 
-$color_upload: #0a5eaa;
-$color_download: #9f2712;
+html:root {
+	--serverinfo-bandwidth-upload: #0a5eaa;
+	--serverinfo-bandwidth-download: #9f2712;
+
+	--serverinfo-title: #e3e3e4;
+	--serverinfo-statistics-title: #244c78;
+}
+
 .modal-body.modal-server-info-bandwidth {
 	padding: 0!important;
 	width: 55em;
@@ -90,7 +96,7 @@ $color_download: #9f2712;
 
 				> a {
 					font-size: 1.25em;
-					color: #e3e3e4;
+					color: var(--serverinfo-title);
 					line-height: normal;
 
 					text-transform: uppercase;
@@ -107,11 +113,11 @@ $color_download: #9f2712;
 					}
 
 					.upload {
-						color: $color_upload;
+						color: var(--serverinfo-bandwidth-upload);
 					}
 
 					.download {
-						color: $color_download;
+						color: var(--serverinfo-bandwidth-download);
 					}
 				}
 
@@ -150,7 +156,7 @@ $color_download: #9f2712;
 				flex-grow: 0;
 				flex-shrink: 0;
 
-				color: #244c78;
+				color: var(--serverinfo-statistics-title);
 				font-size: 1.25em;
 
 				text-transform: uppercase;
@@ -186,11 +192,11 @@ $color_download: #9f2712;
 					text-align: right;
 
 					.upload {
-						color: $color_upload;
+						color: var(--serverinfo-bandwidth-upload);
 					}
 
 					.download {
-						color: $color_download;
+						color: var(--serverinfo-bandwidth-download);
 					}
 				}
 			}

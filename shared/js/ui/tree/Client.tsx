@@ -133,7 +133,7 @@ class ClientServerGroupIcons extends ReactComponentBase<ClientServerGroupIconsPr
         this.unsubscribeGroupEvents();
 
         const groups = this.props.client.assignedServerGroupIds()
-                            .map(e => this.props.client.channelTree.client.groups.serverGroup(e)).filter(e => !!e);
+                            .map(e => this.props.client.channelTree.client.groups.findServerGroup(e)).filter(e => !!e);
         if(groups.length === 0) return null;
 
         groups.forEach(e => {
@@ -189,7 +189,7 @@ class ClientChannelGroupIcon extends ReactComponentBase<ClientChannelGroupIconPr
         const cgid = this.props.client.assignedChannelGroup();
         if(cgid === 0) return null;
 
-        const channel_group = this.props.client.channelTree.client.groups.channelGroup(cgid);
+        const channel_group = this.props.client.channelTree.client.groups.findChannelGroup(cgid);
         if(!channel_group) return null;
 
         channel_group.events.on("notify_properties_updated", this.group_updated_callback);
@@ -278,7 +278,7 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
         let prefix_groups: string[] = [];
         let suffix_groups: string[] = [];
         for(const group_id of this.props.client.assignedServerGroupIds()) {
-            const group = this.props.client.channelTree.client.groups.serverGroup(group_id);
+            const group = this.props.client.channelTree.client.groups.findServerGroup(group_id);
             if(!group) continue;
 
             if(group.properties.namemode == 1)
@@ -287,7 +287,7 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
                 suffix_groups.push(group.name);
         }
 
-        const channel_group = this.props.client.channelTree.client.groups.channelGroup(this.props.client.assignedChannelGroup());
+        const channel_group = this.props.client.channelTree.client.groups.findChannelGroup(this.props.client.assignedChannelGroup());
         if(channel_group) {
             if(channel_group.properties.namemode == 1)
                 prefix_groups.push(channel_group.name);

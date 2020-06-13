@@ -303,7 +303,7 @@ function apply_groups(client: ClientEntry, tag: JQuery, modal: Modal, callbacks:
                 if(group_id == client.channelTree.server.properties.virtualserver_default_server_group)
                     continue;
 
-                const group = client.channelTree.client.groups.serverGroup(group_id);
+                const group = client.channelTree.client.groups.findServerGroup(group_id);
                 if(!group) continue; //This shall never happen!
 
                 container_empty.hide();

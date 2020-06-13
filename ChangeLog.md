@@ -1,4 +1,8 @@
 # Changelog:
+* **13.06.20**
+    - Started to extract all color values and put them into css variables
+    - Fixed a minor issue related to server/channel groups
+    
 * **12.06.20**
     - Added a copy/paste menu for all HTML input elements
     - Heavily improved web client audio de/encoding

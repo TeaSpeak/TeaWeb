@@ -4,7 +4,7 @@ import {LogCategory} from "tc-shared/log";
 import {PermissionManager, PermissionValue} from "tc-shared/permission/PermissionManager";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ConnectionEvents, ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {Registry} from "tc-shared/events";
 
@@ -32,13 +32,27 @@ export class GroupPermissionRequest {
     promise: LaterPromise<PermissionValue[]>;
 }
 
+export interface GroupManagerEvents {
+    notify_reset: {},
+    notify_groups_created: {
+        groups: Group[],
+        cause: "list-update" | "initialize" | "user-action"
+    },
+    notify_groups_deleted: {
+        groups: Group[],
+        cause: "list-update" | "reset" | "user-action"
+    }
+}
+
 export interface GroupEvents {
-    notify_deleted: {},
+    notify_group_deleted: { },
 
     notify_properties_updated: {
         updated_properties: {[Key in keyof GroupProperties]: GroupProperties[Key]};
         group_properties: GroupProperties
-    }
+    },
+
+    notify_needed_powers_updated: { }
 }
 
 export class Group {
@@ -69,14 +83,18 @@ export class Group {
 
     updateProperties(properties: {key: string, value: string}[]) {
         let updates = {};
-
         for(const { key, value } of properties) {
             if(!JSON.map_field_to(this.properties, value, key))
                 continue; /* no updates */
+
             if(key === "iconid")
                 this.properties.iconid = this.properties.iconid >>> 0;
+
             updates[key] = this.properties[key];
         }
+
+        if(Object.keys(updates).length === 0)
+            return;
 
         this.events.fire("notify_properties_updated", {
             group_properties: this.properties,
@@ -86,44 +104,6 @@ export class Group {
 }
 
 export class GroupManager extends AbstractCommandHandler {
-    readonly handle: ConnectionHandler;
-
-    serverGroups: Group[] = [];
-    channelGroups: Group[] = [];
-
-    private requests_group_permissions: GroupPermissionRequest[] = [];
-    constructor(client: ConnectionHandler) {
-        super(client.serverConnection);
-
-        client.serverConnection.command_handler_boss().register_handler(this);
-        this.handle = client;
-    }
-
-    destroy() {
-        this.handle.serverConnection && this.handle.serverConnection.command_handler_boss().unregister_handler(this);
-        this.serverGroups = undefined;
-        this.channelGroups = undefined;
-    }
-
-    handle_command(command: ServerCommand): boolean {
-        switch (command.command) {
-            case "notifyservergrouplist":
-            case "notifychannelgrouplist":
-                this.handle_grouplist(command.arguments);
-                return true;
-            case "notifyservergrouppermlist":
-            case "notifychannelgrouppermlist":
-                this.handle_group_permission_list(command.arguments);
-                return true;
-        }
-        return false;
-    }
-
-    requestGroups(){
-        this.handle.serverConnection.send_command("servergrouplist");
-        this.handle.serverConnection.send_command("channelgrouplist");
-    }
-
     static sorter() : (a: Group, b: Group) => number {
         return (a, b) => {
             if(!a)
@@ -144,78 +124,159 @@ export class GroupManager extends AbstractCommandHandler {
         }
     }
 
-    serverGroup?(id: number) : Group {
-        for(let group of this.serverGroups)
-            if(group.id == id) return group;
-        return undefined;
+    readonly events = new Registry<GroupManagerEvents>();
+    readonly connectionHandler: ConnectionHandler;
+
+    serverGroups: Group[] = [];
+    channelGroups: Group[] = [];
+
+    private readonly connectionStateListener;
+    private groupPermissionRequests: GroupPermissionRequest[] = [];
+
+    constructor(client: ConnectionHandler) {
+        super(client.serverConnection);
+        this.connectionHandler = client;
+
+        this.connectionStateListener = (event: ConnectionEvents["notify_connection_state_changed"]) => {
+            if(event.new_state === ConnectionState.DISCONNECTING || event.new_state === ConnectionState.UNCONNECTED || event.new_state === ConnectionState.CONNECTING)
+                this.reset();
+        };
+
+        client.serverConnection.command_handler_boss().register_handler(this);
+        client.events().on("notify_connection_state_changed", this.connectionStateListener);
+
+        this.reset();
     }
 
-    channelGroup?(id: number) : Group {
-        for(let group of this.channelGroups)
-            if(group.id == id) return group;
-        return undefined;
+    destroy() {
+        this.reset();
+        this.connectionHandler.events().off("notify_connection_state_changed", this.connectionStateListener);
+        this.connectionHandler.serverConnection?.command_handler_boss().unregister_handler(this);
+        this.serverGroups = undefined;
+        this.channelGroups = undefined;
     }
 
-    private handle_grouplist(json) {
-        let target : GroupTarget;
-        if(json[0]["sgid"]) target = GroupTarget.SERVER;
-        else if(json[0]["cgid"]) target = GroupTarget.CHANNEL;
-        else {
-            log.error(LogCategory.CLIENT, tr("Could not resolve group target! => %o"), json[0]);
+    reset() {
+        if(this.serverGroups.length === 0 && this.channelGroups.length === 0)
             return;
+
+        log.debug(LogCategory.PERMISSIONS, tr("Resetting server/channel groups"));
+        this.serverGroups = [];
+        this.channelGroups = [];
+
+        for(const permission of this.groupPermissionRequests)
+            permission.promise.rejected(tr("Group manager reset"));
+        this.groupPermissionRequests = [];
+        this.events.fire("notify_reset");
+    }
+
+    handle_command(command: ServerCommand): boolean {
+        switch (command.command) {
+            case "notifyservergrouplist":
+                this.handleGroupList(command.arguments, GroupTarget.SERVER);
+                return true;
+            case "notifychannelgrouplist":
+                this.handleGroupList(command.arguments, GroupTarget.CHANNEL);
+                return true;
+
+            case "notifyservergrouppermlist":
+            case "notifychannelgrouppermlist":
+                this.handleGroupPermissionList(command.arguments);
+                return true;
         }
+        return false;
+    }
 
-        let group_list = target == GroupTarget.SERVER ? this.serverGroups : this.channelGroups;
-        const deleted_groups = group_list.slice(0);
+    requestGroups(){
+        this.connectionHandler.serverConnection.send_command("servergrouplist", {}, { process_result: false }).catch(error => {
+            log.warn(LogCategory.PERMISSIONS, tr("Failed to request the server group list: %o"), error);
+        });
 
-        for(const group_data of json) {
+        this.connectionHandler.serverConnection.send_command("channelgrouplist", {}, { process_result: false }).catch(error => {
+            log.warn(LogCategory.PERMISSIONS, tr("Failed to request the channel group list: %o"), error);
+        });
+    }
+
+    findServerGroup(id: number) : Group | undefined {
+        for(let group of this.serverGroups)
+            if(group.id === id)
+                return group;
+        return undefined;
+    }
+
+    findChannelGroup(id: number) : Group | undefined {
+        for(let group of this.channelGroups)
+            if(group.id === id)
+                return group;
+        return undefined;
+    }
+
+    private handleGroupList(json: any[], target: GroupTarget) {
+        let groupList = target == GroupTarget.SERVER ? this.serverGroups : this.channelGroups;
+        const deleteGroups = groupList.slice(0);
+        const newGroups: Group[] = [];
+
+        const isInitialList = groupList.length === 0;
+        for(const groupData of json) {
             let type : GroupType;
-            switch (parseInt(group_data["type"])) {
+            switch (parseInt(groupData["type"])) {
                 case 0: type = GroupType.TEMPLATE; break;
                 case 1: type = GroupType.NORMAL; break;
                 case 2: type = GroupType.QUERY; break;
                 default:
-                    log.error(LogCategory.CLIENT, tr("Invalid group type: %o for group %s"), group_data["type"],group_data["name"]);
+                    log.error(LogCategory.CLIENT, tr("Invalid group type: %o for group %s"), groupData["type"], groupData["name"]);
                     continue;
             }
 
-            const group_id = parseInt(target == GroupTarget.SERVER ? group_data["sgid"] : group_data["cgid"]);
-            let group_index = deleted_groups.findIndex(e => e.id === group_id);
+            const groupId = parseInt(target == GroupTarget.SERVER ? groupData["sgid"] : groupData["cgid"]);
+            let groupIndex = deleteGroups.findIndex(e => e.id === groupId);
+
             let group: Group;
-            if(group_index === -1) {
-                group = new Group(this, group_id, target, type, group_data["name"]);
-                group_list.push(group);
-            } else
-                group = deleted_groups.splice(group_index, 1)[0];
+            if(groupIndex === -1) {
+                group = new Group(this, groupId, target, type, groupData["name"]);
+                groupList.push(group);
+                newGroups.push(group);
+            } else {
+                group = deleteGroups.splice(groupIndex, 1)[0];
+            }
 
             const property_blacklist = [
                 "sgid", "cgid", "type", "name",
 
                 "n_member_removep", "n_member_addp", "n_modifyp"
             ];
-            group.updateProperties(Object.keys(group_data).filter(e => property_blacklist.findIndex(a => a === e) === -1).map(e => { return { key: e, value: group_data[e] } }));
 
-            group.requiredMemberRemovePower = parseInt(group_data["n_member_removep"]);
-            group.requiredMemberAddPower = parseInt(group_data["n_member_addp"]);
-            group.requiredModifyPower = parseInt(group_data["n_modifyp"]);
+            group.requiredMemberRemovePower = parseInt(groupData["n_member_removep"]);
+            group.requiredMemberAddPower = parseInt(groupData["n_member_addp"]);
+            group.requiredModifyPower = parseInt(groupData["n_modifyp"]);
+            group.updateProperties(Object.keys(groupData).filter(e => property_blacklist.findIndex(a => a === e) === -1).map(e => { return { key: e, value: groupData[e] } }));
+            group.events.fire("notify_needed_powers_updated");
         }
 
-        for(const deleted of deleted_groups) {
-            group_list.remove(deleted);
-            deleted.events.fire("notify_deleted");
+        if(newGroups.length !== 0) {
+            this.events.fire("notify_groups_created", { groups: newGroups, cause: isInitialList ? "initialize" : "list-update" });
+        }
+
+        for(const deleted of deleteGroups) {
+            groupList.remove(deleted);
+            deleted.events.fire("notify_group_deleted");
+        }
+
+        if(deleteGroups.length !== 0) {
+            this.events.fire("notify_groups_deleted", { groups: deleteGroups, cause: "list-update" });
         }
     }
 
-    request_permissions(group: Group) : Promise<PermissionValue[]> { //database_empty_result
-        for(let request of this.requests_group_permissions)
+    request_permissions(group: Group) : Promise<PermissionValue[]> {
+        for(let request of this.groupPermissionRequests)
             if(request.group_id == group.id && request.promise.time() + 1000 > Date.now())
                 return request.promise;
         let req = new GroupPermissionRequest();
         req.group_id = group.id;
         req.promise = new LaterPromise<PermissionValue[]>();
-        this.requests_group_permissions.push(req);
+        this.groupPermissionRequests.push(req);
 
-        this.handle.serverConnection.send_command(group.target == GroupTarget.SERVER ? "servergrouppermlist" : "channelgrouppermlist", {
+        this.connectionHandler.serverConnection.send_command(group.target == GroupTarget.SERVER ? "servergrouppermlist" : "channelgrouppermlist", {
             cgid: group.id,
             sgid: group.id
         }).catch(error => {
@@ -226,21 +287,21 @@ export class GroupManager extends AbstractCommandHandler {
         }).then(() => {
             //No notify handler
             setTimeout(() => {
-                if(this.requests_group_permissions.remove(req))
+                if(this.groupPermissionRequests.remove(req))
                     req.promise.rejected(tr("no response"));
             }, 1000);
         });
         return req.promise;
     }
 
-    private handle_group_permission_list(json: any[]) {
-        let group = json[0]["sgid"] ? this.serverGroup(parseInt(json[0]["sgid"])) : this.channelGroup(parseInt(json[0]["cgid"]));
+    private handleGroupPermissionList(json: any[]) {
+        let group = json[0]["sgid"] ? this.findServerGroup(parseInt(json[0]["sgid"])) : this.findChannelGroup(parseInt(json[0]["cgid"]));
         if(!group) {
             log.error(LogCategory.PERMISSIONS, tr("Got group permissions for group %o/%o, but its not a registered group!"), json[0]["sgid"], json[0]["cgid"]);
             return;
         }
         let requests: GroupPermissionRequest[] = [];
-        for(let req of this.requests_group_permissions)
+        for(let req of this.groupPermissionRequests)
             if(req.group_id == group.id)
                 requests.push(req);
 
@@ -249,9 +310,9 @@ export class GroupManager extends AbstractCommandHandler {
             return;
         }
 
-        let permissions = PermissionManager.parse_permission_bulk(json, this.handle.permissions);
+        let permissions = PermissionManager.parse_permission_bulk(json, this.connectionHandler.permissions);
         for(let req of requests) {
-            this.requests_group_permissions.remove(req);
+            this.groupPermissionRequests.remove(req);
             req.promise.resolved(permissions);
         }
     }

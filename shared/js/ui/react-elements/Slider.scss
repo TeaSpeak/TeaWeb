@@ -10,6 +10,14 @@ $thumb_height: 2em;
 $tooltip_width: 4em;
 $tooltip_height: 1.8em;
 
+html:root {
+    --slider-filler-color: #4370a2;
+    --slider-disabled-filler-color: #3d618a;
+
+    --slider-thumb-color: #808080;
+    --slider-disabled-thumb-color: #4d4d4d;
+}
+
 .container {
     font-size: .8em;
 
@@ -36,7 +44,7 @@ $tooltip_height: 1.8em;
         top: 0;
         bottom: 0;
 
-        background-color: #4370a2;
+        background-color: var(--slider-filler-color);
         border-radius: $border_radius_large;
 
         @include transition(background-color .15s ease-in-out);
@@ -57,7 +65,7 @@ $tooltip_height: 1.8em;
         margin-top: -($thumb_height - $track_height) / 2;
         margin-bottom: -($thumb_height - $track_height) / 2;
 
-        background-color: #808080;
+        background-color: var(--slider-thumb-color);
         @include transition(background-color .15s ease-in-out);
     }
 
@@ -65,11 +73,11 @@ $tooltip_height: 1.8em;
         pointer-events: none;
 
         .thumb {
-            background-color: #4d4d4d!important;
+            background-color: var(--slider-disabled-thumb-color)!important;
         }
 
         .filler {
-            background-color: #3d618a;
+            background-color: var(--slider-disabled-filler-color);
         }
     }
 }

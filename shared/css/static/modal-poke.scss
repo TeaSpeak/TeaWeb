@@ -1,3 +1,8 @@
+html:root {
+	--modal-poke-date: cornflowerblue;
+	--modal-poke-text: #004d00;
+}
+
 .container-poke {
 	display: flex!important;;
 	flex-direction: column!important;;
@@ -47,10 +52,10 @@
 					}
 
 					.date {
-						color: cornflowerblue;
+						color: var(--modal-poke-date);
 					}
 					.text {
-						color: #004d00;
+						color: var(--modal-poke-text);
 					}
 				}
 			}
@@ -81,16 +86,3 @@
 		}
 	}
 }
-
-/*
-  <script class="jsrender-template" id="tmpl_poke_popup" type="text/html">
-            <div class="container-poke">
-                <div class="container-information">
-                    <a>You have been poked by </a><node key="invoker"></node><a>:</a>
-                </div>
-                <div class="container-message">
-                    <a class="message">{{>message}}</a>
-                </div>
-            </div>
-        </script>
- */

@@ -1,6 +1,16 @@
 @import "../../../../css/static/mixin";
 @import "../../../../css/static/properties";
 
+html:root {
+    --modal-transfer-background-text: #595959;
+
+    --modal-transfer-expend: #363636;
+    --modal-transfer-expend-hover: #404040;
+
+    --modal-transfer-header: #cccccc;
+    --modal-transfer-header-line: #393939;
+}
+
 .container {
     z-index: 1;
     position: absolute;
@@ -20,7 +30,7 @@
 
     .overlay {
         position: absolute;
-        background-color: #19191b;
+        background-color: var(--modal-content-background);
 
         top: 0;
         bottom: 0;
@@ -44,7 +54,7 @@
             justify-content: center;
 
             a {
-                color: #595959;
+                color: var(--modal-transfer-background-text);
                 align-self: center;
                 font-size: 1.2em;
             }
@@ -58,7 +68,7 @@
     .expendedContainer {
         height: 100%;
         margin-top: auto;
-        background-color: #19191b;
+        background-color: var(--modal-content-background);
 
         overflow: hidden;
 
@@ -92,7 +102,7 @@
 
             a {
                 font-weight: bold;
-                color: #cccccc;
+                color: var(--modal-transfer-header);
                 font-size: 1.05em;
             }
 
@@ -102,7 +112,7 @@
                 font-size: .7em;
             }
 
-            border-bottom: 1px solid #393939;
+            border-bottom: 1px solid var(--modal-transfer-header-line);
         }
 
         .list {
@@ -140,7 +150,7 @@
 
                 a {
                     align-self: center;
-                    color: #595959;
+                    color: var(--modal-transfer-background-text);
                 }
             }
         }
@@ -192,7 +202,7 @@
                 align-self: center;
 
                 height: 1.4em;
-                fill: hsla(0, 0%, 21%, 1);
+                fill: var(--modal-transfer-expend);
 
                 @include transform(rotate(-180deg));
                 @include transition($button_hover_animation_time ease-in-out);
@@ -207,7 +217,7 @@
 
             &:hover {
                 svg {
-                    fill: hsla(0, 0%, 25%, 1);
+                    fill: var(--modal-transfer-expend-hover);
                 }
             }
         }
@@ -241,7 +251,7 @@
         flex-direction: row;
         justify-content: flex-start;
 
-        background-color: #19191b;
+        background-color: var(--modal-content-background);
         z-index: 1;
 
         top: 0;

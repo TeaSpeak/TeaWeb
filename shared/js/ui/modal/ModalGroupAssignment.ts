@@ -44,7 +44,7 @@ export function createServerGroupAssignmentModal(client: ClientEntry, callback: 
 
                 entry.on('change', event => {
                     let group_id = parseInt(entry.attr("group-id"));
-                    let group = client.channelTree.client.groups.serverGroup(group_id);
+                    let group = client.channelTree.client.groups.findServerGroup(group_id);
                     if(!group) {
                         console.warn(tr("Could not resolve target group!"));
                         return false;

@@ -353,7 +353,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                 for(const e of result) {
                     if(e.type !== "server_group") continue;
 
-                    const group = client.groups.serverGroup((e as ServerGroup).group_id);
+                    const group = client.groups.findServerGroup((e as ServerGroup).group_id);
                     if(!group) continue;
 
                     groups.push({

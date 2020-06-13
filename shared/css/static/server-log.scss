@@ -1,5 +1,11 @@
 @import "mixin";
 
+html:root {
+	--server-log-text: #6e6e6e;
+	--server-log-error: #e62222;
+	--server-log-tree-entry: #d8d8d8;
+}
+
 .container-log {
 	display: block;
 	overflow-y: auto;
@@ -19,7 +25,7 @@
 		flex-shrink: 0;
 		flex-grow: 0;
 
-		color: #6e6e6e;
+		color: var(--server-log-text);
 
 		overflow-x: hidden;
 		overflow-y: hidden;
@@ -47,15 +53,11 @@
 
 
 		.log-error {
-			color: rgba(230, 34, 34, 1);
-
-			&:hover {
-				color: rgba(230, 34, 34, 1);
-			}
+			color: var(--server-log-error);
 		}
 
 		.htmltag-client, .htmltag-channel {
-			color: #d8d8d8;
+			color: var(--server-log-tree-entry);
 		}
 	}
 }

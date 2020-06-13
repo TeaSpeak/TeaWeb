@@ -1,8 +1,11 @@
 @import "../../../css/static/mixin";
 
+html:root {
+    --tooltip-background-color: #232222;
+}
+
 .container {
-    color: #999999;
-    background-color: #232222;
+    background-color: var(--tooltip-background-color);
 
     position: fixed;
     z-index: 1000000;
@@ -34,7 +37,7 @@
 
         border-style: solid;
         border-width: .5em .5em 0 .5em;
-        border-color: #232222 transparent transparent transparent;
+        border-color: var(--tooltip-background-color) transparent transparent transparent;
     }
 
     &.shown {

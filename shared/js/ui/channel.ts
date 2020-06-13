@@ -629,10 +629,10 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         return ChannelType.TEMPORARY;
     }
 
-    joinChannel() {
-        if(this.properties.channel_flag_password === true && !this.cachedPasswordHash) {
-            this.requestChannelPassword(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).then(password => {
-                this.joinChannel();
+    joinChannel(ignorePasswordFlag?: boolean) {
+        if(this.properties.channel_flag_password === true && !this.cachedPasswordHash && !ignorePasswordFlag) {
+            this.requestChannelPassword(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).then(() => {
+                this.joinChannel(true);
             });
             return;
         }
