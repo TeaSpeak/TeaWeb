@@ -67,6 +67,10 @@
 	--font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
+html:root {
+	--text: #999;
+}
+
 *, :before, :after {
 	box-sizing: border-box;
 	outline: none;

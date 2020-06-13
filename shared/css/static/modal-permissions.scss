@@ -1,6 +1,47 @@
 @import "mixin";
 @import "properties";
 
+html:root {
+	--modal-permissions-header-text: #e1e1e1;
+	--modal-permissions-header-background: #19191b;
+	--modal-permissions-header-hover: #4e4e4e;
+	--modal-permissions-header-selected: #0073d4;
+
+	--modal-permission-right: #303036;
+	--modal-permission-left: #222226;
+
+	--modal-permissions-entry-hover: #28282c;
+	--modal-permissions-entry-selected: #111111;
+	--modal-permissions-current-group: #101012;
+
+	--modal-permissions-buttons-background: #1b1b1b;
+	--modal-permissions-buttons-hover: #262626;
+	--modal-permissions-buttons-disabled: hsla(0, 0%, 9%, 1);
+
+	--modal-permissions-seperator: #1e1e1e; /* the seperator for the "enter a unique id" and "client info" part */
+	--modal-permissions-container-seperator: #222224; /* the seperator between left and right */
+
+	--modal-permissions-icon-select: #121213;
+	--modal-permissions-icon-select-border: #0d0d0d;
+	--modal-permissions-icon-select-hover: #17171a;
+	--modal-permissions-icon-select-hover-border: #333333;
+
+	--modal-permissions-table-border: #1e2025;
+
+	--modal-permissions-table-header: #303036;
+	--modal-permissions-table-entry-odd: #303036;
+	--modal-permissions-table-entry-even: #25252a;
+	--modal-permissions-table-entry-hover: #343a47;
+
+	--modal-permissions-table-header-text: #e1e1e1;
+	--modal-permissions-table-entry-text: #535455;
+	--modal-permissions-table-entry-active-text: #e1e1e1;
+	--modal-permissions-table-entry-group-text: #e1e1e1;
+
+	--modal-permissions-table-input: #e1e1e1;
+	--modal-permissions-table-input-focus: #3f7dbf;
+}
+
 .modal-body.modal-permission-editor {
 	padding: 0!important;
 
@@ -28,8 +69,8 @@
 
 	.header {
 		height: 4em;
-		background-color: #19191b;
-		color: #e1e1e1;
+		background-color: var(--modal-permissions-header-text);
+		color: var(--modal-permissions-header-background);
 
 		display: flex;
 		flex-direction: row;
@@ -73,7 +114,7 @@
 		width: 75%;
 		min-width: 30em;
 
-		background-color: #303036;
+		background-color: var(--modal-permission-right);
 
 		.header {
 			> .entry {
@@ -91,7 +132,7 @@
 
 				&:hover {
 					border: none;
-					border-bottom: 2px solid #4e4e4e;
+					border-bottom: 2px solid var(--modal-permissions-header-hover);
 
 					padding-bottom: 0;
 
@@ -107,13 +148,13 @@
 						height: 100%;
 						width: calc(100% + 20em);
 
-						box-shadow: inset 0px -1.2em 3em -20px #424242;
+						box-shadow: inset 0px -1.2em 3em -20px var(--modal-permissions-header-hover);
 					}
 				}
 
 				&.selected {
 					border: none;
-					border-bottom: 2px solid #0073d4;
+					border-bottom: 2px solid var(--modal-permissions-header-selected);
 
 					padding-bottom: 0;
 
@@ -129,7 +170,7 @@
 						height: 100%;
 						width: calc(100% + 20em);
 
-						box-shadow: inset 0px -1.2em 3em -20px #0073d4;
+						box-shadow: inset 0px -1.2em 3em -20px var(--modal-permissions-header-selected);
 					}
 				}
 			}
@@ -168,7 +209,7 @@
 		min-height: 10em;
 		overflow: hidden;
 
-		background-color: #222226;
+		background-color: var(--modal-permission-left);
 
 		.header {
 			font-weight: bold;
@@ -212,7 +253,7 @@
 			width: 100%;
 
 			.list-groups, .list-channel, .list-clients {
-				color: #999999;
+				color: var(--text);
 
 				display: flex;
 				flex-direction: column;
@@ -252,15 +293,11 @@
 						width: 100%;
 
 						&:hover {
-							background-color: #28282c;
+							background-color: var(--modal-permissions-entry-hover);
 						}
 
 						&.selected {
-							background-color: #111111;
-
-							&.client {
-								background-color: #1a1b1e;
-							}
+							background-color: var(--modal-permissions-entry-selected);
 						}
 
 						@include transition(background-color .25s ease-in-out);
@@ -296,15 +333,16 @@
 
 					cursor: pointer;
 
-					background-color: #1b1b1b;
+					background-color: var(--modal-permissions-buttons-background);
 
 					&:hover {
-						background-color: #262626;
+						background-color: var(--modal-permissions-buttons-hover);
 					}
 
 					&:disabled {
-						background-color: hsla(0, 0%, 9%, 1);
+						background-color: var(--modal-permissions-buttons-disabled);
 					}
+
 					@include transition(background-color .25s ease-in-out);
 
 					img {
@@ -365,8 +403,8 @@
 					flex-direction: row;
 					justify-content: stretch;
 					
-					background-color: #101012;
-					color: #999999;
+					background-color: var(--modal-permissions-current-group);
+					color: var(--text);
 					padding-left: .25em;
 
 
@@ -405,7 +443,7 @@
 
 			hr {
 				border: none;
-				border-top: 2px solid #1e1e1e;
+				border-top: 2px solid var(--modal-permissions-seperator);
 			}
 		}
 
@@ -420,7 +458,7 @@
 	.container-seperator {
 		width: 3px;
 		height: unset!important;
-		background-color: #222224!important;
+		background-color: var(--modal-permissions-container-seperator)!important;
 	}
 }
 
@@ -531,7 +569,7 @@
 			max-width: 10em;
 			min-width: 5em;
 
-			color: #999999;
+			color: var(--text);
 
 			> label {
 				font-size: .75em;
@@ -571,15 +609,15 @@
 			justify-content: flex-end;
 
 			cursor: pointer;
-			background-color: #121213;
-			border: 1px solid #0d0d0d;
+			background-color: var(--modal-permissions-icon-select);
+			border: 1px solid var(--modal-permissions-icon-select-border);
 
 			.icon-preview {
 				height: 100%;
 				width: 3em;
 
 				border: none;
-				border-right: 1px solid #0d0d0d;
+				border-right: 1px solid var(--modal-permissions-icon-select-border);
 
 				display: flex;
 				flex-direction: column;
@@ -614,7 +652,7 @@
 					text-align: center;
 
 					.arrow {
-						border-color: #999999;
+						border-color: var(--text);
 					}
 				}
 
@@ -623,13 +661,13 @@
 					position: absolute;
 					width: max-content;
 
-					top: calc(2.5em - 1px);
+					top: calc(2.5em - 2px);
 
 					flex-direction: column;
 					justify-content: flex-start;
 
-					background-color: #121213;
-					border: 1px solid #0d0d0d;
+					background-color: var(--modal-permissions-icon-select);
+					border: 1px solid var(--modal-permissions-icon-select-border);
 					border-radius: .2em 0 .2em .2em;
 
 					right: -1px;
@@ -639,11 +677,11 @@
 
 						&:not(:last-of-type) {
 							border: none;
-							border-bottom: 1px solid #0d0d0d;
+							border-bottom: 1px solid var(--modal-permissions-icon-select-border);
 						}
 
 						&:hover {
-							background-color: #17171a;
+							background-color: var(--modal-permissions-icon-select-hover);
 						}
 					}
 				}
@@ -657,11 +695,11 @@
 			}
 
 			&:hover {
-				background-color: #17171a;
-				border-color: hsla(0, 0%, 20%, 1);
+				background-color: var(--modal-permissions-icon-select-hover);
+				border-color: var(--modal-permissions-icon-select-hover-border);
 
 				.icon-preview {
-					border-color: hsla(0, 0%, 20%, 1);
+					border-color: var(--modal-permissions-icon-select-hover-border);
 				}
 			}
 
@@ -677,7 +715,7 @@
 		&.container-mode-permissions {
 			.container-permission-list {
 				width: 100%;
-				color: #999999;
+				color: var(--text);
 
 				display: flex;
 				flex-direction: column;
@@ -697,9 +735,10 @@
 
 					height: 2em;
 					border: none;
-					border-bottom: 1px solid #1e2025;
+					border-bottom: 1px solid var(--modal-permissions-table-border);
+					background-color: var(--modal-permissions-table-entry-odd);
 
-					color: #535455;
+					color: var(--modal-permissions-table-entry-text);
 
 					@mixin fixed-column($name, $width) {
 						.column-#{$name} {
@@ -717,7 +756,7 @@
 							padding-left: 1em;
 
 							border: none;
-							border-right: 1px solid #1e2025;
+							border-right: 1px solid var(--modal-permissions-table-border);
 
 							overflow: hidden;
 
@@ -743,7 +782,7 @@
 
 						.arrow {
 							cursor: pointer;
-							border-color: #e1e1e1;
+							border-color: var(--modal-permissions-table-entry-active-text);
 						}
 
 						.group-name {
@@ -757,16 +796,16 @@
 
 
 					&.active {
-						color: #e1e1e1;
+						color: var(--modal-permissions-table-entry-active-text);
 					}
 
 					&.group {
-						color: #e1e1e1;
+						color: var(--modal-permissions-table-entry-group-text);
 						font-weight: bold;
 					}
 
 					input {
-						color: #e1e1e1;
+						color: var(--modal-permissions-table-input);
 
 						outline: none;
 						background: transparent;
@@ -782,7 +821,7 @@
 						border-bottom: 2px solid transparent;
 
 						&:focus {
-							border-bottom-color: #3f7dbf;
+							border-bottom-color: var(--modal-permissions-table-input-focus);
 						}
 						@include transition(border-bottom-color $button_hover_animation_time ease-in-out);
 					}
@@ -806,10 +845,11 @@
 
 					.entry {
 						&.even {
-							background-color: #25252a;
+							background-color: var(--modal-permissions-table-entry-even);
 						}
+
 						&:hover {
-							background-color: #343a47;
+							background-color: var(--modal-permissions-table-entry-hover);
 						}
 						/* We cant use this effect here because the odd/even effect would be a bit crazy then */
 						//@include transition(background-color $button_hover_animation_time ease-in-out);
@@ -817,9 +857,9 @@
 				}
 
 				.header {
-					background-color: unset;
+					background-color: var(--modal-permissions-table-header);
+					color: var(--modal-permissions-table-header-text);
 
-					color: #e1e1e1;
 					font-weight: bold;
 
 					.column-granted {
@@ -838,7 +878,7 @@
 			text-align: center;
 			font-size: 2em;
 
-			color: #222226;
+			color: var(--modal-permission-left);
 		}
 	}
 

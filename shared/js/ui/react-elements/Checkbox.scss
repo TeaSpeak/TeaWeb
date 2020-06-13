@@ -1,6 +1,13 @@
 @import "../../../css/static/mixin";
 @import "../../../css/static/properties";
 
+html:root {
+    --checkbox-checkmark: #46c0ec;
+
+    --checkbox-background: #272626;
+    --checkbox-disabled-background: #46c0ec;
+}
+
 .checkbox {
     flex-shrink: 0;
     flex-grow: 0;
@@ -15,7 +22,7 @@
 
     overflow: hidden;
 
-    background-color: #272626;
+    background-color: var(--checkbox-background);
     border-radius: $border_radius_middle;
 
     input {
@@ -37,8 +44,8 @@
         margin-top: .3em;
 
         border: none;
-        border-bottom: .2em solid #46c0ec;
-        border-left: .2em solid #46c0ec;
+        border-bottom: .2em solid var(--checkbox-checkmark);
+        border-left: .2em solid var(--checkbox-checkmark);
 
         transform: rotateY(0deg) rotate(-45deg); /* needs Y at 0 deg to behave properly*/
         @include transition(.4s);
@@ -70,6 +77,6 @@
 label.disabled > .checkbox, .checkbox:disabled, .checkbox.disabled {
     &.checkbox, > .checkbox {
         pointer-events: none!important;
-        background-color: #1a1a1e;
+        background-color: var(--checkbox-disabled-background);
     }
 }

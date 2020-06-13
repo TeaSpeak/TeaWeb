@@ -1,5 +1,11 @@
 @import "../../../css/static/mixin";
 
+html:root {
+    --channel-tree-name-edit-color: black;
+    --channel-tree-name-edit-background: white;
+    --channel-tree-name-edit-border: white;
+}
+
 .clientEntry {
      cursor: pointer;
 
@@ -34,8 +40,9 @@
              width: 100%;
              font-weight: normal;
 
-             color: black;
-             background-color: white;
+             color: var(--channel-tree-name-edit-color);
+             background-color: var(--channel-tree-name-edit-background);
+             border: 1px solid var(--channel-tree-name-edit-border);
 
              overflow-y: hidden;
              overflow-x: hidden;
@@ -87,7 +94,7 @@
          .clientName {
              &:focus {
                  position: absolute;
-                 color: black;
+                 color: var(--channel-tree-name-edit-color);
 
                  padding-top: 1px;
                  padding-bottom: 1px;

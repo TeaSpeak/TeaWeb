@@ -122,7 +122,7 @@ export class RecorderProfile {
             volume: 100,
 
             vad_threshold: {
-                threshold: 50
+                threshold: 25
             },
             vad_type: "threshold",
             vad_push_to_talk: {

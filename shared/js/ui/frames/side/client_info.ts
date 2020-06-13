@@ -237,7 +237,7 @@ export class ClientInfo {
             if(client) {
                 const invalid_groups = [];
                 const groups = client.assignedServerGroupIds().map(group_id => {
-                    const result = this.handle.handle.groups.serverGroup(group_id);
+                    const result = this.handle.handle.groups.findServerGroup(group_id);
                     if(!result)
                         invalid_groups.push(group_id);
                     return result;
@@ -263,7 +263,7 @@ export class ClientInfo {
             container_group.children().detach();
             if(client) {
                 const group_id = client.assignedChannelGroup();
-                let group = this.handle.handle.groups.channelGroup(group_id);
+                let group = this.handle.handle.groups.findChannelGroup(group_id);
                 if(group) {
                     container_group.append(
                         $.spawn("div").addClass("group-container")

@@ -15,7 +15,6 @@ files=(
     "css/static/frame-chat.css"
     "css/static/server-log.css"
     "css/static/scroll.css"
-    "css/static/helptag.css"
     "css/static/hostbanner.css"
     "css/static/htmltags.css"
     "css/static/menu-bar.css"
@@ -38,7 +37,6 @@ files=(
     "css/static/modal-invite.css"
     "css/static/modal-keyselect.css"
     "css/static/modal-permissions.css"
-    "css/static/modal-playlist.css"
     "css/static/modal-poke.css"
     "css/static/modal-query.css"
     "css/static/modal-server.css"
@@ -54,8 +52,6 @@ files=(
     "css/static/ts/icons.css"
     "css/static/ts/icons_em.css"
     "css/static/ts/country.css"
-    "css/static/music/info_plate.css"
-    "css/static/frame/SelectInfo.css"
 )
 
 target_file=`pwd`/../generated/static/base.css

@@ -1,5 +1,16 @@
 @import "mixin";
 
+html:root {
+	--serverinfo-background: #2f2f35;
+	--serverinfo-hostbanner-background: #26222a;
+
+	--serverinfo-group-border: #1f2122;
+	--serverinfo-group-background: #28292b;
+
+	--serverinfo-key: #557edc;
+	--serverinfo-value: #d6d6d7;
+}
+
 .modal-body.modal-server-info {
 	padding: 0!important;
 	width: 55em;
@@ -8,7 +19,7 @@
 	flex-direction: column!important;
 	justify-content: flex-start!important;
 
-	background-color: #2f2f35;
+	background-color: var(--serverinfo-background);
 
 	.container-tooltip {
 		flex-shrink: 0;
@@ -51,8 +62,7 @@
 		.container-hostbanner {
 			border: none;
 			border-radius: 0;
-			//background-color: #261f30;
-			background-color: hsla(265, 10%, 15%, 1);
+			background-color: var(--serverinfo-hostbanner-background);
 		}
 
 		&.hidden {
@@ -77,9 +87,9 @@
 		padding: .5em;
 
 		border-radius: .2em;
-		border: 1px solid #1f2122;
+		border: 1px solid var(--serverinfo-group-border);
 
-		background-color: #28292b;
+		background-color: var(--serverinfo-group-background);
 
 		display: flex;
 		flex-direction: row;
@@ -135,7 +145,7 @@
 					flex-shrink: 0;
 					flex-grow: 0;
 
-					color: #557edc;
+					color: var(--serverinfo-key);
 					text-transform: uppercase;
 					align-self: center;
 
@@ -147,7 +157,7 @@
 				}
 
 				.value {
-					color: #d6d6d7;
+					color: var(--serverinfo-value);
 					align-self: center;
 					white-space: nowrap;
 					overflow: hidden;

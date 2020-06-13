@@ -3447,81 +3447,6 @@
             </div>
         </script>
 
-        <!-- TODO: Delete me! -->
-        <script class="jsrender-template" id="tmpl_ban_create" type="text/html">
-            <div class="bancreate">
-                <div class="frame-container">
-                    <div class="form-group">
-                        <label class="bmd-label-static">{{tr "IP:" /}}</label>
-                        <input class="form-control input-ip" type="text" maxlength="128">
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="bmd-label-static">{{tr "Name:" /}}</label>
-                            <input class="form-control input-name" type="text" maxlength="128">
-                        </div>
-                        <div class="form-group">
-                            <label class="bmd-label-static">{{tr "Interpret IP/Name as:" /}}</label>
-                            <select class="form-control input-name-type">
-                                <option value="wildcard-4">{{tr "Wildcard IPv4" /}}</option>
-                                <option value="wildcard-6">{{tr "Wildcard IPv6" /}}</option>
-                                <option value="fixed" selected>{{tr "Fixed string" /}}</option>
-                                <option value="regex">{{tr "Regular Expression" /}}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label class="bmd-label-static">{{tr "Unique ID:" /}}</label>
-                        <div><input class="form-control input-uid" type="text" maxlength="64"></div>
-                    </div>
-                    <div class="form-group">
-                        <label class="bmd-label-static">{{tr "Hardware ID:" /}}</label>
-                        <input class="form-control input-hwid" type="text" max="64">
-                    </div>
-                    <div class="form-group container-reason">
-                        <label class="bmd-label-static">{{tr "Reason" /}}</label>
-                        <textarea class="form-control input-reason"></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>{{tr "Duration:" /}}</label>
-                            <input type="number" value="1" class="form-control input-time" style="margin-right: 7px"
-                                   min="1">
-                        </div>
-                        <div class="form-group input-time-unit">
-                            <select class="form-control input-time-unit">
-                                <option value="sec">{{tr "seconds"/}}</option>
-                                <option value="min">{{tr "minutes"/}}</option>
-                                <option value="hours">{{tr "hours"/}}</option>
-                                <option value="days">{{tr "days"/}}</option>
-                                <option value="perm">{{tr "permanent"/}}</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="footer">
-                        <div class="switch">
-                            <label>
-                                <input type="checkbox" class="input-global">
-                                {{tr "Use this ban as a global ban" /}}
-                                <div class="help-tip tip-center tip-small">
-                                    <p>
-                                        {{tr "Global bans are bans which apply instance wide.<br>" +
-                                        "This means that (if this rule apply to a victim) cant join <b>any</b> virtualserver!<br>" +
-                                        "Global bans are by default shown to every server admin group,<br>" +
-                                        "but could only be created with query rights"/}}
-                                    </p>
-                                </div>
-                            </label>
-                        </div>
-                        <div class="bmd-form-group">
-                            <button class="btn btn-danger button-close">{{tr "Cancel"/}}</button>
-                            <button class="btn btn-success btn-raised button-success">{{tr "OK"/}}</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </script>
-
         <!-- Music interface -->
         <script class="jsrender-template" id="tmpl_music_frame" type="text/html">
             <!-- First we want to define some variables if not defined yet. -->
@@ -4003,13 +3928,6 @@
                         </div>
 
                         <a>{{tr "Connect directly" /}}</a>
-                        <!--
-                          <div class="help-tip tip-center tip-small">
-                                <p>
-                                    {{tr "Lets the user directly connect to the server and not open the connect modal" /}}
-                                </p>
-                            </div>
-                        -->
                     </label>
                     <label>
                         <div class="checkbox flag-resolved-address">
@@ -4018,13 +3936,6 @@
                         </div>
 
                         <a>{{tr "Use resolved address" /}}</a>
-                        <!--
-                          <div class="help-tip tip-center tip-small">
-                                <p>
-                                    {{tr "Use the resolved server address (IP) instead of the given address" /}}
-                                </p>
-                            </div>
-                        -->
                     </label>
                 </div>
             </div>
@@ -4206,154 +4117,6 @@
                     {{else}}
                     <div title="{{tr 'Playlist isnt use' /}}" class="icon client-delete"></div>
                     {{/if}}
-                </div>
-            </div>
-        </script>
-
-        <script class="jsrender-template" id="tmpl_playlist_edit" type="text/html">
-            <div class="playlist-edit">
-                <div class="general-properties">
-                    <div class="form-group property-owner">
-                        <label>{{tr "Playlist owner:" /}}</label>
-                        <input type="text" class="form-control value" readonly>
-                    </div>
-                    <div class="form-group property-title">
-                        <label>{{tr "Title:" /}}</label>
-                        <input type="text" class="form-control value">
-                    </div>
-                    <div class="form-group property-description">
-                        <label>{{tr "Description:" /}}</label>
-                        <textarea class="form-control value"></textarea>
-                    </div>
-                    <div class="form-group property-type">
-                        <label>{{tr "Type:" /}}</label>
-                        <select class="form-control">
-                            <option value="0">{{tr "Bot bound" /}}</option>
-                            <option value="1">{{tr "Global" /}}</option>
-                        </select>
-                    </div>
-                </div>
-                <x-tab>
-                    <x-entry>
-                        <x-tag>{{tr "Songs" /}}</x-tag>
-                        <x-content>
-                            <div class="container-songs">
-                                <div class="song-list">
-                                    <div class="song-list-header">
-                                        <div class="column column-id">{{tr "ID" /}}</div>
-                                        <div class="column column-url">{{tr "Url" /}}</div>
-                                        <div class="column column-loaded">{{tr "loaded" /}}</div>
-                                        <div class="column column-buttons"></div>
-                                    </div>
-                                    <div class="song-list-entries-container">
-                                        <div class="song-list-entries">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="footer">
-                                    <div class="buttons">
-                                        <button class="btn btn-success button-song-add">{{tr "Add song" /}}</button>
-                                        <button class="btn btn-secondary button-refresh">{{tr "Refresh" /}}</button>
-                                    </div>
-                                    <div class="info-message"></div>
-                                </div>
-                            </div>
-                        </x-content>
-                    </x-entry>
-                    <x-entry>
-                        <x-tag>{{tr "Playback settings"/}}</x-tag>
-                        <x-content>
-                            <div class="playback-properties">
-                                <div class="form-group property-replay-mode">
-                                    <label>{{tr "Replay mode" /}}</label>
-                                    <select class="form-control value">
-                                        <option value="0">{{tr "Normal"/}}</option>
-                                        <option value="1">{{tr "Loop list"/}}</option>
-                                        <option value="2">{{tr "Loop single entry"/}}</option>
-                                        <option value="3">{{tr "Shuffle"/}}</option>
-                                    </select>
-                                </div>
-                                <div class="form-group property-flag-delete-played">
-                                    <div class="switch">
-                                        <label>
-                                            <input type="checkbox">
-                                            {{tr "Delete played song:" /}}
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="form-group property-current-song">
-                                    <label>{{tr "Current replaying song:" /}}</label>
-                                    <input type="text" class="form-control value"/>
-                                </div>
-                                <div class="form-group property-flag-finished">
-                                    <div class="switch">
-                                        <label>
-                                            {{tr "Playlist finished status" /}}
-                                            <input type="checkbox">
-                                            <!-- TODO add info text here -->
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </x-content>
-                    </x-entry>
-                    <x-entry>
-                        <x-tag>{{tr "Permissions" /}}</x-tag>
-                        <x-content>
-                            <div class="container-permissions">
-                                <div class="group_box">
-                                    <div class="header">{{tr "Access/modify powers" /}}</div>
-                                    <div class="content permissions-list">
-                                        <div class="form-group permission" permission="i_playlist_needed_view_power">
-                                            <label>{{tr "View power" /}}</label>
-
-                                            <input type="number" min="0" value="0" class="form-control value">
-                                        </div>
-                                        <div class="form-group permission" permission="i_playlist_needed_modify_power">
-                                            <label>{{tr "Modify" /}}</label>
-                                            <input type="number" min="0" value="0" class="form-control value">
-                                        </div>
-                                        <div class="form-group permission"
-                                             permission="i_playlist_needed_permission_modify_power">
-                                            <label>{{tr "Permission modify" /}}</label>
-                                            <input type="number" min="0" value="0" class="form-control value">
-                                        </div>
-                                        <div class="form-group permission" permission="i_playlist_needed_delete_power">
-                                            <label>{{tr "Delete" /}}</label>
-                                            <input type="number" min="0" value="0" class="form-control value">
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="group_box">
-                                    <div class="header">{{tr "Song management powers" /}}</div>
-                                    <div class="content permissions-list">
-                                        <div class="form-group permission"
-                                             permission="i_playlist_song_needed_add_power">
-                                            <label>{{tr "Song add" /}}</label>
-                                            <input type="number" min="0" value="0" class="form-control value">
-                                        </div>
-                                        <div class="form-group permission"
-                                             permission="i_playlist_song_needed_move_power">
-                                            <label>{{tr "Song reorder" /}}</label>
-                                            <input type="number" min="0" value="0" class="form-control value">
-                                        </div>
-                                        <div class="form-group permission"
-                                             permission="i_playlist_song_needed_remove_power">
-                                            <label>{{tr "Song delete" /}}</label>
-                                            <input type="number" min="0" value="0" class="form-control value">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="container-no-permissions">
-                                <div class="text">You dont have permissions to see playlist permissions!</div>
-                            </div>
-                        </x-content>
-                    </x-entry>
-                </x-tab>
-                <div class="buttons">
-                    <button class="btn btn-success button-save">{{tr "Save" /}}</button>
-                    <button class="btn btn-secondary button-close">{{tr "Close" /}}</button>
                 </div>
             </div>
         </script>
@@ -4809,7 +4572,7 @@
                 <div class="container-logo">
                     <img src="https://teaspeak.de/img/teaspeak_cup_animated.png"/>
                 </div>
-                <div class="copyright">Copyright (c) 2017-2019 TeaSpeak<br>(Markus Hadenfeldt)</div>
+                <div class="copyright">Copyright (c) 2017-2020 TeaSpeak<br>(Markus Hadenfeldt)</div>
                 <div class="versions">
                     {{if client}}
                     <div class="version version-native">

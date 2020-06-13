@@ -1,6 +1,14 @@
 @import "../../../css/static/mixin";
 @import "../../../css/static/properties";
 
+html:root {
+    --progress-bar-background: #242527;
+
+    --progress-bar-filler-normal: #4370a299;
+    --progress-bar-filler-error: #a1000099;
+    --progress-bar-filler-success: #2b854199;
+}
+
 .container {
     position: relative;
 
@@ -13,7 +21,7 @@
 
     overflow: hidden;
 
-    background-color: #242527;
+    background-color: var(--progress-bar-background);
     -webkit-box-shadow: inset 0 0 2px 0 rgba(0, 0, 0, 0.75);
     -moz-box-shadow: inset 0 0 2px 0 rgba(0, 0, 0, 0.75);
     box-shadow: inset 0 0 2px 0 rgba(0, 0, 0, 0.75);
@@ -35,19 +43,19 @@
 
     &.type-normal {
         .filler {
-            background-color: #4370a299;
+            background-color: var(--progress-bar-filler-normal);
         }
     }
 
     &.type-error {
         .filler {
-            background-color: #a1000099;
+            background-color: var(--progress-bar-filler-error);
         }
     }
 
     &.type-success {
         .filler {
-            background-color: #2b854199;
+            background-color: var(--progress-bar-filler-success);
         }
     }
 }

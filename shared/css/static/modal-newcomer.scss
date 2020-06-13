@@ -1,6 +1,11 @@
 @import "mixin";
 @import "properties";
 
+html:root {
+    --modal-newcomer-header-color: hsla(222, 5%, 39%, 1);
+    --modal-newcomer-divider: #313135;
+}
+
 .modal-body.modal-newcomer {
     display: flex!important;
     flex-direction: column!important;
@@ -17,7 +22,7 @@
         flex-shrink: 0;
         flex-grow: 0;
 
-        color: #565656;
+        color: var(--modal-newcommer-header-color);
         padding: .5em .5em .25em;
 
         position: relative;
@@ -40,7 +45,7 @@
 
                 height: 1.25px;
                 //background: linear-gradient(90deg, rgba(49,49,53,1) 80%, rgba(49,49,53,0) 100%);
-                background: rgba(49,49,53,1);
+                background: var(--modal-newcomer-divider);
             }
 
             &.hidden {
@@ -118,23 +123,20 @@
                     padding: .5em;
 
                     .left .body {
-                        // background-color: #19191b;
-                        background-color: hsla(220, 4%, 13%, 1);
+                        background-color: #202122;
                         .overlay {
-                            background-color: hsla(220, 4%, 13%, 1);
-
+                            background-color: #202122;
                         }
+
                         .profile.selected {
-                            background-color: hsla(240, 2%, 8%, 1);
+                            background-color: #141415;
                         }
                     }
                 }
 
-                &.step-identity {
-                }
+                &.step-identity { }
 
-                &.step-microphone {
-                }
+                &.step-microphone { }
 
                 &.hidden {
                     display: none;
@@ -151,7 +153,7 @@
         flex-direction: row;
         justify-content: space-between;
 
-        border-top: 1.25px solid rgba(49,49,53,1);
+        border-top: 1.25px solid var(--modal-newcomer-divider);
         padding: .5em;
     }
 }

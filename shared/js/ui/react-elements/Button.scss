@@ -1,16 +1,31 @@
 @import "../../../css/static/mixin.scss";
 @import "../../../css/static/properties.scss";
 
+html:root {
+    --button-background: rgba(0, 0, 0, 0.5);
+    --button-hover-background: rgba(0, 0, 0, 0.7);
+    --button-disabled-background: rgba(0, 0, 0, 0.27);
+
+    --button-color: #7c7c7c;
+
+    --button-green: #389738;
+    --button-blue: #386896;
+    --button-red: #973838;
+    --button-purple: #5f3586;
+    --button-brown: #965238;
+    --button-yellow: #96903a;
+}
+
 .button {
     cursor: pointer;
 
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--button-background);
 
     border-width: 0;
     border-radius: $border_radius_middle;
     border-style: solid;
 
-    color: #7c7c7c;
+    color: var(--button-color);
 
     height: 2.2em;
     padding: .25em 1em;
@@ -25,41 +40,41 @@
 
     &:disabled {
         box-shadow: none;
-        background-color: rgba(0, 0, 0, 0.27);
+        background-color: var(--button-disabled-background);
 
         &:hover {
-            background-color: rgba(0, 0, 0, 0.27);
+            background-color: var(--button-disabled-background);
         }
     }
 
     &.color-green {
         border-bottom-width: 2px;
-        border-bottom-color: #389738;
+        border-bottom-color: var(--button-green);
     }
 
     &.color-blue, &.color-default {
         border-bottom-width: 2px;
-        border-bottom-color: #386896;
+        border-bottom-color: var(--button-blue);
     }
 
     &.color-red {
         border-bottom-width: 2px;
-        border-bottom-color: #973838;
+        border-bottom-color: var(--button-red);
     }
 
     &.color-purple {
         border-bottom-width: 2px;
-        border-bottom-color: #5f3586;
+        border-bottom-color: var(--button-purple);
     }
 
     &.color-brown {
         border-bottom-width: 2px;
-        border-bottom-color: #965238;
+        border-bottom-color: var(--button-brown);
     }
 
     &.color-yellow {
         border-bottom-width: 2px;
-        border-bottom-color: #96903a;
+        border-bottom-color: var(--button-yellow);
     }
 
     &.type-normal { }
