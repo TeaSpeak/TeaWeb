@@ -10,8 +10,8 @@ import {
     EditorGroupedPermissions,
     PermissionEditor,
     PermissionEditorEvents
-} from "tc-shared/ui/modal/permissionv2/PermissionEditor";
-import {SideBar} from "tc-shared/ui/modal/permissionv2/TabHandler";
+} from "tc-shared/ui/modal/permission/PermissionEditor";
+import {SideBar} from "tc-shared/ui/modal/permission/TabHandler";
 import {Group, GroupTarget, GroupType} from "tc-shared/permission/GroupManager";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {ClientNameInfo, CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";

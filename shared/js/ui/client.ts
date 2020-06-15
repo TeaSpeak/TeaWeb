@@ -27,7 +27,7 @@ import { ClientEntry as ClientEntryView } from "./tree/Client";
 import * as React from "react";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "tc-shared/ui/modal/ModalChangeVolumeNew";
-import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 
 export enum ClientType {
     CLIENT_VOICE,

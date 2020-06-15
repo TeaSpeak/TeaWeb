@@ -5,8 +5,8 @@ import {
     ChannelInfo,
     GroupProperties,
     PermissionModalEvents
-} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
-import {PermissionEditorEvents} from "tc-shared/ui/modal/permissionv2/PermissionEditor";
+} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
+import {PermissionEditorEvents} from "tc-shared/ui/modal/permission/PermissionEditor";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {createInputModal} from "tc-shared/ui/elements/Modal";

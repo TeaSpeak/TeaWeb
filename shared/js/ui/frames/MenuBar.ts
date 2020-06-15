@@ -23,7 +23,7 @@ import * as loader from "tc-loader";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/file/Icons";
-import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 
 export interface HRItem { }
 

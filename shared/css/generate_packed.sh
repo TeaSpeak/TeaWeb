@@ -36,7 +36,6 @@ files=(
     "css/static/modal-newcomer.css"
     "css/static/modal-invite.css"
     "css/static/modal-keyselect.css"
-    "css/static/modal-permissions.css"
     "css/static/modal-poke.css"
     "css/static/modal-query.css"
     "css/static/modal-server.css"

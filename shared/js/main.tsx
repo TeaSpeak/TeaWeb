@@ -34,7 +34,7 @@ import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTrans
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
-import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 import {spawnGroupCreate} from "tc-shared/ui/modal/ModalGroups";
 
 /* required import for init */
