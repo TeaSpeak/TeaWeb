@@ -1,4 +1,15 @@
 # Changelog:
+* **15.06.20**
+    - Recoded the permission editor with react
+    - Fixed sever permission editor display bugs
+    - Recoded the group add editor with react
+    - Added the ability to duplicate groups and copy their permissions
+    - The permission editor now uses by default the highest permission value instead of 1
+    - Added options to enable/disable a whole permission group
+    
+* **14.06.20**
+    - Fixed local icon display element not updating when the icon has been loaded
+    
 * **13.06.20**
     - Started to extract all color values and put them into css variables
     - Fixed a minor issue related to server/channel groups

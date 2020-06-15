@@ -1,15 +1,11 @@
 import * as React from "react";
 
-export class Translatable extends React.Component<{ message: string, children?: never } | { children: string }, { translated: string }> {
+export class Translatable extends React.Component<{ message: string, children?: never } | { children: string }, any> {
     constructor(props) {
         super(props);
-
-        this.state = {
-            translated: /* @tr-ignore */ tr(props.message || props.children)
-        }
     }
 
     render() {
-        return this.state.translated || "";
+        return /* @tr-ignore */ tr(typeof this.props.children === "string" ? this.props.children : (this.props as any).message);
     }
 }

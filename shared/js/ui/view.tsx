@@ -9,7 +9,7 @@ import {Sound} from "tc-shared/sound/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
 import * as server_log from "tc-shared/ui/frames/server_log";
 import {ServerAddress, ServerEntry} from "tc-shared/ui/server";
-import {ChannelEntry, ChannelSubscribeMode} from "tc-shared/ui/channel";
+import {ChannelEntry, ChannelProperties, ChannelSubscribeMode} from "tc-shared/ui/channel";
 import {ClientEntry, LocalClientEntry, MusicClientEntry} from "tc-shared/ui/client";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
@@ -46,7 +46,13 @@ export interface ChannelTreeEvents {
     notify_query_view_state_changed: { queries_shown: boolean },
 
     notify_entry_move_begin: {},
-    notify_entry_move_end: {}
+    notify_entry_move_end: {},
+
+    notify_channel_updated: {
+        channel: ChannelEntry,
+        channelProperties: ChannelProperties,
+        updatedProperties: ChannelProperties
+    }
 }
 
 export class ChannelTreeEntrySelect {
@@ -258,6 +264,19 @@ export class ChannelTree {
 
     tag_tree() : JQuery {
         return this._tag_container;
+    }
+
+    channelsOrdered() : ChannelEntry[] {
+        const result = [];
+
+        const visit = (channel: ChannelEntry) => {
+            result.push(channel);
+            channel.child_channel_head && visit(channel.child_channel_head);
+            channel.channel_next && visit(channel.channel_next);
+        };
+        this.channel_first && visit(this.channel_first);
+
+        return result;
     }
 
     destroy() {

@@ -289,6 +289,9 @@ if (!String.prototype.format) {
     };
 }
 
+if(!Object.values)
+    Object.values = object => Object.keys(object).map(e => object[e]);
+
 function concatenate(resultConstructor, ...arrays) {
     let totalLength = 0;
     for (const arr of arrays) {

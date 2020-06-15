@@ -201,6 +201,14 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             if(typeof event.updated_properties.client_nickname !== "undefined" || typeof event.updated_properties.client_talk_power !== "undefined")
                 this.reorderClientList(true);
         };
+
+        this.events.on("notify_properties_updated", event => {
+            this.channelTree?.events.fire("notify_channel_updated", {
+                channel: this,
+                channelProperties: event.channel_properties,
+                updatedProperties: event.updated_properties
+            });
+        });
     }
 
     destroy() {
@@ -221,6 +229,16 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
 
     channelName(){
         return this.properties.channel_name;
+    }
+
+    channelDepth() {
+        let depth = 0;
+        let parent = this.parent;
+        while(parent) {
+            depth++;
+            parent = parent.parent;
+        }
+        return depth;
     }
 
     formattedChannelName() {

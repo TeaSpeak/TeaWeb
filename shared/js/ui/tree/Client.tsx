@@ -115,7 +115,7 @@ class ClientServerGroupIcons extends ReactComponentBase<ClientServerGroupIconsPr
 
     protected initialize() {
         this.group_updated_callback = (event: GroupEvents["notify_properties_updated"]) => {
-            if(typeof event.updated_properties.iconid !== "undefined" || typeof event.updated_properties.sortid !== "undefined")
+            if(event.updated_properties.indexOf("sort-id") !== -1 || event.updated_properties.indexOf("icon") !== -1)
                 this.forceUpdate();
         };
     }
@@ -170,7 +170,7 @@ class ClientChannelGroupIcon extends ReactComponentBase<ClientChannelGroupIconPr
 
     protected initialize() {
         this.group_updated_callback = (event: GroupEvents["notify_properties_updated"]) => {
-            if(typeof event.updated_properties.iconid !== "undefined" || typeof event.updated_properties.sortid !== "undefined")
+            if(event.updated_properties.indexOf("sort-id") !== -1 || event.updated_properties.indexOf("icon") !== -1)
                 this.forceUpdate();
         };
     }
@@ -254,6 +254,7 @@ interface ClientNameState {
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
 @ReactEventHandler<ClientName>(e => e.props.client.events)
 class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameState> {
+    /* FIXME: Update prefix/suffix if a server/channel group updates! */
     protected initialize() {
         this.state = {} as any;
         this.updateGroups(this.state);

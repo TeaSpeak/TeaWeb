@@ -1319,7 +1319,7 @@ function apply_server_groups(connection: ConnectionHandler, editor: AbstractPerm
                 if(!!text.match(/^[0-9]+$/))
                     return true;
                 try {
-                    return atob(text).length >= 20;
+                    return atob(text).length == 20;
                 } catch(error) {
                     return false;
                 }
@@ -1348,7 +1348,6 @@ function apply_server_groups(connection: ConnectionHandler, editor: AbstractPerm
                     createErrorModal(tr("Failed to add client"), tr("Failed to add client to server group\nClient database id not found")).open();
                     return;
                 }
-
 
                 connection.serverConnection.send_command("servergroupaddclient", {
                     sgid: current_group.id,
@@ -1411,7 +1410,8 @@ function apply_server_groups(connection: ConnectionHandler, editor: AbstractPerm
     }
 }
 
-function spawnGroupAdd(server_group: boolean, permissions: PermissionManager, valid_name: (name: string, group_type: number) => boolean, callback: (group_name: string, group_type: number) => any) {
+/* Attention: This is used by the new permission editor! */
+export function spawnGroupAdd(server_group: boolean, permissions: PermissionManager, valid_name: (name: string, group_type: number) => boolean, callback: (group_name: string, group_type: number) => any) {
     let modal: Modal;
     modal = createModal({
         header: tr("Create a new group"),

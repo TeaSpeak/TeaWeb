@@ -1,0 +1,36 @@
+@import "../../../css/static/mixin";
+@import "../../../css/static/properties";
+
+$separator_thickness: 5px;
+$animation_separator_length: .1s;
+.separator {
+    @include transition(all $animation_separator_length ease-in-out);
+    background: #1e1e1e;
+
+    display: block;
+
+    flex-grow: 0!important;
+    flex-shrink: 0!important;
+
+    &.vertical {
+        height: $separator_thickness;
+        min-height: $separator_thickness!important;
+        max-height: $separator_thickness!important;
+
+        //width: 100%;
+        cursor: row-resize;
+    }
+
+    &.horizontal {
+        width: $separator_thickness;
+        min-width: $separator_thickness!important;
+        max-width: $separator_thickness!important;
+
+        //height: 100%;
+        cursor: col-resize;
+    }
+}
+
+.documentActiveClass {
+    @include user-select(none);
+}

@@ -1,0 +1,139 @@
+@import "../../../css/static/properties";
+@import "../../../css/static/mixin";
+
+/* general switch look */
+.switch {
+    $ball_outer_width: 1.5em; /* 1.5? */
+    $ball_inner_width: .4em;
+
+    $slider_height: .8em;
+    $slider_width: 2em;
+
+    $slider_border_size: .1em;
+
+    position: relative;
+    display: inline-block;
+    outline: none;
+
+    width: $slider_width;
+    height: $slider_height;
+
+    /* "allocate" space for the slider */
+    margin-top: ($ball_outer_width - $slider_height) / 2;
+    margin-bottom: ($ball_outer_width - $slider_height) / 2;
+    margin-left: $ball_outer_width / 2;
+    margin-right: $ball_outer_width / 2;
+
+    /* fix size */
+    flex-shrink: 0;
+    flex-grow: 0;
+
+    input {
+        /* "hide" the actual input node */
+        opacity: 0;
+        width: 0;
+        height: 0;
+        outline: none;
+    }
+
+    .slider {
+        pointer-events: all!important;
+        position: absolute;
+        cursor: pointer;
+        outline: none;
+
+        top: -$slider_border_size;
+        left: -$slider_border_size;
+        right: -$slider_border_size;
+        bottom: -$slider_border_size;
+
+        background-color: #1c1c1c;
+
+        border: $slider_border_size solid #262628;
+        border-radius: 5px;
+
+        &:before {
+            position: absolute;
+            content: "";
+
+            height: $ball_outer_width;
+            width: $ball_outer_width;
+
+            left: - $ball_outer_width / 2;
+            bottom: -($ball_outer_width - $slider_height) / 2;
+
+            background-color: #3d3a3a;
+
+            @include transition(.4s);
+            border-radius: 50%;
+
+            box-shadow: 0 0 .2em 1px rgba(0, 0, 0, 0.27);
+        }
+
+        .dot {
+            position: absolute;
+
+            height: $ball_inner_width;
+            width: $ball_inner_width;
+
+            left: -($ball_inner_width / 2);
+            bottom: $slider_height / 2 - $ball_inner_width / 2;
+
+            background-color: #a5a5a5;
+            box-shadow: 0 0 1em 1px rgba(165, 165, 165, 0.4);
+            border-radius: 50%;
+
+            @include transition(.4s);
+        }
+    }
+
+
+
+    input:focus + .slider {
+    }
+
+    input:checked + .slider {
+        &:before {
+            @include transform(translateX($slider_width));
+        }
+
+        .dot {
+            @include transform(translateX($slider_width));
+            background-color: #46c0ec;
+            box-shadow: 0 0 1em 1px #46c0ec;
+        }
+    }
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+
+
+    .label {
+        margin-left: .25em;
+    }
+
+    &.disabled {
+        .dot {
+            background-color: #808080;
+            box-shadow: 0 0 1em 1px rgba(102, 102, 102, 0.4);
+        }
+
+        input:checked + .slider {
+            .dot {
+                background-color: #138db9;
+                box-shadow: 0 0 1em 1px #138db9;
+            }
+        }
+
+        .slider {
+            background-color: #252424;
+        }
+
+        .slider:before {
+            background-color: #2f2d2d;
+        }
+    }
+}

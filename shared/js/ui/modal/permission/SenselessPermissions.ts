@@ -4,6 +4,8 @@ export const senseless_server_group_permissions: PermissionType[] = [
     PermissionType.B_CHANNEL_GROUP_INHERITANCE_END
 ];
 
+/* TODO: All the needed permissions! */
+
 const filter = (text, ignore_type) => Object.keys(PermissionType)
     .filter(e => e.toLowerCase().substr(ignore_type ? 1 : 0).startsWith(text)).map(e => PermissionType[e]);
 

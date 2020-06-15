@@ -2,33 +2,33 @@
 @import "../../../css/static/properties";
 
 html:root {
-    --input-field-border: #111112;
-    --input-field-background: #121213;
-    --input-field-text: #b3b3b3;
-    --input-field-placeholder: #606060;
+    --boxed-input-field-border: #111112;
+    --boxed-input-field-background: #121213;
+    --boxed-input-field-text: #b3b3b3;
+    --boxed-input-field-placeholder: #606060;
 
-    --input-field-disabled-background: #1a1819;
+    --boxed-input-field-disabled-background: #1a1819;
 
-    --input-field-focus-border: #111112;
-    --input-field-focus-background: #121213;
-    --input-field-focus-text: #b3b3b3;
+    --boxed-input-field-focus-border: #111112;
+    --boxed-input-field-focus-background: #121213;
+    --boxed-input-field-focus-text: #b3b3b3;
 
-    --input-field-invalid-border: #721c1c;
-    --input-field-invalid-background: #180d0d;
-    --input-field-invalid-text: #b3b3b3;
+    --boxed-input-field-invalid-border: #721c1c;
+    --boxed-input-field-invalid-background: #180d0d;
+    --boxed-input-field-invalid-text: #b3b3b3;
 }
 
-.container {
+.containerBoxed {
     border-radius: .2em;
-    border: 1px solid var(--input-field-border);
+    border: 1px solid var(--boxed-input-field-border);
 
-    background-color: var(--input-field-background);
+    background-color: var(--boxed-input-field-background);
 
     display: flex;
     flex-direction: row;
     justify-content: stretch;
 
-    color: var(--input-field-text);
+    color: var(--boxed-input-field-text);
 
     &.size-normal {
         height: 2em;
@@ -43,7 +43,7 @@ html:root {
     }
 
     @include placeholder(&) {
-        color: var(--input-field-placeholder);
+        color: var(--boxed-input-field-placeholder);
     };
 
     .prefix {
@@ -66,18 +66,18 @@ html:root {
     }
 
     &.is-invalid {
-        background-color: var(--input-field-invalid-background);
-        border-color: var(--input-field-invalid-border);
-        color: var(--input-field-invalid-text);
+        background-color: var(--boxed-input-field-invalid-background);
+        border-color: var(--boxed-input-field-invalid-border);
+        color: var(--boxed-input-field-invalid-text);
 
         background-image: unset!important;
     }
 
     &:focus, &:focus-within {
-        background-color: var(--input-field-focus-background);
-        border-color: var(--input-field-focus-border);
+        background-color: var(--boxed-input-field-focus-background);
+        border-color: var(--boxed-input-field-focus-border);
 
-        color: var(--input-field-focus-text);
+        color: var(--boxed-input-field-focus-text);
 
         .prefix {
             width: 0;
@@ -123,7 +123,7 @@ html:root {
     }
 
     &.disabled, &:disabled {
-        background-color: var(--input-field-disabled-background);
+        background-color: var(--boxed-input-field-disabled-background);
     }
 
     &.noRightIcon {
@@ -139,4 +139,136 @@ html:root {
     }
 
     @include transition($button_hover_animation_time ease-in-out);
+}
+
+.containerFlat {
+    position: relative;
+
+    padding-top: 1.75rem; /* the label above (might be floating) */
+    margin-bottom: 1rem; /* for invalid label/help label */
+
+    label {
+        color: #999999;
+
+        top: 1rem;
+        left: 0;
+        font-size: .75rem;
+
+        position: absolute;
+        pointer-events: none;
+        transition: all .3s ease;
+
+        line-height: 1;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        max-width: 100%;
+
+        &.type-floating {
+            will-change: left, top, contents;
+            color: #999999;
+            top: 2.42rem;
+            font-size: 1rem;
+        }
+
+        &.type-static {
+            top: 1rem;
+            font-size: .75rem;
+        }
+
+        @include transition(color $button_hover_animation_time ease-in-out, top $button_hover_animation_time ease-in-out, font-size $button_hover_animation_time ease-in-out);
+    }
+
+    &:focus-within, &.isFilled {
+        label {
+            color: #3c74a2;
+
+            &.type-floating {
+                font-size: .75rem;
+                top: 1rem;
+            }
+        }
+    }
+
+    input, select {
+        display: block;
+
+        height: 2.25em;
+        width: 100%;
+
+        font-size: 1rem;
+        line-height: 1.5;
+
+        color: #cdd1d0;
+
+        background: no-repeat bottom, 50% calc(100% - 1px);
+        background-image: linear-gradient(0deg, #008aff 2px, rgba(0, 150, 136, 0) 0), linear-gradient(0deg, #393939 1px, transparent 0);
+        background-clip: padding-box;
+        background-size: 0 100%, 100% 100%;
+
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+
+        transition: background 0s ease-out;
+        padding: .4375rem 0;
+
+        @include transition(all .15s ease-in-out);
+
+        &:focus {
+            background-size: 100% 100%, 100% 100%;
+            transition-duration: .3s;
+
+            color: #ced3d3;
+            background-color: transparent;
+            outline: 0;
+        }
+
+        option, optgroup {
+            background: #121213;
+        }
+    }
+
+    .invalidFeedback {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        margin-top: .25rem;
+        font-size: 80%;
+        color: #f44336;
+
+        @include transition(opacity .25s ease-in-out);
+    }
+
+    &.isInvalid {
+        input, select {
+            background-image: linear-gradient(0deg, #d50000 2px,rgba(213,0,0,0) 0),linear-gradient(0deg,rgba(241,1,1,.61) 1px,transparent 0);
+        }
+
+        .invalidFeedback {
+            opacity: 1;
+        }
+
+        label {
+            color: #f44336!important;
+        }
+    }
+
+
+    .help {
+        position: absolute;
+        opacity: 0;
+        width: 100%;
+        margin-top: .25rem;
+
+        font-size: .75em;
+
+        @include transition(opacity .25s ease-in-out);
+    }
+
+    input:focus-within ~ .help, select:focus-within ~ .help {
+        opacity: 1;
+    }
 }

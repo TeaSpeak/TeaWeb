@@ -1,0 +1,193 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+html:root {
+    --modal-permissions-header-text: #e1e1e1;
+    --modal-permissions-header-background: #19191b;
+    --modal-permissions-header-hover: #4e4e4e;
+    --modal-permissions-header-selected: #0073d4;
+
+    --modal-permission-right: #303036;
+    --modal-permission-left: #222226;
+
+    --modal-permissions-entry-hover: #28282c;
+    --modal-permissions-entry-selected: #111111;
+    --modal-permissions-current-group: #101012;
+
+    --modal-permissions-buttons-background: #0f0f0f;
+    --modal-permissions-buttons-hover: #262626;
+    --modal-permissions-buttons-disabled: #1b1b1b;
+
+    --modal-permissions-seperator: #1e1e1e; /* the seperator for the "enter a unique id" and "client info" part */
+    --modal-permissions-container-seperator: #222224; /* the seperator between left and right */
+
+    --modal-permissions-icon-select: #121213;
+    --modal-permissions-icon-select-border: #0d0d0d;
+    --modal-permissions-icon-select-hover: #17171a;
+    --modal-permissions-icon-select-hover-border: #333333;
+
+    --modal-permission-no-permnissions:#18171c;
+    --modal-permissions-table-border: #1e2025;
+
+    --modal-permissions-table-header: #303036;
+    --modal-permissions-table-row-odd: #303036;
+    --modal-permissions-table-row-even: #25252a;
+    --modal-permissions-table-row-hover: #343a47;
+
+    --modal-permissions-table-header-text: #e1e1e1;
+    --modal-permissions-table-row-text: #535455;
+    --modal-permissions-table-entry-active-text: #e1e1e1;
+    --modal-permissions-table-entry-group-text: #e1e1e1;
+
+    --modal-permissions-table-input: #e1e1e1;
+    --modal-permissions-table-input-focus: #3f7dbf;
+}
+
+.container {
+    @include user-select(none);
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    width: 1000em;
+    min-width: 20em;
+    max-width: 100%;
+
+    flex-shrink: 1;
+    flex-grow: 1;
+
+
+    .contextContainer {
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        &.left {
+            min-width: 10em;
+            min-height: 10em;
+            overflow: hidden;
+            background-color: var(--modal-permission-left);
+        }
+
+        &.right {
+            min-width: 30em;
+            background-color: var(--modal-permission-right);
+        }
+    }
+
+    .header {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        height: 4em;
+        background-color: var(--modal-permissions-header-background);
+        color: var(--modal-permissions-header-text);
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        .entry {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            text-align: center;
+
+            height: 100%;
+
+            padding-left: .5em;
+            padding-right: .5em;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+
+        &.tabSelector {
+            min-width: 8em;
+
+            .entry {
+                position: relative;
+                overflow: hidden;
+
+                cursor: pointer;
+                padding-bottom: 2px;
+
+                a {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+
+                &:hover {
+                    border: none;
+                    border-bottom: 2px solid var(--modal-permissions-header-hover);
+
+                    padding-bottom: 0;
+
+                    &:before {
+                        position: absolute;
+                        content: '';
+
+                        margin-right: -10em;
+                        margin-left: -10em;
+                        margin-bottom: -.2em;
+                        bottom: 0;
+
+                        height: 100%;
+                        width: calc(100% + 20em);
+
+                        box-shadow: inset 0px -1.2em 3em -20px var(--modal-permissions-header-hover);
+                    }
+                }
+
+                &.selected {
+                    border: none;
+                    border-bottom: 2px solid var(--modal-permissions-header-selected);
+
+                    padding-bottom: 0;
+
+                    &:before {
+                        position: absolute;
+                        content: '';
+
+                        margin-right: -10em;
+                        margin-left: -10em;
+                        margin-bottom: -.2em;
+                        bottom: 0;
+
+                        height: 100%;
+                        width: calc(100% + 20em);
+
+                        box-shadow: inset 0px -1.2em 3em -20px var(--modal-permissions-header-selected);
+                    }
+                }
+            }
+        }
+
+        &.activeTabInfo {
+            min-width: 6em;
+            font-weight: bold;
+
+            .entry {
+                overflow: hidden;
+
+                a {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    text-overflow: ellipsis;
+                }
+            }
+
+            > * {
+                font-size: 1.5em;
+            }
+        }
+    }
+
+    .body {
+        flex-grow: 1;
+        flex-shrink: 1;
+    }
+}

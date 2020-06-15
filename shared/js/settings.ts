@@ -238,6 +238,10 @@ export class Settings extends StaticSettings {
     static readonly KEY_CONNECT_HISTORY: SettingsKey<string> = {
         key: 'connect_history'
     };
+    static readonly KEY_CONNECT_NO_SINGLE_INSTANCE: SettingsKey<boolean> = {
+        key: 'connect_no_single_instance',
+        default_value: false
+    };
 
     static readonly KEY_CONNECT_NO_DNSPROXY: SettingsKey<boolean> = {
         key: 'connect_no_dnsproxy',
