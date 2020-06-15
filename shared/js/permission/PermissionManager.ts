@@ -283,7 +283,7 @@ export class PermissionManager extends AbstractCommandHandler {
             case "notifyclientpermlist":
                 this.onClientPermList(command.arguments);
                 return true;
-            case "notifyclientchannelpermlist":
+            case "notifychannelclientpermlist":
                 this.onChannelClientPermList(command.arguments);
                 return true;
             case "notifyplaylistpermlist":
