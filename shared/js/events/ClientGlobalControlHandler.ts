@@ -12,7 +12,7 @@ import {openBanList} from "tc-shared/ui/modal/ModalBanList";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
-import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {

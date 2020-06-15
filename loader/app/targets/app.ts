@@ -184,7 +184,6 @@ const loader_style = {
             "css/static/modal-poke.css",
             "css/static/modal-server.css",
             "css/static/modal-keyselect.css",
-            "css/static/modal-permissions.css",
             "css/static/modal-group-assignment.css",
             "css/static/overlay-image-preview.css",
             "css/static/context_menu.css",
