@@ -556,7 +556,7 @@ class ServerClientList extends React.Component<{ connection: ConnectionHandler, 
         if(event.id !== this.state.selectedGroupId)
             return;
 
-        this.clients = event.clients.slice(0);
+        this.clients = (event.clients || []).slice(0);
         this.setState({
             state: event.status === "success" ? "normal" : event.status === "error" ? "error" : event.status === "no-permissions" ? "no-permissions" : "error",
             error: event.error || tr("unknown error")
