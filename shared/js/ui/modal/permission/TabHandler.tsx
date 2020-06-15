@@ -167,7 +167,7 @@ class GroupsList extends React.Component<{ connection: ConnectionHandler, events
                     image={"img/icon_group_permission_copy.svg"}
                     alt={this.props.target === "server" ? tr("Copy server group permissions") : tr("Copy channel group permissions")}
                     disabled={this.state.disablePermissionCopy}
-                    onClick={() => () => this.props.events.fire("action_group_copy_permissions", { target: this.props.target, sourceGroup: this.state.selectedGroupId })}
+                    onClick={() => this.props.events.fire("action_group_copy_permissions", { target: this.props.target, sourceGroup: this.state.selectedGroupId })}
                 />
                 <GroupsButton
                     image={"img/icon_group_delete.svg"}
