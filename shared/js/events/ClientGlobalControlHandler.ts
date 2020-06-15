@@ -1,21 +1,18 @@
 import {Registry} from "tc-shared/events";
 import {ClientGlobalControlEvents} from "tc-shared/events/GlobalEvents";
-import {control_bar_instance, ControlBarEvents} from "tc-shared/ui/frames/control-bar";
-import {manager, Sound} from "tc-shared/sound/Sounds";
+import {Sound} from "tc-shared/sound/Sounds";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {default_recorder} from "tc-shared/voice/RecorderProfile";
-import {Settings, settings} from "tc-shared/settings";
-import {add_server_to_bookmarks} from "tc-shared/bookmarks";
+import {settings} from "tc-shared/settings";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {spawnQueryCreate} from "tc-shared/ui/modal/ModalQuery";
 import {openBanList} from "tc-shared/ui/modal/ModalBanList";
-import {spawnPermissionEdit} from "tc-shared/ui/modal/permission/ModalPermissionEdit";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -114,7 +111,7 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 }
 
                 if(connection_handler)
-                    spawnPermissionEdit(connection_handler).open();
+                    spawnPermissionEditorModal(connection_handler);
                 else
                     createErrorModal(tr("You have to be connected"), tr("You have to be connected!")).open();
                 break;

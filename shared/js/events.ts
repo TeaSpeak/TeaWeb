@@ -44,9 +44,9 @@ export class Registry<Events> {
     enable_warn_unhandled_events() { this.warn_unhandled_events = true; }
     disable_warn_unhandled_events() { this.warn_unhandled_events = false; }
 
-    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
-    on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
-    on(events, handler) {
+    on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
+    on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
+    on(events, handler) : () => void {
         if(!Array.isArray(events))
             events = [events];
 
@@ -57,12 +57,13 @@ export class Registry<Events> {
             const handlers = this.handler[event] || (this.handler[event] = []);
             handlers.push(handler);
         }
+        return () => this.off(events, handler);
     }
 
     /* one */
-    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void);
-    one(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void);
-    one(events, handler) {
+    one<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
+    one(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
+    one(events, handler) : () => void {
         if(!Array.isArray(events))
             events = [events];
 
@@ -72,6 +73,7 @@ export class Registry<Events> {
             handler[this.registry_uuid] = { singleshot: true };
             handlers.push(handler);
         }
+        return () => this.off(events, handler);
     }
 
     off<T extends keyof Events>(handler: (event?) => void);

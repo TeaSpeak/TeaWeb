@@ -44,12 +44,12 @@ export interface GroupManagerEvents {
     }
 }
 
+export type GroupProperty = "name" | "icon" | "sort-id" | "save-db" | "name-mode";
 export interface GroupEvents {
     notify_group_deleted: { },
 
     notify_properties_updated: {
-        updated_properties: {[Key in keyof GroupProperties]: GroupProperties[Key]};
-        group_properties: GroupProperties
+        updated_properties: GroupProperty[];
     },
 
     notify_needed_powers_updated: { }
@@ -81,25 +81,41 @@ export class Group {
         this.name = name;
     }
 
-    updateProperties(properties: {key: string, value: string}[]) {
-        let updates = {};
-        for(const { key, value } of properties) {
-            if(!JSON.map_field_to(this.properties, value, key))
-                continue; /* no updates */
+    updatePropertiesFromGroupList(data: any) {
+        const updates: GroupProperty[] = [];
 
-            if(key === "iconid")
-                this.properties.iconid = this.properties.iconid >>> 0;
-
-            updates[key] = this.properties[key];
+        if(this.name !== data["name"]) {
+            this.name = data["name"];
+            updates.push("name");
         }
 
-        if(Object.keys(updates).length === 0)
-            return;
+        /* icon */
+        let value = parseInt(data["iconid"]) >>> 0;
+        if(value !== this.properties.iconid) {
+            this.properties.iconid = value;
+            updates.push("icon");
+        }
 
-        this.events.fire("notify_properties_updated", {
-            group_properties: this.properties,
-            updated_properties: updates as any
-        });
+        value = parseInt(data["sortid"]);
+        if(value !== this.properties.sortid) {
+            this.properties.sortid = value;
+            updates.push("sort-id");
+        }
+
+        let flag = parseInt(data["savedb"]) >= 1;
+        if(flag !== this.properties.savedb) {
+            this.properties.savedb = flag;
+            updates.push("save-db");
+        }
+
+        value = parseInt(data["namemode"]);
+        if(value !== this.properties.namemode) {
+            this.properties.namemode = value;
+            updates.push("name-mode");
+        }
+
+        if(updates.length > 0)
+            this.events.fire("notify_properties_updated", { updated_properties: updates });
     }
 }
 
@@ -240,16 +256,10 @@ export class GroupManager extends AbstractCommandHandler {
                 group = deleteGroups.splice(groupIndex, 1)[0];
             }
 
-            const property_blacklist = [
-                "sgid", "cgid", "type", "name",
-
-                "n_member_removep", "n_member_addp", "n_modifyp"
-            ];
-
             group.requiredMemberRemovePower = parseInt(groupData["n_member_removep"]);
             group.requiredMemberAddPower = parseInt(groupData["n_member_addp"]);
             group.requiredModifyPower = parseInt(groupData["n_modifyp"]);
-            group.updateProperties(Object.keys(groupData).filter(e => property_blacklist.findIndex(a => a === e) === -1).map(e => { return { key: e, value: groupData[e] } }));
+            group.updatePropertiesFromGroupList(groupData);
             group.events.fire("notify_needed_powers_updated");
         }
 

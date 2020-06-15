@@ -15,7 +15,6 @@ import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {voice} from "tc-shared/connection/ConnectionBase";
 import VoiceClient = voice.VoiceClient;
-import {spawnPermissionEdit} from "tc-shared/ui/modal/permission/ModalPermissionEdit";
 import {createServerGroupAssignmentModal} from "tc-shared/ui/modal/ModalGroupAssignment";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
@@ -28,6 +27,7 @@ import { ClientEntry as ClientEntryView } from "./tree/Client";
 import * as React from "react";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "tc-shared/ui/modal/ModalChangeVolumeNew";
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -455,13 +455,13 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-permission_client",
                     name: tr("Client permissions"),
-                    callback: () => spawnPermissionEdit(this.channelTree.client, "clp", {unique_id: this.clientUid()}).open()
+                    callback: () => spawnPermissionEditorModal(this.channelTree.client, "client", { clientDatabaseId: this.properties.client_database_id })
                 },
                 {
                     type: contextmenu.MenuEntryType.ENTRY,
                     icon_class: "client-permission_client",
                     name: tr("Client channel permissions"),
-                    callback: () => spawnPermissionEdit(this.channelTree.client, "clchp", {unique_id: this.clientUid(), channel_id: this._channel ? this._channel.channelId : undefined }).open()
+                    callback: () => spawnPermissionEditorModal(this.channelTree.client, "client-channel", { clientDatabaseId: this.properties.client_database_id })
                 }
             ]
         }];

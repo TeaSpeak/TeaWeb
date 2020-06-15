@@ -7,10 +7,9 @@ import {
     boorkmak_connect,
     DirectoryBookmark
 } from "tc-shared/bookmarks";
-import {ConnectionHandler, DisconnectReason} from "tc-shared/ConnectionHandler";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Sound} from "tc-shared/sound/Sounds";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
-import {spawnPermissionEdit} from "tc-shared/ui/modal/permission/ModalPermissionEdit";
 import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {PermissionType} from "tc-shared/permission/PermissionType";
@@ -24,6 +23,7 @@ import * as loader from "tc-loader";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/file/Icons";
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
 
 export interface HRItem { }
 
@@ -390,35 +390,35 @@ export function initialize() {
         item = menu.append_item(tr("Server Groups"));
         item.icon("client-permission_server_groups");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection(), "sg").open();
+            spawnPermissionEditorModal(server_connections.active_connection(), "groups-server");
         });
         _state_updater["permission.sg"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Client Permissions"));
         item.icon("client-permission_client");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection(), "clp").open();
+            spawnPermissionEditorModal(server_connections.active_connection(), "client");
         });
         _state_updater["permission.clp"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Channel Client Permissions"));
         item.icon("client-permission_client");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection(), "clchp").open();
+            spawnPermissionEditorModal(server_connections.active_connection(), "client-channel");
         });
         _state_updater["permission.chclp"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Channel Groups"));
         item.icon("client-permission_channel");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection(), "cg").open();
+            spawnPermissionEditorModal(server_connections.active_connection(), "groups-channel");
         });
         _state_updater["permission.cg"] = { item: item, conditions: [condition_connected]};
 
         item = menu.append_item(tr("Channel Permissions"));
         item.icon("client-permission_channel");
         item.click(() => {
-            spawnPermissionEdit(server_connections.active_connection(), "chp").open();
+            spawnPermissionEditorModal(server_connections.active_connection(), "channel");
         });
         _state_updater["permission.cp"] = { item: item, conditions: [condition_connected]};
 

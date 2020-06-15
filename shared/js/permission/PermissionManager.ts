@@ -6,6 +6,7 @@ import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
+import {Registry} from "tc-shared/events";
 
 export class PermissionInfo {
     name: string;
@@ -34,7 +35,7 @@ export class GroupedPermissions {
 
 export class PermissionValue {
     readonly type: PermissionInfo;
-    value: number;
+    value: number | undefined; /* undefined if no permission is given */
     flag_skip: boolean;
     flag_negate: boolean;
     granted_value: number;
@@ -61,8 +62,13 @@ export class PermissionValue {
     hasValue() : boolean {
         return typeof(this.value) !== "undefined" && this.value != -2;
     }
+
     hasGrant() : boolean {
         return typeof(this.granted_value) !== "undefined" && this.granted_value != -2;
+    }
+
+    valueOr(fallback: number) {
+        return this.hasValue() ? this.value : fallback;
     }
 }
 
@@ -126,6 +132,10 @@ export namespace find {
     }
 }
 
+export interface PermissionManagerEvents {
+    client_permissions_changed: {}
+}
+
 export type RequestLists =
     "requests_channel_permissions" |
     "requests_client_permissions" |
@@ -134,6 +144,8 @@ export type RequestLists =
     "requests_playlist_client_permissions";
 
 export class PermissionManager extends AbstractCommandHandler {
+    readonly events = new Registry<PermissionManagerEvents>();
+
     readonly handle: ConnectionHandler;
 
     permissionList: PermissionInfo[] = [];
@@ -397,6 +409,8 @@ export class PermissionManager extends AbstractCommandHandler {
             for(const listener of this.needed_permission_change_listener[e.type.name] || [])
                 listener();
         }
+
+        this.events.fire("client_permissions_changed");
     }
 
     register_needed_permission(key: PermissionType, listener: () => any) {

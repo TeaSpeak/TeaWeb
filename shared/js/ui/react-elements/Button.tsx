@@ -27,6 +27,7 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
     render() {
         if(this.props.hidden)
             return null;
+
         return (
             <button
                 className={this.classList(
@@ -35,7 +36,7 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
                     cssStyle["type-" + this.props.type] || cssStyle["type-normal"],
                     this.props.className
                 )}
-                disabled={this.state.disabled || this.props.disabled}
+                disabled={typeof this.state.disabled === "boolean" ? this.state.disabled : this.props.disabled}
                 onClick={this.props.onClick}
             >
                 {this.props.children}

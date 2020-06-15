@@ -39,12 +39,12 @@ export class LocalIconRenderer extends React.Component<LoadedIconRenderer, {}> {
     render() {
         const icon = this.props.icon;
         if(!icon || icon.status === "empty" || icon.status === "destroyed")
-            return <div className={"icon-container icon-empty"} title={this.props.title} />;
+            return <div key={"empty"} className={"icon-container icon-empty"} title={this.props.title} />;
         else if(icon.status === "loaded") {
             if(icon.icon_id >= 0 && icon.icon_id <= 1000) {
                 if(icon.icon_id === 0)
-                    return <div className={"icon-container icon-empty"} title={this.props.title} />;
-                return <div className={"icon_em client-group_" + icon.icon_id} />;
+                    return <div key={"loaded-empty"} className={"icon-container icon-empty"} title={this.props.title} />;
+                return <div key={"loaded"} className={"icon_em client-group_" + icon.icon_id} />;
             }
             return <div key={"icon"} className={"icon-container"}><img style={{ maxWidth: "100%", maxHeight: "100%" }} src={icon.loaded_url} alt={this.props.title || ("icon " + icon.icon_id)} /></div>;
         } else if(icon.status === "loading")
@@ -59,5 +59,10 @@ export class LocalIconRenderer extends React.Component<LoadedIconRenderer, {}> {
 
     componentWillUnmount(): void {
         this.props.icon?.status_change_callbacks.remove(this.callback_state_update);
+    }
+
+    componentDidUpdate(prevProps: Readonly<LoadedIconRenderer>, prevState: Readonly<{}>, snapshot?: any): void {
+        prevProps.icon?.status_change_callbacks.remove(this.callback_state_update);
+        this.props.icon?.status_change_callbacks.push(this.callback_state_update);
     }
 }

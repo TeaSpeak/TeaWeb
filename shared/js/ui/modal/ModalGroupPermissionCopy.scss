@@ -1,0 +1,41 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    padding: 0 1em 1em;
+
+    width: 40em;
+    min-width: 10em;
+    max-width: 100%;
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+    }
+
+    select {
+        .hiddenOption {
+            display: none;
+        }
+    }
+
+    .sourceGroup, .targetGroup {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        min-width: 5em;
+        width: 10em;
+    }
+
+    .sourceGroup {
+        margin-right: 1em;
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}

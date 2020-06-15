@@ -375,12 +375,15 @@ export class CommandHelper extends AbstractCommandHandler {
 
                     try {
                         const result: ServerGroupClient[] = [];
-                        for(const entry of command.arguments)
+                        for(const entry of command.arguments) {
+                            if(!('cldbid' in entry))
+                                continue;
                             result.push({
                                 client_database_id: parseInt(entry["cldbid"]),
                                 client_nickname: entry["client_nickname"],
                                 client_unique_identifier: entry["client_unique_identifier"]
                             });
+                        }
                         resolve(result);
                     } catch (error) {
                         log.error(LogCategory.NETWORKING, tr("Failed to parse server group client list: %o"), error);

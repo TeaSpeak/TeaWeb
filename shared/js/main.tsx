@@ -34,6 +34,8 @@ import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTrans
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
+import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permissionv2/ModalPermissionEditor";
+import {spawnGroupCreate} from "tc-shared/ui/modal/ModalGroups";
 
 /* required import for init */
 require("./proto").initialize();
@@ -496,7 +498,8 @@ function main() {
         modal.open();
     }
      */
-
+    //setTimeout(() => spawnPermissionEditorModal(server_connections.active_connection()), 3000);
+    //setTimeout(() => spawnGroupCreate(server_connections.active_connection(), "server"), 3000);
 
     if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
         const modal = openModalNewcomer();
@@ -547,7 +550,7 @@ const task_connect_handler: loader.Task = {
                 }
             };
 
-            if(chandler) {
+            if(chandler && !settings.static(Settings.KEY_CONNECT_NO_SINGLE_INSTANCE)) {
                 try {
                     await chandler.post_connect_request(connect_data, () => new Promise<boolean>((resolve, reject) => {
                         spawnYesNo(tr("Another TeaWeb instance is already running"), tra("Another TeaWeb instance is already running.{:br:}Would you like to connect there?"), response => {

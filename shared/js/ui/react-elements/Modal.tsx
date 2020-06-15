@@ -170,6 +170,10 @@ class ModalImpl extends React.PureComponent<{ controller: ModalController  }, { 
     }
 }
 
-export function spawnReactModal<ModalClass extends Modal, T>(modalClass: new (T) => ModalClass, properties?: T) : ModalController<ModalClass> {
-    return new ModalController(new modalClass(properties));
+export function spawnReactModal<ModalClass extends Modal, A1>(modalClass: new (..._: [A1]) => ModalClass, arg1: A1) : ModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends Modal, A1, A2>(modalClass: new (..._: [A1, A2]) => ModalClass, arg1: A1, arg2: A2) : ModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends Modal, A1, A2, A3>(modalClass: new (..._: [A1, A2, A3]) => ModalClass, arg1: A1, arg2: A2, arg3: A3) : ModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends Modal, A1, A2, A3, A4>(modalClass: new (..._: [A1, A2, A3, A4]) => ModalClass, arg1: A1, arg2: A2, arg3: A3, arg4: A4) : ModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends Modal>(modalClass: new (..._: any[]) => ModalClass, ...args: any[]) : ModalController<ModalClass> {
+    return new ModalController(new modalClass(...args));
 }

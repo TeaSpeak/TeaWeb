@@ -1,0 +1,57 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    padding: 0 1em 1em;
+
+    width: 35em;
+    min-width: 10em;
+    max-width: 100%;
+
+    .row {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+    }
+
+    select {
+        .hiddenOption {
+            display: none;
+        }
+    }
+
+    .groupType, .groupSource {
+        flex-grow: 1;
+        flex-shrink: 1;
+        min-width: 6em;
+    }
+
+    .groupType {
+        margin-right: 1em;
+
+        flex-grow: 0;
+        width: 12em;
+    }
+    .groupSource {}
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+@media all and (max-width: 30em){
+    .container {
+        .row {
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .groupType, .groupSource {
+            width: 100%;
+        }
+    }
+}

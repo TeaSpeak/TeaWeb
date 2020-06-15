@@ -70,8 +70,7 @@
     "webpack": "^4.42.1",
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^3.3.11",
-    "worker-plugin": "^4.0.2",
-    "tsd": "latest"
+    "worker-plugin": "^4.0.2"
   },
   "repository": {
     "type": "git",
