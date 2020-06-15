@@ -200,6 +200,7 @@ export class FlatInputField extends React.Component<FlatInputFieldProperties, Fl
 
     setValue(value: string | undefined) {
         this.refInput.current.value = typeof value === "undefined" ? "" : value;
+        this.setState({ filled: !!value });
     }
 
     inputElement() : HTMLInputElement | undefined {
