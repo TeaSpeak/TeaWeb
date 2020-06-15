@@ -416,7 +416,7 @@ const PermissionEntryRow = (props: {
                 refValueB.current?.setState({ disabled: false, checked: props.value.value >= 1 });
                 refSkip.current?.setState({ disabled: false, checked: props.value.flagSkip });
                 refNegate.current?.setState({ disabled: false, checked: props.value.flagNegate });
-                refValueI.current && (refValueI.current.value = props.value.value.toString());
+                refValueI.current && (refValueI.current.value = props.value.value?.toString());
 
                 setValue(props.value.value);
                 setFlagSkip(props.value.flagSkip);
@@ -429,7 +429,7 @@ const PermissionEntryRow = (props: {
                 refGranted.current && (refGranted.current.value = result.newValue.toString());
             } else {
                 setGranted(props.value.granted);
-                refGranted.current && (refGranted.current.value = props.value.granted.toString());
+                refGranted.current && (refGranted.current.value = props.value.granted?.toString());
             }
         }
     });
