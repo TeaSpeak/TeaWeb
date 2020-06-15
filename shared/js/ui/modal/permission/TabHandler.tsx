@@ -909,19 +909,22 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
         }
     });
 
-    props.events.reactUse("query_client_info", event => {
-        if(event.client !== clientIdentifier)
-            return;
-
+    const resetInfoFields = (placeholder?: string) => {
         refNickname.current?.setValue(undefined);
         refUniqueIdentifier.current?.setValue(undefined);
         refDatabaseId.current?.setValue(undefined);
 
-        refInput.current?.setState({ disabled: true });
-        refNickname.current?.setState({ placeholder: tr("loading...") });
-        refUniqueIdentifier.current?.setState({ placeholder: tr("loading...") });
-        refDatabaseId.current?.setState({ placeholder: tr("loading...") });
+        refNickname.current?.setState({ placeholder: placeholder });
+        refUniqueIdentifier.current?.setState({ placeholder: placeholder });
+        refDatabaseId.current?.setState({ placeholder: placeholder });
+    };
 
+    props.events.reactUse("query_client_info", event => {
+        if(event.client !== clientIdentifier)
+            return;
+
+        refInput.current?.setState({ disabled: true });
+        resetInfoFields(tr("loading..."));
         props.events.fire("action_set_permission_editor_subject", { mode: props.tabTarget, clientDatabaseId: 0 });
     });
 
@@ -963,9 +966,7 @@ const ClientSelect = (props: { events: Registry<PermissionModalEvents>, tabTarge
             props.events.fire_async("query_client_info", { client: event.id });
         } else {
             refInput.current?.setValue(undefined);
-            refNickname.current?.setState({ placeholder: undefined });
-            refUniqueIdentifier.current?.setState({ placeholder: undefined });
-            refDatabaseId.current?.setState({ placeholder: undefined });
+            resetInfoFields(undefined);
             props.events.fire("action_set_permission_editor_subject", { mode: props.tabTarget, clientDatabaseId: 0 });
         }
     });
