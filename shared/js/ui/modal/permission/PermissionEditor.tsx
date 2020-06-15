@@ -1192,9 +1192,9 @@ interface PermissionEditorState {
 export class PermissionEditor extends React.Component<PermissionEditorProperties, PermissionEditorState> {
     render() {
         return [
-            <MenuBar events={this.props.events} connection={this.props.connection} />,
-            <PermissionTable events={this.props.events} />,
-            <div className={cssStyle.containerFooter}>
+            <MenuBar key={"menu-bar"} events={this.props.events} connection={this.props.connection} />,
+            <PermissionTable key={"table"} events={this.props.events} />,
+            <div key={"footer"} className={cssStyle.containerFooter}>
                 <RefreshButton events={this.props.events} />
             </div>
         ]
