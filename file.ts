@@ -585,7 +585,8 @@ namespace watcher {
             return cp.spawn(cmd, args, {
                 cwd: __dirname,
                 stdio: "pipe",
-                detached: true
+                detached: true,
+                env: Object.assign({ NODE_ENV: "development" }, process.env)
             });
     }
 
