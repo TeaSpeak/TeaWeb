@@ -207,7 +207,7 @@ class FileTransferModal extends Modal {
     }
 
     title(): string {
-        return "File Browser";
+        return tr("File Browser");
     }
 
     renderBody() {
