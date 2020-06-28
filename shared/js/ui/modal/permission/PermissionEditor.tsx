@@ -274,6 +274,7 @@ const PermissionEntryRow = (props: {
     const [ flagSkip, setFlagSkip ] = useState(props.value.flagSkip);
 
     const [ granted, setGranted ] = useState(props.value.granted);
+    const [ forceGrantedUpdate, setForceGrantedUpdate ] = useState(false);
     const [ grantedEditing, setGrantedEditing ] = useState(false);
     const [ grantedApplying, setGrantedApplying ] = useState(false);
 
@@ -346,15 +347,17 @@ const PermissionEntryRow = (props: {
                     if(typeof granted === "undefined")
                         return;
 
+                    setForceGrantedUpdate(true);
                     props.events.fire("action_remove_permissions", { permissions: [{ name: props.permission, mode: "grant" }] });
                 } else {
                     const numberValue = parseInt(newValue);
                     if(isNaN(numberValue)) return;
-                    if(numberValue === granted) {
+                    if(numberValue === granted && !forceGrantedUpdate) {
                         /* no change */
                         return;
                     }
 
+                    setForceGrantedUpdate(true);
                     props.events.fire("action_set_permissions", { permissions: [{ name: props.permission, mode: "grant", value: numberValue }]});
                 }
             }} onChange={() => {}} onKeyPress={e => e.key === "Enter" && e.currentTarget.blur()} />;
@@ -368,6 +371,7 @@ const PermissionEntryRow = (props: {
         if(event.target === "grant") {
             setGranted(event.defaultValue);
             setGrantedEditing(true);
+            setForceGrantedUpdate(true);
         } else {
             if(isBoolPermission && typeof value === "undefined") {
                 setValue(event.defaultValue >= 1 ? 1 : 0);
