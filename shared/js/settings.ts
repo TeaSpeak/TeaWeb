@@ -1,5 +1,3 @@
-//Used by CertAccept popup
-
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {LogCategory} from "tc-shared/log";
 import * as loader from "tc-loader";
@@ -392,6 +390,12 @@ export class Settings extends StaticSettings {
     static readonly FN_PROFILE_RECORD: (name: string) => SettingsKey<any> = name => {
         return {
             key: 'profile_record' + name
+        }
+    };
+
+    static readonly FN_CHANNEL_CHAT_READ: (id: number) => SettingsKey<number> = id => {
+        return {
+            key: 'channel_chat_read_' + id
         }
     };
 

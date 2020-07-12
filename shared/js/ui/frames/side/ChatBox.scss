@@ -1,0 +1,210 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    flex-shrink: 0;
+    flex-grow: 0;
+
+    .chatbox {
+        min-height: 2em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        padding-left: .25em;
+        padding-right: .25em;
+    }
+}
+
+
+.containerEmojis {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+
+    margin-right: 5px;
+    width: 2em;
+
+    position: relative;
+    box-sizing: content-box;
+
+    .button {
+        padding: 2px;
+
+        cursor: pointer;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+
+        border-radius: .25em;
+
+        &:hover {
+            background-color: #454545;
+        }
+        @include transition(background-color $button_hover_animation_time ease-in-out);
+
+        width: 1.5em;
+        height: 1.5em;
+
+        margin-bottom: .2em;
+        align-self: center;
+
+        > img {
+            height: 100%;
+            width: 100%;
+        }
+    }
+
+    .picker {
+        position: absolute;
+        bottom: 100%;
+        align-self: center;
+        
+        span, button {
+            cursor: pointer;
+        }
+    }
+
+    :global(.lsx-emojipicker-appender) {
+        position: relative;
+
+        width: calc(1.5em - 4px);
+        height: calc(1.5em - 4px);
+
+        .lsx-emojipicker-container {
+            &:after {
+                right: calc(0.75em + 2px) !important
+            }
+
+            .lsx-emojipicker-tabs {
+                height: 38px;
+
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+
+                li {
+                    height: 36px;
+                    width: 36px;
+
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-around;
+
+                    img {
+                        margin: 0;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.containerInput {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    min-height: 1.5em;
+
+    align-self: center;
+    box-sizing: content-box;
+
+    width: 100%;
+    background-color: #464646;
+    border: 2px solid #353535; /* background color (like no border) */
+
+    overflow: hidden;
+    border-radius: 5px;
+
+    .textarea {
+        @include user-select(text);
+
+        flex-shrink: 1;
+        flex-grow: 0;
+
+        width: 100%;
+        resize: none;
+
+        min-height: 1.5em;
+        max-height: 6em;
+
+        overflow: auto;
+
+        background-color: transparent;
+
+        padding-left: 5px;
+        padding-right: 5px;
+        margin: 0;
+
+        border: none;
+        outline: none;
+
+        color: #a9a9a9;
+
+        @include chat-scrollbar-vertical();
+
+        &:empty::before {
+            content: attr(placeholder);
+            color: #5e5e5e;
+        }
+
+        &:empty:focus::before {
+            content: "";
+        }
+    }
+
+    &.disabled {
+        .textarea {
+            background-color: #3d3d3d;
+            border-width: 0;
+
+            &:empty::before {
+                color: #4d4d4d;
+            }
+        }
+
+        pointer-events: none;
+    }
+
+    @include placeholder(textarea) {
+        color: #363535;
+        font-style: oblique;
+    }
+
+    &:hover {
+        border-color: #474747;
+    }
+
+    &:focus-within {
+        border-color: #585858;
+    }
+
+    @include transition(border-color $button_hover_animation_time ease-in-out);
+}
+
+.containerHelp {
+    flex-shrink: 0;
+    flex-grow: 0;
+
+    min-height: unset;
+    height: initial;
+
+    color: #555555;
+    font-size: .8em;
+    text-align: right;
+    margin: -3px 2px 2px 2.5em;
+
+    @include text-dotdotdot();
+    @include transition($button_hover_animation_time ease-in-out);
+
+    max-height: 2em; /* for a smooth transition */
+    &.hidden {
+        max-height: 0;
+    }
+}

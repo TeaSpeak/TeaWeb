@@ -26,14 +26,14 @@ file=$(find "$PACKAGES_DIRECTORY" -maxdepth 1 -name "TeaWeb-release*.zip" -print
 }
 #TeaSpeak-Travis-Web
 # ssh -oStrictHostKeyChecking=no $h TeaSpeak-Travis-Web@dev.web.teaspeak.de
-ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@dev.web.teaspeak.de rm "tmp-upload/*.zip" # Cleanup the old files
+ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@web.teaspeak.dev rm "tmp-upload/*.zip" # Cleanup the old files
 _exit_code=$?
 [[ $_exit_code -ne 0 ]] && {
     echo "Failed to delete the old .zip files ($_exit_code)"
 }
 
 filename="TeaWeb-Release-$(git rev-parse --short HEAD).zip"
-sftp -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@dev.web.teaspeak.de << EOF
+sftp -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@web.teaspeak.dev << EOF
     put $file tmp-upload/$filename
 EOF
 _exit_code=$?
@@ -41,5 +41,5 @@ _exit_code=$?
     echo "Failed to upload the .zip file ($_exit_code)"
     exit 1
 }
-ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@dev.web.teaspeak.de "./unpack.sh tmp-upload/$filename"
+ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@web.teaspeak.dev "./unpack.sh tmp-upload/$filename"
 exit $?

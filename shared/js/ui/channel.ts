@@ -355,7 +355,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         if(!singleSelect) return;
 
         if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
-            this.channelTree.client.side_bar.channel_conversations().set_current_channel(this.channelId);
+            this.channelTree.client.side_bar.channel_conversations().setSelectedConversation(this.channelId);
             this.channelTree.client.side_bar.show_channel_conversations();
         }
     }
@@ -419,7 +419,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 icon_class: "client-channel_switch",
                 name: bold(tr("Join text channel")),
                 callback: () => {
-                    this.channelTree.client.side_bar.channel_conversations().set_current_channel(this.getChannelId());
+                    this.channelTree.client.side_bar.channel_conversations().setSelectedConversation(this.getChannelId());
                     this.channelTree.client.side_bar.show_channel_conversations();
                 },
                 visible: !settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)
@@ -595,20 +595,13 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 this.channelTree.moveChannel(this, order, this.parent);
             } else if(key === "channel_icon_id") {
                 this.properties.channel_icon_id = variable.value as any >>> 0; /* unsigned 32 bit number! */
-            }
-            else if(key == "channel_description") {
+            } else if(key == "channel_description") {
                 this._cached_channel_description = undefined;
                 if(this._cached_channel_description_promise_resolve)
                     this._cached_channel_description_promise_resolve(value);
                 this._cached_channel_description_promise = undefined;
                 this._cached_channel_description_promise_resolve = undefined;
                 this._cached_channel_description_promise_reject = undefined;
-            }
-            if(key == "channel_flag_conversation_private") {
-                const conversations = this.channelTree.client.side_bar.channel_conversations();
-                const conversation = conversations.conversation(this.channelId, false);
-                if(conversation)
-                    conversation.set_flag_private(this.properties.channel_flag_conversation_private);
             }
         }
         /* devel-block(log-channel-property-updates) */

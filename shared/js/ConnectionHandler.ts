@@ -59,13 +59,13 @@ export enum ConnectionState {
     UNCONNECTED, /* no connection is currenting running */
     CONNECTING, /* we try to establish a connection to the target server */
     INITIALISING, /* we're setting up the connection encryption */
-    AUTHENTICATING, /* we're authenticating ourself so we get a unique ID */
+    AUTHENTICATING, /* we're authenticating our self so we get a unique ID */
     CONNECTED, /* we're connected to the server. Server init has been done, may not everything is initialized */
     DISCONNECTING/* we're curently disconnecting from the server and awaiting disconnect acknowledge */
 }
 
 export namespace ConnectionState {
-    export function socket_connected(state: ConnectionState) {
+    export function socketConnected(state: ConnectionState) {
         switch (state) {
             case ConnectionState.CONNECTED:
             case ConnectionState.AUTHENTICATING:
@@ -74,6 +74,10 @@ export namespace ConnectionState {
             default:
                 return false;
         }
+    }
+
+    export function fullyConnected(state: ConnectionState) {
+        return state === ConnectionState.CONNECTED;
     }
 }
 
@@ -173,18 +177,17 @@ export class ConnectionHandler {
 
         this.settings = new ServerSettings();
 
-        this.log = new ServerLog(this);
-        this.channelTree = new ChannelTree(this);
-        this.side_bar = new Frame(this);
-        this.sound = new SoundManager(this);
-        this.hostbanner = new Hostbanner(this);
-
         this.serverConnection = connection.spawn_server_connection(this);
         this.serverConnection.onconnectionstatechanged = this.on_connection_state_changed.bind(this);
 
+        this.channelTree = new ChannelTree(this);
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
-        this.side_bar.channel_conversations().initialize_needed_listener();
+
+        this.log = new ServerLog(this);
+        this.side_bar = new Frame(this);
+        this.sound = new SoundManager(this);
+        this.hostbanner = new Hostbanner(this);
 
         this.groups = new GroupManager(this);
         this._local_client = new LocalClientEntry(this);
@@ -641,7 +644,6 @@ export class ConnectionHandler {
             this.serverConnection.disconnect();
 
         this.side_bar.private_conversations().clear_client_ids();
-        this.side_bar.channel_conversations().set_current_channel(0);
         this.hostbanner.update();
 
         if(auto_reconnect) {

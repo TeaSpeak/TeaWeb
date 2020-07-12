@@ -22,11 +22,14 @@ export abstract class AbstractCommandHandler {
     abstract handle_command(command: ServerCommand) : boolean;
 }
 
+export type ExplicitCommandHandler = (command: ServerCommand, consumed: boolean) => void | boolean;
 export abstract class AbstractCommandHandlerBoss {
     readonly connection: AbstractServerConnection;
     protected command_handlers: AbstractCommandHandler[] = [];
     /* TODO: Timeout */
     protected single_command_handler: SingleCommandHandler[] = [];
+
+    protected explicitHandlers: {[key: string]:ExplicitCommandHandler[]} = {};
 
     protected constructor(connection: AbstractServerConnection) {
         this.connection = connection;
@@ -35,6 +38,21 @@ export abstract class AbstractCommandHandlerBoss {
     destroy() {
         this.command_handlers = undefined;
         this.single_command_handler = undefined;
+    }
+
+    register_explicit_handler(command: string, callback: ExplicitCommandHandler) {
+        this.explicitHandlers[command] = this.explicitHandlers[command] || [];
+        this.explicitHandlers[command].push(callback);
+
+        return () => this.explicitHandlers[command].remove(callback);
+    }
+
+    unregister_explicit_handler(command: string, callback: ExplicitCommandHandler) {
+        if(!this.explicitHandlers[command])
+            return false;
+
+        this.explicitHandlers[command].remove(callback);
+        return true;
     }
 
     register_handler(handler: AbstractCommandHandler) {
@@ -77,9 +95,20 @@ export abstract class AbstractCommandHandlerBoss {
         for(const handler of this.command_handlers) {
             try {
                 if(!flag_consumed || handler.ignore_consumed)
-                    flag_consumed = flag_consumed || handler.handle_command(command);
+                    flag_consumed = handler.handle_command(command) || flag_consumed;
             } catch(error) {
                 console.error(tr("Failed to invoke command handler. Invocation results in an exception: %o"), error);
+            }
+        }
+
+        const explHandlers = this.explicitHandlers[command.command];
+        if(Array.isArray(explHandlers)) {
+            for(const handler of explHandlers) {
+                try {
+                    flag_consumed = handler(command, flag_consumed) || flag_consumed;
+                } catch(error) {
+                    console.error(tr("Failed to invoke command handler. Invocation results in an exception: %o"), error);
+                }
             }
         }
 

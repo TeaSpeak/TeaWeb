@@ -8,7 +8,7 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 import {PrivateConverations} from "tc-shared/ui/frames/side/private_conversations";
 import {ClientInfo} from "tc-shared/ui/frames/side/client_info";
 import {MusicInfo} from "tc-shared/ui/frames/side/music_info";
-import {ConversationManager} from "tc-shared/ui/frames/side/conversations";
+import {ConversationManager} from "tc-shared/ui/frames/side/ConversationManager";
 
 declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
@@ -145,7 +145,7 @@ export class InfoFrame {
 
     update_channel_text() {
         const channel_tree = this.handle.handle.connected ? this.handle.handle.channelTree : undefined;
-        const current_channel_id = channel_tree ? this.handle.channel_conversations().current_channel() : 0;
+        const current_channel_id = channel_tree ? this.handle.channel_conversations().selectedConversation() : 0;
         const channel = channel_tree ? channel_tree.findChannel(current_channel_id) : undefined;
         this._channel_text = channel;
 
@@ -292,7 +292,7 @@ export class Frame {
         this._content_type = FrameContent.NONE;
         this._info_frame = new InfoFrame(this);
         this._conversations = new PrivateConverations(this);
-        this._channel_conversations = new ConversationManager(this);
+        this._channel_conversations = new ConversationManager(handle);
         this._client_info = new ClientInfo(this);
         this._music_info = new MusicInfo(this);
 
@@ -322,8 +322,8 @@ export class Frame {
         this._music_info && this._music_info.destroy();
         this._music_info = undefined;
 
-        this._channel_conversations && this._channel_conversations.destroy();
-        this._channel_conversations = undefined;
+        //this._channel_conversations && this._channel_conversations.destroy();
+        //this._channel_conversations = undefined;
 
         this._container_info && this._container_info.remove();
         this._container_info = undefined;
@@ -378,8 +378,9 @@ export class Frame {
 
         this._clear();
         this._content_type = FrameContent.CHANNEL_CHAT;
-        this._container_chat.append(this._channel_conversations.html_tag());
-        this._channel_conversations.on_show();
+        this._container_chat.append(this._channel_conversations.htmlTag);
+        this._channel_conversations.handlePanelShow();
+
         this._info_frame.set_mode(InfoFrameMode.CHANNEL_CHAT);
     }
 

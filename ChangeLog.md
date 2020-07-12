@@ -1,4 +1,11 @@
 # Changelog:
+* **XX.XX.20**
+    - Rewrote the channel conversation UI
+      - Several bug fixes like the scrollbar 
+      - Updated the channel history view mode
+      - Improved chat box behaviour
+      - Automatically crawling all channels on server join for new messages (requires TeaSpeak 1.4.16-b2 or higher)
+      
 * **15.06.20**
     - Recoded the permission editor with react
     - Fixed sever permission editor display bugs

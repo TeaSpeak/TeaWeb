@@ -68,6 +68,7 @@ export function spawnAvatarList(client: ConnectionHandler) {
         tag_avatar_id.val(avatar_id);
         tag_image_bytes.val(size);
 
+        /* FIXME!
         container_avatar.empty().append(client.fileManager.avatars.generate_tag(avatar_id, undefined, {
             callback_image: image => {
                 tag_image_width.val(image[0].naturalWidth + 'px');
@@ -89,6 +90,7 @@ export function spawnAvatarList(client: ConnectionHandler) {
                 };
             }
         }));
+         */
 
         callback_delete = () => {
             spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this avatar?"), result => {

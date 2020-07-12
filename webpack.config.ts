@@ -167,7 +167,7 @@ export const config = async (target: "web" | "client") => { return {
         ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js', ".scss"],
+        extensions: ['.tsx', '.ts', '.js', ".scss", ".css"],
         alias: { },
     },
     externals: [

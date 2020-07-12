@@ -19,7 +19,6 @@ import {bbcode_chat, formatMessage} from "tc-shared/ui/frames/chat";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnPoke} from "tc-shared/ui/modal/ModalPoke";
 import {PrivateConversationState} from "tc-shared/ui/frames/side/private_conversations";
-import {Conversation} from "tc-shared/ui/frames/side/conversations";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
 
@@ -72,8 +71,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         this["notifychannelsubscribed"] = this.handleNotifyChannelSubscribed;
         this["notifychannelunsubscribed"] = this.handleNotifyChannelUnsubscribed;
 
-        this["notifyconversationhistory"] = this.handleNotifyConversationHistory;
-        this["notifyconversationmessagedelete"] = this.handleNotifyConversationMessageDelete;
+        //this["notifyconversationhistory"] = this.handleNotifyConversationHistory;
+        //this["notifyconversationmessagedelete"] = this.handleNotifyConversationMessageDelete;
 
         this["notifymusicstatusupdate"] = this.handleNotifyMusicStatusUpdate;
         this["notifymusicplayersongchange"] = this.handleMusicPlayerSongChange;
@@ -191,7 +190,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         json = json[0]; //Only one bulk
 
-        this.connection.client.side_bar.channel_conversations().reset();
         this.connection.client.initializeLocalClient(parseInt(json["aclid"]), json["acn"]);
 
         let updates: {
@@ -362,7 +360,9 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     }
 
 
-    handleCommandChannelListFinished(json) {
+    handleCommandChannelListFinished() {
+        this.connection.client.channelTree.events.fire_async("notify_channel_list_received");
+
         if(this.batch_update_finished_timeout) {
             clearTimeout(this.batch_update_finished_timeout);
             this.batch_update_finished_timeout = 0;
@@ -384,7 +384,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         log.info(LogCategory.NETWORKING, tr("Got %d channel deletions"), json.length);
         for(let index = 0; index < json.length; index++) {
-            conversations.delete_conversation(parseInt(json[index]["cid"]));
+            conversations.destroyConversation(parseInt(json[index]["cid"]));
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
                 log.error(LogCategory.NETWORKING, tr("Invalid channel onDelete (Unknown channel)"));
@@ -400,7 +400,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         log.info(LogCategory.NETWORKING, tr("Got %d channel hides"), json.length);
         for(let index = 0; index < json.length; index++) {
-            conversations.delete_conversation(parseInt(json[index]["cid"]));
+            conversations.destroyConversation(parseInt(json[index]["cid"]));
             let channel = tree.findChannel(json[index]["cid"]);
             if(!channel) {
                 log.error(LogCategory.NETWORKING, tr("Invalid channel on hide (Unknown channel)"));
@@ -516,7 +516,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 this.connection_handler.update_voice_status();
                 this.connection_handler.side_bar.info_frame().update_channel_talk();
                 const conversations = this.connection.client.side_bar.channel_conversations();
-                conversations.set_current_channel(client.currentChannel().channelId);
+                conversations.setSelectedConversation(client.currentChannel().channelId);
             }
         }
     }
@@ -654,18 +654,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
             const side_bar = this.connection_handler.side_bar;
             side_bar.info_frame().update_channel_talk();
-
-            const conversation_to = side_bar.channel_conversations().conversation(channel_to.channelId, false);
-            if(conversation_to)
-                conversation_to.update_private_state();
-
-            if(channel_from) {
-                const conversation_from = side_bar.channel_conversations().conversation(channel_from.channelId, false);
-                if(conversation_from)
-                    conversation_from.update_private_state();
-            }
-
-            side_bar.channel_conversations().update_chat_box();
         }
 
         const own_channel = this.connection.client.getClient().currentChannel();
@@ -821,7 +809,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
             const own_channel_id = this.connection.client.getClient().currentChannel().channelId;
             const channel_id = typeof(json["cid"]) !== "undefined" ? parseInt(json["cid"]) : own_channel_id;
-            const channel = this.connection_handler.channelTree.findChannel(channel_id) || this.connection_handler.getClient().currentChannel();
 
             if(json["invokerid"] == this.connection.client.getClientId())
                 this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
@@ -829,18 +816,20 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
             }
 
+            if(!(invoker instanceof LocalClientEntry))
+                this.connection_handler.channelTree.findChannel(channel_id)?.setUnread(true);
+
             const conversations = this.connection_handler.side_bar.channel_conversations();
-            const conversation = conversations.conversation(channel_id);
-            conversation.register_new_message({
+            conversations.findOrCreateConversation(channel_id).handleIncomingMessage({
                 sender_database_id: invoker ? invoker.properties.client_database_id : 0,
                 sender_name: json["invokername"],
                 sender_unique_id: json["invokeruid"],
 
                 timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
-                message: json["msg"]
-            });
-            if(conversation.is_unread() && channel)
-                channel.setUnread(true);
+                message: json["msg"],
+
+                unique_id: Date.now() + " - " + Math.random()
+            }, !(invoker instanceof LocalClientEntry));
         } else if(mode == 3) {
             this.connection_handler.log.log(server_log.Type.GLOBAL_MESSAGE, {
                 message: json["msg"],
@@ -853,16 +842,20 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
             const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
             const conversations = this.connection_handler.side_bar.channel_conversations();
-            const conversation = conversations.conversation(0);
-            conversation.register_new_message({
+
+            if(!(invoker instanceof LocalClientEntry))
+                this.connection_handler.channelTree.server.setUnread(true);
+
+            conversations.findOrCreateConversation(0).handleIncomingMessage({
                 sender_database_id: invoker ? invoker.properties.client_database_id : 0,
                 sender_name: json["invokername"],
                 sender_unique_id: json["invokeruid"],
 
                 timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
-                message: json["msg"]
-            });
-            this.connection_handler.channelTree.server.setUnread(conversation.is_unread());
+                message: json["msg"],
+
+                unique_id: Date.now() + " - " + Math.random()
+            }, !(invoker instanceof LocalClientEntry));
         }
     }
 
@@ -1048,43 +1041,21 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         }
     }
 
-    handleNotifyConversationHistory(json: any[]) {
-        const conversations = this.connection.client.side_bar.channel_conversations();
-        const conversation = conversations.conversation(parseInt(json[0]["cid"]));
-        if(!conversation) {
-            log.warn(LogCategory.NETWORKING, tr("Received conversation history for invalid or unknown conversation (%o)"), json[0]["cid"]);
-            return;
-        }
-
-        for(const entry of json) {
-            conversation.register_new_message({
-                message: entry["msg"],
-                sender_unique_id: entry["sender_unique_id"],
-                sender_name: entry["sender_name"],
-                timestamp: parseInt(entry["timestamp"]),
-                sender_database_id: parseInt(entry["sender_database_id"])
-            }, false);
-        }
-
-        /* now update the boxes */
-        /* No update needed because the command which triggers this notify should update the chat box on success
-        conversation.fix_scroll(true);
-        conversation.handle.update_chat_box();
-        */
-    }
-
+    /*
     handleNotifyConversationMessageDelete(json: any[]) {
         let conversation: Conversation;
         const conversations = this.connection.client.side_bar.channel_conversations();
         for(const entry of json) {
             if(typeof(entry["cid"]) !== "undefined")
                 conversation = conversations.conversation(parseInt(entry["cid"]), false);
+
             if(!conversation)
                 continue;
 
             conversation.delete_messages(parseInt(entry["timestamp_begin"]), parseInt(entry["timestamp_end"]), parseInt(entry["cldbid"]), parseInt(entry["limit"]));
         }
     }
+    */
 
     handleNotifyMusicStatusUpdate(json: any[]) {
         json = json[0];

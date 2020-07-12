@@ -6,7 +6,14 @@ import * as loader from "tc-loader";
 import * as image_preview from "./ui/frames/image_preview"
 import * as DOMPurify from "dompurify";
 
-declare const xbbcode;
+import { parse as parseBBCode } from "vendor/xbbcode/parser";
+
+import ReactRenderer from "vendor/xbbcode/renderer/react";
+import HTMLRenderer from "vendor/xbbcode/renderer/html";
+
+const rendererReact = new ReactRenderer();
+const rendererHTML = new HTMLRenderer();
+
 export namespace bbcode {
     const sanitizer_escaped = (key: string) => "[-- sescaped: " + key + " --]";
     const sanitizer_escaped_regex = /\[-- sescaped: ([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}) --]/;
@@ -56,7 +63,7 @@ export namespace bbcode {
             }
         }
 
-        const result = xbbcode.parse(message, {
+        const result = parseBBCode(message, {
             tag_whitelist: [
                 "b", "big",
                 "i", "italic",
@@ -81,7 +88,7 @@ export namespace bbcode {
                 "img"
             ]
         });
-        let html = result.build_html();
+        let html = result.map(e => rendererHTML.render(e)).join("");
         if(typeof(window.twemoji) !== "undefined" && settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES))
             html = twemoji.parse(html);
 
@@ -164,7 +171,7 @@ export namespace bbcode {
                 icon_class: "client-copy"
             })
         });
-        parent.css("cursor", "pointer").on('click', event => image_preview.preview_image(proxy_url, url));
+        parent.css("cursor", "pointer").on('click', () => image_preview.preview_image(proxy_url, url));
     }
 
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
@@ -216,6 +223,8 @@ export namespace bbcode {
                     }
                 });
 
+            const element: HTMLElement;
+            element.onended
             const load_callback = guid();
             /* the image parse & displayer */
             xbbcode.register.register_parser({

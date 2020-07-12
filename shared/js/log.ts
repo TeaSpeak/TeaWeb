@@ -1,4 +1,3 @@
-//Used by CertAccept popup
 import {settings} from "tc-shared/settings";
 import * as loader from "tc-loader";
 
@@ -41,7 +40,7 @@ let category_mapping = new Map<number, string>([
     [LogCategory.NETWORKING,                "Network      "],
     [LogCategory.VOICE,                     "Voice        "],
     [LogCategory.AUDIO,                     "Audio        "],
-    [LogCategory.CHANNEL,                   "Chat         "],
+    [LogCategory.CHAT,                      "Chat         "],
     [LogCategory.I18N,                      "I18N         "],
     [LogCategory.IDENTITIES,                "Identities   "],
     [LogCategory.IPC,                       "IPC          "],

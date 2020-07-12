@@ -86,6 +86,9 @@ export class ImageCache {
         if(!window.caches)
             throw "Missing caches!";
 
+        if(this._cache_category)
+            return;
+
         this._cache_category = await caches.open(this.cache_name);
     }
 

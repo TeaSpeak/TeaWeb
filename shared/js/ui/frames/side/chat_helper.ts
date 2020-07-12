@@ -2,7 +2,8 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
 
-declare const xbbcode;
+const escapeBBCode = (text: string) => text.replace(/([\[\]])/g, "\\$1");
+
 export namespace helpers {
     //https://regex101.com/r/YQbfcX/2
     //static readonly URL_REGEX = /^(?<hostname>([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/(?<path>(?:[^\s?]+)?)(?:\?(?<query>\S+))?)?$/gm;
@@ -142,8 +143,8 @@ test
 ```
                  */
 
-                "code": (renderer: Renderer, token: RemarkToken) => "[i-code]" + xbbcode.escape(token.content) + "[/i-code]",
-                "fence": (renderer: Renderer, token: RemarkToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + xbbcode.escape(token.content) + "[/code]",
+                "code": (renderer: Renderer, token: RemarkToken) => "[i-code]" + escapeBBCode(token.content) + "[/i-code]",
+                "fence": (renderer: Renderer, token: RemarkToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + escapeBBCode(token.content) + "[/code]",
 
                 "heading_open": (renderer: Renderer, token: RemarkToken) => "[size=" + (9 - Math.min(4, token.hLevel)) + "]",
                 "heading_close": (renderer: Renderer, token: RemarkToken) => "[/size][hr]",
@@ -151,8 +152,8 @@ test
                 "hr": () => "[hr]",
 
                 //> Experience real-time editing with Remarkable!
-                //blockquote_open,
-                //blockquote_close
+                "blockquote_open": () => "[quote]",
+                "blockquote_close": () => "[/quote]"
             };
 
             private _options;
@@ -205,7 +206,7 @@ test
 
             maybe_escape_bb(text: string) {
                 if(this._options.escape_bb)
-                    return xbbcode.escape(text);
+                    return escapeBBCode(text);
                 return text;
             }
         }
@@ -249,7 +250,7 @@ test
             });
 
         if(escape_bb)
-            message = xbbcode.escape(message);
+            message = escapeBBCode(message);
         return process_url ? process_urls(message) : message;
     }
 

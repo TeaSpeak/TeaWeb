@@ -52,7 +52,9 @@ export interface ChannelTreeEvents {
         channel: ChannelEntry,
         channelProperties: ChannelProperties,
         updatedProperties: ChannelProperties
-    }
+    },
+
+    notify_channel_list_received: {}
 }
 
 export class ChannelTreeEntrySelect {
