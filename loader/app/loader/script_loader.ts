@@ -1,5 +1,5 @@
 import {config, critical_error, SourcePath} from "./loader";
-import {load_parallel, LoadSyntaxError, ParallelOptions, script_name} from "./utils";
+import {load_parallel, LoadCallback, LoadSyntaxError, ParallelOptions, script_name} from "./utils";
 
 let _script_promises: {[key: string]: Promise<void>} = {};
 
@@ -88,13 +88,14 @@ export async function load(path: SourcePath, options: Options) : Promise<void> {
                 throw "Missing dependency " + depend;
             await _script_promises[depend];
         }
+
         await load_script_url(source.url + (options.cache_tag || ""));
     }
 }
 
 type MultipleOptions = Options | ParallelOptions;
-export async function load_multiple(paths: SourcePath[], options: MultipleOptions) : Promise<void> {
-    const result = await load_parallel<SourcePath>(paths, e => load(e, options), e => script_name(e, false), options);
+export async function load_multiple(paths: SourcePath[], options: MultipleOptions, callback?: LoadCallback<SourcePath>) : Promise<void> {
+    const result = await load_parallel<SourcePath>(paths, e => load(e, options), e => script_name(e, false), options, callback);
     if(result.failed.length > 0) {
         if(config.error) {
             console.error("Failed to load the following scripts:");

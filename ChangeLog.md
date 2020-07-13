@@ -1,4 +1,8 @@
 # Changelog:
+* **12.07.20**
+    - Made the loader compatible with ES5 to support older browsers
+    - Updated the loader animation
+
 * **15.06.20**
     - Recoded the permission editor with react
     - Fixed sever permission editor display bugs

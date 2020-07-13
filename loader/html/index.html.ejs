@@ -1,0 +1,111 @@
+<%
+/* given on compile time */
+var build_target;
+var initial_script;
+var initial_css;
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, min-zoom=1, max-zoom: 1, user-scalable=no">
+        <meta name="description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
+        <meta name="keywords" content="TeaSpeak, TeaWeb, TeaSpeak-Web,Web client TeaSpeak, веб клієнт TeaSpeak, TSDNS, багатомовність, мультимовність, теми, функціонал"/>
+
+        <meta name="og:description" content="The TeaSpeak Web client is a in the browser running client for the VoIP communication software TeaSpeak." />
+        <meta name="og:url" content="https://web.teaspeak.de/">
+        <%# TODO: Put in an appropirate image <meta name="og:image" content="https://www.whatsapp.com/img/whatsapp-promo.png"> %>
+
+        <%# Using an absolute path here since the manifest.json works only with such. %>
+        <link rel="manifest" href="/manifest.json">
+
+    <% if(build_target === "client") { %>
+        <title>TeaClient</title>
+        <meta name='og:title' content='TeaClient'>
+    <% } else { %>
+        <title>TeaSpeak-Web</title>
+        <meta name='og:title' content='TeaSpeak-Web'>
+        <link rel='shortcut icon' href='img/favicon/teacup.png' type='image/x-icon'>
+        <%# <link rel="apple-touch-icon" sizes="194x194" href="/apple-touch-icon.png" type="image/png"> %>
+    <% } %>
+
+        <x-properties id="properties" style="display: none">
+            <%#
+                We don't need to put any properties down here.
+                But this tag is here to not brick the settings class.
+                But it will be removed quite soonly as soon this class has been fixed
+            %>
+        </x-properties>
+
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="format-detection" content="telephone=no">
+
+        <!-- Global site tag (gtag.js) - Google Analytics -->
+        <script defer async src="https://www.googletagmanager.com/gtag/js?id=UA-113151733-4"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+
+            gtag('js', new Date());
+            gtag('config', 'UA-113151733-4');
+        </script>
+
+        <%# We're preloading the PNG file by default since most browser have APNG support %>
+        <link rel="preload" as="image" href="img/loader/initial-sequence.png">
+        <link rel="preload" as="image" href="img/loader/bowl.png">
+        <%# We don't preload the bowl since it's only a div background %>
+        <link rel="preload" as="image" href="img/loader/text.png">
+
+        <%- initial_css %>
+    </head>
+    <body>
+        <!-- No javascript error -->
+        <noscript>
+            <div id="overlay-no-js">
+                <div class="container">
+                    <img src="img/script.svg" height="128px" alt="no script" >
+                    <h1>Please enable JavaScript</h1>
+                    <h3>TeaSpeak web could not run without it!</h3>
+                    <h3>Its like you, without coffee</h3>
+                </div>
+            </div>
+        </noscript>
+
+        <!-- loader setup -->
+        <div id="style"></div>
+        <div id="scripts"></div>
+
+        <!-- Loading screen -->
+        <div class="loader" id="loader-overlay">
+            <div class="container">
+                <div class="setup">
+                    <lazy-img src-apng="img/loader/initial-sequence.png" src-gif="img/loader/initial-sequence.gif" alt="initial loading sequence"></lazy-img>
+                </div>
+                <div class="idle">
+                    <lazy-img class="bowl" src="img/loader/bowl.png" alt="bowl"></lazy-img>
+                    <lazy-img class="text" src="img/loader/text.png" alt="TeaSpeak"></lazy-img>
+                    <div class="steam"></div>
+                </div>
+            </div>
+
+            <div class="loader-stage"></div>
+        </div>
+
+        <!-- Critical load error -->
+        <div class="fulloverlay" id="critical-load">
+            <div class="container">
+                <img src="img/loading_error_right.svg" alt="load error" />
+
+                <h1 class="error"></h1>
+                <h3 class="detail"></h3>
+            </div>
+        </div>
+
+        <%- initial_script %>
+    </body>
+</html>

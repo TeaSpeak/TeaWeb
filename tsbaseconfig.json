@@ -18,9 +18,11 @@
     "webpack/WatLoader.ts",
     "webpack/DevelBlocks.ts",
 
+    "loader/IndexGenerator.ts",
+
     "file.ts"
   ],
   "exclude": [
-    "node_modules",
+    "node_modules"
   ]
 }
