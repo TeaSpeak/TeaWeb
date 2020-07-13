@@ -3,7 +3,7 @@ import * as fs from "fs";
 import trtransformer from "./tools/trgen/ts_transformer";
 import {exec} from "child_process";
 import * as util from "util";
-import EJSGenerator = require("./webpack/EJSGenerator");
+import LoaderIndexGenerator = require("./loader/IndexGenerator");
 
 const path = require('path');
 const webpack = require("webpack");
@@ -44,6 +44,16 @@ const generate_definitions = async (target: string) => {
     } as any;
 };
 
+const isLoaderFile = (file: string) => {
+    if(file.startsWith(__dirname)) {
+        const path = file.substr(__dirname.length).replace(/\\/g, "/");
+        if(path.startsWith("/loader/")) {
+            return true;
+        }
+    }
+    return false;
+};
+
 export const config = async (target: "web" | "client") => { return {
     entry: {
         "loader": "./loader/app/index.ts"
@@ -77,21 +87,10 @@ export const config = async (target: "web" | "client") => { return {
         }),
         new webpack.DefinePlugin(await generate_definitions(target)),
 
-        new EJSGenerator({
-            variables: {
-                build_target: target
-            },
-            input: path.join(__dirname, "shared/html/index.html.ejs"),
+        new LoaderIndexGenerator({
+            buildTarget: target,
             output: path.join(__dirname, "dist/index.html"),
-            initialJSEntryChunk: "loader",
-            minify: !isDevelopment,
-            embedInitialJSEntryChunk: !isDevelopment,
-
-            embedInitialCSSFile: !isDevelopment,
-            initialCSSFile: {
-                localFile: path.join(__dirname, "loader/css/loader.css"),
-                publicFile: "css/loader.css"
-            }
+            isDevelopment: isDevelopment
         })
     ].filter(e => !!e),
     module: {
@@ -127,7 +126,7 @@ export const config = async (target: "web" | "client") => { return {
                 ]
             },
             {
-                test: /\.tsx?$/,
+                test: (module: string) => module.match(/\.tsx?$/) && !isLoaderFile(module),
                 exclude: /node_modules/,
 
                 loader: [
@@ -150,6 +149,25 @@ export const config = async (target: "web" | "client") => { return {
                         loader: "./webpack/DevelBlocks.js",
                         options: {
                             enabled: true
+                        }
+                    }
+                ]
+            },
+            {
+                test: (module: string) => module.match(/\.tsx?$/) && isLoaderFile(module),
+                exclude: /(node_modules|bower_components)/,
+
+                loader: [
+                    {
+                        loader: "babel-loader",
+                        options: {
+                            presets: ["@babel/preset-env"]  //Preset used for env setup
+                        }
+                    },
+                    {
+                        loader: "ts-loader",
+                        options: {
+                            transpileOnly: true
                         }
                     }
                 ]

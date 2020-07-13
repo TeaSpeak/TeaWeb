@@ -71,12 +71,6 @@ loader.register_task(loader.Stage.STYLE, {
     priority: 10
 });
 
-loader.register_task(loader.Stage.LOADED, {
-    name: "loaded handler",
-    function: async () => loader.hide_overlay(),
-    priority: 0
-});
-
 /* register tasks */
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "safari fix",

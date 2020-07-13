@@ -24,6 +24,9 @@
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.10.4",
+    "@babel/preset-env": "^7.10.4",
     "@google-cloud/translate": "^5.3.0",
     "@types/dompurify": "^2.0.1",
     "@types/ejs": "^3.0.2",
@@ -38,6 +41,7 @@
     "@types/react-dom": "^16.9.5",
     "@types/sha256": "^0.2.0",
     "@types/websocket": "0.0.40",
+    "babel-loader": "^8.1.0",
     "chunk-manifest-webpack-plugin": "^1.1.2",
     "circular-dependency-plugin": "^5.2.0",
     "clean-css": "^4.2.1",
@@ -81,6 +85,7 @@
   },
   "homepage": "https://www.teaspeak.de",
   "dependencies": {
+    "detect-browser": "^5.1.1",
     "@types/emoji-mart": "^3.0.2",
     "dompurify": "^2.0.8",
     "emoji-mart": "^3.0.0",

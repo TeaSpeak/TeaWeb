@@ -121,7 +121,7 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
     },
     { /* shared image files */
         "type": "img",
-        "search-pattern": /.*\.(svg|png)/,
+        "search-pattern": /.*\.(svg|png|gif)/,
         "build-target": "dev|rel",
 
         "path": "img/",

@@ -31,31 +31,34 @@ class EJSGenerator {
         this.options = options;
     }
 
-    private async generate_entry_js_tag(compilation: Compilation) {
+    private async generateEntryJsTag(compilation: Compilation) {
         const entry_group = compilation.chunkGroups.find(e => e.options.name === this.options.initialJSEntryChunk);
         if(!entry_group) return; /* not the correct compilation */
-        if(entry_group.chunks.length !== 1) throw "Unsupported entry chunk size. We only support one at the moment.";
-        if(entry_group.chunks[0].files.length !== 1)
-            throw "Entry chunk has too many files. We only support to inline one!";
-        const file = entry_group.chunks[0].files[0];
-        if(path.extname(file) !== ".js")
-            throw "Entry chunk file has unknown extension";
 
-        if(!this.options.embedInitialJSEntryChunk) {
-            return '<script type="application/javascript" src=' + compilation.compiler.options.output.publicPath + file + ' async defer></script>';
-        } else {
-            const script = await util.promisify(fs.readFile)(path.join(compilation.compiler.outputPath, file));
-            return `<script type="application/javascript">${script}</script>`;
-        }
+        const tags = entry_group.chunks.map(chunk => {
+            if(chunk.files.length !== 1)
+                throw "invalid chunk file count";
+
+            const file = chunk.files[0];
+            if(path.extname(file) !== ".js")
+                throw "Entry chunk file has unknown extension";
+
+            if(!this.options.embedInitialJSEntryChunk) {
+                return '<script type="application/javascript" src=' + compilation.compiler.options.output.publicPath + file + ' async defer></script>';
+            } else {
+                const script = fs.readFileSync(path.join(compilation.compiler.outputPath, file));
+                return `<script type="application/javascript">${script}</script>`;
+            }
+        });
+        return tags.join("\n");
     }
 
-    private async generate_entry_css_tag() {
+    private async generateEntryCssTag() {
         if(this.options.embedInitialCSSFile) {
             const style = await util.promisify(fs.readFile)(this.options.initialCSSFile.localFile);
             return `<style>${style}</style>`
         } else {
-            //<link rel="preload" href="mystyles.css" as="style" onload="this.rel='stylesheet'">
-            return `<link rel="preload" as="style" onload="this.rel='stylesheet'" href="${this.options.initialCSSFile.publicFile}">`
+            return `<link rel="stylesheet" href="${this.options.initialCSSFile.publicFile}">`
         }
     }
 
@@ -64,11 +67,12 @@ class EJSGenerator {
             const input = await util.promisify(fs.readFile)(this.options.input);
             const variables = Object.assign({}, this.options.variables);
 
-            variables["initial_script"] = await this.generate_entry_js_tag(compilation);
-            variables["initial_css"] = await this.generate_entry_css_tag();
+            variables["initial_script"] = await this.generateEntryJsTag(compilation);
+            variables["initial_css"] = await this.generateEntryCssTag();
 
             let generated = await ejs.render(input.toString(), variables, {
-                beautify: false /* uglify is a bit dump and does not understands ES6 */
+                beautify: false, /* uglify is a bit dump and does not understands ES6 */
+                context: this
             });
 
             if(this.options.minify) {
@@ -82,11 +86,20 @@ class EJSGenerator {
                     removeTagWhitespace: true,
                     minifyCSS: true,
                     minifyJS: true,
-                    minifyURLs: true
+                    minifyURLs: true,
                 });
             }
 
             await util.promisify(fs.writeFile)(this.options.output, generated);
+        });
+
+        compiler.hooks.afterCompile.tapPromise(this.constructor.name, async compilation => {
+            const file = path.resolve(this.options.input);
+            if(compilation.fileDependencies.has(file))
+                return;
+
+            console.log("Adding additional watch to %s", file);
+            compilation.fileDependencies.add(file);
         });
     }
 }

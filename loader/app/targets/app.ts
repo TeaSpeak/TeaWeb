@@ -1,5 +1,8 @@
+import "./shared";
 import * as loader from "../loader/loader";
-import {config} from "../loader/loader";
+import {config, SourcePath} from "../loader/loader";
+import {script_name} from "../loader/utils";
+import { detect as detectBrowser } from "detect-browser";
 
 declare global {
     interface Window {
@@ -44,21 +47,18 @@ interface Manifest {
     }};
 }
 
+const LoaderTaskCallback = taskId => (script: SourcePath, state) => {
+    if(state !== "loading")
+        return;
+
+    loader.setCurrentTaskName(taskId, script_name(script, false));
+};
+
 /* all javascript loaders */
 const loader_javascript = {
-    load_scripts: async () => {
+    load_scripts: async taskId => {
         if(!window.require) {
-            await loader.scripts.load(["vendor/jquery/jquery.min.js"], { cache_tag: cache_tag() });
-        } else {
-            /*
-            loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-                name: "forum sync",
-                priority: 10,
-                function: async () => {
-                    forum.sync_main();
-                }
-            });
-            */
+            await loader.scripts.load_multiple(["vendor/jquery/jquery.min.js"], { cache_tag: cache_tag() }, LoaderTaskCallback(taskId));
         }
 
         await loader.scripts.load_multiple([
@@ -71,8 +71,9 @@ const loader_javascript = {
         ], {
             cache_tag: cache_tag(),
             max_parallel_requests: -1
-        });
+        }, LoaderTaskCallback(taskId));
 
+        loader.setCurrentTaskName(taskId, "manifest");
         let manifest: Manifest;
         try {
             const response = await fetch(config.baseUrl + "js/manifest.json");
@@ -99,7 +100,7 @@ const loader_javascript = {
         await loader.scripts.load_multiple(manifest.chunks[chunk_name].files.map(e => "js/" + e.file), {
             cache_tag: undefined,
             max_parallel_requests: -1
-        });
+        }, LoaderTaskCallback(taskId));
     }
 };
 
@@ -125,7 +126,7 @@ const loader_webassembly = {
 };
 
 const loader_style = {
-    load_style: async () => {
+    load_style: async taskId => {
         const options = {
             cache_tag: cache_tag(),
             max_parallel_requests: -1
@@ -133,22 +134,24 @@ const loader_style = {
 
         await loader.style.load_multiple([
             "vendor/xbbcode/src/xbbcode.css"
-        ], options);
+        ], options, LoaderTaskCallback(taskId));
+
         await loader.style.load_multiple([
             "vendor/emoji-picker/src/jquery.lsxemojipicker.css"
-        ], options);
+        ], options, LoaderTaskCallback(taskId));
+
         await loader.style.load_multiple([
             ["vendor/highlight/styles/darcula.css", ""], /* empty string means not required */
-        ], options);
+        ], options, LoaderTaskCallback(taskId));
 
         if(__build.mode === "debug") {
-            await loader_style.load_style_debug();
+            await loader_style.load_style_debug(taskId);
         } else {
-            await loader_style.load_style_release();
+            await loader_style.load_style_release(taskId);
         }
     },
 
-    load_style_debug: async () => {
+    load_style_debug: async taskId => {
         await loader.style.load_multiple([
             "css/static/main.css",
             "css/static/main-layout.css",
@@ -196,17 +199,17 @@ const loader_style = {
         ], {
             cache_tag: cache_tag(),
             max_parallel_requests: -1
-        });
+        }, LoaderTaskCallback(taskId));
     },
 
-    load_style_release: async () => {
+    load_style_release: async taskId => {
         await loader.style.load_multiple([
             "css/static/base.css",
             "css/static/main.css",
         ], {
             cache_tag: cache_tag(),
             max_parallel_requests: -1
-        });
+        }, LoaderTaskCallback(taskId));
     }
 };
 
@@ -229,35 +232,11 @@ loader.register_task(loader.Stage.INITIALIZING, {
 });
 
 loader.register_task(loader.Stage.INITIALIZING, {
-    name: "Browser detection",
-    function: async () => {
-        navigator.browserSpecs = (function(){
-            let ua = navigator.userAgent, tem, M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
-            if(/trident/i.test(M[1])){
-                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
-                return {name:'IE',version:(tem[1] || '')};
-            }
-            if(M[1]=== 'Chrome'){
-                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
-                if(tem != null) return {name:tem[1].replace('OPR', 'Opera'),version:tem[2]};
-            }
-            M = M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
-            if((tem = ua.match(/version\/(\d+)/i))!= null)
-                M.splice(1, 1, tem[1]);
-            return {name:M[0], version:M[1]};
-        })();
-
-        console.log("Resolved browser manufacturer to \"%s\" version \"%s\"", navigator.browserSpecs.name, navigator.browserSpecs.version);
-    },
-    priority: 30
-});
-
-loader.register_task(loader.Stage.INITIALIZING, {
     name: "secure tester",
     function: async () => {
         /* we need https or localhost to use some things like the storage API */
         if(typeof isSecureContext === "undefined")
-            (<any>window)["isSecureContext"] = location.protocol !== 'https:' && location.hostname !== 'localhost';
+            (<any>window)["isSecureContext"] = location.protocol !== 'https:' || location.hostname === 'localhost';
 
         if(!isSecureContext) {
             loader.critical_error("TeaWeb cant run on unsecured sides.", "App requires to be loaded via HTTPS!");
@@ -274,7 +253,7 @@ loader.register_task(loader.Stage.INITIALIZING, {
 });
 
 loader.register_task(loader.Stage.JAVASCRIPT, {
-    name: "javascript",
+    name: "scripts",
     function: loader_javascript.load_scripts,
     priority: 10
 });
@@ -287,7 +266,7 @@ loader.register_task(loader.Stage.STYLE, {
 
 loader.register_task(loader.Stage.TEMPLATES, {
     name: "templates",
-    function: async () => {
+    function: async taskId => {
         await loader.templates.load_multiple([
             "templates.html",
             "templates/modal/musicmanage.html",
@@ -295,15 +274,9 @@ loader.register_task(loader.Stage.TEMPLATES, {
         ], {
             cache_tag: cache_tag(),
             max_parallel_requests: -1
-        });
+        }, LoaderTaskCallback(taskId));
     },
     priority: 10
-});
-
-loader.register_task(loader.Stage.LOADED, {
-    name: "loaded handler",
-    function: async () => loader.hide_overlay(),
-    priority: 5
 });
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
@@ -368,8 +341,6 @@ loader.register_task(loader.Stage.SETUP, {
 });
 
 export function run() {
-    window["Module"] = (window["Module"] || {}) as any; /* Why? */
-
     /* TeaClient */
     if(node_require) {
         if(__build.target !== "client") {

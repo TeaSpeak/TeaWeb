@@ -25,9 +25,10 @@ node_modules/
 /todo.txt
 /tmp/
 
-# All out config files are .ts files
+# All our config files are .ts files
 /*.js
 /*.js.map
+!babel.config.js
 
 /webpack/*.js
 /webpack/*.js.map

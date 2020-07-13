@@ -6,6 +6,10 @@
       - Improved chat box behaviour
       - Automatically crawling all channels on server join for new messages (requires TeaSpeak 1.4.16-b2 or higher)
       
+* **12.07.20**
+    - Made the loader compatible with ES5 to support older browsers
+    - Updated the loader animation
+
 * **15.06.20**
     - Recoded the permission editor with react
     - Fixed sever permission editor display bugs
