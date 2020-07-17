@@ -138,15 +138,6 @@ const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [
 
         "path": "vendor/",
         "local-path": "./vendor/"
-    },
-    {
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-        "search-exclude": /.*xbbcode.*/g,
-
-        "path": "vendor/",
-        "local-path": "./vendor/"
     }
 ];
 

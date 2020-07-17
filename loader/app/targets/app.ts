@@ -63,7 +63,6 @@ const loader_javascript = {
 
         await loader.scripts.load_multiple([
             ["vendor/jsrender/jsrender.min.js"],
-            ["vendor/remarkable/remarkable.min.js", ""], /* empty string means not required */
         ], {
             cache_tag: cache_tag(),
             max_parallel_requests: -1

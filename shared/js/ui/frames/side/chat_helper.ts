@@ -1,6 +1,8 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
+const { Remarkable } = require("remarkable");
+console.error(Remarkable);
 
 const escapeBBCode = (text: string) => text.replace(/([\[\]])/g, "\\$1");
 
@@ -43,188 +45,150 @@ export namespace helpers {
         return message || words.join(" ");
     }
 
-    namespace md2bbc {
-        export type RemarkToken = {
-            type: string;
-            tight: boolean;
-            lines: number[];
-            level: number;
+    export class MD2BBCodeRenderer {
+        private static renderers: {[key: string]:(renderer: MD2BBCodeRenderer, token: Remarkable.Token) => string} = {
+            "text": (renderer: MD2BBCodeRenderer, token: Remarkable.TextToken) => renderer.options().process_url ? process_urls(renderer.maybe_escape_bb(token.content)) : renderer.maybe_escape_bb(token.content),
+            "softbreak": () => "\n",
+            "hardbreak": () => "\n",
 
-            /* img */
-            alt?: string;
-            src?: string;
+            "paragraph_open": (renderer: MD2BBCodeRenderer, token: Remarkable.ParagraphOpenToken) => {
+                const last_line = !renderer.last_paragraph || !renderer.last_paragraph.lines ? 0 : renderer.last_paragraph.lines[1];
+                const lines = token.lines[0] - last_line;
+                return [...new Array(lines)].map(() => "[br]").join("");
+            },
+            "paragraph_close": () => "",
 
-            /* link */
-            href?: string;
+            "strong_open": () => "[b]",
+            "strong_close": () => "[/b]",
 
-            /* table */
-            align?: string;
+            "em_open": () => "[i]",
+            "em_close": () => "[/i]",
 
-            /* code  */
-            params?: string;
+            "del_open": () => "[s]",
+            "del_close": () => "[/s]",
 
-            content?: string;
-            hLevel?: number;
-            children?: RemarkToken[];
+            "sup": (renderer: MD2BBCodeRenderer, token: Remarkable.SupToken) => "[sup]" + renderer.maybe_escape_bb(token.content) + "[/sup]",
+            "sub": (renderer: MD2BBCodeRenderer, token: Remarkable.SubToken) => "[sub]" + renderer.maybe_escape_bb(token.content) + "[/sub]",
+
+            "bullet_list_open": () => "[ul]",
+            "bullet_list_close": () => "[/ul]",
+
+            "ordered_list_open": () => "[ol]",
+            "ordered_list_close": () => "[/ol]",
+
+            "list_item_open": () => "[li]",
+            "list_item_close": () => "[/li]",
+
+            "table_open": () => "[table]",
+            "table_close": () => "[/table]",
+
+            "thead_open": () => "",
+            "thead_close": () => "",
+
+            "tbody_open": () => "",
+            "tbody_close": () => "",
+
+            "tr_open": () => "[tr]",
+            "tr_close": () => "[/tr]",
+
+            "th_open": (renderer: MD2BBCodeRenderer, token: any) => "[th" + (token.align ? ("=" + token.align) : "") + "]",
+            "th_close": () => "[/th]",
+
+            "td_open": () => "[td]",
+            "td_close": () => "[/td]",
+
+            "link_open": (renderer: MD2BBCodeRenderer, token: Remarkable.LinkOpenToken) => "[url" + (token.href ? ("=" + token.href) : "") + "]",
+            "link_close": () => "[/url]",
+
+            "image": (renderer: MD2BBCodeRenderer, token: Remarkable.ImageToken) => "[img=" + (token.src) + "]" + (token.alt || token.src) + "[/img]",
+
+            //footnote_ref
+
+            //"content": "==Marked text==",
+            //mark_open
+            //mark_close
+
+            //++Inserted text++
+            "ins_open": () => "[u]",
+            "ins_close": () => "[/u]",
+
+            "code": (renderer: MD2BBCodeRenderer, token: Remarkable.CodeToken) => "[i-code]" + escapeBBCode(token.content) + "[/i-code]",
+            "fence": (renderer: MD2BBCodeRenderer, token: Remarkable.FenceToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + escapeBBCode(token.content) + "[/code]",
+
+            "heading_open": (renderer: MD2BBCodeRenderer, token: Remarkable.HeadingOpenToken) => "[size=" + (9 - Math.min(4, token.hLevel)) + "]",
+            "heading_close": () => "[/size][hr]",
+
+            "hr": () => "[hr]",
+
+            //> Experience real-time editing with Remarkable!
+            "blockquote_open": () => "[quote]",
+            "blockquote_close": () => "[/quote]"
+        };
+
+        private _options;
+        last_paragraph: Remarkable.Token;
+
+        render(tokens: Remarkable.Token[], options: Remarkable.Options, env: Remarkable.Env): string {
+            this.last_paragraph = undefined;
+            this._options = options;
+            let result = '';
+
+            //TODO: Escape BB-Codes
+            for(let index = 0; index < tokens.length; index++) {
+                if (tokens[index].type === 'inline') {
+                    /* we're just ignoring the inline fact */
+                    result += this.render((tokens[index] as any).children, options, env);
+                } else {
+                    result += this.renderToken(tokens[index], index);
+                }
+            }
+
+            this._options = undefined;
+            return result;
         }
 
-        export class Renderer {
-            private static renderers = {
-                "text": (renderer: Renderer, token: RemarkToken) => renderer.options().process_url ? process_urls(renderer.maybe_escape_bb(token.content)) : renderer.maybe_escape_bb(token.content),
-                "softbreak": () => "\n",
-                "hardbreak": () => "\n",
-
-                "paragraph_open": (renderer: Renderer, token: RemarkToken) => {
-                    const last_line = !renderer.last_paragraph || !renderer.last_paragraph.lines ? 0 : renderer.last_paragraph.lines[1];
-                    const lines = token.lines[0] - last_line;
-                    return [...new Array(lines)].map(e => "[br]").join("");
-                },
-                "paragraph_close": () => "",
-
-                "strong_open": (renderer: Renderer, token: RemarkToken) => "[b]",
-                "strong_close": (renderer: Renderer, token: RemarkToken) => "[/b]",
-
-                "em_open": (renderer: Renderer, token: RemarkToken) => "[i]",
-                "em_close": (renderer: Renderer, token: RemarkToken) => "[/i]",
-
-                "del_open": () => "[s]",
-                "del_close": () => "[/s]",
-
-                "sup": (renderer: Renderer, token: RemarkToken) => "[sup]" + renderer.maybe_escape_bb(token.content) + "[/sup]",
-                "sub": (renderer: Renderer, token: RemarkToken) => "[sub]" + renderer.maybe_escape_bb(token.content) + "[/sub]",
-
-                "bullet_list_open": () => "[ul]",
-                "bullet_list_close": () => "[/ul]",
-
-                "ordered_list_open": () => "[ol]",
-                "ordered_list_close": () => "[/ol]",
-
-                "list_item_open": () => "[li]",
-                "list_item_close": () => "[/li]",
-
-                "table_open": () => "[table]",
-                "table_close": () => "[/table]",
-
-                "thead_open": () => "",
-                "thead_close": () => "",
-
-                "tbody_open": () => "",
-                "tbody_close": () => "",
-
-                "tr_open": () => "[tr]",
-                "tr_close": () => "[/tr]",
-
-                "th_open": (renderer: Renderer, token: RemarkToken) => "[th" + (token.align ? ("=" + token.align) : "") + "]",
-                "th_close": () => "[/th]",
-
-                "td_open": () => "[td]",
-                "td_close": () => "[/td]",
-
-                "link_open": (renderer: Renderer, token: RemarkToken) => "[url" + (token.href ? ("=" + token.href) : "") + "]",
-                "link_close": () => "[/url]",
-
-                "image": (renderer: Renderer, token: RemarkToken) => "[img=" + (token.src) + "]" + (token.alt || token.src) + "[/img]",
-
-                //footnote_ref
-
-                //"content": "==Marked text==",
-                //mark_open
-                //mark_close
-
-                //++Inserted text++
-                "ins_open": () => "[u]",
-                "ins_close": () => "[/u]",
-
-                "code": (renderer: Renderer, token: RemarkToken) => "[i-code]" + escapeBBCode(token.content) + "[/i-code]",
-                "fence": (renderer: Renderer, token: RemarkToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + escapeBBCode(token.content) + "[/code]",
-
-                "heading_open": (renderer: Renderer, token: RemarkToken) => "[size=" + (9 - Math.min(4, token.hLevel)) + "]",
-                "heading_close": (renderer: Renderer, token: RemarkToken) => "[/size][hr]",
-
-                "hr": () => "[hr]",
-
-                //> Experience real-time editing with Remarkable!
-                "blockquote_open": () => "[quote]",
-                "blockquote_close": () => "[/quote]"
-            };
-
-            private _options;
-            last_paragraph: RemarkToken;
-
-            render(tokens: RemarkToken[], options: any, env: any) {
-                this.last_paragraph = undefined;
-                this._options = options;
-                let result = '';
-
-                //TODO: Escape BB-Codes
-                for(let index = 0; index < tokens.length; index++) {
-                    if (tokens[index].type === 'inline') {
-                        result += this.render_inline(tokens[index].children, index);
-                    } else {
-                        result += this.render_token(tokens[index], index);
-                    }
-                }
-
-                this._options = undefined;
-                return result;
+        private renderToken(token: Remarkable.Token, index: number) {
+            log.debug(LogCategory.GENERAL, tr("Render Markdown token: %o"), token);
+            const renderer = MD2BBCodeRenderer.renderers[token.type];
+            if(typeof(renderer) === "undefined") {
+                log.warn(LogCategory.CHAT, tr("Missing markdown to bbcode renderer for token %s: %o"), token.type, token);
+                return 'content' in token ? token.content : "";
             }
 
-            private render_token(token: RemarkToken, index: number) {
-                log.debug(LogCategory.GENERAL, tr("Render Markdown token: %o"), token);
-                const renderer = Renderer.renderers[token.type];
-                if(typeof(renderer) === "undefined") {
-                    log.warn(LogCategory.CHAT, tr("Missing markdown to bbcode renderer for token %s: %o"), token.type, token);
-                    return token.content || "";
-                }
+            const result = renderer(this, token);
+            if(token.type === "paragraph_open")
+                this.last_paragraph = token;
+            return result;
+        }
 
-                const result = renderer(this, token, index);
-                if(token.type === "paragraph_open") this.last_paragraph = token;
-                return result;
-            }
+        options() : any {
+            return this._options;
+        }
 
-            private render_inline(tokens: RemarkToken[], index: number) {
-                let result = '';
-
-                for(let index = 0; index < tokens.length; index++) {
-                    result += this.render_token(tokens[index], index);
-                }
-
-                return result;
-            }
-
-            options() : any {
-                return this._options;
-            }
-
-            maybe_escape_bb(text: string) {
-                if(this._options.escape_bb)
-                    return escapeBBCode(text);
-                return text;
-            }
+        maybe_escape_bb(text: string) {
+            if(this._options.escape_bb)
+                return escapeBBCode(text);
+            return text;
         }
     }
 
-    let _renderer: any;
+    const remarkableRenderer = new Remarkable("full", {
+        typographer: true
+    });
+    remarkableRenderer.renderer = new MD2BBCodeRenderer() as any;
+    remarkableRenderer.inline.ruler.disable([ 'newline', 'autolink' ]);
+
     function process_markdown(message: string, options: {
         process_url?: boolean,
         escape_bb?: boolean
     }) : string {
-        if(typeof(window.remarkable) === "undefined")
-            return (options.process_url ? process_urls(message) : message);
 
-        if(!_renderer) {
-            _renderer = new window.remarkable.Remarkable('full');
-            _renderer.set({
-                typographer: true
-            });
-            _renderer.renderer = new md2bbc.Renderer();
-            _renderer.inline.ruler.disable([ 'newline', 'autolink' ]);
-        }
-        _renderer.set({
+        remarkableRenderer.set({
             process_url: !!options.process_url,
             escape_bb: !!options.escape_bb
-        });
-        let result: string = _renderer.render(message);
+        } as any);
+
+        let result: string = remarkableRenderer.render(message);
         if(result.endsWith("\n"))
             result = result.substr(0, result.length - 1);
         return result;
