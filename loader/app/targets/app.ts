@@ -150,7 +150,6 @@ const loader_style = {
             "css/static/modal-connect.css",
             "css/static/modal-channel.css",
             "css/static/modal-query.css",
-            "css/static/modal-volume.css",
             "css/static/modal-latency.css",
             "css/static/modal-invite.css",
             "css/static/modal-banlist.css",

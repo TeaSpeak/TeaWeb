@@ -43,7 +43,6 @@ files=(
     "css/static/modal-serverinfobandwidth.css"
     "css/static/modal-serverinfo.css"
     "css/static/modal-settings.css"
-    "css/static/modal-volume.css"
     "css/static/overlay-image-preview.css"
 
     "css/static/ts/tab.css"

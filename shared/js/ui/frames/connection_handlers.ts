@@ -24,16 +24,6 @@ export class ConnectionManager {
     private _tag_button_scoll_right: JQuery;
     private _tag_button_scoll_left: JQuery;
 
-    private default_server_state: {
-        microphone_disabled: boolean,
-        speaker_disabled: boolean,
-        away: string | boolean
-    } = {
-        away: false,
-        speaker_disabled: false,
-        microphone_disabled: false
-    };
-
     constructor(tag: JQuery) {
         this.event_registry = new Registry<ConnectionManagerEvents>();
         this.event_registry.enable_debug("connection-manager");

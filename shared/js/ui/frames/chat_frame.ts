@@ -5,7 +5,6 @@ import {ChannelEntry} from "tc-shared/ui/channel";
 import {ServerEntry} from "tc-shared/ui/server";
 import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
 import {formatMessage} from "tc-shared/ui/frames/chat";
-import {PrivateConverations} from "tc-shared/ui/frames/side/private_conversations_old";
 import {ClientInfo} from "tc-shared/ui/frames/side/client_info";
 import {MusicInfo} from "tc-shared/ui/frames/side/music_info";
 import {ConversationManager} from "tc-shared/ui/frames/side/ConversationManager";
