@@ -181,8 +181,10 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         if(!singleSelect) return;
 
         if(settings.static_global(Settings.KEY_SWITCH_INSTANT_CHAT)) {
-            this.channelTree.client.side_bar.channel_conversations().setSelectedConversation(0);
-            this.channelTree.client.side_bar.show_channel_conversations();
+            const sidebar = this.channelTree.client.side_bar;
+            sidebar.channel_conversations().findOrCreateConversation(0);
+            sidebar.channel_conversations().setSelectedConversation(0);
+            sidebar.show_channel_conversations();
         }
     }
 

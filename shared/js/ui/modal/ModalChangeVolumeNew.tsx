@@ -243,8 +243,8 @@ export function spawnClientVolumeChange(client: ClientEntry) {
             return <VolumeChangeModal remote={false} clientName={client.clientNickName()} events={events} />;
         }
 
-        title(): string {
-            return tr("Change local volume");
+        title() {
+            return <Translatable>Change local volume</Translatable>;
         }
     });
 
@@ -278,8 +278,8 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
             return <VolumeChangeModal remote={true} clientName={client.clientNickName()} maxVolume={maxValue} events={events} />;
         }
 
-        title(): string {
-            return tr("Change remote volume");
+        title() {
+            return <Translatable>Change remote volume</Translatable>;
         }
     });
 

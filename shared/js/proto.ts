@@ -43,11 +43,6 @@ declare global {
         format(arguments: string[]): string;
     }
 
-    interface Twemoji {
-        parse(message: string) : string;
-    }
-    let twemoji: Twemoji;
-
     interface HighlightJS {
         listLanguages() : string[];
         getLanguage(name: string) : any | undefined;
@@ -75,8 +70,7 @@ declare global {
         readonly Pointer_stringify: any;
         readonly jsrender: any;
 
-        twemoji: Twemoji;
-        hljs: HighlightJS;
+        cdhljs: HighlightJS;
         remarkable: any;
 
 

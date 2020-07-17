@@ -156,8 +156,8 @@ class ModalGroupPermissionCopy extends Modal {
         </div>;
     }
 
-    title(): string {
-        return tr("Copy group permissions");
+    title() {
+        return <Translatable>Copy group permissions</Translatable>;
     }
 }
 

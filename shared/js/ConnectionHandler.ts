@@ -212,6 +212,7 @@ export class ConnectionHandler {
         }
 
         this.event_registry.register_handler(this);
+        this.events().fire("notify_handler_initialized");
     }
 
     initialize_client_state(source?: ConnectionHandler) {
@@ -643,7 +644,6 @@ export class ConnectionHandler {
         if(this.serverConnection)
             this.serverConnection.disconnect();
 
-        this.side_bar.private_conversations().clear_client_ids();
         this.hostbanner.update();
 
         if(auto_reconnect) {
@@ -1074,5 +1074,8 @@ export interface ConnectionEvents {
     /* the handler has become visible/invisible for the client */
     notify_visibility_changed: {
         visible: boolean
-    }
+    },
+
+    /* fill only trigger once, after everything has been constructed */
+    notify_handler_initialized: {}
 }

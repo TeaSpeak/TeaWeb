@@ -128,7 +128,7 @@ export class ImageCache {
             ignoreSearch: true
         });
         if(!flag) {
-            console.warn(tr("Failed to delete key %s from cache!"), flag);
+            console.warn(tr("Failed to delete key %s from cache!"), key);
         }
     }
 }

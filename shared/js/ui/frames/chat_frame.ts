@@ -5,10 +5,11 @@ import {ChannelEntry} from "tc-shared/ui/channel";
 import {ServerEntry} from "tc-shared/ui/server";
 import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
 import {formatMessage} from "tc-shared/ui/frames/chat";
-import {PrivateConverations} from "tc-shared/ui/frames/side/private_conversations";
+import {PrivateConverations} from "tc-shared/ui/frames/side/private_conversations_old";
 import {ClientInfo} from "tc-shared/ui/frames/side/client_info";
 import {MusicInfo} from "tc-shared/ui/frames/side/music_info";
 import {ConversationManager} from "tc-shared/ui/frames/side/ConversationManager";
+import {PrivateConversationManager} from "tc-shared/ui/frames/side/PrivateConversationManager";
 
 declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
 declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
@@ -64,14 +65,10 @@ export class InfoFrame {
             const selected_client = this.handle.client_info().current_client();
             if(!selected_client) return;
 
-            const conversation = selected_client ? this.handle.private_conversations().find_conversation({
-                name: selected_client.properties.client_nickname,
-                unique_id: selected_client.properties.client_unique_identifier,
-                client_id: selected_client.clientId()
-            }, { create: true, attach: true }) : undefined;
+            const conversation = selected_client ? this.handle.private_conversations().findOrCreateConversation(selected_client) : undefined;
             if(!conversation) return;
 
-            this.handle.private_conversations().set_selected_conversation(conversation);
+            this.handle.private_conversations().setActiveConversation(conversation);
             this.handle.show_private_conversations();
         })[0];
 
@@ -214,9 +211,9 @@ export class InfoFrame {
     }
 
     update_chat_counter() {
-        const conversations = this.handle.private_conversations().conversations();
+        const privateConversations = this.handle.private_conversations().getConversations();
         {
-            const count = conversations.filter(e => e.is_unread()).length;
+            const count = privateConversations.filter(e => e.hasUnreadMessages()).length;
             const count_container = this._html_tag.find(".container-indicator");
             const count_tag = count_container.find(".chat-unread-counter");
             count_container.toggle(count > 0);
@@ -224,12 +221,12 @@ export class InfoFrame {
         }
         {
             const count_tag = this._html_tag.find(".chat-counter");
-            if(conversations.length == 0)
+            if(privateConversations.length == 0)
                 count_tag.text(tr("No conversations"));
-            else if(conversations.length == 1)
+            else if(privateConversations.length == 1)
                 count_tag.text(tr("One conversation"));
             else
-                count_tag.text(conversations.length + " " + tr("conversations"));
+                count_tag.text(privateConversations.length + " " + tr("conversations"));
         }
     }
 
@@ -245,11 +242,7 @@ export class InfoFrame {
         if(mode === InfoFrameMode.CLIENT_INFO && this._button_conversation) {
             //Will be called every time a client is shown
             const selected_client = this.handle.client_info().current_client();
-            const conversation = selected_client ? this.handle.private_conversations().find_conversation({
-                name: selected_client.properties.client_nickname,
-                unique_id: selected_client.properties.client_unique_identifier,
-                client_id: selected_client.clientId()
-            }, { create: false, attach: false }) : undefined;
+            const conversation = selected_client ? this.handle.private_conversations().findConversation(selected_client) : undefined;
 
             const visibility = (selected_client && selected_client.clientId() !== this.handle.handle.getClientId()) ? "visible" : "hidden";
             if(this._button_conversation.style.visibility !== visibility)
@@ -281,17 +274,17 @@ export class Frame {
     private _container_chat: JQuery;
     private _content_type: FrameContent;
 
-    private _conversations: PrivateConverations;
     private _client_info: ClientInfo;
     private _music_info: MusicInfo;
     private _channel_conversations: ConversationManager;
+    private _private_conversations: PrivateConversationManager;
 
     constructor(handle: ConnectionHandler) {
         this.handle = handle;
 
         this._content_type = FrameContent.NONE;
         this._info_frame = new InfoFrame(this);
-        this._conversations = new PrivateConverations(this);
+        this._private_conversations = new PrivateConversationManager(handle);
         this._channel_conversations = new ConversationManager(handle);
         this._client_info = new ClientInfo(this);
         this._music_info = new MusicInfo(this);
@@ -313,17 +306,17 @@ export class Frame {
         this._info_frame && this._info_frame.destroy();
         this._info_frame = undefined;
 
-        this._conversations && this._conversations.destroy();
-        this._conversations = undefined;
-
         this._client_info && this._client_info.destroy();
         this._client_info = undefined;
 
         this._music_info && this._music_info.destroy();
         this._music_info = undefined;
 
-        //this._channel_conversations && this._channel_conversations.destroy();
-        //this._channel_conversations = undefined;
+        this._private_conversations && this._private_conversations.destroy();
+        this._private_conversations = undefined;
+
+        this._channel_conversations && this._channel_conversations.destroy();
+        this._channel_conversations = undefined;
 
         this._container_info && this._container_info.remove();
         this._container_info = undefined;
@@ -341,8 +334,8 @@ export class Frame {
     }
 
 
-    private_conversations() : PrivateConverations {
-        return this._conversations;
+    private_conversations() : PrivateConversationManager {
+        return this._private_conversations;
     }
 
     channel_conversations() : ConversationManager {
@@ -365,10 +358,11 @@ export class Frame {
     show_private_conversations() {
         if(this._content_type === FrameContent.PRIVATE_CHAT)
             return;
+
         this._clear();
         this._content_type = FrameContent.PRIVATE_CHAT;
-        this._container_chat.append(this._conversations.html_tag());
-        this._conversations.on_show();
+        this._container_chat.append(this._private_conversations.htmlTag);
+        this._private_conversations.handlePanelShow();
         this._info_frame.set_mode(InfoFrameMode.PRIVATE_CHAT);
     }
 

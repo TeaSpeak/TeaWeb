@@ -190,7 +190,6 @@ export namespace callbacks {
 }
 window[callback_object_id] = callbacks;
 
-declare const xbbcode;
 namespace bbcodes {
     /* the = because we sometimes get that */
     //const url_client_regex = /?client:\/\/(?<client_id>[0-9]+)\/(?<client_unique_id>[a-zA-Z0-9+=#]+)~(?<client_name>(?:[^%]|%[0-9A-Fa-f]{2})+)$/g;
@@ -198,6 +197,8 @@ namespace bbcodes {
     const url_channel_regex = /channel:\/\/([0-9]+)~((?:[^%]|%[0-9A-Fa-f]{2})+)$/g;
 
     function initialize() {
+        /* FIXME: Reimplement client BB codes */
+        /*
         const origin_url = xbbcode.register.find_parser('url');
         xbbcode.register.register_parser({
             tag: 'url',
@@ -234,6 +235,7 @@ namespace bbcodes {
                 return origin_url.build_html_tag_close(layer);
             }
         });
+         */
     }
     initialize();
 }

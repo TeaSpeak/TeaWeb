@@ -2,6 +2,8 @@
 @import "../../../../css/static/properties";
 
 .container {
+    @include user-select(none);
+    
     display: flex;
     flex-direction: column;
     justify-content: flex-start;

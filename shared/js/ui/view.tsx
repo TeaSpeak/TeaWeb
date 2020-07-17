@@ -48,6 +48,18 @@ export interface ChannelTreeEvents {
     notify_entry_move_begin: {},
     notify_entry_move_end: {},
 
+    notify_client_enter_view: {
+        client: ClientEntry,
+        reason: ViewReasonId,
+        isServerJoin: boolean
+    },
+    notify_client_leave_view: {
+        client: ClientEntry,
+        reason: ViewReasonId,
+        message?: string,
+        isServerLeave: boolean
+    },
+
     notify_channel_updated: {
         channel: ChannelEntry,
         channelProperties: ChannelProperties,
@@ -333,7 +345,7 @@ export class ChannelTree {
             if(channel.clients(false).length !== 0) {
                 log.warn(LogCategory.CHANNEL, tr("Deleting a non empty channel! This could cause some errors."));
                 for(const client of channel.clients(false))
-                    this.deleteClient(client, false);
+                    this.deleteClient(client, { reason: ViewReasonId.VREASON_SYSTEM, serverLeave: false });
             }
 
             const is_root_tree = !channel.parent;
@@ -464,15 +476,16 @@ export class ChannelTree {
             this.events.fire("notify_root_channel_changed");
     }
 
-    deleteClient(client: ClientEntry, animate_tag?: boolean) {
+    deleteClient(client: ClientEntry, reason: { reason: ViewReasonId, message?: string, serverLeave: boolean }) {
         const old_channel = client.currentChannel();
         old_channel?.unregisterClient(client);
         this.clients.remove(client);
 
+        client.events.fire("notify_left_view", reason);
         if(old_channel) {
+            this.events.fire("notify_client_leave_view", { client: client, message: reason.message, reason: reason.reason, isServerLeave: reason.serverLeave });
             this.client.side_bar.info_frame().update_channel_client_count(old_channel);
         }
-
 
         //FIXME: Trigger the notify_clients_changed event!
         const voice_connection = this.client.serverConnection.voice_connection();
@@ -501,7 +514,7 @@ export class ChannelTree {
             return;
     }
 
-    insertClient(client: ClientEntry, channel: ChannelEntry) : ClientEntry {
+    insertClient(client: ClientEntry, channel: ChannelEntry, reason: { reason: ViewReasonId, isServerJoin: boolean }) : ClientEntry {
         batch_updates(BatchUpdateType.CHANNEL_TREE);
         try {
             let newClient = this.findClient(client.clientId());
@@ -515,26 +528,27 @@ export class ChannelTree {
             client["_channel"] = channel;
             channel.registerClient(client);
 
+            this.events.fire("notify_client_enter_view", { client: client, reason: reason.reason, isServerJoin: reason.isServerJoin });
             return client;
         } finally {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }
     }
 
-    moveClient(client: ClientEntry, channel: ChannelEntry) {
+    moveClient(client: ClientEntry, targetChannel: ChannelEntry) {
         batch_updates(BatchUpdateType.CHANNEL_TREE);
         try {
             let oldChannel = client.currentChannel();
             oldChannel?.unregisterClient(client);
-            client["_channel"] = channel;
-            channel?.registerClient(client);
+            client["_channel"] = targetChannel;
+            targetChannel?.registerClient(client);
 
-            if(oldChannel) {
+            if(oldChannel)
                 this.client.side_bar.info_frame().update_channel_client_count(oldChannel);
-            }
-            if(channel) {
-                this.client.side_bar.info_frame().update_channel_client_count(channel);
-            }
+            if(targetChannel)
+                this.client.side_bar.info_frame().update_channel_client_count(targetChannel);
+            if(oldChannel && targetChannel)
+                client.events.fire("notify_client_moved", { oldChannel: oldChannel, newChannel: targetChannel });
             client.speaking = false;
         } finally {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);

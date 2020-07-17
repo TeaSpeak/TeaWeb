@@ -37,6 +37,7 @@ function initializeElements() {
         image.alt = lazyImage.getAttribute("alt");
         image.src = lazyImage.getAttribute(apngSupport ? "src-apng" : "src-gif") || lazyImage.getAttribute("src");
         image.className = lazyImage.className;
+        image.draggable = false;
         lazyImage.replaceWith(image);
     }
 

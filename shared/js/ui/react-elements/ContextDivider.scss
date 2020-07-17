@@ -14,8 +14,8 @@ $animation_separator_length: .1s;
 
     &.vertical {
         height: $separator_thickness;
-        min-height: $separator_thickness!important;
-        max-height: $separator_thickness!important;
+        min-height: $separator_thickness;
+        max-height: $separator_thickness;
 
         //width: 100%;
         cursor: row-resize;
@@ -23,8 +23,8 @@ $animation_separator_length: .1s;
 
     &.horizontal {
         width: $separator_thickness;
-        min-width: $separator_thickness!important;
-        max-width: $separator_thickness!important;
+        min-width: $separator_thickness;
+        max-width: $separator_thickness;
 
         //height: 100%;
         cursor: col-resize;

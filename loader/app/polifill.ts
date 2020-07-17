@@ -1,9 +1,15 @@
-/* IE11 */
-if(!Element.prototype.remove)
-    Element.prototype.remove = function() {
-        this.parentElement?.removeChild(this);
-    };
+/* IE11 and safari */
+if(Element.prototype.remove === undefined)
+    Object.defineProperty(Element.prototype, "remove", {
+        enumerable: false,
+        configurable: false,
+        writable: false,
+        value: function(){
+            this.parentElement.removeChild(this);
+        }
+    });
 
+/* IE11 */
 function ReplaceWithPolyfill() {
     let parent = this.parentNode, i = arguments.length, currentNode;
     if (!parent) return;

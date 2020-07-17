@@ -321,8 +321,8 @@ class PermissionEditorModal extends Modal {
         );
     }
 
-    title(): string {
-        return tr("Server permissions");
+    title() : React.ReactElement<Translatable> {
+        return <Translatable>Server permissions</Translatable>;
     }
 
 }

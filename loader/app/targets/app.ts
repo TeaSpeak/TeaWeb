@@ -63,10 +63,6 @@ const loader_javascript = {
 
         await loader.scripts.load_multiple([
             ["vendor/jsrender/jsrender.min.js"],
-            ["vendor/xbbcode/src/parser.js"],
-            ["vendor/emoji-picker/src/jquery.lsxemojipicker.js"],
-            ["vendor/twemoji/twemoji.min.js", ""], /* empty string means not required */
-            ["vendor/highlight/highlight.pack.js", ""], /* empty string means not required */
             ["vendor/remarkable/remarkable.min.js", ""], /* empty string means not required */
         ], {
             cache_tag: cache_tag(),
@@ -127,23 +123,6 @@ const loader_webassembly = {
 
 const loader_style = {
     load_style: async taskId => {
-        const options = {
-            cache_tag: cache_tag(),
-            max_parallel_requests: -1
-        };
-
-        await loader.style.load_multiple([
-            "vendor/xbbcode/src/xbbcode.css"
-        ], options, LoaderTaskCallback(taskId));
-
-        await loader.style.load_multiple([
-            "vendor/emoji-picker/src/jquery.lsxemojipicker.css"
-        ], options, LoaderTaskCallback(taskId));
-
-        await loader.style.load_multiple([
-            ["vendor/highlight/styles/darcula.css", ""], /* empty string means not required */
-        ], options, LoaderTaskCallback(taskId));
-
         if(__build.mode === "debug") {
             await loader_style.load_style_debug(taskId);
         } else {
@@ -213,24 +192,6 @@ const loader_style = {
     }
 };
 
-/* register tasks */
-loader.register_task(loader.Stage.INITIALIZING, {
-    name: "safari fix",
-    function: async () => {
-        /* safari remove "fix" */
-        if(Element.prototype.remove === undefined)
-            Object.defineProperty(Element.prototype, "remove", {
-                enumerable: false,
-                configurable: false,
-                writable: false,
-                value: function(){
-                    this.parentElement.removeChild(this);
-                }
-            });
-    },
-    priority: 50
-});
-
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "secure tester",
     function: async () => {
@@ -276,12 +237,6 @@ loader.register_task(loader.Stage.TEMPLATES, {
             max_parallel_requests: -1
         }, LoaderTaskCallback(taskId));
     },
-    priority: 10
-});
-
-loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-    name: "lsx emoji picker setup",
-    function: async () => await (window as any).setup_lsx_emoji_picker({twemoji: typeof(window.twemoji) !== "undefined"}),
     priority: 10
 });
 

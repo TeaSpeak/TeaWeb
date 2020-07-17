@@ -269,8 +269,8 @@ class ModalGroupCreate extends Modal {
         </div>;
     }
 
-    title(): string {
-        return this.target === "server" ? tr("Create a new server group") : tr("Create a new channel group");
+    title() {
+        return this.target === "server" ? <Translatable>Create a new server group</Translatable> : <Translatable>Create a new channel group</Translatable>;
     }
 
 }

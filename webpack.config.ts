@@ -186,7 +186,9 @@ export const config = async (target: "web" | "client") => { return {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js', ".scss", ".css"],
-        alias: { },
+        alias: {
+            "vendor/xbbcode": path.resolve(__dirname, "vendor/xbbcode/src")
+        },
     },
     externals: [
         {"tc-loader": "window loader"}

@@ -26,7 +26,6 @@
     "shared/generated",
     "web/declarations/**/*.d.ts",
     "web/generated/",
-    "web/environment/",
-    "vendor/**/*.ts"
+    "web/environment/"
   ]
 }

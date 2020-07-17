@@ -5,6 +5,7 @@ import {LogCategory, LogType} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
 import {settings, Settings} from "tc-shared/settings";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
+import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 import {Sound} from "tc-shared/sound/Sounds";
 import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
@@ -18,9 +19,9 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
-import { ChannelEntryView as ChannelEntryView } from "./tree/Channel";
-import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
+import {ChannelEntryView as ChannelEntryView} from "./tree/Channel";
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
+import {ViewReasonId} from "tc-shared/ConnectionHandler";
 
 export enum ChannelType {
     PERMANENT,
@@ -641,6 +642,9 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     joinChannel(ignorePasswordFlag?: boolean) {
+        if(this.channelTree.client.getClient().currentChannel() === this)
+            return;
+
         if(this.properties.channel_flag_password === true && !this.cachedPasswordHash && !ignorePasswordFlag) {
             this.requestChannelPassword(PermissionType.B_CHANNEL_JOIN_IGNORE_PASSWORD).then(() => {
                 this.joinChannel(true);
@@ -719,7 +723,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 this.flag_subscribed = false;
 
             for(const client of this.clients(false))
-                this.channelTree.deleteClient(client, false);
+                this.channelTree.deleteClient(client, { serverLeave: false, reason: ViewReasonId.VREASON_SYSTEM });
         }
     }
 

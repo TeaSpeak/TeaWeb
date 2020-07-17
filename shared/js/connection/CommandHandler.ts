@@ -18,9 +18,9 @@ import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from
 import {bbcode_chat, formatMessage} from "tc-shared/ui/frames/chat";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnPoke} from "tc-shared/ui/modal/ModalPoke";
-import {PrivateConversationState} from "tc-shared/ui/frames/side/private_conversations";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
+import {OutOfViewClient} from "tc-shared/ui/frames/side/PrivateConversationManager";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {
@@ -440,8 +440,10 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     client = new ClientEntry(parseInt(entry["clid"]), entry["client_nickname"]);
                 }
 
+                /* TODO: Apply all other properties here as well and than register him */
+                client.properties.client_unique_identifier = entry["client_unique_identifier"];
                 client.properties.client_type = parseInt(entry["client_type"]);
-                client = tree.insertClient(client, channel);
+                client = tree.insertClient(client, channel, { reason: reason_id, isServerJoin: parseInt(entry["cfid"]) === 0 });
             } else {
                 tree.moveClient(client, channel);
             }
@@ -495,22 +497,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
             client.updateVariables(...updates);
 
-            /* if its a new client join, or a system reason (like we joined) */
-            if(!old_channel || reason_id == 2) {
-                /* client new join */
-                const conversation_manager = this.connection_handler.side_bar.private_conversations();
-                const conversation = conversation_manager.find_conversation({
-                    unique_id: client.properties.client_unique_identifier,
-                    client_id: client.clientId(),
-                    name: client.clientNickName()
-                }, {
-                    create: false,
-                    attach: true
-                });
-                if(conversation)
-                    client.setUnread(conversation.is_unread());
-            }
-
             if(client instanceof LocalClientEntry) {
                 client.initializeListener();
                 this.connection_handler.update_voice_status();
@@ -548,11 +534,11 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 return;
             }
 
-
+            const targetChannelId = parseInt(entry["ctid"]);
             if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
                 let channel_from = tree.findChannel(entry["cfid"]);
-                let channel_to = tree.findChannel(entry["ctid"]);
+                let channel_to = tree.findChannel(targetChannelId);
 
                 const is_own_channel = channel_from == own_channel;
                 this.connection_handler.log.log(server_log.Type.CLIENT_VIEW_LEAVE, {
@@ -585,25 +571,9 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                         log.error(LogCategory.NETWORKING, tr("Unknown client left reason %d!"), reason_id);
                     }
                 }
-
-                if(!channel_to) {
-                    /* client left the server */
-                    const conversation_manager = this.connection_handler.side_bar.private_conversations();
-                    const conversation = conversation_manager.find_conversation({
-                        unique_id: client.properties.client_unique_identifier,
-                        client_id: client.clientId(),
-                        name: client.clientNickName()
-                    }, {
-                        create: false,
-                        attach: false
-                    });
-                    if(conversation) {
-                        conversation.set_state(PrivateConversationState.DISCONNECTED);
-                    }
-                }
             }
 
-            tree.deleteClient(client);
+            tree.deleteClient(client, { reason: reason_id, message: entry["reasonmsg"], serverLeave: targetChannelId === 0 });
         }
     }
 
@@ -767,44 +737,41 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         let mode = json["targetmode"];
         if(mode == 1){
-            //json["invokerid"], json["invokername"], json["invokeruid"]
-            const target_client_id = parseInt(json["target"]);
-            const target_own = target_client_id === this.connection.client.getClientId();
+            const targetClientId = parseInt(json["target"]);
+            const invokerClientId = parseInt(json["invokerid"]);
 
-            if(target_own && target_client_id === json["invokerid"]) {
-                log.error(LogCategory.NETWORKING, tr("Received conversation message from invalid client id. Data: %o"), json);
+            const targetClientEntry = this.connection_handler.channelTree.findClient(targetClientId);
+            const targetIsOwn = targetClientEntry instanceof LocalClientEntry;
+
+            if(targetIsOwn && targetClientId === invokerClientId) {
+                log.error(LogCategory.NETWORKING, tr("Received conversation message from our self. This should be impossible."), json);
                 return;
             }
+
+            const partnerClientEntry = targetIsOwn ? this.connection.client.channelTree.findClient(invokerClientId) : targetClientEntry;
+            const chatPartner = partnerClientEntry ? partnerClientEntry : {
+                clientId: targetIsOwn ? invokerClientId : targetClientId,
+                nickname: targetIsOwn ? json["invokername"] : undefined,
+                uniqueId: targetIsOwn ? json["invokeruid"] : undefined
+            } as OutOfViewClient;
 
             const conversation_manager = this.connection_handler.side_bar.private_conversations();
-            const conversation = conversation_manager.find_conversation({
-                client_id: target_own ? parseInt(json["invokerid"]) : target_client_id,
-                unique_id: target_own ? json["invokeruid"] : undefined,
-                name: target_own ? json["invokername"] : undefined
-            }, {
-                create: target_own,
-                attach: target_own
-            });
-            if(!conversation) {
-                log.error(LogCategory.NETWORKING, tr("Received conversation message for unknown conversation! (%s)"), target_own ? tr("Remote message") : tr("Own message"));
-                return;
-            }
+            const conversation = conversation_manager.findOrCreateConversation(chatPartner);
 
-            conversation.append_message(json["msg"], {
-                type: target_own ? "partner" : "self",
-                name: json["invokername"],
-                unique_id: json["invokeruid"],
-                client_id: parseInt(json["invokerid"])
-            });
+            conversation.handleIncomingMessage(chatPartner, !targetIsOwn, {
+                sender_database_id: targetClientEntry ? targetClientEntry.properties.client_database_id : 0,
+                sender_name: json["invokername"],
+                sender_unique_id: json["invokeruid"],
 
-            if(target_own) {
+                timestamp: Date.now(),
+                message: json["msg"]
+            });
+            if(targetIsOwn) {
                 this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
-                const client = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
-                if(client) /* the client itself might be invisible */
-                    client.setUnread(conversation.is_unread());
             } else {
                 this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
             }
+            this.connection_handler.side_bar.info_frame().update_chat_counter();
         } else if(mode == 2) {
             const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
             const own_channel_id = this.connection.client.getClient().currentChannel().channelId;
@@ -826,10 +793,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 sender_unique_id: json["invokeruid"],
 
                 timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
-                message: json["msg"],
-
-                unique_id: Date.now() + " - " + Math.random()
-            }, !(invoker instanceof LocalClientEntry));
+                message: json["msg"]
+            }, invoker instanceof LocalClientEntry);
         } else if(mode == 3) {
             this.connection_handler.log.log(server_log.Type.GLOBAL_MESSAGE, {
                 message: json["msg"],
@@ -852,10 +817,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 sender_unique_id: json["invokeruid"],
 
                 timestamp: typeof(json["timestamp"]) === "undefined" ? Date.now() : parseInt(json["timestamp"]),
-                message: json["msg"],
-
-                unique_id: Date.now() + " - " + Math.random()
-            }, !(invoker instanceof LocalClientEntry));
+                message: json["msg"]
+            }, invoker instanceof LocalClientEntry);
         }
     }
 
@@ -863,42 +826,21 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         json = json[0];
 
         const conversation_manager = this.connection_handler.side_bar.private_conversations();
-        const conversation = conversation_manager.find_conversation({
-            client_id: parseInt(json["clid"]),
-            unique_id: json["cluid"],
-            name: undefined
-        }, {
-            create: false,
-            attach: false
-        });
-        if(!conversation)
-            return;
-
-        conversation.trigger_typing();
+        const conversation = conversation_manager.findConversation(json["cluid"]);
+        conversation?.handleRemoteComposing(parseInt(json["clid"]));
     }
 
     handleNotifyClientChatClosed(json) {
         json = json[0]; //Only one bulk
 
-        //Chat partner has closed the conversation
-
-        //clid: "6"
-        //cluid: "YoWmG+dRGKD+Rxb7SPLAM5+B9tY="
-
         const conversation_manager = this.connection_handler.side_bar.private_conversations();
-        const conversation = conversation_manager.find_conversation({
-            client_id: parseInt(json["clid"]),
-            unique_id: json["cluid"],
-            name: undefined
-        }, {
-            create: false,
-            attach: false
-        });
+        const conversation = conversation_manager.findConversation(json["cluid"]);
         if(!conversation) {
             log.warn(LogCategory.GENERAL, tr("Received chat close for client, but we haven't a chat open."));
             return;
         }
-        conversation.set_state(PrivateConversationState.CLOSED);
+
+        conversation.handleChatRemotelyClosed(parseInt(json["clid"]));
     }
 
     handleNotifyClientUpdated(json) {
@@ -1037,7 +979,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
             channel.flag_subscribed = false;
             for(const client of channel.clients(false))
-                this.connection.client.channelTree.deleteClient(client);
+                this.connection.client.channelTree.deleteClient(client, { reason: ViewReasonId.VREASON_SYSTEM, serverLeave: false });
         }
     }
 

@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ReactElement} from "react";
 import {Registry} from "tc-shared/events";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
 
 const cssStyle = require("./Modal.scss");
 
@@ -106,7 +107,7 @@ export abstract class Modal {
 
     type() : ModalType { return "none"; }
     abstract renderBody() : ReactElement;
-    abstract title() : string;
+    abstract title() : string | React.ReactElement<Translatable>;
 
     /**
      * Will only return a modal controller when the modal has not been destroyed
@@ -170,6 +171,7 @@ class ModalImpl extends React.PureComponent<{ controller: ModalController  }, { 
     }
 }
 
+export function spawnReactModal<ModalClass extends Modal, A1>(modalClass: new () => ModalClass) : ModalController<ModalClass>;
 export function spawnReactModal<ModalClass extends Modal, A1>(modalClass: new (..._: [A1]) => ModalClass, arg1: A1) : ModalController<ModalClass>;
 export function spawnReactModal<ModalClass extends Modal, A1, A2>(modalClass: new (..._: [A1, A2]) => ModalClass, arg1: A1, arg2: A2) : ModalController<ModalClass>;
 export function spawnReactModal<ModalClass extends Modal, A1, A2, A3>(modalClass: new (..._: [A1, A2, A3]) => ModalClass, arg1: A1, arg2: A2, arg3: A3) : ModalController<ModalClass>;

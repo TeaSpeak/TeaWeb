@@ -134,6 +134,7 @@ const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [
         "type": "js",
         "search-pattern": /.*(\.min)?\.js$/,
         "build-target": "dev|rel",
+        "search-exclude": /.*xbbcode.*/g,
 
         "path": "vendor/",
         "local-path": "./vendor/"
@@ -142,6 +143,7 @@ const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [
         "type": "css",
         "search-pattern": /.*\.css$/,
         "build-target": "dev|rel",
+        "search-exclude": /.*xbbcode.*/g,
 
         "path": "vendor/",
         "local-path": "./vendor/"

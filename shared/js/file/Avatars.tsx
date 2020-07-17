@@ -254,20 +254,30 @@ export class AvatarManager {
     }
 
     update_cache(clientAvatarId: string, clientAvatarHash: string) {
-        AvatarManager.cache.setup().then(() => {
-            const deletePromise = AvatarManager.cache.delete("avatar_" + clientAvatarId).catch(error => {
-                log.warn(LogCategory.FILE_TRANSFER, tr("Failed to delete avatar %s: %o"), clientAvatarId, error);
-            });
-
+        AvatarManager.cache.setup().then(async () => {
             const cached = this.cachedAvatars[clientAvatarId];
-            if(!cached || cached.currentAvatarHash === clientAvatarHash) return;
+            if(cached) {
+                if(cached.currentAvatarHash === clientAvatarHash)
+                    return;
 
-            log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.currentAvatarHash, clientAvatarHash);
-            deletePromise.then(() => {
+                log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.currentAvatarHash, clientAvatarHash);
+            }
+
+            const response = await AvatarManager.cache.resolve_cached('avatar_' + clientAvatarId);
+            if(response) {
+                let cachedAvatarHash = response.headers.has("X-avatar-version") ? response.headers.get("X-avatar-version") : undefined;
+                if(cachedAvatarHash !== clientAvatarHash) {
+                    await AvatarManager.cache.delete("avatar_" + clientAvatarId).catch(error => {
+                        log.warn(LogCategory.FILE_TRANSFER, tr("Failed to delete avatar %s: %o"), clientAvatarId, error);
+                    });
+                }
+            }
+
+            if(cached) {
                 cached.currentAvatarHash = clientAvatarHash;
                 cached.events.fire("avatar_changed");
                 this.executeAvatarLoad(cached);
-            });
+            }
         });
     }
 

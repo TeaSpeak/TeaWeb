@@ -15,7 +15,8 @@ interface ChatBoxEvents {
         message: string
     },
     action_insert_text: {
-        text: string
+        text: string,
+        focus?: boolean
     },
 
     notify_typing: {}
@@ -47,6 +48,7 @@ const EmojiButton = (props: { events: Registry<ChatBoxEvents> }) => {
     });
 
     props.events.reactUse("action_set_enabled", event => setEnabled(event.enabled));
+    props.events.reactUse("action_submit_message", () => setShown(false));
 
     return (
         <div className={cssStyle.containerEmojis} ref={refContainer}>
@@ -65,7 +67,7 @@ const EmojiButton = (props: { events: Registry<ChatBoxEvents> }) => {
 
                     onSelect={(emoji: any) => {
                         if(enabled) {
-                            props.events.fire("action_insert_text", { text: emoji.native });
+                            props.events.fire("action_insert_text", { text: emoji.native, focus: true });
                         }
                     }}
                 />
@@ -222,7 +224,11 @@ const TextInput = (props: { events: Registry<ChatBoxEvents>, enabled?: boolean, 
 
         typingTimeout.current = setTimeout(() => typingTimeout.current = undefined, 1000);
     });
-    props.events.reactUse("action_insert_text", event => refInput.current.innerHTML = refInput.current.innerHTML + event.text);
+    props.events.reactUse("action_insert_text", event => {
+        refInput.current.innerHTML = refInput.current.innerHTML + event.text;
+        if(event.focus)
+            refInput.current.focus();
+    });
     props.events.reactUse("action_set_enabled", event => {
         setEnabled(event.enabled);
         if(!event.enabled) {
@@ -263,7 +269,7 @@ export interface ChatBoxState {
 export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
     readonly events = new Registry<ChatBoxEvents>();
     private callbackSubmit = event => this.props.onSubmit(event.message);
-    private callbackType = event => this.props.onType && this.props.onType();
+    private callbackType = () => this.props.onType && this.props.onType();
 
     constructor(props) {
         super(props);

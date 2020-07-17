@@ -86,12 +86,15 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
     }
 
     render() {
-        let separatorClassNames = cssStyle.separator + " " + (this.props.separatorClassName || "");
+        let separatorClassNames = cssStyle.separator;
 
         if(this.props.direction === "vertical")
             separatorClassNames += " " + cssStyle.vertical;
         else
             separatorClassNames += " " + cssStyle.horizontal;
+
+        if(this.props.separatorClassName)
+            separatorClassNames += " " + this.props.separatorClassName;
 
         if(this.state.active && this.props.separatorClassName)
             separatorClassNames += " " + this.props.separatorClassName;
@@ -145,7 +148,6 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
 
         if(this.props.direction === "horizontal") {
             const center = this.refSeparator.current.clientWidth;
-
             previousElement.style.width = `calc(${this.value}% - ${center / 2}px)`;
             nextElement.style.width = `calc(${100 - this.value}% - ${center / 2}px)`;
         } else {

@@ -11,6 +11,7 @@ import {
 import {initializeRemoteFileBrowserController} from "tc-shared/ui/modal/transfer/RemoteFileBrowserController";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {initializeTransferInfoController} from "tc-shared/ui/modal/transfer/TransferInfoController";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
 
 const cssStyle = require("./ModalFileTransfer.scss");
 export const channelPathPrefix = tr("Channel") + " ";
@@ -206,8 +207,8 @@ class FileTransferModal extends Modal {
         this.transferInfoEvents.fire("notify_modal_closed");
     }
 
-    title(): string {
-        return tr("File Browser");
+    title() {
+        return <Translatable>File Browser</Translatable>;
     }
 
     renderBody() {

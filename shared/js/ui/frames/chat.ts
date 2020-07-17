@@ -3,6 +3,8 @@ import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
 import {bbcode} from "tc-shared/MessageFormatter";
 import * as loader from "tc-loader";
+import { XBBCodeRenderer } from "vendor/xbbcode/react";
+import * as React from "react";
 
 export enum ChatType {
     GENERAL,
@@ -142,6 +144,7 @@ export function bbcode_chat(message: string) : JQuery[] {
     });
 }
 
+
 export namespace network {
     export const KB = 1024;
     export const MB = 1024 * KB;
@@ -278,7 +281,7 @@ export function set_icon_size(size: string) {
         _icon_size_style = $.spawn("style").appendTo($("#style"));
 
     _icon_size_style.text("\n" +
-        ".message > .emoji {\n" +
+        ".chat-emoji {\n" +
         "  height: " + size + "!important;\n" +
         "  width: " + size + "!important;\n" +
         "}\n"

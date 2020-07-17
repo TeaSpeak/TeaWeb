@@ -1,11 +1,23 @@
 # Changelog:
 * **XX.XX.20**
-    - Rewrote the channel conversation UI
+    - Rewrote the channel conversation UI and manager
       - Several bug fixes like the scrollbar 
       - Updated the channel history view mode
       - Improved chat box behaviour
       - Automatically crawling all channels on server join for new messages (requires TeaSpeak 1.4.16-b2 or higher)
-      
+      - Improved the channel chat history browsing experience
+  - Added support for the `qote` bbcode and markdown syntax
+  - Recoded the private conversation UI and manager
+      - Improved client disconnect/reconnect handing
+      - Updated several chat box issues
+      - Improved history view
+      - Improved chat experience when chatting with two different users which have the same identity
+      - Automatically reopening the last open private chats
+      - Fixed the chat partner typing indicator
+  - Fixed chat scroll bar after switching tabs
+  - Fixed the chat "scroll to new messages" button
+  - Finalized the loader animation
+  
 * **12.07.20**
     - Made the loader compatible with ES5 to support older browsers
     - Updated the loader animation

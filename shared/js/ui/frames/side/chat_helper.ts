@@ -135,14 +135,6 @@ export namespace helpers {
                 "ins_open": () => "[u]",
                 "ins_close": () => "[/u]",
 
-                /*
-```
-test
-[/code]
-test
-```
-                 */
-
                 "code": (renderer: Renderer, token: RemarkToken) => "[i-code]" + escapeBBCode(token.content) + "[/i-code]",
                 "fence": (renderer: Renderer, token: RemarkToken) => "[code" + (token.params ? ("=" + token.params) : "") + "]" + escapeBBCode(token.content) + "[/code]",
 
@@ -254,45 +246,6 @@ test
         return process_url ? process_urls(message) : message;
     }
 
-    export namespace history {
-        let _local_cache: Cache;
-
-        async function get_cache() {
-            if(_local_cache)
-                return _local_cache;
-
-            if(!('caches' in window))
-                throw "missing cache extension!";
-
-            return (_local_cache = await caches.open('chat_history'));
-        }
-
-        export async function load_history(key: string) : Promise<any | undefined> {
-            const cache = await get_cache();
-            const request = new Request("https://_local_cache/cache_request_" + key);
-            const cached_response = await cache.match(request);
-            if(!cached_response)
-                return undefined;
-
-            return await cached_response.json();
-        }
-
-        export async function save_history(key: string, value: any) {
-            const cache = await get_cache();
-            const request = new Request("https://_local_cache/cache_request_" + key);
-            const data = JSON.stringify(value);
-
-            const new_headers = new Headers();
-            new_headers.set("Content-type", "application/json");
-            new_headers.set("Content-length", data.length.toString());
-
-
-            await cache.put(request, new Response(data, {
-                headers: new_headers
-            }));
-        }
-    }
-
     export namespace date {
         export function same_day(a: number | Date, b: number | Date) {
             a = a instanceof Date ? a : new Date(a);
@@ -315,18 +268,30 @@ export namespace format {
             GENERAL
         }
 
+        function dateEqual(a: Date, b: Date) {
+            return  a.getUTCFullYear() === b.getUTCFullYear() &&
+                    a.getUTCMonth() === b.getUTCMonth() &&
+                    a.getUTCDate() === b.getUTCDate();
+        }
+
         export function date_format(date: Date, now: Date, ignore_settings?: boolean) : ColloquialFormat {
             if(!ignore_settings && !settings.static_global(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS))
                 return ColloquialFormat.GENERAL;
 
-            let delta_day = now.getDate() - date.getDate();
-            if(delta_day < 1)   /* month change? */
-                delta_day = date.getDate() - now.getDate();
-            if(delta_day == 0)
+            if(dateEqual(date, now))
                 return ColloquialFormat.TODAY;
-            else if(delta_day == 1)
+
+            date = new Date(date.getTime());
+            date.setDate(date.getDate() + 1);
+
+            if(dateEqual(date, now))
                 return ColloquialFormat.YESTERDAY;
+
             return ColloquialFormat.GENERAL;
+        }
+
+        export function formatDayTime(date: Date) {
+            return ("0" + date.getHours()).substr(-2) + ":" + ("0" + date.getMinutes()).substr(-2);
         }
 
         export function format_date_general(date: Date, hours?: boolean) : string {
@@ -354,7 +319,7 @@ export namespace format {
                     time = "PM";
                 }
                 return {
-                    result: (format == ColloquialFormat.YESTERDAY ? tr("Yesterday at") : tr("Today at")) + " " + hrs + ":" + date.getMinutes() + " " + time,
+                    result: (format == ColloquialFormat.YESTERDAY ? tr("Yesterday at") : tr("Today at")) + " " + ("0" + hrs).substr(-2) + ":" + ("0" + date.getMinutes()).substr(-2) + " " + time,
                     format: format
                 };
             }

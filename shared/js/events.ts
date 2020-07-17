@@ -161,6 +161,7 @@ export class Registry<Events> {
     }
 
     fire_async<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void) {
+        /* TODO: Optimize, bundle them */
         setTimeout(() => {
             this.fire(event_type, data);
             if(typeof callback === "function")
@@ -174,27 +175,39 @@ export class Registry<Events> {
         this.event_handler_objects = [];
     }
 
-    register_handler(handler: any) {
+    register_handler(handler: any, parentClasses?: boolean) {
         if(typeof handler !== "object")
             throw "event handler must be an object";
+
         const proto = Object.getPrototypeOf(handler);
         if(typeof proto !== "object")
             throw "event handler must have a prototype";
 
+        let currentPrototype = proto;
         let registered_events = {};
-        for(const function_name of Object.getOwnPropertyNames(proto)) {
-            if(function_name === "constructor") continue;
-            if(typeof proto[function_name] !== "function") continue;
-            if(typeof proto[function_name][event_annotation_key] !== "object") continue;
+        do {
+            Object.getOwnPropertyNames(currentPrototype).forEach(function_name => {
+                if(function_name === "constructor")
+                    return;
 
-            const event_data = proto[function_name][event_annotation_key];
-            const ev_handler = event => proto[function_name].call(handler, event);
-            for(const event of event_data.events) {
-                registered_events[event] = registered_events[event] || [];
-                registered_events[event].push(ev_handler);
-                this.on(event, ev_handler);
-            }
-        }
+                if(typeof proto[function_name] !== "function")
+                    return;
+
+                if(typeof proto[function_name][event_annotation_key] !== "object")
+                    return;
+
+                const event_data = proto[function_name][event_annotation_key];
+                const ev_handler = event => proto[function_name].call(handler, event);
+                for(const event of event_data.events) {
+                    registered_events[event] = registered_events[event] || [];
+                    registered_events[event].push(ev_handler);
+                    this.on(event, ev_handler);
+                }
+            });
+
+            if(!parentClasses)
+                break;
+        } while ((currentPrototype = Object.getPrototypeOf(currentPrototype)))
         if(Object.keys(registered_events).length === 0) {
             console.warn(tr("no events found in event handler"));
             return;

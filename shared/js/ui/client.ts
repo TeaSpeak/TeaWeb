@@ -138,7 +138,12 @@ export class ClientConnectionInfo {
 
 export interface ClientEvents extends ChannelTreeEntryEvents {
     "notify_enter_view": {},
-    "notify_left_view": {},
+    notify_client_moved: { oldChannel: ChannelEntry, newChannel: ChannelEntry }
+    "notify_left_view": {
+        reason: ViewReasonId;
+        message?: string;
+        serverLeave: boolean;
+    },
 
     notify_properties_updated: {
         updated_properties: {[Key in keyof ClientProperties]: ClientProperties[Key]};
@@ -496,17 +501,11 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
     open_text_chat() {
         const chat = this.channelTree.client.side_bar;
-        const conversation = chat.private_conversations().find_conversation({
-            name: this.clientNickName(),
-            client_id: this.clientId(),
-            unique_id: this.clientUid()
-        }, {
-            attach: true,
-            create: true
-        });
-        chat.private_conversations().set_selected_conversation(conversation);
+        const conversation = chat.private_conversations().findOrCreateConversation(this);
+        conversation.setActiveClientEntry(this);
+        chat.private_conversations().setActiveConversation(conversation);
         chat.show_private_conversations();
-        chat.private_conversations().try_input_focus();
+        chat.private_conversations().focusInput();
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
@@ -753,17 +752,6 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     }
                 }
 
-                const chat = this.channelTree.client.side_bar;
-                const conversation = chat.private_conversations().find_conversation({
-                    name: this.clientNickName(),
-                    client_id: this.clientId(),
-                    unique_id: this.clientUid()
-                }, {
-                    attach: false,
-                    create: false
-                });
-                if(conversation)
-                    conversation.set_client_name(variable.value);
                 reorder_channel = true;
             }
             if(variable.key == "client_unique_identifier") {
@@ -798,14 +786,9 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
             if(client_info.current_client() === this)
                 client_info.set_current_client(this, true); /* force an update */
         }
-        if(update_avatar) {
-            this.channelTree.client.fileManager.avatars.update_cache(this.avatarId(), this.properties.client_flag_avatar);
 
-            const conversations = side_bar.private_conversations();
-            const conversation = conversations.find_conversation({name: this.clientNickName(), unique_id: this.clientUid(), client_id: this.clientId()}, {create: false, attach: false});
-            if(conversation)
-                conversation.update_avatar();
-        }
+        if(update_avatar)
+            this.channelTree.client.fileManager.avatars.update_cache(this.avatarId(), this.properties.client_flag_avatar);
 
         /* devel-block(log-client-property-updates) */
         group.end();

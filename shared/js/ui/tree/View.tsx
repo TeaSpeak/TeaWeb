@@ -83,6 +83,9 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     }
 
     componentDidMount(): void {
+        (window as any).channelTrees = (window as any).channelTrees || [];
+        (window as any).channelTrees.push(this);
+
         this.resize_observer = new ResizeObserver(entries => {
             if(entries.length !== 1) {
                 if(entries.length === 0)
@@ -104,6 +107,8 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     }
 
     componentWillUnmount(): void {
+        (window as any).channelTrees?.remove(this);
+
         this.resize_observer.disconnect();
         this.resize_observer = undefined;
 
@@ -111,7 +116,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     }
 
     protected initialize() {
-        (window as any).do_tree_update = () => this.handleTreeUpdate();
         this.listener_client_change = () => this.handleTreeUpdate();
         this.listener_channel_change = () => this.handleTreeUpdate();
         this.listener_state_collapsed = () => this.handleTreeUpdate();
@@ -143,7 +147,6 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
                      this.setState({ smoothScroll: true });
                 }, 50);
             }, 50);
-            console.log("Update scroll!");
         }
     }
 
