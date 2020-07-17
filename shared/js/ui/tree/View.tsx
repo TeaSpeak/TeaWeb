@@ -62,7 +62,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
     private listener_tree_visibility_changed;
 
     private update_timeout;
-    private fixScrollTimer;
+    private scrollFixRequested;
 
     private mouse_move: { x: number, y: number, down: boolean, fired: boolean } = { x: 0, y: 0, down: false, fired: false };
     private document_mouse_listener;
@@ -135,18 +135,20 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         };
 
         this.listener_tree_visibility_changed = (event: ConnectionEvents["notify_visibility_changed"]) => {
-            clearTimeout(this.fixScrollTimer);
             if(!event.visible) {
                 this.setState({ smoothScroll: false });
                 return;
             }
 
-            this.fixScrollTimer = setTimeout(() => {
+            if(this.scrollFixRequested)
+                return;
+
+            this.scrollFixRequested = true;
+            requestAnimationFrame(() => {
+                this.scrollFixRequested = false;
                 this.ref_container.current.scrollTop = this.state.scroll_offset;
-                this.fixScrollTimer = setTimeout(() => {
-                     this.setState({ smoothScroll: true });
-                }, 50);
-            }, 50);
+                this.setState({ smoothScroll: true });
+            });
         }
     }
 

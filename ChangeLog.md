@@ -1,5 +1,5 @@
 # Changelog:
-* **XX.XX.20**
+* **18.07.20**
     - Rewrote the channel conversation UI and manager
       - Several bug fixes like the scrollbar 
       - Updated the channel history view mode
@@ -17,6 +17,7 @@
   - Fixed chat scroll bar after switching tabs
   - Fixed the chat "scroll to new messages" button
   - Finalized the loader animation
+  - Improved the channel tree scroll fix handler
   
 * **12.07.20**
     - Made the loader compatible with ES5 to support older browsers
