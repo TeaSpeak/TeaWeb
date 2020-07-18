@@ -55,8 +55,7 @@ var initial_css;
             gtag('config', 'UA-113151733-4');
         </script>
 
-        <%# We're preloading the PNG file by default since most browser have APNG support %>
-        <link rel="preload" as="image" href="img/loader/initial-sequence.png">
+        <link rel="preload" as="image" href="img/loader/initial-sequence.gif">
         <link rel="preload" as="image" href="img/loader/bowl.png">
         <%# We don't preload the bowl since it's only a div background %>
         <link rel="preload" as="image" href="img/loader/text.png">
@@ -84,7 +83,7 @@ var initial_css;
         <div class="loader" id="loader-overlay">
             <div class="container">
                 <div class="setup">
-                    <lazy-img src-apng="img/loader/initial-sequence.png" src-gif="img/loader/initial-sequence.gif" alt="initial loading sequence"></lazy-img>
+                    <lazy-img src="img/loader/initial-sequence.gif" alt="initial loading sequence"></lazy-img>
                 </div>
                 <div class="idle">
                     <lazy-img class="bowl" src="img/loader/bowl.png" alt="bowl"></lazy-img>
