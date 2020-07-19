@@ -1,21 +1,7 @@
-import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {LogCategory} from "tc-shared/log";
 import * as loader from "tc-loader";
 import * as log from "tc-shared/log";
 import {Registry} from "tc-shared/events";
-import category from "emoji-mart/dist-es/components/category";
-
-if(typeof(customElements) !== "undefined") {
-    try {
-        class X_Properties extends HTMLElement {}
-        class X_Property extends HTMLElement {}
-
-        customElements.define('x-properties', X_Properties, { extends: 'div' });
-        customElements.define('x-property', X_Property, { extends: 'div' });
-    } catch(error) {
-        console.warn("failed to define costume elements");
-    }
-}
 
 type ConfigValueTypes = boolean | number | string;
 type ConfigValueTypeNames = "boolean" | "number" | "string";
@@ -117,12 +103,11 @@ export class StaticSettings extends SettingsBase {
     }
 
     protected _handle: StaticSettings;
-    protected _staticPropsTag: JQuery;
+    protected staticValues = {};
 
     protected constructor(_reserved = undefined) {
         super();
         if(_reserved && !StaticSettings._instance) {
-            this._staticPropsTag = $("#properties");
             this.initializeStatic();
         } else {
             this._handle = StaticSettings.instance;
@@ -139,10 +124,7 @@ export class StaticSettings extends SettingsBase {
 
         search.substr(1).split("&").forEach(part => {
             let item = part.split("=");
-            $("<x-property></x-property>")
-                .attr("key", item[0])
-                .attr("value", item[1])
-                .appendTo(this._staticPropsTag);
+            this.staticValues[item[0]] = decodeURIComponent(item[1]);
         });
     }
 
@@ -154,12 +136,7 @@ export class StaticSettings extends SettingsBase {
             return this._handle.static<V, DV>(key, defaultValue);
         }
 
-        return StaticSettings.resolveKey(key, key => {
-            let result = this._staticPropsTag.find("[key='" + key + "']");
-            if(result.length > 0)
-                return decodeURIComponent(result.last().attr('value'));
-            return undefined;
-        }, key.valueType, arguments.length > 1 ? defaultValue : key.defaultValue);
+        return StaticSettings.resolveKey(key, key => this.staticValues[key], key.valueType, arguments.length > 1 ? defaultValue : key.defaultValue);
     }
 }
 
@@ -588,7 +565,8 @@ export class Settings extends StaticSettings {
             log.error(LogCategory.GENERAL, tr("Failed to load global settings!\nJson: %s\nError: %o"), json, error);
 
             const show_popup = () => {
-                createErrorModal(tr("Failed to load global settings"), tr("Failed to load global client settings!\nLookup console for more information.")).open();
+                //FIXME: Readd this
+                //createErrorModal(tr("Failed to load global settings"), tr("Failed to load global client settings!\nLookup console for more information.")).open();
             };
             if(!loader.finished())
                 loader.register_task(loader.Stage.LOADED, {
