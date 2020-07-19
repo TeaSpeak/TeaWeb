@@ -149,7 +149,7 @@ export class ConnectionHandler {
     private _clientId: number = 0;
     private _local_client: LocalClientEntry;
 
-    private _reconnect_timer: NodeJS.Timer;
+    private _reconnect_timer: number;
     private _reconnect_attempt: boolean = false;
 
     private _connect_initialize_id: number = 1;
@@ -1058,6 +1058,9 @@ export class ConnectionHandler {
     areQueriesShown() {
         return this.client_status.queries_visible;
     }
+
+    hasInputHardware() { return this.client_status.input_hardware; }
+    hasOutputHardware() { return this.client_status.output_muted; }
 }
 
 export type ConnectionStateUpdateType = "microphone" | "speaker" | "away" | "subscribe" | "query";

@@ -706,7 +706,7 @@ namespace watcher {
         }
 
         protected start_command(): string[] {
-            return ["npm", "run", "sass", "--", "--watch", ".:."];
+            return ["npm", "run", "sass", "--", "--watch", "shared/css:shared/css"];
         }
     }
 

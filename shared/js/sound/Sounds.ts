@@ -243,7 +243,7 @@ export class SoundManager {
         if(volume == 0 || master_volume == 0)
             return;
 
-        if(this._handle && !options.ignore_muted && !ignore_output_muted() && this._handle.client_status.output_muted)
+        if(this._handle && !options.ignore_muted && !ignore_output_muted() && this._handle.isSpeakerMuted())
             return;
 
         resolve_sound(_sound).then(handle => {

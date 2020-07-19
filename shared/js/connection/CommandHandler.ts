@@ -22,6 +22,7 @@ import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "tc-shared/conn
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {OutOfViewClient} from "tc-shared/ui/frames/side/PrivateConversationManager";
 import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
+import {tr} from "tc-shared/i18n/localize";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {

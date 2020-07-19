@@ -10,7 +10,7 @@ import {
     TextToken,
     Token
 } from "remarkable/lib";
-import {escapeBBCode} from "tc-shared/text/BBCodeHelper";
+import {escapeBBCode} from "tc-shared/text/bbcode";
 const { Remarkable } = require("remarkable");
 
 export class MD2BBCodeRenderer {

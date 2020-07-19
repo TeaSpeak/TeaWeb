@@ -18,6 +18,7 @@ import {
     ConversationUIEvents
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {ConversationPanel} from "tc-shared/ui/frames/side/ConversationUI";
+import {preprocessChatMessageForSend} from "tc-shared/text/chat";
 
 const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 
@@ -171,7 +172,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
     }
 
     protected doSendMessage(message: string, targetMode: number, target: number) : Promise<boolean> {
-        let msg = helpers.preprocess_chat_message(message);
+        let msg = preprocessChatMessageForSend(message);
         return this.connection.serverConnection.send_command("sendtextmessage", {
             targetmode: targetMode,
             cid: target,

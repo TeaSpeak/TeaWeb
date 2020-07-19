@@ -55,7 +55,7 @@ export class RecorderProfile {
     record_supported: boolean;
 
     private _ppt_hook: KeyHook;
-    private _ppt_timeout: NodeJS.Timer;
+    private _ppt_timeout: number;
     private _ppt_hook_registered: boolean;
 
     constructor(name: string, volatile?: boolean) {

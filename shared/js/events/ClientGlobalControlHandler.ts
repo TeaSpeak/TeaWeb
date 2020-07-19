@@ -13,6 +13,7 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
 import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
+import {tr} from "tc-shared/i18n/localize";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {

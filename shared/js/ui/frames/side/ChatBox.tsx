@@ -4,6 +4,8 @@ import {Registry} from "tc-shared/events";
 
 import '!style-loader!css-loader!emoji-mart/css/emoji-mart.css'
 import { Picker } from 'emoji-mart'
+import {settings, Settings} from "tc-shared/settings";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
 
 const cssStyle = require("./ChatBox.scss");
 
@@ -266,6 +268,27 @@ export interface ChatBoxState {
     enabled: boolean;
 }
 
+const MarkdownFormatHelper = () => {
+    const [ visible, setVisible ] = useState(settings.global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
+
+    settings.events.reactUse("notify_setting_changed", event => {
+        if(event.setting !== Settings.KEY_CHAT_ENABLE_MARKDOWN.key)
+            return;
+
+        setVisible(settings.global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
+    });
+
+    if(visible) {
+        return (
+            <div key={"help"} className={cssStyle.containerHelp}>*italic*, **bold**, ~~strikethrough~~, `code`, <Translatable>and more</Translatable>...</div>
+        );
+    } else {
+        return (
+            <div key={"placeholder"} className={cssStyle.containerHelp}>&nbsp;</div>
+        );
+    }
+};
+
 export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
     readonly events = new Registry<ChatBoxEvents>();
     private callbackSubmit = event => this.props.onSubmit(event.message);
@@ -294,7 +317,7 @@ export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
                 <EmojiButton events={this.events} />
                 <TextInput events={this.events} placeholder={tr("Type your message here...")} />
             </div>
-            <div className={cssStyle.containerHelp}>*italic*, **bold**, ~~strikethrough~~, `code`, and more...</div>
+            <MarkdownFormatHelper />
         </div>
     }
 

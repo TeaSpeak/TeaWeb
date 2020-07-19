@@ -5,6 +5,7 @@ import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {settings} from "tc-shared/settings";
 import {ConnectParameters, DisconnectReason} from "tc-shared/ConnectionHandler";
+import {tr} from "tc-shared/i18n/localize";
 
 export interface HandshakeIdentityHandler {
     connection: AbstractServerConnection;
@@ -13,7 +14,6 @@ export interface HandshakeIdentityHandler {
     register_callback(callback: (success: boolean, message?: string) => any);
 }
 
-declare const native_client;
 export class HandshakeHandler {
     private connection: AbstractServerConnection;
     private handshake_handler: HandshakeIdentityHandler;
@@ -101,10 +101,10 @@ export class HandshakeHandler {
             client_server_password: this.parameters.password ? this.parameters.password.password : undefined,
             client_browser_engine: navigator.product,
 
-            client_input_hardware: this.connection.client.client_status.input_hardware, //FIXME: No direct access to that state!
+            client_input_hardware: this.connection.client.hasInputHardware(),
             client_output_hardware: false,
-            client_input_muted: this.connection.client.client_status.input_muted, //FIXME: No direct access to that state!
-            client_output_muted: this.connection.client.client_status.output_muted, //FIXME: No direct access to that state!
+            client_input_muted: this.connection.client.isMicrophoneMuted(),
+            client_output_muted: this.connection.client.isSpeakerMuted(),
         };
 
         if(version) {

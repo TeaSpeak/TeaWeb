@@ -14,6 +14,7 @@ import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDecla
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {Registry} from "tc-shared/events";
 import {ClientEntry} from "tc-shared/ui/client";
+import {tr} from "tc-shared/i18n/localize";
 
 /* FIXME: Retry avatar download after some time! */
 

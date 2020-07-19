@@ -42,7 +42,7 @@ function process_urls(message: string) : string {
     return message || words.join(" ");
 }
 
-export function preprocess_chat_message(message: string) : string {
+export function preprocessChatMessageForSend(message: string) : string {
     const process_url = settings.static_global(Settings.KEY_CHAT_TAG_URLS);
     const parse_markdown = settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN);
     const escape_bb = !settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE);

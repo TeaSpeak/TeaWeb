@@ -7,6 +7,7 @@ import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDecla
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {Registry} from "tc-shared/events";
+import {tr} from "tc-shared/i18n/localize";
 
 export class PermissionInfo {
     name: string;

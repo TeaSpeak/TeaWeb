@@ -1,3 +1,4 @@
+import {tr} from "tc-shared/i18n/localize";
 
 export enum ImageType {
     UNKNOWN,

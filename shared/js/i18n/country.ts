@@ -1,3 +1,5 @@
+import {tr} from "tc-shared/i18n/localize";
+
 interface CountryInfo {
     name: string;
     alpha_2: string;

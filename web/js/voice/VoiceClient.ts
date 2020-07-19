@@ -19,7 +19,7 @@ export class VoiceClientController implements VoiceClient {
 
     private _time_index: number = 0;
     private _latency_buffer_length: number = 3;
-    private _buffer_timeout: NodeJS.Timer;
+    private _buffer_timeout: number;
 
     private _buffered_samples: AudioBuffer[] = [];
     private _playing_nodes: AudioBufferSourceNode[] = [];

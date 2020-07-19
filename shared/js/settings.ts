@@ -2,6 +2,7 @@ import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {LogCategory} from "tc-shared/log";
 import * as loader from "tc-loader";
 import * as log from "tc-shared/log";
+import {Registry} from "tc-shared/events";
 
 if(typeof(customElements) !== "undefined") {
     try {
@@ -138,6 +139,16 @@ export class StaticSettings extends SettingsBase {
         key = StaticSettings.keyify(key);
         let result = this._staticPropsTag.find("[key='" + key.key + "']");
         if(result.length != 0) result.detach();
+    }
+}
+
+export interface SettingsEvents {
+    notify_setting_changed: {
+        setting: string,
+        mode: "global" | "server",
+
+        oldValue: string,
+        newValue: string
     }
 }
 
@@ -420,13 +431,15 @@ export class Settings extends StaticSettings {
         (window as any).Settings = Settings;
     }
 
-    private cacheGlobal = {};
-    private saveWorker: NodeJS.Timer;
+    readonly events: Registry<SettingsEvents>;
+    private readonly cacheGlobal = {};
+    private saveWorker: number;
     private updated: boolean = false;
 
     constructor() {
         super();
 
+        this.events = new Registry<SettingsEvents>();
         const json = localStorage.getItem("settings.global");
         try {
             this.cacheGlobal = JSON.parse(json);
@@ -471,8 +484,14 @@ export class Settings extends StaticSettings {
         if(this.cacheGlobal[key.key] === value) return;
 
         this.updated = true;
+        const oldValue = this.cacheGlobal[key.key];
         this.cacheGlobal[key.key] = StaticSettings.transformOtS(value);
-
+        this.events.fire("notify_setting_changed", {
+            mode: "global",
+            newValue: this.cacheGlobal[key.key],
+            oldValue: oldValue,
+            setting: key.key
+        });
         if(Settings.UPDATE_DIRECT)
             this.save();
     }
@@ -489,7 +508,7 @@ export class Settings extends StaticSettings {
 export class ServerSettings extends SettingsBase {
     private cacheServer = {};
     private _server_unique_id: string;
-    private _server_save_worker: NodeJS.Timer;
+    private _server_save_worker: number;
     private _server_settings_updated: boolean = false;
     private _destroyed = false;
 

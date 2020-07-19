@@ -143,11 +143,11 @@ export async function load() {
     if (profiles_data.version == 1) {
         for (const profile_data of profiles_data.profiles) {
             const profile = await decode_profile(profile_data);
-            if (typeof (profile) === 'string') {
+            if (typeof profile === "string") {
                 console.error(tr("Failed to load profile. Reason: %s, Profile data: %s"), profile, profiles_data);
-                continue;
+            } else {
+                available_profiles.push(profile as ConnectionProfile);
             }
-            available_profiles.push(profile);
         }
     }
 

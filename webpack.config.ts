@@ -133,8 +133,9 @@ export const config = async (target: "web" | "client") => { return {
                     {
                         loader: 'ts-loader',
                         options: {
-                            transpileOnly: true,
-                            getCustomTransformers: (prog: ts.Program) => {
+                            context: __dirname,
+                            colors: true,
+                            getCustomTransformers(prog: ts.Program) {
                                 return {
                                     before: [trtransformer(prog, {
                                         optimized: false,

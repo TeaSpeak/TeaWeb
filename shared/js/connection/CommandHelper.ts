@@ -12,6 +12,7 @@ import {ChannelEntry} from "tc-shared/ui/channel";
 import {ClientEntry} from "tc-shared/ui/client";
 import {ChatType} from "tc-shared/ui/frames/chat";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
+import {tr} from "tc-shared/i18n/localize";
 
 export class CommandHelper extends AbstractCommandHandler {
     private _who_am_i: any;

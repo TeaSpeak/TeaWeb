@@ -26,10 +26,8 @@ import {spawnKeySelect} from "tc-shared/ui/modal/ModalKeySelect";
 import {spawnTeamSpeakIdentityImport, spawnTeamSpeakIdentityImprove} from "tc-shared/ui/modal/ModalIdentity";
 import {Device} from "tc-shared/audio/player";
 import {LevelMeter} from "tc-shared/voice/RecorderBase";
-import * as loader from "tc-loader";
 import * as aplayer from "tc-backend/audio/player";
 import * as arecorder from "tc-backend/audio/recorder";
-import * as ppt from "tc-backend/ppt";
 import {KeyMapSettings} from "tc-shared/ui/modal/settings/Keymap";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
@@ -394,22 +392,16 @@ function settings_general_chat(container: JQuery, modal: Modal) {
         }).prop("checked", settings.static_global(Settings.KEY_CHAT_COLORED_EMOJIES));
     }
 
-    const update_format_helper = () => server_connections.all_connections().map(e => e.side_bar).forEach(e => {
-        e.private_conversations().update_input_format_helper();
-        e.channel_conversations().update_input_format_helper();
-    });
     {
         const option = container.find(".option-support-markdown") as JQuery<HTMLInputElement>;
         option.on('change', event => {
             settings.changeGlobal(Settings.KEY_CHAT_ENABLE_MARKDOWN, option[0].checked);
-            update_format_helper();
         }).prop("checked", settings.static_global(Settings.KEY_CHAT_ENABLE_MARKDOWN));
     }
     {
         const option = container.find(".option-support-bbcode") as JQuery<HTMLInputElement>;
         option.on('change', event => {
             settings.changeGlobal(Settings.KEY_CHAT_ENABLE_BBCODE, option[0].checked);
-            update_format_helper();
         }).prop("checked", settings.static_global(Settings.KEY_CHAT_ENABLE_BBCODE));
     }
     {

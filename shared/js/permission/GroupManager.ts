@@ -7,6 +7,7 @@ import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ConnectionEvents, ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {Registry} from "tc-shared/events";
+import {tr} from "tc-shared/i18n/localize";
 
 export enum GroupType {
     QUERY,

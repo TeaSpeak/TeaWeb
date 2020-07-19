@@ -8,7 +8,6 @@ import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {format} from "tc-shared/ui/frames/side/chat_helper";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {BBCodeChatMessage} from "tc-shared/MessageFormatter";
 import {Countdown} from "tc-shared/ui/react-elements/Countdown";
 import {
     ChatEvent,
@@ -23,10 +22,11 @@ import {
     ConversationUIEvents
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
+import {BBCodeRenderer} from "tc-shared/text/bbcode";
 
 const cssStyle = require("./ConversationUI.scss");
 
-const CMTextRenderer = React.memo((props: { text: string }) => <BBCodeChatMessage message={props.text} />);
+const CMTextRenderer = React.memo((props: { text: string }) => <BBCodeRenderer settings={{ convertSingleUrls: true }} message={props.text} />);
 
 const ChatEventMessageRenderer = React.memo((props: {
     message: ChatMessage,

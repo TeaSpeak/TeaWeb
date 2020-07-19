@@ -11,6 +11,7 @@ import {
     TransferTargetType
 } from "tc-shared/file/Transfer";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {tr} from "tc-shared/i18n/localize";
 
 const icon_cache: ImageCache = new ImageCache("icons");
 export interface IconManagerEvents {

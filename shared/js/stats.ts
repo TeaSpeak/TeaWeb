@@ -1,8 +1,6 @@
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 
-const LOG_PREFIX = "[Statistics] ";
-
 enum CloseCodes {
     UNSET = 3000,
     RECONNECT = 3001,
@@ -45,7 +43,7 @@ export interface UserCountData {
 
 export type UserCountListener = (data: UserCountData) => any;
 
-let reconnect_timer: NodeJS.Timer;
+let reconnect_timer: number;
 let current_config: Config;
 
 let last_user_count_update: number;
@@ -241,21 +239,4 @@ namespace connection {
         handler["notifyinitialized"] = handle_notify_initialized;
         handler["notifyusercount"] = handle_notify_user_count;
     }
-}
-
-
-
-{
-    var X; /* just declare the identifier so we'll not getting a reference error */
-    const A = () => {
-        console.log("Variable X: %o", X);
-    };
-
-    {
-        class X {
-
-        }
-        A();
-    }
-    A();
 }

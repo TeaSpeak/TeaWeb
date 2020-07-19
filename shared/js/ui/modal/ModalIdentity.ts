@@ -5,7 +5,7 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 
 export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: string): Modal {
     let modal: Modal;
-    let elapsed_timer: NodeJS.Timer;
+    let elapsed_timer: number;
 
     modal = createModal({
         header: tr("Improve identity"),

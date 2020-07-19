@@ -350,7 +350,7 @@ function main() {
     /** Setup the XF forum identity **/
     fidentity.update_forum();
 
-    let _resize_timeout: NodeJS.Timer;
+    let _resize_timeout;
     $(window).on('resize', event => {
         if(event.target !== window)
             return;

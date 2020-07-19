@@ -20,7 +20,7 @@ import {
     TransferTargetSupplier,
 } from "tc-shared/file/Transfer";
 import {Registry} from "tc-shared/events";
-import {tra} from "tc-shared/i18n/localize";
+import {tr, tra} from "tc-shared/i18n/localize";
 
 export enum FileType {
     DIRECTORY = 0,

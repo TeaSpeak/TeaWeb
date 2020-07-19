@@ -12,6 +12,9 @@ declare global {
         log: any;
         StaticSettings: any;
     }
+
+    const tr: typeof window.tr;
+    const tra: typeof window.tr;
 }
 
 export interface Config {

@@ -26,6 +26,9 @@
     "shared/generated",
     "web/declarations/**/*.d.ts",
     "web/generated/",
-    "web/environment/"
+    "web/environment/",
+    "loader/app/targets/certaccept.ts",
+    "tools/",
+    "vendor"
   ]
 }

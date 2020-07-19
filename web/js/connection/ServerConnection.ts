@@ -24,7 +24,7 @@ class ReturnListener<T> {
     reject: (reason?: any) => void;
     code: string;
 
-    timeout: NodeJS.Timer;
+    timeout: number;
 }
 
 export class ServerConnection extends AbstractServerConnection {
@@ -36,7 +36,7 @@ export class ServerConnection extends AbstractServerConnection {
 
     private _socket_connected: WebSocket;
 
-    private _connect_timeout_timer: NodeJS.Timer = undefined;
+    private _connect_timeout_timer: number = undefined;
 
 
     private _connected: boolean = false;
@@ -129,7 +129,7 @@ export class ServerConnection extends AbstractServerConnection {
         let local_direct_socket: WebSocket;
         let local_proxy_socket: WebSocket;
         let connected_socket: WebSocket;
-        let local_timeout_timer: NodeJS.Timer;
+        let local_timeout_timer: number;
 
         /* setting up an timeout */
         local_timeout_timer = setTimeout(async () => {

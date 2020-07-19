@@ -8,7 +8,7 @@ export class Hostbanner {
     readonly client: ConnectionHandler;
 
     private _destryed = false;
-    private updater: NodeJS.Timer;
+    private updater;
 
     constructor(client: ConnectionHandler) {
         this.client = client;

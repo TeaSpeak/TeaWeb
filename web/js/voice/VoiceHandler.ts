@@ -15,6 +15,7 @@ import {settings} from "tc-shared/settings";
 import {CallbackInputConsumer, InputConsumerType, NodeInputConsumer} from "tc-shared/voice/RecorderBase";
 import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 import VoiceClient = voice.VoiceClient;
+import {tr} from "tc-shared/i18n/localize";
 
 export namespace codec {
     class CacheEntry {
@@ -153,7 +154,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     private voice_packet_id: number = 0;
     private chunkVPacketId: number = 0;
-    private send_task: NodeJS.Timer;
+    private send_task: number;
 
     private _audio_source: RecorderProfile;
     private _audio_clients: VoiceClientController[] = [];
