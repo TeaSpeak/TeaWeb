@@ -1,10 +1,7 @@
 import {LogCategory} from "tc-shared/log";
 import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
-import {bbcode} from "tc-shared/MessageFormatter";
 import * as loader from "tc-loader";
-import { XBBCodeRenderer } from "vendor/xbbcode/react";
-import * as React from "react";
 
 export enum ChatType {
     GENERAL,
@@ -136,14 +133,6 @@ export function formatMessageString(pattern: string, ...args: string[]) : string
 
     return result.join("");
 }
-
-//TODO: Remove this (only legacy)
-export function bbcode_chat(message: string) : JQuery[] {
-    return bbcode.format(message, {
-        is_chat_message: true
-    });
-}
-
 
 export namespace network {
     export const KB = 1024;

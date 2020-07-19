@@ -15,12 +15,13 @@ import {
 } from "tc-shared/ui/client";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "tc-shared/ConnectionHandler";
-import {bbcode_chat, formatMessage} from "tc-shared/ui/frames/chat";
+import {formatMessage} from "tc-shared/ui/frames/chat";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnPoke} from "tc-shared/ui/modal/ModalPoke";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {OutOfViewClient} from "tc-shared/ui/frames/side/PrivateConversationManager";
+import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {
@@ -218,7 +219,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 if(properties.virtualserver_hostmessage || properties.virtualserver_hostmessage_mode == 3)
                     createModal({
                         header: tr("Host message"),
-                        body: bbcode_chat(properties.virtualserver_hostmessage),
+                        body: renderBBCodeAsJQuery(properties.virtualserver_hostmessage, { convertSingleUrls: false }),
                         footer: undefined
                     }).open();
 

@@ -7,9 +7,6 @@ import * as image_preview from "../image_preview";
 import {format} from "tc-shared/ui/frames/side/chat_helper";
 import * as i18nc from "tc-shared/i18n/country";
 
-declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
-declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
-
 export class ClientInfo {
     readonly handle: Frame;
     private _html_tag: JQuery;

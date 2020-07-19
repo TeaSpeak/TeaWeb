@@ -1,10 +1,11 @@
-import {tra} from "tc-shared/i18n/localize";
+import {tra, traj} from "tc-shared/i18n/localize";
 import {PermissionInfo} from "tc-shared/permission/PermissionManager";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
 import * as htmltags from "tc-shared/ui/htmltags";
-import {bbcode_chat, format_time, formatMessage} from "tc-shared/ui/frames/chat";
+import {format_time, formatMessage} from "tc-shared/ui/frames/chat";
 import {formatDate} from "tc-shared/MessageFormatter";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {BBCodeRenderOptions, renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
 
 export enum Type {
     CONNECTION_BEGIN = "connection_begin",
@@ -259,7 +260,7 @@ export interface TypeInfo {
 }
 
 export type MessageBuilderOptions = {};
-export type MessageBuilder<T extends keyof TypeInfo> = (data: TypeInfo[T], options: MessageBuilderOptions) => JQuery[] | undefined;
+export type MessageBuilder<T extends keyof TypeInfo> = (data: TypeInfo[T], options: MessageBuilderOptions) => JQuery[] | string | undefined;
 
 export const MessageBuilders: {[key: string]: MessageBuilder<any>} = {
     "error_custom": (data: event.ErrorCustom) => {
@@ -513,12 +514,16 @@ MessageBuilders["client_view_leave"] = (data: event.ClientLeave) => {
     return [$.spawn("div").addClass("log-error").text("Invalid view leave reason id (" + data.reason + ")")];
 };
 
+const bbcodeRenderOptions: BBCodeRenderOptions = {
+    convertSingleUrls: false
+};
+
 MessageBuilders["server_welcome_message"] = (data: event.WelcomeMessage) => {
-    return bbcode_chat("[color=green]" + data.message + "[/color]");
+    return renderBBCodeAsJQuery("[color=green]" + data.message + "[/color]", bbcodeRenderOptions);
 };
 
 MessageBuilders["server_host_message"] = (data: event.WelcomeMessage) => {
-    return bbcode_chat("[color=green]" + data.message + "[/color]");
+    return renderBBCodeAsJQuery("[color=green]" + data.message + "[/color]", bbcodeRenderOptions);
 };
 
 MessageBuilders["client_nickname_changed"] = (data: event.ClientNicknameChanged) => {
@@ -557,14 +562,14 @@ MessageBuilders["server_banned"] = (data: event.ServerBanned) => {
     const time = data.time == 0 ? tr("ever") : format_time(data.time * 1000, tr("one second"));
     if(data.invoker.client_id > 0) {
         if(data.message)
-            result = tra("You've been banned from the server by {0} for {1}. Reason: {2}", client_tag(data.invoker), time, data.message);
+            result = traj("You've been banned from the server by {0} for {1}. Reason: {2}", client_tag(data.invoker), time, data.message);
         else
-            result = tra("You've been banned from the server by {0} for {1}.", client_tag(data.invoker), time);
+            result = traj("You've been banned from the server by {0} for {1}.", client_tag(data.invoker), time);
     } else {
         if(data.message)
-            result = tra("You've been banned from the server for {0}. Reason: {1}", time, data.message);
+            result = traj("You've been banned from the server for {0}. Reason: {1}", time, data.message);
         else
-            result = tra("You've been banned from the server for {0}.", time);
+            result = traj("You've been banned from the server for {0}.", time);
     }
 
     return result.map(e => e.addClass("log-error"));

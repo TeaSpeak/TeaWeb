@@ -10,9 +10,6 @@ import {MusicInfo} from "tc-shared/ui/frames/side/music_info";
 import {ConversationManager} from "tc-shared/ui/frames/side/ConversationManager";
 import {PrivateConversationManager} from "tc-shared/ui/frames/side/PrivateConversationManager";
 
-declare function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
-declare function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
-
 export enum InfoFrameMode {
     NONE = "none",
     CHANNEL_CHAT = "channel_chat",

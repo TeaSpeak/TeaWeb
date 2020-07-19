@@ -66,8 +66,9 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
             return;
 
         if(this.activeClient instanceof ClientEntry) {
+            this.activeClient.setUnread(false); /* clear the unread flag */
+
             if(client instanceof ClientEntry) {
-                this.activeClient.setUnread(false); /* "transfer" the unread flag */
                 this.registerChatEvent({
                     type: "partner-instance-changed",
                     oldClient: this.activeClient.clientNickName(),
@@ -87,7 +88,7 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
     }
 
     hasUnreadMessages() : boolean {
-        return false;
+        return this.unreadTimestamp !== undefined;
     }
 
     handleIncomingMessage(client: ClientEntry | OutOfViewClient, isOwnMessage: boolean, message: ChatMessage) {
@@ -243,6 +244,14 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
         }
         this.lastClientInfo = newInfo;
         this.sendMessageSendingEnabled(this.lastClientInfo.clientId !== 0);
+    }
+
+    setUnreadTimestamp(timestamp: number | undefined) {
+        super.setUnreadTimestamp(timestamp);
+
+        /* TODO: Move this somehow to the client itself? */
+        if(this.activeClient instanceof ClientEntry)
+            this.activeClient.setUnread(timestamp === undefined);
     }
 
     protected canClientAccessChat(): boolean {

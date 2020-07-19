@@ -1,8 +1,8 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import * as htmltags from "tc-shared/ui/htmltags";
-import {bbcode_chat} from "tc-shared/ui/frames/chat";
 import * as moment from "moment";
+import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
 
 let global_modal: PokeModal;
 
@@ -60,7 +60,7 @@ class PokeModal {
                     }))).appendTo(container);
                     if(message) {
                         $.spawn("div").addClass("text").text(tr("pokes you:")).appendTo(container);
-                        $.spawn("div").addClass("poke-message").append(...bbcode_chat(message)).appendTo(container);
+                        $.spawn("div").addClass("poke-message").append(...renderBBCodeAsJQuery(message, { convertSingleUrls: false })).appendTo(container);
                     } else {
                         $.spawn("div").addClass("text").text(tr("pokes you.")).appendTo(container);
                     }

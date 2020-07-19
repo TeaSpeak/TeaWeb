@@ -1,6 +1,9 @@
 //Used by CertAccept popup
 
 declare global {
+    function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
+    function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
+
     interface Array<T> {
         remove(elem?: T): boolean;
         last?(): T;
