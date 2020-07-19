@@ -597,7 +597,8 @@ namespace watcher {
         }
 
         async start() {
-            if(this._process) throw "watcher already started";
+            if(this._process)
+                throw "watcher already started";
 
             const command = this.start_command();
             this._process = execute(command[0], command.slice(1));
@@ -626,7 +627,7 @@ namespace watcher {
                 this._callback_init_fail = undefined;
                 this._callback_init = undefined;
             }
-            console.log("%s started.", this.name);
+            console.log("%s watcher started.", this.name);
         }
 
         protected abstract start_command() : string[];
@@ -634,15 +635,28 @@ namespace watcher {
         async stop() {
             if(!this._process) return;
 
-            console.log("%s stopped.", this.name);
+            console.log("%s watcher stopped.", this.name);
             this._process.kill("SIGTERM");
             this._process = undefined;
         }
 
         private handle_exit(code: number | null, signal: string | null) {
-            console.log("%s exited with code %d (%s)", this.name, code, signal);
+            console.log("%s watcher exited with code %d (%s)", this.name, code, signal);
             if(this._callback_init_fail)
                 this._callback_init_fail("unexpected exit with code " + code);
+        }
+
+        private printReadBuffer(buffer: string, callback: typeof console.log) {
+            const lines = buffer.split("\n");
+            for(let index = 0; index < lines.length; index++) {
+                let line = lines[index];
+                if(line.charAt(0) === "\r")
+                    line = line.substr(1);
+                if(line === "" && index + 1 === lines.length)
+                    break;
+
+                callback("[%s] %s", this.name, line);
+            }
         }
 
         private handle_stdout_readable() {
@@ -653,25 +667,15 @@ namespace watcher {
                 this._callback_init();
 
             const data = buffer.toString();
-            if(this.verbose) {
-                const lines = data.split("\n");
-                for(let index = 0; index < lines.length; index++) {
-                    let line = lines[index];
-                    if(line.charAt(0) === "\r")
-                        line = line.substr(1);
-                    if(line === "" && index + 1 === lines.length)
-                        break;
-                    console.log("%s: %s", this.name, line);
-                }
-            }
+            if(this.verbose)
+                this.printReadBuffer(data, console.log);
         }
 
         private handle_stderr_readable() {
-            const buffer: Buffer = this._process.stdout.read(this._process.stdout.readableLength);
+            const buffer: Buffer = this._process.stderr.read(this._process.stderr.readableLength);
             if(!buffer) return;
 
-            console.log("%s read %d error bytes:", this.name, buffer.length);
-            console.log(buffer.toString());
+            this.printReadBuffer(buffer.toString(), console.error);
         }
 
         private handle_error(err: Error) {
@@ -686,7 +690,7 @@ namespace watcher {
 
     export class TSCWatcher extends Watcher {
         constructor() {
-            super("TSC Watcher");
+            super("TSC");
             //this.verbose = true;
         }
 
@@ -697,7 +701,7 @@ namespace watcher {
 
     export class SASSWatcher extends Watcher {
         constructor() {
-            super("SASS Watcher");
+            super("SASS");
             this.verbose = false;
         }
 
@@ -710,7 +714,7 @@ namespace watcher {
         private readonly target;
 
         constructor(target: "web" | "client") {
-            super("WebPack Watcher");
+            super("WebPack");
             this.target = target;
             this.verbose = true;
         }
