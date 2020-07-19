@@ -11,7 +11,7 @@ import {ServerConnection} from "../connection/ServerConnection";
 import {voice} from "tc-shared/connection/ConnectionBase";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClientController} from "./VoiceClient";
-import {settings} from "tc-shared/settings";
+import {settings, ValuedSettingsKey} from "tc-shared/settings";
 import {CallbackInputConsumer, InputConsumerType, NodeInputConsumer} from "tc-shared/voice/RecorderBase";
 import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 import VoiceClient = voice.VoiceClient;
@@ -130,6 +130,12 @@ export enum VoiceEncodeType {
     NATIVE_ENCODE
 }
 
+const KEY_VOICE_CONNECTION_TYPE: ValuedSettingsKey<number> = {
+    key: "voice_connection_type",
+    valueType: "number",
+    defaultValue: VoiceEncodeType.NATIVE_ENCODE
+};
+
 export class VoiceConnection extends AbstractVoiceConnection {
     readonly connection: ServerConnection;
 
@@ -165,7 +171,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         super(connection);
         this.connection = connection;
 
-        this._type = settings.static_global("voice_connection_type", this._type);
+        this._type = settings.static_global(KEY_VOICE_CONNECTION_TYPE, this._type);
     }
 
     destroy() {

@@ -1,6 +1,6 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import {settings} from "tc-shared/settings";
+import {Settings, settings} from "tc-shared/settings";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as sbackend from "tc-backend/audio/sounds";
 
@@ -156,7 +156,7 @@ export function save() {
         data.overlap = overlap_sounds;
         data.ignore_muted = ignore_muted;
 
-        settings.changeGlobal("sound_volume", JSON.stringify(data));
+        settings.changeGlobal(Settings.KEY_SOUND_VOLUMES, JSON.stringify(data));
     }
 }
 
@@ -172,7 +172,7 @@ export function initialize() : Promise<void> {
 
     /* volumes */
     {
-        const data = JSON.parse(settings.static_global("sound_volume", "{}"));
+        const data = JSON.parse(settings.static_global(Settings.KEY_SOUND_VOLUMES, "{}"));
         for(const sound_key of Object.keys(Sound)) {
             if(typeof(data[Sound[sound_key]]) !== "undefined")
                 speech_volume[Sound[sound_key]] = data[Sound[sound_key]];

@@ -1,7 +1,7 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {guid} from "tc-shared/crypto/uid";
-import {StaticSettings} from "tc-shared/settings";
+import {Settings, StaticSettings} from "tc-shared/settings";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import * as loader from "tc-loader";
 import {formatMessage, formatMessageString} from "tc-shared/ui/frames/chat";
@@ -207,7 +207,7 @@ export namespace config {
 
         if(config.repositories.length == 0) {
             //Add the default TeaSpeak repository
-            load_repository(StaticSettings.instance.static("i18n.default_repository", "https://web.teaspeak.de/i18n/")).then(repo => {
+            load_repository(StaticSettings.instance.static(Settings.KEY_I18N_DEFAULT_REPOSITORY)).then(repo => {
                 log.info(LogCategory.I18N, tr("Successfully added default repository from \"%s\"."), repo.url);
                 register_repository(repo);
             }).catch(error => {

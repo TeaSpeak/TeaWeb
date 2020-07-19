@@ -86,12 +86,11 @@ export class HandshakeHandler {
             return;
         }
 
-        const git_version = settings.static_global("version", "unknown");
         const browser_name = (navigator.browserSpecs || {})["name"] || " ";
         let data = {
             client_nickname: this.parameters.nickname || "Another TeaSpeak user",
             client_platform: (browser_name ? browser_name + " " : "") + navigator.platform,
-            client_version: "TeaWeb " + git_version + " (" + navigator.userAgent + ")",
+            client_version: "TeaWeb " + __build.version + " (" + navigator.userAgent + ")",
             client_version_sign: undefined,
 
             client_default_channel: (this.parameters.channel || {} as any).target,

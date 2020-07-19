@@ -121,7 +121,7 @@ export function spawnConnectModal(options: {
         header: tr("Connect to a server"),
         body: $("#tmpl_connect").renderTag({
             client: native_client,
-            forum_path: settings.static("forum_path"),
+            forum_path: "https://forum.teaspeak.de/",
             password_id: random_id,
             multi_tab: !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
             default_connect_new_tab: typeof(options.default_connect_new_tab) === "boolean" && options.default_connect_new_tab
@@ -139,12 +139,12 @@ export function spawnConnectModal(options: {
         const set_show = shown => {
             container_last_servers.toggleClass('shown', shown);
             button.find(".arrow").toggleClass('down', shown).toggleClass('up', !shown);
-            settings.changeGlobal("connect_show_last_servers", shown);
+            settings.changeGlobal(Settings.KEY_CONNECT_SHOW_HISTORY, shown);
         };
         button.on('click', event => {
             set_show(!container_last_servers.hasClass("shown"));
         });
-        set_show(settings.static_global("connect_show_last_servers", false));
+        set_show(settings.static_global(Settings.KEY_CONNECT_SHOW_HISTORY));
     }
 
     const apply = (header, body, footer) => {

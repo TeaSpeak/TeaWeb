@@ -19,7 +19,6 @@ import {createServerGroupAssignmentModal} from "tc-shared/ui/modal/ModalGroupAss
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
 import {spawnChangeLatency} from "tc-shared/ui/modal/ModalChangeLatency";
-import {spawnPlaylistEdit} from "tc-shared/ui/modal/ModalPlaylistEdit";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import * as hex from "tc-shared/crypto/hex";
@@ -286,7 +285,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         }
         this._audio_muted = flag;
 
-        this.channelTree.client.settings.changeServer("mute_client_" + this.clientUid(), flag);
+        this.channelTree.client.settings.changeServer(Settings.FN_CLIENT_MUTED(this.clientUid()), flag);
         if(this._audio_handle) {
             if(flag) {
                 this._audio_handle.set_volume(0);
@@ -755,8 +754,8 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 reorder_channel = true;
             }
             if(variable.key == "client_unique_identifier") {
-                this._audio_volume = parseFloat(this.channelTree.client.settings.server("volume_client_" + this.clientUid(), "1"));
-                const mute_status = this.channelTree.client.settings.server("mute_client_" + this.clientUid(), false);
+                this._audio_volume = this.channelTree.client.settings.server(Settings.FN_CLIENT_VOLUME(this.clientUid()), 1);
+                const mute_status = this.channelTree.client.settings.server(Settings.FN_CLIENT_MUTED(this.clientUid()), false);
                 this.set_muted(mute_status, mute_status); /* force only needed when we want to mute the client */
 
                 if(this._audio_handle)
@@ -917,7 +916,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         this._audio_volume = value;
 
         this.get_audio_handle()?.set_volume(value);
-        this.channelTree.client.settings.changeServer("volume_client_" + this.clientUid(), value);
+        this.channelTree.client.settings.changeServer(Settings.FN_CLIENT_VOLUME(this.clientUid()), value);
 
         this.events.fire("notify_audio_level_changed", { newValue: value });
     }
@@ -1140,25 +1139,6 @@ export class MusicClientEntry extends ClientEntry {
                 type: MenuEntryType.ENTRY
             },
             */
-            {
-                name: tr("Open bot's playlist"),
-                icon_class: "client-edit",
-                disabled: false,
-                callback: () => {
-                    this.channelTree.client.serverConnection.command_helper.request_playlist_list().then(lists => {
-                        for(const entry of lists) {
-                            if(entry.playlist_id == this.properties.client_playlist_id) {
-                                spawnPlaylistEdit(this.channelTree.client, entry);
-                                return;
-                            }
-                        }
-                        createErrorModal(tr("Invalid permissions"), tr("You dont have to see the bots playlist.")).open();
-                    }).catch(error => {
-                        createErrorModal(tr("Failed to query playlist."), tr("Failed to query playlist info.")).open();
-                    });
-                },
-                type: contextmenu.MenuEntryType.ENTRY
-            },
             {
                 name: tr("Quick url replay"),
                 icon_class: "client-edit",

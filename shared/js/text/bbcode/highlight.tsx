@@ -1,4 +1,5 @@
 import * as hljs from "highlight.js/lib/core";
+
 import * as loader from "tc-loader";
 import {ElementRenderer} from "vendor/xbbcode/renderer/base";
 import {TagElement} from "vendor/xbbcode/elements";
@@ -67,6 +68,17 @@ registerLanguage("x86asm", import("highlight.js/lib/languages/x86asm"));
 registerLanguage("xml", import("highlight.js/lib/languages/xml"));
 registerLanguage("yaml", import("highlight.js/lib/languages/yaml"));
 
+interface HighlightResult {
+    relevance : number
+    value : string
+    language? : string
+    illegal : boolean
+    sofar? : string
+    errorRaised? : Error
+    
+    second_best? : Omit<HighlightResult, 'second_best'>
+}
+
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "XBBCode highlight init",
     function: async () => {
@@ -91,8 +103,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                         lines = lines.slice(0, lines.length - 1);
                 }
 
-                let result: HighlightJSResult;
-
+                let result: HighlightResult;
                 const detectedLanguage = hljs.getLanguage(language);
                 if(detectedLanguage)
                     result = hljs.highlight(detectedLanguage.name, lines.join("\n"), true);

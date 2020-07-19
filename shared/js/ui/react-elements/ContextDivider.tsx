@@ -1,5 +1,5 @@
 import * as React from "react";
-import {settings} from "tc-shared/settings";
+import {Settings, settings} from "tc-shared/settings";
 const cssStyle = require("./ContextDivider.scss");
 
 export interface ContextDividerProperties {
@@ -34,7 +34,7 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
 
         this.value = this.props.defaultValue;
         try {
-            const config = JSON.parse(settings.global("separator-settings-" + this.props.id));
+            const config = JSON.parse(settings.global(Settings.FN_SEPARATOR_STATE(this.props.id), undefined));
             if(typeof config.value !== "number")
                 throw "Invalid value";
 
@@ -76,7 +76,7 @@ export class ContextDivider extends React.Component<ContextDividerProperties, Co
                 this.value = 100;
             }
 
-            settings.changeGlobal("separator-settings-" + this.props.id, JSON.stringify({
+            settings.changeGlobal(Settings.FN_SEPARATOR_STATE(this.props.id), JSON.stringify({
                 value: this.value
             }));
             this.applySeparator(separator.previousSibling as HTMLElement, separator.nextSibling as HTMLElement);

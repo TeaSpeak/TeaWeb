@@ -193,7 +193,7 @@ export function spawnInviteEditor(connection: ConnectionHandler) {
     }
 
     input_type.on('change', () => {
-                    settings.changeGlobal(Settings.KEY_LAST_INVITE_LINK_TYPE, input_type.val());
+                    settings.changeGlobal(Settings.KEY_LAST_INVITE_LINK_TYPE, input_type.val() as string);
                     update_buttons();
                     update_link();
                 }).val(settings.global(Settings.KEY_LAST_INVITE_LINK_TYPE));

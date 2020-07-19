@@ -1,4 +1,4 @@
-import {settings} from "tc-shared/settings";
+import {Settings, settings} from "tc-shared/settings";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 
@@ -6,10 +6,6 @@ declare global {
     interface JQuery<TElement = HTMLElement> {
         dividerfy() : this;
     }
-}
-
-export function initialize() {
-
 }
 
 if(!$.fn.dividerfy) {
@@ -92,7 +88,7 @@ if(!$.fn.dividerfy) {
                 apply_view(property, previous_p, next_p);
 
                 if(seperator_id)
-                    settings.changeGlobal("seperator-settings-" + seperator_id, JSON.stringify({
+                    settings.changeGlobal(Settings.FN_SEPARATOR_STATE(seperator_id), JSON.stringify({
                         previous: previous_p,
                         next: next_p,
                         property: property
@@ -133,7 +129,7 @@ if(!$.fn.dividerfy) {
 
             if(seperator_id) {
                 try {
-                    const config = JSON.parse(settings.global("seperator-settings-" + seperator_id));
+                    const config = JSON.parse(settings.global(Settings.FN_SEPARATOR_STATE(seperator_id), undefined));
                     if(config) {
                         log.debug(LogCategory.GENERAL, tr("Applying previous changed sperator settings for %s: %o"), seperator_id, config);
                         apply_view(config.property, config.previous, config.next);

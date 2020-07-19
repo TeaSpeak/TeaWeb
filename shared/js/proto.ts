@@ -27,11 +27,6 @@ declare global {
         visible_height() : number;
         visible_width() : number;
 
-        /* bootstrap */
-        alert() : JQuery<TElement>;
-        modal(properties: any) : this;
-        bootstrapMaterialDesign() : this;
-
         /* first element which matches the selector, could be the element itself or a parent */
         firstParent(selector: string) : JQuery;
     }
@@ -41,29 +36,6 @@ declare global {
         views: any;
     }
 
-    interface String {
-        format(...fmt): string;
-        format(arguments: string[]): string;
-    }
-
-    interface HighlightJS {
-        listLanguages() : string[];
-        getLanguage(name: string) : any | undefined;
-
-        highlight(language: string, text: string, ignore_illegals?: boolean) : HighlightJSResult;
-        highlightAuto(text: string) : HighlightJSResult;
-    }
-
-    interface HighlightJSResult {
-        language: string;
-        relevance: number;
-
-        value: string;
-        second_best?: any;
-    }
-
-    let remarkable: typeof window.remarkable;
-
     interface Window {
         readonly webkitAudioContext: typeof AudioContext;
         readonly AudioContext: typeof OfflineAudioContext;
@@ -72,10 +44,6 @@ declare global {
         readonly RTCPeerConnection: typeof RTCPeerConnection;
         readonly Pointer_stringify: any;
         readonly jsrender: any;
-
-        cdhljs: HighlightJS;
-        remarkable: any;
-
 
         readonly require: typeof require;
     }
@@ -92,20 +60,19 @@ declare global {
     }
 }
 
-export function initialize() { }
-
 if(!JSON.map_to) {
     JSON.map_to = function <T>(object: T, json: any, variables?: string | string[], validator?: (map_field: string, map_value: string) => boolean, variable_direction?: number): number {
-        if (!validator) validator = (a, b) => true;
+        if (!validator)
+            validator = () => true;
 
         if (!variables) {
             variables = [];
 
             if (!variable_direction || variable_direction == 0) {
-                for (let field in json)
+                for (let field of Object.keys(json))
                     variables.push(field);
             } else if (variable_direction == 1) {
-                for (let field in object)
+                for (let field of Object.keys(json))
                     variables.push(field);
             }
         } else if (!Array.isArray(variables)) {
@@ -274,42 +241,7 @@ if(typeof ($) !== "undefined") {
         }
 }
 
-if (!String.prototype.format) {
-    String.prototype.format = function() {
-        const args = arguments;
-        let array = args.length == 1 && $.isArray(args[0]);
-        return this.replace(/\{\{|\}\}|\{(\d+)\}/g, function (m, n) {
-            if (m == "{{") { return "{"; }
-            if (m == "}}") { return "}"; }
-            return array ? args[0][n] : args[n];
-        });
-    };
-}
-
 if(!Object.values)
     Object.values = object => Object.keys(object).map(e => object[e]);
 
-function concatenate(resultConstructor, ...arrays) {
-    let totalLength = 0;
-    for (const arr of arrays) {
-        totalLength += arr.length;
-    }
-    const result = new resultConstructor(totalLength);
-    let offset = 0;
-    for (const arr of arrays) {
-        result.set(arr, offset);
-        offset += arr.length;
-    }
-    return result;
-}
-
-function calculate_width(text: string) : number {
-    let element = $.spawn("div");
-    element.text(text)
-        .css("display", "none")
-        .css("margin", 0);
-    $("body").append(element);
-    let size = element.width();
-    element.detach();
-    return size;
-}
+export = {};

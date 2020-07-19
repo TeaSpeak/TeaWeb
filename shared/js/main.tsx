@@ -36,13 +36,12 @@ import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 
 /* required import for init */
-require("./proto").initialize();
-require("./ui/elements/ContextDivider").initialize();
-require("./ui/elements/Tab");
-require("./connection/CommandHandler"); /* else it might not get bundled because only the backends are accessing it */
+import "./proto";
+import "./ui/elements/ContextDivider";
+import "./ui/elements/Tab";
+import "./connection/CommandHandler"; /* else it might not get bundled because only the backends are accessing it */
 
 const js_render = window.jsrender || $;
-const native_client = window.require !== undefined;
 
 declare global {
     interface Window {
@@ -59,7 +58,7 @@ function setup_close() {
             const active_connections = server_connections.all_connections().filter(e => e.connected);
             if(active_connections.length == 0) return;
 
-            if(!native_client) {
+            if(__build.target === "web") {
                 event.returnValue = "Are you really sure?<br>You're still connected!";
             } else {
                 const do_exit = () => {
