@@ -1,7 +1,3 @@
-/// <reference path="../../ui/elements/modal.ts" />
-/// <reference path="../../ConnectionHandler.ts" />
-/// <reference path="../../proto.ts" />
-
 import PermissionType from "tc-shared/permission/PermissionType";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createModal} from "tc-shared/ui/elements/Modal";

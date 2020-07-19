@@ -6,7 +6,6 @@ import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {ClientEntry} from "tc-shared/ui/client";
 import * as log from "tc-shared/log";
 import * as moment from "moment";
-import {media_image_type} from "tc-shared/file/ImageCache";
 
 const avatar_to_uid = (id: string) => {
     const buffer = new Uint8Array(id.length / 2);

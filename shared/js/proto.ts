@@ -1,5 +1,9 @@
 //Used by CertAccept popup
 
+/* setup jsrenderer */
+import * as jsrenderInit from "jsrender";
+const jsrender = jsrenderInit($);
+
 declare global {
     function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
     function setTimeout(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;
@@ -19,7 +23,6 @@ declare global {
 
     type JQueryScrollType = "height" | "width";
     interface JQuery<TElement = HTMLElement> {
-        render(values?: any) : string;
         renderTag(values?: any) : JQuery<TElement>;
         hasScrollBar(direction?: JQueryScrollType) : boolean;
 
@@ -33,7 +36,6 @@ declare global {
 
     interface JQueryStatic<TElement extends Node = HTMLElement> {
         spawn<K extends keyof HTMLElementTagNameMap>(tagName: K): JQuery<HTMLElementTagNameMap[K]>;
-        views: any;
     }
 
     interface Window {
@@ -43,7 +45,6 @@ declare global {
         readonly webkitOfflineAudioContext: typeof OfflineAudioContext;
         readonly RTCPeerConnection: typeof RTCPeerConnection;
         readonly Pointer_stringify: any;
-        readonly jsrender: any;
 
         readonly require: typeof require;
     }
@@ -170,7 +171,7 @@ if(typeof ($) !== "undefined") {
             if(this.render) {
                 result = $(this.render(values));
             } else {
-                const template = window.jsrender.render[this.attr("id")];
+                const template = jsrender.render[this.attr("id")];
                 if(!template) {
                     console.error("Tried to render template %o, but template is not available!", this.attr("id"));
                     throw "missing template " + this.attr("id");

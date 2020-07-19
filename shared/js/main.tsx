@@ -41,8 +41,6 @@ import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./connection/CommandHandler"; /* else it might not get bundled because only the backends are accessing it */
 
-const js_render = window.jsrender || $;
-
 declare global {
     interface Window {
         open_connected_question: () => Promise<boolean>;
@@ -102,32 +100,28 @@ function setup_close() {
 }
 
 function setup_jsrender() : boolean {
-    if(!js_render) {
-        loader.critical_error("Missing jsrender extension!");
-        return false;
-    }
-    if(!js_render.views) {
+    if(!$.views) {
         loader.critical_error("Missing jsrender viewer extension!");
         return false;
     }
-    js_render.views.settings.allowCode(true);
-    js_render.views.tags("rnd", (argument) => {
+    $.views.settings.allowCode(true);
+    $.views.tags("rnd", (argument) => {
         let min = parseInt(argument.substr(0, argument.indexOf('~')));
         let max = parseInt(argument.substr(argument.indexOf('~') + 1));
 
         return (Math.round(Math.random() * (min + max + 1) - min)).toString();
     });
 
-    js_render.views.tags("fmt_date", (...args) => {
+    $.views.tags("fmt_date", (...args) => {
         return moment(args[0]).format(args[1]);
     });
 
-    js_render.views.tags("tr", (...args) => {
+    $.views.tags("tr", (...args) => {
         return /* @tr-ignore */ tr(args[0]);
     });
 
     $(".jsrender-template").each((idx, _entry) => {
-        if(!js_render.templates(_entry.id, _entry.innerHTML)) {
+        if(!$.templates(_entry.id, _entry.innerHTML)) {
             log.error(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), _entry.id);
         } else
             log.info(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);

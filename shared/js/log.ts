@@ -88,14 +88,14 @@ const group_mode: GroupMode = GroupMode.PREFIX;
 //Level Example A: <url>?log.level.trace.enabled=0
 //Level Example B: <url>?log.level=0
 export function initialize(default_level: LogType) {
-    for(const category of Object.keys(LogCategory).map(parseInt).filter(e => !isNaN(e))) {
+    for(const category of Object.keys(LogCategory).map(e => parseInt(e)).filter(e => !isNaN(e))) {
         const categoryName = LogCategory[category].toLowerCase();
         enabled_mapping.set(category, settings.static_global(Settings.FN_LOG_ENABLED(categoryName), enabled_mapping.get(category)));
     }
 
     const base_level = settings.static_global(Settings.KEY_LOG_LEVEL, default_level);
 
-    for(const level of Object.keys(LogType).map(parseInt).filter(e => !isNaN(e))) {
+    for(const level of Object.keys(LogType).map(e => parseInt(e)).filter(e => !isNaN(e))) {
         const levelName = LogType[level].toLowerCase();
         level_mapping.set(level, settings.static_global(Settings.FN_LOG_LEVEL_ENABLED(levelName), level >= base_level));
     }

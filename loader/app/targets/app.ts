@@ -61,13 +61,6 @@ const loader_javascript = {
             await loader.scripts.load_multiple(["vendor/jquery/jquery.min.js"], { cache_tag: cache_tag() }, LoaderTaskCallback(taskId));
         }
 
-        await loader.scripts.load_multiple([
-            ["vendor/jsrender/jsrender.min.js"],
-        ], {
-            cache_tag: cache_tag(),
-            max_parallel_requests: -1
-        }, LoaderTaskCallback(taskId));
-
         loader.setCurrentTaskName(taskId, "manifest");
         let manifest: Manifest;
         try {
