@@ -239,6 +239,10 @@ export function spawnClientVolumeChange(client: ClientEntry) {
     });
 
     const modal = spawnReactModal(class extends Modal {
+        constructor() {
+            super();
+        }
+
         renderBody() {
             return <VolumeChangeModal remote={false} clientName={client.clientNickName()} events={events} />;
         }
@@ -274,6 +278,10 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
     });
 
     const modal = spawnReactModal(class extends Modal {
+        constructor() {
+            super();
+        }
+
         renderBody() {
             return <VolumeChangeModal remote={true} clientName={client.clientNickName()} maxVolume={maxValue} events={events} />;
         }

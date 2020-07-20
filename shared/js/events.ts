@@ -128,7 +128,7 @@ export class Registry<Events> implements EventReceiver<Events> {
         (this.connections[null as any] || (this.connections[null as any] = [])).push(target as any);
     }
 
-    connect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: EventReceiver<Events>) {
+    connect<EOther, T extends (keyof Events & keyof EOther)>(events: T | T[], target: EventReceiver<EOther>) {
         for(const event of Array.isArray(events) ? events : [events])
             (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
     }
@@ -138,10 +138,10 @@ export class Registry<Events> implements EventReceiver<Events> {
             (this.connections[event as string] || []).remove(target as any);
     }
 
-    disconnectAll<EOther>(target: EventReceiver<Events>) {
-        this.connections[null as any]?.remove(target);
+    disconnectAll<EOther>(target: EventReceiver<EOther>) {
+        this.connections[null as any]?.remove(target as any);
         for(const event of Object.keys(this.connections))
-            this.connections[event].remove(target);
+            this.connections[event].remove(target as any);
     }
 
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean) {

@@ -386,9 +386,16 @@ export class MusicInfo {
                 event.new.events.on("music_status_update", callback_time_update);
                 event.new.events.on("music_song_change", callback_song_change);
 
+                // @ts-ignore
                 event.new.events.connect("playlist_song_add", this.events);
+
+                // @ts-ignore
                 event.new.events.connect("playlist_song_remove", this.events);
+
+                // @ts-ignore
                 event.new.events.connect("playlist_song_reorder", this.events);
+
+                // @ts-ignore
                 event.new.events.connect("playlist_song_loaded", this.events);
             }
         });

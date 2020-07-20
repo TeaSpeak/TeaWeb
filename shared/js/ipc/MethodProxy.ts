@@ -1,6 +1,7 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {BasicIPCHandler, IPCChannel, ChannelMessage} from "tc-shared/ipc/BrowserIPC";
+import {guid} from "tc-shared/crypto/uid";
 
 export interface MethodProxyInvokeData {
     method_name: string;
@@ -96,7 +97,7 @@ export abstract class MethodProxy {
                     return Promise.reject("not connected");
 
                 const proxy_callback = {
-                    promise_id: uuidv4()
+                    promise_id: guid()
                 } as MethodProxyCallback;
                 this._proxied_callbacks[proxy_callback.promise_id] = proxy_callback;
                 proxy_callback.promise = new Promise((resolve, reject) => {
