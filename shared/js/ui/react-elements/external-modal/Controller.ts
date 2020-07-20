@@ -41,11 +41,11 @@ export class ExternalModalController extends EventControllerBase<"controller"> {
         };
 
         const features = {
-            /*
             status: "no",
             location: "no",
             toolbar: "no",
             menubar: "no",
+            /*
             width: 600,
             height: 400
             */
