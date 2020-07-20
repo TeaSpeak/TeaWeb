@@ -16,7 +16,8 @@ html:root {
 	--footer-background: #252525;
 	--footer-text: #666666;
 
-	--channel-chat-seperator: #707070;
+	--channel-chat-seperator: #1e1e1e;
+	--channel-chat-seperator-selected: #707070;
 }
 
 .app {
@@ -241,7 +242,7 @@ html:root {
 $animation_seperator_length: .1s;
 .container-seperator {
 	@include transition(all $animation_seperator_length ease-in-out);
-	background: #1e1e1e;
+	background: var(--channel-chat-seperator);
 
 	flex-grow: 0;
 	flex-shrink: 0;
@@ -263,7 +264,7 @@ $animation_seperator_length: .1s;
 	&.seperator-selected {
 		@include transition(all $animation_seperator_length ease-in-out);
 
-		background-color: var(--channel-chat-seperator);
+		background-color: var(--channel-chat-seperator-selected);
 	}
 }
 

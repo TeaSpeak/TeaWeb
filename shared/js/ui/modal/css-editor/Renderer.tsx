@@ -7,7 +7,6 @@ import {BoxedInputField, FlatInputField} from "tc-shared/ui/react-elements/Input
 import {useState} from "react";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
-import 'rc-color-picker/assets/index.css';
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 
