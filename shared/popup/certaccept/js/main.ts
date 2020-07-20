@@ -2,7 +2,7 @@ import {settings, Settings} from "tc-shared/settings";
 import * as loader from "tc-loader";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import * as bipc from "tc-shared/BrowserIPC";
+import * as bipc from "tc-shared/ipc/BrowserIPC";
 
 const is_debug = false; //TODO: Sync with loader!
 function tr(text: string) { return text; }
@@ -20,7 +20,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 
         log.info(LogCategory.IPC, tr("Using this instance as certificate callback. ID: %s"), certificate_accept);
         try {
-            await bipc.get_handler().post_certificate_accpected(certificate_accept);
+            await bipc.getInstance().post_certificate_accpected(certificate_accept);
             log.info(LogCategory.IPC, tr("Other instance has acknowledged out work. Closing this window."));
 
             let seconds = 5;

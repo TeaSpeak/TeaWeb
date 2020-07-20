@@ -24,10 +24,10 @@ const loader_javascript = {
     },
 
     load_scripts: async () => {
-        await loader.load_script(["vendor/jquery/jquery.min.js"]);
-        await loader.load_scripts([
+        await loader.scripts.load_multiple(["vendor/jquery/jquery.min.js"], {});
+        await loader.scripts.load_multiple([
             ["dist/certificate-popup.js"],
-        ]);
+        ], {});
     }
 };
 
@@ -41,15 +41,15 @@ const loader_style = {
     },
 
     load_style_debug: async () => {
-        await loader.load_styles([
+        await loader.style.load_multiple([
             "css/static/main.css",
-        ]);
+        ], {});
     },
 
     load_style_release: async () => {
-        await loader.load_styles([
+        await loader.style.load_multiple([
             "css/static/main.css",
-        ]);
+        ], {});
     }
 };
 
@@ -93,3 +93,5 @@ if(!loader.running()) {
     /* we know that we want to load the app */
     loader.execute_managed();
 }
+
+export = {};
