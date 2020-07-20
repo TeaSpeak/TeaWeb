@@ -137,6 +137,9 @@
                     border-right: .1em;
                     background-color: white;
 
+                    flex-shrink: 0;
+                    flex-grow: 0;
+
                     .color {
                         height: 100%;
                         width: 100%;
