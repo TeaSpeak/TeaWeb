@@ -16,6 +16,14 @@ html:root {
     --menu-bar-button-border-activated-red: #a10000;
     --menu-bar-button-border-activated-hover: #005fa1;
     --menu-bar-button-border-activated-red-hover: #a10000;
+
+    --menu-bar-dropdown: #c4c5c5;
+    --menu-bar-dropdown-border: #2c2525;
+    --menu-bar-dropdown-background: #2d3032;
+    --menu-bar-dropdown-hover-background: #252729;
+
+    --menu-bar-dropdown-arrow-background: #393c43;
+    --menu-bar-dropdown-arrow: #4a4c55;
 }
 
 /* border etc */
@@ -137,11 +145,11 @@ html:root {
         position: absolute;
         margin-left: 5px;
 
-        color: #c4c5c5;
+        color: var(--menu-bar-dropdown);
 
-        background-color: #2d3032;
+        background-color: var(--menu-bar-dropdown-background);
         align-items: center;
-        border: .05em solid #2c2525;
+        border: .05em solid var(--menu-bar-dropdown-border);
         border-radius: 0 $border_radius_middle $border_radius_middle $border_radius_middle;
 
         width: 15em; /* fallback */
@@ -213,7 +221,7 @@ html:root {
             }
 
             &:hover {
-                background-color: #252729;
+                background-color: var(--menu-bar-dropdown-hover-background);
 
                 > .dropdown {
                     display: block;
@@ -238,8 +246,8 @@ html:root {
         }
 
         .button, .dropdown-arrow {
-            background-color: #393c43;
-            border-color: #4a4c55;
+            background-color: var(--menu-bar-dropdown-arrow-background);
+            border-color: var(--menu-bar-dropdown-arrow);
 
             border-bottom-right-radius: 0;
             border-bottom-left-radius: 0;
