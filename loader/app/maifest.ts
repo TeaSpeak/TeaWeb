@@ -27,7 +27,7 @@ export async function loadManifest() : Promise<TeaManifest> {
     }
 
     try {
-        const response = await fetch(config.baseUrl + "js/manifest.json");
+        const response = await fetch(config.baseUrl + "js/manifest.json?_date=" + Date.now());
         if(!response.ok) throw response.status + " " + response.statusText;
 
         manifest = await response.json();
