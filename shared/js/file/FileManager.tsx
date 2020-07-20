@@ -5,7 +5,7 @@ import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {CommandResult, ErrorCode, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {IconManager} from "tc-shared/file/Icons";
-import {AvatarManager} from "tc-shared/file/Avatars";
+import {AvatarManager} from "tc-shared/file/LocalAvatars";
 import {
     CancelReason,
     FileDownloadTransfer,

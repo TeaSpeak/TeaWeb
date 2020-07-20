@@ -1,0 +1,259 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    padding: 1em;
+
+    background: #19191b;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    min-height: 10em;
+    min-width: 20em;
+
+    .containerList, .containerEdit {
+        width: 50%;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        .header {
+            a {
+                font-weight: 700;
+                color: #e0e0e0;
+
+                flex-grow: 1;
+                flex-shrink: 1;
+
+                font-size: 1.05em;
+                min-width: 5em;
+
+                line-height: normal;
+
+                @include text-dotdotdot();
+            }
+        }
+    }
+}
+
+.containerList {
+    .list {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        min-height: 8em;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        border-radius: .2em;
+        border: 1px solid #1f2122;
+        background-color: #28292b;
+
+        .search {
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            padding: 0 .5em;
+            border-top: 1px solid #1f2122;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            .input {
+                flex-grow: 1;
+                flex-shrink: 1;
+
+                min-width: 5em;
+
+                margin-left: 1em;
+                margin-right: 1em;
+            }
+        }
+
+        .body {
+            flex-shrink: 1;
+            flex-grow: 1;
+
+            min-height: 5em;
+            position: relative;
+
+            overflow-x: hidden;
+            overflow-y: auto;
+
+            @include chat-scrollbar-vertical();
+
+            .overlay {
+                position: absolute;
+
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                text-align: center;
+                font-size: 2em;
+
+                color: #4d4d4d;
+                background-color: #28292b;
+            }
+
+            .variable {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+
+                position: relative;
+                flex-shrink: 1;
+
+                min-width: 4em;
+                padding-left: .5em;
+                padding-right: .5em;
+
+                cursor: pointer;
+
+                @include text-dotdotdot();
+                color: #999;
+
+                .preview {
+                    align-self: center;
+                    margin-right: .5em;
+
+                    height: 1em;
+                    width: 1em;
+
+                    border-right: .1em;
+                    background-color: white;
+
+                    .color {
+                        height: 100%;
+                        width: 100%;
+
+                        background-color: #28292b; /* default value if the value is not a color or broken */
+                    }
+                }
+
+                &:hover {
+                    background-color: #2c2d2f;
+
+                    .preview .color {
+                        background-color: #2c2d2f;
+                    }
+                }
+
+                &.selected {
+                    background-color: #1a1a1b;
+
+                    .preview .color {
+                        background-color: #1a1a1b;
+                    }
+                }
+            }
+        }
+    }
+}
+
+.containerEdit {
+    margin-left: 2em;
+
+    .detail {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        margin-bottom: 1em;
+
+        .title, .value {
+            @include text-dotdotdot();
+        }
+
+        .title {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+
+            text-transform: uppercase;
+            color: #557edc;
+        }
+
+        .value {
+            color: #999;
+
+            &.color {
+                display: flex;
+                flex-direction: row;
+                justify-content: stretch;
+
+                .colorButton {
+                    flex-grow: 0;
+                    flex-shrink: 0;
+
+                    margin-left: .5em;
+                }
+
+                .input {
+                    flex-grow: 1;
+                    flex-shrink: 1;
+
+                    min-width: 5em;
+                }
+            }
+        }
+    }
+
+    .colorButton {
+        cursor: pointer;
+
+        padding: .5em;
+        border-radius: .2em;
+        border: 1px solid #111112;
+        background-color: #121213;
+
+        height: 2em;
+        width: 2em;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: center;
+        align-self: center;
+
+        input {
+            position: absolute;
+
+            opacity: 0;
+            pointer-events: none;
+        }
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+
+        margin-top: auto;
+
+        .button {
+            margin-left: 1em;
+
+            &:first-of-type {
+                margin-left: 0;
+            }
+        }
+
+        .buttonReset {
+            margin-right: auto;
+        }
+    }
+}

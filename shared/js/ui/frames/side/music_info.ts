@@ -1,5 +1,4 @@
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
-import * as events from "tc-shared/events";
 import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {voice} from "tc-shared/connection/ConnectionBase";
 import PlayerState = voice.PlayerState;
@@ -8,6 +7,52 @@ import {CommandResult, ErrorID, PlaylistSong} from "tc-shared/connection/ServerC
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import * as log from "tc-shared/log";
 import * as image_preview from "../image_preview";
+import {Registry} from "tc-shared/events";
+
+export interface MusicSidebarEvents {
+    "open": {}, /* triggers when frame should be shown */
+    "close": {}, /* triggers when frame will be closed */
+
+    "bot_change": {
+        old: MusicClientEntry | undefined,
+        new: MusicClientEntry | undefined
+    },
+    "bot_property_update": {
+        properties: string[]
+    },
+
+    "action_play": {},
+    "action_pause": {},
+    "action_song_set": { song_id: number },
+    "action_forward": {},
+    "action_rewind": {},
+    "action_forward_ms": {
+        units: number;
+    },
+    "action_rewind_ms": {
+        units: number;
+    },
+    "action_song_add": {},
+    "action_song_delete": { song_id: number },
+    "action_playlist_reload": {},
+
+    "playtime_move_begin": {},
+    "playtime_move_end": {
+        canceled: boolean,
+        target_time?: number
+    },
+
+    "reorder_begin": { song_id: number; entry: JQuery },
+    "reorder_end": { song_id: number; canceled: boolean; entry: JQuery; previous_entry?: number },
+
+    "player_time_update": ClientEvents["music_status_update"],
+    "player_song_change": ClientEvents["music_song_change"],
+
+    "playlist_song_add": ClientEvents["playlist_song_add"] & { insert_effect?: boolean },
+    "playlist_song_remove": ClientEvents["playlist_song_remove"],
+    "playlist_song_reorder": ClientEvents["playlist_song_reorder"],
+    "playlist_song_loaded": ClientEvents["playlist_song_loaded"] & { html_entry?: JQuery },
+}
 
 interface LoadedSongData {
     description: string;
@@ -21,7 +66,7 @@ interface LoadedSongData {
 }
 
 export class MusicInfo {
-    readonly events: events.Registry<events.sidebar.music>;
+    readonly events: Registry<MusicSidebarEvents>;
     readonly handle: Frame;
 
     private _html_tag: JQuery;
@@ -47,10 +92,10 @@ export class MusicInfo {
     previous_frame_content: FrameContent;
 
     constructor(handle: Frame) {
-        this.events = new events.Registry<events.sidebar.music>();
+        this.events = new Registry<MusicSidebarEvents>();
         this.handle = handle;
 
-        this.events.enable_debug("music-info");
+        this.events.enableDebug("music-info");
         this.initialize_listener();
         this._build_html_tag();
 
@@ -333,7 +378,7 @@ export class MusicInfo {
                 event.old.events.off(callback_property);
                 event.old.events.off(callback_time_update);
                 event.old.events.off(callback_song_change);
-                event.old.events.disconnect_all(this.events);
+                event.old.events.disconnectAll(this.events);
             }
             if(event.new) {
                 event.new.events.on("notify_properties_updated", callback_property);

@@ -101,13 +101,23 @@ export class ModalController<InstanceType extends Modal = Modal> {
     }
 }
 
-export abstract class Modal {
-    private __modal_controller: ModalController;
-    public constructor() {}
+export abstract class AbstractModal {
+    protected constructor() {}
 
-    type() : ModalType { return "none"; }
     abstract renderBody() : ReactElement;
     abstract title() : string | React.ReactElement<Translatable>;
+
+    protected onInitialize() {}
+    protected onDestroy() {}
+
+    protected onClose() {}
+    protected onOpen() {}
+}
+
+export abstract class Modal extends AbstractModal {
+    private __modal_controller: ModalController;
+
+    type() : ModalType { return "none"; }
 
     /**
      * Will only return a modal controller when the modal has not been destroyed
@@ -115,12 +125,6 @@ export abstract class Modal {
     modalController() : ModalController | undefined {
         return this.__modal_controller;
     }
-
-    protected onInitialize() {}
-    protected onDestroy() {}
-
-    protected onClose() {}
-    protected onOpen() {}
 }
 
 class ModalImpl extends React.PureComponent<{ controller: ModalController  }, { show: boolean }> {

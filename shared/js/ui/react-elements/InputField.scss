@@ -9,9 +9,9 @@ html:root {
 
     --boxed-input-field-disabled-background: #1a1819;
 
-    --boxed-input-field-focus-border: #111112;
-    --boxed-input-field-focus-background: #121213;
-    --boxed-input-field-focus-text: #b3b3b3;
+    --boxed-input-field-focus-border: #284262;
+    --boxed-input-field-focus-background: #131b22;
+    --boxed-input-field-focus-text: #e1e2e3;
 
     --boxed-input-field-invalid-border: #721c1c;
     --boxed-input-field-invalid-background: #180d0d;
@@ -73,17 +73,19 @@ html:root {
         background-image: unset!important;
     }
 
-    &:focus, &:focus-within {
-        background-color: var(--boxed-input-field-focus-background);
-        border-color: var(--boxed-input-field-focus-border);
+    &.editable {
+        &:focus, &:focus-within {
+            background-color: var(--boxed-input-field-focus-background);
+            border-color: var(--boxed-input-field-focus-border);
 
-        color: var(--boxed-input-field-focus-text);
+            color: var(--boxed-input-field-focus-text);
 
-        .prefix {
-            width: 0;
-            padding-left: 0;
-            padding-right: 0;
-            opacity: 0;
+            .prefix {
+                width: 0;
+                padding-left: 0;
+                padding-right: 0;
+                opacity: 0;
+            }
         }
     }
 
@@ -97,7 +99,7 @@ html:root {
         outline: none;
         margin: 0;
 
-        //color: #b3b3b3;
+        color: inherit;
         min-width: 2em;
 
         &.editable {

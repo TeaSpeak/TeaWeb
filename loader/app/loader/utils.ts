@@ -1,6 +1,14 @@
 import {SourcePath} from "./loader";
 import {Options} from "./script_loader";
 
+export const getUrlParameter = key => {
+    const match = location.search.match(new RegExp("(.*[?&]|^)" + key + "=([^&]+)($|&.*)"));
+    if(!match)
+        return undefined;
+
+    return match[2];
+};
+
 export class LoadSyntaxError {
     readonly source: any;
     constructor(source: any) {

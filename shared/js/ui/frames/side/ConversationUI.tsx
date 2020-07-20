@@ -1,9 +1,7 @@
 import * as React from "react";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ChatBox} from "tc-shared/ui/frames/side/ChatBox";
-import {generate_client} from "tc-shared/ui/htmltags";
 import {Ref, useEffect, useRef, useState} from "react";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {format} from "tc-shared/ui/frames/side/chat_helper";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
@@ -23,6 +21,7 @@ import {
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
+import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 
 const cssStyle = require("./ConversationUI.scss");
 
@@ -32,7 +31,7 @@ const ChatEventMessageRenderer = React.memo((props: {
     message: ChatMessage,
     callbackDelete?: () => void,
     events: Registry<ConversationUIEvents>,
-    handler: ConnectionHandler,
+    handlerId: string,
 
     refHTMLElement?: Ref<HTMLDivElement>
 }) => {
@@ -46,24 +45,30 @@ const ChatEventMessageRenderer = React.memo((props: {
         );
     }
 
+    const avatar = getGlobalAvatarManagerFactory().getManager(props.handlerId)?.resolveClientAvatar({ clientUniqueId: props.message.sender_unique_id, database_id: props.message.sender_database_id });
     return (
         <div className={cssStyle.containerMessage} ref={props.refHTMLElement}>
             <div className={cssStyle.avatar}>
                 <AvatarRenderer
                     className={cssStyle.imageContainer}
                     alt={""}
-                    avatar={props.handler.fileManager.avatars.resolveClientAvatar({ clientUniqueId: props.message.sender_unique_id, database_id: props.message.sender_database_id })} />
+                    avatar={avatar} />
             </div>
             <div className={cssStyle.message}>
                 <div className={cssStyle.info}>
                     {deleteButton}
-                    <a className={cssStyle.sender} dangerouslySetInnerHTML={{ __html: generate_client({
-                        client_database_id: props.message.sender_database_id,
-                        client_id: -1,
-                        client_name: props.message.sender_name,
-                        client_unique_id: props.message.sender_unique_id,
-                        add_braces: false
-                    })}} />
+                    {/*
+                        <a className={cssStyle.sender} dangerouslySetInnerHTML={{ __html: generate_client({
+                            client_database_id: props.message.sender_database_id,
+                            client_id: -1,
+                            client_name: props.message.sender_name,
+                            client_unique_id: props.message.sender_unique_id,
+                            add_braces: false
+                        })}} />
+                    */}
+                    <a className={cssStyle.sender}>
+                        <div className={"htmltag-client"}>{props.message.sender_name}</div>
+                    </a>
                     <span> </span> { /* Only for copy purposes */}
                     <a className={cssStyle.timestamp}>
                         <TimestampRenderer timestamp={props.message.timestamp} />
@@ -322,7 +327,7 @@ const PartnerTypingIndicator = (props: { events: Registry<ConversationUIEvents>,
 
 interface ConversationMessagesProperties {
     events: Registry<ConversationUIEvents>;
-    handler: ConnectionHandler;
+    handlerId: string;
 
     noFirstMessageOverlay?: boolean
     messagesDeletable?: boolean;
@@ -555,6 +560,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
     }
 
     componentDidMount(): void {
+        this.props.events.fire("query_selected_chat");
         this.scrollToBottom();
     }
 
@@ -604,7 +610,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
                         message={event.message}
                         events={this.props.events}
                         callbackDelete={this.props.messagesDeletable ? () => this.props.events.fire("action_delete_message", { chatId: this.currentChatId, uniqueId: event.uniqueId }) : undefined}
-                        handler={this.props.handler}
+                        handlerId={this.props.handlerId}
                         refHTMLElement={reference}
                     />);
                     break;
@@ -850,7 +856,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
     }
 }
 
-export const ConversationPanel = React.memo((props: { events: Registry<ConversationUIEvents>, handler: ConnectionHandler, messagesDeletable: boolean, noFirstMessageOverlay: boolean }) => {
+export const ConversationPanel = React.memo((props: { events: Registry<ConversationUIEvents>, handlerId: string, messagesDeletable: boolean, noFirstMessageOverlay: boolean }) => {
     const currentChat = useRef({ id: "unselected" });
     const chatEnabled = useRef(false);
 
@@ -882,7 +888,7 @@ export const ConversationPanel = React.memo((props: { events: Registry<Conversat
     });
 
     return <div className={cssStyle.panel}>
-        <ConversationMessages events={props.events} handler={props.handler} messagesDeletable={props.messagesDeletable} noFirstMessageOverlay={props.noFirstMessageOverlay} />
+        <ConversationMessages events={props.events} handlerId={props.handlerId} messagesDeletable={props.messagesDeletable} noFirstMessageOverlay={props.noFirstMessageOverlay} />
         <ChatBox
             ref={refChatBox}
             onSubmit={text => props.events.fire("action_send_message", { chatId: currentChat.current.id, text: text }) }

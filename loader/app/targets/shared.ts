@@ -32,7 +32,7 @@ if(__build.target === "web") {
     });
 }
 
-/* directly disable all context menus */ //disableGlobalContextMenu
+/* directly disable all context menus */
 if(!location.search.match(/(.*[?&]|^)disableGlobalContextMenu=1($|&.*)/)) {
     document.addEventListener("contextmenu", event => event.preventDefault());
 }

@@ -1,8 +1,8 @@
 import "./shared";
 import * as loader from "../loader/loader";
-import {config, SourcePath} from "../loader/loader";
+import {ApplicationLoader, config, SourcePath} from "../loader/loader";
 import {script_name} from "../loader/utils";
-import { detect as detectBrowser } from "detect-browser";
+import {loadManifest, loadManifestTarget} from "../maifest";
 
 declare global {
     interface Window {
@@ -31,22 +31,6 @@ export function ui_version() {
     return _ui_version;
 }
 
-interface Manifest {
-    version: number;
-
-    chunks: {[key: string]: {
-        files: {
-            hash: string,
-            file: string
-        }[],
-        modules: {
-            id: string,
-            context: string,
-            resource: string
-        }[]
-    }};
-}
-
 const LoaderTaskCallback = taskId => (script: SourcePath, state) => {
     if(state !== "loading")
         return;
@@ -62,33 +46,8 @@ const loader_javascript = {
         }
 
         loader.setCurrentTaskName(taskId, "manifest");
-        let manifest: Manifest;
-        try {
-            const response = await fetch(config.baseUrl + "js/manifest.json");
-            if(!response.ok) throw response.status + " " + response.statusText;
-
-            manifest = await response.json();
-        } catch(error) {
-            console.error("Failed to load javascript manifest: %o", error);
-            loader.critical_error("Failed to load manifest.json", error);
-            throw "failed to load manifest.json";
-        }
-        if(manifest.version !== 2)
-            throw "invalid manifest version";
-
-        const chunk_name = __build.entry_chunk_name;
-        if(typeof manifest.chunks[chunk_name] !== "object") {
-            loader.critical_error("Missing entry chunk in manifest.json", "Chunk " + chunk_name + " is missing.");
-            throw "missing entry chunk";
-        }
-        loader.module_mapping().push({
-            application: chunk_name,
-            modules: manifest.chunks[chunk_name].modules
-        });
-        await loader.scripts.load_multiple(manifest.chunks[chunk_name].files.map(e => "js/" + e.file), {
-            cache_tag: undefined,
-            max_parallel_requests: -1
-        }, LoaderTaskCallback(taskId));
+        await loadManifest();
+        await loadManifestTarget(__build.entry_chunk_name, taskId);
     }
 };
 
@@ -286,37 +245,36 @@ loader.register_task(loader.Stage.SETUP, {
     priority: 100
 });
 
-export function run() {
-    /* TeaClient */
-    if(node_require) {
-        if(__build.target !== "client") {
-            loader.critical_error("App seems not to be compiled for the client.", "This app has been compiled for " + __build.target);
-            return;
+export default class implements ApplicationLoader {
+    execute() {
+        /* TeaClient */
+        if(node_require) {
+            if(__build.target !== "client") {
+                loader.critical_error("App seems not to be compiled for the client.", "This app has been compiled for " + __build.target);
+                return;
+            }
+            window.native_client = true;
+
+            const path = node_require("path");
+            const remote = node_require('electron').remote;
+
+            const render_entry = path.join(remote.app.getAppPath(), "/modules/", "renderer");
+            const render = node_require(render_entry);
+
+            loader.register_task(loader.Stage.INITIALIZING, {
+                name: "teaclient initialize",
+                function: render.initialize,
+                priority: 40
+            });
+        } else {
+            if(__build.target !== "web") {
+                loader.critical_error("App seems not to be compiled for the web.", "This app has been compiled for " + __build.target);
+                return;
+            }
+
+            window.native_client = false;
         }
-        window.native_client = true;
 
-        const path = node_require("path");
-        const remote = node_require('electron').remote;
-
-        const render_entry = path.join(remote.app.getAppPath(), "/modules/", "renderer");
-        const render = node_require(render_entry);
-
-        loader.register_task(loader.Stage.INITIALIZING, {
-            name: "teaclient initialize",
-            function: render.initialize,
-            priority: 40
-        });
-    } else {
-        if(__build.target !== "web") {
-            loader.critical_error("App seems not to be compiled for the web.", "This app has been compiled for " + __build.target);
-            return;
-        }
-
-        window.native_client = false;
-    }
-
-    if(!loader.running()) {
-        /* we know that we want to load the app */
         loader.execute_managed();
     }
 }

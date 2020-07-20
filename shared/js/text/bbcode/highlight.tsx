@@ -68,6 +68,8 @@ registerLanguage("x86asm", import("highlight.js/lib/languages/x86asm"));
 registerLanguage("xml", import("highlight.js/lib/languages/xml"));
 registerLanguage("yaml", import("highlight.js/lib/languages/yaml"));
 
+const cssStyle = require("./highlight.scss");
+
 interface HighlightResult {
     relevance : number
     value : string
@@ -91,7 +93,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             }
 
             render(element: TagElement): React.ReactNode {
-                const klass = element.tagNormalized != 'code' ? "tag-hljs-inline-code" : "tag-hljs-code";
+                const klass = element.tagNormalized != 'code' ? cssStyle.inlineCode : cssStyle.code;
                 const language = (element.options || "").replace("\"", "'").toLowerCase();
 
                 let lines = rendererText.renderContent(element).join("").split("\n");

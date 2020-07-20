@@ -1,4 +1,3 @@
-import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {guid} from "tc-shared/crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
@@ -20,29 +19,34 @@ export class SingletonEvent implements Event<SingletonEvents, "singletone-instan
     as<T extends keyof SingletonEvents>() : SingletonEvents[T] { return; }
 }
 
+export interface EventReceiver<Events> {
+    fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean);
+    fire_async<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void);
+}
+
 const event_annotation_key = guid();
-export class Registry<Events> {
-    private readonly registry_uuid;
+export class Registry<Events> implements EventReceiver<Events> {
+    private readonly registryUuid;
 
     private handler: {[key: string]: ((event) => void)[]} = {};
-    private connections: {[key: string]:Registry<string>[]} = {};
-    private event_handler_objects: {
+    private connections: {[key: string]: EventReceiver<Events>[]} = {};
+    private eventHandlerObjects: {
         object: any,
         handlers: {[key: string]: ((event) => void)[]}
     }[] = [];
-    private debug_prefix = undefined;
-    private warn_unhandled_events = false;
+    private debugPrefix = undefined;
+    private warnUnhandledEvents = false;
 
     constructor() {
-        this.registry_uuid = "evreg_data_" + guid();
+        this.registryUuid = "evreg_data_" + guid();
     }
 
 
-    enable_debug(prefix: string) { this.debug_prefix = prefix || "---"; }
-    disable_debug() { this.debug_prefix = undefined; }
+    enableDebug(prefix: string) { this.debugPrefix = prefix || "---"; }
+    disableDebug() { this.debugPrefix = undefined; }
 
-    enable_warn_unhandled_events() { this.warn_unhandled_events = true; }
-    disable_warn_unhandled_events() { this.warn_unhandled_events = false; }
+    enable_warn_unhandled_events() { this.warnUnhandledEvents = true; }
+    disable_warn_unhandled_events() { this.warnUnhandledEvents = false; }
 
     on<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void) : () => void;
     on(events: (keyof Events)[], handler: (event?: Event<Events, keyof Events>) => void) : () => void;
@@ -50,7 +54,7 @@ export class Registry<Events> {
         if(!Array.isArray(events))
             events = [events];
 
-        handler[this.registry_uuid] = {
+        handler[this.registryUuid] = {
             singleshot: false
         };
         for(const event of events) {
@@ -58,6 +62,14 @@ export class Registry<Events> {
             handlers.push(handler);
         }
         return () => this.off(events, handler);
+    }
+
+    onAll(handler: (event?: Event<Events>) => void) : () => void {
+        handler[this.registryUuid] = {
+            singleshot: false
+        };
+        (this.handler[null as any] || (this.handler[null as any] = [])).push(handler);
+        return () => this.offAll(handler);
     }
 
     /* one */
@@ -70,7 +82,7 @@ export class Registry<Events> {
         for(const event of events) {
             const handlers = this.handler[event] || (this.handler[event] = []);
 
-            handler[this.registry_uuid] = { singleshot: true };
+            handler[this.registryUuid] = { singleshot: true };
             handlers.push(handler);
         }
         return () => this.off(events, handler);
@@ -94,6 +106,10 @@ export class Registry<Events> {
         }
     }
 
+    offAll(handler: (event?: Event<Events>) => void) {
+        (this.handler[null as any] || []).remove(handler);
+    }
+
 
     /* special helper methods for react components */
     reactUse<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void, condition?: boolean) {
@@ -108,23 +124,28 @@ export class Registry<Events> {
         });
     }
 
-    connect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: Registry<EOther>) {
+    connectAll<EOther, T extends keyof Events & keyof EOther>(target: EventReceiver<Events>) {
+        (this.connections[null as any] || (this.connections[null as any] = [])).push(target as any);
+    }
+
+    connect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: EventReceiver<Events>) {
         for(const event of Array.isArray(events) ? events : [events])
             (this.connections[event as string] || (this.connections[event as string] = [])).push(target as any);
     }
 
-    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: Registry<EOther>) {
+    disconnect<EOther, T extends keyof Events & keyof EOther>(events: T | T[], target: EventReceiver<Events>) {
         for(const event of Array.isArray(events) ? events : [events])
             (this.connections[event as string] || []).remove(target as any);
     }
 
-    disconnect_all<EOther>(target: Registry<EOther>) {
+    disconnectAll<EOther>(target: EventReceiver<Events>) {
+        this.connections[null as any]?.remove(target);
         for(const event of Object.keys(this.connections))
-            this.connections[event].remove(target as any);
+            this.connections[event].remove(target);
     }
 
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean) {
-        if(this.debug_prefix) console.log("[%s] Trigger event: %s", this.debug_prefix, event_type);
+        if(this.debugPrefix) console.log("[%s] Trigger event: %s", this.debugPrefix, event_type);
 
         if(typeof data === "object" && 'type' in data && !overrideTypeKey) {
             if((data as any).type !== event_type) {
@@ -137,26 +158,35 @@ export class Registry<Events> {
             as: function () { return this; }
         });
 
-        this.fire_event(event_type as string, event);
+        this.fire_event(event_type, event);
     }
 
-    private fire_event(type: string, data: any) {
-        let invoke_count = 0;
-        for(const handler of (this.handler[type]?.slice(0) || [])) {
+    private fire_event(type: keyof Events, data: any) {
+        let invokeCount = 0;
+
+        const typedHandler = this.handler[type as string] || [];
+        const generalHandler = this.handler[null as string] || [];
+        for(const handler of [...generalHandler, ...typedHandler]) {
             handler(data);
-            invoke_count++;
+            invokeCount++;
 
-            const reg_data = handler[this.registry_uuid];
-            if(typeof reg_data === "object" && reg_data.singleshot)
-                this.handler[type].remove(handler);
+            const regData = handler[this.registryUuid];
+            if(typeof regData === "object" && regData.singleshot)
+                this.handler[type as string].remove(handler); /* FIXME: General single shot? */
         }
 
-        for(const evhandler of (this.connections[type]?.slice(0) || [])) {
-            evhandler.fire_event(type, data);
-            invoke_count++;
+        const typedConnections = this.connections[type as string] || [];
+        const generalConnections = this.connections[null as string] || [];
+        for(const evhandler of [...generalConnections, ...typedConnections]) {
+            if('fire_event' in evhandler)
+                /* evhandler is an event registry as well. We don't have to check for any inappropriate keys */
+                (evhandler as any).fire_event(type, data);
+            else
+                evhandler.fire(type, data);
+            invokeCount++;
         }
-        if(this.warn_unhandled_events && invoke_count === 0) {
-            console.warn(tr("Event handler (%s) triggered event %s which has no consumers."), this.debug_prefix, type);
+        if(this.warnUnhandledEvents && invokeCount === 0) {
+            console.warn(tr("Event handler (%s) triggered event %s which has no consumers."), this.debugPrefix, type);
         }
     }
 
@@ -172,7 +202,7 @@ export class Registry<Events> {
     destroy() {
         this.handler = {};
         this.connections = {};
-        this.event_handler_objects = [];
+        this.eventHandlerObjects = [];
     }
 
     register_handler(handler: any, parentClasses?: boolean) {
@@ -213,17 +243,17 @@ export class Registry<Events> {
             return;
         }
 
-        this.event_handler_objects.push({
+        this.eventHandlerObjects.push({
             handlers: registered_events,
             object: handler
         });
     }
 
     unregister_handler(handler: any) {
-        const data = this.event_handler_objects.find(e => e.object === handler);
+        const data = this.eventHandlerObjects.find(e => e.object === handler);
         if(!data) return;
 
-        this.event_handler_objects.remove(data);
+        this.eventHandlerObjects.remove(data);
 
         for(const key of Object.keys(data.handlers)) {
             for(const evhandler of data.handlers[key])
@@ -278,48 +308,7 @@ export function ReactEventHandler<ObjectClass = React.Component<any, any>, Event
 
 export namespace sidebar {
     export interface music {
-        "open": {}, /* triggers when frame should be shown */
-        "close": {}, /* triggers when frame will be closed */
 
-        "bot_change": {
-            old: MusicClientEntry | undefined,
-            new: MusicClientEntry | undefined
-        },
-        "bot_property_update": {
-            properties: string[]
-        },
-
-        "action_play": {},
-        "action_pause": {},
-        "action_song_set": { song_id: number },
-        "action_forward": {},
-        "action_rewind": {},
-        "action_forward_ms": {
-            units: number;
-        },
-        "action_rewind_ms": {
-            units: number;
-        },
-        "action_song_add": {},
-        "action_song_delete": { song_id: number },
-        "action_playlist_reload": {},
-
-        "playtime_move_begin": {},
-        "playtime_move_end": {
-            canceled: boolean,
-            target_time?: number
-        },
-
-        "reorder_begin": { song_id: number; entry: JQuery },
-        "reorder_end": { song_id: number; canceled: boolean; entry: JQuery; previous_entry?: number },
-
-        "player_time_update": ClientEvents["music_status_update"],
-        "player_song_change": ClientEvents["music_song_change"],
-
-        "playlist_song_add": ClientEvents["playlist_song_add"] & { insert_effect?: boolean },
-        "playlist_song_remove": ClientEvents["playlist_song_remove"],
-        "playlist_song_reorder": ClientEvents["playlist_song_reorder"],
-        "playlist_song_loaded": ClientEvents["playlist_song_loaded"] & { html_entry?: JQuery },
     }
 }
 
@@ -722,13 +711,3 @@ export namespace modal {
         }
     }
 }
-
-//Some test code
-/*
-const eclient = new Registry<ClientEvents>();
-const emusic = new Registry<sidebar.music>();
-
-eclient.on("property_update", event => { event.as<"playlist_song_loaded">(); });
-eclient.connect("playlist_song_loaded", emusic);
-eclient.connect("playlist_song_loaded", emusic);
- */

@@ -2,10 +2,12 @@
 
 html:root {
     --tooltip-background-color: #232222;
+    --tooltip-color: #999;
 }
 
 .container {
     background-color: var(--tooltip-background-color);
+    color: var(--tooltip-color);
 
     position: fixed;
     z-index: 1000000;

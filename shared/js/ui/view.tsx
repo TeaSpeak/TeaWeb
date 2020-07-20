@@ -228,7 +228,7 @@ export class ChannelTree {
 
     constructor(client) {
         this.events = new Registry<ChannelTreeEvents>();
-        this.events.enable_debug("channel-tree");
+        this.events.enableDebug("channel-tree");
 
         this.client = client;
         this.view = React.createRef();

@@ -1,4 +1,10 @@
 # Changelog:
+* **20.07.20**
+    - Some general project cleanup
+    - Heavily improved the IPC internal API
+    - Added a basic API for popout able modals 
+    - Added a CSS variable editor
+    
 * **18.07.20**
     - Rewrote the channel conversation UI and manager
       - Several bug fixes like the scrollbar 

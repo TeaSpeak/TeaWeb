@@ -26,7 +26,7 @@ export class ConnectionManager {
 
     constructor(tag: JQuery) {
         this.event_registry = new Registry<ConnectionManagerEvents>();
-        this.event_registry.enable_debug("connection-manager");
+        this.event_registry.enableDebug("connection-manager");
 
         this._tag = tag;
 
@@ -127,6 +127,10 @@ export class ConnectionManager {
         handler?.events().fire("notify_visibility_changed", { visible: true });
 
         top_menu.update_state(); //FIXME: Top menu should listen to our events!
+    }
+
+    findConnection(handlerId: string) : ConnectionHandler | undefined {
+        return this.connection_handlers.find(e => e.handlerId === handlerId);
     }
 
     active_connection() : ConnectionHandler | undefined {

@@ -1,6 +1,9 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import * as hex from "tc-shared/crypto/hex";
+import * as ipc from "../ipc/BrowserIPC";
+import {ChannelMessage} from "../ipc/BrowserIPC";
+import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
 import {image_type, ImageCache, media_image_type} from "tc-shared/file/ImageCache";
 import {FileManager} from "tc-shared/file/FileManager";
 import {
@@ -12,69 +15,40 @@ import {
 } from "tc-shared/file/Transfer";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {Registry} from "tc-shared/events";
 import {ClientEntry} from "tc-shared/ui/client";
 import {tr} from "tc-shared/i18n/localize";
+import {
+    AbstractAvatarManager,
+    AbstractAvatarManagerFactory,
+    AvatarState,
+    AvatarStateData,
+    ClientAvatar,
+    kIPCAvatarChannel,
+    setGlobalAvatarManagerFactory,
+    uniqueId2AvatarId
+} from "tc-shared/file/Avatars";
+import {IPCChannel} from "tc-shared/ipc/BrowserIPC";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 
 /* FIXME: Retry avatar download after some time! */
 
-const DefaultAvatarImage = "img/style/avatar.png";
-
-export type AvatarState = "unset" | "loading" | "errored" | "loaded";
-
-interface AvatarEvents {
-    avatar_changed: {},
-    avatar_state_changed: { oldState: AvatarState, newState: AvatarState }
-}
-
-export class ClientAvatar {
-    readonly events: Registry<AvatarEvents>;
-    readonly clientAvatarId: string; /* the base64 unique id thing from a-m */
-
-    currentAvatarHash: string | "unknown"; /* the client avatars flag */
-    state: AvatarState = "loading";
-
-    /* only set when state is unset, loaded or errored */
-    avatarUrl?: string;
-    loadError?: string;
-
-    loadingTimestamp: number = 0;
-
-    constructor(client_avatar_id: string) {
-        this.clientAvatarId = client_avatar_id;
-        this.events = new Registry<AvatarEvents>();
-    }
-
-    setState(state: AvatarState) {
-        if(state === this.state)
-            return;
-
-        const oldState = this.state;
-        this.state = state;
-        this.events.fire("avatar_state_changed", { newState: state, oldState: oldState });
-    }
-
-    async awaitLoaded() {
-        if(this.state !== "loading")
-            return;
-
-        await new Promise(resolve => this.events.on("avatar_state_changed", event => event.newState !== "loading" && resolve()));
-    }
-
-    destroyUrl() {
-        URL.revokeObjectURL(this.avatarUrl);
-        this.avatarUrl = DefaultAvatarImage;
+class LocalClientAvatar extends ClientAvatar {
+    protected destroyStateData(state: AvatarState, data: AvatarStateData[AvatarState]) {
+        if(state === "loaded") {
+            const tdata = data as AvatarStateData["loaded"];
+            URL.revokeObjectURL(tdata.url);
+        }
     }
 }
 
-export class AvatarManager {
+export class AvatarManager extends AbstractAvatarManager {
     handle: FileManager;
-
     private static cache: ImageCache;
 
 
-    private cachedAvatars: {[avatarId: string]: ClientAvatar} = {};
+    private cachedAvatars: {[avatarId: string]: LocalClientAvatar} = {};
     constructor(handle: FileManager) {
+        super();
         this.handle = handle;
 
         if(!AvatarManager.cache)
@@ -82,7 +56,7 @@ export class AvatarManager {
     }
 
     destroy() {
-        Object.values(this.cachedAvatars).forEach(e => e.destroyUrl());
+        Object.values(this.cachedAvatars).forEach(e => e.destroy());
         this.cachedAvatars = {};
     }
 
@@ -96,14 +70,13 @@ export class AvatarManager {
         });
     }
 
-    private async executeAvatarLoad0(avatar: ClientAvatar) {
-        if(avatar.currentAvatarHash === "") {
-            avatar.destroyUrl();
-            avatar.setState("unset");
+    private async executeAvatarLoad0(avatar: LocalClientAvatar) {
+        if(avatar.getAvatarHash() === "") {
+            avatar.setUnset();
             return;
         }
 
-        const initialAvatarHash = avatar.currentAvatarHash;
+        let initialAvatarHash = avatar.getAvatarHash();
         let avatarResponse: Response;
 
         /* try to lookup our cache for the avatar */
@@ -118,18 +91,19 @@ export class AvatarManager {
             }
 
             let cachedAvatarHash = response.headers.has("X-avatar-version") ? response.headers.get("X-avatar-version") : undefined;
-            if(avatar.currentAvatarHash !== "unknown") {
+            if(avatar.getAvatarHash() !== "unknown") {
                 if(cachedAvatarHash === undefined) {
-                    log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"), avatar.clientAvatarId, avatar.currentAvatarHash);
+                    log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"), avatar.clientAvatarId, avatar.getAvatarHash());
                     await AvatarManager.cache.delete('avatar_' + avatar.clientAvatarId);
                     break cache_lookup;
-                } else if(cachedAvatarHash !== avatar.currentAvatarHash) {
-                    log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"), avatar.clientAvatarId, cachedAvatarHash, avatar.currentAvatarHash);
+                } else if(cachedAvatarHash !== avatar.getAvatarHash()) {
+                    log.debug(LogCategory.FILE_TRANSFER, tr("Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"), avatar.clientAvatarId, cachedAvatarHash, avatar.getAvatarHash());
                     await AvatarManager.cache.delete('avatar_' + avatar.clientAvatarId);
                     break cache_lookup;
                 }
             } else if(cachedAvatarHash) {
-                avatar.currentAvatarHash = cachedAvatarHash;
+                avatar.events.fire("avatar_changed", { newAvatarHash: cachedAvatarHash });
+                initialAvatarHash = cachedAvatarHash;
             }
 
             avatarResponse = response;
@@ -154,11 +128,12 @@ export class AvatarManager {
                     const commandResult = error.commandResult;
                     if(commandResult instanceof CommandResult) {
                         if(commandResult.id === ErrorID.FILE_NOT_FOUND) {
-                            if(avatar.currentAvatarHash !== initialAvatarHash)
+                            if(avatar.getAvatarHash() !== initialAvatarHash) {
+                                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                                 return;
+                            }
 
-                            avatar.destroyUrl();
-                            avatar.setState("unset");
+                            avatar.setUnset();
                             return;
                         } else if(commandResult.id === ErrorID.PERMISSION_ERROR) {
                             throw tr("No permissions to download the avatar");
@@ -192,11 +167,13 @@ export class AvatarManager {
             const type = image_type(headers.get('X-media-bytes'));
             const media = media_image_type(type);
 
-            if(avatar.currentAvatarHash !== initialAvatarHash)
+            if(avatar.getAvatarHash() !== initialAvatarHash) {
+                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                 return;
+            }
 
             await AvatarManager.cache.put_cache('avatar_' + avatar.clientAvatarId, transferResponse.getResponse().clone(), "image/" + media, {
-                "X-avatar-version": avatar.currentAvatarHash
+                "X-avatar-version": avatar.getAvatarHash()
             });
 
             avatarResponse = transferResponse.getResponse();
@@ -217,51 +194,49 @@ export class AvatarManager {
             const blob = await avatarResponse.blob();
 
             /* ensure we're still up to date */
-            if(avatar.currentAvatarHash !== initialAvatarHash)
+            if(avatar.getAvatarHash() !== initialAvatarHash) {
+                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                 return;
-
-            avatar.destroyUrl();
-            if(blob.type !== "image/" + media) {
-                avatar.avatarUrl = URL.createObjectURL(blob.slice(0, blob.size, "image/" + media));
-            } else {
-                avatar.avatarUrl = URL.createObjectURL(blob);
             }
 
-            avatar.setState("loaded");
+            if(blob.type !== "image/" + media) {
+                avatar.setLoaded({ url: URL.createObjectURL(blob.slice(0, blob.size, "image/" + media)) });
+            } else {
+                avatar.setLoaded({ url: URL.createObjectURL(blob) });
+            }
         }
     }
 
-    private executeAvatarLoad(avatar: ClientAvatar) {
-        const avatar_hash = avatar.currentAvatarHash;
+    private executeAvatarLoad(avatar: LocalClientAvatar) {
+        const avatarHash = avatar.getAvatarHash();
 
-        avatar.setState("loading");
+        avatar.setLoading();
         avatar.loadingTimestamp = Date.now();
         this.executeAvatarLoad0(avatar).catch(error => {
-            if(avatar.currentAvatarHash !== avatar_hash)
+            if(avatar.getAvatarHash() !== avatarHash) {
+                log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), avatarHash, avatar.getAvatarHash());
                 return;
-
-            if(typeof error === "string") {
-                avatar.loadError = error;
-            } else if(error instanceof Error) {
-                avatar.loadError = error.message;
-            } else {
-                log.error(LogCategory.FILE_TRANSFER, tr("Failed to load avatar %s (hash: %s): %o"), avatar.clientAvatarId, avatar_hash, error);
-                avatar.loadError = tr("lookup the console");
             }
 
-            avatar.destroyUrl(); /* if there were any image previously */
-            avatar.setState("errored");
+            if(typeof error === "string") {
+                avatar.setErrored({ message: error });
+            } else if(error instanceof Error) {
+                avatar.setErrored({ message: error.message });
+            } else {
+                log.error(LogCategory.FILE_TRANSFER, tr("Failed to load avatar %s (hash: %s): %o"), avatar.clientAvatarId, avatarHash, error);
+                avatar.setErrored({ message: tr("lookup the console") });
+            }
         });
     }
 
-    update_cache(clientAvatarId: string, clientAvatarHash: string) {
+    updateCache(clientAvatarId: string, clientAvatarHash: string) {
         AvatarManager.cache.setup().then(async () => {
             const cached = this.cachedAvatars[clientAvatarId];
             if(cached) {
-                if(cached.currentAvatarHash === clientAvatarHash)
+                if(cached.getAvatarHash() === clientAvatarHash)
                     return;
 
-                log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.currentAvatarHash, clientAvatarHash);
+                log.info(LogCategory.GENERAL, tr("Deleting cached avatar for client %s. Cached version: %s; New version: %s"), cached.getAvatarHash(), clientAvatarHash);
             }
 
             const response = await AvatarManager.cache.resolve_cached('avatar_' + clientAvatarId);
@@ -275,26 +250,25 @@ export class AvatarManager {
             }
 
             if(cached) {
-                cached.currentAvatarHash = clientAvatarHash;
-                cached.events.fire("avatar_changed");
+                cached.events.fire("avatar_changed", { newAvatarHash: clientAvatarHash });
                 this.executeAvatarLoad(cached);
             }
         });
     }
 
-    resolveAvatar(clientAvatarId: string, avatarHash?: string, cacheOnly?: boolean) {
+    resolveAvatar(clientAvatarId: string, avatarHash?: string, cacheOnly?: boolean) : ClientAvatar {
         let avatar = this.cachedAvatars[clientAvatarId];
         if(!avatar) {
             if(cacheOnly)
                 return undefined;
 
-            avatar = new ClientAvatar(clientAvatarId);
+            avatar = new LocalClientAvatar(clientAvatarId);
             this.cachedAvatars[clientAvatarId] = avatar;
-        } else if(typeof avatarHash !== "string" || avatar.currentAvatarHash === avatarHash) {
+        } else if(typeof avatarHash !== "string" || avatar.getAvatarHash() === avatarHash) {
             return avatar;
         }
 
-        avatar.currentAvatarHash = typeof avatarHash === "string" ? avatarHash : "unknown";
+        avatar.events.fire("avatar_changed", { newAvatarHash: typeof avatarHash === "string" ? avatarHash : "unknown" });
         this.executeAvatarLoad(avatar);
 
         return avatar;
@@ -317,7 +291,7 @@ export class AvatarManager {
         return this.resolveAvatar(uniqueId2AvatarId(client.clientUniqueId), clientHandle?.properties.client_flag_avatar);
     }
 
-    private generate_default_image() : JQuery {
+    private static generate_default_image() : JQuery {
         return $.spawn("img").attr("src", "img/style/avatar.png").css({width: '100%', height: '100%'});
     }
 
@@ -337,7 +311,7 @@ export class AvatarManager {
 
         const container = $.spawn("div").addClass("avatar");
         if(client_handle && !client_handle.properties.client_flag_avatar)
-            return container.append(this.generate_default_image());
+            return container.append(AvatarManager.generate_default_image());
 
 
         const clientAvatarId = client_handle ? client_handle.avatarId() : uniqueId2AvatarId(client_unique_id);
@@ -346,11 +320,11 @@ export class AvatarManager {
 
 
             const updateJQueryTag = () => {
-                const image = $.spawn("img").attr("src", avatar.avatarUrl).css({width: '100%', height: '100%'});
+                const image = $.spawn("img").attr("src", avatar.getAvatarUrl()).css({width: '100%', height: '100%'});
                 container.append(image);
             };
 
-            if(avatar.state !== "loading") {
+            if(avatar.getState() !== "loading") {
                 /* Test if we're may able to load the client avatar sync without a loading screen */
                 updateJQueryTag();
                 return container;
@@ -362,7 +336,7 @@ export class AvatarManager {
             avatar.awaitLoaded().then(updateJQueryTag);
             image_loading.appendTo(container);
         } else {
-            this.generate_default_image().appendTo(container);
+            AvatarManager.generate_default_image().appendTo(container);
         }
 
         return container;
@@ -378,34 +352,102 @@ export class AvatarManager {
     });
 };
 
-export function uniqueId2AvatarId(unique_id: string) {
-    function str2ab(str) {
-        let buf = new ArrayBuffer(str.length); // 2 bytes for each char
-        let bufView = new Uint8Array(buf);
-        for (let i=0, strLen = str.length; i<strLen; i++) {
-            bufView[i] = str.charCodeAt(i);
-        }
-        return buf;
+/* FIXME: unsubscribe if the other client isn't alive any mnore */
+class LocalAvatarManagerFactory extends AbstractAvatarManagerFactory {
+    private ipcChannel: IPCChannel;
+
+    private subscribedAvatars: {[key: string]: { avatar: ClientAvatar, remoteAvatarId: string, unregisterCallback: () => void }[]} = {};
+
+    constructor() {
+        super();
+
+        this.ipcChannel = ipc.getInstance().createChannel(undefined, kIPCAvatarChannel);
+        this.ipcChannel.messageHandler = this.handleIpcMessage.bind(this);
+
+        server_connections.events().on("notify_handler_created", event => this.handleHandlerCreated(event.handler));
+        server_connections.events().on("notify_handler_deleted", event => this.handleHandlerDestroyed(event.handler));
     }
 
-    try {
-        let raw = atob(unique_id);
-        let input = hex.encode(str2ab(raw));
+    getManager(handlerId: string): AbstractAvatarManager {
+        return server_connections.findConnection(handlerId)?.fileManager.avatars;
+    }
 
-        let result: string = "";
-        for(let index = 0; index < input.length; index++) {
-            let c = input.charAt(index);
-            let offset: number = 0;
-            if(c >= '0' && c <= '9')
-                offset = c.charCodeAt(0) - '0'.charCodeAt(0);
-            else if(c >= 'A' && c <= 'F')
-                offset = c.charCodeAt(0) - 'A'.charCodeAt(0) + 0x0A;
-            else if(c >= 'a' && c <= 'f')
-                offset = c.charCodeAt(0) - 'a'.charCodeAt(0) + 0x0A;
-            result += String.fromCharCode('a'.charCodeAt(0) + offset);
+    hasManager(handlerId: string): boolean {
+        return this.getManager(handlerId) !== undefined;
+    }
+
+    private handleHandlerCreated(handler: ConnectionHandler) {
+        this.ipcChannel.sendMessage("notify-handler-created", { handler: handler.handlerId });
+    }
+
+    private handleHandlerDestroyed(handler: ConnectionHandler) {
+        this.ipcChannel.sendMessage("notify-handler-destroyed", { handler: handler.handlerId });
+        const subscriptions = this.subscribedAvatars[handler.handlerId] || [];
+        delete this.subscribedAvatars[handler.handlerId];
+
+        subscriptions.forEach(e => e.unregisterCallback());
+    }
+
+    private handleIpcMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
+        if(broadcast)
+            return;
+
+        if(message.type === "query-handlers") {
+            this.ipcChannel.sendMessage("notify-handlers", {
+                handlers: server_connections.all_connections().map(e => e.handlerId)
+            }, remoteId);
+            return;
+        } else if(message.type === "load-avatar") {
+            const sendResponse = properties => {
+                this.ipcChannel.sendMessage("load-avatar-result", {
+                    avatarId: message.data.avatarId,
+                    handlerId: message.data.handlerId,
+                    ...properties
+                }, remoteId);
+            };
+
+            const avatarId = message.data.avatarId;
+            const handlerId = message.data.handlerId;
+            const manager = this.getManager(handlerId);
+            if(!manager) {
+                sendResponse({ success: false, message: tr("Invalid handler") });
+                return;
+            }
+
+            let avatar: ClientAvatar;
+            if(message.data.keyType === "client") {
+                avatar = manager.resolveClientAvatar({
+                    id: message.data.clientId,
+                    clientUniqueId: message.data.clientUniqueId,
+                    database_id: message.data.clientDatabaseId
+                });
+            } else {
+                avatar = manager.resolveAvatar(message.data.clientAvatarId, message.data.avatarVersion);
+            }
+
+            const subscribedAvatars = this.subscribedAvatars[handlerId] || (this.subscribedAvatars[handlerId] = []);
+            const oldSubscribedAvatarIndex = subscribedAvatars.findIndex(e => e.remoteAvatarId === avatarId);
+            if(oldSubscribedAvatarIndex !== -1) {
+                const [ subscription ] = subscribedAvatars.splice(oldSubscribedAvatarIndex, 1);
+                subscription.unregisterCallback();
+            }
+            subscribedAvatars.push({
+                avatar: avatar,
+                remoteAvatarId: avatarId,
+                unregisterCallback: avatar.events.onAll(event => {
+                    this.ipcChannel.sendMessage("avatar-event", { handlerId: handlerId, avatarId: avatarId, event: event }, remoteId);
+                })
+            });
+
+            sendResponse({ success: true, state: avatar.getState(), stateData: avatar.getStateData(), hash: avatar.getAvatarHash() });
         }
-        return result;
-    } catch (e) { //invalid base 64 (like music bot etc)
-        return undefined;
     }
 }
+
+loader.register_task(Stage.LOADED, {
+    name: "Avatar init",
+    function: async () => {
+        setGlobalAvatarManagerFactory(new LocalAvatarManagerFactory());
+    },
+    priority: 5
+});

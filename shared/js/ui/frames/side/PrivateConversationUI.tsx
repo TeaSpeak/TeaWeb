@@ -201,6 +201,6 @@ const OpenConversationsPanel = React.memo((props: { events: Registry<PrivateConv
 export const PrivateConversationsPanel = (props: { events: Registry<PrivateConversationUIEvents>, handler: ConnectionHandler }) => (
     <ContextDivider id={"seperator-conversation-list-messages"} direction={"horizontal"} defaultValue={25} separatorClassName={cssStyle.divider}>
         <OpenConversationsPanel events={props.events} connection={props.handler} />
-        <ConversationPanel events={props.events as any} handler={props.handler} noFirstMessageOverlay={true} messagesDeletable={false} />
+        <ConversationPanel events={props.events as any} handlerId={props.handler.handlerId} noFirstMessageOverlay={true} messagesDeletable={false} />
     </ContextDivider>
 );

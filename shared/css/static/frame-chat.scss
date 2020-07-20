@@ -7,6 +7,27 @@ $client_info_avatar_size: 10em;
 $bot_thumbnail_width: 16em;
 $bot_thumbnail_height: 9em;
 
+html:root {
+	--side-info-background: #2e2e2e;
+	--side-info-shadow: rgba(0, 0, 0, 0.25);
+	--side-info-title: #8b8b8b;
+
+	--side-info-indicator: #dab8b4;
+	--side-info-indicator-border: #6a0e0e;
+	--side-info-indicator-background: #ca3e22;
+
+	--side-info-value-background: #373737;
+	--side-info-value: #5a5a5a;
+
+	--side-info-ping-very-good: #3f7538;
+	--side-info-ping-good: #365632;
+	--side-info-ping-medium: #777f2c;
+	--side-info-ping-poor: #7f5122;
+	--side-info-ping-very-poor: #7f2222;
+
+	--side-info-bot-add-song: #3f7538;
+}
+
 .container-chat-frame {
 	flex-grow: 1;
 	flex-shrink: 1;
@@ -29,13 +50,13 @@ $bot_thumbnail_height: 9em;
 		flex-direction: column;
 		justify-content: space-evenly;
 
-		background-color: #2e2e2e;
+		background-color: var(--side-info-background);
 		border-top-left-radius: 5px;
 		border-top-right-radius: 5px;
 
-		-moz-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
-		-webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
-		box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.25);
+		-moz-box-shadow: inset 0 0 5px var(--side-info-shadow);
+		-webkit-box-shadow: inset 0 0 5px var(--side-info-shadow);
+		box-shadow: inset 0 0 5px var(--side-info-shadow);
 
 		.lane {
 			padding-right: 10px;
@@ -90,22 +111,22 @@ $bot_thumbnail_height: 9em;
 
 				.title {
 					display: block;
-					color: #8b8b8b;
+					color: var(--side-info-title);
 
 					.container-indicator {
 						display: inline-flex;
 						flex-direction: column;
 						justify-content: space-around;
 
-						background: #ca3e22;
-						border: 1px solid #6a0e0e;
+						background: var(--side-info-indicator-background);
+						border: 1px solid var(--side-info-indicator-border);
 						border-radius: 4px;
 
 						text-align: center;
 
 						vertical-align: text-top;
 
-						color: #dab8b4;
+						color: var(--side-info-indicator);
 
 						font-size: .66em;
 						height: 1.3em;
@@ -117,8 +138,8 @@ $bot_thumbnail_height: 9em;
 				}
 
 				.value {
-					color: #5a5a5a;
-					background-color: #373737;
+					color: var(--side-info-value);
+					background-color: var(--side-info-value-background);
 
 					display: inline-block;
 
@@ -138,19 +159,19 @@ $bot_thumbnail_height: 9em;
 					&.value-ping {
 						//very-good good medium poor very-poor
 						&.very-good {
-							color: #3f7538;
+							color: var(--side-info-ping-very-good);
 						}
 						&.good {
-							color: #365632;
+							color: var(--side-info-ping-good);
 						}
 						&.medium {
-							color: #777f2c;
+							color: var(--side-info-ping-medium);
 						}
 						&.poor {
-							color: #7f5122;
+							color: var(--side-info-ping-poor);
 						}
 						&.very-poor {
-							color: #7f2222;
+							color: var(--side-info-ping-very-poor);
 						}
 					}
 
@@ -159,21 +180,21 @@ $bot_thumbnail_height: 9em;
 					}
 
 					&.bot-add-song {
-						color: #3f7538;
+						color: var(--side-info-bot-add-song);
 					}
 				}
 
 				.small-value {
 					display: inline-block;
-					color: #5a5a5a;
+					color: var(--side-info-value);
 					font-size: .66em;
 					vertical-align: top;
 					margin-top: -.2em;
 				}
 
 				.button {
-					color: #5a5a5a;
-					background-color: #373737;
+					color: var(--side-info-value);
+					background-color: var(--side-info-value-background);
 
 					display: inline-block;
 

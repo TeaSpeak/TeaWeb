@@ -34,7 +34,7 @@ export function openModalNewcomer() : Modal {
     });
 
     const event_registry = new Registry<emodal.newcomer>();
-    event_registry.enable_debug("newcomer");
+    event_registry.enableDebug("newcomer");
 
     modal.htmlTag.find(".modal-body").addClass("modal-newcomer");
 
@@ -126,7 +126,7 @@ function initializeStepFinish(tag: JQuery, event_registry: Registry<emodal.newco
 
 function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.newcomer>) {
     const profile_events = new Registry<emodal.settings.profiles>();
-    profile_events.enable_debug("settings-identity");
+    profile_events.enableDebug("settings-identity");
     modal_settings.initialize_identity_profiles_controller(profile_events);
     modal_settings.initialize_identity_profiles_view(tag, profile_events, { forum_setuppable: false });
 

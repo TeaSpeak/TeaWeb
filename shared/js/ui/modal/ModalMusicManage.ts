@@ -15,7 +15,7 @@ import * as htmltags from "tc-shared/ui/htmltags";
 
 export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry) {
     const ev_registry = new Registry<modal.music_manage>();
-    ev_registry.enable_debug("music-manage");
+    ev_registry.enableDebug("music-manage");
     //dummy_controller(ev_registry);
     permission_controller(ev_registry, bot, client);
 

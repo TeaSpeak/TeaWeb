@@ -1,6 +1,22 @@
 @import "../../../../css/static/mixin";
 @import "../../../../css/static/properties";
 
+html:root {
+    --chat-private-no-chats: #5a5a5a;
+    --chat-private-border: #313132;
+
+    --chat-private-unread-background: #a81414;
+    --chat-private-unread-shadow: rgba(0, 0, 0, 0.20);
+
+    --chat-private-name: #ccc;
+    --chat-private-timestamp: #555353;
+
+    --chat-private-close-background: #5a5a5a;
+
+    --chat-private-hovered-background: #393939;
+    --chat-private-selected-background: #2c2c2c;
+}
+
 .divider {
     width: 2px!important;
     min-width: 2px!important;
@@ -39,7 +55,7 @@
 
         > div {
             display: inline-block;
-            color: #5a5a5a;
+            color: var(--chat-private-no-chats);
         }
     }
 }
@@ -52,7 +68,7 @@
     justify-content: stretch;
 
     cursor: pointer;
-    border-bottom: 1px solid #313132;
+    border-bottom: 1px solid var(--chat-private-border);
 
     .containerAvatar {
         flex-grow: 0;
@@ -78,15 +94,15 @@
             position: absolute;
             top: 0;
             right: 0;
-            background-color: #a81414;
+            background-color: var(--chat-private-unread-background);
             width: 7px;
             height: 7px;
 
             border-radius: 50%;
 
-            -webkit-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.20);
-            -moz-box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.20);
-            box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.20);
+            -webkit-box-shadow: 0 0 1px 1px var(--chat-private-unread-shadow);
+            -moz-box-shadow: 0 0 1px 1px var(--chat-private-unread-shadow);
+            box-shadow: 0 0 1px 1px var(--chat-private-unread-shadow);
         }
     }
 
@@ -112,14 +128,14 @@
         }
 
         .name {
-            color: #ccc;
+            color: var(--chat-private-name);
             font-weight: bold;
 
             margin-bottom: -.4em;
         }
 
         .timestamp {
-            color: #555353;
+            color: var(--chat-private-timestamp);
 
             display: inline-block;
             font-size: .66em;
@@ -150,7 +166,7 @@
             content: ' ';
             height: .5em;
             width: .05em;
-            background-color: #5a5a5a;
+            background-color: var(--chat-private-close-background);
         }
 
         &:before {
@@ -163,11 +179,11 @@
     }
 
     &:hover {
-        background-color: #393939;
+        background-color: var(--chat-private-hovered-background);
     }
 
     &.selected {
-        background-color: #2c2c2c;
+        background-color: var(--chat-private-selected-background);
     }
     @include transition(background-color $button_hover_animation_time ease-in-out);
 }

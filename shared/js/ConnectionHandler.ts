@@ -18,7 +18,7 @@ import * as htmltags from "./ui/htmltags";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import * as bipc from "./BrowserIPC";
+import * as bipc from "./ipc/BrowserIPC";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {Frame} from "tc-shared/ui/frames/chat_frame";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
@@ -34,6 +34,7 @@ import {FileManager} from "tc-shared/file/FileManager";
 import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
 import {traj} from "tc-shared/i18n/localize";
 import {md5} from "tc-shared/crypto/md5";
+import {guid} from "tc-shared/crypto/uid";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -126,6 +127,8 @@ export interface ConnectParameters {
 
 declare const native_client;
 export class ConnectionHandler {
+    readonly handlerId: string;
+
     private readonly event_registry: Registry<ConnectionEvents>;
     channelTree: ChannelTree;
 
@@ -172,8 +175,9 @@ export class ConnectionHandler {
     log: ServerLog;
 
     constructor() {
+        this.handlerId = guid();
         this.event_registry = new Registry<ConnectionEvents>();
-        this.event_registry.enable_debug("connection-handler");
+        this.event_registry.enableDebug("connection-handler");
 
         this.settings = new ServerSettings();
 
@@ -435,7 +439,7 @@ export class ConnectionHandler {
                 if(popup)
                     popup.close();
 
-                properties["certificate_callback"] = bipc.get_handler().register_certificate_accept_callback(() => {
+                properties["certificate_callback"] = bipc.getInstance().register_certificate_accept_callback(() => {
                     log.info(LogCategory.GENERAL, tr("Received notification that the certificate has been accepted! Attempting reconnect!"));
                     if(this._certificate_modal)
                         this._certificate_modal.close();
@@ -448,7 +452,7 @@ export class ConnectionHandler {
                 });
 
                 const url = build_url(document.location.origin + pathname + "/popup/certaccept/", "", properties);
-                const features_string = [...Object.keys(features)].map(e => e + "=" + features[e]).reduce((a, b) => a + "," + b);
+                const features_string = Object.keys(features).map(e => e + "=" + features[e]).join(",");
                 popup = window.open(url, "TeaWeb certificate accept", features_string);
                 try {
                     popup.focus();

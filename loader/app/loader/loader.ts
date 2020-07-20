@@ -14,7 +14,11 @@ declare global {
     }
 
     const tr: typeof window.tr;
-    const tra: typeof window.tr;
+    const tra: typeof window.tra;
+}
+
+export interface ApplicationLoader {
+    execute();
 }
 
 export interface Config {

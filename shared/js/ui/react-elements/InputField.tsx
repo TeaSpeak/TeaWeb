@@ -10,6 +10,7 @@ export interface BoxedInputFieldProperties {
     disabled?: boolean;
     editable?: boolean;
 
+    value?: string;
     defaultValue?: string;
 
     rightIcon?: () => ReactElement;
@@ -52,9 +53,10 @@ export class BoxedInputField extends React.Component<BoxedInputFieldProperties, 
                 draggable={false}
                 className={
                     cssStyle.containerBoxed + " " +
-                    cssStyle["size-" + (this.props.size || "normal")] +
+                    cssStyle["size-" + (this.props.size || "normal")] + " " +
                     (this.state.disabled || this.props.disabled ? cssStyle.disabled : "") + " " +
                     (this.state.isInvalid || this.props.isInvalid ? cssStyle.isInvalid : "") + " " +
+                    (typeof this.props.editable !== "boolean" || this.props.editable ? cssStyle.editable : "") + " " +
                     (this.props.leftIcon ? "" : cssStyle.noLeftIcon) + " " +
                     (this.props.rightIcon ? "" : cssStyle.noRightIcon) + " " +
                     this.props.className
@@ -69,10 +71,10 @@ export class BoxedInputField extends React.Component<BoxedInputFieldProperties, 
                     <span key={"custom-input"} className={cssStyle.inputBox + " " + (this.props.editable ? cssStyle.editable : "")} onClick={this.props.onFocus}>{this.props.inputBox()}</span> :
                     <input key={"input"}
                         ref={this.refInput}
-                        value={this.state.value}
+                        value={this.props.value || this.state.value}
                         defaultValue={this.state.defaultValue || this.props.defaultValue}
                         placeholder={this.props.placeholder}
-                        readOnly={typeof this.props.editable === "boolean" ? this.props.editable : false}
+                        readOnly={typeof this.props.editable === "boolean" ? !this.props.editable : false}
                         disabled={this.state.disabled || this.props.disabled}
                         onInput={this.props.onInput && (event => this.props.onInput(event.currentTarget.value))}
                         onKeyDown={e => this.onKeyDown(e)}

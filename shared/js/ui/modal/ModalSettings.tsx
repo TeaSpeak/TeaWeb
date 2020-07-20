@@ -436,7 +436,7 @@ function settings_general_chat(container: JQuery, modal: Modal) {
 
 function settings_audio_microphone(container: JQuery, modal: Modal) {
     const registry = new Registry<events.modal.settings.microphone>();
-    registry.enable_debug("settings-microphone");
+    registry.enableDebug("settings-microphone");
     modal_settings.initialize_audio_microphone_controller(registry);
     modal_settings.initialize_audio_microphone_view(container, registry);
 

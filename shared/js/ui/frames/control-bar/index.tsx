@@ -406,7 +406,7 @@ export class ControlBar extends React.Component<ControlBarProperties, {}> {
         super(props);
 
         this.event_registry = new Registry<InternalControlBarEvents>();
-        this.event_registry.enable_debug("control-bar");
+        this.event_registry.enableDebug("control-bar");
         initialize(this.event_registry);
     }
 

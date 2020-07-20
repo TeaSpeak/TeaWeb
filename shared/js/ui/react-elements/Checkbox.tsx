@@ -6,6 +6,8 @@ export interface CheckboxProperties {
     label?: ReactElement | string;
     disabled?: boolean;
     onChange?: (value: boolean) => void;
+
+    value?: boolean;
     initialValue?: boolean;
 
     children?: never;
@@ -20,21 +22,18 @@ export class Checkbox extends React.Component<CheckboxProperties, CheckboxState>
     constructor(props) {
         super(props);
 
-        this.state = {
-            checked: this.props.initialValue,
-            disabled: this.props.disabled
-        };
+        this.state = { };
     }
 
     render() {
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : this.props.disabled;
-        const checked = typeof this.state.checked === "boolean" ? this.state.checked : this.props.initialValue;
+        const checked = typeof this.props.value === "boolean" ? this.props.value : typeof this.state.checked === "boolean" ? this.state.checked : this.props.initialValue;
         const disabledClass = disabled ? cssStyle.disabled : "";
 
         return (
             <label className={cssStyle.labelCheckbox + " " + disabledClass}>
                 <div className={cssStyle.checkbox + " " + disabledClass}>
-                    <input type={"checkbox"} checked={checked} disabled={disabled} onChange={() => this.onStateChange()} />
+                    <input type={"checkbox"} checked={checked} disabled={disabled} onChange={event => this.onStateChange(event)} />
                     <div className={cssStyle.mark} />
                 </div>
                 {this.props.label ? <a>{this.props.label}</a> : undefined}
@@ -42,9 +41,9 @@ export class Checkbox extends React.Component<CheckboxProperties, CheckboxState>
         );
     }
 
-    private onStateChange() {
+    private onStateChange(event: React.ChangeEvent) {
         if(this.props.onChange)
-            this.props.onChange(!this.state.checked);
+            this.props.onChange((event.target as HTMLInputElement).checked);
 
         this.setState({ checked: !this.state.checked });
     }

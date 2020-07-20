@@ -2,14 +2,24 @@ import "core-js/stable";
 import "./polifill";
 
 import * as loader from "./loader/loader";
+import {ApplicationLoader} from "./loader/loader";
+import {getUrlParameter} from "./loader/utils";
+
 window["loader"] = loader;
 /* let the loader register himself at the window first */
 
-import * as AppLoader from "./targets/app";
-setTimeout(AppLoader.run, 0);
+const target = getUrlParameter("loader-target") || "app";
+console.error("Loading app with loader \"%s\"", target);
 
-import * as EmptyLoader from "./targets/empty";
-//setTimeout(EmptyLoader.run, 0);
+let appLoader: ApplicationLoader;
+if(target === "empty") {
+    appLoader = new (require("./targets/empty").default);
+} else if(target === "manifest") {
+    appLoader = new (require("./targets/maifest-target").default);
+} else {
+    appLoader = new (require("./targets/app").default);
+}
+setTimeout(() => appLoader.execute(), 0);
 
 export {};
 

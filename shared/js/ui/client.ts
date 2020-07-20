@@ -787,7 +787,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         }
 
         if(update_avatar)
-            this.channelTree.client.fileManager.avatars.update_cache(this.avatarId(), this.properties.client_flag_avatar);
+            this.channelTree.client.fileManager.avatars.updateCache(this.avatarId(), this.properties.client_flag_avatar);
 
         /* devel-block(log-client-property-updates) */
         group.end();

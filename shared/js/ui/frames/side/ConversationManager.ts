@@ -19,6 +19,7 @@ import {
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {ConversationPanel} from "tc-shared/ui/frames/side/ConversationUI";
 import {preprocessChatMessageForSend} from "tc-shared/text/chat";
+import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
 
 const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 
@@ -676,10 +677,19 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
 
         ReactDOM.render(React.createElement(ConversationPanel, {
             events: this.uiEvents,
-            handler: this.connection,
+            handlerId: this.connection.handlerId,
             noFirstMessageOverlay: false,
             messagesDeletable: true
         }), this.htmlTag);
+        /*
+        spawnExternalModal("conversation", this.uiEvents, {
+            handlerId: this.connection.handlerId,
+            noFirstMessageOverlay: false,
+            messagesDeletable: true
+        }).open().then(() => {
+            console.error("Opened");
+        });
+        */
 
         this.uiEvents.on("action_select_chat", event => this.selectedConversation_ = parseInt(event.chatId));
         this.uiEvents.on("notify_destroy", connection.events().on("notify_connection_state_changed", event => {
@@ -825,6 +835,11 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
         }
 
         conversation.deleteMessage(event.uniqueId);
+    }
+
+    @EventHandler<ConversationUIEvents>("query_selected_chat")
+    private handleQuerySelectedChat(event: ConversationUIEvents["query_selected_chat"]) {
+        this.uiEvents.fire_async("notify_selected_chat", { chatId: isNaN(this.selectedConversation_) ? "unselected" : this.selectedConversation_ + ""})
     }
 
     @EventHandler<ConversationUIEvents>("notify_selected_chat")

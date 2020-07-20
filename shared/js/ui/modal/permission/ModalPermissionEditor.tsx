@@ -281,8 +281,8 @@ class PermissionEditorModal extends Modal {
         this.defaultTab = defaultTab;
         this.defaultTabValues = defaultTabValues || {};
 
-        this.modalEvents.enable_debug("modal-permissions");
-        this.editorEvents.enable_debug("permissions-editor");
+        this.modalEvents.enableDebug("modal-permissions");
+        this.editorEvents.enableDebug("permissions-editor");
 
         this.connection = connection;
         initializePermissionModalResultHandlers(this.modalEvents);

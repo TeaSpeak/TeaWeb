@@ -109,6 +109,9 @@ export interface ConversationUIEvents {
     action_jump_to_present: { chatId: string },
     action_focus_chat: {},
 
+    query_selected_chat: {},
+    /* will cause a notify_selected_chat */
+
     query_conversation_state: { chatId: string }, /* will cause a notify_conversation_state */
     notify_conversation_state: { chatId: string } & ChatStateData,
 

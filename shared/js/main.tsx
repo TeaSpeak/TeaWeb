@@ -4,7 +4,7 @@ import {settings, Settings} from "tc-shared/settings";
 import * as profiles from "tc-shared/profiles/ConnectionProfile";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import * as bipc from "./BrowserIPC";
+import * as bipc from "./ipc/BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
 import {tra} from "./i18n/localize";
@@ -39,7 +39,10 @@ import ContextMenuEvent = JQuery.ContextMenuEvent;
 import "./proto";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
-import "./connection/CommandHandler"; /* else it might not get bundled because only the backends are accessing it */
+import "./connection/CommandHandler";
+import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
+import {spawnVideoPopout} from "tc-shared/video-viewer/Controller";
+import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller"; /* else it might not get bundled because only the backends are accessing it */
 
 declare global {
     interface Window {
@@ -130,8 +133,6 @@ function setup_jsrender() : boolean {
 }
 
 async function initialize() {
-    Settings.initialize();
-
     try {
         await i18n.initialize();
     } catch(error) {
@@ -251,7 +252,7 @@ interface Window {
 }
 */
 
-export function handle_connect_request(properties: bipc.connect.ConnectRequestData, connection: ConnectionHandler) {
+export function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
     const profile_uuid = properties.profile || (profiles.default_profile() || {id: 'default'}).id;
     const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
     const username = properties.username || profile.connect_username();
@@ -497,7 +498,7 @@ function main() {
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
 
-    (window as any).spawnFileTransferModal = spawnFileTransferModal;
+    (window as any).spawnVideoPopout = spawnModalCssVariableEditor;
 }
 
 const task_teaweb_starter: loader.Task = {
@@ -527,7 +528,7 @@ const task_connect_handler: loader.Task = {
     name: "Connect handler",
     function: async () => {
         const address = settings.static(Settings.KEY_CONNECT_ADDRESS, "");
-        const chandler = bipc.get_connect_handler();
+        const chandler = bipc.getInstanceConnectHandler();
         if(settings.static(Settings.KEY_FLAG_CONNECT_DEFAULT, false) && address) {
             const connect_data = {
                 address: address,
@@ -599,7 +600,7 @@ const task_certificate_callback: loader.Task = {
             log.info(LogCategory.IPC, tr("Using this instance as certificate callback. ID: %s"), certificate_accept);
             try {
                 try {
-                    await bipc.get_handler().post_certificate_accpected(certificate_accept);
+                    await bipc.getInstance().post_certificate_accpected(certificate_accept);
                 } catch(e) {} //FIXME remove!
                 log.info(LogCategory.IPC, tr("Other instance has acknowledged out work. Closing this window."));
 

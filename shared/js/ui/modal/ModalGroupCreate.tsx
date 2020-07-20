@@ -240,7 +240,7 @@ class ModalGroupCreate extends Modal {
     constructor(connection: ConnectionHandler, target: "server" | "channel", defaultSourceGroup: number) {
         super();
 
-        this.events.enable_debug("group-create");
+        this.events.enableDebug("group-create");
         this.defaultSourceGroup = defaultSourceGroup;
         this.target = target;
         initializeGroupCreateController(connection, this.events, this.target);

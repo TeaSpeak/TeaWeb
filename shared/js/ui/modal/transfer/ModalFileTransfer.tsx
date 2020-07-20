@@ -190,8 +190,8 @@ class FileTransferModal extends Modal {
 
         this.defaultChannelId = defaultChannelId;
 
-        this.remoteBrowseEvents.enable_debug("remote-file-browser");
-        this.transferInfoEvents.enable_debug("transfer-info");
+        this.remoteBrowseEvents.enableDebug("remote-file-browser");
+        this.transferInfoEvents.enableDebug("transfer-info");
 
         initializeRemoteFileBrowserController(server_connections.active_connection(), this.remoteBrowseEvents);
         initializeTransferInfoController(server_connections.active_connection(), this.transferInfoEvents);

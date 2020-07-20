@@ -260,6 +260,7 @@ const TextInput = (props: { events: Registry<ChatBoxEvents>, enabled?: boolean, 
 };
 
 export interface ChatBoxProperties {
+    className?: string;
     onSubmit?: (text: string) => void;
     onType?: () => void;
 }
@@ -298,7 +299,7 @@ export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
         super(props);
 
         this.state = { enabled: false };
-        this.events.enable_debug("chat-box");
+        this.events.enableDebug("chat-box");
     }
 
     componentDidMount(): void {
@@ -312,7 +313,7 @@ export class ChatBox extends React.Component<ChatBoxProperties, ChatBoxState> {
     }
 
     render() {
-        return <div className={cssStyle.container}>
+        return <div className={cssStyle.container + " " + this.props.className}>
             <div className={cssStyle.chatbox}>
                 <EmojiButton events={this.events} />
                 <TextInput events={this.events} placeholder={tr("Type your message here...")} />

@@ -4,6 +4,7 @@ import trtransformer from "./tools/trgen/ts_transformer";
 import {exec} from "child_process";
 import * as util from "util";
 import LoaderIndexGenerator = require("./loader/IndexGenerator");
+import {Configuration} from "webpack";
 
 const path = require('path');
 const webpack = require("webpack");
@@ -56,7 +57,9 @@ const isLoaderFile = (file: string) => {
 
 export const config = async (target: "web" | "client") => { return {
     entry: {
-        "loader": "./loader/app/index.ts"
+        "loader": "./loader/app/index.ts",
+        "modal-external": "./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts",
+        "devel-main": "./shared/js/devel_main.ts"
     },
 
     devtool: isDevelopment ? "inline-source-map" : undefined,
@@ -143,7 +146,8 @@ export const config = async (target: "web" | "client") => { return {
                                         target_file: path.join(__dirname, "dist", "translations.json")
                                     })]
                                 };
-                            }
+                            },
+                            transpileOnly: isDevelopment
                         }
                     },
                     {

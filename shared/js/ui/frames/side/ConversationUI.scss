@@ -6,6 +6,43 @@ $client_info_avatar_size: 10em;
 $bot_thumbnail_width: 16em;
 $bot_thumbnail_height: 9em;
 
+html:root {
+    --chat-background: #353535;
+
+    --chat-event-new-message: #8b8b8b;
+
+    --chat-loader-background: #252525;
+    --chat-loader: #565353;
+
+    --chat-loader-background-hover: #232326;
+    --chat-loader-hover: #5b5757;
+
+    --chat-partner-typing: #4d4d4d;
+
+    --chat-message-background: #303030;
+    --chat-message-timestamp: #5d5b5b;
+    --chat-message: #b5b5b5;
+
+    --chat-message-table-border: #1e2025;
+    --chat-message-table-row-background: #303036;
+    --chat-message-table-row-even-background: #25252a;
+
+    --chat-message-quote-border: #737373;
+    --chat-message-quote: #737373;
+
+    --chat-timestamp: #565353;
+    --chat-overlay: #5a5a5a;
+    --chat-unread: #bc1515;
+
+    --chat-container-switch: #535353;
+
+    --chat-event-general: #524e4e;
+    --chat-event-message-send-failed: #ac5353;
+    --chat-event-close: #adad1f;
+    --chat-event-disconnect: #a82424;
+    --chat-event-reconnect: #1B7E1B;
+}
+
 .panel {
     display: flex;
     flex-direction: column;
@@ -15,6 +52,7 @@ $bot_thumbnail_height: 9em;
     width: 100%;
 
     min-width: 250px;
+    background: var(--chat-background);
 
     position: relative;
 
@@ -44,10 +82,10 @@ $bot_thumbnail_height: 9em;
             text-align: center;
 
             width: 100%;
-            color: #8b8b8b;
+            color: var(--chat-event-new-message);
 
-            background: #353535; /* if we dont support gradients */
-            background: linear-gradient(rgba(53, 53, 53, 0) 10%, #353535 70%);
+            background: var(--chat-background); /* if we dont support gradients */
+            background: linear-gradient(rgba(53, 53, 53, 0) 10%, var(--chat-background) 70%);
             pointer-events: none;
 
             opacity: 0;
@@ -67,7 +105,8 @@ $bot_thumbnail_height: 9em;
             display: flex;
             flex-direction: row;
 
-            background: linear-gradient(rgba(53, 53, 53, 0) 10%, #353535 70%);
+            background: var(--chat-background); /* if we dont support gradients */
+            background: linear-gradient(rgba(53, 53, 53, 0) 10%, var(--chat-background) 70%);
 
             .inner {
                 flex-grow: 1;
@@ -78,8 +117,8 @@ $bot_thumbnail_height: 9em;
 
                 text-align: center;
 
-                background: #252525;
-                color: #565353;
+                background: var(--chat-loader-background);
+                color: var(--chat-loader);
 
                 margin-left: 4.5em;
                 margin-right: 2em;
@@ -92,8 +131,8 @@ $bot_thumbnail_height: 9em;
                 @include transition(background-color ease-in-out $button_hover_animation_time);
 
                 &:hover {
-                    background-color: #232326;
-                    color: #5b5757;
+                    background-color: var(--chat-loader-background-hover);
+                    color: var(--chat-loader-hover);
                 }
             }
 
@@ -117,7 +156,7 @@ $bot_thumbnail_height: 9em;
             padding-left: .6em;
             line-height: 1;
 
-            color: #4d4d4d;
+            color: var(--chat-partner-typing);
             opacity: 1;
 
             @include transition(.25s ease-in-out);
@@ -189,7 +228,7 @@ $bot_thumbnail_height: 9em;
 
             @include user-select(text);
 
-            background: #303030;
+            background: var(--chat-message-background);
             border-radius: 6px 6px 6px 6px;
 
             margin-top: .5em;
@@ -213,7 +252,7 @@ $bot_thumbnail_height: 9em;
                     display: inline;
 
                     font-size: 0.66em;
-                    color: #5d5b5b;
+                    color: var(--chat-message-timestamp);
                 }
 
                 .delete {
@@ -238,7 +277,7 @@ $bot_thumbnail_height: 9em;
             }
 
             .text {
-                color: #b5b5b5;
+                color: var(--chat-message);
                 line-height: 1.1em;
 
                 word-wrap: break-word;
@@ -261,15 +300,15 @@ $bot_thumbnail_height: 9em;
 
                 table {
                     th, td {
-                        border-color: #1e2025;
+                        border-color: var(--chat-message-table-border);
                     }
 
                     tr {
-                        background-color: #303036;
+                        background-color: var(--chat-message-table-row-background);
                     }
 
                     tr:nth-child(2n) {
-                        background-color: #25252a;
+                        background-color: var(--chat-message-table-row-even-background);
                     }
                 }
 
@@ -304,9 +343,9 @@ $bot_thumbnail_height: 9em;
                 }
 
                 :global(.xbbcode-tag-quote) {
-                    border-color: #737373;
+                    border-color: var(--chat-message-quote-border);
                     padding-left: .5em;
-                    color: #737373;
+                    color: var(--chat-message-quote);
                 }
             }
 
@@ -320,7 +359,7 @@ $bot_thumbnail_height: 9em;
 
                 margin-left: calc(-.5em - 1em);
                 border-top: .5em solid transparent;
-                border-right: .75em solid #303030;
+                border-right: .75em solid var(--chat-message-background);
                 border-bottom: .5em solid transparent;
 
                 top: 1.25em;
@@ -331,7 +370,7 @@ $bot_thumbnail_height: 9em;
     .containerTimestamp {
         margin-left: 2.5em;
 
-        color: #565353;
+        color: var(--chat-timestamp);
         text-align: center;
     }
 
@@ -349,8 +388,8 @@ $bot_thumbnail_height: 9em;
         text-align: center;
 
         width: 100%;
-        color: #5a5a5a;
-        background: #353535;
+        color: var(--chat-overlay);
+        background: var(--chat-background);
 
         display: flex;
         flex-direction: column;
@@ -362,7 +401,7 @@ $bot_thumbnail_height: 9em;
         margin-right: .5em;
 
         text-align: center;
-        color: #bc1515;
+        color: var(--chat-unread);
     }
 
     .jumpToPresentPlaceholder {
@@ -379,10 +418,10 @@ $bot_thumbnail_height: 9em;
         flex-direction: row;
         justify-content: center;
 
-        color: #535353;
+        color: var(--chat-container-switch);
 
         a {
-            background: #353535;
+            background: var(--chat-background);
             z-index: 1;
 
             padding-left: 1em;
@@ -398,7 +437,7 @@ $bot_thumbnail_height: 9em;
             right: 0;
 
             height: .1em;
-            background-color: #535353;
+            background-color: var(--chat-container-switch);
         }
     }
 
@@ -408,27 +447,27 @@ $bot_thumbnail_height: 9em;
 
         justify-content: center;
         text-align: center;
-        color: #524e4e;
+        color: var(--chat-event-general);
 
         a {
             display: inline-block;
         }
 
         &.containerMessageSendFailed {
-            color: #ac5353;
+            color: var(--chat-event-message-send-failed);
             margin-bottom: .5em;
         }
 
         &.actionClose {
-            color: #adad1f;
+            color: var(--chat-event-close);
         }
 
         &.actionDisconnect {
-            color: #a82424;
+            color: var(--chat-event-disconnect);
         }
 
         &.actionReconnect {
-            color: hsl(120, 65%, 30%);
+            color: var(--chat-event-reconnect);
         }
     }
 }

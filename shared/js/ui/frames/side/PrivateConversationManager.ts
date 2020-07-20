@@ -330,7 +330,7 @@ export class PrivateConversationManager extends AbstractChatManager<PrivateConve
         this.htmlTag.style.height = "100%";
 
         this.uiEvents.register_handler(this, true);
-        this.uiEvents.enable_debug("private-conversations");
+        this.uiEvents.enableDebug("private-conversations");
 
         ReactDOM.render(React.createElement(PrivateConversationsPanel, { events: this.uiEvents, handler: this.connection }), this.htmlTag);
 

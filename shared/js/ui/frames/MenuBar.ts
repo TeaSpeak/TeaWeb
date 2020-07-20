@@ -24,6 +24,7 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
 import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/file/Icons";
 import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
+import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
 
 export interface HRItem { }
 
@@ -520,6 +521,11 @@ export function initialize() {
         });
         _state_updater["tools.qc"] = { item: item, conditions: [condition_connected]};
         menu.append_hr();
+
+        if(__build.target === "web") {
+            item = menu.append_item(tr("Modify CSS variables"));
+            item.click(() => spawnModalCssVariableEditor());
+        }
 
         item = menu.append_item(tr("Settings"));
         item.icon("client-settings");

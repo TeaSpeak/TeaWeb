@@ -1,6 +1,7 @@
+import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import * as loader from "tc-loader";
-import * as log from "tc-shared/log";
+import {Stage} from "tc-loader";
 import {Registry} from "tc-shared/events";
 
 type ConfigValueTypes = boolean | number | string;
@@ -456,6 +457,11 @@ export class Settings extends StaticSettings {
         /* defaultValue: <users download directory> */
     };
 
+    static readonly  KEY_IPC_REMOTE_ADDRESS: SettingsKey<string> = {
+        key: "ipc-address",
+        valueType: "string"
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",
@@ -709,3 +715,9 @@ export class ServerSettings extends SettingsBase {
 }
 
 export let settings: Settings = null;
+
+loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
+    priority: 1000,
+    name: "Settings initialize",
+    function: async () => Settings.initialize()
+})

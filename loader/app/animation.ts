@@ -1,5 +1,6 @@
 import * as loader from "./loader/loader";
 import {Stage} from "./loader/loader";
+import {getUrlParameter} from "./loader/utils";
 
 let overlay: HTMLDivElement;
 let setupContainer: HTMLDivElement;
@@ -92,10 +93,14 @@ export function abort() {
 }
 
 export function finalize() {
-    finalizing = true;
+    if(getUrlParameter("loader-abort") === "1") {
+        abort();
+    } else {
+        finalizing = true;
 
-    if(loaderStageContainer)
-        loaderStageContainer.innerText = "app loaded successfully (" + (Date.now() - initializeTimestamp) + "ms)";
+        if(loaderStageContainer)
+            loaderStageContainer.innerText = "app loaded successfully (" + (Date.now() - initializeTimestamp) + "ms)";
+    }
 }
 
 const StageNames = {};

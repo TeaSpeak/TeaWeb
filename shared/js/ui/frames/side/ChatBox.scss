@@ -1,6 +1,21 @@
 @import "../../../../css/static/mixin";
 @import "../../../../css/static/properties";
 
+html:root {
+    --chatbox-emoji-hover-background: #454545;
+    --chatbox-input-background: #464646;
+    --chatbox-input-background-disabled: #3d3d3d;
+
+    --chatbox-input-border: #353535;
+    --chatbox-input-border-hover: #474747;
+    --chatbox-input-border-focus: #585858;
+
+    --chatbox-input: #a9a9a9;
+    --chatbox-input-planceholder: #363535;
+    --chatbox-input-disabled: #4d4d4d;
+    --chatbox-input-help: #555555;
+}
+
 .container {
     @include user-select(none);
     
@@ -47,7 +62,7 @@
         border-radius: .25em;
 
         &:hover {
-            background-color: #454545;
+            background-color: var(--chatbox-emoji-hover-background);
         }
         @include transition(background-color $button_hover_animation_time ease-in-out);
 
@@ -118,8 +133,8 @@
     box-sizing: content-box;
 
     width: 100%;
-    background-color: #464646;
-    border: 2px solid #353535; /* background color (like no border) */
+    background-color: var(--chatbox-input-background);
+    border: 2px solid var(--chatbox-input-border); /* background color (like no border) */
 
     overflow: hidden;
     border-radius: 5px;
@@ -147,13 +162,13 @@
         border: none;
         outline: none;
 
-        color: #a9a9a9;
+        color: var(--chatbox-input);
 
         @include chat-scrollbar-vertical();
 
         &:empty::before {
             content: attr(placeholder);
-            color: #5e5e5e;
+            color: var(--chatbox-input-planceholder);
         }
 
         &:empty:focus::before {
@@ -163,11 +178,11 @@
 
     &.disabled {
         .textarea {
-            background-color: #3d3d3d;
+            background-color: var(--chatbox-input-background-disabled);
             border-width: 0;
 
             &:empty::before {
-                color: #4d4d4d;
+                color: var(--chatbox-input-disabled);
             }
         }
 
@@ -175,16 +190,16 @@
     }
 
     @include placeholder(textarea) {
-        color: #363535;
+        color: var(--chatbox-input-planceholder);
         font-style: oblique;
     }
 
     &:hover {
-        border-color: #474747;
+        border-color: var(--chatbox-input-border-hover);
     }
 
     &:focus-within {
-        border-color: #585858;
+        border-color: var(--chatbox-input-border-focus);
     }
 
     @include transition(border-color $button_hover_animation_time ease-in-out);
@@ -197,7 +212,7 @@
     min-height: unset;
     height: initial;
 
-    color: #555555;
+    color: var(--chatbox-input-help);
     font-size: .8em;
     text-align: right;
     margin: -3px 2px 2px 2.5em;
