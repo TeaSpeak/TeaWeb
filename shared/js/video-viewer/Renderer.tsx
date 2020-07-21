@@ -4,7 +4,9 @@ import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {VideoViewerEvents} from "./Definitions";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
-import {Slider} from "tc-shared/ui/react-elements/Slider";
+import ReactPlayer from 'react-player'
+
+const cssStyle = require("./Renderer.scss");
 
 class ModalVideoPopout extends AbstractModal {
     readonly events: Registry<VideoViewerEvents>;
@@ -28,8 +30,31 @@ class ModalVideoPopout extends AbstractModal {
     }
 
     renderBody(): React.ReactElement {
-        return <div style={{ padding: "10em" }}>
-            <Slider value={100} minValue={0} maxValue={100} stepSize={1} onInput={value => this.events.fire("notify_value", { value: value })} />
+        return <div className={cssStyle.container} >
+            <ReactPlayer
+                url={"https://www.youtube.com/watch?v=u_TuibFg-GA"}
+                height={"100%"}
+                width={"100%"}
+
+                onError={(error, data, hlsInstance, hlsGlobal) => console.log("onError(%o, %o, %o, %o)", error, data, hlsInstance, hlsGlobal)}
+                onBuffer={() => console.log("onBuffer()")}
+                onBufferEnd={() => console.log("onBufferEnd()")}
+                onDisablePIP={() => console.log("onDisabledPIP()")}
+                onEnablePIP={() => console.log("onEnablePIP()")}
+                onDuration={duration => console.log("onDuration(%o)", duration)}
+                onEnded={() => console.log("onEnded()")}
+                onPause={() => console.log("onPause()")}
+                onPlay={() => console.log("onPlay()")}
+                onProgress={state => console.log("onProgress(%o)", state)}
+                onReady={() => console.log("onReady()")}
+                onSeek={seconds => console.log("onSeek(%o)", seconds)}
+                onStart={() => console.log("onStart()")}
+
+                controls={true}
+
+                loop={false}
+                light={false}
+            />
         </div>;
     }
 }

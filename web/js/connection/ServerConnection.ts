@@ -15,9 +15,9 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
-import * as elog from "tc-shared/ui/frames/server_log";
 import {VoiceConnection} from "../voice/VoiceHandler";
 import AbstractVoiceConnection = voice.AbstractVoiceConnection;
+import {EventType} from "tc-shared/ui/frames/log/Definitions";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -290,7 +290,7 @@ export class ServerConnection extends AbstractServerConnection {
 
     private start_handshake() {
         this.updateConnectionState(ConnectionState.INITIALISING);
-        this.client.log.log(elog.Type.CONNECTION_LOGIN, {});
+        this.client.log.log(EventType.CONNECTION_LOGIN, {});
         this._handshakeHandler.initialize();
         this._handshakeHandler.startHandshake();
     }

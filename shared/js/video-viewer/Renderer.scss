@@ -1,0 +1,15 @@
+.container {
+    background: #19191b;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    min-height: 10em;
+    min-width: 20em;
+
+    padding-left: 4em;
+}

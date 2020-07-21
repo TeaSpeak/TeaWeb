@@ -1,6 +1,5 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import * as server_log from "tc-shared/ui/frames/server_log";
 import {AbstractServerConnection, CommandOptions, ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {Sound} from "tc-shared/sound/Sounds";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
@@ -23,6 +22,7 @@ import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/u
 import {OutOfViewClient} from "tc-shared/ui/frames/side/PrivateConversationManager";
 import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
 import {tr} from "tc-shared/i18n/localize";
+import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {
@@ -85,7 +85,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         this["notifyplaylistsongloaded"] = this.handleNotifyPlaylistSongLoaded;
     }
 
-    private loggable_invoker(unique_id, client_id, name) : server_log.base.Client | undefined {
+    private loggable_invoker(unique_id, client_id, name) : EventClient | undefined {
         const id = parseInt(client_id);
         if(typeof(client_id) === "undefined" || Number.isNaN(id))
             return undefined;
@@ -116,18 +116,18 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                         if(res.id == ErrorID.PERMISSION_ERROR) { //Permission error
                             const permission = this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number);
                             res.message = tr("Insufficient client permissions. Failed on permission ") + (permission ? permission.name : "unknown");
-                            this.connection_handler.log.log(server_log.Type.ERROR_PERMISSION, {
+                            this.connection_handler.log.log(EventType.ERROR_PERMISSION, {
                                 permission: this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number)
                             });
                             this.connection_handler.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
                         } else if(res.id != ErrorID.EMPTY_RESULT) {
-                            this.connection_handler.log.log(server_log.Type.ERROR_CUSTOM, {
+                            this.connection_handler.log.log(EventType.ERROR_CUSTOM, {
                                 message: res.extra_message.length == 0 ? res.message : res.extra_message
                             });
                         }
                     }
                 } else if(typeof(ex) === "string") {
-                    this.connection_handler.log.log(server_log.Type.CONNECTION_COMMAND_ERROR, {error: ex});
+                    this.connection_handler.log.log(EventType.CONNECTION_COMMAND_ERROR, {error: ex});
                 } else {
                     log.error(LogCategory.NETWORKING, tr("Invalid promise result type: %s. Result: %o"), typeof (ex), ex);
                 }
@@ -212,7 +212,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             if(properties.virtualserver_hostmessage_mode == 1) {
                 /* show in log */
                 if(properties.virtualserver_hostmessage)
-                    this.connection_handler.log.log(server_log.Type.SERVER_HOST_MESSAGE, {
+                    this.connection_handler.log.log(EventType.SERVER_HOST_MESSAGE, {
                         message: properties.virtualserver_hostmessage
                     });
             } else {
@@ -227,7 +227,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 if(properties.virtualserver_hostmessage_mode == 3) {
                     /* first let the client initialize his stuff */
                     setTimeout(() => {
-                        this.connection_handler.log.log(server_log.Type.SERVER_HOST_MESSAGE_DISCONNECT, {
+                        this.connection_handler.log.log(EventType.SERVER_HOST_MESSAGE_DISCONNECT, {
                             message: properties.virtualserver_welcomemessage
                         });
 
@@ -241,7 +241,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
         /* welcome message */
         if(properties.virtualserver_welcomemessage) {
-            this.connection_handler.log.log(server_log.Type.SERVER_WELCOME_MESSAGE, {
+            this.connection_handler.log.log(EventType.SERVER_WELCOME_MESSAGE, {
                 message: properties.virtualserver_welcomemessage
             });
         }
@@ -452,14 +452,13 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
             if(this.connection_handler.areQueriesShown() || client.properties.client_type != ClientType.CLIENT_QUERY) {
                 const own_channel = this.connection.client.getClient().currentChannel();
-                this.connection_handler.log.log(server_log.Type.CLIENT_VIEW_ENTER, {
+                this.connection_handler.log.log(channel == own_channel ? EventType.CLIENT_VIEW_ENTER_OWN_CHANNEL : EventType.CLIENT_VIEW_ENTER, {
                     channel_from: old_channel ? old_channel.log_data() : undefined,
                     channel_to: channel ? channel.log_data() : undefined,
                     client: client.log_data(),
                     invoker: this.loggable_invoker(invokeruid, invokerid, invokername),
                     message:reason_msg,
                     reason: parseInt(reason_id),
-                    own_channel: channel == own_channel
                 });
 
                 if(reason_id == ViewReasonId.VREASON_USER_ACTION) {
@@ -543,7 +542,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 let channel_to = tree.findChannel(targetChannelId);
 
                 const is_own_channel = channel_from == own_channel;
-                this.connection_handler.log.log(server_log.Type.CLIENT_VIEW_LEAVE, {
+                this.connection_handler.log.log(is_own_channel ? EventType.CLIENT_VIEW_LEAVE_OWN_CHANNEL : EventType.CLIENT_VIEW_LEAVE, {
                     channel_from: channel_from ? channel_from.log_data() : undefined,
                     channel_to: channel_to ? channel_to.log_data() : undefined,
                     client: client.log_data(),
@@ -551,7 +550,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     message: entry["reasonmsg"],
                     reason: parseInt(entry["reasonid"]),
                     ban_time: parseInt(entry["bantime"]),
-                    own_channel: is_own_channel
                 });
 
                 if(is_own_channel) {
@@ -629,7 +627,8 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         }
 
         const own_channel = this.connection.client.getClient().currentChannel();
-        this.connection_handler.log.log(server_log.Type.CLIENT_VIEW_MOVE, {
+        const event = self ? EventType.CLIENT_VIEW_MOVE_OWN : (channel_from == own_channel || channel_to == own_channel ? EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL : EventType.CLIENT_VIEW_MOVE);
+        this.connection_handler.log.log(event, {
             channel_from: channel_from ? {
                 channel_id: channel_from.channelId,
                 channel_name: channel_from.channelName()
@@ -770,8 +769,24 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             });
             if(targetIsOwn) {
                 this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
+                this.connection_handler.log.log(EventType.PRIVATE_MESSAGE_RECEIVED, {
+                    message: json["msg"],
+                    sender: {
+                        client_unique_id: json["invokeruid"],
+                        client_name: json["invokername"],
+                        client_id: parseInt(json["invokerid"])
+                    }
+                });
             } else {
                 this.connection_handler.sound.play(Sound.MESSAGE_SEND, {default_volume: .5});
+                this.connection_handler.log.log(EventType.PRIVATE_MESSAGE_SEND, {
+                    message: json["msg"],
+                    target: {
+                        client_unique_id: json["invokeruid"],
+                        client_name: json["invokername"],
+                        client_id: parseInt(json["invokerid"])
+                    }
+                });
             }
             this.connection_handler.side_bar.info_frame().update_chat_counter();
         } else if(mode == 2) {
@@ -798,7 +813,11 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 message: json["msg"]
             }, invoker instanceof LocalClientEntry);
         } else if(mode == 3) {
-            this.connection_handler.log.log(server_log.Type.GLOBAL_MESSAGE, {
+            const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
+            const conversations = this.connection_handler.side_bar.channel_conversations();
+
+            this.connection_handler.log.log(EventType.GLOBAL_MESSAGE, {
+                isOwnMessage: invoker instanceof LocalClientEntry,
                 message: json["msg"],
                 sender: {
                     client_unique_id: json["invokeruid"],
@@ -806,9 +825,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     client_id: parseInt(json["invokerid"])
                 }
             });
-
-            const invoker = this.connection_handler.channelTree.findClient(parseInt(json["invokerid"]));
-            const conversations = this.connection_handler.side_bar.channel_conversations();
 
             if(!(invoker instanceof LocalClientEntry))
                 this.connection_handler.channelTree.server.setUnread(true);
@@ -921,6 +937,10 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             unique_id: json["invokeruid"]
         }, json["msg"]);
 
+        this.connection_handler.log.log(EventType.CLIENT_POKE_RECEIVED, {
+            sender: this.loggable_invoker(json["invokeruid"], json["invokerid"], json["invokername"]),
+            message: json["msg"]
+        });
         this.connection_handler.sound.play(Sound.USER_POKED_SELF);
     }
 

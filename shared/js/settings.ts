@@ -536,6 +536,13 @@ export class Settings extends StaticSettings {
         }
     };
 
+    static readonly FN_EVENTS_NOTIFICATION_ENABLED: (event: string) => SettingsKey<boolean> = event => {
+        return {
+            key: "notification_" + event + "_enabled",
+            valueType: "boolean"
+        }
+    };
+
     static readonly KEYS = (() => {
         const result = [];
 

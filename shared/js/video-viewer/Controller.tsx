@@ -16,21 +16,5 @@ const NumberRenderer = (props: { events: Registry<VideoViewerEvents> }) => {
 export function spawnVideoPopout() {
     const registry = new Registry<VideoViewerEvents>();
     const modalController = spawnExternalModal("video-viewer", registry, {});
-    modalController.open().then(() => {
-        const url = URL.createObjectURL(new Blob(["Hello World"], { type: "plain/text" }));
-        registry.fire("notify_data_url", { url: url });
-    });
-
-    spawnReactModal(class extends Modal {
-        constructor() {
-            super();
-        }
-
-        title() {
-            return "Hello World";
-        }
-        renderBody() {
-            return <h1>Hello World: <NumberRenderer events={registry} /></h1>;
-        }
-    }).show();
+    modalController.open();
 }

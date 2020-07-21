@@ -7,7 +7,6 @@ import {PermissionType} from "tc-shared/permission/PermissionType";
 import {KeyCode, SpecialKey} from "tc-shared/PPTListener";
 import {Sound} from "tc-shared/sound/Sounds";
 import {Group} from "tc-shared/permission/GroupManager";
-import * as server_log from "tc-shared/ui/frames/server_log";
 import {ServerAddress, ServerEntry} from "tc-shared/ui/server";
 import {ChannelEntry, ChannelProperties, ChannelSubscribeMode} from "tc-shared/ui/channel";
 import {ClientEntry, LocalClientEntry, MusicClientEntry} from "tc-shared/ui/client";
@@ -27,6 +26,7 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tra} from "tc-shared/i18n/localize";
 import {TreeEntryMove} from "tc-shared/ui/tree/TreeEntryMove";
+import {EventType} from "tc-shared/ui/frames/log/Definitions";
 
 export interface ChannelTreeEvents {
     action_select_entries: {
@@ -898,10 +898,9 @@ export class ChannelTree {
 
                 return new Promise<ChannelEntry>(resolve => { resolve(channel); })
             }).then(channel => {
-                this.client.log.log(server_log.Type.CHANNEL_CREATE, {
+                this.client.log.log(EventType.CHANNEL_CREATE_OWN, {
                     channel: channel.log_data(),
                     creator: this.client.getClient().log_data(),
-                    own_action: true
                 });
                 this.client.sound.play(Sound.CHANNEL_CREATED);
             });

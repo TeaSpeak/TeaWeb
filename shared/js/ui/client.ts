@@ -9,7 +9,6 @@ import {Group, GroupManager, GroupTarget, GroupType} from "tc-shared/permission/
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import * as htmltags from "tc-shared/ui/htmltags";
-import * as server_log from "tc-shared/ui/frames/server_log";
 import {CommandResult, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
@@ -27,6 +26,7 @@ import * as React from "react";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "tc-shared/ui/modal/ModalChangeVolumeNew";
 import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
+import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -535,13 +535,15 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 callback: () => {
                     createInputModal(tr("Poke client"), tr("Poke message:<br>"), text => true, result => {
                         if(typeof(result) === "string") {
-                            //TODO tr
-                            console.log("Poking client " + this.clientNickName() + " with message " + result);
                             this.channelTree.client.serverConnection.send_command("clientpoke", {
                                 clid: this.clientId(),
                                 msg: result
+                            }).then(() => {
+                                this.channelTree.client.log.log(EventType.CLIENT_POKE_SEND, {
+                                    target: this.log_data(),
+                                    message: result
+                                });
                             });
-
                         }
                     }, { width: 400, maxLength: 512 }).open();
                 }
@@ -742,8 +744,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
             if(variable.key == "client_nickname") {
                 if(variable.value !== old_value && typeof(old_value) === "string") {
                     if(!(this instanceof LocalClientEntry)) { /* own changes will be logged somewhere else */
-                        this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGED, {
-                            own_client: false,
+                        this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGED, {
                             client: this.log_data(),
                             new_name: variable.value,
                             old_name: old_value
@@ -873,7 +874,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         }
     }
 
-    log_data() : server_log.base.Client {
+    log_data() : EventClient {
         return {
             client_unique_id: this.properties.client_unique_identifier,
             client_name: this.clientNickName(),
@@ -980,16 +981,15 @@ export class LocalClientEntry extends ClientEntry {
         this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
         return this.handle.serverConnection.command_helper.updateClient("client_nickname", new_name).then((e) => {
             settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, new_name);
-            this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGED, {
+            this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGED_OWN, {
                 client: this.log_data(),
                 old_name: old_name,
                 new_name: new_name,
-                own_client: true
             });
             return true;
         }).catch((e: CommandResult) => {
             this.updateVariables({ key: "client_nickname", value: old_name }); /* change it back */
-            this.channelTree.client.log.log(server_log.Type.CLIENT_NICKNAME_CHANGE_FAILED, {
+            this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGE_FAILED, {
                 reason: e.extra_message
             });
             return false;

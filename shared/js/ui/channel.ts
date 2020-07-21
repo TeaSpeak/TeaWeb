@@ -11,7 +11,6 @@ import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import * as htmltags from "./htmltags";
 import {hashPassword} from "tc-shared/utils/helpers";
-import * as server_log from "tc-shared/ui/frames/server_log";
 import {openChannelInfo} from "tc-shared/ui/modal/ModalChannelInfo";
 import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
 import {formatMessage} from "tc-shared/ui/frames/chat";
@@ -22,6 +21,7 @@ import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import {ChannelEntryView as ChannelEntryView} from "./tree/Channel";
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {ViewReasonId} from "tc-shared/ConnectionHandler";
+import {EventChannelData} from "tc-shared/ui/frames/log/Definitions";
 
 export enum ChannelType {
     PERMANENT,
@@ -409,7 +409,8 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-channel_switch",
                 name: bold(tr("Switch to channel")),
-                callback: () => this.joinChannel()
+                callback: () => this.joinChannel(),
+                visible: this !== this.channelTree.client.getClient()?.currentChannel()
             },{
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-filetransfer",
@@ -766,7 +767,7 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
         this.channelTree.client.settings.changeServer(Settings.FN_SERVER_CHANNEL_SUBSCRIBE_MODE(this.channelId), mode);
     }
 
-    log_data() : server_log.base.Channel {
+    log_data() : EventChannelData {
         return {
             channel_name: this.channelName(),
             channel_id: this.channelId

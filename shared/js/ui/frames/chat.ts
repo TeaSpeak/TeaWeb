@@ -95,8 +95,13 @@ export function formatMessage(pattern: string, ...objects: any[]) : JQuery[] {
 }
 
 export function formatMessageString(pattern: string, ...args: string[]) : string {
+    return parseMessageWithArguments(pattern, args.length).map(e => typeof e === "string" ? e : args[e]).join("");
+}
+
+export function parseMessageWithArguments(pattern: string, argumentCount: number) : (string | number)[] {
     let begin = 0, found = 0;
 
+    let unspecifiedIndex = 0;
     let result: string[] = [];
     do {
         found = pattern.indexOf('{', found);
@@ -111,27 +116,42 @@ export function formatMessageString(pattern: string, ...args: string[]) : string
             continue;
         }
 
-        result.push(pattern.substr(begin, found - begin)); //Append the text
+        result.push(pattern.substring(begin, found)); //Append the text
 
         let offset = 0;
         let number;
-        while ("0123456789".includes(pattern[found + 1 + offset])) offset++;
-        number = parseInt(offset > 0 ? pattern.substr(found + 1, offset) : "0");
+        while ("0123456789".includes(pattern[found + 1 + offset]))
+            offset++;
+
+        if(offset > 0) {
+            number = parseInt(pattern.substr(found + 1, offset));
+        } else {
+            number = unspecifiedIndex++;
+        }
+
         if(pattern[found + offset + 1] != '}') {
             found++;
             continue;
         }
 
-        if(args.length < number)
+        if(argumentCount < number) {
             log.warn(LogCategory.GENERAL, tr("Message to format contains invalid index (%o)"), number);
-
-        result.push(args[number]);
+            result.push("{" + offset.toString() + "}");
+        } else {
+            result.push(number);
+        }
 
         found = found + 1 + offset;
         begin = found + 1;
     } while(found++);
 
-    return result.join("");
+    return result.reduce((prev, element) => {
+        if(typeof element === "string" && typeof prev.last() === "string")
+            prev.push(prev.pop() + element);
+        else
+            prev.push(element);
+        return prev;
+    }, []);
 }
 
 export namespace network {

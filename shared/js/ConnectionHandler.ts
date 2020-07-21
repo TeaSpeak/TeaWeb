@@ -5,8 +5,6 @@ import {GroupManager} from "tc-shared/permission/GroupManager";
 import {ServerSettings, Settings, settings, StaticSettings} from "tc-shared/settings";
 import {Sound, SoundManager} from "tc-shared/sound/Sounds";
 import {LocalClientEntry} from "tc-shared/ui/client";
-import * as server_log from "tc-shared/ui/frames/server_log";
-import {ServerLog} from "tc-shared/ui/frames/server_log";
 import {ConnectionProfile, default_profile, find_profile} from "tc-shared/profiles/ConnectionProfile";
 import {ServerAddress} from "tc-shared/ui/server";
 import * as log from "tc-shared/log";
@@ -35,6 +33,8 @@ import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
 import {traj} from "tc-shared/i18n/localize";
 import {md5} from "tc-shared/crypto/md5";
 import {guid} from "tc-shared/crypto/uid";
+import {ServerEventLog} from "tc-shared/ui/frames/log/ServerEventLog";
+import {EventType} from "tc-shared/ui/frames/log/Definitions";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -172,7 +172,7 @@ export class ConnectionHandler {
     };
 
     invoke_resized_on_activate: boolean = false;
-    log: ServerLog;
+    log: ServerEventLog;
 
     constructor() {
         this.handlerId = guid();
@@ -188,7 +188,7 @@ export class ConnectionHandler {
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
 
-        this.log = new ServerLog(this);
+        this.log = new ServerEventLog(this);
         this.side_bar = new Frame(this);
         this.sound = new SoundManager(this);
         this.hostbanner = new Hostbanner(this);
@@ -261,7 +261,7 @@ export class ConnectionHandler {
             }
         }
         log.info(LogCategory.CLIENT, tr("Start connection to %s:%d"), server_address.host, server_address.port);
-        this.log.log(server_log.Type.CONNECTION_BEGIN, {
+        this.log.log(EventType.CONNECTION_BEGIN, {
             address: {
                 server_hostname: server_address.host,
                 server_port: server_address.port
@@ -294,7 +294,7 @@ export class ConnectionHandler {
             server_address.host = "127.0.0.1";
         } else if(dns.supported() && !server_address.host.match(Regex.IP_V4) && !server_address.host.match(Regex.IP_V6)) {
             const id = ++this._connect_initialize_id;
-            this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVE, {});
+            this.log.log(EventType.CONNECTION_HOSTNAME_RESOLVE, {});
             try {
                 const resolved = await dns.resolve_address(server_address, { timeout: 5000 }) || {} as any;
                 if(id != this._connect_initialize_id)
@@ -302,7 +302,7 @@ export class ConnectionHandler {
 
                 server_address.host = typeof(resolved.target_ip) === "string" ? resolved.target_ip : server_address.host;
                 server_address.port = typeof(resolved.target_port) === "number" ? resolved.target_port : server_address.port;
-                this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVED, {
+                this.log.log(EventType.CONNECTION_HOSTNAME_RESOLVED, {
                     address: {
                         server_port: server_address.port,
                         server_hostname: server_address.host
@@ -339,7 +339,7 @@ export class ConnectionHandler {
             log.warn(LogCategory.CLIENT, tr("Failed to successfully disconnect from server: {}"), error);
         }
         this.sound.play(Sound.CONNECTION_DISCONNECTED);
-        this.log.log(server_log.Type.DISCONNECTED, {});
+        this.log.log(EventType.DISCONNECTED, {});
     }
 
     getClient() : LocalClientEntry { return this._local_client; }
@@ -362,7 +362,12 @@ export class ConnectionHandler {
         this.connection_state = event.new_state;
 
         log.info(LogCategory.CLIENT, tr("Client connected"));
-        this.log.log(server_log.Type.CONNECTION_CONNECTED, {
+        this.log.log(EventType.CONNECTION_CONNECTED, {
+            serverAddress: {
+                server_port: this.channelTree.server.remote_address.port,
+                server_hostname: this.channelTree.server.remote_address.host
+            },
+            serverName: this.channelTree.server.properties.virtualserver_name,
             own_client: this.getClient().log_data()
         });
         this.sound.play(Sound.CONNECTION_CONNECTED);
@@ -484,12 +489,12 @@ export class ConnectionHandler {
             case DisconnectReason.HANDLER_DESTROYED:
                 if(data) {
                     this.sound.play(Sound.CONNECTION_DISCONNECTED);
-                    this.log.log(server_log.Type.DISCONNECTED, {});
+                    this.log.log(EventType.DISCONNECTED, {});
                 }
                 break;
             case DisconnectReason.DNS_FAILED:
                 log.error(LogCategory.CLIENT, tr("Failed to resolve hostname: %o"), data);
-                this.log.log(server_log.Type.CONNECTION_HOSTNAME_RESOLVE_ERROR, {
+                this.log.log(EventType.CONNECTION_HOSTNAME_RESOLVE_ERROR, {
                     message: data as any
                 });
                 this.sound.play(Sound.CONNECTION_REFUSED);
@@ -497,7 +502,10 @@ export class ConnectionHandler {
             case DisconnectReason.CONNECT_FAILURE:
                 if(this._reconnect_attempt) {
                     auto_reconnect = true;
-                    this.log.log(server_log.Type.CONNECTION_FAILED, {});
+                    this.log.log(EventType.CONNECTION_FAILED, { serverAddress: {
+                        server_port: this.channelTree.server.remote_address.port,
+                        server_hostname: this.channelTree.server.remote_address.host
+                    } });
                     break;
                 }
                 if(data)
@@ -572,7 +580,7 @@ export class ConnectionHandler {
 
                 break;
             case DisconnectReason.SERVER_CLOSED:
-                this.log.log(server_log.Type.SERVER_CLOSED, {message: data.reasonmsg});
+                this.log.log(EventType.SERVER_CLOSED, {message: data.reasonmsg});
 
                 createErrorModal(
                     tr("Server closed"),
@@ -584,7 +592,7 @@ export class ConnectionHandler {
                 auto_reconnect = true;
                 break;
             case DisconnectReason.SERVER_REQUIRES_PASSWORD:
-                this.log.log(server_log.Type.SERVER_REQUIRES_PASSWORD, {});
+                this.log.log(EventType.SERVER_REQUIRES_PASSWORD, {});
 
                 createInputModal(tr("Server password"), tr("Enter server password:"), password => password.length != 0, password => {
                     if(!(typeof password === "string")) return;
@@ -625,7 +633,7 @@ export class ConnectionHandler {
                 this.sound.play(Sound.CONNECTION_BANNED);
                 break;
             case DisconnectReason.CLIENT_BANNED:
-                this.log.log(server_log.Type.SERVER_BANNED, {
+                this.log.log(EventType.SERVER_BANNED, {
                     invoker: {
                         client_name: data["invokername"],
                         client_id: parseInt(data["invokerid"]),
@@ -655,7 +663,7 @@ export class ConnectionHandler {
                 log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect but cant reconnect because we dont have any information left..."));
                 return;
             }
-            this.log.log(server_log.Type.RECONNECT_SCHEDULED, {timeout: 5000});
+            this.log.log(EventType.RECONNECT_SCHEDULED, {timeout: 5000});
 
             log.info(LogCategory.NETWORKING, tr("Allowed to auto reconnect. Reconnecting in 5000ms"));
             const server_address = this.serverConnection.remote_address();
@@ -663,7 +671,7 @@ export class ConnectionHandler {
 
             this._reconnect_timer = setTimeout(() => {
                 this._reconnect_timer = undefined;
-                this.log.log(server_log.Type.RECONNECT_EXECUTE, {});
+                this.log.log(EventType.RECONNECT_EXECUTE, {});
                 log.info(LogCategory.NETWORKING, tr("Reconnecting..."));
 
                 this.startConnection(server_address.host + ":" + server_address.port, profile, false, Object.assign(this.reconnect_properties(profile), {auto_reconnect_attempt: true}));
@@ -675,7 +683,7 @@ export class ConnectionHandler {
 
     cancel_reconnect(log_event: boolean) {
         if(this._reconnect_timer) {
-            if(log_event) this.log.log(server_log.Type.RECONNECT_CANCELED, {});
+            if(log_event) this.log.log(EventType.RECONNECT_CANCELED, {});
             clearTimeout(this._reconnect_timer);
             this._reconnect_timer = undefined;
         }
@@ -734,7 +742,7 @@ export class ConnectionHandler {
             if(Object.keys(property_update).length > 0) {
                 this.serverConnection.send_command("clientupdate", property_update).catch(error => {
                     log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
-                    this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to update audio hardware properties.")});
+                    this.log.log(EventType.ERROR_CUSTOM, {message: tr("Failed to update audio hardware properties.")});
 
                     /* Update these properties anyways (for case the server fails to handle the command) */
                     const updates = [];
@@ -816,7 +824,7 @@ export class ConnectionHandler {
                 client_output_hardware: this.client_status.sound_playback_supported
             }).catch(error => {
                 log.warn(LogCategory.GENERAL, tr("Failed to sync handler state with server. Error: %o"), error);
-                this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to sync handler state with server.")});
+                this.log.log(EventType.ERROR_CUSTOM, {message: tr("Failed to sync handler state with server.")});
             });
     }
 
@@ -1039,7 +1047,7 @@ export class ConnectionHandler {
             client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
         }).catch(error => {
             log.warn(LogCategory.GENERAL, tr("Failed to update away status. Error: %o"), error);
-            this.log.log(server_log.Type.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
+            this.log.log(EventType.ERROR_CUSTOM, {message: tr("Failed to update away status.")});
         });
 
         this.event_registry.fire("notify_state_updated", {

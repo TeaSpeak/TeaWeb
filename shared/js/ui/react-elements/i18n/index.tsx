@@ -1,4 +1,6 @@
 import * as React from "react";
+import {parseMessageWithArguments} from "tc-shared/ui/frames/chat";
+import {cloneElement} from "react";
 
 let instances = [];
 export class Translatable extends React.Component<{ message: string, children?: never } | { children: string }, { translated: string }> {
@@ -28,6 +30,29 @@ export class Translatable extends React.Component<{ message: string, children?: 
         instances.splice(index, 1);
     }
 }
+
+export const VariadicTranslatable = (props: { text: string, children?: React.ReactElement[] | React.ReactElement }) => {
+    const args = Array.isArray(props.children) ? props.children : [props.children];
+    const argsUseCount = [...new Array(args.length)].map(() => 0);
+
+    const translated = /* @tr-ignore */ tr(props.text);
+
+    return (<>
+        {
+            parseMessageWithArguments(translated, args.length).map(e => {
+                if(typeof e === "string")
+                    return e;
+
+                let element = args[e];
+                if(argsUseCount[e])
+                    element = cloneElement(element);
+                argsUseCount[e]++;
+
+                return <React.Fragment key={"argument-" + e + "-" + argsUseCount[e]}>{element}</React.Fragment>;
+            })
+        }
+    </>);
+};
 
 
 declare global {

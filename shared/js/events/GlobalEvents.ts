@@ -4,7 +4,15 @@ import {Registry} from "tc-shared/events";
 export interface ClientGlobalControlEvents {
     /* open a basic window */
     action_open_window: {
-        window: "bookmark-manage" | "query-manage" | "query-create" | "ban-list" | "permissions" | "token-list" | "token-use" | "settings",
+        window:
+            "bookmark-manage" |
+            "query-manage" |
+            "query-create" |
+            "ban-list" |
+            "permissions" |
+            "token-list" |
+            "token-use" |
+            "settings",
         connection?: ConnectionHandler
     },
 

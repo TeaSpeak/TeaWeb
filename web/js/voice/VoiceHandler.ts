@@ -2,7 +2,6 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import * as loader from "tc-loader";
 import * as aplayer from "../audio/player";
-import * as elog from "tc-shared/ui/frames/server_log";
 import {BasicCodec} from "../codec/BasicCodec";
 import {CodecType} from "../codec/Codec";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
@@ -16,6 +15,7 @@ import {CallbackInputConsumer, InputConsumerType, NodeInputConsumer} from "tc-sh
 import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 import VoiceClient = voice.VoiceClient;
 import {tr} from "tc-shared/i18n/localize";
+import {EventType} from "tc-shared/ui/frames/log/Definitions";
 
 export namespace codec {
     class CacheEntry {
@@ -508,7 +508,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         } else if(json["request"] == "status") {
             if(json["state"] == "failed") {
                 const chandler = this.connection.client;
-                chandler.log.log(elog.Type.CONNECTION_VOICE_SETUP_FAILED, {
+                chandler.log.log(EventType.CONNECTION_VOICE_SETUP_FAILED, {
                     reason: json["reason"],
                     reconnect_delay: json["allow_reconnect"] ? 1 : 0
                 });

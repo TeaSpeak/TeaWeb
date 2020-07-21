@@ -1,4 +1,8 @@
 # Changelog:
+* **21.07.20**
+    - Added the enchanted server log system
+    - Recoded the server log with react
+    
 * **20.07.20**
     - Some general project cleanup
     - Heavily improved the IPC internal API

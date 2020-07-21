@@ -1,0 +1,55 @@
+@import "../../../../css/static/mixin";
+
+.htmlTag {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    flex-shrink: 1;
+    min-height: 2em;
+}
+
+.logContainer {
+    flex-shrink: 1;
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    min-height: 2em;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    @include chat-scrollbar-vertical();
+}
+
+.logEntry {
+    flex-shrink: 0;
+    flex-grow: 0;
+
+    color: var(--server-log-text);
+
+    overflow-x: hidden;
+    overflow-y: hidden;
+
+    display: block;
+
+    > *, .errorMessage > * {
+        display: inline-block;
+
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+
+        max-width: 100%;
+    }
+
+    .timestamp {
+        padding-right: 5px;
+    }
+
+    .errorMessage {
+        color: var(--server-log-error);
+    }
+}

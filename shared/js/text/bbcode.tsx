@@ -1,6 +1,6 @@
 import {XBBCodeRenderer} from "vendor/xbbcode/react";
 import * as React from "react";
-import {rendererHTML, rendererReact} from "tc-shared/text/bbcode/renderer";
+import {rendererHTML, rendererReact, rendererText} from "tc-shared/text/bbcode/renderer";
 import {parse as parseBBCode} from "vendor/xbbcode/parser";
 import {fixupJQueryUrlTags} from "tc-shared/text/bbcode/url";
 import {fixupJQueryImageTags} from "tc-shared/text/bbcode/image";
@@ -100,4 +100,8 @@ export function renderBBCodeAsJQuery(message: string, settings: BBCodeRenderOpti
     fixupJQueryImageTags(container);
 
     return [container.contents() as JQuery];
+}
+
+export function renderBBCodeAsText(message: string) {
+    return parseBBCode(message, { tag_whitelist: allowedBBCodes }).map(e => rendererText.render(e)).join("");
 }
