@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import * as React from "react";
 
-export const LoadingDots = (props: { maxDots?: number, speed?: number, textOnly?: boolean }) => {
+export const LoadingDots = (props: { maxDots?: number, speed?: number, textOnly?: boolean, enabled?: boolean }) => {
     let { maxDots, speed } = props;
     if(!maxDots || maxDots < 1)
         maxDots = 3;
@@ -9,6 +9,9 @@ export const LoadingDots = (props: { maxDots?: number, speed?: number, textOnly?
     const [dots, setDots] = useState(0);
 
     useEffect(() => {
+        if(!props.enabled)
+            return;
+
         const timeout = setTimeout(() => setDots(dots + 1), speed || 500);
         return () => clearTimeout(timeout);
     });
@@ -19,5 +22,6 @@ export const LoadingDots = (props: { maxDots?: number, speed?: number, textOnly?
 
     if(props.textOnly)
         return <>{result}</>;
+
     return <div style={{ width: (maxDots / 3) + "em", display: "inline-block", textAlign: "left" }}>{result}</div>;
 };

@@ -320,7 +320,7 @@ const PartnerTypingIndicator = (props: { events: Registry<ConversationUIEvents>,
 
     return (
         <div className={cssStyle.containerPartnerTyping + (isTyping ? "" : " " + cssStyle.hidden)}>
-            <Translatable>Partner is typing</Translatable> <LoadingDots />
+            <Translatable>Partner is typing</Translatable> <LoadingDots enabled={isTyping} />
         </div>
     )
 };
