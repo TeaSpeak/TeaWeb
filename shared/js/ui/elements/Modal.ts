@@ -19,7 +19,7 @@ export const ModalFunctions = {
         if(typeof(val) === "function")
             val = val();
 
-        if(val instanceof jQuery)
+        if(val instanceof $)
             return val as JQuery;
 
         if(Array.isArray(val)) {

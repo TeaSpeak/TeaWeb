@@ -2,6 +2,8 @@
 
 /* setup jsrenderer */
 (window as any).$ = require("jquery");
+(window as any).jQuery = $;
+
 import * as jsrenderInit from "jsrender";
 const jsrender = jsrenderInit($);
 
