@@ -8,9 +8,6 @@ export default class implements ApplicationLoader {
     execute() {
         loader.register_task(Stage.SETUP, {
             function: async taskId => {
-                /* sadly still a need in general :/ */
-                await loader.scripts.load_multiple(["vendor/jquery/jquery.min.js"], {  });
-
                 await loadManifest();
 
                 const entryChunk = getUrlParameter("chunk");

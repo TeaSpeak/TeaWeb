@@ -1,6 +1,7 @@
 //Used by CertAccept popup
 
 /* setup jsrenderer */
+(window as any).$ = require("jquery");
 import * as jsrenderInit from "jsrender";
 const jsrender = jsrenderInit($);
 

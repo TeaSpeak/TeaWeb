@@ -30,7 +30,6 @@ import * as cbar from "./ui/frames/control-bar";
 import * as global_ev_handler from "./events/ClientGlobalControlHandler";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
-import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
@@ -498,7 +497,7 @@ function main() {
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
 
-    (window as any).spawnVideoPopout = spawnModalCssVariableEditor;
+    (window as any).spawnVideoPopout = spawnVideoPopout();
 }
 
 const task_teaweb_starter: loader.Task = {

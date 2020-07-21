@@ -1,3 +1,4 @@
+import * as $ from "jquery";
 export interface MenuEntry {
     callback?: () => void;
     type: MenuEntryType;

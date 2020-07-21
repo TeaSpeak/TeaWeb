@@ -41,10 +41,6 @@ const LoaderTaskCallback = taskId => (script: SourcePath, state) => {
 /* all javascript loaders */
 const loader_javascript = {
     load_scripts: async taskId => {
-        if(!window.require) {
-            await loader.scripts.load_multiple(["vendor/jquery/jquery.min.js"], { cache_tag: cache_tag() }, LoaderTaskCallback(taskId));
-        }
-
         loader.setCurrentTaskName(taskId, "manifest");
         await loadManifest();
         await loadManifestTarget(__build.entry_chunk_name, taskId);
