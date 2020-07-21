@@ -497,7 +497,7 @@ function main() {
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
 
-    (window as any).spawnVideoPopout = spawnVideoPopout();
+    (window as any).spawnVideoPopout = spawnVideoPopout;
 }
 
 const task_teaweb_starter: loader.Task = {
