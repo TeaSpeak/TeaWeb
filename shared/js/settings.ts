@@ -538,7 +538,21 @@ export class Settings extends StaticSettings {
 
     static readonly FN_EVENTS_NOTIFICATION_ENABLED: (event: string) => SettingsKey<boolean> = event => {
         return {
-            key: "notification_" + event + "_enabled",
+            key: "event_notification_" + event + "_enabled",
+            valueType: "boolean"
+        }
+    };
+
+    static readonly FN_EVENTS_LOG_ENABLED: (event: string) => SettingsKey<boolean> = event => {
+        return {
+            key: "event_log_" + event + "_enabled",
+            valueType: "boolean"
+        }
+    };
+
+    static readonly FN_EVENTS_FOCUS_ENABLED: (event: string) => SettingsKey<boolean> = event => {
+        return {
+            key: "event_focus_" + event + "_enabled",
             valueType: "boolean"
         }
     };

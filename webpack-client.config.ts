@@ -18,5 +18,8 @@ export = () => config_base.config("client").then(config => {
         callback();
     });
 
+    config.externals.push({ "jquery": "window.$" });
+    config.externals.push({ "jsrender": "window.$" });
+
     return Promise.resolve(config);
 });

@@ -1,11 +1,11 @@
-//Used by CertAccept popup
-
 /* setup jsrenderer */
-(window as any).$ = require("jquery");
-(window as any).jQuery = $;
+import "jsrender";
+if(__build.target === "web") {
+    (window as any).$ = require("jquery");
+    (window as any).jQuery = $;
 
-import * as jsrenderInit from "jsrender";
-const jsrender = jsrenderInit($);
+    require("jsrender")($);
+}
 
 declare global {
     function setInterval(handler: TimerHandler, timeout?: number, ...arguments: any[]): number;

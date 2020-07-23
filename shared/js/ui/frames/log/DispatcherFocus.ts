@@ -5,7 +5,13 @@ const focusDefaultStatus = {};
 focusDefaultStatus[EventType.CLIENT_POKE_RECEIVED] = true;
 
 export function requestWindowFocus() {
-    window.focus();
+    if(__build.target === "web") {
+        window.focus();
+    } else {
+        /* TODO: Abstract that! */
+        const { remote } = __non_webpack_require__("electron");
+        remote.getCurrentWindow().show();
+    }
 }
 
 export function isFocusRequestEnabled(type: EventType) {

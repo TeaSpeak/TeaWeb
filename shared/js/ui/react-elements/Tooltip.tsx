@@ -1,12 +1,14 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ReactElement} from "react";
+import {guid} from "tc-shared/crypto/uid";
 
 const cssStyle = require("./Tooltip.scss");
 
 interface GlobalTooltipState {
     pageX: number;
     pageY: number;
+    tooltipId: string;
 }
 
 class GlobalTooltip extends React.Component<{}, GlobalTooltipState> {
@@ -18,7 +20,8 @@ class GlobalTooltip extends React.Component<{}, GlobalTooltipState> {
 
         this.state = {
             pageX: 0,
-            pageY: 0
+            pageY: 0,
+            tooltipId: "unset"
         };
     }
 
@@ -47,7 +50,7 @@ class GlobalTooltip extends React.Component<{}, GlobalTooltipState> {
         if(!this.currentTooltip_ || this.isUnmount) {
             return (
                 <div className={cssStyle.container} style={{ top: this.state.pageY, left: this.state.pageX }}>
-                    {this.currentTooltip_?.props.tooltip()}
+                    <React.Fragment key={this.state.tooltipId}>{this.currentTooltip_?.props.tooltip()}</React.Fragment>
                 </div>
             );
         }
@@ -73,6 +76,7 @@ export interface TooltipProperties {
 }
 
 export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
+    readonly tooltipId = guid();
     private refContainer = React.createRef<HTMLSpanElement>();
     private currentContainer: HTMLElement;
 
@@ -105,6 +109,7 @@ export class Tooltip extends React.Component<TooltipProperties, TooltipState> {
             globalTooltipRef.current?.setState({
                 pageY: this.state.pageY,
                 pageX: this.state.pageX,
+                tooltipId: this.tooltipId
             });
         } else if(prevState.forceShow || prevState.hovered) {
             globalTooltipRef.current?.unmountTooltip(this);

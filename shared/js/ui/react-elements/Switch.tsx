@@ -2,7 +2,8 @@ import * as React from "react";
 const cssStyle = require("./Switch.scss");
 
 export interface SwitchProperties {
-    initialState: boolean;
+    value?: boolean;
+    initialState?: boolean;
 
     className?: string;
 
@@ -36,10 +37,14 @@ export class Switch extends React.Component<SwitchProperties, SwitchState> {
         return (
             <label ref={this.ref} className={cssStyle.container + " " + (this.props.className || "") + " " + (disabled ? cssStyle.disabled : "")} onBlur={this.props.onBlur}>
                 <div className={cssStyle.switch}>
-                    <input type="checkbox" onChange={e => {
-                        this.setState({ checked: e.currentTarget.checked });
-                        this.props.onChange && this.props.onChange(e.currentTarget.checked);
-                    }} disabled={disabled} checked={this.state.checked} />
+                    <input
+                        type="checkbox"
+                        onChange={e => {
+                            this.setState({ checked: e.currentTarget.checked });
+                            this.props.onChange && this.props.onChange(e.currentTarget.checked);
+                        }} disabled={disabled}
+                        checked={typeof this.props.value === "boolean" ? this.props.value : this.state.checked}
+                    />
                     <span className={cssStyle.slider}>
                         <span className={cssStyle.dot} />
                     </span>

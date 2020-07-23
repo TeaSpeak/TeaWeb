@@ -23,4 +23,7 @@ setTimeout(() => appLoader.execute(), 0);
 
 export {};
 
-//window.__REACT_DEVTOOLS_GLOBAL_HOOK__.inject = function () {};
+if(__build.target === "client") {
+    /* do this so we don't get a react dev tools warning within the client */
+    (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.inject = function () {};
+}

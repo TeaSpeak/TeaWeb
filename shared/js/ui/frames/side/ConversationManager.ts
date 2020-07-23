@@ -427,12 +427,20 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
             this.pendingHistoryQueries.push(() => {
                 this.historyQueryResponse = [];
 
-                return this.handle.connection.serverConnection.send_command("conversationhistory", {
-                    cid: this.conversationId,
-                    timestamp_begin: criteria.begin,
-                    message_count: criteria.limit,
-                    timestamp_end: criteria.end
-                }, { flagset: [ "merge" ], process_result: false }).then(() => {
+                const requestObject = {
+                    cid: this.conversationId
+                } as any;
+
+                if(typeof criteria.begin === "number")
+                    requestObject.timestamp_begin = criteria.begin;
+
+                if(typeof criteria.end === "number")
+                    requestObject.timestamp_end = criteria.end;
+
+                if(typeof criteria.limit === "number")
+                    requestObject.message_count = criteria.limit;
+
+                return this.handle.connection.serverConnection.send_command("conversationhistory", requestObject, { flagset: [ "merge" ], process_result: false }).then(() => {
                     resolve({ status: "success", events: this.historyQueryResponse.map(e => {
                         return {
                             type: "message",
@@ -778,6 +786,8 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
 
     queryUnreadFlags() {
         /* FIXME: Test for old TeaSpeak servers which don't support this */
+        return;
+
         const commandData = this.connection.channelTree.channels.map(e => { return { cid: e.channelId, cpw: e.cached_password() }});
         this.connection.serverConnection.send_command("conversationfetch", commandData).catch(error => {
             log.warn(LogCategory.CHAT, tr("Failed to query conversation indexes: %o"), error);
