@@ -89,14 +89,13 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         this.resize_observer = new ResizeObserver(entries => {
             if(entries.length !== 1) {
                 if(entries.length === 0)
-                    console.warn("Channel resize observer fired resize event with no entries!");
+                    console.warn(tr("Channel resize observer fired resize event with no entries!"));
                 else
-                    console.warn("Channel resize observer fired resize event with more than one entry which should not be possible (%d)!", entries.length);
+                    console.warn(tr("Channel resize observer fired resize event with more than one entry which should not be possible (%d)!"), entries.length);
                 return;
             }
             const bounds = entries[0].contentRect;
             if(this.state.view_height !== bounds.height) {
-                console.log("Handling height update and change tree height to %d from %d", bounds.height, this.state.view_height);
                 this.setState({
                     view_height: bounds.height
                 });
@@ -321,7 +320,7 @@ export class ChannelTreeView extends ReactComponentBase<ChannelTreeViewPropertie
         const index = this.flat_tree.findIndex(e => e.entry === entry);
         if(index === -1) {
             if(callback) callback();
-            console.warn("Failed to scroll tree entry in view because its not registered within the view. Entry: %o", entry);
+            console.warn(tr("Failed to scroll tree entry in view because its not registered within the view. Entry: %o"), entry);
             return;
         }
 

@@ -18,7 +18,8 @@ export enum LogCategory {
     IDENTITIES,
     STATISTICS,
     DNS,
-    FILE_TRANSFER
+    FILE_TRANSFER,
+    EVENT_REGISTRY,
 }
 
 export enum LogType {
@@ -30,23 +31,24 @@ export enum LogType {
 }
 
 let category_mapping = new Map<number, string>([
-    [LogCategory.CHANNEL,                   "Channel      "],
-    [LogCategory.CHANNEL_PROPERTIES,        "Channel      "],
-    [LogCategory.CLIENT,                    "Client       "],
-    [LogCategory.SERVER,                    "Server       "],
-    [LogCategory.BOOKMARKS,                 "Bookmark     "],
-    [LogCategory.PERMISSIONS,               "Permission   "],
-    [LogCategory.GENERAL,                   "General      "],
-    [LogCategory.NETWORKING,                "Network      "],
-    [LogCategory.VOICE,                     "Voice        "],
-    [LogCategory.AUDIO,                     "Audio        "],
-    [LogCategory.CHAT,                      "Chat         "],
-    [LogCategory.I18N,                      "I18N         "],
-    [LogCategory.IDENTITIES,                "Identities   "],
-    [LogCategory.IPC,                       "IPC          "],
-    [LogCategory.STATISTICS,                "Statistics   "],
-    [LogCategory.DNS,                       "DNS          "],
-    [LogCategory.FILE_TRANSFER,             "FILE_TRANSFER"]
+    [LogCategory.CHANNEL,                   "Channel       "],
+    [LogCategory.CHANNEL_PROPERTIES,        "Channel       "],
+    [LogCategory.CLIENT,                    "Client        "],
+    [LogCategory.SERVER,                    "Server        "],
+    [LogCategory.BOOKMARKS,                 "Bookmark      "],
+    [LogCategory.PERMISSIONS,               "Permission    "],
+    [LogCategory.GENERAL,                   "General       "],
+    [LogCategory.NETWORKING,                "Network       "],
+    [LogCategory.VOICE,                     "Voice         "],
+    [LogCategory.AUDIO,                     "Audio         "],
+    [LogCategory.CHAT,                      "Chat          "],
+    [LogCategory.I18N,                      "I18N          "],
+    [LogCategory.IDENTITIES,                "Identities    "],
+    [LogCategory.IPC,                       "IPC           "],
+    [LogCategory.STATISTICS,                "Statistics    "],
+    [LogCategory.DNS,                       "DNS           "],
+    [LogCategory.FILE_TRANSFER,             "File transfer "],
+    [LogCategory.EVENT_REGISTRY,            "Event registry"],
 ]);
 
 export let enabled_mapping = new Map<number, boolean>([
@@ -66,7 +68,8 @@ export let enabled_mapping = new Map<number, boolean>([
     [LogCategory.IPC,                   true],
     [LogCategory.STATISTICS,            true],
     [LogCategory.DNS,                   true],
-    [LogCategory.FILE_TRANSFER,         true]
+    [LogCategory.FILE_TRANSFER,         true],
+    [LogCategory.EVENT_REGISTRY,        true],
 ]);
 
 //Values will be overridden by initialize()
@@ -87,17 +90,16 @@ const group_mode: GroupMode = GroupMode.PREFIX;
 //Category Example: <url>?log.i18n.enabled=0
 //Level Example A: <url>?log.level.trace.enabled=0
 //Level Example B: <url>?log.level=0
-export function initialize(default_level: LogType) {
+export function initialize(defaultLogLevel: LogType) {
     for(const category of Object.keys(LogCategory).map(e => parseInt(e)).filter(e => !isNaN(e))) {
         const categoryName = LogCategory[category].toLowerCase();
         enabled_mapping.set(category, settings.static_global(Settings.FN_LOG_ENABLED(categoryName), enabled_mapping.get(category)));
     }
 
-    const base_level = settings.static_global(Settings.KEY_LOG_LEVEL, default_level);
-
+    const baseLogLevel = settings.static_global(Settings.KEY_LOG_LEVEL, defaultLogLevel);
     for(const level of Object.keys(LogType).map(e => parseInt(e)).filter(e => !isNaN(e))) {
         const levelName = LogType[level].toLowerCase();
-        level_mapping.set(level, settings.static_global(Settings.FN_LOG_LEVEL_ENABLED(levelName), level >= base_level));
+        level_mapping.set(level, settings.static_global(Settings.FN_LOG_LEVEL_ENABLED(levelName), level >= baseLogLevel));
     }
 }
 

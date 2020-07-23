@@ -256,6 +256,9 @@ export class ServerConnection extends AbstractServerConnection {
         if(this.connectCancelCallback)
             this.connectCancelCallback();
 
+        if(this.connection_state_ === ConnectionState.UNCONNECTED)
+            return;
+
         this.updateConnectionState(ConnectionState.DISCONNECTING);
         try {
             clearTimeout(this.pingStatistics.thread_id);

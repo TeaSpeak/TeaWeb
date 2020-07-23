@@ -224,7 +224,7 @@ export class CodecWrapperWorker extends BasicCodec {
     }
 
     private handleWorkerError() {
-        log.error(LogCategory.VOICE, tr("Received error from codec worker. Closing worker."));
+        log.debug(LogCategory.VOICE, tr("Received error from codec worker. Closing worker."));
         for(const token of Object.keys(this.pending_executes)) {
             this.pending_executes[token].resolve({
                 success: false,

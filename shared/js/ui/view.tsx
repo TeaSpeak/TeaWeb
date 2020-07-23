@@ -448,7 +448,6 @@ export class ChannelTree {
                 }
                 parent.events.fire("notify_children_changed");
             } else {
-                console.error("No previous & paretn!");
                 channel.channel_next = this.channel_first;
                 if(this.channel_first)
                     this.channel_first.channel_previous = channel;
