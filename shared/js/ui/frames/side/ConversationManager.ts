@@ -73,7 +73,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
             if(event.isOwnMessage)
                 this.setUnreadTimestamp(undefined);
             else if(!this.unreadTimestamp)
-                this.unreadTimestamp = event.message.timestamp;
+                this.setUnreadTimestamp(event.message.timestamp);
 
             /* let all other events run before */
             this.events.fire_async("notify_chat_event", {
@@ -583,12 +583,8 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
         if(isNaN(timestamp))
             return;
 
-        if(timestamp > this.lastReadMessage) {
+        if(timestamp > this.lastReadMessage)
             this.setUnreadTimestamp(this.lastReadMessage);
-
-            /* TODO: Move the whole last read part to the channel entry itself? */
-            this.handle.connection.channelTree.findChannel(this.conversationId)?.setUnread(true);
-        }
     }
 
     public handleIncomingMessage(message: ChatMessage, isOwnMessage: boolean) {
@@ -647,6 +643,7 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
 
         /* we've to update the last read timestamp regardless of if we're having actual unread stuff */
         this.handle.connection.settings.changeServer(Settings.FN_CHANNEL_CHAT_READ(this.conversationId), typeof timestamp === "number" ? timestamp : Date.now());
+        this.handle.connection.channelTree.findChannel(this.conversationId)?.setUnread(timestamp !== undefined);
     }
 
     public localClientSwitchedChannel(type: "join" | "leave") {

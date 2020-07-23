@@ -25,5 +25,6 @@ export {};
 
 if(__build.target === "client") {
     /* do this so we don't get a react dev tools warning within the client */
+    (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ = (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__ || {};
     (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__.inject = function () {};
 }

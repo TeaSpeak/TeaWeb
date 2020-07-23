@@ -251,7 +251,7 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
 
         /* TODO: Move this somehow to the client itself? */
         if(this.activeClient instanceof ClientEntry)
-            this.activeClient.setUnread(timestamp === undefined);
+            this.activeClient.setUnread(timestamp !== undefined);
     }
 
     protected canClientAccessChat(): boolean {

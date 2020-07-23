@@ -800,9 +800,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 this.connection_handler.sound.play(Sound.MESSAGE_RECEIVED, {default_volume: .5});
             }
 
-            if(!(invoker instanceof LocalClientEntry))
-                this.connection_handler.channelTree.findChannel(channel_id)?.setUnread(true);
-
             const conversations = this.connection_handler.side_bar.channel_conversations();
             conversations.findOrCreateConversation(channel_id).handleIncomingMessage({
                 sender_database_id: invoker ? invoker.properties.client_database_id : 0,
@@ -825,9 +822,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                     client_id: parseInt(json["invokerid"])
                 }
             });
-
-            if(!(invoker instanceof LocalClientEntry))
-                this.connection_handler.channelTree.server.setUnread(true);
 
             conversations.findOrCreateConversation(0).handleIncomingMessage({
                 sender_database_id: invoker ? invoker.properties.client_database_id : 0,
