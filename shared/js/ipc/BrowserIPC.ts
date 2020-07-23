@@ -192,7 +192,7 @@ export abstract class BasicIPCHandler {
                 resolve();
             };
             this.sendMessage("certificate-accept-callback", {
-                currentRequestId: data[1]
+                request_id: data[1]
             } as CertificateAcceptCallback, data[0]);
         })
     }
