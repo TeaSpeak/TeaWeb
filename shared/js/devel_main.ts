@@ -24,16 +24,5 @@ loader.register_task(Stage.LOADED, {
     function: async () => {
         console.error("Spawning video popup");
         //spawnVideoPopout();
-
-        Notification.requestPermission().then(permission => {
-            if(permission === "denied")
-                return;
-
-            const notification = new Notification("Hello World", {
-                body: "This is a simple test notification - " + Math.random(),
-                renotify: true,
-                tag: "xx"
-            });
-        })
     }
 });

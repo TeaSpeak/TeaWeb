@@ -508,29 +508,46 @@ export class ConnectionHandler {
                     } });
                     break;
                 }
+
                 if(data)
                     log.error(LogCategory.CLIENT, tr("Could not connect to remote host! Extra data: %o"), data);
                 else
                     log.error(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
 
-                if(native_client) {
+                if(native_client || !dns.resolve_address_ipv4) {
                     createErrorModal(
                         tr("Could not connect"),
                         tr("Could not connect to remote host (Connection refused)")
                     ).open();
                 } else {
-                    const error_message_format =
-                        "Could not connect to remote host (Connection refused)\n" +
-                        "If you're sure that the remote host is up, than you may not allow unsigned certificates.\n" +
-                        "Click {0} to accept the remote certificate";
+                    const generateAddressPart = () => Math.floor(Math.random() * 256);
+                    const addressParts = [generateAddressPart(), generateAddressPart(), generateAddressPart(), generateAddressPart()];
+                    dns.resolve_address_ipv4(addressParts.join("-") + ".con-gate.work").then(async result => {
+                        if(result !== addressParts.join("."))
+                            throw "miss matching address";
 
-                    this._certificate_modal = createErrorModal(
-                        tr("Could not connect"),
-                        formatMessage(/* @tr-ignore */ tr(error_message_format), this.generate_ssl_certificate_accept())
-                    );
-                    this._certificate_modal.close_listener.push(() => this._certificate_modal = undefined);
-                    this._certificate_modal.open();
+                        createErrorModal(
+                            tr("Could not connect"),
+                            tr("Could not connect to remote host (Connection refused)")
+                        ).open();
+                    }).catch(() => {
+                        const error_message_format =
+                            "Could not connect to remote host (Connection refused)\n" +
+                            "If you're sure that the remote host is up, than you may not allow unsigned certificates or that con-gate.work works properly.\n" +
+                            "Click {0} to accept the remote certificate";
+
+                        this._certificate_modal = createErrorModal(
+                            tr("Could not connect"),
+                            formatMessage(/* @tr-ignore */ tr(error_message_format), this.generate_ssl_certificate_accept())
+                        );
+                        this._certificate_modal.close_listener.push(() => this._certificate_modal = undefined);
+                        this._certificate_modal.open();
+                    });
                 }
+                this.log.log(EventType.CONNECTION_FAILED, { serverAddress: {
+                    server_hostname: this.serverConnection.remote_address().host,
+                    server_port: this.serverConnection.remote_address().port
+                } });
                 this.sound.play(Sound.CONNECTION_REFUSED);
                 break;
             case DisconnectReason.HANDSHAKE_FAILED:

@@ -16,8 +16,9 @@ import {LogCategory} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {VoiceConnection} from "../voice/VoiceHandler";
-import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
+import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
+import AbstractVoiceConnection = voice.AbstractVoiceConnection;
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -27,49 +28,44 @@ class ReturnListener<T> {
     timeout: number;
 }
 
+let globalReturnCodeIndex = 0;
 export class ServerConnection extends AbstractServerConnection {
-    private _remote_address: ServerAddress;
-    private _handshakeHandler: HandshakeHandler;
+    private remoteServerAddress: ServerAddress;
+    private handshakeHandler: HandshakeHandler;
 
-    private _command_boss: ServerConnectionCommandBoss;
-    private _command_handler_default: ConnectionCommandHandler;
+    private commandHandlerBoss: ServerConnectionCommandBoss;
+    private defaultCommandHandler: ConnectionCommandHandler;
 
-    private _socket_connected: WebSocket;
+    private socket: WrappedWebSocket;
+    private connectCancelCallback: () => void;
 
-    private _connect_timeout_timer: number = undefined;
-
-
-    private _connected: boolean = false;
-    private _retCodeIdx: number;
-    private _retListener: ReturnListener<CommandResult>[];
+    private returnListeners: ReturnListener<CommandResult>[] = [];
 
     private _connection_state_listener: ConnectionStateListener;
     private _voice_connection: VoiceConnection;
 
-    private _ping = {
+    private pingStatistics = {
         thread_id: 0,
 
-        last_request: 0,
-        last_response: 0,
+        lastRequestTimestamp: 0,
+        lastResponseTimestamp: 0,
 
-        request_id: 0,
+        currentRequestId: 0,
+
         interval: 5000,
         timeout: 7500,
 
-        value: 0,
-        value_native: 0 /* ping value for native (WS)  */
+        currentJsValue: 0,
+        currentNativeValue: 0 /* ping value for native (WS)  */
     };
 
     constructor(client : ConnectionHandler) {
         super(client);
 
-        this._retCodeIdx = 0;
-        this._retListener = [];
+        this.commandHandlerBoss = new ServerConnectionCommandBoss(this);
+        this.defaultCommandHandler = new ConnectionCommandHandler(this);
 
-        this._command_boss = new ServerConnectionCommandBoss(this);
-        this._command_handler_default = new ConnectionCommandHandler(this);
-
-        this._command_boss.register_handler(this._command_handler_default);
+        this.commandHandlerBoss.register_handler(this.defaultCommandHandler);
         this.command_helper.initialize();
 
         if(!settings.static_global(Settings.KEY_DISABLE_VOICE, false))
@@ -80,229 +76,190 @@ export class ServerConnection extends AbstractServerConnection {
         this.disconnect("handle destroyed").catch(error => {
             log.warn(LogCategory.NETWORKING, tr("Failed to disconnect on server connection destroy: %o"), error);
         }).then(() => {
-            clearInterval(this._ping.thread_id);
-            clearTimeout(this._connect_timeout_timer);
+            clearInterval(this.pingStatistics.thread_id);
+            if(this.connectCancelCallback)
+                this.connectCancelCallback();
 
-            for(const listener of this._retListener) {
+            for(const listener of this.returnListeners) {
                 try {
                     listener.reject("handler destroyed");
                 } catch(error) {
                     log.warn(LogCategory.NETWORKING, tr("Failed to reject command promise: %o"), error);
                 }
             }
-            this._retListener = undefined;
+            this.returnListeners = undefined;
 
             this.command_helper.destroy();
 
-            this._command_handler_default && this._command_boss.unregister_handler(this._command_handler_default);
-            this._command_handler_default = undefined;
+            this.defaultCommandHandler && this.commandHandlerBoss.unregister_handler(this.defaultCommandHandler);
+            this.defaultCommandHandler = undefined;
 
             this._voice_connection && this._voice_connection.destroy();
             this._voice_connection = undefined;
 
-            this._command_boss && this._command_boss.destroy();
-            this._command_boss = undefined;
+            this.commandHandlerBoss && this.commandHandlerBoss.destroy();
+            this.commandHandlerBoss = undefined;
         });
     }
 
-    private generateReturnCode() : string {
-        return (this._retCodeIdx++).toString();
-    }
-
     async connect(address : ServerAddress, handshake: HandshakeHandler, timeout?: number) : Promise<void> {
+        const connectBeginTimestamp = Date.now();
         timeout = typeof(timeout) === "number" ? timeout : 5000;
 
         try {
-            await this.disconnect()
+            await this.disconnect();
         } catch(error) {
             log.error(LogCategory.NETWORKING, tr("Failed to close old connection properly. Error: %o"), error);
             throw "failed to cleanup old connection";
         }
 
         this.updateConnectionState(ConnectionState.CONNECTING);
-        this._remote_address = address;
+        this.remoteServerAddress = address;
 
-        this._handshakeHandler = handshake;
-        this._handshakeHandler.setConnection(this);
+        this.handshakeHandler = handshake;
+        this.handshakeHandler.setConnection(this);
 
         /* The direct one connect directly to the target address. The other via the .con-gate.work */
-        let local_direct_socket: WebSocket;
-        let local_proxy_socket: WebSocket;
-        let connected_socket: WebSocket;
-        let local_timeout_timer: number;
+        let availableSockets: WrappedWebSocket[] = [];
 
-        /* setting up an timeout */
-        local_timeout_timer = setTimeout(async () => {
-            log.error(LogCategory.NETWORKING, tr("Connect timeout triggered. Aborting connect attempt!"));
-            try {
-                await this.disconnect();
-            } catch(error) {
-                log.warn(LogCategory.NETWORKING, tr("Failed to close connection after timeout had been triggered! (%o)"), error);
+        proxySocket:
+        if(!settings.static_global(Settings.KEY_CONNECT_NO_DNSPROXY)) {
+            let host;
+            if(Regex.IP_V4.test(address.host)) {
+                host = address.host.replace(/\./g, "-") + ".con-gate.work";
+            } else if(Regex.IP_V6.test(address.host)) {
+                host = address.host.replace(/\[(.*)]/, "$1").replace(/:/g, "_") + ".con-gate.work";
+            } else {
+                break proxySocket;
             }
 
-            error_cleanup();
-            this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
-        }, timeout);
-        this._connect_timeout_timer = local_timeout_timer;
+            availableSockets.push(new WrappedWebSocket("wss://" + host + ":" + address.port))
+        }
+        availableSockets.push(new WrappedWebSocket("wss://" + address.host + ":" + address.port));
 
-        const error_cleanup = () => {
-            try { local_direct_socket.close(); } catch(ex) {}
-            try { local_proxy_socket.close(); } catch(ex) {}
-            clearTimeout(local_timeout_timer);
+        let timeoutRaised = false;
+        let timeoutPromise = new Promise(resolve => setTimeout(() => {
+            timeoutRaised = true;
+            resolve();
+        }, timeout));
+
+        let cancelRaised = false;
+        let cancelPromise = new Promise(resolve => {
+            this.connectCancelCallback = () => {
+                this.connectCancelCallback = undefined;
+                cancelRaised = true;
+                resolve();
+            };
+        });
+
+        availableSockets.forEach(e => e.doConnect());
+        while (availableSockets.length > 0) {
+            await Promise.race([...availableSockets.map(e => e.awaitConnectResult()), timeoutPromise, cancelPromise]);
+
+            if(cancelRaised) {
+                log.debug(LogCategory.NETWORKING, tr("Aborting connect attempt due to a cancel request."));
+                availableSockets.forEach(e => e.closeConnection());
+                return
+            }
+
+            if(timeoutRaised) {
+                log.info(LogCategory.NETWORKING, tr("Connect timeout triggered. Aborting connect attempt!"));
+                availableSockets.forEach(e => e.closeConnection());
+                this.updateConnectionState(ConnectionState.UNCONNECTED); /* firstly update the state, that fire event */
+                this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
+                return
+            }
+
+            let finished = availableSockets.find(e => e.state !== "connecting");
+            if(!finished) continue; /* should not happen, but we want to ensure it */
+            availableSockets.remove(finished);
+
+            switch (finished.state) {
+                case "unconnected":
+                    log.debug(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s got aborted."), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.url);
+                    continue;
+
+                case "errored":
+                    const error = finished.popError();
+                    log.info(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s failed:\n%o"), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.url, error);
+                    continue;
+
+                case "connected":
+                    break;
+            }
+
+            this.socket = finished;
+
+            /* abort any other ongoing connection attempts, we already succeeded */
+            availableSockets.forEach(e => e.closeConnection());
+            break;
+        }
+
+        if(!this.socket) {
+            log.info(LogCategory.NETWORKING, tr("Failed to connect to %s:%d. No connection attempt succeeded."), this.remoteServerAddress.host, this.remoteServerAddress.port);
+            this.updateConnectionState(ConnectionState.UNCONNECTED); /* firstly update the state, that fire event */
+            this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
+            return;
+        }
+
+        this.socket.callbackMessage = message => this.handleSocketMessage(message);
+        this.socket.callbackDisconnect = (code, reason) => {
+            try {
+                this.disconnect();
+            } catch (error) {
+                log.warn(LogCategory.NETWORKING, tr("Failed to disconnect with an already closed socket: %o"), error);
+            }
+
+            this.client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED, {
+                code: code,
+                reason: reason
+            });
+        };
+        this.socket.callbackErrored = () => {
+            if(this.socket.hasError()) {
+                log.error(LogCategory.NETWORKING, tr("Server connection %s:%d has been terminated due to an unexpected error (%o)."),
+                    this.remoteServerAddress.host,
+                    this.remoteServerAddress.port,
+                    this.socket.popError()
+                );
+            } else {
+                log.error(LogCategory.NETWORKING, tr("Server connection %s:%d has been terminated due to an unexpected error."), this.remoteServerAddress.host, this.remoteServerAddress.port);
+            }
+            try {
+                this.disconnect();
+            } catch (error) {
+                log.warn(LogCategory.NETWORKING, tr("Failed to disconnect with an already closed socket: %o"), error);
+            }
+
+            this.client.handleDisconnect(DisconnectReason.CONNECTION_CLOSED);
         };
 
-        try {
-            let proxy_host;
-            if(Regex.IP_V4.test(address.host))
-                proxy_host = address.host.replace(/\./g, "-") + ".con-gate.work";
-            else if(Regex.IP_V6.test(address.host))
-                proxy_host = address.host.replace(/\[(.*)]/, "$1").replace(/:/g, "_") + ".con-gate.work";
+        const connectEndTimestamp = Date.now();
+        log.info(LogCategory.NETWORKING, tr("Successfully initialized a connection to %s:%d via %s within %d milliseconds."),
+            this.remoteServerAddress.host,
+            this.remoteServerAddress.port,
+            this.socket.url,
+            connectEndTimestamp - connectBeginTimestamp);
 
-            if(proxy_host && !settings.static_global(Settings.KEY_CONNECT_NO_DNSPROXY))
-                local_proxy_socket = new WebSocket('wss://' + proxy_host + ":" + address.port);
-            local_direct_socket = new WebSocket('wss://' + address.host + ":" + address.port);
 
-            connected_socket = await new Promise<WebSocket>(resolve => {
-                let pending = 0, succeed = false;
-                if(local_proxy_socket) {
-                    pending++;
-
-                    local_proxy_socket.onerror = event => {
-                        --pending;
-                        if(this._connect_timeout_timer != local_timeout_timer)
-                            log.trace(LogCategory.NETWORKING, tr("Proxy socket send an error while connecting. Pending sockets: %d. Any succeed: %s"), pending, succeed ? tr("yes") : tr("no"));
-                        if(!succeed && pending == 0)
-                            resolve(undefined);
-                    };
-
-                    local_proxy_socket.onopen = event => {
-                        --pending;
-                        if(this._connect_timeout_timer != local_timeout_timer)
-                            log.trace(LogCategory.NETWORKING, tr("Proxy socket connected. Pending sockets: %d. Any succeed before: %s"), pending, succeed ? tr("yes") : tr("no"));
-                        if(!succeed) {
-                            succeed = true;
-                            resolve(local_proxy_socket);
-                        }
-                    };
-                }
-
-                if(local_direct_socket) {
-                    pending++;
-
-                    local_direct_socket.onerror = event => {
-                        --pending;
-                        if(this._connect_timeout_timer != local_timeout_timer)
-                            log.trace(LogCategory.NETWORKING, tr("Direct socket send an error while connecting. Pending sockets: %d. Any succeed: %s"), pending, succeed ? tr("yes") : tr("no"));
-                        if(!succeed && pending == 0)
-                            resolve(undefined);
-                    };
-
-                    local_direct_socket.onopen = event => {
-                        --pending;
-                        if(this._connect_timeout_timer != local_timeout_timer)
-                            log.trace(LogCategory.NETWORKING, tr("Direct socket connected. Pending sockets: %d. Any succeed before: %s"), pending, succeed ? tr("yes") : tr("no"));
-                        if(!succeed) {
-                            succeed = true;
-                            resolve(local_direct_socket);
-                        }
-                    };
-                }
-
-                if(local_proxy_socket && local_proxy_socket.readyState == WebSocket.OPEN)
-                    local_proxy_socket.onopen(undefined);
-
-                if(local_direct_socket && local_direct_socket.readyState == WebSocket.OPEN)
-                    local_direct_socket.onopen(undefined);
-            });
-
-            if(!connected_socket) {
-                //We failed to connect. Lets test if we're still relevant
-                if(this._connect_timeout_timer != local_timeout_timer) {
-                    log.trace(LogCategory.NETWORKING, tr("Failed to connect to %s, but we're already obsolete."), address.host + ":" + address.port);
-                    error_cleanup();
-                } else {
-                    try {
-                        await this.disconnect();
-                    } catch(error) {
-                        log.warn(LogCategory.NETWORKING, tr("Failed to cleanup connection after unsuccessful connect attempt: %o"), error);
-                    }
-                    error_cleanup();
-                    this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE);
-                }
-                return;
-            }
-
-            if(this._connect_timeout_timer != local_timeout_timer) {
-                log.trace(LogCategory.NETWORKING, tr("Successfully connected to %s, but we're already obsolete. Closing connections"), address.host + ":" + address.port);
-                error_cleanup();
-                return;
-            }
-
-            clearTimeout(local_timeout_timer);
-            this._connect_timeout_timer = undefined;
-
-            if(connected_socket == local_proxy_socket) {
-                log.debug(LogCategory.NETWORKING, tr("Established a TCP connection to %s via proxy to %s"), address.host + ":" + address.port, proxy_host);
-                this._remote_address.host = proxy_host;
-            } else {
-                log.debug(LogCategory.NETWORKING, tr("Established a TCP connection to %s directly"), address.host + ":" + address.port);
-            }
-
-            this._socket_connected = connected_socket;
-            this._socket_connected.onclose = event => {
-                if(this._socket_connected != connected_socket) return; /* this socket isn't from interest anymore */
-
-                this.client.handleDisconnect(this._connected ? DisconnectReason.CONNECTION_CLOSED : DisconnectReason.CONNECT_FAILURE, {
-                    code: event.code,
-                    reason: event.reason,
-                    event: event
-                });
-            };
-
-            this._socket_connected.onerror = e => {
-                if(this._socket_connected != connected_socket) return; /* this socket isn't from interest anymore */
-
-                log.warn(LogCategory.NETWORKING, tr("Received web socket error: (%o)"), e);
-            };
-
-            this._socket_connected.onmessage = msg => {
-                if(this._socket_connected != connected_socket) return; /* this socket isn't from interest anymore */
-
-                this.handle_socket_message(msg.data);
-            };
-
-            this._connected = true;
-            this.start_handshake();
-        } catch (error) {
-            error_cleanup();
-            if(this._socket_connected != connected_socket && this._connect_timeout_timer != local_timeout_timer)
-                return; /* we're not from interest anymore */
-
-            log.warn(LogCategory.NETWORKING, tr("Received unexpected error while connecting: %o"), error);
-            try {
-                await this.disconnect();
-            } catch(error) {
-                log.warn(LogCategory.NETWORKING, tr("Failed to cleanup connection after unsuccessful connect attempt: %o"), error);
-            }
-            this.client.handleDisconnect(DisconnectReason.CONNECT_FAILURE, error);
-        }
+        this.start_handshake();
     }
 
     private start_handshake() {
         this.updateConnectionState(ConnectionState.INITIALISING);
         this.client.log.log(EventType.CONNECTION_LOGIN, {});
-        this._handshakeHandler.initialize();
-        this._handshakeHandler.startHandshake();
+        this.handshakeHandler.initialize();
+        this.handshakeHandler.startHandshake();
     }
 
     async disconnect(reason?: string) : Promise<void> {
+        if(this.connectCancelCallback)
+            this.connectCancelCallback();
+
         this.updateConnectionState(ConnectionState.DISCONNECTING);
         try {
-            clearTimeout(this._connect_timeout_timer);
-            this._connect_timeout_timer = undefined;
-
-            clearTimeout(this._ping.thread_id);
-            this._ping.thread_id = undefined;
+            clearTimeout(this.pingStatistics.thread_id);
+            this.pingStatistics.thread_id = undefined;
 
             if(typeof(reason) === "string") {
                 //TODO send disconnect reason
@@ -313,31 +270,30 @@ export class ServerConnection extends AbstractServerConnection {
                 this._voice_connection.drop_rtp_session();
 
 
-            if(this._socket_connected) {
-                this._socket_connected.close(3000 + 0xFF, tr("request disconnect"));
-                this._socket_connected = undefined;
+            if(this.socket) {
+                this.socket.callbackMessage = undefined;
+                this.socket.callbackDisconnect = undefined;
+                this.socket.callbackErrored = undefined;
+
+                this.socket.closeConnection(); /* 3000 + 0xFF, tr("request disconnect") */
+                this.socket = undefined;
             }
 
-
-            for(let future of this._retListener)
+            for(let future of this.returnListeners)
                 future.reject(tr("Connection closed"));
-            this._retListener = [];
-
-            this._connected = false;
-            this._retCodeIdx = 0;
+            this.returnListeners = [];
         } finally {
             this.updateConnectionState(ConnectionState.UNCONNECTED);
         }
     }
 
-    private handle_socket_message(data) {
+    private handleSocketMessage(data) {
         if(typeof(data) === "string") {
             let json;
             try {
                 json = JSON.parse(data);
             } catch(e) {
                 log.warn(LogCategory.NETWORKING, tr("Could not parse message json!"));
-                alert(e); // error in the above string (in this case, yes)!
                 return;
             }
             if(json["type"] === undefined) {
@@ -351,14 +307,14 @@ export class ServerConnection extends AbstractServerConnection {
                 group.group(log.LogType.TRACE, tr("Json:")).collapsed(true).log("%o", json).end();
                 /* devel-block-end */
 
-                this._command_boss.invoke_handle({
+                this.commandHandlerBoss.invoke_handle({
                     command: json["command"],
                     arguments: json["data"]
                 });
 
                 if(json["command"] === "initserver") {
-                    this._ping.thread_id = setInterval(() => this.do_ping(), this._ping.interval) as any;
-                    this.do_ping();
+                    this.pingStatistics.thread_id = setInterval(() => this.doNextPing(), this.pingStatistics.interval) as any;
+                    this.doNextPing();
                     this.updateConnectionState(ConnectionState.CONNECTED);
                     if(this._voice_connection)
                         this._voice_connection.start_rtc_session(); /* FIXME: Move it to a handler boss and not here! */
@@ -372,18 +328,18 @@ export class ServerConnection extends AbstractServerConnection {
                 else
                     log.warn(LogCategory.NETWORKING, tr("Dropping WebRTC command packet, because we haven't a bridge."))
             } else if(json["type"] === "ping") {
-              this.sendData(JSON.stringify({
-                  type: 'pong',
-                  payload: json["payload"]
-              }));
+                this.sendData(JSON.stringify({
+                    type: 'pong',
+                    payload: json["payload"]
+                }));
             } else if(json["type"] === "pong") {
                 const id = parseInt(json["payload"]);
-                if(id != this._ping.request_id) {
-                    log.warn(LogCategory.NETWORKING, tr("Received pong which is older than the last request. Delay may over %oms? (Index: %o, Current index: %o)"), this._ping.timeout, id, this._ping.request_id);
+                if(id != this.pingStatistics.currentRequestId) {
+                    log.warn(LogCategory.NETWORKING, tr("Received pong which is older than the last request. Delay may over %oms? (Index: %o, Current index: %o)"), this.pingStatistics.timeout, id, this.pingStatistics.currentRequestId);
                 } else {
-                    this._ping.last_response = 'now' in performance ? performance.now() : Date.now();
-                    this._ping.value = this._ping.last_response - this._ping.last_request;
-                    this._ping.value_native = parseInt(json["ping_native"]) / 1000; /* we're getting it in microseconds and not milliseconds */
+                    this.pingStatistics.lastResponseTimestamp = 'now' in performance ? performance.now() : Date.now();
+                    this.pingStatistics.currentJsValue = this.pingStatistics.lastResponseTimestamp - this.pingStatistics.lastRequestTimestamp;
+                    this.pingStatistics.currentNativeValue = parseInt(json["ping_native"]) / 1000; /* we're getting it in microseconds and not milliseconds */
                     //log.debug(LogCategory.NETWORKING, tr("Received new pong. Updating ping to: JS: %o Native: %o"), this._ping.value.toFixed(3), this._ping.value_native.toFixed(3));
                 }
             } else {
@@ -395,14 +351,15 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     sendData(data: any) {
-        if(!this._socket_connected || this._socket_connected.readyState != 1) {
-            log.warn(LogCategory.NETWORKING, tr("Tried to send on a invalid socket (%s)"), this._socket_connected ? "invalid state (" + this._socket_connected.readyState + ")" : "invalid socket");
+        if(!this.socket || this.socket.state !== "connected") {
+            log.warn(LogCategory.NETWORKING, tr("Tried to send data via a non connected server socket."));
             return;
         }
-        this._socket_connected.send(data);
+
+        this.socket.socket.send(data);
     }
 
-    private commandiefy(input: any) : string {
+    private static commandDataToJson(input: any) : string {
         return JSON.stringify(input, (key, value) => {
             switch (typeof value) {
                 case "boolean": return value == true ? "1" : "0";
@@ -415,7 +372,7 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     send_command(command: string, data?: any | any[], _options?: CommandOptions) : Promise<CommandResult> {
-        if(!this._socket_connected || !this.connected()) {
+        if(!this.socket || !this.connected()) {
             log.warn(LogCategory.NETWORKING, tr("Tried to send a command without a valid connection."));
             return Promise.reject(tr("not connected"));
         }
@@ -428,35 +385,35 @@ export class ServerConnection extends AbstractServerConnection {
         if(data.length == 0) /* we require min one arg to append return_code */
             data.push({});
 
-        const _this = this;
         let result = new Promise<CommandResult>((resolve, failed) => {
-            let _data = $.isArray(data) ? data : [data];
-            let retCode = _data[0]["return_code"] !== undefined ? _data[0].return_code : _this.generateReturnCode();
-            _data[0].return_code = retCode;
+            let payload = $.isArray(data) ? data : [data];
+
+            let returnCode = typeof payload[0]["return_code"] === "string" ? payload[0].return_code : ++globalReturnCodeIndex;
+            payload[0].return_code = returnCode;
 
             let listener = new ReturnListener<CommandResult>();
             listener.resolve = resolve;
             listener.reject = failed;
-            listener.code = retCode;
+            listener.code = returnCode;
             listener.timeout = setTimeout(() => {
-                _this._retListener.remove(listener);
+                this.returnListeners.remove(listener);
                 listener.reject("timeout");
             }, 1500);
-            this._retListener.push(listener);
+            this.returnListeners.push(listener);
 
-            this._socket_connected.send(this.commandiefy({
+            this.sendData(ServerConnection.commandDataToJson({
                 "type": "command",
                 "command": command,
-                "data": _data,
+                "data": payload,
                 "flags": options.flagset.filter(entry => entry.length != 0)
-            }));
+            }))
         });
 
-        return this._command_handler_default.proxy_command_promise(result, options);
+        return this.defaultCommandHandler.proxy_command_promise(result, options);
     }
 
     connected() : boolean {
-        return !!this._socket_connected && this._socket_connected.readyState == WebSocket.OPEN;
+        return !!this.socket && this.socket.state === "connected";
     }
 
     support_voice(): boolean {
@@ -468,7 +425,7 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     command_handler_boss(): AbstractCommandHandlerBoss {
-        return this._command_boss;
+        return this.commandHandlerBoss;
     }
 
 
@@ -480,31 +437,32 @@ export class ServerConnection extends AbstractServerConnection {
     }
 
     handshake_handler(): HandshakeHandler {
-        return this._handshakeHandler;
+        return this.handshakeHandler;
     }
 
     remote_address(): ServerAddress {
-        return this._remote_address;
+        return this.remoteServerAddress;
     }
 
-    private do_ping() {
-        if(this._ping.last_request + this._ping.timeout < Date.now()) {
-            this._ping.value = this._ping.timeout;
-            this._ping.last_response = this._ping.last_request + 1;
+    private doNextPing() {
+        if(this.pingStatistics.lastRequestTimestamp + this.pingStatistics.timeout < Date.now()) {
+            this.pingStatistics.currentJsValue = this.pingStatistics.timeout;
+            this.pingStatistics.lastResponseTimestamp = this.pingStatistics.lastRequestTimestamp + 1;
         }
-        if(this._ping.last_response > this._ping.last_request) {
-            this._ping.last_request = 'now' in performance ? performance.now() : Date.now();
+
+        if(this.pingStatistics.lastResponseTimestamp > this.pingStatistics.lastRequestTimestamp) {
+            this.pingStatistics.lastRequestTimestamp = 'now' in performance ? performance.now() : Date.now();
             this.sendData(JSON.stringify({
                 type: 'ping',
-                payload: (++this._ping.request_id).toString()
+                payload: (++this.pingStatistics.currentRequestId).toString()
             }));
         }
     }
 
     ping(): { native: number; javascript?: number } {
         return {
-            javascript: this._ping.value,
-            native: this._ping.value_native
+            javascript: this.pingStatistics.currentJsValue,
+            native: this.pingStatistics.currentNativeValue
         };
     }
 }

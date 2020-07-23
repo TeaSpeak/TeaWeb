@@ -42,6 +42,8 @@ declare global {
     }
 
     interface Window {
+        __REACT_DEVTOOLS_GLOBAL_HOOK__: any;
+
         readonly webkitAudioContext: typeof AudioContext;
         readonly AudioContext: typeof OfflineAudioContext;
         readonly OfflineAudioContext: typeof OfflineAudioContext;

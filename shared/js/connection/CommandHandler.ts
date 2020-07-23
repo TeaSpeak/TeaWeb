@@ -167,7 +167,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             log.warn(LogCategory.NETWORKING, tr("Invalid return code! (%o)"), json);
             return;
         }
-        let retListeners = this.connection["_retListener"];
+        let retListeners = this.connection["_retListener"] || this.connection["returnListeners"];
 
         for(let e of retListeners) {
             if(e.code != code) continue;

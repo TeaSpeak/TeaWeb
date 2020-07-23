@@ -86,7 +86,7 @@ export class ConnectHandler {
 
                 const response = {
                     accepted: this.callback_available(data.data),
-                    request_id: data.request_id
+                    currentRequestId: data.request_id
                 } as ConnectOfferAnswer;
 
                 if(response.accepted) {
@@ -135,7 +135,7 @@ export class ConnectHandler {
 
                     log.debug(LogCategory.IPC, tr("Executing connect with client %s"), request.remote_handler);
                     this.ipc_channel.sendMessage("execute", {
-                        request_id: request.id
+                        currentRequestId: request.id
                     } as ConnectExecute, request.remote_handler);
                     request.timeout = setTimeout(() => {
                         request.callback_failed("connect execute timeout");
@@ -185,7 +185,7 @@ export class ConnectHandler {
                 const cr = this.callback_execute(request.data);
 
                 const response = {
-                    request_id: data.request_id,
+                    currentRequestId: data.request_id,
 
                     succeeded: typeof(cr) !== "string" && cr,
                     message: typeof(cr) === "string" ? cr : "",
@@ -219,7 +219,7 @@ export class ConnectHandler {
             this._pending_connects_requests.push(pd);
 
             this.ipc_channel.sendMessage("offer", {
-                request_id: pd.id,
+                currentRequestId: pd.id,
                 data: pd.data
             } as ConnectOffer);
             pd.timeout = setTimeout(() => {

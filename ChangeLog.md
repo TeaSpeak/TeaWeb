@@ -1,4 +1,8 @@
 # Changelog:
+* **24.07.20**
+    - Cleaned up the web client socket connection establishment code
+    - Improved connect refused error detection (Not showing the certificate accept dialog if the server is down)
+    
 * **21.07.20**
     - Added the enchanted server log system
     - Recoded the server log with react

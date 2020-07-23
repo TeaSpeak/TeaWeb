@@ -479,3 +479,10 @@ export async function resolve_address(address: ServerAddress, _options?: Resolve
         target_port: response.port
     };
 }
+
+export async function resolve_address_ipv4(address: string) : Promise<string> {
+    const result = await resolve(address, RRType.A);
+    if(!result.length) return undefined;
+
+    return result[0].data;
+}
