@@ -33,8 +33,6 @@ function registerDispatcher<T extends keyof TypeInfo>(key: T, builder: Dispatche
 }
 
 export function findNotificationDispatcher<T extends keyof TypeInfo>(type: T) : DispatcherLog<T> {
-    if(!isNotificationEnabled(type as any))
-        return undefined;
     return dispatchers[type];
 }
 

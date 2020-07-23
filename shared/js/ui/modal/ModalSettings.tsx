@@ -31,6 +31,7 @@ import * as arecorder from "tc-backend/audio/recorder";
 import {KeyMapSettings} from "tc-shared/ui/modal/settings/Keymap";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
 
 export function spawnSettingsModal(default_page?: string) : Modal {
     let modal: Modal;
@@ -73,6 +74,7 @@ export function spawnSettingsModal(default_page?: string) : Modal {
     settings_general_language(modal.htmlTag.find(".right .container.general-language"), modal);
     settings_general_chat(modal.htmlTag.find(".right .container.general-chat"), modal);
     settings_general_keymap(modal.htmlTag.find(".right .container.general-keymap"), modal);
+    settings_general_notifications(modal.htmlTag.find(".right .container.general-notifications"), modal);
     settings_audio_microphone(modal.htmlTag.find(".right .container.audio-microphone"), modal);
     settings_audio_speaker(modal.htmlTag.find(".right .container.audio-speaker"), modal);
     settings_audio_sounds(modal.htmlTag.find(".right .container.audio-sounds"), modal);
@@ -346,6 +348,12 @@ function settings_general_language(container: JQuery, modal: Modal) {
 
 function settings_general_keymap(container: JQuery, modal: Modal) {
     const entry = <KeyMapSettings />;
+    ReactDOM.render(entry, container[0]);
+    modal.close_listener.push(() => ReactDOM.unmountComponentAtNode(container[0]));
+}
+
+function settings_general_notifications(container: JQuery, modal: Modal) {
+    const entry = <NotificationSettings />;
     ReactDOM.render(entry, container[0]);
     modal.close_listener.push(() => ReactDOM.unmountComponentAtNode(container[0]));
 }

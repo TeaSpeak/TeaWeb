@@ -4,7 +4,9 @@ import {LogMessage, ServerLogUIEvents, TypeInfo} from "tc-shared/ui/frames/log/D
 import {Registry} from "tc-shared/events";
 import * as ReactDOM from "react-dom";
 import {ServerLogRenderer} from "tc-shared/ui/frames/log/Renderer";
-import {findNotificationDispatcher} from "tc-shared/ui/frames/log/DispatcherNotifications";
+import {findNotificationDispatcher, isNotificationEnabled} from "tc-shared/ui/frames/log/DispatcherNotifications";
+import {Settings, settings} from "tc-shared/settings";
+import {isFocusRequestEnabled, requestWindowFocus} from "tc-shared/ui/frames/log/DispatcherFocus";
 
 const cssStyle = require("./Renderer.scss");
 
@@ -39,14 +41,22 @@ export class ServerEventLog {
             uniqueId: "log-" + Date.now() + "-" + (++uniqueLogEventId)
         };
 
-        this.eventLog.push(event);
-        while(this.eventLog.length > this.maxHistoryLength)
-            this.eventLog.pop_front();
+        if(settings.global(Settings.FN_EVENTS_LOG_ENABLED(type), true)) {
+            this.eventLog.push(event);
+            while(this.eventLog.length > this.maxHistoryLength)
+                this.eventLog.pop_front();
 
-        this.uiEvents.fire_async("notify_log_add", { event: event });
+            this.uiEvents.fire_async("notify_log_add", { event: event });
+        }
 
-        const notification = findNotificationDispatcher(type);
-        if(notification) notification(data, this.connection.handlerId, type);
+        if(isNotificationEnabled(type as any)) {
+            const notification = findNotificationDispatcher(type);
+            if(notification) notification(data, this.connection.handlerId, type);
+        }
+
+        if(isFocusRequestEnabled(type as any)) {
+            requestWindowFocus();
+        }
     }
 
     getHTMLTag() {

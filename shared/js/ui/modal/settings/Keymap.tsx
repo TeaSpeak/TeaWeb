@@ -12,6 +12,7 @@ import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import * as keycontrol from "./../../../KeyControl";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
+import {useRef} from "react";
 
 const cssStyle = require("./Keymap.scss");
 
@@ -292,30 +293,25 @@ class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEven
     }
 }
 
-export class KeyMapSettings extends React.Component<{}, {}> {
-    private readonly event_registry: Registry<KeyMapEvents>;
+export const KeyMapSettings = () => {
+    const events = useRef<Registry<KeyMapEvents>>(undefined);
 
-    constructor(props) {
-        super(props);
-
-        this.event_registry = new Registry<KeyMapEvents>();
-        initialize_timeouts(this.event_registry);
-        initialize_controller(this.event_registry);
+    if(events.current === undefined) {
+        events.current = new Registry<KeyMapEvents>();
+        initialize_timeouts(events.current);
+        initialize_controller(events.current);
     }
 
-    render() {
-        //TODO: May refresh button?
-        return [
-            <div key={"header"} className={cssStyle.header}>
-                <a><Translatable message={"Keymap"} /></a>
-            </div>,
-            <div key={"body"} className={cssStyle.containerList}>
-                <KeyActionList eventRegistry={this.event_registry} />
-                <ButtonBar event_registry={this.event_registry} />
-            </div>
-        ];
-    }
-}
+    return (<>
+        <div key={"header"} className={cssStyle.header}>
+            <a><Translatable message={"Keymap"} /></a>
+        </div>
+        <div key={"body"} className={cssStyle.containerList}>
+            <KeyActionList eventRegistry={events.current} />
+            <ButtonBar event_registry={events.current} />
+        </div>
+    </>);
+};
 
 function initialize_timeouts(event_registry: Registry<KeyMapEvents>) {
     /* query */
