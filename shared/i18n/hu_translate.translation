@@ -1,5 +1,5 @@
 {
-       "info": {
+    "info": {
         "contributors": [
             {
                 "name": "Google Translate, via script by Markus Hadenfeldt",
@@ -8,7 +8,7 @@
             {
                 "name": "Ifj. Madarász László (Silverhost.xyz csapata)",
                 "email": "info@silverhost.hu"
-            },
+            }
         ],
         "name": "Magyar (fordította: Ifj. Madarász László)"
     },
