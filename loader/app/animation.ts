@@ -25,7 +25,6 @@ async function detectAPNGSupport() {
 
     ctx.drawImage(image, 0, 0);
     apngSupport = ctx.getImageData(0, 0, 1, 1).data[3] === 0;
-    console.log("Browser APNG support: %o", apngSupport);
 }
 
 function initializeElements() {
