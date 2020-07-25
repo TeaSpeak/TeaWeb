@@ -1,4 +1,7 @@
 # Changelog:
+* **25.07.20**
+    - Fixed bug where icons could not be loaded due to cros policy
+    
 * **24.07.20**
     - Cleaned up the web client socket connection establishment code
     - Improved connect refused error detection (Not showing the certificate accept dialog if the server is down)

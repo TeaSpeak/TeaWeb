@@ -133,9 +133,17 @@ export class ServerConnection extends AbstractServerConnection {
                 break proxySocket;
             }
 
-            availableSockets.push(new WrappedWebSocket("wss://" + host + ":" + address.port))
+            availableSockets.push(new WrappedWebSocket({
+                host: host,
+                port: address.port,
+                secure: true
+            }))
         }
-        availableSockets.push(new WrappedWebSocket("wss://" + address.host + ":" + address.port));
+        availableSockets.push(new WrappedWebSocket({
+            host: address.host,
+            port: address.port,
+            secure: true
+        }));
 
         let timeoutRaised = false;
         let timeoutPromise = new Promise(resolve => setTimeout(() => {
@@ -176,12 +184,12 @@ export class ServerConnection extends AbstractServerConnection {
 
             switch (finished.state) {
                 case "unconnected":
-                    log.debug(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s got aborted."), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.url);
+                    log.debug(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s got aborted."), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.socketUrl());
                     continue;
 
                 case "errored":
                     const error = finished.popError();
-                    log.info(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s failed:\n%o"), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.url, error);
+                    log.info(LogCategory.NETWORKING, tr("Connection attempt to %s:%d via %s failed:\n%o"), this.remoteServerAddress.host, this.remoteServerAddress.port, finished.socketUrl(), error);
                     continue;
 
                 case "connected":
@@ -238,7 +246,7 @@ export class ServerConnection extends AbstractServerConnection {
         log.info(LogCategory.NETWORKING, tr("Successfully initialized a connection to %s:%d via %s within %d milliseconds."),
             this.remoteServerAddress.host,
             this.remoteServerAddress.port,
-            this.socket.url,
+            this.socket.socketUrl(),
             connectEndTimestamp - connectBeginTimestamp);
 
 
@@ -445,6 +453,10 @@ export class ServerConnection extends AbstractServerConnection {
 
     remote_address(): ServerAddress {
         return this.remoteServerAddress;
+    }
+
+    connectionProxyAddress(): ServerAddress | undefined {
+        return this.socket?.address;
     }
 
     private doNextPing() {
