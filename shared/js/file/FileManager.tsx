@@ -195,9 +195,12 @@ class FileCommandHandler extends AbstractCommandHandler {
     }
 
     private fixIPAddresses(properties: InitializedTransferProperties) {
-        for(const address of properties.addresses)
-            if(address.serverAddress === '0.0.0.0')
-                address.serverAddress = this.manager.connectionHandler.serverConnection.remote_address().host;
+        for(const address of properties.addresses) {
+            if(address.serverAddress === '0.0.0.0') {
+                const sconnection = this.manager.connectionHandler.serverConnection;
+                address.serverAddress = (sconnection.connectionProxyAddress() || sconnection.remote_address()).host;
+            }
+        }
 
     }
 
