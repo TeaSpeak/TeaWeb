@@ -107,6 +107,9 @@
 				min-height: min-content;
 				min-width: 30em;
 
+				max-height: 100%;
+				height: 100%;
+
 				@include chat-scrollbar-horizontal();
 
 				&.general-chat, &.general-application, &.audio-sounds {
