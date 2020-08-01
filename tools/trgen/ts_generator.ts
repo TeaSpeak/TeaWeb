@@ -296,11 +296,13 @@ export function replace_processor(config: Configuration, cache: VolatileTransfor
     if(config.verbose)
         console.log("Process %s", SyntaxKind[node.kind]);
 
+    if(!node.getSourceFile())
+        return node;
+
     if(ts.isCallExpression(node)) {
         const call = <ts.CallExpression>node;
         const call_name = call.expression["escapedText"] as string;
         if(call_name != "tr") return node;
-        if(!node.getSourceFile()) return node;
         if(config.verbose) {
             console.dir(call_name);
             console.log("Parameters: %o", call.arguments.length);

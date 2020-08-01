@@ -1,6 +1,7 @@
 # Changelog:
 * **01.08.20**
     - Cleaning up the channel trees selection on reset
+    - Updated the translations to the newest standard
     
 * **25.07.20**
     - Fixed bug where icons could not be loaded due to cros policy
