@@ -21203,6 +21203,4470 @@
       "flags": [
         "google-translated"
       ]
+    },
+    {
+      "key": {
+        "message": "Paste"
+      },
+      "translated": "Pegar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "transfer source is undefined"
+      },
+      "translated": "la fuente de transferencia no está definida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid source type"
+      },
+      "translated": "tipo de fuente inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload object via HTTPS connection: %o"
+      },
+      "translated": "Error al cargar el objeto a través de la conexión HTTPS:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize transfer source: %o"
+      },
+      "translated": "Error al inicializar la fuente de transferencia:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "transfer target is undefined"
+      },
+      "translated": "el objetivo de transferencia no está definido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer target type"
+      },
+      "translated": "tipo de destino de transferencia no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download file to response object: %o"
+      },
+      "translated": "Error al descargar el archivo al objeto de respuesta:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize transfer target: %o"
+      },
+      "translated": "Error al inicializar el objetivo de transferencia:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to transfer data throw a HTTPS request: %o"
+      },
+      "translated": "Error al transferir datos arrojar una solicitud HTTPS:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "handler query timeout"
+      },
+      "translated": "tiempo de espera de consulta del controlador",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse old key control data."
+      },
+      "translated": "Error al analizar los datos de control de clave antiguos.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "estado de transferencia inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "estado de transferencia inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "estado de transferencia inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "response target isn't supported"
+      },
+      "translated": "el objetivo de respuesta no es compatible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download target isn't supported"
+      },
+      "translated": "el objetivo de descarga no es compatible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file target isn't supported"
+      },
+      "translated": "el objetivo del archivo no es compatible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "buffer source isn't supported"
+      },
+      "translated": "fuente de búfer no es compatible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "text source isn't supported"
+      },
+      "translated": "fuente de texto no es compatible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "browser file source isn't supported"
+      },
+      "translated": "la fuente del archivo del navegador no es compatible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No variable matched your filter"
+      },
+      "translated": "Ninguna variable coincide con su filtro",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter variables"
+      },
+      "translated": "Filtrar variables",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "CSS Variable list"
+      },
+      "translated": "Lista de variables CSS",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Default Value"
+      },
+      "translated": "Valor por defecto",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Override Value"
+      },
+      "translated": "Anular valor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Randomize"
+      },
+      "translated": "Aleatorizar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Export"
+      },
+      "translated": "Exportar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Variable details"
+      },
+      "translated": "Detalles variables",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config exported successfully"
+      },
+      "translated": "Configuración exportada con éxito",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config has been exported successfully."
+      },
+      "translated": "La configuración se ha exportado con éxito.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config imported successfully"
+      },
+      "translated": "Configuración importada con éxito",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config has been imported successfully."
+      },
+      "translated": "La configuración se ha importado correctamente.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config imported failed"
+      },
+      "translated": "Configuración importada fallida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config import has been failed."
+      },
+      "translated": "La importación de la configuración ha fallado.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "[%s] Trigger event: %s"
+      },
+      "translated": "[% s] Evento de activación:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The keyword 'type' is reserved for the event type and should not be passed as argument"
+      },
+      "translated": "La palabra clave 'tipo' está reservada para el tipo de evento y no debe pasarse como argumento",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Event handler (%s) triggered event %s which has no consumers."
+      },
+      "translated": "El controlador de eventos (% s) activó el evento% s que no tiene consumidores.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No events found in event handler which has been registered."
+      },
+      "translated": "No se encontraron eventos en el controlador de eventos que se haya registrado.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load window"
+      },
+      "translated": "Error al cargar la ventana",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load the bookmark window.\nSee the console for more details."
+      },
+      "translated": "Error al cargar la ventana de marcadores.\nVea la consola para más detalles.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received open window event for an unknown window: %s"
+      },
+      "translated": "Se recibió un evento de ventana abierta para una ventana desconocida:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Modify CSS variables"
+      },
+      "translated": "Modificar variables CSS",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Enter Privilege Key"
+      },
+      "translated": "Ingrese la clave de privilegio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received conversation message from our self. This should be impossible."
+      },
+      "translated": "Recibimos un mensaje de conversación de nosotros mismos. Esto debería ser imposible.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection manager has already been initialized"
+      },
+      "translated": "El administrador de conexión ya se ha inicializado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "modal has been destroyed"
+      },
+      "translated": "modal ha sido destruido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "modal has been destroyed"
+      },
+      "translated": "modal ha sido destruido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Modal - Icon"
+      },
+      "translated": "Modal - Icono",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading older messages"
+      },
+      "translated": "cargando mensajes antiguos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "please wait"
+      },
+      "translated": "por favor espera",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 segundo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "History query failed"
+      },
+      "translated": "Consulta de historial fallida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Try again in"
+      },
+      "translated": "Inténtalo de nuevo en",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 segundo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Jump to present"
+      },
+      "translated": "Salta al presente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You joined at"
+      },
+      "translated": "Te uniste a",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You left at"
+      },
+      "translated": "Te fuiste a las",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "failed to query history"
+      },
+      "translated": "error al consultar el historial",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "message send failed due to permission"
+      },
+      "translated": "envío de mensaje fallido debido a permiso",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "failed to send message:"
+      },
+      "translated": "no se pudo enviar el mensaje:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're&nbsp;now&nbsp;chatting&nbsp;with"
+      },
+      "translated": "Estás & nbsp; ahora & nbsp; chateando & nbsp; con",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Chat reconnected"
+      },
+      "translated": "Chat reconectado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Partner is typing"
+      },
+      "translated": "El compañero está escribiendo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "An unknown error happened."
+      },
+      "translated": "Ocurrió un error desconocido.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No conversation selected"
+      },
+      "translated": "No se seleccionó ninguna conversación.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This conversation is private."
+      },
+      "translated": "Esta conversación es privada.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Join the channel to participate."
+      },
+      "translated": "Únete al canal para participar.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The target server does not support cross channel chat."
+      },
+      "translated": "El servidor de destino no admite chat entre canales.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Join the channel if you want to write."
+      },
+      "translated": "Únete al canal si quieres escribir.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "There have been no messages yet."
+      },
+      "translated": "No ha habido mensajes todavía.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Be the first who talks in here!"
+      },
+      "translated": "¡Sé el primero en hablar aquí!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown error/Invalid state"
+      },
+      "translated": "Error desconocido / Estado inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon set image method threw an unexpected error: %o"
+      },
+      "translated": "El método de imagen de conjunto de iconos arrojó un error inesperado:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon load method threw an unexpected error: %o"
+      },
+      "translated": "El método de carga de iconos arrojó un error inesperado:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download icon %d: %o"
+      },
+      "translated": "Error al descargar el icono% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load icon"
+      },
+      "translated": "Error al cargar el icono",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to update icon image for icon %d: %o"
+      },
+      "translated": "Error al actualizar la imagen del icono para el icono% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to update icon from downloaded file"
+      },
+      "translated": "Error al actualizar el icono del archivo descargado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid status"
+      },
+      "translated": "Estado inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Don't retry icon download from server. We'll try again in %s"
+      },
+      "translated": "No vuelva a intentar la descarga de iconos desde el servidor. Lo intentaremos nuevamente en% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "never"
+      },
+      "translated": "Nunca",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 segundo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download canceled"
+      },
+      "translated": "descarga cancelada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown transfer finished state"
+      },
+      "translated": "Transferencia desconocida estado finalizado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon could not be found"
+      },
+      "translated": "No se pudo encontrar el ícono",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No permissions to download icon"
+      },
+      "translated": "Sin permisos para descargar icono",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize icon download"
+      },
+      "translated": "Error al inicializar la descarga del icono",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Transfer has no response"
+      },
+      "translated": "La transferencia no tiene respuesta.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server permissions"
+      },
+      "translated": "Permisos del servidor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group has been renamed."
+      },
+      "translated": "El grupo ha cambiado de nombre.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Do you really want to delete this group?"
+      },
+      "translated": "¿Realmente quieres eliminar este grupo?",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "permisos insuficientes",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename group: %o"
+      },
+      "translated": "Error al cambiar el nombre del grupo:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete group: %o"
+      },
+      "translated": "Error al eliminar el grupo:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request server group client list: %o"
+      },
+      "translated": "Error al solicitar la lista de clientes del grupo de servidores:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add client %s to server group %d: %o"
+      },
+      "translated": "Error al agregar el cliente% s al grupo de servidores% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete client %d from server group %d: %o"
+      },
+      "translated": "Error al eliminar el cliente% d del grupo de servidores% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "Desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query client info for %o: %o"
+      },
+      "translated": "Error al consultar la información del cliente para% o:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Sujeto inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Grupo de servidores inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Grupo de servidores inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "ID de canal no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "ID de base de datos de cliente no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "ID de base de datos de cliente no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "ID de canal no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "Desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query permissions: %o"
+      },
+      "translated": "Error al consultar permisos:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Sujeto inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Grupo de servidores inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "ID de canal no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "ID de base de datos de cliente no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "ID de base de datos de cliente no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "ID de canal no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to set permissions: %o"
+      },
+      "translated": "Error al establecer permisos:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Sujeto inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Grupo de servidores inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "ID de canal no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "ID de base de datos de cliente no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "ID de base de datos de cliente no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "ID de canal no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to remove permissions: %o"
+      },
+      "translated": "Error al eliminar los permisos:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to find bookmark profile %s. Displaying default one."
+      },
+      "translated": "No se pudo encontrar el perfil de marcador% s. Mostrando uno predeterminado.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Enter the bookmark name for the duplicate"
+      },
+      "translated": "Ingrese el nombre del marcador para el duplicado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unregistered unknown client from channel %s"
+      },
+      "translated": "Cliente desconocido no registrado del canal% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Open channel file browser"
+      },
+      "translated": "Abrir buscador de archivos de canal",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse sub channels"
+      },
+      "translated": "Contraer canales secundarios",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend sub channels"
+      },
+      "translated": "Gastar subcanales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to successfully disconnect from server: {}"
+      },
+      "translated": "Error al desconectarse correctamente del servidor: {}",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload clients avatar: %o"
+      },
+      "translated": "Error al cargar el avatar de los clientes:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Your avatar upload has been canceled."
+      },
+      "translated": "Su carga de avatar ha sido cancelada.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar upload finished with an unknown finished state."
+      },
+      "translated": "La carga del avatar finalizó con un estado final desconocido.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Renewing TeaForo data."
+      },
+      "translated": "Renovando los datos de TeaForo.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Set away on all servers"
+      },
+      "translated": "Establecer en todos los servidores",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unmute headphones"
+      },
+      "translated": "Dejar de silenciar los auriculares",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Mute headphones"
+      },
+      "translated": "Silenciar auriculares",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "default avatar"
+      },
+      "translated": "avatar predeterminado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "default avatar"
+      },
+      "translated": "avatar predeterminado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "user avatar"
+      },
+      "translated": "avatar de usuario",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "user avatar"
+      },
+      "translated": "avatar de usuario",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "avatar failed to load:\n"
+      },
+      "translated": "avatar no se pudo cargar:\n",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading avatar"
+      },
+      "translated": "cargando avatar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You can not write here."
+      },
+      "translated": "No puedes escribir aquí.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "and more"
+      },
+      "translated": "y más",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 hour"
+      },
+      "translated": "1 hora",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 minute"
+      },
+      "translated": "1 minuto",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 segundo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter permissions"
+      },
+      "translated": "Filtrar permisos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add permissions to this group"
+      },
+      "translated": "Agregar permisos a este grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove permissions from this group"
+      },
+      "translated": "Eliminar permisos de este grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add granted permissions to this group"
+      },
+      "translated": "Agregar permisos otorgados a este grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove granted permissions from this group"
+      },
+      "translated": "Eliminar los permisos otorgados de este grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "An error happened"
+      },
+      "translated": "Ocurrió un error",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Permission editor resize observer fired resize event with no entries!"
+      },
+      "translated": "¡El editor de permisos redimensiona el evento de cambio de tamaño del observador sin entradas!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Permission editor resize observer fired resize event with more than one entry which should not be possible (%d)!"
+      },
+      "translated": "¡El editor de permisos redimensiona el evento de cambio de tamaño del observador con más de una entrada que no debería ser posible (% d)!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Handling height update and change permission view height to %d from %d"
+      },
+      "translated": "Manejo de la actualización de altura y cambio de altura de vista de permiso a% d desde% d",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received group toogle for unknwon group: %s"
+      },
+      "translated": "Grupo de Google recibido para unknwon group:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't have the permissions to view this permissions"
+      },
+      "translated": "No tiene los permisos para ver estos permisos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add group"
+      },
+      "translated": "Añadir grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy permissions"
+      },
+      "translated": "Copiar permisos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add group"
+      },
+      "translated": "Añadir grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add server group"
+      },
+      "translated": "Agregar grupo de servidores",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add channel group"
+      },
+      "translated": "Agregar grupo de canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy server group permissions"
+      },
+      "translated": "Copiar permisos de grupo de servidores",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy channel group permissions"
+      },
+      "translated": "Copiar permisos de grupo de canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This group contains no clients."
+      },
+      "translated": "Este grupo no contiene clientes.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This group is a temporary group."
+      },
+      "translated": "Este grupo es un grupo temporal.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't have permissions to view the clients in this group"
+      },
+      "translated": "No tiene permisos para ver los clientes en este grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query clients:"
+      },
+      "translated": "Error al consultar clientes:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No group selected"
+      },
+      "translated": "Ningún grupo seleccionado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "no client found"
+      },
+      "translated": "no se encontró cliente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database or Unique ID"
+      },
+      "translated": "Base de datos o ID única",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid UUID length"
+      },
+      "translated": "Longitud de UUID no válida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid UUID"
+      },
+      "translated": "UUID no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unique identifier"
+      },
+      "translated": "Identificador único",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Client database ID"
+      },
+      "translated": "ID de la base de datos del cliente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Select a group"
+      },
+      "translated": "Selecciona un grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query groups"
+      },
+      "translated": "Grupos de consulta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Template groups"
+      },
+      "translated": "Grupos de plantillas",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Regular Groups"
+      },
+      "translated": "Grupos regulares",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy group permissions"
+      },
+      "translated": "Copiar permisos de grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Source group"
+      },
+      "translated": "Grupo fuente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target group"
+      },
+      "translated": "Grupo objetivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy group permissions"
+      },
+      "translated": "Copiar permisos de grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "permisos insuficientes",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group permissions have been copied"
+      },
+      "translated": "Se han copiado los permisos de grupo.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group permissions have been successfully copied."
+      },
+      "translated": "Los permisos de grupo se han copiado correctamente.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions"
+      },
+      "translated": "Error al copiar permisos de grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "Desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions: %o"
+      },
+      "translated": "Error al copiar los permisos del grupo:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions"
+      },
+      "translated": "Error al copiar permisos de grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid group name length"
+      },
+      "translated": "Longitud de nombre de grupo no válida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A group with this name already exists"
+      },
+      "translated": "Ya existe un grupo con este nombre",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading data..."
+      },
+      "translated": "cargando datos...",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target group type"
+      },
+      "translated": "Tipo de grupo objetivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query group"
+      },
+      "translated": "Grupo de consulta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create group using this template"
+      },
+      "translated": "Crear grupo usando esta plantilla",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No template"
+      },
+      "translated": "Ninguna plantilla",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query groups"
+      },
+      "translated": "Grupos de consulta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Template groups"
+      },
+      "translated": "Grupos de plantillas",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Regular Groups"
+      },
+      "translated": "Grupos regulares",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create Group"
+      },
+      "translated": "Crea un grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create a new server group"
+      },
+      "translated": "Crear un nuevo grupo de servidores",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create a new channel group"
+      },
+      "translated": "Crea un nuevo grupo de canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "permisos insuficientes",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group has been created"
+      },
+      "translated": "El grupo ha sido creado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group has been successfully created."
+      },
+      "translated": "El grupo ha sido creado con éxito.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "Desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create group: %o"
+      },
+      "translated": "Error al crear el grupo:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Event"
+      },
+      "translated": "Evento",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Focus"
+      },
+      "translated": "Atención",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Draw focus to the window when the event occurs"
+      },
+      "translated": "Dibuja el foco en la ventana cuando ocurre el evento",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notify"
+      },
+      "translated": "Notificar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Sending out a system notification"
+      },
+      "translated": "Enviar una notificación del sistema",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Log"
+      },
+      "translated": "Iniciar sesión",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Log the event within the client server log"
+      },
+      "translated": "Registre el evento dentro del registro del servidor del cliente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No events matching your filter"
+      },
+      "translated": "No hay eventos que coincidan con tu filtro",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter Events"
+      },
+      "translated": "Filtrar eventos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notifications"
+      },
+      "translated": "Notificaciones",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You received a poke"
+      },
+      "translated": "Recibiste un golpe",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You send a poke"
+      },
+      "translated": "Mandas un poke",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You received a private message"
+      },
+      "translated": "Recibiste un mensaje privado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You send a private message"
+      },
+      "translated": "Envias un mensaje privado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client enters your view"
+      },
+      "translated": "Un cliente ingresa a su vista",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client enters your view and your channel"
+      },
+      "translated": "Un cliente ingresa a tu vista y a tu canal",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client switches/gets moved/kicked"
+      },
+      "translated": "Un cliente cambia / se mueve / patea",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client switches/gets moved/kicked in to/out of your channel"
+      },
+      "translated": "Un cliente cambia / es movido / pateado dentro / fuera de su canal",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've been moved or kicked"
+      },
+      "translated": "Has sido movido o pateado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client leaves/disconnects of your view"
+      },
+      "translated": "Un cliente deja / se desconecta de su vista",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client leaves/disconnects of your channel"
+      },
+      "translated": "Un cliente abandona / desconecta tu canal",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A server message has been send"
+      },
+      "translated": "Un mensaje del servidor ha sido enviado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The server has been closed"
+      },
+      "translated": "El servidor ha sido cerrado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've been banned from the server"
+      },
+      "translated": "Has sido expulsado del servidor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're connecting to a server"
+      },
+      "translated": "Te estás conectando a un servidor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've successfully connected to the server"
+      },
+      "translated": "Te has conectado correctamente al servidor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're connect attempt failed"
+      },
+      "translated": "Tu intento de conexión falló",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Set key"
+      },
+      "translated": "Establecer clave",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove key"
+      },
+      "translated": "Eliminar clave",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "query timeout"
+      },
+      "translated": "Tiempo vencido de consulta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to change key"
+      },
+      "translated": "Error al cambiar la clave",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Clear Key"
+      },
+      "translated": "Clave clara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Keymap"
+      },
+      "translated": "Mapa de teclas",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Deleting an unknown channel!"
+      },
+      "translated": "¡Eliminar un canal desconocido!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Deleting a non empty channel! This could cause some errors."
+      },
+      "translated": "¡Eliminar un canal no vacío! Esto podría causar algunos errores.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse all channels"
+      },
+      "translated": "Contraer todos los canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend all channels"
+      },
+      "translated": "Gastar todos los canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete all channels"
+      },
+      "translated": "Eliminar todos los canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Apply to all clients"
+      },
+      "translated": "Aplicar a todos los clientes",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Apply to all channels"
+      },
+      "translated": "Aplicar a todos los canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server actions"
+      },
+      "translated": "Acciones del servidor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Notificación de inicio de transferencia de archivo recibida para transferencia desconocida (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Notificación de inicio de transferencia de archivo recibida para transferencia desconocida (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Notificación de inicio de transferencia de archivo recibida para transferencia desconocida (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer progress notification for unknown transfer (%s)"
+      },
+      "translated": "Recibió notificación de progreso de transferencia de archivos para transferencia desconocida (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer status notification for unknown transfer (%s)"
+      },
+      "translated": "Recibió notificación de estado de transferencia de archivo para transferencia desconocida (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file list for not request path: %s (channel %s)"
+      },
+      "translated": "Lista de archivos recibidos para la ruta no solicitada:% s (canal% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file list finish for not request path: %s (channel %s)"
+      },
+      "translated": "Fin de la lista de archivos recibidos para la ruta no solicitada:% s (canal% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for unknown return code: %s"
+      },
+      "translated": "Información del archivo recibido para el código de retorno desconocido:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for already finished return code: %s"
+      },
+      "translated": "Información del archivo recibido para el código de retorno ya terminado:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for unknown return code: %s"
+      },
+      "translated": "Información del archivo recibido para el código de retorno desconocido:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing server file list response"
+      },
+      "translated": "Falta la respuesta de la lista de archivos del servidor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "response bulk miss match"
+      },
+      "translated": "respuesta masiva miss match",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "the server failed to full fill the request"
+      },
+      "translated": "el servidor no pudo completar la solicitud",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "request gone away while parsing response"
+      },
+      "translated": "solicitud desaparecida al analizar la respuesta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing info for bulk "
+      },
+      "translated": "Falta información para el volumen",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target"
+      },
+      "translated": "Error al crear el objetivo de transferencia",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "missing transfer start notify"
+      },
+      "translated": "falta de inicio de transferencia notificar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer source"
+      },
+      "translated": "Error al crear la fuente de transferencia",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "missing transfer start notify"
+      },
+      "translated": "falta de inicio de transferencia notificar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing transfer provider"
+      },
+      "translated": "Falta el proveedor de transferencia",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown transfer type"
+      },
+      "translated": "tipo de transferencia desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing file transfer in file transfer list!"
+      },
+      "translated": "Falta la transferencia de archivos en la lista de transferencia de archivos.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Timed out"
+      },
+      "translated": "Caducado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Resetting server/channel groups"
+      },
+      "translated": "Restablecer grupos de servidores / canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group manager reset"
+      },
+      "translated": "Restablecimiento de administrador de grupo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request the server group list: %o"
+      },
+      "translated": "Error al solicitar la lista de grupos de servidores:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request the channel group list: %o"
+      },
+      "translated": "Error al solicitar la lista de grupos de canales:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "pending"
+      },
+      "translated": "pendiente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "connecting"
+      },
+      "translated": "conectando",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload icon %s: %o"
+      },
+      "translated": "Error al cargar el icono% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "upload canceled"
+      },
+      "translated": "carga cancelada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File Browser"
+      },
+      "translated": "Explorador de archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to get version: %o"
+      },
+      "translated": "Error al obtener la versión:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load icon"
+      },
+      "translated": "Error al cargar el icono",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "general"
+      },
+      "translated": "general",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy code"
+      },
+      "translated": "Código de copia",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Show finished transfers"
+      },
+      "translated": "Mostrar transferencias terminadas",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "query error"
+      },
+      "translated": "error de consulta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No running transfers"
+      },
+      "translated": "No hay transferencias en ejecución",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file transfer failed: "
+      },
+      "translated": "la transferencia de archivos falló:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file transfer failed"
+      },
+      "translated": "la transferencia de archivos falló",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "less than a second"
+      },
+      "translated": "menos de un segundo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "pending"
+      },
+      "translated": "pendiente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid state!"
+      },
+      "translated": "¡Estado Inválido!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "awaiting info"
+      },
+      "translated": "esperando información",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query the file transfers:"
+      },
+      "translated": "Error al consultar las transferencias de archivos:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No transfers"
+      },
+      "translated": "Sin transferencias",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Request timed out"
+      },
+      "translated": "Tiempo de espera agotado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File transfers"
+      },
+      "translated": "Transferencias de archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Running file transfers"
+      },
+      "translated": "Ejecución de transferencias de archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove finished"
+      },
+      "translated": "Eliminar terminado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received an unknown drop media type (%o)"
+      },
+      "translated": "Recibió un tipo de medio de caída desconocido (% o)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to enter path"
+      },
+      "translated": "Error al ingresar ruta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to enter path"
+      },
+      "translated": "Error al ingresar ruta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File"
+      },
+      "translated": "Expediente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory icon"
+      },
+      "translated": "Icono de directorio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory"
+      },
+      "translated": "Directorio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Empty directory icon"
+      },
+      "translated": "Icono de directorio vacío",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Empty directory"
+      },
+      "translated": "Directorio vacío",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory password protected"
+      },
+      "translated": "Directorio protegido por contraseña",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Password protected directory"
+      },
+      "translated": "Directorio protegido por contraseña",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid directory state"
+      },
+      "translated": "Estado de directorio inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename file"
+      },
+      "translated": "Error al cambiar el nombre del archivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename file"
+      },
+      "translated": "Error al cambiar el nombre del archivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query directory:"
+      },
+      "translated": "Error al consultar el directorio:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query timed out."
+      },
+      "translated": "La consulta del directorio ha excedido el tiempo de espera.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Please try again."
+      },
+      "translated": "Inténtalo de nuevo.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query failed on permission"
+      },
+      "translated": "La consulta del directorio falló en el permiso",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query failed because it is password protected"
+      },
+      "translated": "La consulta del directorio falló porque está protegida por contraseña",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This folder is empty."
+      },
+      "translated": "Esta carpeta está vacía.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory"
+      },
+      "translated": "Directorio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File"
+      },
+      "translated": "Expediente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Last changed"
+      },
+      "translated": "Último cambio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received an unknown drop media type (%o)"
+      },
+      "translated": "Recibió un tipo de medio de caída desconocido (% o)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Last changed"
+      },
+      "translated": "Último cambio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown query error"
+      },
+      "translated": "error de consulta desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid query result state"
+      },
+      "translated": "estado de resultado de consulta no válido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete entry"
+      },
+      "translated": "Error al eliminar la entrada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory"
+      },
+      "translated": "Error al crear el directorio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory"
+      },
+      "translated": "Error al crear el directorio",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Having file download start notification for current path, but target file is unknown (%s%s)"
+      },
+      "translated": "Tener una notificación de inicio de descarga de archivo para la ruta actual, pero el archivo de destino es desconocido (% s% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"
+      },
+      "translated": "Invalidar avatar almacenado en caché para% s (Versión miss match. En caché: sin configurar, Actual:% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"
+      },
+      "translated": "Invalidar avatar almacenado en caché para% s (Versión miss match. En caché:% s, Actual:% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download canceled"
+      },
+      "translated": "descarga cancelada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown transfer finished state"
+      },
+      "translated": "transferencia desconocida estado terminado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Ignorando el avatar no encontrado ya que el avatar en sí se actualizó. Versión de salida:% s, versión actual:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No permissions to download the avatar"
+      },
+      "translated": "No hay permisos para descargar el avatar.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar download failed"
+      },
+      "translated": "Descarga de avatar fallida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar transfer has no response"
+      },
+      "translated": "La transferencia de avatar no tiene respuesta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar response missing media bytes"
+      },
+      "translated": "La respuesta del avatar no tiene bytes de medios",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Ignorando el avatar no encontrado ya que el avatar en sí se actualizó. Versión de salida:% s, versión actual:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing avatar response"
+      },
+      "translated": "Falta la respuesta del avatar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Ignorando el avatar no encontrado ya que el avatar en sí se actualizó. Versión de salida:% s, versión actual:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Ignorando el avatar no encontrado ya que el avatar en sí se actualizó. Versión de salida:% s, versión actual:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load avatar %s (hash: %s): %o"
+      },
+      "translated": "Error al cargar el avatar% s (hash:% s):% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete avatar %s: %o"
+      },
+      "translated": "Error al eliminar el avatar% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid handler"
+      },
+      "translated": "Manejador inválido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Would you like to open the popup?"
+      },
+      "translated": "¿Quieres abrir la ventana emergente?",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "version miss match"
+      },
+      "translated": "versión miss match",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "version miss match"
+      },
+      "translated": "versión miss match",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id (ID is NaN)"
+      },
+      "translated": "ID de canal no válido (ID es NaN)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel not visible anymore"
+      },
+      "translated": "Canal ya no visible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown path"
+      },
+      "translated": "Camino desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown parsed path type"
+      },
+      "translated": "Tipo de ruta analizada desconocida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query channel directory files: %o"
+      },
+      "translated": "Error al consultar los archivos del directorio de canales:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon/avatars could not be renamed"
+      },
+      "translated": "No se pudo cambiar el nombre del icono / avatares",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid source path"
+      },
+      "translated": "Ruta de origen no válida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target path isn't a channel"
+      },
+      "translated": "La ruta de destino no es un canal",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid target path"
+      },
+      "translated": "Ruta de destino no válida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "Falló el permiso",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Contraseña de canal inválida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename/move files: %o"
+      },
+      "translated": "Error al cambiar el nombre / mover archivos:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Refresh file list"
+      },
+      "translated": "Actualizar lista de archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Force delete file"
+      },
+      "translated": "Forzar eliminación de archivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete file"
+      },
+      "translated": "Borrar archivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Force delete files"
+      },
+      "translated": "Forzar la eliminación de archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete files"
+      },
+      "translated": "Borrar archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Refresh file list"
+      },
+      "translated": "Actualizar lista de archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create folder"
+      },
+      "translated": "Crear carpeta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "New folder"
+      },
+      "translated": "Nueva carpeta",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "files"
+      },
+      "translated": "archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "files"
+      },
+      "translated": "archivos",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Response contained invalid bulk length"
+      },
+      "translated": "La respuesta contenía longitud masiva no válida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "Falló el permiso",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Contraseña de canal inválida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory: %o"
+      },
+      "translated": "Error al crear el directorio:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse path for one or more entries "
+      },
+      "translated": "Error al analizar la ruta para una o más entradas",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directories could only created for channels"
+      },
+      "translated": "Los directorios solo se pueden crear para canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid path"
+      },
+      "translated": "Ruta no válida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "Falló el permiso",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Contraseña de canal inválida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory: %o"
+      },
+      "translated": "Error al crear el directorio:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target"
+      },
+      "translated": "Error al crear el objetivo de transferencia",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target.\nAll targets are unsupported"
+      },
+      "translated": "No se pudo crear el objetivo de transferencia.\nTodos los objetivos no son compatibles",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download file"
+      },
+      "translated": "Error al descargar el archivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse path for file download: %s"
+      },
+      "translated": "Error al analizar la ruta para la descarga del archivo:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload file(s)"
+      },
+      "translated": "Error al cargar archivo (s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload file"
+      },
+      "translated": "Error al cargar el archivo",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Aborting connect attempt due to a cancel request."
+      },
+      "translated": "Se canceló el intento de conexión debido a una solicitud de cancelación.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection attempt to %s:%d via %s got aborted."
+      },
+      "translated": "Intento de conexión a% s: se interrumpió% d a través de% s.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection attempt to %s:%d via %s failed:\n%o"
+      },
+      "translated": "Intento de conexión a% s:% d a través de% s falló:\n% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to connect to %s:%d. No connection attempt succeeded."
+      },
+      "translated": "Error al conectarse a% s:% d. Ningún intento de conexión tuvo éxito.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to disconnect with an already closed socket: %o"
+      },
+      "translated": "Error al desconectar con un socket ya cerrado:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server connection %s:%d has been terminated due to an unexpected error (%o)."
+      },
+      "translated": "Conexión del servidor% s:% d ha finalizado debido a un error inesperado (% o).",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server connection %s:%d has been terminated due to an unexpected error."
+      },
+      "translated": "Conexión del servidor% s:% d ha finalizado debido a un error inesperado.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to disconnect with an already closed socket: %o"
+      },
+      "translated": "Error al desconectar con un socket ya cerrado:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Successfully initialized a connection to %s:%d via %s within %d milliseconds."
+      },
+      "translated": "Inicializó con éxito una conexión a% s:% d a través de% s dentro de% d milisegundos.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to send data via a non connected server socket."
+      },
+      "translated": "Intenté enviar datos a través de un socket de servidor no conectado.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel resize observer fired resize event with no entries!"
+      },
+      "translated": "¡El evento de cambio de tamaño del observador de cambio de tamaño de canal se activó sin entradas!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel resize observer fired resize event with more than one entry which should not be possible (%d)!"
+      },
+      "translated": "Evento de cambio de tamaño del observador de cambio de tamaño de canal con más de una entrada que no debería ser posible (% d).",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Rebuilding the channel tree"
+      },
+      "translated": "Reconstruyendo el árbol del canal",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to scroll tree entry in view because its not registered within the view. Entry: %o"
+      },
+      "translated": "Error al desplazar la entrada del árbol a la vista porque no está registrada dentro de la vista. Entrada:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connecting..."
+      },
+      "translated": "Conectando ...",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Hostname resolved"
+      },
+      "translated": "Nombre de host resuelto",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection to server denied"
+      },
+      "translated": "Conexión al servidor denegada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server has been closed"
+      },
+      "translated": "El servidor ha sido cerrado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server requires a password to connect."
+      },
+      "translated": "El servidor requiere una contraseña para conectarse.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "for"
+      },
+      "translated": "para",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've peen poked by"
+      },
+      "translated": "Has peneado por",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notification permission request resulted in %s"
+      },
+      "translated": "La solicitud de permiso de notificación resultó en% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to execute notification permission request: %O"
+      },
+      "translated": "Error al ejecutar la solicitud de permiso de notificación:% O",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse all channels"
+      },
+      "translated": "Contraer todos los canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend all channels"
+      },
+      "translated": "Gastar todos los canales",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "target client is offline/invisible"
+      },
+      "translated": "el cliente objetivo está fuera de línea / invisible",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to register private conversation chat event for %s: %o"
+      },
+      "translated": "Error al registrar el evento de conversación de chat privado para% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to close a not existing private conversation with id %s"
+      },
+      "translated": "Intenté cerrar una conversación privada no existente con el id% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to send chat composing to server for chat %d: %o"
+      },
+      "translated": "Error al enviar la composición de chat al servidor para chat% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to send channel chat message to %s: %o"
+      },
+      "translated": "Error al enviar el mensaje de chat del canal a% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "chat is private"
+      },
+      "translated": "el chat es privado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown permission"
+      },
+      "translated": "permiso desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown conversation"
+      },
+      "translated": "Conversación desconocida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown conversation"
+      },
+      "translated": "Conversación desconocida",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to query history for an unknown conversation with id %s"
+      },
+      "translated": "Intenté consultar el historial de una conversación desconocida con el id% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to send a chat message to an unknown conversation with id %s"
+      },
+      "translated": "Intenté enviar un mensaje de chat a una conversación desconocida con el id% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to jump to present for an unknown conversation with id %s"
+      },
+      "translated": "Intenté saltar al presente para una conversación desconocida con el id% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "Desconocido",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "buscar la consola",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Conversation history query task threw an error; this should never happen: %o"
+      },
+      "translated": "La tarea de consulta del historial de conversaciones arrojó un error; esto nunca debería suceder:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to delete an unknown message (id: %s)"
+      },
+      "translated": "Intenté eliminar un mensaje desconocido (id:% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete conversation message for conversation %d: %o"
+      },
+      "translated": "Error al eliminar el mensaje de conversación para la conversación% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query conversation indexes: %o"
+      },
+      "translated": "Error al consultar los índices de conversación:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received conversation history for an unknown conversation: %o"
+      },
+      "translated": "Historial de conversación recibido para una conversación desconocida:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to delete a chat message from an unknown conversation with id %s"
+      },
+      "translated": "Intenté eliminar un mensaje de chat de una conversación desconocida con la identificación% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "permanently"
+      },
+      "translated": "permanentemente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Reconnect canceled."
+      },
+      "translated": "Reconexión cancelada.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server requires a password to connect."
+      },
+      "translated": "El servidor requiere una contraseña para conectarse.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server has been closed."
+      },
+      "translated": "El servidor ha sido cerrado.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Not connected to any server"
+      },
+      "translated": "No conectado a ningún servidor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connecting to "
+      },
+      "translated": "Conectado a",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Client icon"
+      },
+      "translated": "Icono del cliente",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't support the channel codec"
+      },
+      "translated": "No es compatible con el códec de canal",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unexpected close with code "
+      },
+      "translated": "Cierre inesperado con código",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to close the web socket to %s: %o"
+      },
+      "translated": "Error al cerrar el socket web a% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Typing"
+      },
+      "translated": "Mecanografía",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No messages"
+      },
+      "translated": "Ningún mensaje",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add remote cached ice candidate finish: %o"
+      },
+      "translated": "No se pudo agregar el acabado candidato de hielo en caché remoto:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add remote cached ice candidate %o: %o"
+      },
+      "translated": "Error al agregar el candidato de hielo en caché remoto% o:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown web client control packet: %s"
+      },
+      "translated": "Paquete de control de cliente web desconocido recibido:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Gathered local ice candidate for stream %d: %s"
+      },
+      "translated": "Candidato de hielo local reunido para la secuencia% d:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Local ICE candidate gathering finish."
+      },
+      "translated": "Final de la reunión de candidatos locales de ICE.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database ready callback throw an unexpected exception: %o"
+      },
+      "translated": "La devolución de llamada lista para la base de datos genera una excepción inesperada:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Importing old chats saved via cache storage. This may take some moments."
+      },
+      "translated": "Importar chats antiguos guardados a través del almacenamiento en caché. Esto puede tomar algunos momentos.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Skipping importing chat %s because URL does not match."
+      },
+      "translated": "Omitiendo la importación del chat% s porque la URL no coincide.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "array expected"
+      },
+      "translated": "matriz esperada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Skipping importing chat %s because of an error: %o"
+      },
+      "translated": "Omitiendo la importación del chat% s debido a un error:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Found %d old chats. Importing."
+      },
+      "translated": "Se encontraron% d chats antiguos. Importador.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "All old chats have been imported. Deleting old data."
+      },
+      "translated": "Todos los viejos chats han sido importados. Eliminar datos antiguos.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to import old chats from cache storage: %o"
+      },
+      "translated": "Error al importar chats antiguos del almacenamiento en caché:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database update callback throw an unexpected exception: %o"
+      },
+      "translated": "La devolución de llamada de actualización de la base de datos arroja una excepción inesperada:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to open/upgrade the private chat database.\nPlease close all other instances of the TeaWeb client."
+      },
+      "translated": "Error al abrir / actualizar la base de datos de chat privado.\nCierre todas las demás instancias del cliente TeaWeb.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Opened private conversations database, with an update, but update didn't happened. Trying again."
+      },
+      "translated": "Se abrió una base de datos de conversaciones privadas, con una actualización, pero la actualización no ocurrió. Intentando otra vez.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received external database version change. Closing database."
+      },
+      "translated": "Se recibió un cambio de versión de la base de datos externa. Cierre de base de datos.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing Indexed DB support"
+      },
+      "translated": "Falta el soporte de base de datos indexada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing Indexed DB support"
+      },
+      "translated": "Falta el soporte de base de datos indexada",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Successfully initialized private conversation history database"
+      },
+      "translated": "Base de datos de historial de conversación privada inicializada con éxito",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize private conversation history database: %o"
+      },
+      "translated": "Error al inicializar la base de datos del historial de conversación privada:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Do not saving the private conversation chat."
+      },
+      "translated": "No guarde el chat de conversación privada.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown notify from worker."
+      },
+      "translated": "Recibió una notificación desconocida del trabajador.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received worker execute error for unknown token (%s)"
+      },
+      "translated": "Error de ejecución del trabajador recibido para token desconocido (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received command %s from voice worker. This should never happen!"
+      },
+      "translated": "Recibió el comando% s del trabajador de voz. ¡Esto nunca debería suceder!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown message of type %s from voice worker. This should never happen!"
+      },
+      "translated": "Recibió un mensaje desconocido del tipo% s del trabajador de voz. ¡Esto nunca debería suceder!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "worker terminated with an error"
+      },
+      "translated": "trabajador terminado con un error",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "command timed out"
+      },
+      "translated": "comando agotado",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Duplicate"
+      },
+      "translated": "Duplicar",
+      "flags": [
+        "google-translated"
+      ]
     }
   ]
 }

@@ -21608,6 +21608,4470 @@
       "flags": [
         "google-translated"
       ]
+    },
+    {
+      "key": {
+        "message": "Paste"
+      },
+      "translated": "Вставить",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "transfer source is undefined"
+      },
+      "translated": "источник передачи не определен",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid source type"
+      },
+      "translated": "неверный тип источника",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload object via HTTPS connection: %o"
+      },
+      "translated": "Не удалось загрузить объект через соединение HTTPS:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize transfer source: %o"
+      },
+      "translated": "Не удалось инициализировать источник передачи:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "transfer target is undefined"
+      },
+      "translated": "цель передачи не определена",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer target type"
+      },
+      "translated": "неверный тип цели передачи",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download file to response object: %o"
+      },
+      "translated": "Не удалось загрузить файл в объект ответа:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize transfer target: %o"
+      },
+      "translated": "Не удалось инициализировать цель передачи:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to transfer data throw a HTTPS request: %o"
+      },
+      "translated": "Не удалось передать данные сгенерировать HTTPS-запрос:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "handler query timeout"
+      },
+      "translated": "тайм-аут запроса обработчика",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse old key control data."
+      },
+      "translated": "Не удалось проанализировать старые данные управления ключами.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "неверное состояние передачи",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "неверное состояние передачи",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "неверное состояние передачи",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "response target isn't supported"
+      },
+      "translated": "Цель ответа не поддерживается",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download target isn't supported"
+      },
+      "translated": "цель загрузки не поддерживается",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file target isn't supported"
+      },
+      "translated": "цель файла не поддерживается",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "buffer source isn't supported"
+      },
+      "translated": "источник буфера не поддерживается",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "text source isn't supported"
+      },
+      "translated": "источник текста не поддерживается",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "browser file source isn't supported"
+      },
+      "translated": "источник файла браузера не поддерживается",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No variable matched your filter"
+      },
+      "translated": "Ни одна переменная не соответствует вашему фильтру",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter variables"
+      },
+      "translated": "Переменные фильтра",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "CSS Variable list"
+      },
+      "translated": "Список переменных CSS",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Default Value"
+      },
+      "translated": "Значение по умолчанию",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Override Value"
+      },
+      "translated": "Значение переопределения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Randomize"
+      },
+      "translated": "Randomize",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Export"
+      },
+      "translated": "экспорт",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Variable details"
+      },
+      "translated": "Переменные детали",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config exported successfully"
+      },
+      "translated": "Конфиг успешно экспортирован",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config has been exported successfully."
+      },
+      "translated": "Конфиг был успешно экспортирован.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config imported successfully"
+      },
+      "translated": "Конфиг успешно импортирован",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config has been imported successfully."
+      },
+      "translated": "Конфиг был успешно импортирован.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config imported failed"
+      },
+      "translated": "Ошибка импорта конфигурации",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config import has been failed."
+      },
+      "translated": "Импорт конфигурации не удался.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "[%s] Trigger event: %s"
+      },
+      "translated": "[% s] Триггерное событие:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The keyword 'type' is reserved for the event type and should not be passed as argument"
+      },
+      "translated": "Ключевое слово «type» зарезервировано для типа события и не должно передаваться в качестве аргумента.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Event handler (%s) triggered event %s which has no consumers."
+      },
+      "translated": "Обработчик события (% s) вызвал событие% s, у которого нет потребителей.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No events found in event handler which has been registered."
+      },
+      "translated": "В обработчике событий, который был зарегистрирован, событий не найдено.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load window"
+      },
+      "translated": "Не удалось загрузить окно",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load the bookmark window.\nSee the console for more details."
+      },
+      "translated": "Не удалось загрузить окно закладок.\nСмотрите консоль для более подробной информации.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received open window event for an unknown window: %s"
+      },
+      "translated": "Получено событие открытия окна для неизвестного окна:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Modify CSS variables"
+      },
+      "translated": "Изменить CSS-переменные",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Enter Privilege Key"
+      },
+      "translated": "Введите ключ привилегий",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received conversation message from our self. This should be impossible."
+      },
+      "translated": "Получил разговорное сообщение от себя. Это должно быть невозможно.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection manager has already been initialized"
+      },
+      "translated": "Диспетчер соединений уже инициализирован",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "modal has been destroyed"
+      },
+      "translated": "модал был уничтожен",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "modal has been destroyed"
+      },
+      "translated": "модал был уничтожен",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Modal - Icon"
+      },
+      "translated": "Модал - Иконка",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading older messages"
+      },
+      "translated": "загрузка старых сообщений",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "please wait"
+      },
+      "translated": "Пожалуйста, подождите",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 секунда",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "History query failed"
+      },
+      "translated": "Запрос истории не удался",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Try again in"
+      },
+      "translated": "Попробуйте еще раз в",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 секунда",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Jump to present"
+      },
+      "translated": "Перейти к подарку",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You joined at"
+      },
+      "translated": "Вы присоединились к",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You left at"
+      },
+      "translated": "Вы оставили в",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "failed to query history"
+      },
+      "translated": "не удалось запросить историю",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "message send failed due to permission"
+      },
+      "translated": "отправка сообщения не удалась из-за разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "failed to send message:"
+      },
+      "translated": "не удалось отправить сообщение:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're&nbsp;now&nbsp;chatting&nbsp;with"
+      },
+      "translated": "Вы & NBSP; & NBSP в настоящее время, в чате и NBSP; с",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Chat reconnected"
+      },
+      "translated": "Чат переподключен",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Partner is typing"
+      },
+      "translated": "Партнер печатает",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "An unknown error happened."
+      },
+      "translated": "Произошла неизвестная ошибка.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No conversation selected"
+      },
+      "translated": "Беседа не выбрана",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This conversation is private."
+      },
+      "translated": "Этот разговор частный.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Join the channel to participate."
+      },
+      "translated": "Присоединяйтесь к каналу для участия.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The target server does not support cross channel chat."
+      },
+      "translated": "Целевой сервер не поддерживает многоканальный чат.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Join the channel if you want to write."
+      },
+      "translated": "Присоединяйтесь к каналу, если вы хотите написать.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "There have been no messages yet."
+      },
+      "translated": "Там еще не было сообщений.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Be the first who talks in here!"
+      },
+      "translated": "Будь первым кто здесь заговорит!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown error/Invalid state"
+      },
+      "translated": "Неизвестная ошибка / Неверное состояние",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon set image method threw an unexpected error: %o"
+      },
+      "translated": "Метод установки изображения значка выдал неожиданную ошибку:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon load method threw an unexpected error: %o"
+      },
+      "translated": "Метод загрузки значков выдал неожиданную ошибку:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download icon %d: %o"
+      },
+      "translated": "Не удалось загрузить значок% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load icon"
+      },
+      "translated": "Не удалось загрузить значок",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to update icon image for icon %d: %o"
+      },
+      "translated": "Не удалось обновить изображение значка для значка% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to update icon from downloaded file"
+      },
+      "translated": "Не удалось обновить значок из загруженного файла",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid status"
+      },
+      "translated": "Неверный статус",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Don't retry icon download from server. We'll try again in %s"
+      },
+      "translated": "Не повторяйте загрузку значка с сервера. Мы попробуем еще раз в% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "never"
+      },
+      "translated": "никогда",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 секунда",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download canceled"
+      },
+      "translated": "загрузка отменена",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown transfer finished state"
+      },
+      "translated": "Неизвестный перевод завершен",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon could not be found"
+      },
+      "translated": "Значок не найден",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No permissions to download icon"
+      },
+      "translated": "Нет разрешений для загрузки значка",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize icon download"
+      },
+      "translated": "Не удалось инициализировать загрузку значка",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Transfer has no response"
+      },
+      "translated": "Передача не имеет ответа",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server permissions"
+      },
+      "translated": "Серверные разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group has been renamed."
+      },
+      "translated": "Группа была переименована.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Do you really want to delete this group?"
+      },
+      "translated": "Вы действительно хотите удалить эту группу?",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "недостаточные разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename group: %o"
+      },
+      "translated": "Не удалось переименовать группу:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete group: %o"
+      },
+      "translated": "Не удалось удалить группу:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request server group client list: %o"
+      },
+      "translated": "Не удалось запросить список клиентов группы серверов:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add client %s to server group %d: %o"
+      },
+      "translated": "Не удалось добавить клиента% s в группу серверов% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete client %d from server group %d: %o"
+      },
+      "translated": "Не удалось удалить клиент% d из группы серверов% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "unknwon",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query client info for %o: %o"
+      },
+      "translated": "Не удалось запросить информацию о клиенте для% o:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Неверный предмет",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Неверная группа серверов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Неверная группа серверов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Неверный идентификатор канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Неверный идентификатор базы данных клиента",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Неверный идентификатор базы данных клиента",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Неверный идентификатор канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "unknwon",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query permissions: %o"
+      },
+      "translated": "Не удалось запросить разрешения:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Неверный предмет",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Неверная группа серверов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Неверный идентификатор канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Неверный идентификатор базы данных клиента",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Неверный идентификатор базы данных клиента",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Неверный идентификатор канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to set permissions: %o"
+      },
+      "translated": "Не удалось установить разрешения:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Неверный предмет",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Неверная группа серверов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Неверный идентификатор канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Неверный идентификатор базы данных клиента",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Неверный идентификатор базы данных клиента",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Неверный идентификатор канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to remove permissions: %o"
+      },
+      "translated": "Не удалось удалить разрешения:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to find bookmark profile %s. Displaying default one."
+      },
+      "translated": "Не удалось найти профиль закладки% s. Отображение по умолчанию.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Enter the bookmark name for the duplicate"
+      },
+      "translated": "Введите название закладки для дубликата",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unregistered unknown client from channel %s"
+      },
+      "translated": "Незарегистрированный неизвестный клиент из канала% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Open channel file browser"
+      },
+      "translated": "Открыть канал файловый браузер",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse sub channels"
+      },
+      "translated": "Свернуть подканалы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend sub channels"
+      },
+      "translated": "Расход подканалов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to successfully disconnect from server: {}"
+      },
+      "translated": "Не удалось успешно отключиться от сервера: {}",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload clients avatar: %o"
+      },
+      "translated": "Не удалось загрузить аватар клиента:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Your avatar upload has been canceled."
+      },
+      "translated": "Загрузка вашего аватара была отменена.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar upload finished with an unknown finished state."
+      },
+      "translated": "Загрузка аватара завершена с неизвестным завершенным состоянием.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Renewing TeaForo data."
+      },
+      "translated": "Обновление данных TeaForo.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Set away on all servers"
+      },
+      "translated": "Установить на всех серверах",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unmute headphones"
+      },
+      "translated": "Включить наушники",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Mute headphones"
+      },
+      "translated": "Наушники без звука",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "default avatar"
+      },
+      "translated": "аватар по умолчанию",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "default avatar"
+      },
+      "translated": "аватар по умолчанию",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "user avatar"
+      },
+      "translated": "аватар пользователя",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "user avatar"
+      },
+      "translated": "аватар пользователя",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "avatar failed to load:\n"
+      },
+      "translated": "Не удалось загрузить аватар:\n",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading avatar"
+      },
+      "translated": "загрузка аватара",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You can not write here."
+      },
+      "translated": "Вы не можете писать здесь.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "and more"
+      },
+      "translated": "и больше",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 hour"
+      },
+      "translated": "1 час",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 minute"
+      },
+      "translated": "1 минута",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 секунда",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter permissions"
+      },
+      "translated": "Разрешения фильтра",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add permissions to this group"
+      },
+      "translated": "Добавить разрешения для этой группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove permissions from this group"
+      },
+      "translated": "Удалить разрешения из этой группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add granted permissions to this group"
+      },
+      "translated": "Добавить предоставленные разрешения для этой группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove granted permissions from this group"
+      },
+      "translated": "Удалить предоставленные разрешения из этой группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "An error happened"
+      },
+      "translated": "Произошла ошибка",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Permission editor resize observer fired resize event with no entries!"
+      },
+      "translated": "Редактор разрешений изменяет размер события, запущенного наблюдателем, без записей!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Permission editor resize observer fired resize event with more than one entry which should not be possible (%d)!"
+      },
+      "translated": "Редактор разрешений изменяет размер события, инициированного наблюдателем, с более чем одной записью, что не должно быть возможным (% d)!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Handling height update and change permission view height to %d from %d"
+      },
+      "translated": "Обновление высоты обработки и изменение высоты разрешения разрешения на% d с% d",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received group toogle for unknwon group: %s"
+      },
+      "translated": "Получено разрешение группы для неизвестной группы:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't have the permissions to view this permissions"
+      },
+      "translated": "У вас нет прав для просмотра этих разрешений",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add group"
+      },
+      "translated": "Добавить группу",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy permissions"
+      },
+      "translated": "Копировать разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add group"
+      },
+      "translated": "Добавить группу",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add server group"
+      },
+      "translated": "Добавить группу серверов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add channel group"
+      },
+      "translated": "Добавить группу каналов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy server group permissions"
+      },
+      "translated": "Копировать разрешения группы серверов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy channel group permissions"
+      },
+      "translated": "Копировать разрешения группы каналов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This group contains no clients."
+      },
+      "translated": "Эта группа не содержит клиентов.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This group is a temporary group."
+      },
+      "translated": "Эта группа является временной группой.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't have permissions to view the clients in this group"
+      },
+      "translated": "У вас нет прав для просмотра клиентов в этой группе",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query clients:"
+      },
+      "translated": "Не удалось запросить клиентов:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No group selected"
+      },
+      "translated": "Группа не выбрана",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "no client found"
+      },
+      "translated": "клиент не найден",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database or Unique ID"
+      },
+      "translated": "База данных или уникальный идентификатор",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid UUID length"
+      },
+      "translated": "Неверная длина UUID",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid UUID"
+      },
+      "translated": "Неверный UUID",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unique identifier"
+      },
+      "translated": "Уникальный идентификатор",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Client database ID"
+      },
+      "translated": "Идентификатор клиентской базы данных",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Select a group"
+      },
+      "translated": "Выберите группу",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query groups"
+      },
+      "translated": "Группы запросов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Template groups"
+      },
+      "translated": "Шаблонные группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Regular Groups"
+      },
+      "translated": "Регулярные группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy group permissions"
+      },
+      "translated": "Копировать разрешения группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Source group"
+      },
+      "translated": "Исходная группа",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target group"
+      },
+      "translated": "Целевая группа",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy group permissions"
+      },
+      "translated": "Копировать разрешения группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "недостаточные разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group permissions have been copied"
+      },
+      "translated": "Групповые разрешения были скопированы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group permissions have been successfully copied."
+      },
+      "translated": "Права доступа группы были успешно скопированы.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions"
+      },
+      "translated": "Не удалось скопировать групповые разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "unknwon",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions: %o"
+      },
+      "translated": "Не удалось скопировать разрешения группы:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions"
+      },
+      "translated": "Не удалось скопировать групповые разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid group name length"
+      },
+      "translated": "Неверная длина имени группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A group with this name already exists"
+      },
+      "translated": "Группа с таким названием уже существует",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading data..."
+      },
+      "translated": "Загрузка данных...",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target group type"
+      },
+      "translated": "Тип целевой группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query group"
+      },
+      "translated": "Группа запросов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create group using this template"
+      },
+      "translated": "Создать группу, используя этот шаблон",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No template"
+      },
+      "translated": "Нет шаблона",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query groups"
+      },
+      "translated": "Группы запросов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Template groups"
+      },
+      "translated": "Шаблонные группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Regular Groups"
+      },
+      "translated": "Регулярные группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create Group"
+      },
+      "translated": "Создать группу",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create a new server group"
+      },
+      "translated": "Создать новую группу серверов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create a new channel group"
+      },
+      "translated": "Создать новую группу каналов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "недостаточные разрешения",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group has been created"
+      },
+      "translated": "Группа была создана",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group has been successfully created."
+      },
+      "translated": "Группа была успешно создана.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "unknwon",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create group: %o"
+      },
+      "translated": "Не удалось создать группу:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Event"
+      },
+      "translated": "Мероприятие",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Focus"
+      },
+      "translated": "фокус",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Draw focus to the window when the event occurs"
+      },
+      "translated": "Нарисуйте фокус на окне, когда происходит событие",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notify"
+      },
+      "translated": "Поставить в известность",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Sending out a system notification"
+      },
+      "translated": "Отправка системного уведомления",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Log"
+      },
+      "translated": "Журнал",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Log the event within the client server log"
+      },
+      "translated": "Записать событие в журнал клиент-сервер",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No events matching your filter"
+      },
+      "translated": "Нет событий, соответствующих вашему фильтру",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter Events"
+      },
+      "translated": "Фильтр событий",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notifications"
+      },
+      "translated": "Уведомления",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You received a poke"
+      },
+      "translated": "Вы получили тыкать",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You send a poke"
+      },
+      "translated": "Вы отправляете тыкать",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You received a private message"
+      },
+      "translated": "Вы получили личное сообщение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You send a private message"
+      },
+      "translated": "Вы отправляете личное сообщение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client enters your view"
+      },
+      "translated": "Клиент входит в ваш взгляд",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client enters your view and your channel"
+      },
+      "translated": "Клиент вводит ваш взгляд и ваш канал",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client switches/gets moved/kicked"
+      },
+      "translated": "Клиент переключается / получает перемещен / выгнан",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client switches/gets moved/kicked in to/out of your channel"
+      },
+      "translated": "Клиент переключается / перемещается / выгнан в / из вашего канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've been moved or kicked"
+      },
+      "translated": "Вы были перемещены или выгнаны",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client leaves/disconnects of your view"
+      },
+      "translated": "Клиент оставляет / отключает ваш взгляд",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client leaves/disconnects of your channel"
+      },
+      "translated": "Клиент покидает / отключает ваш канал",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A server message has been send"
+      },
+      "translated": "Сообщение сервера было отправлено",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The server has been closed"
+      },
+      "translated": "Сервер был закрыт",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've been banned from the server"
+      },
+      "translated": "Вы были забанены с сервера",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're connecting to a server"
+      },
+      "translated": "Вы подключаетесь к серверу",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've successfully connected to the server"
+      },
+      "translated": "Вы успешно подключились к серверу",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're connect attempt failed"
+      },
+      "translated": "Не удалось подключиться",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Set key"
+      },
+      "translated": "Установить ключ",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove key"
+      },
+      "translated": "Удалить ключ",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "query timeout"
+      },
+      "translated": "тайм-аут запроса",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to change key"
+      },
+      "translated": "Не удалось изменить ключ",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Clear Key"
+      },
+      "translated": "Очистить ключ",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Keymap"
+      },
+      "translated": "Раскладка",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Deleting an unknown channel!"
+      },
+      "translated": "Удаление неизвестного канала!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Deleting a non empty channel! This could cause some errors."
+      },
+      "translated": "Удаление не пустого канала! Это может вызвать некоторые ошибки.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse all channels"
+      },
+      "translated": "Свернуть все каналы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend all channels"
+      },
+      "translated": "Расходовать все каналы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete all channels"
+      },
+      "translated": "Удалить все каналы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Apply to all clients"
+      },
+      "translated": "Применить ко всем клиентам",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Apply to all channels"
+      },
+      "translated": "Применить ко всем каналам",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server actions"
+      },
+      "translated": "Действия сервера",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Получено уведомление о начале передачи файла для неизвестной передачи (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Получено уведомление о начале передачи файла для неизвестной передачи (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Получено уведомление о начале передачи файла для неизвестной передачи (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer progress notification for unknown transfer (%s)"
+      },
+      "translated": "Получено уведомление о ходе передачи файла для неизвестной передачи (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer status notification for unknown transfer (%s)"
+      },
+      "translated": "Получено уведомление о состоянии передачи файла для неизвестной передачи (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file list for not request path: %s (channel %s)"
+      },
+      "translated": "Список полученных файлов для пути без запроса:% s (канал% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file list finish for not request path: %s (channel %s)"
+      },
+      "translated": "Завершено получение списка файлов для незапрошенного пути:% s (канал% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for unknown return code: %s"
+      },
+      "translated": "Информация о полученном файле для неизвестного кода возврата:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for already finished return code: %s"
+      },
+      "translated": "Информация о полученном файле для уже завершенного кода возврата:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for unknown return code: %s"
+      },
+      "translated": "Информация о полученном файле для неизвестного кода возврата:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing server file list response"
+      },
+      "translated": "Отсутствует ответ списка файлов сервера",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "response bulk miss match"
+      },
+      "translated": "ответная массовая мисс матч",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "the server failed to full fill the request"
+      },
+      "translated": "серверу не удалось полностью заполнить запрос",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "request gone away while parsing response"
+      },
+      "translated": "запрос пропал при анализе ответа",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing info for bulk "
+      },
+      "translated": "Отсутствует информация для массовых",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target"
+      },
+      "translated": "Не удалось создать цель переноса",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "missing transfer start notify"
+      },
+      "translated": "Уведомление о начале передачи",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer source"
+      },
+      "translated": "Не удалось создать источник передачи",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "missing transfer start notify"
+      },
+      "translated": "Уведомление о начале передачи",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Найти консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing transfer provider"
+      },
+      "translated": "Отсутствует переводчик",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown transfer type"
+      },
+      "translated": "неизвестный тип перевода",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing file transfer in file transfer list!"
+      },
+      "translated": "Отсутствует передача файлов в списке передачи файлов!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Timed out"
+      },
+      "translated": "Время вышло",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Resetting server/channel groups"
+      },
+      "translated": "Сброс групп серверов / каналов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group manager reset"
+      },
+      "translated": "Сброс менеджера группы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request the server group list: %o"
+      },
+      "translated": "Не удалось запросить список групп серверов:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request the channel group list: %o"
+      },
+      "translated": "Не удалось запросить список групп каналов:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "pending"
+      },
+      "translated": "в ожидании",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "connecting"
+      },
+      "translated": "соединительный",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload icon %s: %o"
+      },
+      "translated": "Не удалось загрузить значок% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "upload canceled"
+      },
+      "translated": "загрузка отменена",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File Browser"
+      },
+      "translated": "Браузер файлов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to get version: %o"
+      },
+      "translated": "Не удалось получить версию:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load icon"
+      },
+      "translated": "Не удалось загрузить значок",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "general"
+      },
+      "translated": "Общее",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy code"
+      },
+      "translated": "Скопировать код",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Show finished transfers"
+      },
+      "translated": "Показать законченные переводы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "query error"
+      },
+      "translated": "ошибка запроса",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No running transfers"
+      },
+      "translated": "Нет текущих переводов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file transfer failed: "
+      },
+      "translated": "передача файла не удалась:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file transfer failed"
+      },
+      "translated": "передача файла не удалась",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "less than a second"
+      },
+      "translated": "меньше секунды",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "pending"
+      },
+      "translated": "в ожидании",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid state!"
+      },
+      "translated": "недопустимое состояние!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "awaiting info"
+      },
+      "translated": "в ожидании информации",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query the file transfers:"
+      },
+      "translated": "Не удалось запросить передачу файлов:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No transfers"
+      },
+      "translated": "Нет переводов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Request timed out"
+      },
+      "translated": "Истекло время запроса",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File transfers"
+      },
+      "translated": "Передача файлов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Running file transfers"
+      },
+      "translated": "Запуск передачи файлов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove finished"
+      },
+      "translated": "Удалить готово",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received an unknown drop media type (%o)"
+      },
+      "translated": "Получен неизвестный тип носителя для отбрасывания (% o)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to enter path"
+      },
+      "translated": "Не удалось ввести путь",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to enter path"
+      },
+      "translated": "Не удалось ввести путь",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File"
+      },
+      "translated": "файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory icon"
+      },
+      "translated": "Значок каталога",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory"
+      },
+      "translated": "каталог",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Empty directory icon"
+      },
+      "translated": "Значок пустой директории",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Empty directory"
+      },
+      "translated": "Пустой каталог",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory password protected"
+      },
+      "translated": "Пароль защищен паролем",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Password protected directory"
+      },
+      "translated": "Защищенный паролем каталог",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid directory state"
+      },
+      "translated": "Неверное состояние каталога",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename file"
+      },
+      "translated": "Не удалось переименовать файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename file"
+      },
+      "translated": "Не удалось переименовать файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query directory:"
+      },
+      "translated": "Не удалось запросить каталог:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query timed out."
+      },
+      "translated": "Тайм-аут запроса каталога.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Please try again."
+      },
+      "translated": "Пожалуйста, попробуйте еще раз.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query failed on permission"
+      },
+      "translated": "Запрос каталога не выполнен при разрешении",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query failed because it is password protected"
+      },
+      "translated": "Запрос к каталогу не выполнен, потому что он защищен паролем",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This folder is empty."
+      },
+      "translated": "Эта папка пуста.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory"
+      },
+      "translated": "каталог",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File"
+      },
+      "translated": "файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Last changed"
+      },
+      "translated": "Последнее изменение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received an unknown drop media type (%o)"
+      },
+      "translated": "Получен неизвестный тип носителя для отбрасывания (% o)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Last changed"
+      },
+      "translated": "Последнее изменение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown query error"
+      },
+      "translated": "неизвестная ошибка запроса",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid query result state"
+      },
+      "translated": "неверное состояние результата запроса",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete entry"
+      },
+      "translated": "Не удалось удалить запись",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory"
+      },
+      "translated": "Не удалось создать каталог",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory"
+      },
+      "translated": "Не удалось создать каталог",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Having file download start notification for current path, but target file is unknown (%s%s)"
+      },
+      "translated": "Наличие уведомления о начале загрузки файла для текущего пути, но целевой файл неизвестен (% s% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"
+      },
+      "translated": "Признание недействительным кэшированного аватара для% s (совпадение пропущенной версии. Cached: unset, Current:% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"
+      },
+      "translated": "Аннулирование кэшированного аватара для% s (Соответствие версии отсутствует. Кэшировано:% s, Текущий:% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download canceled"
+      },
+      "translated": "загрузка отменена",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown transfer finished state"
+      },
+      "translated": "неизвестный перевод завершен",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Игнорируемый аватар не найден, так как сам аватар был обновлен. Выходная версия:% s, текущая версия:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No permissions to download the avatar"
+      },
+      "translated": "Нет прав на скачивание аватара",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar download failed"
+      },
+      "translated": "Ошибка загрузки аватара",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar transfer has no response"
+      },
+      "translated": "Аватар перевод не имеет ответа",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar response missing media bytes"
+      },
+      "translated": "В ответе аватара отсутствуют медиа-байты",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Игнорируемый аватар не найден, так как сам аватар был обновлен. Выходная версия:% s, текущая версия:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing avatar response"
+      },
+      "translated": "Отсутствует ответ аватара",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Игнорируемый аватар не найден, так как сам аватар был обновлен. Выходная версия:% s, текущая версия:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Игнорируемый аватар не найден, так как сам аватар был обновлен. Выходная версия:% s, текущая версия:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load avatar %s (hash: %s): %o"
+      },
+      "translated": "Не удалось загрузить аватар% s (хэш:% s):% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete avatar %s: %o"
+      },
+      "translated": "Не удалось удалить аватар% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid handler"
+      },
+      "translated": "Неверный обработчик",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Would you like to open the popup?"
+      },
+      "translated": "Хотите открыть всплывающее окно?",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "version miss match"
+      },
+      "translated": "версия мисс матч",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "version miss match"
+      },
+      "translated": "версия мисс матч",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id (ID is NaN)"
+      },
+      "translated": "Неверный идентификатор канала (идентификатор NaN)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel not visible anymore"
+      },
+      "translated": "Канал больше не виден",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown path"
+      },
+      "translated": "Неизвестный путь",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown parsed path type"
+      },
+      "translated": "Неизвестный проанализированный тип пути",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query channel directory files: %o"
+      },
+      "translated": "Не удалось запросить файлы каталогов каналов:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon/avatars could not be renamed"
+      },
+      "translated": "Иконка / аватары не могут быть переименованы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid source path"
+      },
+      "translated": "Неверный исходный путь",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target path isn't a channel"
+      },
+      "translated": "Целевой путь не является каналом",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid target path"
+      },
+      "translated": "Неверный целевой путь",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "Не удалось на разрешение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Неверный пароль канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename/move files: %o"
+      },
+      "translated": "Не удалось переименовать / переместить файлы:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Refresh file list"
+      },
+      "translated": "Обновить список файлов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Force delete file"
+      },
+      "translated": "Принудительно удалить файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete file"
+      },
+      "translated": "Удалить файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Force delete files"
+      },
+      "translated": "Принудительно удалять файлы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete files"
+      },
+      "translated": "Удалить файлы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Refresh file list"
+      },
+      "translated": "Обновить список файлов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create folder"
+      },
+      "translated": "Создать папку",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "New folder"
+      },
+      "translated": "Новая папка",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "files"
+      },
+      "translated": "файлы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "files"
+      },
+      "translated": "файлы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Response contained invalid bulk length"
+      },
+      "translated": "В ответе указана неверная длина",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "Не удалось на разрешение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Неверный пароль канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory: %o"
+      },
+      "translated": "Не удалось создать каталог:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse path for one or more entries "
+      },
+      "translated": "Не удалось проанализировать путь для одной или нескольких записей",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directories could only created for channels"
+      },
+      "translated": "Каталоги могут быть созданы только для каналов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid path"
+      },
+      "translated": "Неверный путь",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "Не удалось на разрешение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Неверный пароль канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory: %o"
+      },
+      "translated": "Не удалось создать каталог:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target"
+      },
+      "translated": "Не удалось создать цель переноса",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target.\nAll targets are unsupported"
+      },
+      "translated": "Не удалось создать цель переноса.\nВсе цели не поддерживаются",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download file"
+      },
+      "translated": "Не удалось загрузить файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse path for file download: %s"
+      },
+      "translated": "Не удалось проанализировать путь для загрузки файла:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload file(s)"
+      },
+      "translated": "Не удалось загрузить файл (ы)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload file"
+      },
+      "translated": "Не удалось загрузить файл",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Aborting connect attempt due to a cancel request."
+      },
+      "translated": "Отмена попытки подключения из-за запроса на отмену.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection attempt to %s:%d via %s got aborted."
+      },
+      "translated": "Попытка подключения к% s:% d через% s прервана.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection attempt to %s:%d via %s failed:\n%o"
+      },
+      "translated": "Попытка подключения к% s:% d через% s не удалась:\n% о",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to connect to %s:%d. No connection attempt succeeded."
+      },
+      "translated": "Не удалось подключиться к% s:% d. Попытка подключения не удалась.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to disconnect with an already closed socket: %o"
+      },
+      "translated": "Не удалось отключиться с уже закрытым сокетом:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server connection %s:%d has been terminated due to an unexpected error (%o)."
+      },
+      "translated": "Соединение с сервером% s:% d было прервано из-за непредвиденной ошибки (% o).",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server connection %s:%d has been terminated due to an unexpected error."
+      },
+      "translated": "Соединение с сервером% s:% d было прервано из-за непредвиденной ошибки.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to disconnect with an already closed socket: %o"
+      },
+      "translated": "Не удалось отключиться с уже закрытым сокетом:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Successfully initialized a connection to %s:%d via %s within %d milliseconds."
+      },
+      "translated": "Успешно инициализировано соединение с% s:% d через% s в течение% d миллисекунд.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to send data via a non connected server socket."
+      },
+      "translated": "Пытался отправить данные через не подключенный серверный сокет.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel resize observer fired resize event with no entries!"
+      },
+      "translated": "Событие изменения размера канала, инициированное наблюдателем, без записей!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel resize observer fired resize event with more than one entry which should not be possible (%d)!"
+      },
+      "translated": "Событие изменения размера наблюдателя изменения размера канала с более чем одной записью, что не должно быть возможным (% d)!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Rebuilding the channel tree"
+      },
+      "translated": "Восстановление дерева каналов",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to scroll tree entry in view because its not registered within the view. Entry: %o"
+      },
+      "translated": "Не удалось прокрутить запись дерева в представлении, поскольку оно не зарегистрировано в представлении. Вступление:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connecting..."
+      },
+      "translated": "Подключение ...",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Hostname resolved"
+      },
+      "translated": "Имя хоста разрешено",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection to server denied"
+      },
+      "translated": "Соединение с сервером запрещено",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server has been closed"
+      },
+      "translated": "Сервер был закрыт",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server requires a password to connect."
+      },
+      "translated": "Сервер требует пароль для подключения.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "for"
+      },
+      "translated": "для",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've peen poked by"
+      },
+      "translated": "Вы подсунули",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notification permission request resulted in %s"
+      },
+      "translated": "Запрос разрешения уведомления привел к% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to execute notification permission request: %O"
+      },
+      "translated": "Не удалось выполнить запрос на разрешение уведомления:% O",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse all channels"
+      },
+      "translated": "Свернуть все каналы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend all channels"
+      },
+      "translated": "Расходовать все каналы",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "target client is offline/invisible"
+      },
+      "translated": "целевой клиент не в сети / невидим",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to register private conversation chat event for %s: %o"
+      },
+      "translated": "Не удалось зарегистрировать приватное событие чата для% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to close a not existing private conversation with id %s"
+      },
+      "translated": "Пытался закрыть несуществующий приватный разговор с идентификатором% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to send chat composing to server for chat %d: %o"
+      },
+      "translated": "Не удалось отправить составление чата на сервер для чата% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to send channel chat message to %s: %o"
+      },
+      "translated": "Не удалось отправить сообщение чата на канал% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "chat is private"
+      },
+      "translated": "приватный чат",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown permission"
+      },
+      "translated": "неизвестное разрешение",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown conversation"
+      },
+      "translated": "Неизвестный разговор",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown conversation"
+      },
+      "translated": "Неизвестный разговор",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to query history for an unknown conversation with id %s"
+      },
+      "translated": "Пытался запросить историю неизвестного разговора с идентификатором% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to send a chat message to an unknown conversation with id %s"
+      },
+      "translated": "Пытался отправить сообщение чата на неизвестный разговор с идентификатором% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to jump to present for an unknown conversation with id %s"
+      },
+      "translated": "Попытка перейти к подарку для неизвестного разговора с идентификатором% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "unknwon",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "искать консоль",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Conversation history query task threw an error; this should never happen: %o"
+      },
+      "translated": "Задача запроса истории разговоров вызвала ошибку; этого никогда не должно случиться:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to delete an unknown message (id: %s)"
+      },
+      "translated": "Попытка удалить неизвестное сообщение (идентификатор:% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete conversation message for conversation %d: %o"
+      },
+      "translated": "Не удалось удалить сообщение беседы для беседы% d:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query conversation indexes: %o"
+      },
+      "translated": "Не удалось запросить индексы диалога:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received conversation history for an unknown conversation: %o"
+      },
+      "translated": "Получена история разговоров для неизвестного разговора:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to delete a chat message from an unknown conversation with id %s"
+      },
+      "translated": "Попытка удалить сообщение чата из неизвестного разговора с идентификатором% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "permanently"
+      },
+      "translated": "постоянно",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Reconnect canceled."
+      },
+      "translated": "Переподключение отменено.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server requires a password to connect."
+      },
+      "translated": "Сервер требует пароль для подключения.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server has been closed."
+      },
+      "translated": "Сервер был закрыт.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Not connected to any server"
+      },
+      "translated": "Не подключен ни к какому серверу",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connecting to "
+      },
+      "translated": "Присоединенный к",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Client icon"
+      },
+      "translated": "Значок клиента",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't support the channel codec"
+      },
+      "translated": "Вы не поддерживаете кодек канала",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unexpected close with code "
+      },
+      "translated": "Неожиданное закрытие с кодом",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to close the web socket to %s: %o"
+      },
+      "translated": "Не удалось закрыть веб-сокет для% s:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Typing"
+      },
+      "translated": "Typing",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No messages"
+      },
+      "translated": "Нет сообщений",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add remote cached ice candidate finish: %o"
+      },
+      "translated": "Не удалось добавить удаленный кэшированный кандидат на окончание льда:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add remote cached ice candidate %o: %o"
+      },
+      "translated": "Не удалось добавить удаленный кэшированный кандидат со льдом% o:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown web client control packet: %s"
+      },
+      "translated": "Получен неизвестный контрольный пакет веб-клиента:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Gathered local ice candidate for stream %d: %s"
+      },
+      "translated": "Собранный местный ледяной кандидат для потока% d:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Local ICE candidate gathering finish."
+      },
+      "translated": "Завершается сбор местных кандидатов в ICE.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database ready callback throw an unexpected exception: %o"
+      },
+      "translated": "Обратный вызов готовности базы данных выдает неожиданное исключение:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Importing old chats saved via cache storage. This may take some moments."
+      },
+      "translated": "Импорт старых чатов, сохраненных через кеш-хранилище. Это может занять несколько минут.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Skipping importing chat %s because URL does not match."
+      },
+      "translated": "Пропуск импорта чата% s, поскольку URL не совпадает.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "array expected"
+      },
+      "translated": "ожидается массив",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Skipping importing chat %s because of an error: %o"
+      },
+      "translated": "Пропуск импорта чата% s из-за ошибки:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Found %d old chats. Importing."
+      },
+      "translated": "Найдено% d старых чатов. Импорт.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "All old chats have been imported. Deleting old data."
+      },
+      "translated": "Все старые чаты были импортированы. Удаление старых данных.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to import old chats from cache storage: %o"
+      },
+      "translated": "Не удалось импортировать старые чаты из кеша:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database update callback throw an unexpected exception: %o"
+      },
+      "translated": "Обратный вызов обновления базы данных вызывает непредвиденное исключение:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to open/upgrade the private chat database.\nPlease close all other instances of the TeaWeb client."
+      },
+      "translated": "Не удалось открыть / обновить базу данных приватного чата.\nПожалуйста, закройте все другие экземпляры клиента TeaWeb.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Opened private conversations database, with an update, but update didn't happened. Trying again."
+      },
+      "translated": "Открыл базу личных разговоров, с обновлением, но обновления не произошло. Пробую еще раз.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received external database version change. Closing database."
+      },
+      "translated": "Получено изменение версии внешней базы данных. Закрытие базы данных.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing Indexed DB support"
+      },
+      "translated": "Отсутствует поддержка индексированных БД",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing Indexed DB support"
+      },
+      "translated": "Отсутствует поддержка индексированных БД",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Successfully initialized private conversation history database"
+      },
+      "translated": "Успешно инициализирована частная база данных истории разговоров",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize private conversation history database: %o"
+      },
+      "translated": "Не удалось инициализировать частную базу данных истории разговоров:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Do not saving the private conversation chat."
+      },
+      "translated": "Не сохраняйте приватный разговор в чате.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown notify from worker."
+      },
+      "translated": "Получено неизвестное уведомление от работника.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received worker execute error for unknown token (%s)"
+      },
+      "translated": "Полученная рабочая ошибка выполнения для неизвестного токена (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received command %s from voice worker. This should never happen!"
+      },
+      "translated": "Получена команда% s от голосового работника. Этого никогда не должно случиться!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown message of type %s from voice worker. This should never happen!"
+      },
+      "translated": "Получено неизвестное сообщение типа% s от голосового работника. Этого никогда не должно случиться!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "worker terminated with an error"
+      },
+      "translated": "работник уволен с ошибкой",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "command timed out"
+      },
+      "translated": "тайм-аут команды",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Duplicate"
+      },
+      "translated": "Дублированный",
+      "flags": [
+        "google-translated"
+      ]
     }
   ]
 }
