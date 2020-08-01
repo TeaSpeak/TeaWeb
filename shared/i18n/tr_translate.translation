@@ -22013,6 +22013,4470 @@
       "flags": [
         "google-translated"
       ]
+    },
+    {
+      "key": {
+        "message": "Paste"
+      },
+      "translated": "Yapıştırmak",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "transfer source is undefined"
+      },
+      "translated": "aktarım kaynağı tanımsız",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid source type"
+      },
+      "translated": "geçersiz kaynak türü",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload object via HTTPS connection: %o"
+      },
+      "translated": "HTTPS bağlantısı üzerinden nesne yüklenemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize transfer source: %o"
+      },
+      "translated": "Aktarım kaynağı başlatılamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "transfer target is undefined"
+      },
+      "translated": "transfer hedefi tanımlanmamış",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer target type"
+      },
+      "translated": "geçersiz aktarım hedefi türü",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download file to response object: %o"
+      },
+      "translated": "Yanıt nesnesine dosya indirilemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize transfer target: %o"
+      },
+      "translated": "Transfer hedefi başlatılamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to transfer data throw a HTTPS request: %o"
+      },
+      "translated": "HTTPS isteği atma verileri aktarılamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "handler query timeout"
+      },
+      "translated": "işleyici sorgusu zaman aşımı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse old key control data."
+      },
+      "translated": "Eski anahtar kontrol verileri ayrıştırılamadı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "geçersiz aktarım durumu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "geçersiz aktarım durumu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid transfer state"
+      },
+      "translated": "geçersiz aktarım durumu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "response target isn't supported"
+      },
+      "translated": "yanıt hedefi desteklenmiyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download target isn't supported"
+      },
+      "translated": "indirme hedefi desteklenmiyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file target isn't supported"
+      },
+      "translated": "dosya hedefi desteklenmiyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "buffer source isn't supported"
+      },
+      "translated": "arabellek kaynağı desteklenmiyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "text source isn't supported"
+      },
+      "translated": "metin kaynağı desteklenmiyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "browser file source isn't supported"
+      },
+      "translated": "tarayıcı dosya kaynağı desteklenmiyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No variable matched your filter"
+      },
+      "translated": "Filtrenizle eşleşen değişken yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter variables"
+      },
+      "translated": "Filtre değişkenleri",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "CSS Variable list"
+      },
+      "translated": "CSS Değişken listesi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Default Value"
+      },
+      "translated": "Varsayılan değer",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Override Value"
+      },
+      "translated": "Değeri Geçersiz Kıl",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Randomize"
+      },
+      "translated": "Rastgele",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Export"
+      },
+      "translated": "İhracat",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Variable details"
+      },
+      "translated": "Değişken ayrıntıları",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config exported successfully"
+      },
+      "translated": "Yapılandırma başarıyla dışa aktarıldı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config has been exported successfully."
+      },
+      "translated": "Yapılandırma başarıyla dışa aktarıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config imported successfully"
+      },
+      "translated": "Yapılandırma başarıyla içe aktarıldı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config has been imported successfully."
+      },
+      "translated": "Yapılandırma başarıyla içe aktarıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Config imported failed"
+      },
+      "translated": "Yapılandırma içe aktarılamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The config import has been failed."
+      },
+      "translated": "Yapılandırma içe aktarma başarısız oldu.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "[%s] Trigger event: %s"
+      },
+      "translated": "[% s] Tetikleyici olay:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The keyword 'type' is reserved for the event type and should not be passed as argument"
+      },
+      "translated": "'Type' anahtar kelimesi olay türü için ayrılmıştır ve bağımsız değişken olarak geçirilmemelidir",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Event handler (%s) triggered event %s which has no consumers."
+      },
+      "translated": "Olay işleyici (% s), tüketicisi olmayan% s olayını tetikledi.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No events found in event handler which has been registered."
+      },
+      "translated": "Olay işleyicide kaydedilmiş hiçbir etkinlik bulunamadı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load window"
+      },
+      "translated": "Pencere yüklenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load the bookmark window.\nSee the console for more details."
+      },
+      "translated": "Yer işareti penceresi yüklenemedi.\nDaha fazla ayrıntı için konsola bakın.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received open window event for an unknown window: %s"
+      },
+      "translated": "Bilinmeyen bir pencere için açık pencere etkinliği alındı:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Modify CSS variables"
+      },
+      "translated": "CSS değişkenlerini değiştirme",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Enter Privilege Key"
+      },
+      "translated": "Ayrıcalık Anahtarını Girin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received conversation message from our self. This should be impossible."
+      },
+      "translated": "Kendimizden konuşma mesajı aldık. Bu imkansız olmalı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection manager has already been initialized"
+      },
+      "translated": "Bağlantı yöneticisi zaten başlatıldı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "modal has been destroyed"
+      },
+      "translated": "modal yok edildi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "modal has been destroyed"
+      },
+      "translated": "modal yok edildi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Modal - Icon"
+      },
+      "translated": "Kip - Simge",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading older messages"
+      },
+      "translated": "eski mesajları yükleme",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "please wait"
+      },
+      "translated": "lütfen bekle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 saniye",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "History query failed"
+      },
+      "translated": "Geçmiş sorgusu başarısız oldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Try again in"
+      },
+      "translated": "Tekrar deneyin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 saniye",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Jump to present"
+      },
+      "translated": "Bugüne atla",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You joined at"
+      },
+      "translated": "Katıldınız",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You left at"
+      },
+      "translated": "Ayrıldın",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "failed to query history"
+      },
+      "translated": "geçmiş sorgulanamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "message send failed due to permission"
+      },
+      "translated": "mesaj gönderme izni nedeniyle başarısız oldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "failed to send message:"
+      },
+      "translated": "mesaj gönderilemedi:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're&nbsp;now&nbsp;chatting&nbsp;with"
+      },
+      "translated": "Sen & nbsp; şimdi & nbsp; sohbet &; ile",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Chat reconnected"
+      },
+      "translated": "Sohbet yeniden bağlandı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Partner is typing"
+      },
+      "translated": "Ortak yazıyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "An unknown error happened."
+      },
+      "translated": "Bilinmeyen bir hata oluştu.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No conversation selected"
+      },
+      "translated": "Seçili ileti dizisi yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This conversation is private."
+      },
+      "translated": "Bu konuşma özel.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Join the channel to participate."
+      },
+      "translated": "Katılmak için kanala katılın.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The target server does not support cross channel chat."
+      },
+      "translated": "Hedef sunucu, kanallar arası sohbeti desteklemiyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Join the channel if you want to write."
+      },
+      "translated": "Yazmak istiyorsanız kanala katılın.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "There have been no messages yet."
+      },
+      "translated": "Henüz hiç mesaj yok.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Be the first who talks in here!"
+      },
+      "translated": "Burada ilk konuşan siz olun!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown error/Invalid state"
+      },
+      "translated": "Bilinmeyen hata / Geçersiz durum",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon set image method threw an unexpected error: %o"
+      },
+      "translated": "Simge seti görüntü yöntemi beklenmedik bir hata verdi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon load method threw an unexpected error: %o"
+      },
+      "translated": "Simge yükleme yöntemi beklenmedik bir hata verdi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download icon %d: %o"
+      },
+      "translated": "% D:% o simgesi indirilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load icon"
+      },
+      "translated": "Simge yüklenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to update icon image for icon %d: %o"
+      },
+      "translated": "% D:% o simgesi için simge resmi güncellenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to update icon from downloaded file"
+      },
+      "translated": "İndirilen dosyadaki simge güncellenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid status"
+      },
+      "translated": "Geçersiz durum",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Don't retry icon download from server. We'll try again in %s"
+      },
+      "translated": "Sunucudan simge indirmeyi tekrar denemeyin. % S içinde tekrar deneyeceğiz",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "never"
+      },
+      "translated": "asla",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 saniye",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download canceled"
+      },
+      "translated": "indirme iptal edildi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown transfer finished state"
+      },
+      "translated": "Bilinmeyen aktarım tamamlanma durumu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon could not be found"
+      },
+      "translated": "Simge bulunamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No permissions to download icon"
+      },
+      "translated": "Simgeyi indirmek için izin yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize icon download"
+      },
+      "translated": "Simge indirmesi başlatılamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Transfer has no response"
+      },
+      "translated": "Aktarımın yanıtı yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server permissions"
+      },
+      "translated": "Sunucu izinleri",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group has been renamed."
+      },
+      "translated": "Grup yeniden adlandırıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Do you really want to delete this group?"
+      },
+      "translated": "Bu grubu gerçekten silmek istiyor musunuz?",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "yetersiz yetkiler",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename group: %o"
+      },
+      "translated": "Grup yeniden adlandırılamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete group: %o"
+      },
+      "translated": "Grup silinemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request server group client list: %o"
+      },
+      "translated": "Sunucu grubu istemci listesi istenemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add client %s to server group %d: %o"
+      },
+      "translated": "% D istemcisi% d:% o sunucu grubuna eklenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete client %d from server group %d: %o"
+      },
+      "translated": "% D istemcisi% d:% o sunucu grubundan silinemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "bilinmi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query client info for %o: %o"
+      },
+      "translated": "% O:% o için istemci bilgileri sorgulanamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Geçersiz konu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Geçersiz sunucu grubu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Geçersiz sunucu grubu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Geçersiz kanal kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Geçersiz istemci veritabanı kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Geçersiz istemci veritabanı kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Geçersiz kanal kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "bilinmi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query permissions: %o"
+      },
+      "translated": "İzinler sorgulanamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Geçersiz konu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Geçersiz sunucu grubu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Geçersiz kanal kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Geçersiz istemci veritabanı kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Geçersiz istemci veritabanı kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Geçersiz kanal kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to set permissions: %o"
+      },
+      "translated": "İzinler ayarlanamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid subject"
+      },
+      "translated": "Geçersiz konu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid server group"
+      },
+      "translated": "Geçersiz sunucu grubu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Geçersiz kanal kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Geçersiz istemci veritabanı kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid client database id"
+      },
+      "translated": "Geçersiz istemci veritabanı kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id"
+      },
+      "translated": "Geçersiz kanal kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to remove permissions: %o"
+      },
+      "translated": "İzinler kaldırılamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to find bookmark profile %s. Displaying default one."
+      },
+      "translated": "% S yer işareti profili bulunamadı. Varsayılan olan gösteriliyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Enter the bookmark name for the duplicate"
+      },
+      "translated": "Kopya için yer imi adını girin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unregistered unknown client from channel %s"
+      },
+      "translated": "% S kanalından kayıtsız bilinmeyen müşteri",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Open channel file browser"
+      },
+      "translated": "Kanal dosya tarayıcısını aç",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse sub channels"
+      },
+      "translated": "Alt kanalları daralt",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend sub channels"
+      },
+      "translated": "Alt kanalları harcama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to successfully disconnect from server: {}"
+      },
+      "translated": "{} Sunucusuyla bağlantı başarıyla kesilemedi: {}",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload clients avatar: %o"
+      },
+      "translated": "Müşteri avatarı yüklenemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Your avatar upload has been canceled."
+      },
+      "translated": "Avatar yüklemeniz iptal edildi.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar upload finished with an unknown finished state."
+      },
+      "translated": "Avatar yüklemesi bilinmeyen bir bitmiş durumla bitti.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Renewing TeaForo data."
+      },
+      "translated": "TeaForo verilerini yenileme.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Set away on all servers"
+      },
+      "translated": "Tüm sunucularda kullanım dışı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unmute headphones"
+      },
+      "translated": "Kulaklıkları aç",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Mute headphones"
+      },
+      "translated": "Kulaklıkları sessize al",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "default avatar"
+      },
+      "translated": "varsayılan avatar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "default avatar"
+      },
+      "translated": "varsayılan avatar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "user avatar"
+      },
+      "translated": "kullanıcı avatarı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "user avatar"
+      },
+      "translated": "kullanıcı avatarı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "avatar failed to load:\n"
+      },
+      "translated": "avatar yüklenemedi:\n",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading avatar"
+      },
+      "translated": "avatar yükleniyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You can not write here."
+      },
+      "translated": "Burada yazamazsınız.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "and more"
+      },
+      "translated": "ve dahası",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 hour"
+      },
+      "translated": "1 saat",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 minute"
+      },
+      "translated": "1 dakika",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "1 second"
+      },
+      "translated": "1 saniye",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter permissions"
+      },
+      "translated": "Filtre izinleri",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add permissions to this group"
+      },
+      "translated": "Bu gruba izin ekle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove permissions from this group"
+      },
+      "translated": "Bu gruptan izinleri kaldır",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add granted permissions to this group"
+      },
+      "translated": "Bu gruba verilen izinleri ekle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove granted permissions from this group"
+      },
+      "translated": "Bu gruptan verilen izinleri kaldır",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "An error happened"
+      },
+      "translated": "Bir hata oldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Permission editor resize observer fired resize event with no entries!"
+      },
+      "translated": "İzin editörü yeniden boyutlandırma gözlemci ateşli resize olay giriş olmadan!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Permission editor resize observer fired resize event with more than one entry which should not be possible (%d)!"
+      },
+      "translated": "İzin düzenleyici yeniden boyutlandırma gözlemci ateşli yeniden boyutlandırma olayı mümkün olmamalı birden fazla giriş (% d)!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Handling height update and change permission view height to %d from %d"
+      },
+      "translated": "Yükseklik güncelleştirmesini yönetme ve izin görünümü yüksekliğini% d yerine% d olarak değiştirme",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received group toogle for unknwon group: %s"
+      },
+      "translated": "Unknwon grubu için Google'a alınan grup:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't have the permissions to view this permissions"
+      },
+      "translated": "Bu izinleri görüntüleme izniniz yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add group"
+      },
+      "translated": "Grup ekle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy permissions"
+      },
+      "translated": "Kopyalama izinleri",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add group"
+      },
+      "translated": "Grup ekle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add server group"
+      },
+      "translated": "Sunucu grubu ekle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Add channel group"
+      },
+      "translated": "Kanal grubu ekle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy server group permissions"
+      },
+      "translated": "Sunucu grubu izinlerini kopyala",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy channel group permissions"
+      },
+      "translated": "Kanal grubu izinlerini kopyala",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This group contains no clients."
+      },
+      "translated": "Bu grupta istemci yok.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This group is a temporary group."
+      },
+      "translated": "Bu grup geçici bir gruptur.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't have permissions to view the clients in this group"
+      },
+      "translated": "Bu gruptaki istemcileri görüntüleme izniniz yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query clients:"
+      },
+      "translated": "İstemciler sorgulanamadı:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No group selected"
+      },
+      "translated": "Grup seçilmedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "no client found"
+      },
+      "translated": "müşteri bulunamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database or Unique ID"
+      },
+      "translated": "Veritabanı veya Benzersiz Kimlik",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid UUID length"
+      },
+      "translated": "Geçersiz UUID uzunluğu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid UUID"
+      },
+      "translated": "Geçersiz UUID",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unique identifier"
+      },
+      "translated": "Benzersiz tanımlayıcı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Client database ID"
+      },
+      "translated": "İstemci veritabanı kimliği",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Select a group"
+      },
+      "translated": "Bir grup seçin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query groups"
+      },
+      "translated": "Sorgu grupları",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Template groups"
+      },
+      "translated": "Şablon grupları",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Regular Groups"
+      },
+      "translated": "Düzenli Gruplar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy group permissions"
+      },
+      "translated": "Grup izinlerini kopyala",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Source group"
+      },
+      "translated": "Kaynak grubu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target group"
+      },
+      "translated": "Hedef kitle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy group permissions"
+      },
+      "translated": "Grup izinlerini kopyala",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "yetersiz yetkiler",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group permissions have been copied"
+      },
+      "translated": "Grup izinleri kopyalandı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group permissions have been successfully copied."
+      },
+      "translated": "Grup izinleri başarıyla kopyalandı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions"
+      },
+      "translated": "Grup izinleri kopyalanamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "bilinmi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions: %o"
+      },
+      "translated": "Grup izinleri kopyalanamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to copy group permissions"
+      },
+      "translated": "Grup izinleri kopyalanamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid group name length"
+      },
+      "translated": "Geçersiz grup adı uzunluğu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A group with this name already exists"
+      },
+      "translated": "Bu ada sahip bir grup zaten var",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "loading data..."
+      },
+      "translated": "veri yükleniyor...",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target group type"
+      },
+      "translated": "Hedef grup türü",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query group"
+      },
+      "translated": "Sorgu grubu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create group using this template"
+      },
+      "translated": "Bu şablonu kullanarak grup oluştur",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No template"
+      },
+      "translated": "Şablon yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Query groups"
+      },
+      "translated": "Sorgu grupları",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Template groups"
+      },
+      "translated": "Şablon grupları",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Regular Groups"
+      },
+      "translated": "Düzenli Gruplar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create Group"
+      },
+      "translated": "Grup oluştur",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create a new server group"
+      },
+      "translated": "Yeni bir sunucu grubu oluşturun",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create a new channel group"
+      },
+      "translated": "Yeni bir kanal grubu oluşturun",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "insufficient permissions"
+      },
+      "translated": "yetersiz yetkiler",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group has been created"
+      },
+      "translated": "Grup oluşturuldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The group has been successfully created."
+      },
+      "translated": "Grup başarıyla oluşturuldu.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "bilinmi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create group: %o"
+      },
+      "translated": "Grup oluşturulamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Event"
+      },
+      "translated": "Etkinlik",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Focus"
+      },
+      "translated": "odak",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Draw focus to the window when the event occurs"
+      },
+      "translated": "Olay meydana geldiğinde pencereye odak çiz",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notify"
+      },
+      "translated": "bildirmek",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Sending out a system notification"
+      },
+      "translated": "Sistem bildirimi gönderme",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Log"
+      },
+      "translated": "Giriş",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Log the event within the client server log"
+      },
+      "translated": "İstemci sunucu günlüğünde olayı günlüğe kaydet",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No events matching your filter"
+      },
+      "translated": "Filtrenizle eşleşen etkinlik yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Filter Events"
+      },
+      "translated": "Olayları Filtrele",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notifications"
+      },
+      "translated": "Bildirimler",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You received a poke"
+      },
+      "translated": "Bir dürtme aldın",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You send a poke"
+      },
+      "translated": "Bir dürtme gönder",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You received a private message"
+      },
+      "translated": "Özel bir mesaj aldınız",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You send a private message"
+      },
+      "translated": "Özel mesaj gönder",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client enters your view"
+      },
+      "translated": "Bir müşteri görüşünüzü girer",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client enters your view and your channel"
+      },
+      "translated": "Bir müşteri görüşünüzü ve kanalınızı girer",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client switches/gets moved/kicked"
+      },
+      "translated": "Bir müşteri değişir / taşınır / tekme",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client switches/gets moved/kicked in to/out of your channel"
+      },
+      "translated": "Bir müşteri kanalınıza geçer / kanalınıza girer / tekme yapar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've been moved or kicked"
+      },
+      "translated": "Taşındın veya tekmelendin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client leaves/disconnects of your view"
+      },
+      "translated": "Bir müşteri görüşünüzü bırakır / bağlantısını keser",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A client leaves/disconnects of your channel"
+      },
+      "translated": "Bir müşteri kanalınızdan ayrılır / bağlantıyı keser",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "A server message has been send"
+      },
+      "translated": "Bir sunucu mesajı gönderildi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "The server has been closed"
+      },
+      "translated": "Sunucu kapatıldı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've been banned from the server"
+      },
+      "translated": "Sunucudan yasaklandınız",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're connecting to a server"
+      },
+      "translated": "Bir sunucuya bağlanıyorsunuz",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've successfully connected to the server"
+      },
+      "translated": "Sunucuya başarıyla bağlandınız",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You're connect attempt failed"
+      },
+      "translated": "Bağlanma girişimi başarısız",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Set key"
+      },
+      "translated": "Ayar tuşu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove key"
+      },
+      "translated": "Anahtarı kaldır",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "query timeout"
+      },
+      "translated": "sorgu zaman aşımı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to change key"
+      },
+      "translated": "Anahtar değiştirilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Clear Key"
+      },
+      "translated": "Anahtarı Temizle",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Keymap"
+      },
+      "translated": "Tuşeşlem",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Deleting an unknown channel!"
+      },
+      "translated": "Bilinmeyen bir kanalı silme!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Deleting a non empty channel! This could cause some errors."
+      },
+      "translated": "Boş olmayan bir kanalı silme! Bu bazı hatalara neden olabilir.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse all channels"
+      },
+      "translated": "Tüm kanalları daralt",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend all channels"
+      },
+      "translated": "Tüm kanalları genişlet",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete all channels"
+      },
+      "translated": "Tüm kanalları sil",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Apply to all clients"
+      },
+      "translated": "Tüm istemcilere uygula",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Apply to all channels"
+      },
+      "translated": "Tüm kanallara uygula",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server actions"
+      },
+      "translated": "Sunucu işlemleri",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Bilinmeyen aktarım için dosya aktarımı başlatma bildirimi alındı (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Bilinmeyen aktarım için dosya aktarımı başlatma bildirimi alındı (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer start notification for unknown transfer (%s)"
+      },
+      "translated": "Bilinmeyen aktarım için dosya aktarımı başlatma bildirimi alındı (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer progress notification for unknown transfer (%s)"
+      },
+      "translated": "Bilinmeyen aktarım için dosya aktarımı ilerleme bildirimi alındı (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file transfer status notification for unknown transfer (%s)"
+      },
+      "translated": "Bilinmeyen aktarım için dosya aktarım durumu bildirimi alındı (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file list for not request path: %s (channel %s)"
+      },
+      "translated": "İstek isteği yolu için alınan dosya listesi:% s (kanal% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file list finish for not request path: %s (channel %s)"
+      },
+      "translated": "Talep edilmeyen yol için alınan dosya listesi bitişi:% s (kanal% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for unknown return code: %s"
+      },
+      "translated": "Bilinmeyen dönüş kodu için alınan dosya bilgileri:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for already finished return code: %s"
+      },
+      "translated": "Zaten bitmiş dönüş kodu için alınan dosya bilgisi:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received file info for unknown return code: %s"
+      },
+      "translated": "Bilinmeyen dönüş kodu için alınan dosya bilgileri:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing server file list response"
+      },
+      "translated": "Eksik sunucu dosya listesi yanıtı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "response bulk miss match"
+      },
+      "translated": "yanıt toplu özledim maç",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "the server failed to full fill the request"
+      },
+      "translated": "sunucu isteği yerine getiremedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "request gone away while parsing response"
+      },
+      "translated": "yanıt ayrıştırılırken istek kayboldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing info for bulk "
+      },
+      "translated": "Toplu için eksik bilgi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target"
+      },
+      "translated": "Aktarım hedefi oluşturulamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "missing transfer start notify"
+      },
+      "translated": "aktarım başlama bildirimi eksik",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer source"
+      },
+      "translated": "Aktarım kaynağı oluşturulamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "missing transfer start notify"
+      },
+      "translated": "aktarım başlama bildirimi eksik",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Lookup the console"
+      },
+      "translated": "Konsolu arama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing transfer provider"
+      },
+      "translated": "Eksik aktarım sağlayıcısı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown transfer type"
+      },
+      "translated": "bilinmeyen aktarım türü",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing file transfer in file transfer list!"
+      },
+      "translated": "Dosya aktarım listesinde eksik dosya aktarımı!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Timed out"
+      },
+      "translated": "Zaman aşımına uğradı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Resetting server/channel groups"
+      },
+      "translated": "Sunucu / kanal gruplarını sıfırlama",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Group manager reset"
+      },
+      "translated": "Grup yöneticisi sıfırlandı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request the server group list: %o"
+      },
+      "translated": "Sunucu grubu listesi istenemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to request the channel group list: %o"
+      },
+      "translated": "Kanal grubu listesi istenemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "pending"
+      },
+      "translated": "Bekliyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "connecting"
+      },
+      "translated": "Bağlanıyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload icon %s: %o"
+      },
+      "translated": "% S simgesi yüklenemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "upload canceled"
+      },
+      "translated": "yükleme iptal edildi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File Browser"
+      },
+      "translated": "Dosya tarayıcısı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to get version: %o"
+      },
+      "translated": "Sürüm alınamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load icon"
+      },
+      "translated": "Simge yüklenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "general"
+      },
+      "translated": "genel",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Copy code"
+      },
+      "translated": "Kodu kopyala",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Show finished transfers"
+      },
+      "translated": "Tamamlanan transferleri göster",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "query error"
+      },
+      "translated": "sorgu hatası",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No running transfers"
+      },
+      "translated": "Devam eden aktarım yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file transfer failed: "
+      },
+      "translated": "dosya aktarımı başarısız oldu:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "file transfer failed"
+      },
+      "translated": "dosya aktarımı başarısız oldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "less than a second"
+      },
+      "translated": "bir saniyeden az",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "pending"
+      },
+      "translated": "Bekliyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid state!"
+      },
+      "translated": "geçersiz durum!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "awaiting info"
+      },
+      "translated": "bilgi bekleniyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query the file transfers:"
+      },
+      "translated": "Dosya aktarımları sorgulanamadı:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No transfers"
+      },
+      "translated": "Transfer yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Request timed out"
+      },
+      "translated": "İstek zaman aşımına uğradı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File transfers"
+      },
+      "translated": "Dosya aktarımları",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Running file transfers"
+      },
+      "translated": "Dosya aktarımlarını çalıştırma",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Remove finished"
+      },
+      "translated": "Kaldır tamamlandı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received an unknown drop media type (%o)"
+      },
+      "translated": "Bilinmeyen bir bırakma ortamı türü alındı (% o)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to enter path"
+      },
+      "translated": "Yol girilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to enter path"
+      },
+      "translated": "Yol girilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File"
+      },
+      "translated": "Dosya",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory icon"
+      },
+      "translated": "Dizin simgesi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory"
+      },
+      "translated": "rehber",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Empty directory icon"
+      },
+      "translated": "Boş dizin simgesi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Empty directory"
+      },
+      "translated": "Boş dizin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory password protected"
+      },
+      "translated": "Dizin parolası korumalı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Password protected directory"
+      },
+      "translated": "Parola korumalı dizin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid directory state"
+      },
+      "translated": "Geçersiz dizin durumu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename file"
+      },
+      "translated": "Dosya yeniden adlandırılamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename file"
+      },
+      "translated": "Dosya yeniden adlandırılamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query directory:"
+      },
+      "translated": "Dizin sorgulanamadı:",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query timed out."
+      },
+      "translated": "Dizin sorgusu zaman aşımına uğradı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Please try again."
+      },
+      "translated": "Lütfen tekrar deneyin.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query failed on permission"
+      },
+      "translated": "Dizin sorgusu izin verildiğinde başarısız oldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory query failed because it is password protected"
+      },
+      "translated": "Parola korumalı olduğu için dizin sorgusu başarısız oldu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "This folder is empty."
+      },
+      "translated": "Bu klasör boş.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directory"
+      },
+      "translated": "rehber",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "File"
+      },
+      "translated": "Dosya",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Last changed"
+      },
+      "translated": "Son değiştirilme tarihi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received an unknown drop media type (%o)"
+      },
+      "translated": "Bilinmeyen bir bırakma ortamı türü alındı (% o)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Last changed"
+      },
+      "translated": "Son değiştirilme tarihi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown query error"
+      },
+      "translated": "bilinmeyen sorgu hatası",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "invalid query result state"
+      },
+      "translated": "geçersiz sorgu sonucu durumu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete entry"
+      },
+      "translated": "Giriş silinemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory"
+      },
+      "translated": "Dizin oluşturulamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory"
+      },
+      "translated": "Dizin oluşturulamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Having file download start notification for current path, but target file is unknown (%s%s)"
+      },
+      "translated": "Geçerli yol için dosya indirme başlatma bildirimi olması, ancak hedef dosya bilinmiyor (% s% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalidating cached avatar for %s (Version miss match. Cached: unset, Current: %s)"
+      },
+      "translated": "% S için önbelleğe alınmış avatar geçersiz",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalidating cached avatar for %s (Version miss match. Cached: %s, Current: %s)"
+      },
+      "translated": "% S için önbelleğe alınmış avatar geçersiz",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "download canceled"
+      },
+      "translated": "indirme iptal edildi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown transfer finished state"
+      },
+      "translated": "bilinmeyen aktarım bitmiş durumu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Avatarın kendisi güncellendiğinden avatar yoksayıldı. Çıkış sürümü:% s, geçerli sürüm:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No permissions to download the avatar"
+      },
+      "translated": "Avatarı indirmek için izin yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar download failed"
+      },
+      "translated": "Avatar indirilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar transfer has no response"
+      },
+      "translated": "Avatar aktarımının yanıtı yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Avatar response missing media bytes"
+      },
+      "translated": "Avatar yanıtı eksik medya baytları",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Avatarın kendisi güncellendiğinden avatar yoksayıldı. Çıkış sürümü:% s, geçerli sürüm:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing avatar response"
+      },
+      "translated": "Avatar yanıtı eksik",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Avatarın kendisi güncellendiğinden avatar yoksayıldı. Çıkış sürümü:% s, geçerli sürüm:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"
+      },
+      "translated": "Avatarın kendisi güncellendiğinden avatar yoksayıldı. Çıkış sürümü:% s, geçerli sürüm:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to load avatar %s (hash: %s): %o"
+      },
+      "translated": "% S avatar yüklenemedi (sağlama:% s):% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete avatar %s: %o"
+      },
+      "translated": "% S avatarı silinemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid handler"
+      },
+      "translated": "Geçersiz işleyici",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Would you like to open the popup?"
+      },
+      "translated": "Açılır pencereyi açmak ister misiniz?",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "version miss match"
+      },
+      "translated": "sürüm özledim maç",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "version miss match"
+      },
+      "translated": "sürüm özledim maç",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel id (ID is NaN)"
+      },
+      "translated": "Geçersiz kanal kimliği (Kimlik NaN)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel not visible anymore"
+      },
+      "translated": "Kanal artık görünmüyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown path"
+      },
+      "translated": "Bilinmeyen yol",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown parsed path type"
+      },
+      "translated": "Bilinmeyen ayrıştırılmış yol türü",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query channel directory files: %o"
+      },
+      "translated": "Kanal dizini dosyaları sorgulanamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Icon/avatars could not be renamed"
+      },
+      "translated": "Simge / avatarlar yeniden adlandırılamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid source path"
+      },
+      "translated": "Geçersiz kaynak yolu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Target path isn't a channel"
+      },
+      "translated": "Hedef yol bir kanal değil",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid target path"
+      },
+      "translated": "Geçersiz hedef yolu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "İzin verilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Geçersiz kanal şifresi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to rename/move files: %o"
+      },
+      "translated": "Dosyalar yeniden adlandırılamadı / taşınamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Refresh file list"
+      },
+      "translated": "Dosya listesini yenile",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Force delete file"
+      },
+      "translated": "Dosyayı silmeye zorla",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete file"
+      },
+      "translated": "Dosyayı sil",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Force delete files"
+      },
+      "translated": "Dosyaları silmeye zorla",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Delete files"
+      },
+      "translated": "Dosyaları sil",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Refresh file list"
+      },
+      "translated": "Dosya listesini yenile",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Create folder"
+      },
+      "translated": "Klasör oluşturun",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "New folder"
+      },
+      "translated": "Yeni dosya",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "files"
+      },
+      "translated": "Dosyalar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "files"
+      },
+      "translated": "Dosyalar",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Response contained invalid bulk length"
+      },
+      "translated": "Yanıt geçersiz toplu uzunluk içeriyordu",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "İzin verilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Geçersiz kanal şifresi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory: %o"
+      },
+      "translated": "Dizin oluşturulamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse path for one or more entries "
+      },
+      "translated": "Bir veya daha fazla giriş için yol ayrıştırılamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Directories could only created for channels"
+      },
+      "translated": "Dizinler yalnızca kanallar için oluşturulabilir",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid path"
+      },
+      "translated": "Geçersiz yol",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed on permission "
+      },
+      "translated": "İzin verilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Invalid channel password"
+      },
+      "translated": "Geçersiz kanal şifresi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create directory: %o"
+      },
+      "translated": "Dizin oluşturulamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target"
+      },
+      "translated": "Aktarım hedefi oluşturulamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to create transfer target.\nAll targets are unsupported"
+      },
+      "translated": "Aktarım hedefi oluşturulamadı.\nTüm hedefler desteklenmiyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to download file"
+      },
+      "translated": "Dosya indirilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to parse path for file download: %s"
+      },
+      "translated": "Dosya indirme yolu ayrıştırılamadı:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload file(s)"
+      },
+      "translated": "Dosya yüklenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to upload file"
+      },
+      "translated": "Dosya yüklenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Aborting connect attempt due to a cancel request."
+      },
+      "translated": "İptal isteği nedeniyle bağlantı girişimi iptal ediliyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection attempt to %s:%d via %s got aborted."
+      },
+      "translated": "% S bağlantı girişimi:% s üzerinden% d iptal edildi.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection attempt to %s:%d via %s failed:\n%o"
+      },
+      "translated": "% S:% d ile% s arasındaki bağlantı denemesi başarısız oldu:\n%Ö",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to connect to %s:%d. No connection attempt succeeded."
+      },
+      "translated": "% S:% d ağına bağlanılamadı. Bağlantı denemesi başarısız oldu.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to disconnect with an already closed socket: %o"
+      },
+      "translated": "Zaten kapalı bir soketle bağlantı kesilemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server connection %s:%d has been terminated due to an unexpected error (%o)."
+      },
+      "translated": "% S:% d sunucu bağlantısı, beklenmeyen bir hata (% o) nedeniyle sonlandırıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server connection %s:%d has been terminated due to an unexpected error."
+      },
+      "translated": "Sunucu bağlantısı% s:% d beklenmedik bir hata nedeniyle sonlandırıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to disconnect with an already closed socket: %o"
+      },
+      "translated": "Zaten kapalı bir soketle bağlantı kesilemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Successfully initialized a connection to %s:%d via %s within %d milliseconds."
+      },
+      "translated": "% D milisaniye içinde% s:% d ile% s arasındaki bağlantı başarıyla başlatıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to send data via a non connected server socket."
+      },
+      "translated": "Bağlı olmayan bir sunucu soketi üzerinden veri göndermeye çalışıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel resize observer fired resize event with no entries!"
+      },
+      "translated": "Kanal yeniden boyutlandırma gözlemci hiçbir giriş ile ateş yeniden boyutlandırma olay!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Channel resize observer fired resize event with more than one entry which should not be possible (%d)!"
+      },
+      "translated": "Kanal yeniden boyutlandırma gözlemcisi, mümkün olmaması gereken birden fazla girişle yeniden boyutlandırma etkinliğini tetikledi (% d)!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Rebuilding the channel tree"
+      },
+      "translated": "Kanal ağacını yeniden oluşturma",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to scroll tree entry in view because its not registered within the view. Entry: %o"
+      },
+      "translated": "Görünümde kayıtlı olmadığı için görünümdeki ağaç girişi kaydırılamadı. Giriş:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connecting..."
+      },
+      "translated": "Bağlanıyor...",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Hostname resolved"
+      },
+      "translated": "Ana bilgisayar adı çözüldü",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connection to server denied"
+      },
+      "translated": "Sunucu bağlantısı reddedildi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server has been closed"
+      },
+      "translated": "Sunucu kapatıldı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server requires a password to connect."
+      },
+      "translated": "Sunucu, bağlanmak için bir şifre gerektiriyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "for"
+      },
+      "translated": "için",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You've peen poked by"
+      },
+      "translated": "Tarafından tahrik edildin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Notification permission request resulted in %s"
+      },
+      "translated": "Bildirim izni isteği% s ile sonuçlandı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to execute notification permission request: %O"
+      },
+      "translated": "Bildirim izni isteği yürütülemedi:% O",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Collapse all channels"
+      },
+      "translated": "Tüm kanalları daralt",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Expend all channels"
+      },
+      "translated": "Tüm kanalları genişlet",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "target client is offline/invisible"
+      },
+      "translated": "hedef müşteri çevrimdışı / görünmez",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to register private conversation chat event for %s: %o"
+      },
+      "translated": "% S:% o için özel sohbet sohbet etkinliği kaydedilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to close a not existing private conversation with id %s"
+      },
+      "translated": "% S kimliğiyle mevcut olmayan bir özel görüşmeyi kapatmaya çalıştım",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to send chat composing to server for chat %d: %o"
+      },
+      "translated": "% D:% o sohbeti için sunucuya sohbet oluşturulamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to send channel chat message to %s: %o"
+      },
+      "translated": "% S:% o kanalına sohbet mesajı gönderilemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "chat is private"
+      },
+      "translated": "sohbet özel",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknown permission"
+      },
+      "translated": "bilinmeyen izin",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown conversation"
+      },
+      "translated": "Bilinmeyen sohbet",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unknown conversation"
+      },
+      "translated": "Bilinmeyen sohbet",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to query history for an unknown conversation with id %s"
+      },
+      "translated": "% S kimliğine sahip bilinmeyen bir ileti dizisi geçmişini sorgulamaya çalıştı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to send a chat message to an unknown conversation with id %s"
+      },
+      "translated": "% S kimliğine sahip bilinmeyen bir sohbete sohbet mesajı göndermeye çalıştım",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to jump to present for an unknown conversation with id %s"
+      },
+      "translated": "% S kimliğiyle bilinmeyen bir ileti dizisi için günümüze atlamaya çalıştı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "unknwon"
+      },
+      "translated": "bilinmi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "lookup the console"
+      },
+      "translated": "konsolu ara",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Conversation history query task threw an error; this should never happen: %o"
+      },
+      "translated": "Görüşme geçmişi sorgu görevi bir hata attı; bu asla olmamalı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to delete an unknown message (id: %s)"
+      },
+      "translated": "Bilinmeyen bir mesajı silmeye çalıştı (id:% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to delete conversation message for conversation %d: %o"
+      },
+      "translated": "% D:% o ileti dizisi için ileti dizisi silinemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to query conversation indexes: %o"
+      },
+      "translated": "Görüşme dizinleri sorgulanamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received conversation history for an unknown conversation: %o"
+      },
+      "translated": "Bilinmeyen bir ileti dizisi için ileti dizisi geçmişi alındı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Tried to delete a chat message from an unknown conversation with id %s"
+      },
+      "translated": "% S kimliğine sahip bilinmeyen bir ileti dizisinden sohbet mesajını silmeye çalıştım",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "permanently"
+      },
+      "translated": "kalıcı olarak",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Reconnect canceled."
+      },
+      "translated": "Yeniden bağlanma iptal edildi.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server requires a password to connect."
+      },
+      "translated": "Sunucu, bağlanmak için bir şifre gerektiriyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Server has been closed."
+      },
+      "translated": "Sunucu kapatıldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Not connected to any server"
+      },
+      "translated": "Hiçbir sunucuya bağlı değil",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Connecting to "
+      },
+      "translated": "Bağlanıyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Client icon"
+      },
+      "translated": "İstemci simgesi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "You don't support the channel codec"
+      },
+      "translated": "Kanal kodekini desteklemiyorsunuz",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Unexpected close with code "
+      },
+      "translated": "Kodla beklenmedik kapanma",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to close the web socket to %s: %o"
+      },
+      "translated": "Web soketi% s: kapatılamadı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Typing"
+      },
+      "translated": "Yazıyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "No messages"
+      },
+      "translated": "Mesaj yok",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add remote cached ice candidate finish: %o"
+      },
+      "translated": "Uzaktan önbellekli buz adayı bitişi eklenemedi:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to add remote cached ice candidate %o: %o"
+      },
+      "translated": "Uzak önbelleğe alınmış buz adayı% o:% o eklenemedi",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown web client control packet: %s"
+      },
+      "translated": "Bilinmeyen web istemcisi kontrol paketi alındı:% s",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Gathered local ice candidate for stream %d: %s"
+      },
+      "translated": "% D:% s akışı için yerel buz adayı toplandı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Local ICE candidate gathering finish."
+      },
+      "translated": "Yerel ICE aday toplama bitişi.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database ready callback throw an unexpected exception: %o"
+      },
+      "translated": "Veritabanına hazır geri çağrı beklenmeyen bir istisna atıyor:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Importing old chats saved via cache storage. This may take some moments."
+      },
+      "translated": "Önbellek depolama yoluyla kaydedilen eski sohbetleri içe aktarma. Bu biraz zaman alabilir.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Skipping importing chat %s because URL does not match."
+      },
+      "translated": "URL eşleşmediğinden% s sohbetini içe aktarma atlanıyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "array expected"
+      },
+      "translated": "dizi bekleniyor",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Skipping importing chat %s because of an error: %o"
+      },
+      "translated": "Bir hata nedeniyle% s sohbetini içe aktarma atlanıyor:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Found %d old chats. Importing."
+      },
+      "translated": "% D eski sohbet bulundu. İçe.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "All old chats have been imported. Deleting old data."
+      },
+      "translated": "Tüm eski sohbetler içe aktarıldı. Eski veriler siliniyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to import old chats from cache storage: %o"
+      },
+      "translated": "Eski sohbetler önbellek deposundan içe aktarılamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Database update callback throw an unexpected exception: %o"
+      },
+      "translated": "Veritabanı güncellemesi geri çağrısı beklenmedik bir istisna atıyor:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to open/upgrade the private chat database.\nPlease close all other instances of the TeaWeb client."
+      },
+      "translated": "Özel sohbet veritabanı açılamadı / yükseltilemedi.\nLütfen TeaWeb istemcisinin diğer tüm örneklerini kapatın.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Opened private conversations database, with an update, but update didn't happened. Trying again."
+      },
+      "translated": "Bir güncelleme ile özel görüşme veritabanı açıldı, ancak güncelleme olmadı. Tekrar deniyorum.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received external database version change. Closing database."
+      },
+      "translated": "Harici veritabanı sürümü değişikliği alındı. Veritabanı kapatılıyor.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing Indexed DB support"
+      },
+      "translated": "Endeksli DB desteği eksik",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Missing Indexed DB support"
+      },
+      "translated": "Endeksli DB desteği eksik",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Successfully initialized private conversation history database"
+      },
+      "translated": "Özel görüşme geçmişi veritabanı başarıyla başlatıldı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Failed to initialize private conversation history database: %o"
+      },
+      "translated": "Özel görüşme geçmişi veritabanı başlatılamadı:% o",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Do not saving the private conversation chat."
+      },
+      "translated": "Özel sohbet sohbetini kaydetme.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown notify from worker."
+      },
+      "translated": "İşçiden bilinmeyen bildirim aldı.",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received worker execute error for unknown token (%s)"
+      },
+      "translated": "Bilinmeyen belirteç için çalışan çalışan yürütme hatası (% s)",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received command %s from voice worker. This should never happen!"
+      },
+      "translated": "Ses çalışanından% s komutu alındı. Bu asla olmamalı!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Received unknown message of type %s from voice worker. This should never happen!"
+      },
+      "translated": "Ses çalışanından% s türünde bilinmeyen mesaj alındı. Bu asla olmamalı!",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "worker terminated with an error"
+      },
+      "translated": "çalışan bir hatayla sonlandırıldı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "command timed out"
+      },
+      "translated": "komut zaman aşımına uğradı",
+      "flags": [
+        "google-translated"
+      ]
+    },
+    {
+      "key": {
+        "message": "Duplicate"
+      },
+      "translated": "Çiftleme",
+      "flags": [
+        "google-translated"
+      ]
     }
   ]
 }
