@@ -12,10 +12,13 @@ export = () => config_base.config("client").then(config => {
         "tc-backend": path.resolve(__dirname, "shared/backend.d"),
     });
 
-    config.externals.push((context, request: string, callback) => {
+    if(!Array.isArray(config.externals))
+        throw "invalid config";
+
+    config.externals.push((context, request, callback) => {
         if (request.startsWith("tc-backend/"))
             return callback(null, `window["backend-loader"].require("${request}")`);
-        callback();
+        callback(undefined, undefined);
     });
 
     config.externals.push({ "jquery": "window.$" });

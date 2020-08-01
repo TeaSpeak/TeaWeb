@@ -44,7 +44,7 @@ export interface GroupPermissionCopyModalEvents {
     notify_destroy: {}
 }
 
-const GroupSelector = (props: { events: Registry<GroupPermissionCopyModalEvents>, defaultGroup: number, updateEvent: "action_set_source" | "action_set_target", label: string, className: string}) => {
+const GroupSelector = (props: { events: Registry<GroupPermissionCopyModalEvents>, defaultGroup: number, updateEvent: "action_set_source" | "action_set_target", label: React.ReactElement, className: string}) => {
     const [ selectedGroup, setSelectedGroup ] = useState(undefined);
     const [ permissions, setPermissions ] = useState<"loading" | { createTemplate, createQuery }>("loading");
     const [ exitingGroups, setExitingGroups ] = useState<"loading" | GroupInfo[]>("loading");
@@ -72,7 +72,7 @@ const GroupSelector = (props: { events: Registry<GroupPermissionCopyModalEvents>
     return (
         <FlatSelect
             ref={refSelect}
-            label={<Translatable>{props.label}</Translatable>}
+            label={props.label}
             className={props.className}
             disabled={isLoading}
             value={isLoading || selectedGroup === undefined ? "-1" : selectedGroup.toString()}
@@ -146,8 +146,8 @@ class ModalGroupPermissionCopy extends Modal {
     renderBody() {
         return <div className={cssStyle.container}>
             <div className={cssStyle.row}>
-                <GroupSelector events={this.events} defaultGroup={this.defaultSource} updateEvent={"action_set_source"} label={"Source group"} className={cssStyle.sourceGroup} />
-                <GroupSelector events={this.events} defaultGroup={this.defaultTarget} updateEvent={"action_set_target"} label={"Target group"} className={cssStyle.targetGroup} />
+                <GroupSelector events={this.events} defaultGroup={this.defaultSource} updateEvent={"action_set_source"} label={<Translatable>Source group</Translatable>} className={cssStyle.sourceGroup} />
+                <GroupSelector events={this.events} defaultGroup={this.defaultTarget} updateEvent={"action_set_target"} label={<Translatable>Target group</Translatable>} className={cssStyle.targetGroup} />
             </div>
             <div className={cssStyle.buttons}>
                 <Button color={"red"} onClick={() => this.events.fire("action_cancel")}><Translatable>Cancel</Translatable></Button>

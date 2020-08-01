@@ -77,15 +77,15 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
     render() {
         let rightItem;
         if(this.state.state === "loading") {
-            rightItem = <div key={"status-loading"} className={cssStyle.status}><Translatable message={"loading..."} /></div>;
+            rightItem = <div key={"status-loading"} className={cssStyle.status}><Translatable>loading...</Translatable></div>;
         } else if(this.state.state === "applying") {
-            rightItem = <div key={"status-applying"} className={cssStyle.status}><Translatable message={"applying..."} /></div>;
+            rightItem = <div key={"status-applying"} className={cssStyle.status}><Translatable>applying...</Translatable></div>;
         } else if(this.state.state === "loaded") {
             rightItem = null;
             if(this.state.assignedKey)
                 rightItem = <div className={cssStyle.key}>{ppt.key_description(this.state.assignedKey)}</div>;
         } else {
-            rightItem = <div key={"status-error"} className={this.classList(cssStyle.status, cssStyle.error)}><Translatable message={this.state.error || "unknown error"} /></div>;
+            rightItem = <div key={"status-error"} className={this.classList(cssStyle.status, cssStyle.error)}><Translatable trIgnore={true}>{this.state.error || "unknown error"}</Translatable></div>;
         }
         return (
             <div
@@ -97,7 +97,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
                 onContextMenu={e => this.onContextMenu(e)}
             >
                 <IconRenderer icon={this.props.icon}/>
-                <a><Translatable message={this.props.description} /></a>
+                <a><Translatable trIgnore={true}>{this.props.description}</Translatable></a>
                 {rightItem}
             </div>
         );
@@ -204,7 +204,7 @@ class KeyActionGroup extends ReactComponentBase<KeyActionGroupProperties, { coll
         const result = [];
         result.push(<div key={"category-" + this.props.id} className={this.classList(cssStyle.row, cssStyle.category)} onClick={() => this.toggleCollapsed()}>
             <div className={this.classList("arrow", this.state.collapsed ? "right" : "down")} />
-            <a><Translatable message={this.props.name} /></a>
+            <a><Translatable trIgnore={true}>{this.props.name}</Translatable></a>
         </div>);
 
         result.push(...Object.keys(KeyTypes).filter(e => KeyTypes[e].category === this.props.id).map(e => (
@@ -264,7 +264,7 @@ class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEven
         return (
             <div className={cssStyle.buttons}>
                 <Button color={"red"} disabled={!this.state.active_action || this.state.loading || !this.state.has_key} onClick={() => this.onButtonClick()}>
-                    <Translatable message={"Clear Key"} />
+                    <Translatable>Clear Key</Translatable>
                 </Button>
             </div>
         );
@@ -304,7 +304,7 @@ export const KeyMapSettings = () => {
 
     return (<>
         <div key={"header"} className={cssStyle.header}>
-            <a><Translatable message={"Keymap"} /></a>
+            <a><Translatable>Keymap</Translatable></a>
         </div>
         <div key={"body"} className={cssStyle.containerList}>
             <KeyActionList eventRegistry={events.current} />

@@ -17,7 +17,6 @@ const transformer = <T extends ts.Node>(context: ts.TransformationContext) => (r
 function compile(fileNames: string[], options: ts.CompilerOptions): void {
     const program: ts.Program = ts.createProgram(fileNames, options);
 
-    //(context: TransformationContext) => Transformer<T>;
     let emitResult = program.emit(undefined, undefined, undefined, undefined, {
         before: [ transformer ]
     });

@@ -204,7 +204,7 @@ const ClientListButton = (props: { events: Registry<PermissionEditorEvents> }) =
         className={cssStyle.clients + " " + (visible ? "" : cssStyle.hidden)}
         color={"green"}
         onClick={() => props.events.fire("action_toggle_client_list", { visible: !toggled })}>
-        <Translatable>{toggled ? "Hide clients in group" : "Show clients in group"}</Translatable>
+        {toggled ? <Translatable key={"hide"}>Hide clients in group</Translatable> : <Translatable key={"show"}>Show clients in group</Translatable>}
     </Button>
 };
 
@@ -643,7 +643,9 @@ const PermissionGroupRow = (props: { events: Registry<PermissionEditorEvents>, g
         >
             <div className={cssStyle.columnName}>
                 <div className={"arrow " + (collapsed ? "right" : "down")} onClick={() => props.events.fire("action_toggle_group", { collapsed: !collapsed, groupId: props.group.groupId })} />
-                <div className={cssStyle.groupName} title={/* @tr-ignore */ tr(props.group.groupName)}><Translatable>{props.group.groupName}</Translatable></div>
+                <div className={cssStyle.groupName} title={/* @tr-ignore */ tr(props.group.groupName)}>
+                    <Translatable trIgnore={true}>{props.group.groupName}</Translatable>
+                </div>
             </div>
             <div className={cssStyle.columnValue} />
             <div className={cssStyle.columnSkip} />
