@@ -3,8 +3,16 @@ import {LogCategory} from "tc-shared/log";
 
 const kPreventOpeningWebSocketClosing = false;
 
+export type WebSocketUrl = {
+    secure: boolean;
+
+    host: string,
+    port: number,
+
+    path?: string
+};
 export class WrappedWebSocket {
-    public readonly url: string;
+    public readonly address: WebSocketUrl;
     public socket: WebSocket;
     public state: "unconnected" | "connecting" | "connected" | "errored";
 
@@ -16,9 +24,18 @@ export class WrappedWebSocket {
     private errorQueue = [];
     private connectResultListener = [];
 
-    constructor(url: string) {
-        this.url = url;
+    constructor(addr: WebSocketUrl) {
+        this.address = addr;
         this.state = "unconnected";
+    }
+
+    socketUrl() : string {
+        let result = "";
+        result += this.address.secure ? "wss://" : "ws://";
+        result += this.address.host + ":" + this.address.port;
+        if(this.address.path)
+            result += (this.address.path.startsWith("/") ? "" : "/") + this.address.path;
+        return result
     }
 
     doConnect() {
@@ -26,7 +43,7 @@ export class WrappedWebSocket {
 
         this.state = "connecting";
         try {
-            this.socket = new WebSocket(this.url);
+            this.socket = new WebSocket(this.socketUrl());
 
             this.socket.onopen = () => {
                 this.state = "connected";
@@ -111,7 +128,7 @@ export class WrappedWebSocket {
                     }
                 }
             } catch (error) {
-                log.warn(LogCategory.NETWORKING, tr("Failed to close the web socket to %s: %o"), this.url, error);
+                log.warn(LogCategory.NETWORKING, tr("Failed to close the web socket to %s: %o"), this.socketUrl(), error);
             }
 
             this.socket = undefined;

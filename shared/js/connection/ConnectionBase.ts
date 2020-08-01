@@ -46,6 +46,8 @@ export abstract class AbstractServerConnection {
     abstract set onconnectionstatechanged(listener: ConnectionStateListener);
 
     abstract remote_address() : ServerAddress; /* only valid when connected */
+    connectionProxyAddress() : ServerAddress | undefined { return undefined; };
+
     abstract handshake_handler() : HandshakeHandler; /* only valid when connected */
 
     //FIXME: Remove this this is currently only some kind of hack
