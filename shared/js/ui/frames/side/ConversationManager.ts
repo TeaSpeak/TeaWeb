@@ -743,7 +743,8 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
     }
 
     setSelectedConversation(id: number) {
-        this.findOrCreateConversation(id);
+        if(id >= 0)
+            this.findOrCreateConversation(id);
 
         this.uiEvents.fire("notify_selected_chat", { chatId: id.toString() });
     }
@@ -797,7 +798,6 @@ export class ConversationManager extends AbstractChatManager<ConversationUIEvent
             log.warn(LogCategory.NETWORKING, tr("Received conversation history for an unknown conversation: %o"), command.arguments[0]["cid"]);
             return;
         }
-
 
         for(const entry of command.arguments) {
             conversation.historyQueryResponse.push({
