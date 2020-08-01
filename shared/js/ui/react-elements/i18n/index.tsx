@@ -31,7 +31,7 @@ export class Translatable extends React.Component<{ children: string, __cacheKey
     }
 }
 
-export const VariadicTranslatable = (props: { text: string, children?: React.ReactElement[] | React.ReactElement }) => {
+export const VariadicTranslatable = (props: { text: string, __cacheKey?: string, children?: React.ReactElement[] | React.ReactElement }) => {
     const args = Array.isArray(props.children) ? props.children : [props.children];
     const argsUseCount = [...new Array(args.length)].map(() => 0);
 
