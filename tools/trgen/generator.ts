@@ -5,5 +5,5 @@ export interface TranslationEntry {
 
     message: string;
 
-    type: "call" | "jsx-translatable" | "js-template";
+    type: "call" | "jsx-translatable" | "jsx-variadic-translatable" | "js-template";
 }

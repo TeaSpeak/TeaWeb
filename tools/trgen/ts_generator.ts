@@ -69,28 +69,29 @@ function _generate(config: Configuration, node: ts.Node, result: TranslationEntr
         if(tag.kind !== SyntaxKind.Identifier)
             break call_analize;
 
-        if(tag.escapedText !== "Translatable")
-            break call_analize;
+        if(tag.escapedText === "Translatable") {
+            if(element.children.length !== 1) {
+                report(element, "Invalid child count: " + element.children.length);
+                break call_analize;
+            }
 
-        if(element.children.length !== 1) {
-            report(element, "Invalid child count: " + element.children.length);
-            break call_analize;
+            const text = element.children[0] as ts.JsxText;
+            if(text.kind != SyntaxKind.JsxText) {
+                report(element, "Invalid child type " + SyntaxKind[text.kind]);
+                break call_analize;
+            }
+
+            const { line, character } = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart());
+            result.push({
+                filename: node.getSourceFile().fileName,
+                line: line,
+                character: character,
+                message: text.text,
+                type: "jsx-translatable"
+            });
+        } else if(tag.escapedText === "VariadicTranslatable") {
+
         }
-
-        const text = element.children[0] as ts.JsxText;
-        if(text.kind != SyntaxKind.JsxText) {
-            report(element, "Invalid child type " + SyntaxKind[text.kind]);
-            break call_analize;
-        }
-
-        const { line, character } = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart());
-        result.push({
-            filename: node.getSourceFile().fileName,
-            line: line,
-            character: character,
-            message: text.text,
-            type: "jsx-translatable"
-        });
     }
 
     node.forEachChild(n => _generate(config, n, result));
@@ -276,6 +277,21 @@ export function transform(config: Configuration, context: ts.TransformationConte
     return result;
 }
 
+const generate_jsx_cache_key = (cache: VolatileTransformConfig, config: Configuration, element: ts.JsxElement) => ts.updateJsxElement(
+    element,
+    ts.updateJsxOpeningElement(
+        element.openingElement,
+        element.openingElement.tagName,
+        element.openingElement.typeArguments,
+        ts.updateJsxAttributes(element.openingElement.attributes, [
+            ...element.openingElement.attributes.properties,
+            ts.createJsxAttribute(ts.createIdentifier("__cacheKey"), ts.createStringLiteral(cache.tsx_name_generator(config)))
+        ])
+    ),
+    element.children,
+    element.closingElement
+);
+
 export function replace_processor(config: Configuration, cache: VolatileTransformConfig, node: ts.Node, source_file: ts.SourceFile) : ts.Node {
     if(config.verbose)
         console.log("Process %s", SyntaxKind[node.kind]);
@@ -331,20 +347,19 @@ export function replace_processor(config: Configuration, cache: VolatileTransfor
         if(tag.kind !== SyntaxKind.Identifier)
             return node;
 
-        /* TODO: VariadicTranslatable */
+        const properties = {} as any;
+
+        element.openingElement.attributes.properties.forEach((e: ts.JsxAttribute) => {
+            if(e.kind !== SyntaxKind.JsxAttribute)
+                throw new Error(source_location(e) + ": Invalid jsx attribute kind " + SyntaxKind[e.kind]);
+
+            if(e.name.kind !== SyntaxKind.Identifier)
+                throw new Error(source_location(e) + ": Key isn't an identifier");
+
+            properties[e.name.escapedText as string] = e.initializer;
+        });
+
         if(tag.escapedText === "Translatable") {
-            const properties = {} as any;
-
-            element.openingElement.attributes.properties.forEach((e: ts.JsxAttribute) => {
-                if(e.kind !== SyntaxKind.JsxAttribute)
-                    throw new Error(source_location(e) + ": Invalid jsx attribute kind " + SyntaxKind[e.kind]);
-
-                if(e.name.kind !== SyntaxKind.Identifier)
-                    throw new Error(source_location(e) + ": Key isn't an identifier");
-
-                properties[e.name.escapedText as string] = e.initializer;
-            });
-
             if('trIgnore' in properties && properties.trIgnore.kind === SyntaxKind.JsxExpression) {
                 const ignoreAttribute = properties.trIgnore as ts.JsxExpression;
                 if(ignoreAttribute.expression.kind === SyntaxKind.TrueKeyword)
@@ -369,26 +384,30 @@ export function replace_processor(config: Configuration, cache: VolatileTransfor
                 type: "jsx-translatable"
             });
 
-            /*
-            console.error( ts.updateJsxAttributes(element.openingElement.attributes, [
-                ...element.openingElement.attributes.properties,
-                ts.createJsxAttribute(ts.createIdentifier("__cacheKey"), ts.createStringLiteral(cache.tsx_name_generator(config)))
-            ]));
-            */
-            return ts.updateJsxElement(
-                element,
-                ts.updateJsxOpeningElement(
-                    element.openingElement,
-                    element.openingElement.tagName,
-                    element.openingElement.typeArguments,
-                    ts.updateJsxAttributes(element.openingElement.attributes, [
-                        ...element.openingElement.attributes.properties,
-                        ts.createJsxAttribute(ts.createIdentifier("__cacheKey"), ts.createStringLiteral(cache.tsx_name_generator(config)))
-                    ])
-                ),
-                element.children,
-                element.closingElement
-            );
+            return generate_jsx_cache_key(cache, config, element);
+        } else if(tag.escapedText === "VariadicTranslatable") {
+            if(!('text' in properties))
+                throw new Error(source_location(element) + ": Missing text to translate");
+
+            const textAttribute = properties["text"] as ts.JsxExpression;
+            if(textAttribute.kind !== SyntaxKind.JsxExpression)
+                throw new Error(source_location(element) + ": Text attribute has an invalid type. Expected JsxExpression but received " + SyntaxKind[textAttribute.kind]);
+
+            if(textAttribute.expression.kind !== SyntaxKind.StringLiteral)
+                throw new Error(source_location(element) + ": Text attribute value isn't a string literal. Expected StringLiteral but received " + SyntaxKind[textAttribute.expression.kind]);
+
+            const literal = textAttribute.expression as ts.StringLiteral;
+
+            let { line, character } = source_file.getLineAndCharacterOfPosition(node.getStart());
+            cache.translations.push({
+                message: literal.text,
+                line: line,
+                character: character,
+                filename: (source_file || {fileName: "unknown"}).fileName,
+                type: "jsx-variadic-translatable"
+            });
+
+            return generate_jsx_cache_key(cache, config, element);
         }
     }
 
