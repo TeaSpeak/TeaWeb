@@ -44,7 +44,8 @@ export function generate(config: Configuration, file: File) : TranslationEntry[]
             filename: file.name,
             character: character + 1,
             line: line + 1,
-            message: message
+            message: message,
+            type: "js-template"
         });
 
         base_index += match.index + match[0].length;
