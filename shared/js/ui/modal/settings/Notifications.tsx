@@ -300,7 +300,7 @@ export const NotificationSettings = () => {
 
     return (<>
         <div key={"header"} className={cssStyle.header}>
-            <a><Translatable message={"Notifications"} /></a>
+            <a><Translatable>Notifications</Translatable></a>
         </div>
         <div key={"body"} className={cssStyle.body}>
             <EventTable events={events.current} />

@@ -3,7 +3,7 @@ import {parseMessageWithArguments} from "tc-shared/ui/frames/chat";
 import {cloneElement} from "react";
 
 let instances = [];
-export class Translatable extends React.Component<{ message: string, children?: never } | { children: string }, { translated: string }> {
+export class Translatable extends React.Component<{ children: string, __cacheKey?: string, trIgnore?: boolean }, { translated: string }> {
     constructor(props) {
         super(props);
 

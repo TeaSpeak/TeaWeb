@@ -49,7 +49,6 @@ const transformer = (context: ts.TransformationContext) =>
             for(const file of bundle.sourceFiles)
                 result.push(handler(file));
             return ts.updateBundle(bundle, result as any, bundle.prepends as any);
-
         } else if(rootNode.kind == ts.SyntaxKind.SourceFile) {
             const file = rootNode as ts.SourceFile;
 

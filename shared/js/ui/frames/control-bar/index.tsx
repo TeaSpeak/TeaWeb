@@ -44,23 +44,23 @@ class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_re
         if(this.props.multiSession) {
             if(!this.state.connected) {
                 subentries.push(
-                    <DropdownEntry key={"connect-server"} icon={"client-connect"} text={<Translatable message={"Connect to a server"} />}
+                    <DropdownEntry key={"connect-server"} icon={"client-connect"} text={<Translatable>Connect to a server</Translatable>}
                                    onClick={ () => global_client_actions.fire("action_open_window_connect", {new_tab: false }) } />
                 );
             } else {
                 subentries.push(
-                    <DropdownEntry key={"disconnect-current-a"} icon={"client-disconnect"} text={<Translatable message={"Disconnect from current server"} />}
+                    <DropdownEntry key={"disconnect-current-a"} icon={"client-disconnect"} text={<Translatable>Disconnect from current server</Translatable>}
                                    onClick={ () => this.props.event_registry.fire("action_disconnect", { globally: false }) }/>
                 );
             }
             if(this.state.connectedAnywhere) {
                 subentries.push(
-                    <DropdownEntry key={"disconnect-current-b"} icon={"client-disconnect"} text={<Translatable message={"Disconnect from all servers"} />}
+                    <DropdownEntry key={"disconnect-current-b"} icon={"client-disconnect"} text={<Translatable>Disconnect from all servers</Translatable>}
                                    onClick={ () => this.props.event_registry.fire("action_disconnect", { globally: true }) }/>
                 );
             }
             subentries.push(
-                <DropdownEntry key={"connect-new-tab"} icon={"client-connect"} text={<Translatable message={"Connect to a server in another tab"} />}
+                <DropdownEntry key={"connect-new-tab"} icon={"client-connect"} text={<Translatable>Connect to a server in another tab</Translatable>}
                                onClick={ () => global_client_actions.fire("action_open_window_connect", { new_tab: true }) } />
             );
         }
@@ -106,9 +106,9 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Inter
             marks.splice(0, 0, <hr key={"hr"} />);
         return (
             <Button ref={this.button_ref} dropdownButtonExtraClass={cssButtonStyle.buttonBookmarks} autoSwitch={false} iconNormal={"client-bookmark_manager"}>
-                <DropdownEntry icon={"client-bookmark_manager"} text={<Translatable message={"Manage bookmarks"} />}
+                <DropdownEntry icon={"client-bookmark_manager"} text={<Translatable>Manage bookmarks</Translatable>}
                                onClick={() => this.props.event_registry.fire("action_open_window", { window: "bookmark-manage" })} />
-                <DropdownEntry icon={"client-bookmark_add"} text={<Translatable message={"Add current server to bookmarks"} />}
+                <DropdownEntry icon={"client-bookmark_add"} text={<Translatable>Add current server to bookmarks</Translatable>}
                                 onClick={() => this.props.event_registry.fire("action_add_current_server_to_bookmarks")} />
                 {marks}
             </Button>
@@ -188,25 +188,25 @@ class AwayButton extends ReactComponentBase<{ event_registry: Registry<InternalC
     render() {
         let dropdowns = [];
         if(this.state.away) {
-            dropdowns.push(<DropdownEntry key={"cgo"} icon={"client-present"} text={<Translatable message={"Go online"} />}
+            dropdowns.push(<DropdownEntry key={"cgo"} icon={"client-present"} text={<Translatable>Go online</Translatable>}
                                 onClick={() => this.props.event_registry.fire("action_disable_away", { globally: false })} />);
         } else {
-            dropdowns.push(<DropdownEntry key={"sas"} icon={"client-away"} text={<Translatable message={"Set away on this server"} />}
+            dropdowns.push(<DropdownEntry key={"sas"} icon={"client-away"} text={<Translatable>Set away on this server</Translatable>}
                                           onClick={() => this.props.event_registry.fire("action_set_away", { globally: false, prompt_reason: false })} />);
         }
-        dropdowns.push(<DropdownEntry key={"sam"} icon={"client-away"} text={<Translatable message={"Set away message on this server"} />}
+        dropdowns.push(<DropdownEntry key={"sam"} icon={"client-away"} text={<Translatable>Set away message on this server</Translatable>}
                                       onClick={() => this.props.event_registry.fire("action_set_away", { globally: false, prompt_reason: true })} />);
 
         dropdowns.push(<hr key={"-hr"} />);
         if(this.state.awayAnywhere) {
-            dropdowns.push(<DropdownEntry key={"goa"} icon={"client-present"} text={<Translatable message={"Go online for all servers"} />}
+            dropdowns.push(<DropdownEntry key={"goa"} icon={"client-present"} text={<Translatable>Go online for all servers</Translatable>}
                                           onClick={() => this.props.event_registry.fire("action_disable_away", { globally: true })} />);
         }
         if(!this.state.awayAll) {
-            dropdowns.push(<DropdownEntry key={"saa"} icon={"client-away"} text={<Translatable message={"Set away on all servers"} />}
+            dropdowns.push(<DropdownEntry key={"saa"} icon={"client-away"} text={<Translatable>Set away on all servers</Translatable>}
                                           onClick={() => this.props.event_registry.fire("action_set_away", { globally: true, prompt_reason: false })} />);
         }
-        dropdowns.push(<DropdownEntry key={"sama"} icon={"client-away"} text={<Translatable message={"Set away message for all servers"} />}
+        dropdowns.push(<DropdownEntry key={"sama"} icon={"client-away"} text={<Translatable>Set away message for all servers</Translatable>}
                                       onClick={() => this.props.event_registry.fire("action_set_away", { globally: true, prompt_reason: true })} />);
 
         /* switchable because we're switching it manually */
@@ -323,16 +323,16 @@ class QueryButton extends ReactComponentBase<{ event_registry: Registry<Internal
     render() {
         let toggle;
         if(this.state.queryShown)
-            toggle = <DropdownEntry key={"query-show"} icon={"client-toggle_server_query_clients"} text={<Translatable message={"Hide server queries"} />}
+            toggle = <DropdownEntry key={"query-show"} icon={"client-toggle_server_query_clients"} text={<Translatable>Hide server queries</Translatable>}
                                     onClick={() => this.props.event_registry.fire("action_toggle_query", { shown: false })}/>;
         else
-            toggle = <DropdownEntry key={"query-hide"} icon={"client-toggle_server_query_clients"} text={<Translatable message={"Show server queries"} />}
+            toggle = <DropdownEntry key={"query-hide"} icon={"client-toggle_server_query_clients"} text={<Translatable>Show server queries</Translatable>}
                                     onClick={() => this.props.event_registry.fire("action_toggle_query", { shown: true })}/>;
         return (
             <Button switched={this.state.queryShown} autoSwitch={false} iconNormal={"client-server_query"}
                     onToggle={flag => this.props.event_registry.fire("action_toggle_query", { shown: flag })}>
                 {toggle}
-                <DropdownEntry icon={"client-server_query"} text={<Translatable message={"Manage server queries"} />}
+                <DropdownEntry icon={"client-server_query"} text={<Translatable>Manage server queries</Translatable>}
                                 onClick={() => this.props.event_registry.fire("action_open_window", { window: "query-manage" })}/>
             </Button>
         )

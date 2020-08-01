@@ -99,6 +99,7 @@ const translations: TranslationEntry[] = [];
 config.source_files.forEach(file => {
     if(config.verbose)
         console.log("iterating over %s (%s)", file, path.resolve(path.normalize(config.base_bath + file)));
+
     glob.sync(config.base_bath + file).forEach(_file => {
         _file = path.normalize(_file);
         for(const n_file of negate_files) {
@@ -109,28 +110,17 @@ config.source_files.forEach(file => {
         }
 
         const file_type = path.extname(_file);
-        if(file_type == ".ts") {
+        if(file_type == ".ts" || file_type == ".tsx") {
             let source = ts.createSourceFile(
                 _file,
                 readFileSync(_file).toString(),
                 ts.ScriptTarget.ES2016,
                 true
             );
-            console.log(print(source));
-
             console.log("Compile " + _file);
 
             const messages = ts_generator.generate(source, {});
             translations.push(...messages);
-
-            /*
-            messages.forEach(message => {
-                console.log(message);
-            });
-
-            console.log("PRINT!");
-            console.log(print(source));
-            */
         } else if(file_type == ".html") {
             const messages = jsrender_generator.generate({}, {
                 content: readFileSync(_file).toString(),
