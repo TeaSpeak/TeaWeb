@@ -18,7 +18,7 @@ endfunction()
 import_opus()
 
 set(CMAKE_CXX_FLAGS "-O3 --llvm-lto 1 --memory-init-file 0 -s WASM=1 -s ASSERTIONS=1") # -s ALLOW_MEMORY_GROWTH=1 -O3
-set(CMAKE_EXE_LINKER_FLAGS "-s EXPORTED_FUNCTIONS='[\"_malloc\", \"_free\"]' -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s ENVIRONMENT='worker' --pre-js ${CMAKE_SOURCE_DIR}/init.js") #
+set(CMAKE_EXE_LINKER_FLAGS "-s MODULARIZE=1 -s EXPORTED_FUNCTIONS='[\"_malloc\", \"_free\"]' -s EXTRA_EXPORTED_RUNTIME_METHODS='[\"ccall\", \"cwrap\"]' -s ENVIRONMENT='worker' --pre-js ${CMAKE_SOURCE_DIR}/init.js") #
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/generated/")
 
 add_executable(TeaWeb-Worker-Codec-Opus src/opus.cpp)

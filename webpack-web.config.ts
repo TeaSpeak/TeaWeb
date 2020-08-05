@@ -8,10 +8,13 @@ export = () => config_base.config("web").then(config => {
 
     Object.assign(config.resolve.alias, {
         "tc-shared": path.resolve(__dirname, "shared/js"),
+        "tc-backend/web/assembly": path.resolve(__dirname, "web/native-codec/generated"),
         "tc-backend/web": path.resolve(__dirname, "web/app"),
         "tc-backend": path.resolve(__dirname, "web/app"),
-        "tc-generated/codec/opus": path.resolve(__dirname, "web/native-codec/generated/TeaWeb-Worker-Codec-Opus.js"),
     });
+
+    config.node = config.node || {};
+    config.node["fs"] = "empty";
 
     return Promise.resolve(config);
 });

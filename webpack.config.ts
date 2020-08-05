@@ -88,6 +88,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
             isDevelopment: isDevelopment
         })
     ].filter(e => !!e),
+
     module: {
         rules: [
             {
@@ -174,6 +175,15 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 loader: [
                     "./webpack/WatLoader.js"
                 ]
+            },
+            {
+                test: /\.wasm$/,
+                type: 'javascript/auto',
+                loader: 'file-loader',
+                options: {
+                    /* the public path will already be set by emscripten base path */
+                    publicPath: './'
+                }
             },
             {
                 test: /\.svg$/,

@@ -85,42 +85,23 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
 
         "path": "img/",
         "local-path": "./shared/img/"
-    }
-];
-
-const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [];
-
-const APP_FILE_LIST_CLIENT_SOURCE: ProjectResource[] = [
-    { /* client css files */
-        "client-only": true,
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "css/",
-        "local-path": "./client/css/"
     },
-    { /* client js files */
-        "client-only": true,
-        "type": "js",
-        "search-pattern": /.*\.js/,
-        "build-target": "dev",
-
-        "path": "js/",
-        "local-path": "./client/js/"
-    }
-];
-
-const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
-    { /* generated assembly files */
+    { /* assembly files */
         "web-only": true,
         "type": "wasm",
         "search-pattern": /.*\.(wasm)/,
         "build-target": "dev|rel",
 
-        "path": "wasm/",
-        "local-path": "./web/native-codec/generated/"
-    },
+        "path": "js/",
+        "local-path": "./dist/"
+    }
+];
+
+const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [];
+
+const APP_FILE_LIST_CLIENT_SOURCE: ProjectResource[] = [];
+
+const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
     { /* translations */
         "web-only": true, /* Only required for the web client */
         "type": "i18n",
@@ -289,8 +270,6 @@ namespace server {
         search_options: SearchOptions;
     }
 
-    const exec: (command: string) => Promise<{ stdout: string, stderr: string }> = util.promisify(cp.exec);
-
     let files: ProjectResource[] = [];
     let server: http.Server;
     let options: Options;
@@ -333,7 +312,7 @@ namespace server {
         }
     }
 
-    async function serve_file(pathname: string, query: any, response: http.ServerResponse) {
+    async function serve_file(pathname: string, response: http.ServerResponse) {
         const file = await generator.search_http_file(files, pathname, options.search_options);
         if(!file) {
             console.log("[SERVER] Client requested unknown file %s", pathname);
@@ -358,7 +337,7 @@ namespace server {
         fis.on("data", data => response.write(data));
     }
 
-    async function handle_api_request(request: http.IncomingMessage, response: http.ServerResponse, url: url_utils.UrlWithParsedQuery) {
+    async function handle_api_request(response: http.ServerResponse, url: url_utils.UrlWithParsedQuery) {
         if(url.query["type"] === "files") {
             response.writeHead(200, { "info-version": 1 });
             response.write("type\thash\tpath\tname\n");
@@ -369,7 +348,7 @@ namespace server {
         } else if(url.query["type"] === "file") {
             let p = path.join(url.query["path"] as string, url.query["name"] as string).replace(/\\/g, "/");
             if(!p.startsWith("/")) p = "/" + p;
-            serve_file(p, url.query, response);
+            await serve_file(p, response);
             return;
         }
 
@@ -395,12 +374,12 @@ namespace server {
 
         if(url.pathname === "/api.php") {
             //Client API
-            handle_api_request(request, response, url);
+            handle_api_request(response, url);
             return;
         } else if(url.pathname === "/") {
             url.pathname = "/index.html";
         }
-        serve_file(url.pathname, url.query, response);
+        serve_file(url.pathname, response);
     }
 }
 
@@ -526,28 +505,6 @@ namespace watcher {
         }
     }
 
-    export class TSCWatcher extends Watcher {
-        constructor() {
-            super("TSC");
-            //this.verbose = true;
-        }
-
-        protected start_command(): string[] {
-            return ["npm", "run", "tsc", "--", "-w"];
-        }
-    }
-
-    export class SASSWatcher extends Watcher {
-        constructor() {
-            super("SASS");
-            this.verbose = false;
-        }
-
-        protected start_command(): string[] {
-            return ["npm", "run", "sass", "--", "--watch", "shared/css:shared/css"];
-        }
-    }
-
     export class WebPackWatcher extends Watcher {
         private readonly target;
 
@@ -576,7 +533,7 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
 
     console.log("Server started on %d", port);
     console.log("To stop the server press ^K^C.");
-    await new Promise(resolve => {});
+    await new Promise(() => {});
 }
 
 async function main_develop(node: boolean, target: "client" | "web", port: number, flags: string[]) {
@@ -626,7 +583,7 @@ async function main_develop(node: boolean, target: "client" | "web", port: numbe
 
 async function git_tag() {
     const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
-    let version;
+
     if(git_rev.indexOf("/") === -1)
         return git_rev.substr(0, 7);
     else
@@ -655,7 +612,7 @@ async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest
         const exec = util.promisify(cp.exec);
         linker = async (source, target) => {
             const command = "ln -s " + source + " " + target;
-            const { stdout, stderr } = await exec(command);
+            const { stderr } = await exec(command);
             if(stderr)
                 throw "failed to create link: " + stderr;
         }
