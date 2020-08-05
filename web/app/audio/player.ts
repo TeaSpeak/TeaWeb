@@ -21,15 +21,16 @@ export function initializeFromGesture();
 */
 
 import {Device} from "tc-shared/audio/player";
-import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
-import * as loader from "tc-loader";
+import {LogCategory} from "tc-shared/log";
 
-let _globalContext: AudioContext;
-let _global_destination: GainNode;
+const kAvoidAudioContextWarning = true;
 
-let _globalContextPromise: Promise<void>;
-let _initialized_listener: (() => any)[] = [];
+let audioContextRequiredGesture = false;
+let audioContextInstance: AudioContext;
+let globalAudioGainInstance: GainNode;
+
+let audioContextInitializeCallbacks: (() => any)[] = [];
 let _master_volume: number = 1;
 let _no_device = false;
 
@@ -39,44 +40,44 @@ export function initialize() : boolean {
 }
 
 export function initialized() : boolean {
-    return !!_globalContext && _globalContext.state === 'running';
+    return !!audioContextInstance && audioContextInstance.state === 'running';
 }
 
 function fire_initialized() {
-    log.info(LogCategory.AUDIO, tr("Fire audio player initialized for %d listeners"), _initialized_listener.length);
-    while(_initialized_listener.length > 0)
-        _initialized_listener.pop_front()();
+    log.info(LogCategory.AUDIO, tr("Fire audio player initialized for %d listeners"), audioContextInitializeCallbacks.length);
+    while(audioContextInitializeCallbacks.length > 0)
+        audioContextInitializeCallbacks.pop_front()();
 }
 
+function createNewContext() {
+    audioContextInstance = new (window.webkitAudioContext || window.AudioContext)();
+
+    audioContextInitializeCallbacks.unshift(() => {
+        globalAudioGainInstance = audioContextInstance.createGain();
+        globalAudioGainInstance.gain.value = _no_device ? 0 : _master_volume;
+        globalAudioGainInstance.connect(audioContextInstance.destination);
+    });
+
+    if(audioContextInstance.state === "suspended") {
+        audioContextRequiredGesture = true;
+        return audioContextInstance;
+    } else if(audioContextInstance.state === "running") {
+        fire_initialized();
+    } else if(audioContextInstance.state === "closed") {
+        throw tr("Audio context has been closed");
+    } else {
+        throw tr("invalid audio context state");
+    }
+}
 
 export function context() : AudioContext {
-    if(_globalContext && _globalContext.state != "suspended") return _globalContext;
+    if(audioContextInstance || kAvoidAudioContextWarning)
+        return audioContextInstance;
 
-    if(!_globalContext)
-        _globalContext = new (window.webkitAudioContext || window.AudioContext)();
+    if(!audioContextInstance)
+        createNewContext();
 
-    _initialized_listener.unshift(() => {
-        _global_destination = _globalContext.createGain();
-        _global_destination.gain.value = _no_device ? 0 : _master_volume;
-        _global_destination.connect(_globalContext.destination);
-    });
-    if(_globalContext.state == "suspended") {
-        if(!_globalContextPromise) {
-            (_globalContextPromise = _globalContext.resume()).then(() => {
-                fire_initialized();
-            }).catch(error => {
-                loader.critical_error("Failed to initialize global audio context! (" + error + ")");
-            });
-        }
-        _globalContext.resume(); //We already have our listener
-        return _globalContext;
-    }
-
-    if(_globalContext.state == "running") {
-        fire_initialized();
-        return _globalContext;
-    }
-    return _globalContext;
+    return audioContextInstance;
 }
 
 export function get_master_volume() : number {
@@ -84,22 +85,22 @@ export function get_master_volume() : number {
 }
 export function set_master_volume(volume: number) {
     _master_volume = volume;
-    if(_global_destination)
-        _global_destination.gain.value = _no_device ? 0 : _master_volume;
+    if(globalAudioGainInstance)
+        globalAudioGainInstance.gain.value = _no_device ? 0 : _master_volume;
 }
 
 export function destination() : AudioNode {
     const ctx = context();
     if(!ctx) throw tr("Audio player isn't initialized yet!");
 
-    return _global_destination;
+    return globalAudioGainInstance;
 }
 
 export function on_ready(cb: () => any) {
     if(initialized())
         cb();
     else
-        _initialized_listener.push(cb);
+        audioContextInitializeCallbacks.push(cb);
 }
 
 export const WEB_DEVICE: Device = {
@@ -114,7 +115,7 @@ export function available_devices() : Promise<Device[]> {
 
 export function set_device(device_id: string) : Promise<void> {
     _no_device = !device_id;
-    _global_destination.gain.value = _no_device ? 0 : _master_volume;
+    globalAudioGainInstance.gain.value = _no_device ? 0 : _master_volume;
 
     return Promise.resolve();
 }
@@ -124,5 +125,15 @@ export function current_device() : Device {
 }
 
 export function initializeFromGesture() {
-    context();
+    if(audioContextInstance) {
+        if(audioContextInstance.state !== "running") {
+            audioContextInstance.resume().then(() => {
+                fire_initialized();
+            }).catch(error => {
+                log.error(LogCategory.AUDIO, tr("Failed to initialize audio context instance from gesture: %o"), error);
+            });
+        }
+    } else {
+        createNewContext();
+    }
 }
