@@ -3,7 +3,7 @@ import * as config_base from "./webpack.config";
 
 export = () => config_base.config("client").then(config => {
     Object.assign(config.entry, {
-        "client-app": "./client/js/index.ts"
+        "client-app": "./client/app/index.ts"
     });
 
     Object.assign(config.resolve.alias, {
