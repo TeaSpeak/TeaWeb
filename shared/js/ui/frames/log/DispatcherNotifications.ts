@@ -20,7 +20,7 @@ notificationDefaultStatus[EventType.SERVER_CLOSED] = true;
 notificationDefaultStatus[EventType.SERVER_HOST_MESSAGE_DISCONNECT] = true;
 notificationDefaultStatus[EventType.GLOBAL_MESSAGE] = true;
 notificationDefaultStatus[EventType.CONNECTION_FAILED] = true;
-//notificationDefaultStatus[EventType.PRIVATE_MESSAGE_RECEIVED] = true;
+notificationDefaultStatus[EventType.PRIVATE_MESSAGE_RECEIVED] = true;
 
 let windowFocused = false;
 
