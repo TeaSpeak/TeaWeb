@@ -580,74 +580,46 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
 }
 
 async function main_develop(node: boolean, target: "client" | "web", port: number, flags: string[]) {
-    const tscwatcher = new watcher.TSCWatcher();
+    const webpackwatcher = new watcher.WebPackWatcher(target);
+
     try {
-        if(flags.indexOf("--no-tsc") == -1)
-            await tscwatcher.start();
+        if(flags.indexOf("--no-webpack") == -1)
+            await webpackwatcher.start();
 
-        const sasswatcher = new watcher.SASSWatcher();
         try {
-            if(flags.indexOf("--no-sass") == -1)
-                await sasswatcher.start();
-
-            const webpackwatcher = new watcher.WebPackWatcher(target);
-
-            try {
-                if(flags.indexOf("--no-webpack") == -1)
-                    await webpackwatcher.start();
-
-                try {
-                    await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
-                        port: port,
-                        search_options: {
-                            source_path: __dirname,
-                            parameter: [],
-                            target: target,
-                            mode: "dev",
-                            serving: true
-                        }
-                    });
-                } catch(error) {
-                    console.error("Failed to start server: %o", error instanceof Error ? error.message : error);
-                    return;
+            await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
+                port: port,
+                search_options: {
+                    source_path: __dirname,
+                    parameter: [],
+                    target: target,
+                    mode: "dev",
+                    serving: true
                 }
-
-                console.log("Server started on %d", port);
-                console.log("To stop the session press ^K^C.");
-
-                await new Promise(resolve => process.once('SIGINT', resolve));
-                console.log("Stopping session.");
-
-                try {
-                    await server.shutdown();
-                } catch(error) {
-                    console.warn("Failed to stop web server: %o", error instanceof Error ? error.message : error);
-                }
-            } catch (error) {
-                console.error("Failed to start WebPack watcher: %o", error instanceof Error ? error.message : error);
-            } finally {
-                try {
-                    await webpackwatcher.stop();
-                } catch(error) {
-                    console.warn("Failed to stop WebPack watcher: %o", error instanceof Error ? error.message : error);
-                }
-            }
+            });
         } catch(error) {
-            console.error("Failed to start SASS watcher: %o", error instanceof Error ? error.message : error);
-        } finally {
-            try {
-                await sasswatcher.stop();
-            } catch(error) {
-                console.warn("Failed to stop SASS watcher: %o", error instanceof Error ? error.message : error);
-            }
+            console.error("Failed to start server: %o", error instanceof Error ? error.message : error);
+            return;
         }
-    } catch(error) {
-        console.error("Failed to start TSC watcher: %o", error instanceof Error ? error.message : error);
+
+        console.log("Server started on %d", port);
+        console.log("To stop the session press ^K^C.");
+
+        await new Promise(resolve => process.once('SIGINT', resolve));
+        console.log("Stopping session.");
+
+        try {
+            await server.shutdown();
+        } catch(error) {
+            console.warn("Failed to stop web server: %o", error instanceof Error ? error.message : error);
+        }
+    } catch (error) {
+        console.error("Failed to start WebPack watcher: %o", error instanceof Error ? error.message : error);
     } finally {
         try {
-            await tscwatcher.stop();
+            await webpackwatcher.stop();
         } catch(error) {
-            console.warn("Failed to stop TSC watcher: %o", error instanceof Error ? error.message : error);
+            console.warn("Failed to stop WebPack watcher: %o", error instanceof Error ? error.message : error);
         }
     }
 }
