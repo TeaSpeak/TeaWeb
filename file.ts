@@ -292,9 +292,9 @@ namespace server {
             server = https.createServer({
                 key: await fs.readFile(key_file),
                 cert: await fs.readFile(cert_file),
-            }, handle_request);
+            }, handleHTTPRequest);
         } else {
-            server = http.createServer(handle_request);
+            server = http.createServer(handleHTTPRequest);
         }
         await new Promise((resolve, reject) => {
             server.on('error', reject);
@@ -322,12 +322,12 @@ namespace server {
             return;
         }
 
-        let type = mt.lookup(path.extname(file)) || "text/html";
+        let type: string = mt.lookup(path.extname(file)) || "text/html";
         console.log("[SERVER] Serving file %s", file, type);
         const fis = fs.createReadStream(file);
 
         response.writeHead(200, "success", {
-            "Content-Type": type + "; charset=utf-8"
+            "Content-Type": type + (type.startsWith("text/") ? "; charset=utf-8" : "")
         });
 
         fis.on("end", () => response.end());
@@ -360,7 +360,7 @@ namespace server {
         response.end();
     }
 
-    function handle_request(request: http.IncomingMessage, response: http.ServerResponse) {
+    function handleHTTPRequest(request: http.IncomingMessage, response: http.ServerResponse) {
         let url: url_utils.UrlWithParsedQuery;
         try {
             url = url_utils.parse(request.url, true);
