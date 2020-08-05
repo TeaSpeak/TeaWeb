@@ -49,6 +49,13 @@ if [[ $_exit_code -ne 0 ]]; then
     exit 1
 fi
 
+echo "Generating style files"
+npm run compile-scss; _exit_code=$?
+if [[ $_exit_code -ne 0 ]]; then
+    echo "Failed to generate style files"
+    exit 1
+fi
+
 if [[ "$build_type" == "release" ]]; then # Compile everything for release mode
     NODE_ENV=production npm run build-$build_target; _exit_code=$?
     if [[ $_exit_code -ne 0 ]]; then

@@ -43,7 +43,7 @@ export function initialized() : boolean {
 }
 
 function fire_initialized() {
-    log.info(LogCategory.AUDIO, tr("File initialized for %d listeners"), _initialized_listener.length);
+    log.info(LogCategory.AUDIO, tr("Fire audio player initialized for %d listeners"), _initialized_listener.length);
     while(_initialized_listener.length > 0)
         _initialized_listener.pop_front()();
 }

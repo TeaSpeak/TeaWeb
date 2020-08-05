@@ -44,7 +44,7 @@ export namespace codec {
             const dummy_client_id = 0xFFEF;
 
             this.ownCodec(dummy_client_id, _ => {}).then(codec => {
-                log.info(LogCategory.VOICE, tr("Release again! (%o)"), codec);
+                log.trace(LogCategory.VOICE, tr("Releasing codec instance (%o)"), codec);
                 this.releaseCodec(dummy_client_id);
             }).catch(error => {
                 if(this._supported) {

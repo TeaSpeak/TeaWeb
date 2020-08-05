@@ -120,7 +120,7 @@ namespace connection {
                 if(connection_copy !== connection) return;
 
                 if(current_config.verbose)
-                    log.info(LogCategory.STATISTICS, tr("Successfully connected to server. Initializing session."));
+                    log.debug(LogCategory.STATISTICS, tr("Successfully connected to server. Initializing session."));
 
                 connection_state = ConnectionState.INITIALIZING;
                 initialize_session();
@@ -141,7 +141,7 @@ namespace connection {
 
                 if(typeof(event.data) !== 'string') {
                     if(current_config.verbose)
-                        log.info(LogCategory.STATISTICS, tr("Received an message which isn't a string. Event object: %o"), event);
+                        log.warn(LogCategory.STATISTICS, tr("Received an message which isn't a string. Event object: %o"), event);
                     return;
                 }
 
@@ -212,7 +212,7 @@ namespace connection {
 
         if(typeof(handler[type]) === 'function') {
             if(current_config.verbose)
-                log.debug(LogCategory.STATISTICS, tr("Handling message of type %s"), type);
+                log.trace(LogCategory.STATISTICS, tr("Handling message of type %s"), type);
             handler[type](data);
         } else if(current_config.verbose) {
             log.warn(LogCategory.STATISTICS, tr("Received message with an unknown type (%s). Dropping message. Full message: %o"), type, data_object);
