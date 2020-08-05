@@ -49,9 +49,9 @@ export async function load_parallel<T>(requests: T[], executor: (_: T) => Promis
     if(typeof callback === "undefined")
         callback = () => {};
 
-    options.max_parallel_requests = 1;
+    const maxParallelRequests = typeof options.max_parallel_requests === "number" && options.max_parallel_requests > 0 ? options.max_parallel_requests : Number.MAX_SAFE_INTEGER;
     while (pendingRequests.length > 0) {
-        while(typeof options.max_parallel_requests !== "number" || options.max_parallel_requests <= 0 || Object.keys(currentRequests).length < options.max_parallel_requests) {
+        while(Object.keys(currentRequests).length < maxParallelRequests) {
             const element = pendingRequests.pop();
             const name = stringify(element);
 

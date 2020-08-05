@@ -23,7 +23,6 @@ export default class implements ApplicationLoader {
         });
 
         /* required sadly */
-
         loader.register_task(loader.Stage.SETUP, {
             name: "page setup",
             function: async () => {
