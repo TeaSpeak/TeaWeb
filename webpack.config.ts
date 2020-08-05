@@ -208,7 +208,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
     },
     optimization: {
         splitChunks: {
-
+            chunks: "all"
         },
         minimize: !isDevelopment,
         minimizer: [new TerserPlugin()]
