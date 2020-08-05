@@ -110,7 +110,7 @@ registerCommandHandler("global-initialize", async () => {
 });
 
 registerCommandHandler("initialise", async data => {
-    console.log(prefix + "Initialize for codec %s", CodecType[data.type as CodecType]);
+    console.log(prefix + "Initialize codec worker for codec %s", CodecType[data.type as CodecType]);
     if(!supported_types[data.type])
         throw "type unsupported";
 

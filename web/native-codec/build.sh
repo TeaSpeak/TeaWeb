@@ -10,6 +10,7 @@ cd build_ || exit 1
 
 emcmake cmake .. || {
     echo "emcmake cmake failed for the first time, trying it again" #IDKW but sometimes it does not work the first try
+    cd . # Sometimes helps
     emcmake cmake .. || {
         echo "Failed to execute cmake"
         exit 1

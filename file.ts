@@ -62,47 +62,6 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "path": "css/",
         "local-path": "./loader/css/"
     },
-    { /* shared developer single css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev",
-
-        "path": "css/",
-        "local-path": "./shared/css/"
-    },
-    { /* shared css mapping files (development mode only) */
-        "type": "css",
-        "search-pattern": /.*\.(css.map|scss)$/,
-        "build-target": "dev",
-
-        "path": "css/",
-        "local-path": "./shared/css/",
-        "req-parm": ["--mappings"]
-    },
-    { /* shared release css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "rel",
-
-        "path": "css/",
-        "local-path": "./shared/generated/"
-    },
-    { /* shared release css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "rel",
-
-        "path": "css/loader/",
-        "local-path": "./shared/css/loader/"
-    },
-    { /* shared release css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "css/theme/",
-        "local-path": "./shared/css/theme/"
-    },
     { /* shared sound files */
         "type": "wav",
         "search-pattern": /.*\.wav$/,
@@ -126,70 +85,23 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
 
         "path": "img/",
         "local-path": "./shared/img/"
-    }
-];
-
-const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [
-    {
-        "type": "js",
-        "search-pattern": /.*(\.min)?\.js$/,
-        "build-target": "dev|rel",
-        "search-exclude": /.*xbbcode.*/g,
-
-        "path": "vendor/",
-        "local-path": "./vendor/"
-    }
-];
-
-const APP_FILE_LIST_CLIENT_SOURCE: ProjectResource[] = [
-    { /* client css files */
-        "client-only": true,
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "css/",
-        "local-path": "./client/css/"
     },
-    { /* client js files */
-        "client-only": true,
-        "type": "js",
-        "search-pattern": /.*\.js/,
-        "build-target": "dev",
-
-        "path": "js/",
-        "local-path": "./client/js/"
-    }
-];
-
-const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
-    { /* generated assembly files */
+    { /* assembly files */
         "web-only": true,
         "type": "wasm",
         "search-pattern": /.*\.(wasm)/,
         "build-target": "dev|rel",
 
-        "path": "wasm/",
-        "local-path": "./web/native-codec/generated/"
-    },
-    { /* web css files */
-        "web-only": true,
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
+        "path": "js/",
+        "local-path": "./dist/"
+    }
+];
 
-        "path": "css/",
-        "local-path": "./web/css/"
-    },
-    { /* web html files */
-        "web-only": true,
-        "type": "html",
-        "search-pattern": /.*\.(html)/,
-        "build-target": "dev|rel",
+const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [];
 
-        "path": "./",
-        "local-path": "./web/html/"
-    },
+const APP_FILE_LIST_CLIENT_SOURCE: ProjectResource[] = [];
+
+const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
     { /* translations */
         "web-only": true, /* Only required for the web client */
         "type": "i18n",
@@ -199,98 +111,6 @@ const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
         "path": "i18n/",
         "local-path": "./shared/i18n/"
     }
-];
-
-//FIXME: This isn't working right now
-const CERTACCEPT_FILE_LIST: ProjectResource[] = [
-    { /* html files */
-        "type": "html",
-        "search-pattern": /^([a-zA-Z]+)\.(html|json)$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/",
-        "local-path": "./shared/popup/certaccept/html/"
-    },
-
-    { /* javascript loader (debug) */
-        "type": "js",
-        "search-pattern": /(loader|certaccept)\.js$/,
-        "build-target": "dev",
-
-        "path": "./popup/certaccept/loader/",
-        "local-path": "./shared/loader/"
-    },
-    { /* javascript loader (releases) */
-        "type": "js",
-        "search-pattern": /.*loader_certaccept.min.js$/,
-        "build-target": "rel",
-
-        "path": "./popup/certaccept/loader/",
-        "local-path": "./shared/generated/"
-    },
-
-    { /* javascript imported from shared for debug */
-        "type": "js",
-        "search-pattern": /^(BrowserIPC|log|proto|settings)\.js$/,
-        "build-target": "dev",
-
-        "path": "./popup/certaccept/js/",
-        "local-path": "./shared/js/"
-    },
-
-    { /* javascript for debug */
-        "type": "js",
-        "search-pattern": /^certaccept\.min\.js$/,
-        "build-target": "rel",
-
-        "path": "./popup/certaccept/js/",
-        "local-path": "./shared/generated/"
-    },
-
-    { /* javascript for release */
-        "type": "js",
-        "search-pattern": /^.*\.js$/,
-        "build-target": "dev",
-
-        "path": "./popup/certaccept/js/",
-        "local-path": "./shared/popup/certaccept/js/"
-    },
-
-    { /* shared css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/css/loader/",
-        "local-path": "./shared/css/loader/"
-    },
-
-    { /* shared css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/css/static/",
-        "local-path": "./shared/popup/certaccept/css/static/"
-    },
-
-    { /* img files */
-        "type": "img",
-        "search-pattern": /^(loading_error.*)\.(svg)$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/img/",
-        "local-path": "./shared/img/"
-    },
-
-    { /* jquery vendor */
-        "type": "js",
-        "search-pattern": /^jquery\/.*\.js$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/vendor/",
-        "local-path": "./vendor/"
-    },
 ];
 
 const CLIENT_APP_FILE_LIST = [
@@ -303,7 +123,6 @@ const WEB_APP_FILE_LIST = [
     ...APP_FILE_LIST_SHARED_SOURCE,
     ...APP_FILE_LIST_SHARED_VENDORS,
     ...APP_FILE_LIST_WEB_SOURCE,
-    ...CERTACCEPT_FILE_LIST,
 ];
 
 //@ts-ignore
@@ -451,8 +270,6 @@ namespace server {
         search_options: SearchOptions;
     }
 
-    const exec: (command: string) => Promise<{ stdout: string, stderr: string }> = util.promisify(cp.exec);
-
     let files: ProjectResource[] = [];
     let server: http.Server;
     let options: Options;
@@ -475,9 +292,9 @@ namespace server {
             server = https.createServer({
                 key: await fs.readFile(key_file),
                 cert: await fs.readFile(cert_file),
-            }, handle_request);
+            }, handleHTTPRequest);
         } else {
-            server = http.createServer(handle_request);
+            server = http.createServer(handleHTTPRequest);
         }
         await new Promise((resolve, reject) => {
             server.on('error', reject);
@@ -495,7 +312,7 @@ namespace server {
         }
     }
 
-    async function serve_file(pathname: string, query: any, response: http.ServerResponse) {
+    async function serve_file(pathname: string, response: http.ServerResponse) {
         const file = await generator.search_http_file(files, pathname, options.search_options);
         if(!file) {
             console.log("[SERVER] Client requested unknown file %s", pathname);
@@ -505,12 +322,12 @@ namespace server {
             return;
         }
 
-        let type = mt.lookup(path.extname(file)) || "text/html";
+        let type: string = mt.lookup(path.extname(file)) || "text/html";
         console.log("[SERVER] Serving file %s", file, type);
         const fis = fs.createReadStream(file);
 
         response.writeHead(200, "success", {
-            "Content-Type": type + "; charset=utf-8"
+            "Content-Type": type + (type.startsWith("text/") ? "; charset=utf-8" : "")
         });
 
         fis.on("end", () => response.end());
@@ -520,7 +337,7 @@ namespace server {
         fis.on("data", data => response.write(data));
     }
 
-    async function handle_api_request(request: http.IncomingMessage, response: http.ServerResponse, url: url_utils.UrlWithParsedQuery) {
+    async function handle_api_request(response: http.ServerResponse, url: url_utils.UrlWithParsedQuery) {
         if(url.query["type"] === "files") {
             response.writeHead(200, { "info-version": 1 });
             response.write("type\thash\tpath\tname\n");
@@ -531,7 +348,7 @@ namespace server {
         } else if(url.query["type"] === "file") {
             let p = path.join(url.query["path"] as string, url.query["name"] as string).replace(/\\/g, "/");
             if(!p.startsWith("/")) p = "/" + p;
-            serve_file(p, url.query, response);
+            await serve_file(p, response);
             return;
         }
 
@@ -543,7 +360,7 @@ namespace server {
         response.end();
     }
 
-    function handle_request(request: http.IncomingMessage, response: http.ServerResponse) {
+    function handleHTTPRequest(request: http.IncomingMessage, response: http.ServerResponse) {
         let url: url_utils.UrlWithParsedQuery;
         try {
             url = url_utils.parse(request.url, true);
@@ -557,12 +374,12 @@ namespace server {
 
         if(url.pathname === "/api.php") {
             //Client API
-            handle_api_request(request, response, url);
+            handle_api_request(response, url);
             return;
         } else if(url.pathname === "/") {
             url.pathname = "/index.html";
         }
-        serve_file(url.pathname, url.query, response);
+        serve_file(url.pathname, response);
     }
 }
 
@@ -688,28 +505,6 @@ namespace watcher {
         }
     }
 
-    export class TSCWatcher extends Watcher {
-        constructor() {
-            super("TSC");
-            //this.verbose = true;
-        }
-
-        protected start_command(): string[] {
-            return ["npm", "run", "tsc", "--", "-w"];
-        }
-    }
-
-    export class SASSWatcher extends Watcher {
-        constructor() {
-            super("SASS");
-            this.verbose = false;
-        }
-
-        protected start_command(): string[] {
-            return ["npm", "run", "sass", "--", "--watch", "shared/css:shared/css"];
-        }
-    }
-
     export class WebPackWatcher extends Watcher {
         private readonly target;
 
@@ -738,85 +533,57 @@ async function main_serve(target: "client" | "web", mode: "rel" | "dev", port: n
 
     console.log("Server started on %d", port);
     console.log("To stop the server press ^K^C.");
-    await new Promise(resolve => {});
+    await new Promise(() => {});
 }
 
 async function main_develop(node: boolean, target: "client" | "web", port: number, flags: string[]) {
-    const tscwatcher = new watcher.TSCWatcher();
+    const webpackwatcher = new watcher.WebPackWatcher(target);
+
     try {
-        if(flags.indexOf("--no-tsc") == -1)
-            await tscwatcher.start();
+        if(flags.indexOf("--no-webpack") == -1)
+            await webpackwatcher.start();
 
-        const sasswatcher = new watcher.SASSWatcher();
         try {
-            if(flags.indexOf("--no-sass") == -1)
-                await sasswatcher.start();
-
-            const webpackwatcher = new watcher.WebPackWatcher(target);
-
-            try {
-                if(flags.indexOf("--no-webpack") == -1)
-                    await webpackwatcher.start();
-
-                try {
-                    await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
-                        port: port,
-                        search_options: {
-                            source_path: __dirname,
-                            parameter: [],
-                            target: target,
-                            mode: "dev",
-                            serving: true
-                        }
-                    });
-                } catch(error) {
-                    console.error("Failed to start server: %o", error instanceof Error ? error.message : error);
-                    return;
+            await server.launch(target === "client" ? CLIENT_APP_FILE_LIST : WEB_APP_FILE_LIST, {
+                port: port,
+                search_options: {
+                    source_path: __dirname,
+                    parameter: [],
+                    target: target,
+                    mode: "dev",
+                    serving: true
                 }
-
-                console.log("Server started on %d", port);
-                console.log("To stop the session press ^K^C.");
-
-                await new Promise(resolve => process.once('SIGINT', resolve));
-                console.log("Stopping session.");
-
-                try {
-                    await server.shutdown();
-                } catch(error) {
-                    console.warn("Failed to stop web server: %o", error instanceof Error ? error.message : error);
-                }
-            } catch (error) {
-                console.error("Failed to start WebPack watcher: %o", error instanceof Error ? error.message : error);
-            } finally {
-                try {
-                    await webpackwatcher.stop();
-                } catch(error) {
-                    console.warn("Failed to stop WebPack watcher: %o", error instanceof Error ? error.message : error);
-                }
-            }
+            });
         } catch(error) {
-            console.error("Failed to start SASS watcher: %o", error instanceof Error ? error.message : error);
-        } finally {
-            try {
-                await sasswatcher.stop();
-            } catch(error) {
-                console.warn("Failed to stop SASS watcher: %o", error instanceof Error ? error.message : error);
-            }
+            console.error("Failed to start server: %o", error instanceof Error ? error.message : error);
+            return;
         }
-    } catch(error) {
-        console.error("Failed to start TSC watcher: %o", error instanceof Error ? error.message : error);
+
+        console.log("Server started on %d", port);
+        console.log("To stop the session press ^K^C.");
+
+        await new Promise(resolve => process.once('SIGINT', resolve));
+        console.log("Stopping session.");
+
+        try {
+            await server.shutdown();
+        } catch(error) {
+            console.warn("Failed to stop web server: %o", error instanceof Error ? error.message : error);
+        }
+    } catch (error) {
+        console.error("Failed to start WebPack watcher: %o", error instanceof Error ? error.message : error);
     } finally {
         try {
-            await tscwatcher.stop();
+            await webpackwatcher.stop();
         } catch(error) {
-            console.warn("Failed to stop TSC watcher: %o", error instanceof Error ? error.message : error);
+            console.warn("Failed to stop WebPack watcher: %o", error instanceof Error ? error.message : error);
         }
     }
 }
 
 async function git_tag() {
     const git_rev = fs.readFileSync(path.join(__dirname, ".git", "HEAD")).toString();
-    let version;
+
     if(git_rev.indexOf("/") === -1)
         return git_rev.substr(0, 7);
     else
@@ -845,7 +612,7 @@ async function main_generate(target: "client" | "web", mode: "rel" | "dev", dest
         const exec = util.promisify(cp.exec);
         linker = async (source, target) => {
             const command = "ln -s " + source + " " + target;
-            const { stdout, stderr } = await exec(command);
+            const { stderr } = await exec(command);
             if(stderr)
                 throw "failed to create link: " + stderr;
         }

@@ -68,6 +68,8 @@ html:root {
             flex-grow: 0; /* we dont want a grow over the limit set within the content, but we want to shrink the content if necessary */
             align-self: center;
 
+            overflow: hidden;
+
             display: flex;
             flex-direction: column;
             justify-content: stretch;

@@ -13,7 +13,6 @@
     "index.ts",
     "compiler.ts",
     "jsrender_generator.ts",
-    "ts_generator.ts",
-    //"ttsc_transformer.ts"
+    "ts_generator.ts"
   ]
 }

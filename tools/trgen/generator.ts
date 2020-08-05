@@ -4,4 +4,6 @@ export interface TranslationEntry {
     character: number;
 
     message: string;
+
+    type: "call" | "jsx-translatable" | "jsx-variadic-translatable" | "js-template";
 }

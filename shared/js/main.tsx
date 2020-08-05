@@ -35,6 +35,7 @@ import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 
 /* required import for init */
+import "../css/load-css"
 import "./proto";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
@@ -126,7 +127,7 @@ function setup_jsrender() : boolean {
         if(!$.templates(_entry.id, _entry.innerHTML)) {
             log.error(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), _entry.id);
         } else
-            log.info(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);
+            log.trace(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);
     });
     return true;
 }
@@ -594,6 +595,9 @@ const task_connect_handler: loader.Task = {
 const task_certificate_callback: loader.Task = {
     name: "certificate accept tester",
     function: async () => {
+        /*
+            This is not needed any more. If we would use the certificate accept stuff, we would have an extra loader target.
+            I'm just keeping this, so later I've not to to any work, writing this, again.
         const certificate_accept = settings.static_global(Settings.KEY_CERTIFICATE_CALLBACK, undefined);
         if(certificate_accept) {
             log.info(LogCategory.IPC, tr("Using this instance as certificate callback. ID: %s"), certificate_accept);
@@ -619,12 +623,9 @@ const task_certificate_callback: loader.Task = {
                     }
                 }, 1000);
 
-                const message =
-                    "You've successfully accepted the certificate.{:br:}" +
-                    "This page will close in {0} seconds.";
                 createInfoModal(
                     tr("Certificate acccepted successfully"),
-                    formatMessage(/* @tr-ignore */ tr(message), seconds_tag),
+                    formatMessage(tr("You've successfully accepted the certificate.{:br:}This page will close in {0} seconds."), seconds_tag),
                     {
                         closeable: false,
                         footer: undefined
@@ -637,7 +638,7 @@ const task_certificate_callback: loader.Task = {
         } else {
             log.info(LogCategory.IPC, tr("We're not used to accept certificated. Booting app."));
         }
-
+         */
         loader.register_task(loader.Stage.LOADED, task_connect_handler);
     },
     priority: 10

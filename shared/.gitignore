@@ -5,8 +5,12 @@ declarations/*.d.ts
 css/static/**/*.css
 css/static/**/*.css.map
 
+css/**/*.js
+css/**/*.js.map
+
 js/**/*.js
 js/**/*.js.map
+
 js/**/*.css
 js/**/*.css.map
 

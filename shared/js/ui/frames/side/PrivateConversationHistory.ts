@@ -230,8 +230,13 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
             throw tr("Missing Indexed DB support");
         }
 
-        await doOpenDatabase(false);
-        log.debug(LogCategory.CHAT, tr("Successfully initialized private conversation history database"));
+        try {
+            await doOpenDatabase(false);
+            log.debug(LogCategory.CHAT, tr("Successfully initialized private conversation history database"));
+        } catch (error) {
+            log.error(LogCategory.CHAT, tr("Failed to initialize private conversation history database: %o"), error);
+            log.error(LogCategory.CHAT, tr("Do not saving the private conversation chat."));
+        }
     }
 });
 

@@ -842,6 +842,7 @@ export class ChannelTree {
     reset() {
         batch_updates(BatchUpdateType.CHANNEL_TREE);
 
+        this.selection.clear_selection();
         try {
             this.selection.reset();
 

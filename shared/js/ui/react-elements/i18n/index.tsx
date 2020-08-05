@@ -3,7 +3,7 @@ import {parseMessageWithArguments} from "tc-shared/ui/frames/chat";
 import {cloneElement} from "react";
 
 let instances = [];
-export class Translatable extends React.Component<{ message: string, children?: never } | { children: string }, { translated: string }> {
+export class Translatable extends React.Component<{ children: string, __cacheKey?: string, trIgnore?: boolean }, { translated: string }> {
     constructor(props) {
         super(props);
 
@@ -31,7 +31,7 @@ export class Translatable extends React.Component<{ message: string, children?: 
     }
 }
 
-export const VariadicTranslatable = (props: { text: string, children?: React.ReactElement[] | React.ReactElement }) => {
+export const VariadicTranslatable = (props: { text: string, __cacheKey?: string, children?: React.ReactElement[] | React.ReactElement }) => {
     const args = Array.isArray(props.children) ? props.children : [props.children];
     const argsUseCount = [...new Array(args.length)].map(() => 0);
 

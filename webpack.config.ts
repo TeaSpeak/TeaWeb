@@ -55,7 +55,7 @@ const isLoaderFile = (file: string) => {
     return false;
 };
 
-export const config = async (target: "web" | "client") => { return {
+export const config = async (target: "web" | "client"): Promise<Configuration> => { return {
     entry: {
         "loader": "./loader/app/index.ts",
         "modal-external": "./shared/js/ui/react-elements/external-modal/PopoutEntrypoint.ts",
@@ -75,15 +75,7 @@ export const config = async (target: "web" | "client") => { return {
             base: __dirname
         }),
         new WorkerPlugin(),
-        //new BundleAnalyzerPlugin()
-        /*
-        new CircularDependencyPlugin({
-            //exclude: /a\.js|node_modules/,
-            failOnError: true,
-            allowAsyncCycles: false,
-            cwd: process.cwd(),
-        })
-         */
+        //new BundleAnalyzerPlugin(),
         isDevelopment ? undefined : new webpack.optimize.AggressiveSplittingPlugin({
             minSize: 1024 * 8,
             maxSize: 1024 * 128
@@ -96,6 +88,7 @@ export const config = async (target: "web" | "client") => { return {
             isDevelopment: isDevelopment
         })
     ].filter(e => !!e),
+
     module: {
         rules: [
             {
@@ -138,7 +131,7 @@ export const config = async (target: "web" | "client") => { return {
                         options: {
                             context: __dirname,
                             colors: true,
-                            getCustomTransformers(prog: ts.Program) {
+                            getCustomTransformers: (prog: ts.Program) => {
                                 return {
                                     before: [trtransformer(prog, {
                                         optimized: false,
@@ -184,6 +177,15 @@ export const config = async (target: "web" | "client") => { return {
                 ]
             },
             {
+                test: /\.wasm$/,
+                type: 'javascript/auto',
+                loader: 'file-loader',
+                options: {
+                    /* the public path will already be set by emscripten base path */
+                    publicPath: './'
+                }
+            },
+            {
                 test: /\.svg$/,
                 loader: 'svg-inline-loader'
             }
@@ -197,7 +199,7 @@ export const config = async (target: "web" | "client") => { return {
     },
     externals: [
         {"tc-loader": "window loader"}
-    ] as any[],
+    ],
     output: {
         filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
         chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
@@ -206,7 +208,7 @@ export const config = async (target: "web" | "client") => { return {
     },
     optimization: {
         splitChunks: {
-
+            chunks: "all"
         },
         minimize: !isDevelopment,
         minimizer: [new TerserPlugin()]

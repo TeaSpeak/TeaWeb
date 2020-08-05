@@ -1,4 +1,15 @@
 # Changelog:
+* **05.08.20**
+    - Putting the CSS files within the assets. No extra load needed any more
+    - Revoked the async file loading limit
+    - Improved chunk splitting for webpack
+    - Using webpack for the opus codec generated code as well
+    - Improved the web audio context handler
+    
+* **01.08.20**
+    - Cleaning up the channel trees selection on reset
+    - Updated the translations to the newest standard
+    
 * **25.07.20**
     - Fixed bug where icons could not be loaded due to cros policy
     

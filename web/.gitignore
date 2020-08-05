@@ -2,8 +2,8 @@ environment/
 generated/
 declarations/
 
-css/**/*.css
-css/**/*.css.map
+app/**/*.css
+app/**/*.css.map
 
-js/**/*.js
-js/**/*.js.map
+app/**/*.js
+app/**/*.js.map

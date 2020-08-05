@@ -68,76 +68,6 @@ const loader_webassembly = {
     }
 };
 
-const loader_style = {
-    load_style: async taskId => {
-        if(__build.mode === "debug") {
-            await loader_style.load_style_debug(taskId);
-        } else {
-            await loader_style.load_style_release(taskId);
-        }
-    },
-
-    load_style_debug: async taskId => {
-        await loader.style.load_multiple([
-            "css/static/main.css",
-            "css/static/main-layout.css",
-            "css/static/scroll.css",
-            "css/static/channel-tree.css",
-            "css/static/ts/tab.css",
-            "css/static/ts/icons.css",
-            "css/static/ts/icons_em.css",
-            "css/static/ts/country.css",
-            "css/static/general.css",
-            "css/static/modal.css",
-            "css/static/modals.css",
-            "css/static/modal-about.css",
-            "css/static/modal-avatar.css",
-            "css/static/modal-icons.css",
-            "css/static/modal-bookmarks.css",
-            "css/static/modal-connect.css",
-            "css/static/modal-channel.css",
-            "css/static/modal-query.css",
-            "css/static/modal-latency.css",
-            "css/static/modal-invite.css",
-            "css/static/modal-banlist.css",
-            "css/static/modal-banclient.css",
-            "css/static/modal-channelinfo.css",
-            "css/static/modal-clientinfo.css",
-            "css/static/modal-serverinfo.css",
-            "css/static/modal-musicmanage.css",
-            "css/static/modal-serverinfobandwidth.css",
-            "css/static/modal-identity.css",
-            "css/static/modal-newcomer.css",
-            "css/static/modal-settings.css",
-            "css/static/modal-poke.css",
-            "css/static/modal-server.css",
-            "css/static/modal-keyselect.css",
-            "css/static/modal-group-assignment.css",
-            "css/static/overlay-image-preview.css",
-            "css/static/context_menu.css",
-            "css/static/frame-chat.css",
-            "css/static/connection_handlers.css",
-            "css/static/server-log.css",
-            "css/static/htmltags.css",
-            "css/static/hostbanner.css",
-            "css/static/menu-bar.css"
-        ], {
-            cache_tag: cache_tag(),
-            max_parallel_requests: -1
-        }, LoaderTaskCallback(taskId));
-    },
-
-    load_style_release: async taskId => {
-        await loader.style.load_multiple([
-            "css/static/base.css",
-            "css/static/main.css",
-        ], {
-            cache_tag: cache_tag(),
-            max_parallel_requests: -1
-        }, LoaderTaskCallback(taskId));
-    }
-};
-
 loader.register_task(loader.Stage.INITIALIZING, {
     name: "secure tester",
     function: async () => {
@@ -162,12 +92,6 @@ loader.register_task(loader.Stage.INITIALIZING, {
 loader.register_task(loader.Stage.JAVASCRIPT, {
     name: "scripts",
     function: loader_javascript.load_scripts,
-    priority: 10
-});
-
-loader.register_task(loader.Stage.STYLE, {
-    name: "style",
-    function: loader_style.load_style,
     priority: 10
 });
 

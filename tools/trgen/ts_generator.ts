@@ -1,6 +1,6 @@
 import * as ts from "typescript";
-import * as sha256 from "sha256";
 import {SyntaxKind} from "typescript";
+import * as sha256 from "sha256";
 import {TranslationEntry} from "./generator";
 
 export function generate(file: ts.SourceFile, config: Configuration) : TranslationEntry[] {
@@ -26,23 +26,24 @@ function _generate(config: Configuration, node: ts.Node, result: TranslationEntr
 
     call_analize:
     if(ts.isCallExpression(node)) {
-        const call = <ts.CallExpression>node;
+        const call = node as ts.CallExpression;
         const call_name = call.expression["escapedText"] as string;
-        if(call_name != "tr") break call_analize;
+
+        if(call_name != "tr") {
+            break call_analize;
+        }
 
         console.dir(call_name);
         console.log("Parameters: %o", call.arguments.length);
         if(call.arguments.length > 1) {
             report(call, "Invalid argument count");
-            node.forEachChild(n => _generate(config, n, result));
-            return;
+            break call_analize;
         }
 
         const object = <ts.StringLiteral>call.arguments[0];
         if(object.kind != SyntaxKind.StringLiteral) {
             report(call, "Invalid argument: " + SyntaxKind[object.kind]);
-            node.forEachChild(n => _generate(config, n, result));
-            return;
+            break call_analize;
         }
 
         console.log("Message: %o", object.text);
@@ -58,13 +59,44 @@ function _generate(config: Configuration, node: ts.Node, result: TranslationEntr
             filename: node.getSourceFile().fileName,
             line: line,
             character: character,
-            message: object.text
+            message: object.text,
+            type: "call"
         });
+    } else if(node.kind === SyntaxKind.JsxElement) {
+        const element = node as ts.JsxElement;
+        const tag = element.openingElement.tagName as ts.Identifier;
+
+        if(tag.kind !== SyntaxKind.Identifier)
+            break call_analize;
+
+        if(tag.escapedText === "Translatable") {
+            if(element.children.length !== 1) {
+                report(element, "Invalid child count: " + element.children.length);
+                break call_analize;
+            }
+
+            const text = element.children[0] as ts.JsxText;
+            if(text.kind != SyntaxKind.JsxText) {
+                report(element, "Invalid child type " + SyntaxKind[text.kind]);
+                break call_analize;
+            }
+
+            const { line, character } = node.getSourceFile().getLineAndCharacterOfPosition(node.getStart());
+            result.push({
+                filename: node.getSourceFile().fileName,
+                line: line,
+                character: character,
+                message: text.text,
+                type: "jsx-translatable"
+            });
+        } else if(tag.escapedText === "VariadicTranslatable") {
+
+        }
     }
 
     node.forEachChild(n => _generate(config, n, result));
 }
-function create_unique_check(config: Configuration, source_file: ts.SourceFile, variable: ts.Expression, variables: { name: string, node: ts.Node }[]) : ts.Node[] {
+function generateUniqueCheck(config: Configuration, source_file: ts.SourceFile, variable: ts.Expression, variables: { name: string, node: ts.Node }[]) : ts.Node[] {
     const nodes: ts.Node[] = [], blocked_nodes: ts.Statement[] = [];
 
     const node_path = (node: ts.Node) => {
@@ -162,6 +194,7 @@ function create_unique_check(config: Configuration, source_file: ts.SourceFile, 
     return [...nodes, ts.createLabel(unique_check_label_name, ts.createBlock(blocked_nodes))];
 }
 
+let globalIdIndex = 0, globalIdTimestamp = Date.now();
 export function transform(config: Configuration, context: ts.TransformationContext, source_file: ts.SourceFile) : TransformResult {
     const cache: VolatileTransformConfig = {} as any;
     cache.translations = [];
@@ -207,31 +240,24 @@ export function transform(config: Configuration, context: ts.TransformationConte
         }
     }
 
-    const used_names = [config.variables.declarations, config.variables.declare_files];
     const generated_names: { name: string, node: ts.Node }[] = [];
     let generator_base = 0;
+
+    const generate_unique_name = config => {
+        if(config.module) {
+            return "_" + generator_base++;
+        } else {
+            return "_" + globalIdTimestamp + "-" + ++globalIdIndex;
+        }
+    };
+
     cache.name_generator = (config, node, message) => {
-        const characters = "0123456789_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        let name;
-        do {
-            name = "";
-
-            if(config.module) {
-                name = "_" + generator_base++;
-            } else {
-                /* Global namespace. We've to generate a random name so no duplicates happen */
-                while(name.length < 8) {
-                    const char = characters[Math.floor(Math.random() * characters.length)];
-                    name = name + char;
-                    if(name[0] >= '0' && name[0] <= '9')
-                        name = name.substr(1) || "";
-                }
-            }
-        } while(used_names.findIndex(e => e === name) !== -1);
-
+        const name = generate_unique_name(config);
         generated_names.push({name: name, node: node});
         return name;
     };
+
+    cache.tsx_name_generator = generate_unique_name;
 
     function visit(node: ts.Node): ts.Node {
         node = ts.visitEachChild(node, visit, context);
@@ -240,7 +266,7 @@ export function transform(config: Configuration, context: ts.TransformationConte
     source_file = ts.visitNode(source_file, visit);
     if(!config.module) {
         /* we don't need a unique check because we're just in our scope */
-        extra_nodes.push(...create_unique_check(config, source_file, cache.nodes.translation_map, generated_names));
+        extra_nodes.push(...generateUniqueCheck(config, source_file, cache.nodes.translation_map, generated_names));
     }
 
     source_file = ts.updateSourceFileNode(source_file, [...(extra_nodes as any[]), ...source_file.statements], source_file.isDeclarationFile, source_file.referencedFiles, source_file.typeReferenceDirectives, source_file.hasNoDefaultLib, source_file.referencedFiles);
@@ -251,14 +277,32 @@ export function transform(config: Configuration, context: ts.TransformationConte
     return result;
 }
 
+const generate_jsx_cache_key = (cache: VolatileTransformConfig, config: Configuration, element: ts.JsxElement) => ts.updateJsxElement(
+    element,
+    ts.updateJsxOpeningElement(
+        element.openingElement,
+        element.openingElement.tagName,
+        element.openingElement.typeArguments,
+        ts.updateJsxAttributes(element.openingElement.attributes, [
+            ...element.openingElement.attributes.properties,
+            ts.createJsxAttribute(ts.createIdentifier("__cacheKey"), ts.createStringLiteral(cache.tsx_name_generator(config)))
+        ])
+    ),
+    element.children,
+    element.closingElement
+);
+
 export function replace_processor(config: Configuration, cache: VolatileTransformConfig, node: ts.Node, source_file: ts.SourceFile) : ts.Node {
     if(config.verbose)
         console.log("Process %s", SyntaxKind[node.kind]);
+
+    if(!node.getSourceFile())
+        return node;
+
     if(ts.isCallExpression(node)) {
         const call = <ts.CallExpression>node;
         const call_name = call.expression["escapedText"] as string;
         if(call_name != "tr") return node;
-        if(!node.getSourceFile()) return node;
         if(config.verbose) {
             console.dir(call_name);
             console.log("Parameters: %o", call.arguments.length);
@@ -293,11 +337,82 @@ export function replace_processor(config: Configuration, cache: VolatileTransfor
             message: object.text || object.getText(source_file),
             line: line,
             character: character,
-            filename: (source_file || {fileName: "unknown"}).fileName
+            filename: (source_file || {fileName: "unknown"}).fileName,
+            type: "call"
         });
 
         return ts.createBinary(variable_init, ts.SyntaxKind.BarBarToken, new_variable);
+    } else if(node.kind === SyntaxKind.JsxElement) {
+        const element = node as ts.JsxElement;
+        const tag = element.openingElement.tagName as ts.Identifier;
+
+        if(tag.kind !== SyntaxKind.Identifier)
+            return node;
+
+        const properties = {} as any;
+
+        element.openingElement.attributes.properties.forEach((e: ts.JsxAttribute) => {
+            if(e.kind !== SyntaxKind.JsxAttribute)
+                throw new Error(source_location(e) + ": Invalid jsx attribute kind " + SyntaxKind[e.kind]);
+
+            if(e.name.kind !== SyntaxKind.Identifier)
+                throw new Error(source_location(e) + ": Key isn't an identifier");
+
+            properties[e.name.escapedText as string] = e.initializer;
+        });
+
+        if(tag.escapedText === "Translatable") {
+            if('trIgnore' in properties && properties.trIgnore.kind === SyntaxKind.JsxExpression) {
+                const ignoreAttribute = properties.trIgnore as ts.JsxExpression;
+                if(ignoreAttribute.expression.kind === SyntaxKind.TrueKeyword)
+                    return node;
+                else if(ignoreAttribute.expression.kind !== SyntaxKind.FalseKeyword)
+                    throw new Error(source_location(ignoreAttribute) + ": Invalid attribute value of type " + SyntaxKind[ignoreAttribute.expression.kind]);
+            }
+
+            if(element.children.length !== 1)
+                throw new Error(source_location(element) + ": Element has been called with an invalid arguments (" +  (element.children.length === 0 ? "too few" : "too many") + ")");
+
+            const text = element.children[0] as ts.JsxText;
+            if(text.kind != SyntaxKind.JsxText)
+                throw new Error(source_location(element) + ": Element has invalid children. Expected JsxText but got " + SyntaxKind[text.kind]);
+
+            let { line, character } = source_file.getLineAndCharacterOfPosition(node.getStart());
+            cache.translations.push({
+                message: text.text,
+                line: line,
+                character: character,
+                filename: (source_file || {fileName: "unknown"}).fileName,
+                type: "jsx-translatable"
+            });
+
+            return generate_jsx_cache_key(cache, config, element);
+        } else if(tag.escapedText === "VariadicTranslatable") {
+            if(!('text' in properties))
+                throw new Error(source_location(element) + ": Missing text to translate");
+
+            const textAttribute = properties["text"] as ts.JsxExpression;
+            if(textAttribute.kind !== SyntaxKind.JsxExpression)
+                throw new Error(source_location(element) + ": Text attribute has an invalid type. Expected JsxExpression but received " + SyntaxKind[textAttribute.kind]);
+
+            if(textAttribute.expression.kind !== SyntaxKind.StringLiteral)
+                throw new Error(source_location(element) + ": Text attribute value isn't a string literal. Expected StringLiteral but received " + SyntaxKind[textAttribute.expression.kind]);
+
+            const literal = textAttribute.expression as ts.StringLiteral;
+
+            let { line, character } = source_file.getLineAndCharacterOfPosition(node.getStart());
+            cache.translations.push({
+                message: literal.text,
+                line: line,
+                character: character,
+                filename: (source_file || {fileName: "unknown"}).fileName,
+                type: "jsx-variadic-translatable"
+            });
+
+            return generate_jsx_cache_key(cache, config, element);
+        }
     }
+
     return node;
 }
 export interface Configuration {
@@ -326,5 +441,6 @@ interface VolatileTransformConfig {
     };
 
     name_generator: (config: Configuration, node: ts.Node, message: string) => string;
+    tsx_name_generator: (config: Configuration) => string;
     translations: TranslationEntry[];
 }

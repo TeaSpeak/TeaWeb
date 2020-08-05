@@ -238,7 +238,7 @@ const ActiveTabInfo = (props: { events: Registry<PermissionModalEvents> }) => {
     return <div className={cssStyle.header + " " + cssStyle.activeTabInfo}>
         <div className={cssStyle.entry}>
             <a title={PermissionTabName[activeTab].translated}>
-                <Translatable>{PermissionTabName[activeTab].name}</Translatable>
+                <Translatable trIgnore={true}>{PermissionTabName[activeTab].name}</Translatable>
             </a>
         </div>
     </div>
@@ -251,7 +251,7 @@ const TabSelectorEntry = (props: { events: Registry<PermissionModalEvents>, entr
 
     return <div className={cssStyle.entry + " " + (active ? cssStyle.selected : "")} onClick={() => !active && props.events.fire("action_activate_tab", { tab: props.entry })}>
         <a title={PermissionTabName[props.entry].translated}>
-            <Translatable>{PermissionTabName[props.entry].translated}</Translatable>
+            <Translatable trIgnore={true}>{PermissionTabName[props.entry].translated}</Translatable>
         </a>
     </div>;
 };

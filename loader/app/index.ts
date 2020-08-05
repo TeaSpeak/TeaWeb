@@ -9,7 +9,7 @@ window["loader"] = loader;
 /* let the loader register himself at the window first */
 
 const target = getUrlParameter("loader-target") || "app";
-console.error("Loading app with loader \"%s\"", target);
+console.info("Loading app with loader \"%s\"", target);
 
 let appLoader: ApplicationLoader;
 if(target === "empty") {

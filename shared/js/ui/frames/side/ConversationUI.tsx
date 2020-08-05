@@ -481,7 +481,7 @@ class ConversationMessages extends React.PureComponent<ConversationMessagesPrope
             case "no-permission":
                 contents.push(<div key={"ol-permission"} className={cssStyle.overlay}><a>
                     <Translatable>You don't have permissions to participate in this conversation!</Translatable><br />
-                    <Translatable>{this.state.failedPermission}</Translatable></a>
+                    >{this.state.failedPermission}</a>
                 </div>);
                 break;
 
