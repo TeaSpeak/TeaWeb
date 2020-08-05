@@ -35,6 +35,7 @@ import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 
 /* required import for init */
+import "../css/load-css"
 import "./proto";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";

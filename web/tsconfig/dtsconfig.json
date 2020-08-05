@@ -1,6 +1,6 @@
 {
   "source_files": [
-    "../js/**/*.ts"
+    "../app/**/*.ts"
   ],
   "target_file": "../declarations/exports.d.ts"
 }

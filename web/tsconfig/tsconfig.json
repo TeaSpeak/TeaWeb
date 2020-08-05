@@ -8,6 +8,6 @@
   "include": [
     "../types",
     "../declarations/imports_*.d.ts",
-    "../js/**/*.ts"
+    "../app/**/*.ts"
   ]
 }

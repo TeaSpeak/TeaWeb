@@ -1,22 +1,15 @@
 {
-  "name": "client",
+  "name": "teaspeak-web",
   "version": "1.2.0",
   "description": "Welcome here! This repository is created with two reasons:\n 1. People can bring their own ideas and follow their implementation\n 2. People can see TeaSpeak Web client progress and avoid creating repetitive issues all the time.",
-  "main": "main.js",
-  "directories": {},
   "scripts": {
-    "compile-sass": "sass --update shared/css/:shared/css/ loader/css/:loader/css/ web/css/:web/css/ client/css/:client/css/ vendor/:vendor/",
     "compile-project-base": "tsc -p tsbaseconfig.json",
     "dtsgen": "node tools/dtsgen/index.js",
     "trgen": "node tools/trgen/index.js",
-    "sass": "sass",
-    "csso": "csso",
     "tsc": "tsc",
     "start": "npm run compile-project-base && node file.js ndevelop",
     "build-web": "webpack --config webpack-web.config.js",
-    "develop-web": "npm run compile-project-base && node file.js develop web",
     "build-client": "webpack --config webpack-client.config.js",
-    "develop-client": "npm run compile-project-base && node file.js develop client",
     "webpack-web": "webpack --config webpack-web.config.js",
     "webpack-client": "webpack --config webpack-client.config.js",
     "generate-i18n-gtranslate": "node shared/generate_i18n_gtranslate.js"
@@ -24,6 +17,7 @@
   "author": "TeaSpeak (WolverinDEV)",
   "license": "ISC",
   "devDependencies": {
+    "@types/jsrender": "^1.0.5",
     "@babel/core": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.10.4",
     "@babel/preset-env": "^7.10.4",
@@ -89,7 +83,6 @@
   },
   "homepage": "https://www.teaspeak.de",
   "dependencies": {
-    "@types/jsrender": "^1.0.5",
     "detect-browser": "^5.1.1",
     "dompurify": "^2.0.8",
     "emoji-mart": "git+https://github.com/WolverinDEV/emoji-mart.git",

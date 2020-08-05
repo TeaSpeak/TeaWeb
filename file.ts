@@ -62,47 +62,6 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "path": "css/",
         "local-path": "./loader/css/"
     },
-    { /* shared developer single css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev",
-
-        "path": "css/",
-        "local-path": "./shared/css/"
-    },
-    { /* shared css mapping files (development mode only) */
-        "type": "css",
-        "search-pattern": /.*\.(css.map|scss)$/,
-        "build-target": "dev",
-
-        "path": "css/",
-        "local-path": "./shared/css/",
-        "req-parm": ["--mappings"]
-    },
-    { /* shared release css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "rel",
-
-        "path": "css/",
-        "local-path": "./shared/generated/"
-    },
-    { /* shared release css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "rel",
-
-        "path": "css/loader/",
-        "local-path": "./shared/css/loader/"
-    },
-    { /* shared release css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "css/theme/",
-        "local-path": "./shared/css/theme/"
-    },
     { /* shared sound files */
         "type": "wav",
         "search-pattern": /.*\.wav$/,
@@ -129,17 +88,7 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
     }
 ];
 
-const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [
-    {
-        "type": "js",
-        "search-pattern": /.*(\.min)?\.js$/,
-        "build-target": "dev|rel",
-        "search-exclude": /.*xbbcode.*/g,
-
-        "path": "vendor/",
-        "local-path": "./vendor/"
-    }
-];
+const APP_FILE_LIST_SHARED_VENDORS: ProjectResource[] = [];
 
 const APP_FILE_LIST_CLIENT_SOURCE: ProjectResource[] = [
     { /* client css files */
@@ -172,24 +121,6 @@ const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
         "path": "wasm/",
         "local-path": "./web/native-codec/generated/"
     },
-    { /* web css files */
-        "web-only": true,
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "css/",
-        "local-path": "./web/css/"
-    },
-    { /* web html files */
-        "web-only": true,
-        "type": "html",
-        "search-pattern": /.*\.(html)/,
-        "build-target": "dev|rel",
-
-        "path": "./",
-        "local-path": "./web/html/"
-    },
     { /* translations */
         "web-only": true, /* Only required for the web client */
         "type": "i18n",
@@ -199,98 +130,6 @@ const APP_FILE_LIST_WEB_SOURCE: ProjectResource[] = [
         "path": "i18n/",
         "local-path": "./shared/i18n/"
     }
-];
-
-//FIXME: This isn't working right now
-const CERTACCEPT_FILE_LIST: ProjectResource[] = [
-    { /* html files */
-        "type": "html",
-        "search-pattern": /^([a-zA-Z]+)\.(html|json)$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/",
-        "local-path": "./shared/popup/certaccept/html/"
-    },
-
-    { /* javascript loader (debug) */
-        "type": "js",
-        "search-pattern": /(loader|certaccept)\.js$/,
-        "build-target": "dev",
-
-        "path": "./popup/certaccept/loader/",
-        "local-path": "./shared/loader/"
-    },
-    { /* javascript loader (releases) */
-        "type": "js",
-        "search-pattern": /.*loader_certaccept.min.js$/,
-        "build-target": "rel",
-
-        "path": "./popup/certaccept/loader/",
-        "local-path": "./shared/generated/"
-    },
-
-    { /* javascript imported from shared for debug */
-        "type": "js",
-        "search-pattern": /^(BrowserIPC|log|proto|settings)\.js$/,
-        "build-target": "dev",
-
-        "path": "./popup/certaccept/js/",
-        "local-path": "./shared/js/"
-    },
-
-    { /* javascript for debug */
-        "type": "js",
-        "search-pattern": /^certaccept\.min\.js$/,
-        "build-target": "rel",
-
-        "path": "./popup/certaccept/js/",
-        "local-path": "./shared/generated/"
-    },
-
-    { /* javascript for release */
-        "type": "js",
-        "search-pattern": /^.*\.js$/,
-        "build-target": "dev",
-
-        "path": "./popup/certaccept/js/",
-        "local-path": "./shared/popup/certaccept/js/"
-    },
-
-    { /* shared css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/css/loader/",
-        "local-path": "./shared/css/loader/"
-    },
-
-    { /* shared css files */
-        "type": "css",
-        "search-pattern": /.*\.css$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/css/static/",
-        "local-path": "./shared/popup/certaccept/css/static/"
-    },
-
-    { /* img files */
-        "type": "img",
-        "search-pattern": /^(loading_error.*)\.(svg)$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/img/",
-        "local-path": "./shared/img/"
-    },
-
-    { /* jquery vendor */
-        "type": "js",
-        "search-pattern": /^jquery\/.*\.js$/,
-        "build-target": "dev|rel",
-
-        "path": "./popup/certaccept/vendor/",
-        "local-path": "./vendor/"
-    },
 ];
 
 const CLIENT_APP_FILE_LIST = [
@@ -303,7 +142,6 @@ const WEB_APP_FILE_LIST = [
     ...APP_FILE_LIST_SHARED_SOURCE,
     ...APP_FILE_LIST_SHARED_VENDORS,
     ...APP_FILE_LIST_WEB_SOURCE,
-    ...CERTACCEPT_FILE_LIST,
 ];
 
 //@ts-ignore
