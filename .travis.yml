@@ -26,7 +26,13 @@ jobs:
 
 deploy:
   - provider: script
-    script: "bash  scripts/travis/deploy_dev_server.sh"
+    script: "bash  scripts/travis/deploy_server.sh development"
+    cleanup: false
+    skip_cleanup: true
+    on:
+      branch: develop
+  - provider: script
+    script: "bash  scripts/travis/deploy_server.sh production"
     cleanup: false
     skip_cleanup: true
     on:

@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if [[ -z "$1" ]]; then
+    echo "Missing deploy channel"
+    exit 1
+fi
+
 cd "$(dirname "$0")/../../" || { echo "Failed to enter base dir"; exit 1; }
 source ./scripts/travis/properties.sh
 
@@ -41,5 +46,5 @@ _exit_code=$?
     echo "Failed to upload the .zip file ($_exit_code)"
     exit 1
 }
-ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@web.teaspeak.dev "./unpack.sh tmp-upload/$filename"
+ssh -oStrictHostKeyChecking=no -oIdentitiesOnly=yes -i /tmp/sftp_key TeaSpeak-Travis-Web@web.teaspeak.dev "./unpack.sh $1 tmp-upload/$filename"
 exit $?
