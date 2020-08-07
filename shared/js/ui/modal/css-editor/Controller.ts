@@ -123,12 +123,11 @@ class CssVariableManager {
 let cssVariableManager: CssVariableManager;
 
 export function spawnModalCssVariableEditor() {
-    /* FIXME: Disable for the native client! */
     const events = new Registry<CssEditorEvents>();
     cssVariableEditorController(events);
 
     const modal = spawnExternalModal("css-editor", events, {});
-    modal.open();
+    modal.show();
 }
 
 function cssVariableEditorController(events: Registry<CssEditorEvents>) {
