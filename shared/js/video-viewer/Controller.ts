@@ -66,7 +66,6 @@ class VideoViewer {
 
         this.events.fire("notify_following", { watcherId: undefined });
         this.events.fire("notify_video", { url: url });
-        this.notifyWatcherList();
     }
 
     async open() {
@@ -305,6 +304,7 @@ class VideoViewer {
             this.plugin.setLocalFollowing(following, { status: "paused" });
         else
             this.plugin.setLocalWatcherStatus(this.currentVideoUrl, { status: "paused" });
+        this.notifyWatcherList();
     }
 }
 
