@@ -173,7 +173,7 @@ $setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
 }
 
 /* Automated loader timeout */
-#loader-overlay:not(.initialized) + #critical-load {
+#loader-overlay:not(.initialized) + #critical-load:not(.shown) {
 	display: block !important;
 	opacity: 0;
 
