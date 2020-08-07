@@ -2,7 +2,6 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import * as ipc from "tc-shared/ipc/BrowserIPC";
 import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {Registry} from "tc-shared/events";
 import {
     EventControllerBase,
@@ -11,21 +10,17 @@ import {
 } from "tc-shared/ui/react-elements/external-modal/IPCMessage";
 import {ModalController, ModalEvents, ModalOptions, ModalState} from "tc-shared/ui/react-elements/Modal";
 
-export class ExternalModalController extends EventControllerBase<"controller"> implements ModalController {
+export abstract class AbstractExternalModalController extends EventControllerBase<"controller"> implements ModalController {
     public readonly modalType: string;
     public readonly userData: any;
 
-    private modalState: ModalState = ModalState.DESTROYED;
     private readonly modalEvents: Registry<ModalEvents>;
+    private modalState: ModalState = ModalState.DESTROYED;
 
-    private currentWindow: Window;
+    private readonly documentUnloadListener: () => void;
     private callbackWindowInitialized: (error?: string) => void;
 
-    private readonly documentQuitListener: () => void;
-    private windowClosedTestInterval: number = 0;
-    private windowClosedTimeout: number;
-
-    constructor(modal: string, localEventRegistry: Registry<any>, userData: any) {
+    protected constructor(modal: string, localEventRegistry: Registry, userData: any) {
         super(localEventRegistry);
 
         this.modalEvents = new Registry<ModalEvents>();
@@ -36,7 +31,7 @@ export class ExternalModalController extends EventControllerBase<"controller"> i
         this.ipcChannel = ipc.getInstance().createChannel();
         this.ipcChannel.messageHandler = this.handleIPCMessage.bind(this);
 
-        this.documentQuitListener = () => this.currentWindow?.close();
+        this.documentUnloadListener = () => this.destroy();
     }
 
     getOptions(): Readonly<ModalOptions> {
@@ -51,66 +46,21 @@ export class ExternalModalController extends EventControllerBase<"controller"> i
         return this.modalState;
     }
 
-    private trySpawnWindow() : Window | null {
-        const parameters = {
-            "loader-target": "manifest",
-            "chunk": "modal-external",
-            "modal-target": this.modalType,
-            "ipc-channel": this.ipcChannel.channelId,
-            "ipc-address": ipc.getInstance().getLocalAddress(),
-            "disableGlobalContextMenu": __build.mode === "debug" ? 1 : 0,
-            "loader-abort": __build.mode === "debug" ? 1 : 0,
-        };
-
-        const features = {
-            status: "no",
-            location: "no",
-            toolbar: "no",
-            menubar: "no",
-            /*
-            width: 600,
-            height: 400
-            */
-        };
-
-        let baseUrl = location.origin + location.pathname + "?";
-        return window.open(
-            baseUrl + Object.keys(parameters).map(e => e + "=" + encodeURIComponent(parameters[e])).join("&"),
-            this.modalType,
-            Object.keys(features).map(e => e + "=" + features[e]).join(",")
-        );
-    }
+    protected abstract spawnWindow() : Promise<boolean>;
+    protected abstract focusWindow() : void;
+    protected abstract destroyWindow() : void;
 
     async show() {
-        if(this.currentWindow) {
-            this.currentWindow.focus();
+        if(this.modalState === ModalState.SHOWN) {
+            this.focusWindow();
             return;
         }
+        this.modalState = ModalState.SHOWN;
 
-        this.currentWindow = this.trySpawnWindow();
-        if(!this.currentWindow) {
-            await new Promise((resolve, reject) => {
-                spawnYesNo(tr("Would you like to open the popup?"), tra("Would you like to open popup {}?", this.modalType), callback => {
-                    if(!callback) {
-                        reject("user aborted");
-                        return;
-                    }
-
-                    this.currentWindow = this.trySpawnWindow();
-                    if(this.currentWindow) {
-                        reject(tr("Failed to spawn window"));
-                    } else {
-                        resolve();
-                    }
-                }).close_listener.push(() => reject(tr("user aborted")));
-            })
-        }
-
-        if(!this.currentWindow) {
-            /* some shitty popup blocker or whatever */
+        if(!await this.spawnWindow()) {
+            this.modalState = ModalState.DESTROYED;
             throw tr("failed to create window");
         }
-        window.addEventListener("unload", this.documentQuitListener);
 
         try {
             await new Promise((resolve, reject) => {
@@ -126,50 +76,25 @@ export class ExternalModalController extends EventControllerBase<"controller"> i
                 };
             });
         } catch (e) {
-            this.currentWindow?.close();
-            this.currentWindow = undefined;
+            this.modalState = ModalState.DESTROYED;
+            this.doDestroyWindow();
             throw e;
         }
 
-        this.currentWindow.onbeforeunload = () => {
-            clearInterval(this.windowClosedTestInterval);
-
-            this.windowClosedTimeout = Date.now() + 5000;
-            this.windowClosedTestInterval = setInterval(() => {
-                if(!this.currentWindow) {
-                    clearInterval(this.windowClosedTestInterval);
-                    this.windowClosedTestInterval = 0;
-                    return;
-                }
-
-                if(this.currentWindow.closed || Date.now() > this.windowClosedTimeout) {
-                    window.removeEventListener("unload", this.documentQuitListener);
-                    this.currentWindow = undefined;
-                    this.destroy(); /* TODO: Test if we should do this */
-                }
-            }, 100);
-        };
-
-        this.modalState = ModalState.SHOWN;
+        window.addEventListener("unload", this.documentUnloadListener);
         this.modalEvents.fire("open");
     }
 
-    private destroyPopUp() {
-        if(this.currentWindow) {
-            clearInterval(this.windowClosedTestInterval);
-            this.windowClosedTestInterval = 0;
-
-            window.removeEventListener("beforeunload", this.documentQuitListener);
-            this.currentWindow.close();
-            this.currentWindow = undefined;
-        }
+    private doDestroyWindow() {
+        this.destroyWindow();
+        window.removeEventListener("beforeunload", this.documentUnloadListener);
     }
 
     async hide() {
         if(this.modalState == ModalState.DESTROYED || this.modalState === ModalState.HIDDEN)
             return;
 
-        this.destroyPopUp();
+        this.doDestroyWindow();
         this.modalState = ModalState.HIDDEN;
         this.modalEvents.fire("close");
     }
@@ -178,13 +103,17 @@ export class ExternalModalController extends EventControllerBase<"controller"> i
         if(this.modalState === ModalState.DESTROYED)
             return;
 
-        this.destroyPopUp();
+        this.doDestroyWindow();
         if(this.ipcChannel)
             ipc.getInstance().deleteChannel(this.ipcChannel);
 
         this.destroyIPC();
         this.modalState = ModalState.DESTROYED;
         this.modalEvents.fire("destroy");
+    }
+
+    protected handleWindowClosed() {
+        this.destroy();
     }
 
     protected handleIPCMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
@@ -195,14 +124,6 @@ export class ExternalModalController extends EventControllerBase<"controller"> i
             log.debug(LogCategory.IPC, tr("Remote window connected with id %s"), remoteId);
             this.ipcRemoteId = remoteId;
         } else if(this.ipcRemoteId !== remoteId) {
-            if(this.windowClosedTestInterval > 0) {
-                clearInterval(this.windowClosedTestInterval);
-                this.windowClosedTestInterval = 0;
-
-                log.debug(LogCategory.IPC, tr("Remote window got reconnected. Client reloaded it."));
-            } else {
-                log.warn(LogCategory.IPC, tr("Remote window got a new id. Maybe a reload?"));
-            }
             this.ipcRemoteId = remoteId;
         }
 

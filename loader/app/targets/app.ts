@@ -1,6 +1,6 @@
 import "./shared";
 import * as loader from "../loader/loader";
-import {ApplicationLoader, config, SourcePath} from "../loader/loader";
+import {ApplicationLoader, SourcePath} from "../loader/loader";
 import {script_name} from "../loader/utils";
 import {loadManifest, loadManifestTarget} from "../maifest";
 
@@ -9,8 +9,6 @@ declare global {
         native_client: boolean;
     }
 }
-
-const node_require: typeof require = window.require;
 
 function cache_tag() {
     const ui = ui_version();
@@ -168,18 +166,18 @@ loader.register_task(loader.Stage.SETUP, {
 export default class implements ApplicationLoader {
     execute() {
         /* TeaClient */
-        if(node_require) {
+        if(window.require) {
             if(__build.target !== "client") {
                 loader.critical_error("App seems not to be compiled for the client.", "This app has been compiled for " + __build.target);
                 return;
             }
             window.native_client = true;
 
-            const path = node_require("path");
-            const remote = node_require('electron').remote;
+            const path = __non_webpack_require__("path");
+            const remote = __non_webpack_require__('electron').remote;
 
             const render_entry = path.join(remote.app.getAppPath(), "/modules/", "renderer");
-            const render = node_require(render_entry);
+            const render = __non_webpack_require__(render_entry);
 
             loader.register_task(loader.Stage.INITIALIZING, {
                 name: "teaclient initialize",

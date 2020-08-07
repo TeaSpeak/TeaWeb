@@ -1,5 +1,5 @@
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logError} from "tc-shared/log";
 import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
 import {EventHandler, Registry} from "tc-shared/events";
 import {VideoViewerEvents} from "./Definitions";
@@ -66,7 +66,6 @@ class VideoViewer {
 
         this.events.fire_async("notify_following", { watcherId: undefined });
         this.events.fire_async("notify_video", { url: url });
-        this.modal.show();
     }
 
     async open() {
@@ -313,6 +312,7 @@ let currentVideoViewer: VideoViewer;
 export function openVideoViewer(connection: ConnectionHandler, url: string) {
     if(currentVideoViewer?.connection === connection) {
         currentVideoViewer.setWatchingVideo(url);
+        currentVideoViewer.open(); /* draw focus */
         return;
     } else if(currentVideoViewer) {
         currentVideoViewer.destroy();
@@ -323,9 +323,13 @@ export function openVideoViewer(connection: ConnectionHandler, url: string) {
     currentVideoViewer.events.on("notify_destroy", () => {
         currentVideoViewer = undefined;
     });
-    currentVideoViewer.open();
+    currentVideoViewer.open().catch(error => {
+        logError(LogCategory.GENERAL, tr("Failed to open video viewer: %o"), error);
+        currentVideoViewer.destroy();
+        currentVideoViewer = undefined;
+    });
 }
 
-window.onunload = () => {
+window.onbeforeunload = () => {
     currentVideoViewer?.destroy();
 };

@@ -1,4 +1,8 @@
 # Changelog:
+* **08.08.20**
+    - Added a watch to gether mode
+    - Added API support for the popout able browsers for the native client
+    
 * **05.08.20**
     - Putting the CSS files within the assets. No extra load needed any more
     - Revoked the async file loading limit

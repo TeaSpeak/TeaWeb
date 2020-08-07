@@ -2,7 +2,6 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {guid} from "tc-shared/crypto/uid";
 import {Settings, StaticSettings} from "tc-shared/settings";
-import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import * as loader from "tc-loader";
 import {formatMessage, formatMessageString} from "tc-shared/ui/frames/chat";
 
@@ -309,7 +308,9 @@ export async function initialize() {
         } catch (error) {
             console.error(tr("Failed to initialize selected translation: %o"), error);
             const show_error = () => {
-                createErrorModal(tr("Translation System"), tra("Failed to load current selected translation file.{:br:}File: {0}{:br:}Error: {1}{:br:}{:br:}Using default fallback translations.", cfg.current_translation_url, error)).open()
+                import("../ui/elements/Modal").then(Modal => {
+                    Modal.createErrorModal(tr("Translation System"), tra("Failed to load current selected translation file.{:br:}File: {0}{:br:}Error: {1}{:br:}{:br:}Using default fallback translations.", cfg.current_translation_url, error)).open()
+                });
             };
             if(loader.running())
                 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {

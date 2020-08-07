@@ -1,19 +1,19 @@
-interface PlayerStatusPlaying {
+export interface PlayerStatusPlaying {
     status: "playing";
 
     timestampPlay: number;
     timestampBuffer: number;
 }
 
-interface PlayerStatusBuffering {
+export interface PlayerStatusBuffering {
     status: "buffering";
 }
 
-interface PlayerStatusStopped {
+export interface PlayerStatusStopped {
     status: "stopped";
 }
 
-interface PlayerStatusPaused {
+export interface PlayerStatusPaused {
     status: "paused";
 }
 

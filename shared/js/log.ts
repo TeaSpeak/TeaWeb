@@ -152,6 +152,27 @@ export function error(category: LogCategory, message: string, ...optionalParams:
     log(LogType.ERROR, category, message, ...optionalParams);
 }
 
+/* methods for direct import */
+export function logTrace(category: LogCategory, message: string, ...optionalParams: any[]) {
+    log(LogType.TRACE, category, message, ...optionalParams);
+}
+
+export function logDebug(category: LogCategory, message: string, ...optionalParams: any[]) {
+    log(LogType.DEBUG, category, message, ...optionalParams);
+}
+
+export function logInfo(category: LogCategory, message: string, ...optionalParams: any[]) {
+    log(LogType.INFO, category, message, ...optionalParams);
+}
+
+export function logWarn(category: LogCategory, message: string, ...optionalParams: any[]) {
+    log(LogType.WARNING, category, message, ...optionalParams);
+}
+
+export function logError(category: LogCategory, message: string, ...optionalParams: any[]) {
+    log(LogType.ERROR, category, message, ...optionalParams);
+}
+
 export function group(level: LogType, category: LogCategory, name: string, ...optionalParams: any[]) : Group {
     name = "[%s] " + name;
     optionalParams.unshift(category_mapping.get(category));

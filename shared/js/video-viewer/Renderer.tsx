@@ -91,10 +91,10 @@ const WatcherInfo = React.memo((props: { events: Registry<VideoViewerEvents>, wa
 
     let renderedAvatar;
     if(clientInfo === "loading") {
-        renderedAvatar = <AvatarRenderer avatar={"loading"} key={"loading-avatar"} />;
+        renderedAvatar = <AvatarRenderer className={cssStyle.avatar} avatar={"loading"} key={"loading-avatar"} />;
     } else {
         const avatar = getGlobalAvatarManagerFactory().getManager(props.handlerId).resolveClientAvatar({ id: clientInfo.clientId, clientUniqueId: clientInfo.uniqueId });
-        renderedAvatar = <AvatarRenderer avatar={avatar} key={"client-avatar"} />;
+        renderedAvatar = <AvatarRenderer className={cssStyle.avatar} avatar={avatar} key={"client-avatar"} />;
     }
 
     let renderedClientName;
@@ -154,9 +154,7 @@ const WatcherInfo = React.memo((props: { events: Registry<VideoViewerEvents>, wa
             }}
         >
             <div className={cssStyle.containerAvatar}>
-                <div className={cssStyle.avatar}>
-                    {renderedAvatar}
-                </div>
+                {renderedAvatar}
             </div>
             <div className={cssStyle.containerDetail}>
                 <a className={cssStyle.username}>

@@ -33,18 +33,18 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
     protected ipcChannel: IPCChannel;
     protected ipcRemoteId: string;
 
-    protected readonly localEventRegistry: Registry<string>;
-    private readonly localEventReceiver: EventReceiver<string>;
+    protected readonly localEventRegistry: Registry;
+    private readonly localEventReceiver: EventReceiver;
 
     private omitEventType: string = undefined;
     private omitEventData: any;
     private eventFiredListeners: {[key: string]:{ callback: () => void, timeout: number }} = {};
 
-    protected constructor(localEventRegistry: Registry<string>) {
+    protected constructor(localEventRegistry: Registry) {
         this.localEventRegistry = localEventRegistry;
 
         let refThis = this;
-        this.localEventReceiver = new class implements EventReceiver<{}> {
+        this.localEventReceiver = new class implements EventReceiver {
             fire<T extends keyof {}>(eventType: T, data?: any[T], overrideTypeKey?: boolean) {
                 if(refThis.omitEventType === eventType && refThis.omitEventData === data) {
                     refThis.omitEventType = undefined;
@@ -70,7 +70,7 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
                 }
             }
         };
-        this.localEventRegistry.connectAll(this.localEventReceiver as any);
+        this.localEventRegistry.connectAll(this.localEventReceiver);
     }
 
     protected handleIPCMessage(remoteId: string, broadcast: boolean, message: ChannelMessage) {
@@ -112,7 +112,7 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
     }
 
     protected destroyIPC() {
-        this.localEventRegistry.disconnectAll(this.localEventReceiver as any);
+        this.localEventRegistry.disconnectAll(this.localEventReceiver);
         this.ipcChannel = undefined;
         this.ipcRemoteId = undefined;
         this.eventFiredListeners = {};
