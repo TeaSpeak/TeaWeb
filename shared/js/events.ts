@@ -21,13 +21,13 @@ export class SingletonEvent implements Event<SingletonEvents, "singletone-instan
     as<T extends keyof SingletonEvents>() : SingletonEvents[T] { return; }
 }
 
-export interface EventReceiver<Events> {
+export interface EventReceiver<Events = { [key: string]: any }> {
     fire<T extends keyof Events>(event_type: T, data?: Events[T], overrideTypeKey?: boolean);
     fire_async<T extends keyof Events>(event_type: T, data?: Events[T], callback?: () => void);
 }
 
 const event_annotation_key = guid();
-export class Registry<Events> implements EventReceiver<Events> {
+export class Registry<Events = { [key: string]: any }> implements EventReceiver<Events> {
     private readonly registryUuid;
 
     private handler: {[key: string]: ((event) => void)[]} = {};
