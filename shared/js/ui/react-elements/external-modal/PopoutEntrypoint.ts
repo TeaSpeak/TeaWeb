@@ -4,7 +4,6 @@ import * as loader from "tc-loader";
 import * as ipc from "../../../ipc/BrowserIPC";
 import * as i18n from "../../../i18n/localize";
 
-import "tc-shared/file/RemoteAvatars";
 import "tc-shared/proto";
 
 import {Stage} from "tc-loader";

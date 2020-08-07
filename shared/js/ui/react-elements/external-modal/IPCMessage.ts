@@ -110,4 +110,11 @@ export abstract class EventControllerBase<Type extends "controller" | "popout"> 
             }
         }
     }
+
+    protected destroyIPC() {
+        this.localEventRegistry.disconnectAll(this.localEventReceiver as any);
+        this.ipcChannel = undefined;
+        this.ipcRemoteId = undefined;
+        this.eventFiredListeners = {};
+    }
 }

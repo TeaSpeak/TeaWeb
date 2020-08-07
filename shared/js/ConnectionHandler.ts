@@ -35,6 +35,8 @@ import {md5} from "tc-shared/crypto/md5";
 import {guid} from "tc-shared/crypto/uid";
 import {ServerEventLog} from "tc-shared/ui/frames/log/ServerEventLog";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
+import {PluginCmdRegistry} from "tc-shared/connection/PluginCmdHandler";
+import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPluginHandler";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -157,6 +159,8 @@ export class ConnectionHandler {
 
     private _connect_initialize_id: number = 1;
 
+    private pluginCmdRegistry: PluginCmdRegistry;
+
     private client_status: LocalClientStatus = {
         input_hardware: false,
         input_muted: false,
@@ -188,6 +192,8 @@ export class ConnectionHandler {
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
 
+        this.pluginCmdRegistry = new PluginCmdRegistry(this);
+
         this.log = new ServerEventLog(this);
         this.side_bar = new Frame(this);
         this.sound = new SoundManager(this);
@@ -217,6 +223,8 @@ export class ConnectionHandler {
 
         this.event_registry.register_handler(this);
         this.events().fire("notify_handler_initialized");
+
+        this.pluginCmdRegistry.registerHandler(new W2GPluginCmdHandler());
     }
 
     initialize_client_state(source?: ConnectionHandler) {
@@ -962,6 +970,9 @@ export class ConnectionHandler {
         this.hostbanner && this.hostbanner.destroy();
         this.hostbanner = undefined;
 
+        this.pluginCmdRegistry && this.pluginCmdRegistry.destroy();
+        this.pluginCmdRegistry = undefined;
+
         this._local_client && this._local_client.destroy();
         this._local_client = undefined;
 
@@ -1031,7 +1042,7 @@ export class ConnectionHandler {
      * - Voice bridge hasn't been set upped yet
      */
     //TODO: This currently returns false
-    isSpeakerDisabled() { return false; }
+    isSpeakerDisabled() : boolean { return false; }
 
     setSubscribeToAllChannels(flag: boolean) {
         if(this.client_status.channel_subscribe_all === flag) return;
@@ -1043,7 +1054,7 @@ export class ConnectionHandler {
         this.event_registry.fire("notify_state_updated", { state: "subscribe" });
     }
 
-    isSubscribeToAllChannels() { return this.client_status.channel_subscribe_all; }
+    isSubscribeToAllChannels() : boolean { return this.client_status.channel_subscribe_all; }
 
     setAway(state: boolean | string) {
         this.setAway_(state, true);
@@ -1084,12 +1095,14 @@ export class ConnectionHandler {
         });
     }
 
-    areQueriesShown() {
+    areQueriesShown() : boolean {
         return this.client_status.queries_visible;
     }
 
-    hasInputHardware() { return this.client_status.input_hardware; }
-    hasOutputHardware() { return this.client_status.output_muted; }
+    hasInputHardware() : boolean { return this.client_status.input_hardware; }
+    hasOutputHardware() : boolean { return this.client_status.output_muted; }
+
+    getPluginCmdRegistry() : PluginCmdRegistry { return this.pluginCmdRegistry; }
 }
 
 export type ConnectionStateUpdateType = "microphone" | "speaker" | "away" | "subscribe" | "query";

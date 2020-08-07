@@ -6,7 +6,6 @@ import * as i18n from "./i18n/localize";
 
 import "./proto";
 
-import {spawnVideoPopout} from "tc-shared/video-viewer/Controller";
 
 console.error("Hello World from devel main");
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
@@ -22,7 +21,5 @@ loader.register_task(Stage.LOADED, {
     name: "invoke",
     priority: 10,
     function: async () => {
-        console.error("Spawning video popup");
-        //spawnVideoPopout();
     }
 });

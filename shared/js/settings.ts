@@ -462,6 +462,12 @@ export class Settings extends StaticSettings {
         valueType: "string"
     };
 
+    static readonly KEY_W2G_SIDEBAR_COLLAPSED: ValuedSettingsKey<boolean> = {
+        key: 'w2g_sidebar_collapsed',
+        defaultValue: false,
+        valueType: "boolean",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",

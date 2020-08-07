@@ -24,7 +24,8 @@ import {Device} from "tc-shared/audio/player";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 
-const kAvoidAudioContextWarning = true;
+/* lets try without any gestures, maybe the user already clicked the page */
+const kAvoidAudioContextWarning = false;
 
 let audioContextRequiredGesture = false;
 let audioContextInstance: AudioContext;

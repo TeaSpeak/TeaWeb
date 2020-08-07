@@ -8,6 +8,10 @@ const cssStyle = require("./Modal.scss");
 
 export type ModalType = "error" | "warning" | "info" | "none";
 
+export interface ModalOptions {
+    destroyOnClose?: boolean;
+}
+
 export interface ModalEvents {
     "open": {},
     "close": {},
@@ -22,29 +26,67 @@ export enum ModalState {
     DESTROYED
 }
 
-export class ModalController<InstanceType extends Modal = Modal> {
+export interface ModalController {
+    getOptions() : Readonly<ModalOptions>;
+    getEvents() : Registry<ModalEvents>;
+    getState() : ModalState;
+
+    show() : Promise<void>;
+    hide() : Promise<void>;
+
+    destroy();
+}
+
+export abstract class AbstractModal {
+    protected constructor() {}
+
+    abstract renderBody() : ReactElement;
+    abstract title() : string | React.ReactElement<Translatable>;
+
+    /* only valid for the "inline" modals */
+    type() : ModalType { return "none"; }
+
+    protected onInitialize() {}
+    protected onDestroy() {}
+
+    protected onClose() {}
+    protected onOpen() {}
+}
+
+export class InternalModalController<InstanceType extends InternalModal = InternalModal> implements ModalController {
     readonly events: Registry<ModalEvents>;
     readonly modalInstance: InstanceType;
 
     private initializedPromise: Promise<void>;
 
     private domElement: Element;
-    private refModal: React.RefObject<ModalImpl>;
+    private refModal: React.RefObject<InternalModalRenderer>;
     private modalState_: ModalState = ModalState.HIDDEN;
 
     constructor(instance: InstanceType) {
         this.modalInstance = instance;
-        instance["__modal_controller"] = this;
-
         this.events = new Registry<ModalEvents>();
         this.initialize();
+    }
+
+    getOptions(): Readonly<ModalOptions> {
+        /* FIXME! */
+        return {};
+    }
+
+    getEvents(): Registry<ModalEvents> {
+        return this.events;
+    }
+
+    getState() {
+        return this.modalState_;
     }
 
     private initialize() {
         this.refModal = React.createRef();
         this.domElement = document.createElement("div");
 
-        const element = <ModalImpl controller={this} ref={this.refModal} />;
+        const element = <InternalModalRenderer controller={this} ref={this.refModal} />;
         document.body.appendChild(this.domElement);
         this.initializedPromise = new Promise<void>(resolve => {
             ReactDOM.render(element, this.domElement, () => setTimeout(resolve, 0));
@@ -53,11 +95,7 @@ export class ModalController<InstanceType extends Modal = Modal> {
         this.modalInstance["onInitialize"]();
     }
 
-    modalState() {
-        return this.modalState_;
-    }
-
-    async show() {
+    async show() : Promise<void> {
         await this.initializedPromise;
         if(this.modalState_ === ModalState.DESTROYED)
             throw tr("modal has been destroyed");
@@ -101,33 +139,9 @@ export class ModalController<InstanceType extends Modal = Modal> {
     }
 }
 
-export abstract class AbstractModal {
-    protected constructor() {}
+export abstract class InternalModal extends AbstractModal { }
 
-    abstract renderBody() : ReactElement;
-    abstract title() : string | React.ReactElement<Translatable>;
-
-    protected onInitialize() {}
-    protected onDestroy() {}
-
-    protected onClose() {}
-    protected onOpen() {}
-}
-
-export abstract class Modal extends AbstractModal {
-    private __modal_controller: ModalController;
-
-    type() : ModalType { return "none"; }
-
-    /**
-     * Will only return a modal controller when the modal has not been destroyed
-     */
-    modalController() : ModalController | undefined {
-        return this.__modal_controller;
-    }
-}
-
-class ModalImpl extends React.PureComponent<{ controller: ModalController  }, { show: boolean }> {
+class InternalModalRenderer extends React.PureComponent<{ controller: InternalModalController  }, { show: boolean }> {
     private readonly refModal = React.createRef<HTMLDivElement>();
 
     constructor(props) {
@@ -175,11 +189,12 @@ class ModalImpl extends React.PureComponent<{ controller: ModalController  }, { 
     }
 }
 
-export function spawnReactModal<ModalClass extends Modal, A1>(modalClass: new () => ModalClass) : ModalController<ModalClass>;
-export function spawnReactModal<ModalClass extends Modal, A1>(modalClass: new (..._: [A1]) => ModalClass, arg1: A1) : ModalController<ModalClass>;
-export function spawnReactModal<ModalClass extends Modal, A1, A2>(modalClass: new (..._: [A1, A2]) => ModalClass, arg1: A1, arg2: A2) : ModalController<ModalClass>;
-export function spawnReactModal<ModalClass extends Modal, A1, A2, A3>(modalClass: new (..._: [A1, A2, A3]) => ModalClass, arg1: A1, arg2: A2, arg3: A3) : ModalController<ModalClass>;
-export function spawnReactModal<ModalClass extends Modal, A1, A2, A3, A4>(modalClass: new (..._: [A1, A2, A3, A4]) => ModalClass, arg1: A1, arg2: A2, arg3: A3, arg4: A4) : ModalController<ModalClass>;
-export function spawnReactModal<ModalClass extends Modal>(modalClass: new (..._: any[]) => ModalClass, ...args: any[]) : ModalController<ModalClass> {
-    return new ModalController(new modalClass(...args));
+export function spawnReactModal<ModalClass extends InternalModal, A1>(modalClass: new () => ModalClass) : InternalModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends InternalModal, A1>(modalClass: new (..._: [A1]) => ModalClass, arg1: A1) : InternalModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends InternalModal, A1, A2>(modalClass: new (..._: [A1, A2]) => ModalClass, arg1: A1, arg2: A2) : InternalModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends InternalModal, A1, A2, A3>(modalClass: new (..._: [A1, A2, A3]) => ModalClass, arg1: A1, arg2: A2, arg3: A3) : InternalModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends InternalModal, A1, A2, A3, A4>(modalClass: new (..._: [A1, A2, A3, A4]) => ModalClass, arg1: A1, arg2: A2, arg3: A3, arg4: A4) : InternalModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends InternalModal, A1, A2, A3, A4, A5>(modalClass: new (..._: [A1, A2, A3, A4]) => ModalClass, arg1: A1, arg2: A2, arg3: A3, arg4: A4, arg5: A5) : InternalModalController<ModalClass>;
+export function spawnReactModal<ModalClass extends InternalModal>(modalClass: new (..._: any[]) => ModalClass, ...args: any[]) : InternalModalController<ModalClass> {
+    return new InternalModalController(new modalClass(...args));
 }

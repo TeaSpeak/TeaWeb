@@ -1,4 +1,4 @@
-import {Modal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {InternalModal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import * as React from "react";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {Button} from "tc-shared/ui/react-elements/Button";
@@ -238,7 +238,7 @@ export function spawnClientVolumeChange(client: ClientEntry) {
         client.setAudioVolume(event.newValue);
     });
 
-    const modal = spawnReactModal(class extends Modal {
+    const modal = spawnReactModal(class extends InternalModal {
         constructor() {
             super();
         }
@@ -277,7 +277,7 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
         });
     });
 
-    const modal = spawnReactModal(class extends Modal {
+    const modal = spawnReactModal(class extends InternalModal {
         constructor() {
             super();
         }

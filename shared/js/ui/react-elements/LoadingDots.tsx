@@ -9,10 +9,10 @@ export const LoadingDots = (props: { maxDots?: number, speed?: number, textOnly?
     const [dots, setDots] = useState(0);
 
     useEffect(() => {
-        if(!props.enabled)
+        if(typeof props.enabled === "boolean" && !props.enabled)
             return;
 
-        const timeout = setTimeout(() => setDots(dots + 1), speed || 500);
+        const timeout = setTimeout(() => setDots(dots + 1), typeof speed === "number" ? speed : 500);
         return () => clearTimeout(timeout);
     });
 

@@ -8,3 +8,4 @@ export const rendererHTML = new HTMLRenderer(rendererReact);
 
 import "./emoji";
 import "./highlight";
+import "./youtube";

@@ -1,4 +1,4 @@
-import {Modal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {InternalModal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import * as React from "react";
 import {FileType} from "tc-shared/file/FileManager";
 import {Registry} from "tc-shared/events";
@@ -179,7 +179,7 @@ export interface FileBrowserEvents {
 }
 
 
-class FileTransferModal extends Modal {
+class FileTransferModal extends InternalModal {
     readonly remoteBrowseEvents = new Registry<FileBrowserEvents>();
     readonly transferInfoEvents = new Registry<TransferInfoEvents>();
 

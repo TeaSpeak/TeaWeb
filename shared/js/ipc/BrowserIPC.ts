@@ -112,15 +112,17 @@ export abstract class BasicIPCHandler {
             const data: ChannelMessage = message.data;
 
             let channel_invoked = false;
-            for(const channel of this._channels)
+            for(const channel of this._channels) {
                 if(channel.channelId === data.channel_id && (typeof(channel.targetClientId) === "undefined" || channel.targetClientId === message.sender)) {
                     if(channel.messageHandler)
                         channel.messageHandler(message.sender, message.receiver === BasicIPCHandler.BROADCAST_UNIQUE_ID, data);
                     channel_invoked = true;
                 }
+            }
+
             if(!channel_invoked) {
-                debugger;
-                console.warn(tr("Received channel message for unknown channel (%s)"), data.channel_id);
+                /* Seems like we're not the only web/teaclient instance */
+                /* console.warn(tr("Received channel message for unknown channel (%s)"), data.channel_id); */
             }
         }
     }
