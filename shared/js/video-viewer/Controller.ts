@@ -64,8 +64,8 @@ class VideoViewer {
         if(this.currentVideoUrl === url)
             return;
 
-        this.events.fire("notify_following", { watcherId: undefined });
-        this.events.fire("notify_video", { url: url });
+        this.events.fire_async("notify_following", { watcherId: undefined });
+        this.events.fire_async("notify_video", { url: url });
     }
 
     async open() {

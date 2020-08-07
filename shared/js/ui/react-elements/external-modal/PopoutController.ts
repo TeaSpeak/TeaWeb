@@ -24,7 +24,7 @@ class PopoutController extends EventControllerBase<"popout"> {
     private callbackControllerHello: (accepted: boolean | string) => void;
 
     constructor() {
-        super(new Registry<string>());
+        super(new Registry());
         this.ipcRemoteId = Settings.instance.static(Settings.KEY_IPC_REMOTE_ADDRESS, "invalid");
 
         this.ipcChannel = getIPCInstance().createChannel(this.ipcRemoteId, Settings.instance.static(kSettingIPCChannel, "invalid"));
