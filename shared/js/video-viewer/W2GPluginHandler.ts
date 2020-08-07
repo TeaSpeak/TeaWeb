@@ -212,9 +212,7 @@ export class W2GPluginCmdHandler extends PluginCmdHandler {
     }
 
     handleHandlerRegistered() {
-        console.error("REGISTER!");
         this.localStatusUpdateTimer = setInterval(() => this.notifyLocalStatus(), W2GPluginCmdHandler.kStatusUpdateInterval);
-        this.setLocalWatcherStatus("https://www.youtube.com/watch?v=9683D18fyvs", { status: "paused" });
     }
 
     handleHandlerUnregistered() {
