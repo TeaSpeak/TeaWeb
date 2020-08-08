@@ -97,8 +97,8 @@ class VideoViewer {
             this.events.fire("notify_following", { watcherId: event.newWatcher ? event.newWatcher.clientId + " - " + event.newWatcher.clientUniqueId : undefined });
         }));
 
-        this.events.on("notify_destroy", this.plugin.events.on("notify_following_url", () => {
-            /* TODO! */
+        this.events.on("notify_destroy", this.plugin.events.on("notify_following_url", event => {
+            this.events.fire_async("notify_video", { url: event.newUrl });
         }));
 
         this.events.on("notify_destroy", this.plugin.events.on("notify_following_watcher_status", event => {
