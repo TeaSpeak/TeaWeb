@@ -38,6 +38,4 @@ import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/m
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/overlay-image-preview.scss"
 
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/tab.scss"
-import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/icons.scss"
-import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/icons_em.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/country.scss"
