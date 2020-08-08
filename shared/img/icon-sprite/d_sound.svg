@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="client-d_sound" width="16"
+     height="16" viewBox="0 0 16 16" x="0" y="0">
+    <path fill="#a9aaac" d="M1.497 5.117v6.653l5.936 3.479v-6.658l-5.936-3.473z"></path>
+    <path fill="#7289da" d="M14.503 5.121l-5.937 3.476v6.653l5.937-3.466v-6.663z"></path>
+    <path fill="#999" d="M13.938 4.101l-5.938-3.351-5.934 3.349 5.94 3.476 5.933-3.473z"></path>
+</svg>

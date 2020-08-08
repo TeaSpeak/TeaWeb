@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="client-security" width="16"
+     height="16" viewBox="0 0 16 16" x="384" y="256">
+    <path fill="#7289da"
+          d="M7.404 14.875c0 0-6.279-4.319-6.279-12.349 1.95 0 6.277-1.401 6.277-1.401l0.002 13.75z"></path>
+    <path fill="#a9aaac"
+          d="M8.597 14.875c0 0 6.278-4.319 6.278-12.349-1.95 0-6.277-1.401-6.277-1.401l-0.002 13.75z"></path>
+</svg>
