@@ -1,6 +1,9 @@
 # Changelog:
+* **09.08.20**
+    - Added a "watch to gather" context menu entry for clients
+    
 * **08.08.20**
-    - Added a watch to gether mode
+    - Added a watch to gather mode
     - Added API support for the popout able browsers for the native client
     
 * **05.08.20**

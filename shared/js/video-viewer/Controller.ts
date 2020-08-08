@@ -4,9 +4,12 @@ import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
 import {EventHandler, Registry} from "tc-shared/events";
 import {VideoViewerEvents} from "./Definitions";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {W2GPluginCmdHandler, W2GWatcher, W2GWatcherFollower} from "tc-shared/video-viewer/W2GPluginHandler";
+import {W2GPluginCmdHandler, W2GWatcher, W2GWatcherFollower} from "tc-shared/video-viewer/W2GPlugin";
 import {ModalController} from "tc-shared/ui/react-elements/Modal";
 import {settings, Settings} from "tc-shared/settings";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {createErrorModal} from "tc-shared/ui/elements/Modal";
 
 const parseWatcherId = (id: string): { clientId: number, clientUniqueId: string} => {
     const [ clientIdString, clientUniqueId ] = id.split(" - ");
@@ -26,7 +29,7 @@ class VideoViewer {
     private unregisterCallbacks = [];
     private destroyCalled = false;
 
-    constructor(connection: ConnectionHandler, initialUrl: string) {
+    constructor(connection: ConnectionHandler) {
         this.connection = connection;
 
         this.events = new Registry<VideoViewerEvents>();
@@ -37,8 +40,7 @@ class VideoViewer {
             throw tr("Missing video viewer plugin");
         }
 
-        this.modal = spawnExternalModal("video-viewer", this.events, { handlerId: connection.handlerId, url: initialUrl });
-        this.setWatchingVideo(initialUrl);
+        this.modal = spawnExternalModal("video-viewer", this.events, { handlerId: connection.handlerId });
 
         this.registerPluginListeners();
         this.plugin.getCurrentWatchers().forEach(watcher => this.registerWatcherEvents(watcher));
@@ -64,8 +66,16 @@ class VideoViewer {
         if(this.currentVideoUrl === url)
             return;
 
-        this.events.fire_async("notify_following", { watcherId: undefined });
-        this.events.fire_async("notify_video", { url: url });
+        this.plugin.setLocalWatcherStatus(url, { status: "paused" });
+        this.events.fire_async("notify_video", { url: url }); /* notify the new url */
+    }
+
+    setFollowing(target: W2GWatcher) {
+        if(this.plugin.getLocalFollowingWatcher() === target)
+            return;
+
+        this.plugin.setLocalFollowing(target, { status: "paused" });
+        this.events.fire_async("notify_video", { url: target.getCurrentVideo() }); /* notify the new url */
     }
 
     async open() {
@@ -291,45 +301,57 @@ class VideoViewer {
         settings.changeGlobal(Settings.KEY_W2G_SIDEBAR_COLLAPSED, !event.shown);
     }
 
-
-
     @EventHandler<VideoViewerEvents>("notify_video")
     private handleVideo(event: VideoViewerEvents["notify_video"]) {
         if(this.currentVideoUrl === event.url)
             return;
 
         this.currentVideoUrl = event.url;
-        const following = this.plugin.getLocalFollowingWatcher();
-        if(following)
-            this.plugin.setLocalFollowing(following, { status: "paused" });
-        else
-            this.plugin.setLocalWatcherStatus(this.currentVideoUrl, { status: "paused" });
         this.notifyWatcherList();
     }
 }
 
 let currentVideoViewer: VideoViewer;
 
-export function openVideoViewer(connection: ConnectionHandler, url: string) {
-    if(currentVideoViewer?.connection === connection) {
-        currentVideoViewer.setWatchingVideo(url);
-        currentVideoViewer.open(); /* draw focus */
-        return;
-    } else if(currentVideoViewer) {
+global_client_actions.on("action_w2g", event => {
+    const connection = server_connections.findConnection(event.handlerId);
+    if(connection === undefined) return;
+
+    const plugin = connection.getPluginCmdRegistry().getPluginHandler<W2GPluginCmdHandler>(W2GPluginCmdHandler.kPluginChannel);
+
+    let watcher: W2GWatcher;
+    if('following' in event) {
+        watcher = plugin.getCurrentWatchers().find(e => e.clientId === event.following);
+        if(!watcher) {
+            createErrorModal(tr("Target client isn't watching anything"), tr("The target client isn't watching anything.")).open();
+            return;
+        }
+    }
+
+    if(currentVideoViewer && currentVideoViewer.connection !== connection) {
         currentVideoViewer.destroy();
         currentVideoViewer = undefined;
     }
 
-    currentVideoViewer = new VideoViewer(connection, url);
-    currentVideoViewer.events.on("notify_destroy", () => {
-        currentVideoViewer = undefined;
-    });
+    if(!currentVideoViewer) {
+        currentVideoViewer = new VideoViewer(connection);
+        currentVideoViewer.events.on("notify_destroy", () => {
+            currentVideoViewer = undefined;
+        });
+    }
+
+    if('following' in event) {
+        currentVideoViewer.setFollowing(watcher);
+    } else {
+        currentVideoViewer.setWatchingVideo(event.videoUrl);
+    }
+
     currentVideoViewer.open().catch(error => {
         logError(LogCategory.GENERAL, tr("Failed to open video viewer: %o"), error);
         currentVideoViewer.destroy();
         currentVideoViewer = undefined;
     });
-}
+});
 
 window.onbeforeunload = () => {
     currentVideoViewer?.destroy();

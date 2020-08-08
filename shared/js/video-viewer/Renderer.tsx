@@ -127,7 +127,7 @@ const WatcherInfo = React.memo((props: { events: Registry<VideoViewerEvents>, wa
             if(Math.abs(expectedPlaytime - currentPlaytime) > 2) {
                 setStatus(Object.assign({ timestamp: Date.now() }, event.status));
             } else {
-                /* keep the last value, its still close enought */
+                /* keep the last value, its still close enough */
                 setStatus({
                     status: "playing",
                     timestamp: status.timestamp,
@@ -305,6 +305,8 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
     const [ masterPlayerState, setWatcherPlayerState ] = useState<"playing" | "buffering" | "paused" | "stopped">("stopped");
     const watcherTimestamp = useRef<number>();
 
+    const videoEnded = useRef(false);
+
     const [ forcePause, setForcePause ] = useState(false);
 
     props.events.reactUse("notify_following", event => setMode(event.watcherId === undefined ? "watcher" : "follower"));
@@ -375,16 +377,30 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
                 kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onEnded()"));
                 playerState.current = "stopped";
                 props.events.fire("notify_local_status", { status: { status: "stopped" } });
+
+                videoEnded.current = true;
+                player.current.seekTo(0, "seconds");
             }}
 
             onPause={() => {
                 kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onPause()"));
+
+                if(videoEnded.current) {
+                    videoEnded.current = false;
+                    return;
+                }
+
                 playerState.current = "paused";
                 props.events.fire("notify_local_status", { status: { status: "paused" } });
             }}
 
             onPlay={() => {
                 kLogPlayerEvents && log.trace(LogCategory.GENERAL, tr("ReactPlayer::onPlay()"));
+
+                if(videoEnded.current) {
+                    /* it's just the seek to the beginning */
+                    return;
+                }
 
                 if(mode === "follower") {
                     if(masterPlayerState !== "playing") {
@@ -399,6 +415,7 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
                     log.debug(LogCategory.GENERAL, tr("Player started, at second %d. Watcher is at %s. So sync: %o"), currentSeconds, expectedSeconds, doSync);
                     doSync && player.current.seekTo(expectedSeconds, "seconds");
                 }
+
                 playerState.current = "playing";
                 props.events.fire("notify_local_status", { status: { status: "playing", timestampBuffer: currentTime.current.buffer, timestampPlay: currentTime.current.play } });
             }}
@@ -436,6 +453,13 @@ const PlayerController = React.memo((props: { events: Registry<VideoViewerEvents
             loop={false}
             light={false}
 
+            config={{
+                youtube: {
+                    playerVars: {
+                        rel: 0
+                    }
+                }
+            }}
             playing={mode === "watcher" ? undefined : masterPlayerState === "playing" || forcePause}
         />
     );

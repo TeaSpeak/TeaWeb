@@ -41,7 +41,7 @@ import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./connection/CommandHandler";
 import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
-import {openVideoViewer} from "tc-shared/video-viewer/Controller";
+import "./video-viewer/Controller";
 
 declare global {
     interface Window {
@@ -496,8 +496,6 @@ function main() {
         const modal = openModalNewcomer();
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
-
-    (window as any).spawnVideoPopout = openVideoViewer;
 
     //spawnVideoPopout(server_connections.active_connection(), "https://www.youtube.com/watch?v=9683D18fyvs");
 }

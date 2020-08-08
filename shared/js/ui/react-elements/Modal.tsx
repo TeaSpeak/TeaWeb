@@ -10,6 +10,8 @@ export type ModalType = "error" | "warning" | "info" | "none";
 
 export interface ModalOptions {
     destroyOnClose?: boolean;
+
+    defaultSize?: { width: number, height: number };
 }
 
 export interface ModalEvents {

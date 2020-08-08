@@ -36,7 +36,7 @@ import {guid} from "tc-shared/crypto/uid";
 import {ServerEventLog} from "tc-shared/ui/frames/log/ServerEventLog";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {PluginCmdRegistry} from "tc-shared/connection/PluginCmdHandler";
-import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPluginHandler";
+import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,

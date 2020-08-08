@@ -8,8 +8,8 @@ import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
-import {openVideoViewer} from "tc-shared/video-viewer/Controller";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
 
 const playIcon = require("./yt-play-button.svg");
 const cssStyle = require("./youtube.scss");
@@ -36,7 +36,10 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
 
                             spawn_context_menu(event.pageX, event.pageY, {
                                 callback: () => {
-                                    openVideoViewer(server_connections.active_connection(), text);
+                                    global_client_actions.fire("action_w2g", {
+                                        videoUrl: text,
+                                        handlerId: server_connections.active_connection().handlerId
+                                    });
                                 },
                                 name: tr("Watch video"),
                                 type: contextmenu.MenuEntryType.ENTRY,
@@ -59,7 +62,10 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
                     >
                         <img draggable={false} src={"https://img.youtube.com/vi/" + result[1] + "/hqdefault.jpg"} alt={"Video thumbnail"} title={tra("Youtube video {}", result[1])} />
                         <button className={cssStyle.playButton} onClick={() => {
-                            openVideoViewer(server_connections.active_connection(), text);
+                            global_client_actions.fire("action_w2g", {
+                                videoUrl: text,
+                                handlerId: server_connections.active_connection().handlerId
+                            });
                         }}>
                             <HTMLRenderer purify={false}>{playIcon}</HTMLRenderer>
                         </button>

@@ -89,15 +89,15 @@ class ExternalModalController extends AbstractExternalModalController {
             "loader-abort": __build.mode === "debug" ? 1 : 0,
         };
 
+        const options = this.getOptions();
         const features = {
             status: "no",
             location: "no",
             toolbar: "no",
             menubar: "no",
-            /*
-            width: 600,
-            height: 400
-            */
+            resizable: "yes",
+            width: options.defaultSize?.width,
+            height: options.defaultSize?.height
         };
 
         let baseUrl = location.origin + location.pathname + "?";

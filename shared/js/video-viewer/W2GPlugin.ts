@@ -195,14 +195,14 @@ export class W2GPluginCmdHandler extends PluginCmdHandler {
     static readonly kStatusUpdateTimeout = 10000;
 
     readonly events: Registry<W2GEvents>;
+    private readonly callbackWatcherEvents;
+
     private currentWatchers: InternalW2GWatcher[] = [];
 
     private localPlayerStatus: PlayerStatus;
     private localVideoUrl: string;
     private localFollowing: InternalW2GWatcher | undefined;
     private localStatusUpdateTimer: number;
-
-    private callbackWatcherEvents;
 
     constructor() {
         super(W2GPluginCmdHandler.kPluginChannel);

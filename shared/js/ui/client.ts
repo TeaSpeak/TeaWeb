@@ -27,6 +27,8 @@ import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "tc-shared/ui/modal/ModalChangeVolumeNew";
 import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
+import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -508,6 +510,8 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
+        const w2gPlugin = this.channelTree.client.getPluginCmdRegistry().getPluginHandler<W2GPluginCmdHandler>(W2GPluginCmdHandler.kPluginChannel);
+
         let trigger_close = true;
         contextmenu.spawn_context_menu(x, y,
             ...this.contextmenu_info(), {
@@ -518,6 +522,17 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 callback: () => {
                     this.open_text_chat();
+                }
+            }, {
+                type: contextmenu.MenuEntryType.ENTRY,
+                name: tr("Watch clients video"),
+                icon_path: "img/icon_w2g.svg",
+                visible: w2gPlugin?.getCurrentWatchers().findIndex(e => e.clientId === this.clientId()) !== -1,
+                callback: () => {
+                    global_client_actions.fire("action_w2g", {
+                        following: this.clientId(),
+                        handlerId: this.channelTree.client.handlerId
+                    });
                 }
             },
             contextmenu.Entry.HR(),
