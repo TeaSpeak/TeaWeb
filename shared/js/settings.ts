@@ -4,12 +4,17 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "tc-shared/events";
 
-type ConfigValueTypes = boolean | number | string;
-type ConfigValueTypeNames = "boolean" | "number" | "string";
+type ConfigValueTypes = boolean | number | string | object;
+type ConfigValueTypeNames = "boolean" | "number" | "string" | "object";
+
+type ValueTypeMapping<T> = T extends boolean ? "boolean" :
+                           T extends number ? "number" :
+                           T extends string ? "string" :
+                           T extends object ? "object" : never;
 
 export interface SettingsKey<ValueType extends ConfigValueTypes> {
     key: string;
-    valueType: ConfigValueTypeNames;
+    valueType: ValueTypeMapping<ValueType>;
 
     defaultValue?: ValueType;
 
@@ -44,6 +49,13 @@ export class SettingsBase {
             case "number":
                 return parseFloat(input) as any;
 
+            case "object":
+                try {
+                    return JSON.parse(input);
+                } catch (error) {
+                    return {} as any;
+                }
+
             default:
                 return defaultValue;
         }
@@ -61,6 +73,9 @@ export class SettingsBase {
 
             case "number":
                 return input.toString();
+
+            case "object":
+                return JSON.stringify(input);
 
             default:
                 return undefined;
@@ -486,7 +501,7 @@ export class Settings extends StaticSettings {
     static readonly FN_LOG_LEVEL_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log.level." + category.toLowerCase() + ".enabled",
-            valueType: "boolean",
+            valueType: "boolean"
         }
     };
 
@@ -512,10 +527,10 @@ export class Settings extends StaticSettings {
         }
     };
 
-    static readonly FN_PROFILE_RECORD: (name: string) => SettingsKey<any> = name => {
+    static readonly FN_PROFILE_RECORD: (name: string) => SettingsKey<object> = name => {
         return {
             key: 'profile_record' + name,
-            valueType: "string",
+            valueType: "object",
         }
     };
 

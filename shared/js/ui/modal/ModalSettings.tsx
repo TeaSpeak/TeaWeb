@@ -1719,6 +1719,7 @@ export namespace modal_settings {
             const update_level_meter = () => {
                 destroy_meters();
 
+                return; /* FIXME: Remove! */
                 for(const device of arecorder.devices()) {
                     let promise = arecorder.create_levelmeter(device).then(meter => {
                         meter.set_observer(level => {

@@ -33,7 +33,7 @@ import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
-import "svg-sprite/client-icons";
+import "svg-sprites/client-icons";
 
 /* required import for init */
 import "../css/load-css"

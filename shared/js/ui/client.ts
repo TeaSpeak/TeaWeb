@@ -29,7 +29,7 @@ import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPer
 import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
-import { ClientIcon } from "svg-sprite/client-icons";
+import { ClientIcon } from "svg-sprites/client-icons";
 
 export enum ClientType {
     CLIENT_VOICE,

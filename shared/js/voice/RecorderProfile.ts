@@ -153,7 +153,7 @@ export class RecorderProfile {
     }
 
     private save(enforce?: boolean) {
-        if(enforce || !this.volatile)
+        if(!this.volatile)
             settings.changeGlobal(Settings.FN_PROFILE_RECORD(this.name), this.config);
     }
 
