@@ -6,6 +6,7 @@ import {formatDate} from "tc-shared/MessageFormatter";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {format_time} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {XBBCodeRenderer} from "vendor/xbbcode/react";
 
 const cssStyle = require("./DispatcherLog.scss");
 const cssStyleRenderer = require("./Renderer.scss");
@@ -472,7 +473,12 @@ registerDispatcher(EventType.CLIENT_NICKNAME_CHANGE_FAILED,(data) => (
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.GLOBAL_MESSAGE, () => undefined);
+registerDispatcher(EventType.GLOBAL_MESSAGE, (data, handlerId) => <>
+    <VariadicTranslatable text={"{} send a server message: {1}"}>
+        <ClientRenderer client={data.sender} handlerId={handlerId} />
+        <XBBCodeRenderer>{data.message}</XBBCodeRenderer>
+    </VariadicTranslatable>
+</>);
 
 
 registerDispatcher(EventType.DISCONNECTED,() => (
