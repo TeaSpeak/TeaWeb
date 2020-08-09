@@ -1,6 +1,5 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import {AbstractModal} from "tc-shared/ui/react-elements/Modal";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
@@ -15,6 +14,7 @@ import "tc-shared/file/RemoteAvatars";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
 import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
 import {Settings, settings} from "tc-shared/settings";
+import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 
 const iconNavbar = require("./icon-navbar.svg");
 const cssStyle = require("./Renderer.scss");

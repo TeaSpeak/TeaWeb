@@ -1,4 +1,4 @@
-import {InternalModal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
 import {FlatInputField, FlatSelect} from "tc-shared/ui/react-elements/InputField";
@@ -11,6 +11,7 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
+import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 
 const cssStyle = require("./ModalGroupCreate.scss");
 

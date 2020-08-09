@@ -8,7 +8,7 @@ import {
     Popout2ControllerMessages,
     PopoutIPCMessage
 } from "tc-shared/ui/react-elements/external-modal/IPCMessage";
-import {ModalController, ModalEvents, ModalOptions, ModalState} from "tc-shared/ui/react-elements/Modal";
+import {ModalController, ModalEvents, ModalOptions, ModalState} from "tc-shared/ui/react-elements/ModalDefinitions";
 
 export abstract class AbstractExternalModalController extends EventControllerBase<"controller"> implements ModalController {
     public readonly modalType: string;
@@ -158,6 +158,10 @@ export abstract class AbstractExternalModalController extends EventControllerBas
             case "fire-event":
             case "fire-event-callback":
                 /* already handled by out base class */
+                break;
+
+            case "invoke-modal-action":
+                /* must be handled by the underlying handler */
                 break;
 
             default:

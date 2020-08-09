@@ -13,17 +13,22 @@ export interface PopoutIPCMessage {
 
     "fire-event-callback": {
         callbackId: string
+    },
+
+    "invoke-modal-action": {
+        action: "close" | "minimize"
     }
 }
 
 export type Controller2PopoutMessages = "hello-controller" | "fire-event" | "fire-event-callback";
-export type Popout2ControllerMessages = "hello-popout" | "fire-event" | "fire-event-callback";
+export type Popout2ControllerMessages = "hello-popout" | "fire-event" | "fire-event-callback" | "invoke-modal-action";
 
-interface SendIPCMessage {
+export interface SendIPCMessage {
     "controller": Controller2PopoutMessages;
     "popout": Popout2ControllerMessages;
 }
-interface ReceivedIPCMessage {
+
+export interface ReceivedIPCMessage {
     "controller": Popout2ControllerMessages;
     "popout": Controller2PopoutMessages;
 }

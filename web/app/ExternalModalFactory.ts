@@ -6,6 +6,7 @@ import {Stage} from "tc-loader";
 import {setExternalModalControllerFactory} from "tc-shared/ui/react-elements/external-modal";
 import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
+import {Popout2ControllerMessages, PopoutIPCMessage} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
 
 class ExternalModalController extends AbstractExternalModalController {
     private currentWindow: Window;
@@ -121,6 +122,25 @@ class ExternalModalController extends AbstractExternalModalController {
         }
 
         super.handleIPCMessage(remoteId, broadcast, message);
+    }
+
+    protected handleTypedIPCMessage<T extends Popout2ControllerMessages>(type: T, payload: PopoutIPCMessage[T]) {
+        super.handleTypedIPCMessage(type, payload);
+
+        switch (type) {
+            case "invoke-modal-action":
+                const data = payload as PopoutIPCMessage["invoke-modal-action"];
+                switch (data.action) {
+                    case "close":
+                        this.destroy();
+                        break;
+
+                    case "minimize":
+                        window.focus();
+                        break;
+                }
+                break;
+        }
     }
 }
 

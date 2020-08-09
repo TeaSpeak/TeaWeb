@@ -1,4 +1,5 @@
-import * as $ from "jquery";
+import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
 import {KeyCode} from "tc-shared/PPTListener";
 
 export enum ElementType {
@@ -179,7 +180,6 @@ namespace modal {
         });
     }
 }
-modal.initialize_modals();
 
 let _global_modal_count = 0;
 let _global_modal_last: HTMLElement;
@@ -395,26 +395,10 @@ export function createInfoModal(header: BodyCreator, message: BodyCreator, props
     return modal;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
+    priority: 80,
+    name: "modal init",
+    function: async () => {
+        modal.initialize_modals();
+    }
+})

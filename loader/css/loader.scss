@@ -19,6 +19,8 @@ $setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
 	flex-direction: column;
 	justify-content: center;
 
+	-webkit-app-region: drag;
+
 	.container {
 		flex-shrink: 0;
 

@@ -87,4 +87,12 @@ class PopoutController extends EventControllerBase<"popout"> {
     getUserData() {
         return this.userData;
     }
+
+    doClose() {
+        this.sendIPCMessage("invoke-modal-action", { action: "close" });
+    }
+
+    doMinimize() {
+        this.sendIPCMessage("invoke-modal-action", { action: "minimize" });
+    }
 }

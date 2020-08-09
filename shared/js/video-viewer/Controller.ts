@@ -5,11 +5,11 @@ import {EventHandler, Registry} from "tc-shared/events";
 import {VideoViewerEvents} from "./Definitions";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {W2GPluginCmdHandler, W2GWatcher, W2GWatcherFollower} from "tc-shared/video-viewer/W2GPlugin";
-import {ModalController} from "tc-shared/ui/react-elements/Modal";
 import {settings, Settings} from "tc-shared/settings";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {ModalController} from "tc-shared/ui/react-elements/ModalDefinitions";
 
 const parseWatcherId = (id: string): { clientId: number, clientUniqueId: string} => {
     const [ clientIdString, clientUniqueId ] = id.split(" - ");

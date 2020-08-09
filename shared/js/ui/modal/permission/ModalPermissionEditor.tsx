@@ -1,4 +1,4 @@
-import {InternalModal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as React from "react";
 import {useState} from "react";
@@ -31,6 +31,7 @@ import {
 } from "tc-shared/ui/modal/permission/SenselessPermissions";
 import {spawnGroupCreate} from "tc-shared/ui/modal/ModalGroupCreate";
 import {spawnModalGroupPermissionCopy} from "tc-shared/ui/modal/ModalGroupPermissionCopy";
+import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 
 const cssStyle = require("./ModalPermissionEditor.scss");
 

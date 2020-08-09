@@ -14,6 +14,15 @@ $sidebar-width: 20em;
 
     min-height: 10em;
     min-width: 20em;
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow: hidden;
 }
 
 .containerPlayer {
@@ -26,6 +35,8 @@ $sidebar-width: 20em;
     display: flex;
     flex-direction: row;
     justify-content: stretch;
+
+    position: relative;
 }
 
 .sidebarButton {

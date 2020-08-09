@@ -1,7 +1,6 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
-import {AbstractModal} from "tc-shared/ui/react-elements/Modal";
+import {AbstractModal, ModalRenderer} from "tc-shared/ui/react-elements/ModalDefinitions";
 
 const cssStyle = require("./PopoutRenderer.scss");
 
@@ -27,7 +26,6 @@ class TitleRenderer {
             ReactDOM.render(<>{this.modalInstance.title()}</>, this.htmlContainer);
     }
 }
-export const titleRenderer = new TitleRenderer();
 
 class BodyRenderer {
     private readonly htmlContainer: HTMLElement;
@@ -48,4 +46,24 @@ class BodyRenderer {
             ReactDOM.render(<>{this.modalInstance.renderBody()}</>, this.htmlContainer);
     }
 }
-export const bodyRenderer = new BodyRenderer();
+
+export class WebModalRenderer implements ModalRenderer {
+    private readonly titleRenderer: TitleRenderer;
+    private readonly bodyRenderer: BodyRenderer;
+
+    private currentModal: AbstractModal;
+
+    constructor() {
+        this.titleRenderer = new TitleRenderer();
+        this.bodyRenderer = new BodyRenderer();
+    }
+
+    renderModal(modal: AbstractModal | undefined) {
+        if(this.currentModal === modal)
+            return;
+
+        this.currentModal = modal;
+        this.titleRenderer.setInstance(modal);
+        this.bodyRenderer.setInstance(modal);
+    }
+}
