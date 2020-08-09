@@ -28,7 +28,6 @@ node_modules/
 # All our config files are .ts files
 /*.js
 /*.js.map
-!babel.config.js
 
 /webpack/*.js
 /webpack/*.js.map
