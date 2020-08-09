@@ -16,6 +16,7 @@
       "tc-backend/web/*": ["web/app/*"], /* specific web part */
       "tc-backend/*": ["shared/backend.d/*"],
       "tc-loader": ["loader/exports/loader.d.ts"],
+      "svg-sprite/*": ["shared/svg-sprites/*"],
 
       "vendor/xbbcode/*": ["vendor/xbbcode/src/*"]
     }
