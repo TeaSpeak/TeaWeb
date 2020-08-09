@@ -1,4 +1,4 @@
-module.exports = function (api) {
+export = api => {
     api.cache(false);
     const presets = [
         [
@@ -24,4 +24,4 @@ module.exports = function (api) {
         presets,
         plugins
     };
-};
+}
