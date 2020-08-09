@@ -17,38 +17,6 @@ const WorkerPlugin = require('worker-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
-/*
-    const sourceFolder = path.join(__dirname, "..", "shared", "img", "icon-sprite");
-
-    const publicCssUrl = "url('../../../img/client_icon_sprite_new.svg'), url('../../img/client_icon_sprite_new.svg')";
-    const cssConfigurations: SpriteCssOptions[] = [
-        {
-            scale: 1,
-            selector: ".icon",
-            prefix: "client-",
-            unit: "px"
-        },
-        {
-            scale: 1.5,
-            selector: ".icon_x24",
-            prefix: "client-",
-            unit: "px"
-        },
-        {
-            scale: 2,
-            selector: ".icon_x32",
-            prefix: "client-",
-            unit: "px"
-        },
-        {
-            scale: 1,
-            selector: ".icon_em",
-            prefix: "client-",
-            unit: "em"
-        }
-    ];
- */
-
 export let isDevelopment = process.env.NODE_ENV === 'development';
 console.log("Webpacking for %s (%s)", isDevelopment ? "development" : "production", process.env.NODE_ENV || "NODE_ENV not specified");
 const generate_definitions = async (target: string) => {
@@ -116,41 +84,37 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
         }),
         new webpack.DefinePlugin(await generate_definitions(target)),
         new SvgSpriteGenerator({
-            dtsOutputFolder: path.join(__dirname, "shared", "generated"),
+            dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
             configurations: {
                 "client-icons": {
-                    folder: path.join(__dirname, "shared", "img", "icon-sprite"),
+                    folder: path.join(__dirname, "shared", "img", "client-icons"),
+                    cssClassPrefix: "client-",
                     cssOptions: [
                         {
                             scale: 1,
                             selector: ".icon",
-                            prefix: "client-",
                             unit: "px"
                         },
                         {
                             scale: 1.5,
                             selector: ".icon_x24",
-                            prefix: "client-",
                             unit: "px"
                         },
                         {
                             scale: 2,
                             selector: ".icon_x32",
-                            prefix: "client-",
                             unit: "px"
                         },
                         {
                             scale: 1,
                             selector: ".icon_em",
-                            prefix: "client-",
                             unit: "em"
                         }
                     ],
                     dtsOptions: {
                         enumName: "ClientIcon",
                         classUnionName: "ClientIconClass",
-                        module: true,
-                        cssClassPrefix: "client-"
+                        module: false
                     }
                 }
             }
