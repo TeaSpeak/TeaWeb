@@ -73,6 +73,7 @@ $setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
 			width: 249px;
 			height: 125px;
 			background: url("../img/loader/steam.png") 0 0;
+			background: url("img/loader/steam.png") 0 0;
 
 			animation: sprite-steam 2.5s steps(50) forwards infinite;
 		}
