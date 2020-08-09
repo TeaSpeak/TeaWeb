@@ -20,7 +20,7 @@
 
     "loader/IndexGenerator.ts",
 
-    "babel.config.ts",,
+    "babel.config.ts",
     "file.ts"
   ],
   "exclude": [
