@@ -347,6 +347,8 @@ global_client_actions.on("action_w2g", event => {
     }
 
     currentVideoViewer.open().catch(error => {
+        let errorMessage = typeof error === "string" ? error : tr("Lookup the console for details");
+        createErrorModal(tr("Failed to open video viewer."), tra("Failed to open the video viewer: {}", errorMessage)).open();
         logError(LogCategory.GENERAL, tr("Failed to open video viewer: %o"), error);
         currentVideoViewer.destroy();
         currentVideoViewer = undefined;
