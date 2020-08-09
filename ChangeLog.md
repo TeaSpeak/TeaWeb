@@ -1,7 +1,9 @@
 # Changelog:
 * **09.08.20**
     - Added a "watch to gather" context menu entry for clients
-    
+    - Disassembled the current client icon sprite into his icons
+    - Added an icon spread generator. This now allows dynamically adding new icons to the spread sheet
+        
 * **08.08.20**
     - Added a watch to gather mode
     - Added API support for the popout able browsers for the native client
