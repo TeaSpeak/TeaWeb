@@ -2,7 +2,6 @@ import {ClientEntry} from "tc-shared/ui/client";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {EventHandler, Registry} from "tc-shared/events";
 import {
-    PrivateConversationManagerEvents,
     PrivateConversationInfo,
     PrivateConversationUIEvents
 } from "tc-shared/ui/frames/side/PrivateConversationDefinitions";
@@ -315,7 +314,6 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
 }
 
 export class PrivateConversationManager extends AbstractChatManager<PrivateConversationUIEvents> {
-    public readonly events: Registry<PrivateConversationManagerEvents>;
     public readonly htmlTag: HTMLDivElement;
     public readonly connection: ConnectionHandler;
 
@@ -327,7 +325,6 @@ export class PrivateConversationManager extends AbstractChatManager<PrivateConve
     constructor(connection: ConnectionHandler) {
         super();
         this.connection = connection;
-        this.events = new Registry<PrivateConversationManagerEvents>();
 
         this.htmlTag = document.createElement("div");
         this.htmlTag.style.display = "flex";
