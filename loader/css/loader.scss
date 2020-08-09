@@ -32,6 +32,10 @@ $setup-time: 80s / 24; /* 24 frames / sec; the initial sequence is 80 seconds */
 		margin-bottom: 10vh;
 
 		transition-duration: .5s;
+
+		img {
+			user-select: none;
+		}
 	}
 
 	.setup, .idle {
