@@ -4,8 +4,8 @@
     "target": "es6",
     "module": "commonjs",
     "sourceMap": true,
-    "lib": ["es6"],
-    "removeComments": false,
+    "lib": ["es6", "dom"],
+    "removeComments": false
   },
   "include": [
     "webpack.config.ts",
