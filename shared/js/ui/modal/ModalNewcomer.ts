@@ -294,8 +294,8 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
 function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.newcomer>, modal: Modal) {
     const microphone_events = new Registry<emodal.settings.microphone>();
     //microphone_events.enable_debug("settings-microphone");
-    modal_settings.initialize_audio_microphone_controller(microphone_events);
-    modal_settings.initialize_audio_microphone_view(tag, microphone_events);
+    //modal_settings.initialize_audio_microphone_controller(microphone_events);
+    //modal_settings.initialize_audio_microphone_view(tag, microphone_events);
     modal.close_listener.push(() => microphone_events.fire_async("deinitialize"));
 
     let help_animation_done = false;

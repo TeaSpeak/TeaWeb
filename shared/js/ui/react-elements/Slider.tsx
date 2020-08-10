@@ -13,6 +13,9 @@ export interface SliderProperties {
     disabled?: boolean;
     className?: string;
 
+    classNameFiller?: string;
+    inverseFiller?: boolean;
+
     unit?: string;
     tooltip?: (value: number) => ReactElement | string;
 
@@ -36,8 +39,8 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
     private readonly mouseListener;
     private readonly mouseUpListener;
 
-    private readonly refTooltip = React.createRef<Tooltip>();
-    private readonly refSlider = React.createRef<HTMLDivElement>();
+    protected readonly refTooltip = React.createRef<Tooltip>();
+    protected readonly refSlider = React.createRef<HTMLDivElement>();
 
     constructor(props) {
         super(props);
@@ -87,6 +90,7 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
         if(!this.documentListenersRegistered) return;
         this.documentListenersRegistered = false;
 
+        document.body.classList.remove(cssStyle.documentClass);
         document.removeEventListener('mousemove', this.mouseListener);
         document.removeEventListener('touchmove', this.mouseListener);
 
@@ -100,6 +104,7 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
         if(this.documentListenersRegistered) return;
         this.documentListenersRegistered = true;
 
+        document.body.classList.add(cssStyle.documentClass);
         document.addEventListener('mousemove', this.mouseListener);
         document.addEventListener('touchmove', this.mouseListener);
 
@@ -124,7 +129,10 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
                 onMouseDown={e => this.enableSliderMode(e)}
                 onTouchStart={e => this.enableSliderMode(e)}
             >
-                <div className={cssStyle.filler} style={{right: (100 - offset) + "%"}} />
+                <div className={cssStyle.filler + " " + (this.props.classNameFiller || "")} style={{
+                    right: this.props.inverseFiller ? 0 : (100 - offset) + "%",
+                    left: this.props.inverseFiller ? offset + "%" : 0
+                }} />
                 <Tooltip ref={this.refTooltip} tooltip={() => this.props.tooltip ? this.props.tooltip(this.state.value) : this.renderTooltip()}>
                     <div className={cssStyle.thumb} style={{left: offset + "%"}} />
                 </Tooltip>
@@ -132,14 +140,14 @@ export class Slider extends React.Component<SliderProperties, SliderState> {
         );
     }
 
-    private enableSliderMode(event: React.MouseEvent | React.TouchEvent) {
+    protected enableSliderMode(event: React.MouseEvent | React.TouchEvent) {
         this.setState({ active: true });
         this.registerDocumentListener();
         this.mouseListener(event);
         this.refTooltip.current?.setState({ forceShow: true });
     }
 
-    private renderTooltip() {
+    protected renderTooltip() {
         return <a>{this.state.value + (this.props.unit || "")}</a>;
     }
 

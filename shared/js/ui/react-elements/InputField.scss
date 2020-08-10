@@ -46,7 +46,7 @@ html:root {
         color: var(--boxed-input-field-placeholder);
     };
 
-    .prefix {
+    .prefix, .suffix {
         flex-grow: 0;
         flex-shrink: 0;
 
@@ -65,6 +65,10 @@ html:root {
         @include transition($button_hover_animation_time ease-in-out);
     }
 
+    .suffix {
+        padding-left: 0;
+    }
+
     &.is-invalid {
         background-color: var(--boxed-input-field-invalid-background);
         border-color: var(--boxed-input-field-invalid-border);
@@ -80,7 +84,7 @@ html:root {
 
             color: var(--boxed-input-field-focus-text);
 
-            .prefix {
+            .prefix, .suffix {
                 width: 0;
                 padding-left: 0;
                 padding-right: 0;
@@ -125,6 +129,7 @@ html:root {
     }
 
     &.disabled, &:disabled {
+        @include user-select(none);
         background-color: var(--boxed-input-field-disabled-background);
     }
 
@@ -138,6 +143,12 @@ html:root {
         input, select {
             padding-left: .5em;
         }
+    }
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
     }
 
     @include transition($button_hover_animation_time ease-in-out);

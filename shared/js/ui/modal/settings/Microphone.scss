@@ -1,0 +1,579 @@
+@import "../../../../css/static/properties";
+@import "../../../../css/static/mixin";
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+    flex-shrink: 1;
+    flex-grow: 1;
+
+    min-width: 43em;
+    min-height: 41em;
+
+    position: relative;
+
+    .left, .right {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        width: calc(50% - .5em); /* the .5em for the padding/margin */
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+    }
+
+    .left {
+        margin-right: 1em;
+
+        min-height: 0;
+        max-height: 100%;
+
+        .body {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            min-height: 6.5em;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+
+            border: 1px $color_list_border solid;
+            border-radius: $border_radius_large;
+
+            background-color: $color_list_background;
+
+            .buttons {
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                height: 3.5em;
+                padding: .5em;
+
+                display: flex;
+                flex-direction: row;
+                justify-content: stretch;
+
+                border: none;
+                border-top: 1px $color_list_border solid;
+
+                .spacer {
+                    flex-grow: 1;
+                    flex-shrink: 1;
+                }
+
+                :not(.spacer) {
+                    flex-grow: 0;
+                    flex-shrink: 0;
+                }
+
+                button {
+                    min-width: 8em;
+                    height: 2.5em;
+                }
+            }
+        }
+    }
+
+    .right {
+        padding-right: .5em; /* for the sliders etc*/
+        justify-content: flex-start;
+
+        .body {
+            flex-grow: 0;
+            flex-shrink: 1;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            /* microphone */
+            .containerVolume {
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+
+                height: 3em;
+                width: 100%;
+            }
+
+            /* microphone */
+            .containerSelectVad {
+                margin-top: .5em;
+                width: 100%;
+
+                .fieldset {
+                    padding: 0;
+                    margin: 0;
+
+                    flex-shrink: 1;
+                    flex-grow: 1;
+
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: stretch;
+
+                    > .containerOption {
+                        padding: 0;
+
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: space-between;
+
+                        > label {
+                            flex-shrink: 0;
+                            min-width: 5em;
+
+                            cursor: pointer;
+
+                            display: flex;
+                            flex-direction: row;
+                            justify-content: flex-start;
+
+                            height: 1.7em;
+
+                            a {
+                                align-self: center;
+                                line-height: 1.2em;
+                            }
+                        }
+
+                        button {
+                            width: 100%;
+
+                            height: 2em;
+                            font-size: .75em;
+
+                            align-self: center;
+
+                            overflow: hidden;
+                            white-space: nowrap;
+                            text-overflow: ellipsis;
+                        }
+
+                        .containerButton {
+                            flex-shrink: 1;
+                            margin-left: .5em;
+
+                            min-width: 3em;
+                            width: 15em;
+                        }
+                    }
+                }
+            }
+
+            /* microphone */
+            .containerSensitivity {
+                width: 100%;
+
+                display: flex;
+                flex-direction: row;
+                justify-content: stretch;
+
+                position: relative;
+
+                .slider {
+                    width: 100%;
+                    background: transparent;
+
+                    .filler {
+                        display: none;
+                    }
+                }
+
+                .containerBar {
+                    position: absolute;
+
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+
+                    .containerActivityBar {
+                        width: 100%;
+                    }
+                }
+            }
+
+            /* microphone */
+            .containerAdvanced {
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+
+                .containerPptDelay {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: space-between;
+
+                    .input {
+                        width: 6em;
+                        font-size: .7em;
+
+                        input {
+                            font-size: 1.1em;
+                        }
+                    }
+                }
+            }
+
+            /* speaker */
+            .containerVolumeMaster {
+                .filler {
+                    background-color: #2b8541;
+                }
+            }
+
+            .containerVolumeSoundpack {
+                padding-top: .75em;
+            }
+        }
+    }
+}
+
+.header {
+    height: 2.6em;
+
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    padding-bottom: .5em;
+
+    a {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        align-self: flex-end;
+
+        font-weight: bold;
+        color: #e0e0e0;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .btn {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        height: 2em;
+        align-self: flex-end;
+
+        margin-left: 1em;
+        min-width: 8em;
+    }
+}
+
+.containerDevices {
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    min-height: 3em;
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    @include chat-scrollbar-vertical();
+
+    .device {
+        flex-shrink: 0;
+        flex-grow: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        cursor: pointer;
+
+        height: 3em;
+        width: 100%;
+
+        .containerSelected {
+            /* the selected border */
+            margin-top: 1px;
+            margin-bottom: 1px;
+
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            width: 3em;
+            position: relative;
+
+            border: none;
+            border-right: 1px solid #242527;
+
+            > * {
+                padding: .5em;
+                position: absolute;
+
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+
+                margin: auto;
+            }
+
+            > :global(.icon_em) {
+                font-size: 2em;
+            }
+
+            > .iconLoading {
+                img {
+                    max-height: 100%;
+                    max-width: 100%;
+
+                    -webkit-animation:spin 4s linear infinite;
+                    -moz-animation:spin 4s linear infinite;
+                    animation:spin 4s linear infinite;
+                }
+            }
+        }
+
+        .containerName {
+            /* the selected border */
+            margin-top: 1px;
+            margin-bottom: 1px;
+
+            flex-shrink: 1;
+            flex-grow: 1;
+
+            min-width: 4em;
+
+            padding: .5em;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+
+            border: none;
+
+            .driver {
+                font-size: .8em;
+                line-height: 1em;
+
+                color: #6a6a6a;
+
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .name {
+                line-height: 1em;
+
+                color: #999999;
+
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+        }
+
+        .containerActivity {
+            /* the selected border */
+            margin-top: 1px;
+            margin-bottom: 1px;
+
+            flex-shrink: 0;
+            flex-grow: 0;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+
+            padding: .5em;
+
+            width: 10em;
+
+            border: none;
+            border-left: 1px solid #242527;
+
+            .bar {
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                width: 8em;
+            }
+        }
+
+        &:hover {
+            background-color: $color_list_hover;
+        }
+
+        &.selected {
+            > div {
+                margin-top: 0;
+                margin-bottom: 0;
+
+                border-bottom: 1px solid #242527;
+                border-top: 1px solid #242527;
+            }
+        }
+    }
+
+    .overlay {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        background-color: #28292b;
+
+        a {
+            font-size: 1.3em;
+            align-self: center;
+            color: #9e9494;
+            text-align: center;
+        }
+
+        &.hidden {
+            pointer-events: none;
+            opacity: 0;
+        }
+    }
+}
+
+.containerActivityBar {
+    $bar_height: 1em;
+
+    $thumb_width: .6em;
+    $thumb_height: 2em;
+
+    position: relative;
+    align-self: center;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+
+    height: $bar_height;
+    border-radius: $border_radius_large;
+
+    overflow: hidden;
+    cursor: pointer;
+
+    .hider {
+        position: absolute;
+
+        top: 0;
+        right: 0;
+        bottom: 0;
+
+        background-color: #242527;
+
+        -webkit-box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.75);
+        -moz-box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.75);
+        box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.75);
+
+        border-bottom-right-radius: $border_radius_large;
+        border-top-right-radius: $border_radius_large;
+
+        @include transition(.06s ease-in-out);
+    }
+
+    &[value] {
+        overflow: visible; /* for the thumb */
+
+        border-bottom-left-radius: $border_radius_large;
+        border-top-left-radius: $border_radius_large;
+    }
+
+    .text {
+        z-index: 2;
+        width: 100%;
+        text-align: center;
+
+        line-height: 1em;
+        font-size: .8em;
+
+        padding-left: .2em;
+        padding-right: .2em;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &.error {
+            color: #a10000;
+        }
+    }
+
+    .thumb {
+        position: absolute;
+
+        top: 0;
+        right: 0;
+
+        height: $thumb_height;
+        width: $thumb_width;
+
+        margin-left: -($thumb_width / 2);
+        margin-right: -($thumb_width / 2);
+
+        margin-top: -($thumb_height - $bar_height) / 2;
+        margin-bottom: -($thumb_height - $bar_height) / 2;
+
+        background-color: #808080;
+
+        .tooltip {
+            display: none;
+        }
+    }
+
+    &.disabled {
+        pointer-events: none;
+
+        .hider {
+            width: 100%;
+        }
+
+        .thumb {
+            background-color: #4d4d4d;
+
+            .tooltip {
+                opacity: 0;
+            }
+        }
+    }
+
+    -webkit-box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.25);
+    -moz-box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.25);
+    box-shadow: inset 0 0 2px 0 rgba(0,0,0,0.25);
+
+    /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#70407e+0,45407e+100 */
+    background: rgb(112,64,126); /* Old browsers */
+    background: -moz-linear-gradient(left,  rgba(112,64,126,1) 0%, rgba(69,64,126,1) 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(left,  rgba(112,64,126,1) 0%,rgba(69,64,126,1) 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to right,  rgba(112,64,126,1) 0%,rgba(69,64,126,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#70407e', endColorstr='#45407e',GradientType=1 ); /* IE6-9 */
+}
+
+@-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }
+@-webkit-keyframes spin { 100% { -webkit-transform: rotate(360deg); } }
+@keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
