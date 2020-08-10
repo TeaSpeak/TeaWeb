@@ -1,11 +1,8 @@
-import {voice} from "tc-shared/connection/ConnectionBase";
-import VoiceClient = voice.VoiceClient;
-import PlayerState = voice.PlayerState;
 import {CodecClientCache} from "../codec/Codec";
 import * as aplayer from "../audio/player";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
-import LatencySettings = voice.LatencySettings;
+import {LatencySettings, PlayerState, VoiceClient} from "tc-shared/connection/VoiceConnection";
 
 export class VoiceClientController implements VoiceClient {
     callback_playback: () => any;

@@ -10,6 +10,9 @@ import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Settings, settings} from "tc-shared/settings";
 import {TreeEntry, UnreadMarker} from "tc-shared/ui/tree/TreeEntry";
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
+import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
+import {ClientIcon} from "svg-sprites/client-icons";
+import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 
 const channelStyle = require("./Channel.scss");
 const viewStyle = require("./View.scss");
@@ -33,23 +36,47 @@ interface ChannelEntryIconsState {
 @ReactEventHandler<ChannelEntryIcons>(e => e.props.channel.events)
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
 class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, ChannelEntryIconsState> {
-    private static readonly SimpleIcon = (props: { iconClass: string, title: string }) => {
-        return <div className={"icon " + props.iconClass} title={props.title} />
-    };
+    private readonly listenerVoiceStatusChange;
+
+    constructor(props) {
+        super(props);
+
+        this.listenerVoiceStatusChange = () => {
+            let stateUpdate = {} as ChannelEntryIconsState;
+            this.updateVoiceStatus(stateUpdate, this.props.channel.properties.channel_codec);
+            this.setState(stateUpdate);
+        }
+    }
+
+    private serverConnection() {
+        return this.props.channel.channelTree.client.serverConnection;
+    }
+
+    componentDidMount() {
+        const voiceConnection = this.serverConnection().getVoiceConnection();
+        voiceConnection.events.on("notify_connection_status_changed", this.listenerVoiceStatusChange);
+    }
+
+    componentWillUnmount() {
+        const voiceConnection = this.serverConnection().getVoiceConnection();
+        voiceConnection.events.off("notify_connection_status_changed", this.listenerVoiceStatusChange);
+    }
 
     protected defaultState(): ChannelEntryIconsState {
         const properties = this.props.channel.properties;
-        const server_connection = this.props.channel.channelTree.client.serverConnection;
 
-        return {
+        const status = {
             icons_shown: this.props.channel.parsed_channel_name.alignment === "normal",
             custom_icon_id: properties.channel_icon_id,
             is_music_quality: properties.channel_codec === 3 || properties.channel_codec === 5,
-            is_codec_supported: server_connection.support_voice() && server_connection.voice_connection().decoding_supported(properties.channel_codec),
+            is_codec_supported: false,
             is_default: properties.channel_flag_default,
             is_password_protected: properties.channel_flag_password,
             is_moderated: properties.channel_needed_talk_power !== 0
         }
+        this.updateVoiceStatus(status, this.props.channel.properties.channel_codec);
+
+        return status;
     }
 
     render() {
@@ -59,16 +86,16 @@ class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, 
             return null;
 
         if(this.state.is_default)
-            icons.push(<ChannelEntryIcons.SimpleIcon key={"icon-default"} iconClass={"client-channel_default"} title={tr("Default channel")} />);
+            icons.push(<ClientIconRenderer key={"icon-default"} icon={ClientIcon.ChannelDefault} title={tr("Default channel")} />);
 
         if(this.state.is_password_protected)
-            icons.push(<ChannelEntryIcons.SimpleIcon key={"icon-password"} iconClass={"client-register"} title={tr("The channel is password protected")} />); //TODO: "client-register" is really the right icon?
+            icons.push(<ClientIconRenderer key={"icon-protected"} icon={ClientIcon.Register} title={tr("The channel is password protected")} />);
 
         if(this.state.is_music_quality)
-            icons.push(<ChannelEntryIcons.SimpleIcon key={"icon-music"} iconClass={"client-music"} title={tr("Music quality")} />);
+            icons.push(<ClientIconRenderer key={"icon-music"} icon={ClientIcon.Music} title={tr("Music quality")} />);
 
         if(this.state.is_moderated)
-            icons.push(<ChannelEntryIcons.SimpleIcon key={"icon-moderated"} iconClass={"client-moderated"} title={tr("Channel is moderated")} />);
+            icons.push(<ClientIconRenderer key={"icon-moderated"} icon={ClientIcon.Moderated} title={tr("Channel is moderated")} />);
 
         if(this.state.custom_icon_id)
             icons.push(<LocalIconRenderer  key={"icon-custom"} icon={this.props.channel.channelTree.client.fileManager.icons.load_icon(this.state.custom_icon_id)} title={tr("Client icon")} />);
@@ -87,30 +114,46 @@ class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, 
 
     @EventHandler<ChannelEvents>("notify_properties_updated")
     private handlePropertiesUpdate(event: ChannelEvents["notify_properties_updated"]) {
+        let updates = {} as ChannelEntryIconsState;
         if(typeof event.updated_properties.channel_icon_id !== "undefined")
-            this.setState({ custom_icon_id: event.updated_properties.channel_icon_id });
+            updates.custom_icon_id = event.updated_properties.channel_icon_id;
 
         if(typeof event.updated_properties.channel_codec !== "undefined" || typeof event.updated_properties.channel_codec_quality !== "undefined") {
             const codec = event.channel_properties.channel_codec;
-            this.setState({ is_music_quality: codec === 3 || codec === 5 });
+            updates.is_music_quality = codec === 3 || codec === 5;
         }
 
         if(typeof event.updated_properties.channel_codec !== "undefined") {
-            const server_connection = this.props.channel.channelTree.client.serverConnection;
-            this.setState({ is_codec_supported: server_connection.support_voice() && server_connection.voice_connection().decoding_supported(event.channel_properties.channel_codec) });
+            this.updateVoiceStatus(updates, event.channel_properties.channel_codec);
         }
 
         if(typeof event.updated_properties.channel_flag_default !== "undefined")
-            this.setState({ is_default: event.updated_properties.channel_flag_default });
+            updates.is_default = event.updated_properties.channel_flag_default;
 
         if(typeof event.updated_properties.channel_flag_password !== "undefined")
-            this.setState({ is_password_protected: event.updated_properties.channel_flag_password });
+            updates.is_password_protected = event.updated_properties.channel_flag_password;
 
         if(typeof event.updated_properties.channel_needed_talk_power !== "undefined")
-            this.setState({ is_moderated: event.channel_properties.channel_needed_talk_power !== 0 });
+            updates.is_moderated = event.updated_properties.channel_needed_talk_power !== 0;
 
         if(typeof event.updated_properties.channel_name !== "undefined")
-            this.setState({ icons_shown: this.props.channel.parsed_channel_name.alignment === "normal" });
+            updates.icons_shown = this.props.channel.parsed_channel_name.alignment === "normal";
+
+        this.setState(updates);
+    }
+
+    private updateVoiceStatus(state: ChannelEntryIconsState, currentCodec: number) {
+        const voiceConnection = this.serverConnection().getVoiceConnection();
+        const voiceState = voiceConnection.getConnectionState();
+
+        switch (voiceState) {
+            case VoiceConnectionStatus.Connected:
+                state.is_codec_supported = voiceConnection.decoding_supported(currentCodec);
+                break;
+
+            default:
+                state.is_codec_supported = false;
+        }
     }
 }
 

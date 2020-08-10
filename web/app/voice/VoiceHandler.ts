@@ -1,129 +1,15 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import * as loader from "tc-loader";
 import * as aplayer from "../audio/player";
-import {BasicCodec} from "../codec/BasicCodec";
-import {CodecType} from "../codec/Codec";
-import {createErrorModal} from "tc-shared/ui/elements/Modal";
-import {CodecWrapperWorker} from "../codec/CodecWrapperWorker";
 import {ServerConnection} from "../connection/ServerConnection";
-import {voice} from "tc-shared/connection/ConnectionBase";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClientController} from "./VoiceClient";
 import {settings, ValuedSettingsKey} from "tc-shared/settings";
 import {CallbackInputConsumer, InputConsumerType, NodeInputConsumer} from "tc-shared/voice/RecorderBase";
-import AbstractVoiceConnection = voice.AbstractVoiceConnection;
-import VoiceClient = voice.VoiceClient;
 import {tr} from "tc-shared/i18n/localize";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
-
-export namespace codec {
-    class CacheEntry {
-        instance: BasicCodec;
-        owner: number;
-
-        last_access: number;
-    }
-
-    export function codec_supported(type: CodecType) {
-        return type == CodecType.OPUS_MUSIC || type == CodecType.OPUS_VOICE;
-    }
-
-    export class CodecPool {
-        codecIndex: number;
-        name: string;
-        type: CodecType;
-
-        entries: CacheEntry[] = [];
-        maxInstances: number = 2;
-
-        private _supported: boolean = true;
-
-        initialize(cached: number) {
-            /* test if we're able to use this codec */
-            const dummy_client_id = 0xFFEF;
-
-            this.ownCodec(dummy_client_id, _ => {}).then(codec => {
-                log.trace(LogCategory.VOICE, tr("Releasing codec instance (%o)"), codec);
-                this.releaseCodec(dummy_client_id);
-            }).catch(error => {
-                if(this._supported) {
-                    log.warn(LogCategory.VOICE, tr("Disabling codec support for "), this.name);
-                    createErrorModal(tr("Could not load codec driver"), tr("Could not load or initialize codec ") + this.name + "<br>" +
-                        "Error: <code>" + JSON.stringify(error) + "</code>").open();
-                    log.error(LogCategory.VOICE, tr("Failed to initialize the opus codec. Error: %o"), error);
-                } else {
-                    log.debug(LogCategory.VOICE, tr("Failed to initialize already disabled codec. Error: %o"), error);
-                }
-                this._supported = false;
-            });
-        }
-
-        supported() { return this._supported; }
-
-        ownCodec?(clientId: number, callback_encoded: (buffer: Uint8Array) => any, create: boolean = true) : Promise<BasicCodec | undefined> {
-            return new Promise<BasicCodec>((resolve, reject) => {
-                if(!this._supported) {
-                    reject(tr("unsupported codec!"));
-                    return;
-                }
-
-                let free_slot = 0;
-                for(let index = 0; index < this.entries.length; index++) {
-                    if(this.entries[index].owner == clientId) {
-                        this.entries[index].last_access = Date.now();
-                        if(this.entries[index].instance.initialized())
-                            resolve(this.entries[index].instance);
-                        else {
-                            this.entries[index].instance.initialise().then((flag) => {
-                                //TODO test success flag
-                                this.ownCodec(clientId, callback_encoded, false).then(resolve).catch(reject);
-                            }).catch(reject);
-                        }
-                        return;
-                    } else if(this.entries[index].owner == 0) {
-                        free_slot = index;
-                    }
-                }
-
-                if(!create) {
-                    resolve(undefined);
-                    return;
-                }
-
-                if(free_slot == 0){
-                    free_slot = this.entries.length;
-                    let entry = new CacheEntry();
-                    entry.instance = new CodecWrapperWorker(this.type);
-                    this.entries.push(entry);
-                }
-                this.entries[free_slot].owner = clientId;
-                this.entries[free_slot].last_access = new Date().getTime();
-                this.entries[free_slot].instance.on_encoded_data = callback_encoded;
-                if(this.entries[free_slot].instance.initialized())
-                    this.entries[free_slot].instance.reset();
-                else {
-                    this.ownCodec(clientId, callback_encoded, false).then(resolve).catch(reject);
-                    return;
-                }
-                resolve(this.entries[free_slot].instance);
-            });
-        }
-
-        releaseCodec(clientId: number) {
-            for(let index = 0; index < this.entries.length; index++)
-                if(this.entries[index].owner == clientId) this.entries[index].owner = 0;
-        }
-
-        constructor(index: number, name: string, type: CodecType){
-            this.codecIndex = index;
-            this.name = name;
-            this.type = type;
-
-            this._supported = this.type !== undefined && codec_supported(this.type);
-        }
-    }
-}
+import {AbstractVoiceConnection, VoiceClient, VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
+import {codecPool, CodecPool} from "tc-backend/web/voice/CodecConverter";
 
 export enum VoiceEncodeType {
     JS_ENCODE,
@@ -139,10 +25,11 @@ const KEY_VOICE_CONNECTION_TYPE: ValuedSettingsKey<number> = {
 export class VoiceConnection extends AbstractVoiceConnection {
     readonly connection: ServerConnection;
 
+    connectionState: VoiceConnectionStatus;
     rtcPeerConnection: RTCPeerConnection;
     dataChannel: RTCDataChannel;
 
-    private _type: VoiceEncodeType = VoiceEncodeType.NATIVE_ENCODE;
+    private connectionType: VoiceEncodeType = VoiceEncodeType.NATIVE_ENCODE;
 
     private localAudioStarted = false;
     /*
@@ -152,10 +39,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
     local_audio_mute: GainNode;
     local_audio_stream: MediaStreamAudioDestinationNode;
 
-    static codec_pool: codec.CodecPool[];
-
     static codecSupported(type: number) : boolean {
-        return this.codec_pool && this.codec_pool.length > type && this.codec_pool[type].supported();
+        return !!codecPool && codecPool.length > type && codecPool[type].supported();
     }
 
     private voice_packet_id: number = 0;
@@ -169,9 +54,15 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     constructor(connection: ServerConnection) {
         super(connection);
-        this.connection = connection;
 
-        this._type = settings.static_global(KEY_VOICE_CONNECTION_TYPE, this._type);
+        this.connectionState = VoiceConnectionStatus.Disconnected;
+
+        this.connection = connection;
+        this.connectionType = settings.static_global(KEY_VOICE_CONNECTION_TYPE, this.connectionType);
+    }
+
+    getConnectionState(): VoiceConnectionStatus {
+        return this.connectionState;
     }
 
     destroy() {
@@ -189,6 +80,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
             this._audio_clients = undefined;
             this._audio_source = undefined;
         });
+        this.events.destroy();
     }
 
     static native_encoding_supported() : boolean {
@@ -197,21 +89,17 @@ export class VoiceConnection extends AbstractVoiceConnection {
             return false;
 
         if(!context.prototype.createMediaStreamDestination)
-            return false; //Required, but not available within edge
+            return false; /* Required, but not available within edge */
 
         return true;
     }
 
     static javascript_encoding_supported() : boolean {
-        if(!window.RTCPeerConnection)
-            return false;
-        if(!RTCPeerConnection.prototype.createDataChannel)
-            return false;
-        return true;
+        return typeof window.RTCPeerConnection !== "undefined" && typeof window.RTCPeerConnection.prototype.createDataChannel === "function";
     }
 
     current_encoding_supported() : boolean {
-        switch (this._type) {
+        switch (this.connectionType) {
             case VoiceEncodeType.JS_ENCODE:
                 return VoiceConnection.javascript_encoding_supported();
             case VoiceEncodeType.NATIVE_ENCODE:
@@ -247,11 +135,13 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(this._audio_source === recorder && !enforce)
             return;
 
-        if(recorder)
+        if(recorder) {
             await recorder.unmount();
+        }
 
-        if(this._audio_source)
+        if(this._audio_source) {
             await this._audio_source.unmount();
+        }
 
         this.handleLocalVoiceEnded();
         this._audio_source = recorder;
@@ -272,7 +162,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
                     }
                 }
                 if(new_input) {
-                    if(this._type == VoiceEncodeType.NATIVE_ENCODE) {
+                    if(this.connectionType == VoiceEncodeType.NATIVE_ENCODE) {
                         if(!this.local_audio_stream)
                             this.setup_native(); /* requires initialized audio */
 
@@ -311,15 +201,16 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 }
             };
         }
-        this.connection.client.update_voice_status(undefined);
+
+        this.events.fire("notify_recorder_changed");
     }
 
-    get_encoder_type() : VoiceEncodeType { return this._type; }
+    get_encoder_type() : VoiceEncodeType { return this.connectionType; }
     set_encoder_type(target: VoiceEncodeType) {
-        if(target == this._type) return;
-        this._type = target;
+        if(target == this.connectionType) return;
+        this.connectionType = target;
 
-        if(this._type == VoiceEncodeType.NATIVE_ENCODE)
+        if(this.connectionType == VoiceEncodeType.NATIVE_ENCODE)
             this.setup_native();
         else
             this.setup_js();
@@ -331,7 +222,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
     }
 
     voice_send_support() : boolean {
-        if(this._type == VoiceEncodeType.NATIVE_ENCODE)
+        if(this.connectionType == VoiceEncodeType.NATIVE_ENCODE)
             return VoiceConnection.native_encoding_supported() && this.rtcPeerConnection.getLocalStreams().length > 0;
         else
             return this.voice_playback_support();
@@ -405,7 +296,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(!this.current_encoding_supported())
             return false;
 
-        if(this._type == VoiceEncodeType.NATIVE_ENCODE)
+        if(this.connectionType == VoiceEncodeType.NATIVE_ENCODE)
             this.setup_native();
         else
             this.setup_js();
@@ -413,7 +304,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.drop_rtp_session();
         this._ice_use_cache = true;
 
-
+        this.setConnectionState(VoiceConnectionStatus.Connecting);
         let config: RTCConfiguration = {};
         config.iceServers = [];
         config.iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
@@ -427,7 +318,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.dataChannel.binaryType = "arraybuffer";
 
         let sdpConstraints : RTCOfferOptions = {};
-        sdpConstraints.offerToReceiveAudio = this._type == VoiceEncodeType.NATIVE_ENCODE;
+        sdpConstraints.offerToReceiveAudio = this.connectionType == VoiceEncodeType.NATIVE_ENCODE;
         sdpConstraints.offerToReceiveVideo = false;
         sdpConstraints.voiceActivityDetection = true;
 
@@ -460,7 +351,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this._ice_use_cache = true;
         this._ice_cache = [];
 
-        this.connection.client.update_voice_status(undefined);
+        this.setConnectionState(VoiceConnectionStatus.Disconnected);
     }
 
     private registerRemoteICECandidate(candidate: RTCIceCandidate) {
@@ -559,7 +450,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
     private onMainDataChannelOpen(channel) {
         log.info(LogCategory.VOICE, tr("Got new data channel! (%s)"), this.dataChannel.readyState);
 
-        this.connection.client.update_voice_status();
+        this.setConnectionState(VoiceConnectionStatus.Connected);
     }
 
     private onMainDataChannelMessage(message: MessageEvent) {
@@ -578,7 +469,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
             return;
         }
 
-        let codec_pool = VoiceConnection.codec_pool[codec];
+        let codec_pool = codecPool[codec];
         if(!codec_pool) {
             log.error(LogCategory.VOICE, tr("Could not playback codec %o"), codec);
             return;
@@ -621,7 +512,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         }
 
         const codec = this._encoder_codec;
-        VoiceConnection.codec_pool[codec]
+        codecPool[codec]
             .ownCodec(chandler.getClientId(), e => this.handleEncodedVoicePacket(e, codec), true)
             .then(encoder => encoder.encodeSamples(client.get_codec_cache(codec), data));
     }
@@ -638,7 +529,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         log.info(LogCategory.VOICE, tr("Local voice ended"));
         this.localAudioStarted = false;
 
-        if(this._type === VoiceEncodeType.NATIVE_ENCODE) {
+        if(this.connectionType === VoiceEncodeType.NATIVE_ENCODE) {
             setTimeout(() => {
                 /* first send all data, than send the stop signal */
                 this.sendVoiceStopPacket(this._encoder_codec);
@@ -670,6 +561,15 @@ export class VoiceConnection extends AbstractVoiceConnection {
         log.info(LogCategory.VOICE, "Lost recorder!");
         this._audio_source = undefined;
         this.acquire_voice_recorder(undefined, true); /* we can ignore the promise because we should finish this directly */
+    }
+
+    private setConnectionState(state: VoiceConnectionStatus) {
+        if(this.connectionState === state)
+            return;
+
+        const oldState = this.connectionState;
+        this.connectionState = state;
+        this.events.fire("notify_connection_status_changed", { newStatus: state, oldStatus: oldState });
     }
 
     connected(): boolean {
@@ -733,25 +633,3 @@ declare global {
         createOffer(successCallback?: RTCSessionDescriptionCallback, failureCallback?: RTCPeerConnectionErrorCallback, options?: RTCOfferOptions): Promise<RTCSessionDescription>;
     }
 }
-
-loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
-    priority: 10,
-    function: async () => {
-        aplayer.on_ready(() => {
-            log.info(LogCategory.VOICE, tr("Initializing voice handler after AudioController has been initialized!"));
-
-            VoiceConnection.codec_pool = [
-                new codec.CodecPool(0, tr("Speex Narrowband"), CodecType.SPEEX_NARROWBAND),
-                new codec.CodecPool(1, tr("Speex Wideband"), CodecType.SPEEX_WIDEBAND),
-                new codec.CodecPool(2, tr("Speex Ultra Wideband"), CodecType.SPEEX_ULTRA_WIDEBAND),
-                new codec.CodecPool(3, tr("CELT Mono"), CodecType.CELT_MONO),
-                new codec.CodecPool(4, tr("Opus Voice"), CodecType.OPUS_VOICE),
-                new codec.CodecPool(5, tr("Opus Music"), CodecType.OPUS_MUSIC)
-            ];
-
-            VoiceConnection.codec_pool[4].initialize(2);
-            VoiceConnection.codec_pool[5].initialize(2);
-        });
-    },
-    name: "registering codec initialisation"
-});

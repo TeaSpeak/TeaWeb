@@ -1,14 +1,11 @@
 import {AbstractExternalModalController} from "tc-shared/ui/react-elements/external-modal/Controller";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import * as ipc from "tc-shared/ipc/BrowserIPC";
-import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
-import {setExternalModalControllerFactory} from "tc-shared/ui/react-elements/external-modal";
 import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
 import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import {Popout2ControllerMessages, PopoutIPCMessage} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
 
-class ExternalModalController extends AbstractExternalModalController {
+export class ExternalModalController extends AbstractExternalModalController {
     private currentWindow: Window;
     private windowClosedTestInterval: number = 0;
     private windowClosedTimeout: number;
@@ -143,11 +140,3 @@ class ExternalModalController extends AbstractExternalModalController {
         }
     }
 }
-
-loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
-    priority: 50,
-    name: "external modal controller factory setup",
-    function: async () => {
-        setExternalModalControllerFactory((modal, events, userData) => new ExternalModalController(modal, events, userData));
-    }
-});

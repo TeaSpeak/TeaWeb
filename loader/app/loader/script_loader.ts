@@ -1,5 +1,6 @@
 import {config, critical_error, SourcePath} from "./loader";
 import {load_parallel, LoadCallback, LoadSyntaxError, ParallelOptions, script_name} from "./utils";
+import {type} from "os";
 
 let _script_promises: {[key: string]: Promise<void>} = {};
 
@@ -116,7 +117,16 @@ export async function load_multiple(paths: SourcePath[], options: MultipleOption
             }
         }
 
-        critical_error("Failed to load script " + script_name(result.failed[0].request, true) + " <br>" + "View the browser console for more information!");
+        {
+            const error = result.failed[0].error;
+            console.error(error);
+            let errorMessage;
+            if(error instanceof LoadSyntaxError)
+                errorMessage = error.source.message;
+            else
+                errorMessage = "View the browser console for more information!";
+            critical_error("Failed to load script " + script_name(result.failed[0].request, true), errorMessage);
+        }
         throw "failed to load script " + script_name(result.failed[0].request, false);
     }
 }

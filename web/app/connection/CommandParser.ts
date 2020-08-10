@@ -52,7 +52,7 @@ const escapeCharacterMap = {
     "\x0B": "b"
 };
 
-const escapeCommandValue = (value: string) => value.replace(/[\\ \/|\b\f\n\r\t\x07\x08]/g, value => "\\" + escapeCharacterMap[value]);
+const escapeCommandValue = (value: string) => value.replace(/[\\ \/|\b\f\n\r\t\x07]/g, value => "\\" + escapeCharacterMap[value]);
 
 export function parseCommand(command: string): ParsedCommand {
     const parts = command.split("|").map(element => element.split(" ").map(e => e.trim()).filter(e => !!e));

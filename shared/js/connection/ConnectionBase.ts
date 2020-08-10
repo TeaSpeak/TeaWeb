@@ -2,9 +2,10 @@ import {CommandHelper} from "tc-shared/connection/CommandHelper";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ServerAddress} from "tc-shared/ui/server";
-import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
+import {Registry} from "tc-shared/events";
+import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
 
 export interface CommandOptions {
     flagset?: string[]; /* default: [] */
@@ -18,13 +19,23 @@ export const CommandOptionDefaults: CommandOptions = {
     timeout: 1000
 };
 
+export interface ServerConnectionEvents {
+    notify_connection_state_changed: {
+        oldState: ConnectionState,
+        newState: ConnectionState
+    }
+}
+
 export type ConnectionStateListener = (old_state: ConnectionState, new_state: ConnectionState) => any;
 export abstract class AbstractServerConnection {
+    readonly events: Registry<ServerConnectionEvents>;
+
     readonly client: ConnectionHandler;
     readonly command_helper: CommandHelper;
-    protected connection_state_: ConnectionState = ConnectionState.UNCONNECTED;
+    protected connectionState: ConnectionState = ConnectionState.UNCONNECTED;
 
     protected constructor(client: ConnectionHandler) {
+        this.events = new Registry<ServerConnectionEvents>();
         this.client = client;
 
         this.command_helper = new CommandHelper(this);
@@ -36,14 +47,10 @@ export abstract class AbstractServerConnection {
     abstract connected() : boolean;
     abstract disconnect(reason?: string) : Promise<void>;
 
-    abstract support_voice() : boolean;
-    abstract voice_connection() : voice.AbstractVoiceConnection | undefined;
+    abstract getVoiceConnection() : AbstractVoiceConnection;
 
     abstract command_handler_boss() : AbstractCommandHandlerBoss;
     abstract send_command(command: string, data?: any | any[], options?: CommandOptions) : Promise<CommandResult>;
-
-    abstract get onconnectionstatechanged() : ConnectionStateListener;
-    abstract set onconnectionstatechanged(listener: ConnectionStateListener);
 
     abstract remote_address() : ServerAddress; /* only valid when connected */
     connectionProxyAddress() : ServerAddress | undefined { return undefined; };
@@ -52,79 +59,17 @@ export abstract class AbstractServerConnection {
 
     //FIXME: Remove this this is currently only some kind of hack
     updateConnectionState(state: ConnectionState) {
-        if(state === this.connection_state_) return;
+        if(state === this.connectionState) return;
 
-        const old_state = this.connection_state_;
-        this.connection_state_ = state;
-        if(this.onconnectionstatechanged)
-            this.onconnectionstatechanged(old_state, state);
+        const oldState = this.connectionState;
+        this.connectionState = state;
+        this.events.fire("notify_connection_state_changed", { oldState: oldState, newState: state });
     }
 
     abstract ping() : {
         native: number,
         javascript?: number
     };
-}
-
-export namespace voice {
-    export enum PlayerState {
-        PREBUFFERING,
-        PLAYING,
-        BUFFERING,
-        STOPPING,
-        STOPPED
-    }
-
-    export type LatencySettings = {
-        min_buffer: number; /* milliseconds */
-        max_buffer: number; /* milliseconds */
-    }
-
-    export interface VoiceClient {
-        client_id: number;
-
-        callback_playback: () => any;
-        callback_stopped: () => any;
-
-        callback_state_changed: (new_state: PlayerState) => any;
-
-        get_state() : PlayerState;
-
-        get_volume() : number;
-        set_volume(volume: number) : void;
-
-        abort_replay();
-
-        support_latency_settings() : boolean;
-
-        reset_latency_settings();
-        latency_settings(settings?: LatencySettings) : LatencySettings;
-
-        support_flush() : boolean;
-        flush();
-    }
-
-    export abstract class AbstractVoiceConnection {
-        readonly connection: AbstractServerConnection;
-
-        protected constructor(connection: AbstractServerConnection) {
-            this.connection = connection;
-        }
-
-        abstract connected() : boolean;
-        abstract encoding_supported(codec: number) : boolean;
-        abstract decoding_supported(codec: number) : boolean;
-
-        abstract register_client(client_id: number) : VoiceClient;
-        abstract available_clients() : VoiceClient[];
-        abstract unregister_client(client: VoiceClient) : Promise<void>;
-
-        abstract voice_recorder() : RecorderProfile;
-        abstract acquire_voice_recorder(recorder: RecorderProfile | undefined) : Promise<void>;
-
-        abstract get_encoder_codec() : number;
-        abstract set_encoder_codec(codec: number);
-    }
 }
 
 export class ServerCommand {

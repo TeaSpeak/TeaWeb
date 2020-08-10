@@ -182,14 +182,6 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
     }
 
     handleCommandServerInit(json){
-        //We could setup the voice channel
-        if(this.connection.support_voice()) {
-            log.debug(LogCategory.NETWORKING, tr("Setting up voice"));
-        } else {
-            log.debug(LogCategory.NETWORKING, tr("Skipping voice setup (No voice bridge available)"));
-        }
-
-
         json = json[0]; //Only one bulk
 
         this.connection.client.initializeLocalClient(parseInt(json["aclid"]), json["acn"]);

@@ -12,8 +12,6 @@ import * as htmltags from "tc-shared/ui/htmltags";
 import {CommandResult, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
-import {voice} from "tc-shared/connection/ConnectionBase";
-import VoiceClient = voice.VoiceClient;
 import {createServerGroupAssignmentModal} from "tc-shared/ui/modal/ModalGroupAssignment";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
@@ -30,6 +28,7 @@ import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import { ClientIcon } from "svg-sprites/client-icons";
+import {VoiceClient} from "tc-shared/connection/VoiceConnection";
 
 export enum ClientType {
     CLIENT_VOICE,
