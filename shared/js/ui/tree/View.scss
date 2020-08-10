@@ -30,6 +30,10 @@ html:root {
         line-height: 1;
     }
 
+    :global(.icon_em) {
+        font-size: 16px;
+    }
+
     .treeEntry {
         position: absolute;
         left: 0;

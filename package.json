@@ -77,7 +77,7 @@
     "webpack": "^4.42.1",
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^3.3.11",
-    "webpack-svg-sprite-generator": "^1.0.13",
+    "webpack-svg-sprite-generator": "^1.0.14",
     "worker-plugin": "^4.0.2",
     "xml-parser": "^1.2.1"
   },

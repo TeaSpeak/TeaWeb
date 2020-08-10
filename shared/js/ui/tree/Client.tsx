@@ -9,7 +9,8 @@ import {
     ClientEvents,
     ClientProperties,
     ClientType,
-    LocalClientEntry, MusicClientEntry
+    LocalClientEntry,
+    MusicClientEntry
 } from "../client";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Group, GroupEvents} from "tc-shared/permission/GroupManager";
@@ -17,6 +18,8 @@ import {Settings, settings} from "tc-shared/settings";
 import {TreeEntry, UnreadMarker} from "tc-shared/ui/tree/TreeEntry";
 import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import * as DOMPurify from "dompurify";
+import {ClientIcon} from "svg-sprites/client-icons";
+import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 
 const clientStyle = require("./Client.scss");
 const viewStyle = require("./View.scss");
@@ -39,48 +42,43 @@ class ClientSpeakIcon extends ReactComponentBase<ClientIconProperties, {}> {
     ];
 
     render() {
-        let icon: string = "";
-        let clicon: string = "";
-
         const client = this.props.client;
         const properties = client.properties;
 
+        let icon: ClientIcon;
         if(properties.client_type_exact == ClientType.CLIENT_QUERY) {
-            icon = "client-server_query";
+            icon = ClientIcon.ServerQuery;
         } else {
             if (properties.client_away) {
-                icon = "client-away";
+                icon = ClientIcon.Away;
             } else if (!client.get_audio_handle() && !(this instanceof LocalClientEntry)) {
-                icon = "client-input_muted_local";
+                icon = ClientIcon.InputMutedLocal;
             } else if(!properties.client_output_hardware) {
-                icon = "client-hardware_output_muted";
+                icon = ClientIcon.HardwareOutputMuted;
             } else if(properties.client_output_muted) {
-                icon = "client-output_muted";
+                icon = ClientIcon.OutputMuted;
             } else if(!properties.client_input_hardware) {
-                icon = "client-hardware_input_muted";
+                icon = ClientIcon.HardwareInputMuted;
             } else if(properties.client_input_muted) {
-                icon = "client-input_muted";
+                icon = ClientIcon.InputMuted;
             } else {
                 if(client.isSpeaking()) {
-                    if(properties.client_is_channel_commander)
-                        clicon = "client_cc_talk";
-                    else
-                        clicon = "client_talk";
+                    if(properties.client_is_channel_commander) {
+                        icon = ClientIcon.PlayerCommanderOn;
+                    } else {
+                        icon = ClientIcon.PlayerOn;
+                    }
                 } else {
-                    if(properties.client_is_channel_commander)
-                        clicon = "client_cc_idle";
-                    else
-                        clicon = "client_idle";
+                    if(properties.client_is_channel_commander) {
+                        icon = ClientIcon.PlayerCommanderOff;
+                    } else {
+                        icon = ClientIcon.PlayerOff;
+                    }
                 }
             }
         }
 
-        if(clicon.length > 0)
-            return <div className={"clicon " + clicon} />;
-        else if(icon.length > 0)
-            return <div className={"icon " + icon} />;
-        else
-            return null;
+        return <ClientIconRenderer icon={icon} />
     }
 
     @EventHandler<ClientEvents>("notify_properties_updated")
