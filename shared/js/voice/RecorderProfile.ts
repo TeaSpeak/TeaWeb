@@ -54,27 +54,27 @@ export class RecorderProfile {
 
     record_supported: boolean;
 
-    private _ppt_hook: KeyHook;
-    private _ppt_timeout: number;
-    private _ppt_hook_registered: boolean;
+    private pptHook: KeyHook;
+    private pptTimeout: number;
+    private pptHookRegistered: boolean;
 
     constructor(name: string, volatile?: boolean) {
         this.name = name;
         this.volatile = typeof(volatile) === "boolean" ? volatile : false;
 
-        this._ppt_hook = {
+        this.pptHook = {
             callback_release: () => {
-                if(this._ppt_timeout)
-                    clearTimeout(this._ppt_timeout);
+                if(this.pptTimeout)
+                    clearTimeout(this.pptTimeout);
 
-                this._ppt_timeout = setTimeout(() => {
+                this.pptTimeout = setTimeout(() => {
                     const f = this.input.get_filter(filter.Type.STATE) as filter.StateFilter;
                     if(f) f.set_state(true);
-                }, Math.min(this.config.vad_push_to_talk.delay, 0));
+                }, Math.max(this.config.vad_push_to_talk.delay, 0));
             },
             callback_press: () => {
-                if(this._ppt_timeout)
-                    clearTimeout(this._ppt_timeout);
+                if(this.pptTimeout)
+                    clearTimeout(this.pptTimeout);
 
                 const f = this.input.get_filter(filter.Type.STATE) as filter.StateFilter;
                 if(f) f.set_state(false);
@@ -82,7 +82,7 @@ export class RecorderProfile {
 
             cancel: false
         } as KeyHook;
-        this._ppt_hook_registered = false;
+        this.pptHookRegistered = false;
         this.record_supported = true;
     }
 
@@ -152,7 +152,7 @@ export class RecorderProfile {
         }
     }
 
-    private save(enforce?: boolean) {
+    private save() {
         if(!this.volatile)
             settings.changeGlobal(Settings.FN_PROFILE_RECORD(this.name), this.config);
     }
@@ -161,9 +161,9 @@ export class RecorderProfile {
         if(!this.input) return;
 
         this.input.clear_filter();
-        if(this._ppt_hook_registered) {
-            ppt.unregister_key_hook(this._ppt_hook);
-            this._ppt_hook_registered = false;
+        if(this.pptHookRegistered) {
+            ppt.unregister_key_hook(this.pptHook);
+            this.pptHookRegistered = false;
         }
 
         if(this.config.vad_type === "threshold") {
@@ -174,6 +174,7 @@ export class RecorderProfile {
             /* legacy client support */
             if('set_attack_smooth' in filter_)
                 filter_.set_attack_smooth(.25);
+
             if('set_release_smooth' in filter_)
                 filter_.set_release_smooth(.9);
 
@@ -183,9 +184,9 @@ export class RecorderProfile {
             await filter_.set_state(true);
 
             for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
-                this._ppt_hook[key] = this.config.vad_push_to_talk[key];
-            ppt.register_key_hook(this._ppt_hook);
-            this._ppt_hook_registered = true;
+                this.pptHook[key] = this.config.vad_push_to_talk[key];
+            ppt.register_key_hook(this.pptHook);
+            this.pptHookRegistered = true;
 
             this.input.enable_filter(filter.Type.STATE);
         } else if(this.config.vad_type === "active") {}
@@ -254,7 +255,7 @@ export class RecorderProfile {
     }
 
 
-    current_device() : InputDevice | undefined { return this.input.current_device(); }
+    current_device() : InputDevice | undefined { return this.input?.current_device(); }
     set_device(device: InputDevice | undefined) : Promise<void> {
         this.config.device_id = device ? device.unique_id : undefined;
         this.save();

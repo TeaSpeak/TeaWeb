@@ -77,6 +77,10 @@ html:root {
         border-bottom-color: var(--button-yellow);
     }
 
+    &.color-none {
+        --keep-alive: true;
+    }
+
     &.type-normal { }
 
     &.type-small {

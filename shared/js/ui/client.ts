@@ -994,7 +994,7 @@ export class LocalClientEntry extends ClientEntry {
     renameSelf(new_name: string) : Promise<boolean> {
         const old_name = this.properties.client_nickname;
         this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
-        return this.handle.serverConnection.command_helper.updateClient("client_nickname", new_name).then((e) => {
+        return this.handle.serverConnection.send_command("clientupdate", { client_nickname: new_name }).then((e) => {
             settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, new_name);
             this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGED_OWN, {
                 client: this.log_data(),

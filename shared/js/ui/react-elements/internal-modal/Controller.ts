@@ -94,4 +94,4 @@ export class InternalModalController<InstanceType extends InternalModal = Intern
     }
 }
 
-export abstract class InternalModal extends AbstractModal { }
+export abstract class InternalModal extends AbstractModal {}
