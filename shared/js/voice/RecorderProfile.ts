@@ -192,8 +192,10 @@ export class RecorderProfile {
     }
 
     async unmount() : Promise<void> {
-        if(this.callback_unmount)
+        if(this.callback_unmount) {
             this.callback_unmount();
+        }
+
         if(this.input) {
             try {
                 await this.input.set_consumer(undefined);

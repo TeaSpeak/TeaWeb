@@ -20,6 +20,7 @@ export enum LogCategory {
     DNS,
     FILE_TRANSFER,
     EVENT_REGISTRY,
+    WEBRTC
 }
 
 export enum LogType {
@@ -49,6 +50,7 @@ let category_mapping = new Map<number, string>([
     [LogCategory.DNS,                       "DNS           "],
     [LogCategory.FILE_TRANSFER,             "File transfer "],
     [LogCategory.EVENT_REGISTRY,            "Event registry"],
+    [LogCategory.WEBRTC,                    "WebRTC        "],
 ]);
 
 export let enabled_mapping = new Map<number, boolean>([
@@ -70,6 +72,7 @@ export let enabled_mapping = new Map<number, boolean>([
     [LogCategory.DNS,                   true],
     [LogCategory.FILE_TRANSFER,         true],
     [LogCategory.EVENT_REGISTRY,        true],
+    [LogCategory.WEBRTC,                true],
 ]);
 
 //Values will be overridden by initialize()

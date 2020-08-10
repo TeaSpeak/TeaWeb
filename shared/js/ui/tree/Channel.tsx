@@ -13,6 +13,7 @@ import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTrans
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
+import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 
 const channelStyle = require("./Channel.scss");
 const viewStyle = require("./View.scss");
@@ -37,6 +38,7 @@ interface ChannelEntryIconsState {
 @BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
 class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, ChannelEntryIconsState> {
     private readonly listenerVoiceStatusChange;
+    private serverConnection: AbstractServerConnection;
 
     constructor(props) {
         super(props);
@@ -48,23 +50,20 @@ class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, 
         }
     }
 
-    private serverConnection() {
-        return this.props.channel.channelTree.client.serverConnection;
-    }
-
     componentDidMount() {
-        const voiceConnection = this.serverConnection().getVoiceConnection();
+        const voiceConnection = this.serverConnection.getVoiceConnection();
         voiceConnection.events.on("notify_connection_status_changed", this.listenerVoiceStatusChange);
     }
 
     componentWillUnmount() {
-        const voiceConnection = this.serverConnection().getVoiceConnection();
+        const voiceConnection = this.serverConnection.getVoiceConnection();
         voiceConnection.events.off("notify_connection_status_changed", this.listenerVoiceStatusChange);
     }
 
     protected defaultState(): ChannelEntryIconsState {
-        const properties = this.props.channel.properties;
+        this.serverConnection = this.props.channel.channelTree.client.serverConnection;
 
+        const properties = this.props.channel.properties;
         const status = {
             icons_shown: this.props.channel.parsed_channel_name.alignment === "normal",
             custom_icon_id: properties.channel_icon_id,
@@ -143,7 +142,7 @@ class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, 
     }
 
     private updateVoiceStatus(state: ChannelEntryIconsState, currentCodec: number) {
-        const voiceConnection = this.serverConnection().getVoiceConnection();
+        const voiceConnection = this.serverConnection.getVoiceConnection();
         const voiceState = voiceConnection.getConnectionState();
 
         switch (voiceState) {

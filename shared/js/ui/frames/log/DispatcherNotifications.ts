@@ -21,6 +21,7 @@ notificationDefaultStatus[EventType.SERVER_HOST_MESSAGE_DISCONNECT] = true;
 notificationDefaultStatus[EventType.GLOBAL_MESSAGE] = true;
 notificationDefaultStatus[EventType.CONNECTION_FAILED] = true;
 notificationDefaultStatus[EventType.PRIVATE_MESSAGE_RECEIVED] = true;
+notificationDefaultStatus[EventType.CONNECTION_VOICE_DROPPED] = true;
 
 let windowFocused = false;
 
@@ -143,9 +144,27 @@ registerDispatcher(EventType.DISCONNECTED, () => {
 /* snipped RECONNECT_EXECUTE */
 /* snipped RECONNECT_CANCELED */
 
-registerDispatcher(EventType.CONNECTION_VOICE_SETUP_FAILED, (data, handlerId) => {
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT, (data, handlerId) => {
+    spawnServerNotification(handlerId, {
+        body: tr("Connecting voice bridge.")
+    });
+});
+
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, (data, handlerId) => {
+    spawnServerNotification(handlerId, {
+        body: tr("Voice bridge successfully connected.")
+    });
+});
+
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_FAILED, (data, handlerId) => {
     spawnServerNotification(handlerId, {
         body: tra("Failed to setup voice bridge: {0}. Allow reconnect: {1}", data.reason, data.reconnect_delay > 0 ? tr("Yes") : tr("No"))
+    });
+});
+
+registerDispatcher(EventType.CONNECTION_VOICE_DROPPED, (data, handlerId) => {
+    spawnServerNotification(handlerId, {
+        body: tr("Voice bridge has been dropped. Trying to reconnect.")
     });
 });
 

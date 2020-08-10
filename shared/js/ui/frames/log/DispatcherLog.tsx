@@ -80,11 +80,23 @@ registerDispatcher(EventType.CONNECTION_CONNECTED, (data,handlerId) => (
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_VOICE_SETUP_FAILED, (data) => (
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT, () => (
+    <Translatable>Connecting voice bridge.</Translatable>
+));
+
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, () => (
+    <Translatable>Voice bridge successfully connected.</Translatable>
+));
+
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_FAILED, (data) => (
     <VariadicTranslatable text={"Failed to setup voice bridge: {0}. Allow reconnect: {1}"}>
         <>{data.reason}</>
         {data.reconnect_delay > 0 ? <Translatable>Yes</Translatable> : <Translatable>No</Translatable>}
     </VariadicTranslatable>
+));
+
+registerDispatcher(EventType.CONNECTION_VOICE_DROPPED, () => (
+    <Translatable>Voice bridge has been dropped. Trying to reconnect.</Translatable>
 ));
 
 registerDispatcher(EventType.ERROR_PERMISSION, data => (

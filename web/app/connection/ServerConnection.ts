@@ -284,11 +284,6 @@ export class ServerConnection extends AbstractServerConnection {
                 //TODO send disconnect reason
             }
 
-
-            if(this.voiceConnection)
-                this.voiceConnection.drop_rtp_session();
-
-
             if(this.socket) {
                 this.socket.callbackMessage = undefined;
                 this.socket.callbackDisconnect = undefined;
@@ -335,17 +330,12 @@ export class ServerConnection extends AbstractServerConnection {
                     this.pingStatistics.thread_id = setInterval(() => this.doNextPing(), this.pingStatistics.interval) as any;
                     this.doNextPing();
                     this.updateConnectionState(ConnectionState.CONNECTED);
-                    if(this.voiceConnection)
-                        this.voiceConnection.start_rtc_session(); /* FIXME: Move it to a handler boss and not here! */
                 }
                 /* devel-block(log-networking-commands) */
                 group.end();
                 /* devel-block-end */
             } else if(json["type"] === "WebRTC") {
-                if(this.voiceConnection)
-                    this.voiceConnection.handleControlPacket(json);
-                else
-                    log.warn(LogCategory.NETWORKING, tr("Dropping WebRTC command packet, because we haven't a bridge."))
+                this.voiceConnection?.handleControlPacket(json);
             } else if(json["type"] === "ping") {
                 this.sendData(JSON.stringify({
                     type: 'pong',

@@ -66,6 +66,8 @@ export abstract class AbstractServerConnection {
         this.events.fire("notify_connection_state_changed", { oldState: oldState, newState: state });
     }
 
+    getConnectionState() { return this.connectionState; }
+
     abstract ping() : {
         native: number,
         javascript?: number
