@@ -1,6 +1,15 @@
 import * as loader from "../loader/loader";
 import {Stage} from "../loader/loader";
-import {detect as detectBrowser} from "detect-browser";
+import {
+    BrowserInfo,
+    detect as detectBrowser,
+} from "detect-browser";
+
+declare global {
+    interface Window {
+        detectedBrowser: BrowserInfo
+    }
+}
 
 if(__build.target === "web") {
     loader.register_task(Stage.SETUP, {
@@ -13,14 +22,15 @@ if(__build.target === "web") {
                 return;
 
             console.log("Resolved browser manufacturer to \"%s\" version \"%s\" on %s", browser.name, browser.version, browser.os);
-            if(browser.type && browser.type !== "browser") {
+            if(browser.type !== "browser") {
                 loader.critical_error("Your device isn't supported.", "User agent type " + browser.type + " isn't supported.");
                 throw "unsupported user type";
             }
 
+            window.detectedBrowser = browser;
+
             switch (browser?.name) {
                 case "aol":
-                case "bot":
                 case "crios":
                 case "ie":
                     loader.critical_error("Browser not supported", "We're sorry, but your browser isn't supported.");

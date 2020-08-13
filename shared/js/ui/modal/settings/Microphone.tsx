@@ -2,7 +2,6 @@ import * as aplayer from "tc-backend/audio/player";
 import * as React from "react";
 import {Registry} from "tc-shared/events";
 import {LevelMeter} from "tc-shared/voice/RecorderBase";
-import * as arecorder from "tc-backend/audio/recorder";
 import * as log from "tc-shared/log";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {default_recorder} from "tc-shared/voice/RecorderProfile";
@@ -12,6 +11,7 @@ import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
+import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
 
 export type MicrophoneSetting = "volume" | "vad-type" | "ppt-key" | "ppt-release-delay" | "ppt-release-delay-active" | "threshold-threshold";
 
@@ -29,6 +29,7 @@ export interface MicrophoneSettingsEvents {
         setting: MicrophoneSetting
     },
 
+    "action_request_permissions": {},
     "action_set_selected_device": { deviceId: string },
     "action_set_selected_device_result": {
         deviceId: string, /* on error it will contain the current selected device */
@@ -48,9 +49,11 @@ export interface MicrophoneSettingsEvents {
     }
 
     "notify_devices": {
-        status: "success" | "error" | "audio-not-initialized",
+        status: "success" | "error" | "audio-not-initialized" | "no-permissions",
 
         error?: string,
+        shouldAsk?: boolean,
+
         devices?: MicrophoneDevice[]
         selectedDevice?: string;
     },
@@ -62,13 +65,17 @@ export interface MicrophoneSettingsEvents {
 
             level?: number,
             error?: string
-        }}
+        }},
+
+        status: Exclude<DeviceListState, "error">
     },
 
     notify_destroy: {}
 }
 
 export function initialize_audio_microphone_controller(events: Registry<MicrophoneSettingsEvents>) {
+    const recorderBackend = getRecorderBackend();
+
     /* level meters */
     {
         const level_meters: {[key: string]:Promise<LevelMeter>} = {};
@@ -80,7 +87,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                 const meter = level_meters[e];
                 delete level_meters[e];
 
-                meter.then(e => e.destory());
+                meter.then(e => e.destroy());
             });
             Object.keys(level_info).forEach(e => delete level_info[e]);
         };
@@ -88,37 +95,42 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         const update_level_meter = () => {
             destroy_meters();
 
-            for(const device of arecorder.devices()) {
-                let promise = arecorder.create_levelmeter(device).then(meter => {
-                    meter.set_observer(level => {
-                        if(level_meters[device.unique_id] !== promise) return; /* old level meter */
+            level_info["none"] = { deviceId: "none", status: "success", level: 0 };
 
-                        level_info[device.unique_id] = {
-                            deviceId: device.unique_id,
+            for(const device of recorderBackend.getDeviceList().getDevices()) {
+                let promise = recorderBackend.createLevelMeter(device).then(meter => {
+                    meter.set_observer(level => {
+                        if(level_meters[device.deviceId] !== promise) return; /* old level meter */
+
+                        level_info[device.deviceId] = {
+                            deviceId: device.deviceId,
                             status: "success",
                             level: level
                         };
                     });
                     return Promise.resolve(meter);
                 }).catch(error => {
-                    if(level_meters[device.unique_id] !== promise) return; /* old level meter */
-                    level_info[device.unique_id] = {
-                        deviceId: device.unique_id,
+                    if(level_meters[device.deviceId] !== promise) return; /* old level meter */
+                    level_info[device.deviceId] = {
+                        deviceId: device.deviceId,
                         status: "error",
 
                         error: error
                     };
 
-                    log.warn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.unique_id, device.driver + ":" + device.name, error);
+                    log.warn(LogCategory.AUDIO, tr("Failed to initialize a level meter for device %s (%s): %o"), device.deviceId, device.driver + ":" + device.name, error);
                     return Promise.reject(error);
                 });
-                level_meters[device.unique_id] = promise;
+                level_meters[device.deviceId] = promise;
             }
         };
 
         level_update_task = setInterval(() => {
+            const deviceListStatus = recorderBackend.getDeviceList().getStatus();
+
             events.fire("notify_device_level", {
-                level: level_info
+                level: level_info,
+                status: deviceListStatus === "error" ? "uninitialized" : deviceListStatus
             });
         }, 50);
 
@@ -142,34 +154,43 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                 return;
             }
 
-            Promise.resolve().then(() => {
-                return arecorder.device_refresh_available() && event.refresh_list ? arecorder.refresh_devices() : Promise.resolve();
-            }).catch(error => {
-                log.warn(LogCategory.AUDIO, tr("Failed to refresh device list: %o"), error);
-                return Promise.resolve();
-            }).then(() => {
-                const devices = arecorder.devices();
+            const deviceList = recorderBackend.getDeviceList();
+            switch (deviceList.getStatus()) {
+                case "no-permissions":
+                    events.fire_async("notify_devices", { status: "no-permissions", shouldAsk: deviceList.getPermissionState() === "denied" });
+                    return;
+
+                case "uninitialized":
+                    events.fire_async("notify_devices", { status: "audio-not-initialized" });
+                    return;
+            }
+
+            if(event.refresh_list && deviceList.isRefreshAvailable()) {
+                /* will automatically trigger a device list changed event if something has changed */
+                deviceList.refresh().then(() => {});
+            } else {
+                const devices = deviceList.getDevices();
 
                 events.fire_async("notify_devices", {
                     status: "success",
-                    selectedDevice: default_recorder.current_device() ? default_recorder.current_device().unique_id : "none",
-                    devices: devices.map(e => { return { id: e.unique_id, name: e.name, driver: e.driver }})
+                    selectedDevice: default_recorder.getDeviceId(),
+                    devices: devices.map(e => { return { id: e.deviceId, name: e.name, driver: e.driver }})
                 });
-            });
+            }
         });
 
         events.on("action_set_selected_device", event => {
-            const device = arecorder.devices().find(e => e.unique_id === event.deviceId);
-            if(!device && event.deviceId !== "none") {
-                events.fire_async("action_set_selected_device_result", { status: "error", error: tr("Invalid device id"), deviceId: default_recorder.current_device().unique_id });
+            const device = recorderBackend.getDeviceList().getDevices().find(e => e.deviceId === event.deviceId);
+            if(!device && event.deviceId !== IDevice.NoDeviceId) {
+                events.fire_async("action_set_selected_device_result", { status: "error", error: tr("Invalid device id"), deviceId: default_recorder.getDeviceId() });
                 return;
             }
 
             default_recorder.set_device(device).then(() => {
-                console.debug(tr("Changed default microphone device"));
+                console.debug(tr("Changed default microphone device to %s"), event.deviceId);
                 events.fire_async("action_set_selected_device_result", { status: "success", deviceId: event.deviceId });
             }).catch((error) => {
-                log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.unique_id : "none", error);
+                log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.deviceId : IDevice.NoDeviceId, error);
                 events.fire_async("action_set_selected_device_result", { status: "success", deviceId: event.deviceId });
             });
         });
@@ -265,7 +286,59 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         });
     }
 
+    events.on("action_request_permissions", () => recorderBackend.getDeviceList().requestPermissions().then(result => {
+        console.error("Permission request result: %o", result);
+
+        if(result === "granted") {
+            /* we've nothing to do, the device change event will already update out list */
+        } else {
+            events.fire_async("notify_devices", { status: "no-permissions", shouldAsk: result === "denied" });
+            return;
+        }
+    }));
+
+    events.on("notify_destroy", recorderBackend.getDeviceList().getEvents().on("notify_list_updated", () => {
+        events.fire("query_devices");
+    }));
+
+    events.on("notify_destroy", recorderBackend.getDeviceList().getEvents().on("notify_state_changed", () => {
+        events.fire("query_devices");
+    }));
+
     if(!aplayer.initialized()) {
         aplayer.on_ready(() => { events.fire_async("query_devices"); });
     }
 }
+
+
+loader.register_task(Stage.LOADED, {
+    name: "test",
+    function: async () => {
+        aplayer.on_ready(() => {
+            const modal = spawnReactModal(class extends InternalModal {
+                settings = new Registry<MicrophoneSettingsEvents>();
+                constructor() {
+                    super();
+
+                    initialize_audio_microphone_controller(this.settings);
+                }
+
+                renderBody(): React.ReactElement {
+                    return <div style={{
+                        padding: "1em",
+                        backgroundColor: "#2f2f35"
+                    }}>
+                        <MicrophoneSettings events={this.settings} />
+                    </div>;
+                }
+
+                title(): string | React.ReactElement<Translatable> {
+                    return "test";
+                }
+            });
+
+            modal.show();
+        });
+    },
+    priority: -2
+})

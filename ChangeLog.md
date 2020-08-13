@@ -1,7 +1,7 @@
 # Changelog:
 * **11.08.20**
     - Fixed the voice push to talk delay
-    
+    /* FIXME: Newcomer modal with the microphone */
 * **09.08.20**
     - Added a "watch to gather" context menu entry for clients
     - Disassembled the current client icon sprite into his icons

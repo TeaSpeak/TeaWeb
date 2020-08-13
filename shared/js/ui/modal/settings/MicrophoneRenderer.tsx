@@ -9,13 +9,13 @@ import {ClientIcon} from "svg-sprites/client-icons";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
-import MicrophoneSettings = modal.settings.MicrophoneSettings;
 import {RadioButton} from "tc-shared/ui/react-elements/RadioButton";
 import {VadType} from "tc-shared/voice/RecorderProfile";
 import {key_description, KeyDescriptor} from "tc-shared/PPTListener";
 import {spawnKeySelect} from "tc-shared/ui/modal/ModalKeySelect";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
+import {IDevice} from "tc-shared/audio/recorder";
 
 const cssStyle = require("./Microphone.scss");
 
@@ -37,28 +37,41 @@ const MicrophoneStatus = (props: { state: MicrophoneSelectedState }) => {
     }
 }
 
-type ActivityBarStatus = { mode: "success" } | { mode: "error", message: string } | { mode: "loading" };
+type ActivityBarStatus = { mode: "success" } | { mode: "error", message: string } | { mode: "loading" } | { mode: "uninitialized" };
 const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, deviceId: string, disabled?: boolean }) => {
     const refHider = useRef<HTMLDivElement>();
     const [ status, setStatus ] = useState<ActivityBarStatus>({ mode: "loading" });
 
     props.events.reactUse("notify_device_level", event => {
-        const device = event.level[props.deviceId];
-        if(!device) {
-            if(status.mode === "loading")
+        if(event.status === "uninitialized") {
+            if(status.mode === "uninitialized")
                 return;
 
-            setStatus({ mode: "loading" });
-        } else if(device.status === "success") {
-            if(status.mode !== "success") {
-                setStatus({ mode: "success" });
-            }
-            refHider.current.style.width = (100 - device.level) + "%";
+            setStatus({ mode: "uninitialized" });
+        } else if(event.status === "no-permissions") {
+            const noPermissionsMessage = tr("no permissions");
+            if(status.mode === "error" && status.message === noPermissionsMessage)
+                return;
+
+            setStatus({ mode: "error", message: noPermissionsMessage });
         } else {
-            if(status.mode === "error" && status.message === device.error)
-                return;
+            const device = event.level[props.deviceId];
+            if(!device) {
+                if(status.mode === "loading")
+                    return;
 
-            setStatus({ mode: "error", message: device.error });
+                setStatus({ mode: "loading" });
+            } else if(device.status === "success") {
+                if(status.mode !== "success") {
+                    setStatus({ mode: "success" });
+                }
+                refHider.current.style.width = (100 - device.level) + "%";
+            } else {
+                if(status.mode === "error" && status.message === device.error)
+                    return;
+
+                setStatus({ mode: "error", message: device.error + "" });
+            }
         }
     });
 
@@ -96,16 +109,51 @@ const Microphone = (props: { events: Registry<MicrophoneSettingsEvents>, device:
                 <div className={cssStyle.name}>{props.device.name}</div>
             </div>
             <div className={cssStyle.containerActivity}>
-                <ActivityBar events={props.events} deviceId={props.device.id} />
+                {props.device.id === IDevice.NoDeviceId ? undefined :
+                    <ActivityBar key={"a"} events={props.events} deviceId={props.device.id} />
+                }
             </div>
         </div>
     );
 };
 
+type MicrophoneListState = {
+    type: "normal" | "loading" | "audio-not-initialized"
+} | {
+    type: "error",
+    message: string
+} | {
+    type: "no-permissions",
+    bySystem: boolean
+}
+
+const PermissionDeniedOverlay = (props: { bySystem: boolean, shown: boolean, onRequestPermission: () => void }) => {
+    if(props.bySystem) {
+        return (
+            <div key={"system"} className={cssStyle.overlay + " " + (props.shown ? undefined : cssStyle.hidden)}>
+                <ClientIconRenderer icon={ClientIcon.MicrophoneBroken} />
+                <a><Translatable>Microphone access has been blocked by your browser.</Translatable></a>
+            </div>
+        );
+    } else {
+        return (
+            <div key={"user"} className={cssStyle.overlay + " " + (props.shown ? undefined : cssStyle.hidden)}>
+                <a><Translatable>Please grant access to your microphone.</Translatable></a>
+                <Button
+                    key={"request"}
+                    color={"green"}
+                    type={"small"}
+                    onClick={props.onRequestPermission}
+                ><Translatable>Request access</Translatable></Button>
+            </div>
+        );
+    }
+}
+
 const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
-    const [ state, setState ] = useState<"normal" | "loading" | "error" | "audio-not-initialized">(() => {
+    const [ state, setState ] = useState<MicrophoneListState>(() => {
         props.events.fire("query_devices");
-        return "loading";
+        return { type: "loading" };
     });
     const [ selectedDevice, setSelectedDevice ] = useState<{ deviceId: string, mode: "selected" | "selecting" }>();
     const [ deviceList, setDeviceList ] = useState<MicrophoneDevice[]>([]);
@@ -116,17 +164,20 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
         switch (event.status) {
             case "success":
                 setDeviceList(event.devices.slice(0));
-                setState("normal");
+                setState({ type: "normal" });
                 setSelectedDevice({ mode: "selected", deviceId: event.selectedDevice });
                 break;
 
             case "error":
-                setError(event.error || tr("Unknown error"));
-                setState("error");
+                setState({ type: "error", message: event.error || tr("Unknown error") });
                 break;
 
             case "audio-not-initialized":
-                setState("audio-not-initialized");
+                setState({ type: "audio-not-initialized" });
+                break;
+
+            case "no-permissions":
+                setState({ type: "no-permissions", bySystem: event.shouldAsk });
                 break;
         }
     });
@@ -144,25 +195,50 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
 
     return (
         <div className={cssStyle.body + " " + cssStyle.containerDevices}>
-            <div className={cssStyle.overlay + " " + (state !== "audio-not-initialized" ? cssStyle.hidden : undefined)}>
+            <div className={cssStyle.overlay + " " + (state.type !== "audio-not-initialized" ? cssStyle.hidden : undefined)}>
                 <a>
                     <Translatable>The web audio play hasn't been initialized yet.</Translatable>&nbsp;
                     <Translatable>Click somewhere on the base to initialize it.</Translatable>
                 </a>
             </div>
-            <div className={cssStyle.overlay + " " + (state !== "error" ? cssStyle.hidden : undefined)}>
+            <div className={cssStyle.overlay + " " + (state.type !== "error" ? cssStyle.hidden : undefined)}>
                 <a>{error}</a>
             </div>
-            <div className={cssStyle.overlay + " " + (state !== "loading" ? cssStyle.hidden : undefined)}>
+            <div className={cssStyle.overlay + " " + (state.type !== "no-permissions" ? cssStyle.hidden : undefined)}>
+                <a><Translatable>Please grant access to your microphone.</Translatable></a>
+                <Button
+                    color={"green"}
+                    type={"small"}
+                    onClick={() => props.events.fire("action_request_permissions") }
+                ><Translatable>Request access</Translatable></Button>
+            </div>
+            <PermissionDeniedOverlay
+                bySystem={state.type === "no-permissions" ? state.bySystem : false}
+                shown={state.type === "no-permissions"}
+                onRequestPermission={() => props.events.fire("action_request_permissions")}
+            />
+            <div className={cssStyle.overlay + " " + (state.type !== "loading" ? cssStyle.hidden : undefined)}>
                 <a><Translatable>Loading</Translatable>&nbsp;<LoadingDots/></a>
             </div>
+            <Microphone key={"d-default"}
+                        device={{ id: IDevice.NoDeviceId, driver: tr("No device"), name: tr("No device") }}
+                        events={props.events}
+                        state={IDevice.NoDeviceId === selectedDevice?.deviceId ? selectedDevice.mode === "selecting" ? "applying" : "selected" : "unselected"}
+                        onClick={() => {
+                            if(state.type !== "normal" || selectedDevice?.mode === "selecting")
+                                return;
+
+                            props.events.fire("action_set_selected_device", { deviceId: IDevice.NoDeviceId });
+                        }}
+            />
+
             {deviceList.map(e => <Microphone
                 key={"d-" + e.id}
                 device={e}
                 events={props.events}
                 state={e.id === selectedDevice?.deviceId ? selectedDevice.mode === "selecting" ? "applying" : "selected" : "unselected"}
                 onClick={() => {
-                    if(state !== "normal" || selectedDevice?.mode === "selecting")
+                    if(state.type !== "normal" || selectedDevice?.mode === "selecting")
                         return;
 
                     props.events.fire("action_set_selected_device", { deviceId: e.id });
@@ -187,7 +263,7 @@ const ListRefreshButton = (props: { events: Registry<MicrophoneSettingsEvents> }
 
     props.events.reactUse("query_devices", () => setUpdateTimeout(Date.now() + 2000));
 
-    return <Button disabled={updateTimeout > 0} type={"small"} color={"blue"} onClick={() => props.events.fire("query_devices", { refresh_list: true })}>
+    return <Button disabled={updateTimeout > 0} color={"blue"} onClick={() => props.events.fire("query_devices", { refresh_list: true })}>
         <Translatable>Update</Translatable>
     </Button>;
 }
@@ -203,7 +279,6 @@ const VolumeSettings = (props: { events: Registry<MicrophoneSettingsEvents> }) =
         if(event.setting !== "volume")
             return;
 
-        console.error("Set value: %o", event.value);
         refSlider.current?.setState({ value: event.value });
         setValue(event.value);
     });
@@ -386,6 +461,7 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
         return "loading";
     });
 
+    const [ currentDevice, setCurrentDevice ] = useState(undefined);
     const [ isActive, setActive ] = useState(false);
 
     props.events.reactUse("notify_setting", event => {
@@ -397,10 +473,18 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
         }
     });
 
+    props.events.reactUse("notify_devices", event => {
+        setCurrentDevice(event.selectedDevice);
+    });
+
+    props.events.reactUse("action_set_selected_device_result", event => {
+        setCurrentDevice(event.deviceId);
+    });
+
     return (
         <div className={cssStyle.containerSensitivity}>
             <div className={cssStyle.containerBar}>
-                <ActivityBar events={props.events} deviceId={"default"} disabled={!isActive} />
+                <ActivityBar events={props.events} deviceId={currentDevice} disabled={!isActive || !currentDevice} />
             </div>
             <Slider
                 ref={refSlider}
@@ -416,7 +500,7 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
 
                 disabled={value === "loading" || !isActive}
 
-                onChange={value => {}}
+                onChange={value => { props.events.fire("action_set_setting", { setting: "threshold-threshold", value: value })}}
             />
         </div>
     )

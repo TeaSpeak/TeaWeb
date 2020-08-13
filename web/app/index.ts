@@ -2,7 +2,8 @@ import "webrtc-adapter";
 import "./index.scss";
 import "./FileTransfer";
 
-import "./factories/ServerConnection";
-import "./factories/ExternalModal";
+import "./hooks/ServerConnection";
+import "./hooks/ExternalModal";
+import "./hooks/AudioRecorder";
 
 export = require("tc-shared/main");
