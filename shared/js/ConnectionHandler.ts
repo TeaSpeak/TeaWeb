@@ -38,6 +38,7 @@ import {PluginCmdRegistry} from "tc-shared/connection/PluginCmdHandler";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 import {getServerConnectionFactory} from "tc-shared/connection/ConnectionFactory";
+import {getRecorderBackend} from "tc-shared/audio/recorder";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -738,6 +739,8 @@ export class ConnectionHandler {
         const support_record = basic_voice_support && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
         const support_playback = basic_voice_support && (!targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec));
 
+        const hasInputDevice = getRecorderBackend().getDeviceList().getPermissionState() === "granted" && !!vconnection.voice_recorder();
+
         const property_update = {
             client_input_muted: this.client_status.input_muted,
             client_output_muted: this.client_status.output_muted
@@ -749,12 +752,11 @@ export class ConnectionHandler {
         if(!this.serverConnection.connected() || vconnection.getConnectionState() !== VoiceConnectionStatus.Connected) {
             property_update["client_input_hardware"] = false;
             property_update["client_output_hardware"] = false;
-            this.client_status.input_hardware = true; /* IDK if we have input hardware or not, but it dosn't matter at all so */
+            this.client_status.input_hardware = hasInputDevice;
 
             /* no icons are shown so no update at all */
         } else {
-            const audio_source = vconnection.voice_recorder();
-            const recording_supported = typeof(audio_source) !== "undefined" && audio_source.record_supported && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
+            const recording_supported = hasInputDevice && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
             const playback_supported = !targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec);
 
             property_update["client_input_hardware"] = recording_supported;
@@ -807,7 +809,7 @@ export class ConnectionHandler {
         this.client_status.sound_record_supported = support_record;
         this.client_status.sound_playback_supported = support_playback;
 
-        if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().record_supported) {
+        if(vconnection && vconnection.voice_recorder()) {
             const active = !this.client_status.input_muted && !this.client_status.output_muted;
             /* No need to start the microphone when we're not even connected */
 

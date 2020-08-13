@@ -241,7 +241,7 @@
 }
 
 .header {
-    height: 2.6em;
+    height: 3em;
 
     flex-grow: 0;
     flex-shrink: 0;
@@ -266,7 +266,7 @@
         white-space: nowrap;
     }
 
-    .btn {
+    button {
         flex-shrink: 0;
         flex-grow: 0;
 
@@ -452,9 +452,23 @@
             text-align: center;
         }
 
+        button {
+            width: 10em;
+            align-self: center;
+            margin-top: 2em;
+        }
+
         &.hidden {
             pointer-events: none;
             opacity: 0;
+        }
+
+        :global(.icon_em) {
+            align-self: center;
+            font-size: 10em;
+
+            margin-bottom: .25em;
+            margin-top: -.25em;
         }
     }
 }

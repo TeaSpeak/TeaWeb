@@ -19,7 +19,6 @@ import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
 import {DummyVoiceConnection} from "tc-shared/connection/DummyVoiceConnection";
-import {ServerConnectionFactory, setServerConnectionFactory} from "tc-shared/connection/ConnectionFactory";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;

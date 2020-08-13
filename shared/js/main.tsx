@@ -21,7 +21,6 @@ import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {openModalNewcomer} from "tc-shared/ui/modal/ModalNewcomer";
 import * as aplayer from "tc-backend/audio/player";
-import * as arecorder from "tc-backend/audio/recorder";
 import * as ppt from "tc-backend/ppt";
 import * as keycontrol from "./KeyControl";
 import * as React from "react";
@@ -182,8 +181,6 @@ async function initialize_app() {
             aplayer.on_ready(() => aplayer.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER) / 100));
         else
             log.warn(LogCategory.GENERAL, tr("Client does not support aplayer.set_master_volume()... May client is too old?"));
-        if(arecorder.device_refresh_available())
-            arecorder.refresh_devices();
     });
 
     set_default_recorder(new RecorderProfile("default"));
@@ -512,7 +509,7 @@ const task_teaweb_starter: loader.Task = {
                 if(!aplayer.initializeFromGesture) {
                     console.error(tr("Missing aplayer.initializeFromGesture"));
                 } else
-                    $(document).one('click', event => aplayer.initializeFromGesture());
+                    $(document).one('click', () => aplayer.initializeFromGesture());
             }
         } catch (ex) {
             console.error(ex.stack);
