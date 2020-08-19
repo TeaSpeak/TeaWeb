@@ -573,7 +573,7 @@ export const MicrophoneSettings = (props: { events: Registry<MicrophoneSettingsE
     props.events.reactUse("notify_highlight", event => setHighlighted(event.field));
 
     return (
-        <HighlightContainer highlightedId={highlighted} onClick={() => props.events.fire("action_help_click")}>
+        <HighlightContainer highlightedId={highlighted} onClick={() => props.events.fire("action_help_click")} classList={cssStyle.highlightContainer}>
             <div className={cssStyle.container}>
                 <HelpText0/>
                 <HighlightRegion className={cssStyle.left} highlightId={"hs-1"}>
