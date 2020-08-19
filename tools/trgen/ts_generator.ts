@@ -370,16 +370,29 @@ export function replace_processor(config: Configuration, cache: VolatileTransfor
                     throw new Error(source_location(ignoreAttribute) + ": Invalid attribute value of type " + SyntaxKind[ignoreAttribute.expression.kind]);
             }
 
-            if(element.children.length !== 1)
-                throw new Error(source_location(element) + ": Element has been called with an invalid arguments (" +  (element.children.length === 0 ? "too few" : "too many") + ")");
+            if(element.children.length < 1) {
+                throw new Error(source_location(element) + ": Element has been called with an invalid arguments (too few)");
+            }
 
-            const text = element.children[0] as ts.JsxText;
-            if(text.kind != SyntaxKind.JsxText)
-                throw new Error(source_location(element) + ": Element has invalid children. Expected JsxText but got " + SyntaxKind[text.kind]);
+            let text = element.children.map(element => {
+                if(element.kind === SyntaxKind.JsxText) {
+                    return element.text;
+                } else if(element.kind === SyntaxKind.JsxSelfClosingElement) {
+                    if(element.tagName.kind !== SyntaxKind.Identifier) {
+                        throw new Error(source_location(element.tagName) + ": Expected a JsxSelfClosingElement, but received " + SyntaxKind[element.tagName.kind]);
+                    }
+
+                    if(element.tagName.escapedText !== "br") {
+                        throw new Error(source_location(element.tagName) + ": Expected a br element, but received " + element.tagName.escapedText);
+                    }
+
+                    return "\n";
+                }
+            }).join("");
 
             let { line, character } = source_file.getLineAndCharacterOfPosition(node.getStart());
             cache.translations.push({
-                message: text.text,
+                message: text,
                 line: line,
                 character: character,
                 filename: (source_file || {fileName: "unknown"}).fileName,
