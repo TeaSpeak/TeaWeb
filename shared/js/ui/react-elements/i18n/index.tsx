@@ -1,19 +1,38 @@
 import * as React from "react";
 import {parseMessageWithArguments} from "tc-shared/ui/frames/chat";
-import {cloneElement} from "react";
+import {cloneElement, ReactNode} from "react";
 
 let instances = [];
-export class Translatable extends React.Component<{ children: string, __cacheKey?: string, trIgnore?: boolean, enforceTextOnly?: boolean }, { translated: string }> {
+export class Translatable extends React.Component<{
+    children: string | (string | React.ReactElement<HTMLBRElement>)[],
+    __cacheKey?: string,
+    trIgnore?: boolean,
+    enforceTextOnly?: boolean
+}, { translated: string }> {
+    protected renderElementIndex = 0;
+
     constructor(props) {
         super(props);
 
+        let text;
+        if(Array.isArray(this.props.children)) {
+            text = (this.props.children as any[]).map(e => typeof e === "string" ? e : "\n").join("");
+        } else {
+            text = this.props.children;
+        }
+
         this.state = {
-            translated: /* @tr-ignore */ tr(typeof this.props.children === "string" ? this.props.children : (this.props as any).message)
+            translated: /* @tr-ignore */ tr(text)
         }
     }
 
     render() {
-        return this.state.translated;
+        return this.state.translated.split("\n").reduce((previousValue, currentValue, currentIndex, array) => {
+            previousValue.push(<React.Fragment key={++this.renderElementIndex}>{currentValue}</React.Fragment>);
+            if(currentIndex + 1 !== array.length)
+                previousValue.push(<br key={++this.renderElementIndex} />);
+            return previousValue;
+        }, []);
     }
 
     componentDidMount(): void {
