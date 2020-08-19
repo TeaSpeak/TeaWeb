@@ -244,7 +244,7 @@ export class ConnectionHandler {
         this.update_voice_status();
 
         this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.global(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
-        this.setAway_(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
+        this.doSetAway(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
         this.setQueriesShown(source ? source.client_status.queries_visible : settings.global(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
     }
 
@@ -1061,10 +1061,10 @@ export class ConnectionHandler {
     isSubscribeToAllChannels() : boolean { return this.client_status.channel_subscribe_all; }
 
     setAway(state: boolean | string) {
-        this.setAway_(state, true);
+        this.doSetAway(state, true);
     }
 
-    private setAway_(state: boolean | string, play_sound: boolean) {
+    private doSetAway(state: boolean | string, play_sound: boolean) {
         if(this.client_status.away === state)
             return;
 

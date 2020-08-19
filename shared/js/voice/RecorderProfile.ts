@@ -126,9 +126,7 @@ export class RecorderProfile {
         }
 
         aplayer.on_ready(async () => {
-            console.error("AWAITING DEVICE LIST");
             await getRecorderBackend().getDeviceList().awaitInitialized();
-            console.error("AWAITING DEVICE LIST DONE");
 
             await this.initializeInput();
             await this.reinitializeFilter();
