@@ -1,7 +1,7 @@
 import * as React from "react";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
-import {modal, Registry} from "tc-shared/events";
+import {Registry} from "tc-shared/events";
 import {MicrophoneDevice, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {useEffect, useRef, useState} from "react";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
@@ -16,6 +16,7 @@ import {spawnKeySelect} from "tc-shared/ui/modal/ModalKeySelect";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {BoxedInputField} from "tc-shared/ui/react-elements/InputField";
 import {IDevice} from "tc-shared/audio/recorder";
+import {HighlightContainer, HighlightRegion, HighlightText} from "./Heighlight";
 
 const cssStyle = require("./Microphone.scss");
 
@@ -157,7 +158,6 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
     });
     const [ selectedDevice, setSelectedDevice ] = useState<{ deviceId: string, mode: "selected" | "selecting" }>();
     const [ deviceList, setDeviceList ] = useState<MicrophoneDevice[]>([]);
-    const [ error, setError ] = useState(undefined);
 
     props.events.reactUse("notify_devices", event => {
         setSelectedDevice(undefined);
@@ -202,7 +202,7 @@ const MicrophoneList = (props: { events: Registry<MicrophoneSettingsEvents> }) =
                 </a>
             </div>
             <div className={cssStyle.overlay + " " + (state.type !== "error" ? cssStyle.hidden : undefined)}>
-                <a>{error}</a>
+                <a>{state.type === "error" ? state.message : undefined}</a>
             </div>
             <div className={cssStyle.overlay + " " + (state.type !== "no-permissions" ? cssStyle.hidden : undefined)}>
                 <a><Translatable>Please grant access to your microphone.</Translatable></a>
@@ -506,37 +506,109 @@ const ThresholdSelector = (props: { events: Registry<MicrophoneSettingsEvents> }
     )
 };
 
-export const MicrophoneSettings = (props: { events: Registry<MicrophoneSettingsEvents> }) => (
-    <div className={cssStyle.container}>
-        <div className={cssStyle.left}>
-            <div className={cssStyle.header}>
-                <a><Translatable>Select your Microphone Device</Translatable></a>
-                <ListRefreshButton events={props.events} />
+const HelpText0 = () => (
+    <HighlightText highlightId={"hs-0"} className={cssStyle.help}>
+        <Translatable>
+            Firstly we need to setup a microphone.<br />
+            Let me guide you thru the basic UI elements.<br />
+            <br />
+            To continue click anywhere on the screen.
+        </Translatable>
+    </HighlightText>
+);
+
+const HelpText1 = () => (
+    <HighlightText highlightId={"hs-1"} className={cssStyle.help + " " + cssStyle.paddingTop}>
+        <Translatable>
+            All your available microphones are listed within this box.<br />
+            <br />
+            The currently selected microphone<br />
+            is marked with a green checkmark. To change the selected microphone<br />
+            just click on the new one.<br />
+            <br />
+            To continue click anywhere on the screen.
+        </Translatable>
+    </HighlightText>
+);
+
+const HelpText2 = () => (
+    <HighlightText highlightId={"hs-2"} className={cssStyle.help + " " + cssStyle.paddingTop}>
+        <a>
+            <Translatable>TeaSpeak has three voice activity detection types:</Translatable>
+        </a>
+        <ol>
+            <li>
+                <Translatable>
+                    To transmit audio data you'll have to<br />
+                    press a key. The key could be selected via the button right to the radio button
+                </Translatable>
+            </li>
+            <li>
+                <Translatable>
+                    In this mode, TeaSpeak will continuously analyze your microphone input.
+                    If the audio level is grater than a certain threshold,
+                    the audio will be transmitted.
+                    The threshold is changeable via the "Sensitivity Settings" slider
+                </Translatable>
+            </li>
+            <li>
+                <Translatable>Continuously transmit any audio data.</Translatable>
+            </li>
+        </ol>
+        <a>
+            <Translatable>
+                Now you're ready to configure your microphone.<br />
+                Just click anywhere on the screen.
+            </Translatable>
+        </a>
+    </HighlightText>
+);
+
+export const MicrophoneSettings = (props: { events: Registry<MicrophoneSettingsEvents> }) => {
+    const [ highlighted, setHighlighted ] = useState(() => {
+        props.events.fire("query_help");
+        return undefined;
+    });
+
+    props.events.reactUse("notify_highlight", event => setHighlighted(event.field));
+
+    return (
+        <HighlightContainer highlightedId={highlighted} onClick={() => props.events.fire("action_help_click")}>
+            <div className={cssStyle.container}>
+                <HelpText0/>
+                <HighlightRegion className={cssStyle.left} highlightId={"hs-1"}>
+                    <div className={cssStyle.header}>
+                        <a><Translatable>Select your Microphone Device</Translatable></a>
+                        <ListRefreshButton events={props.events}/>
+                    </div>
+                    <MicrophoneList events={props.events}/>
+                    <HelpText2/>
+                </HighlightRegion>
+                <HighlightRegion className={cssStyle.right} highlightId={"hs-2"}>
+                    <HelpText1/>
+                    <div className={cssStyle.header}>
+                        <a><Translatable>Microphone Settings</Translatable></a>
+                    </div>
+                    <div className={cssStyle.body}>
+                        <VolumeSettings events={props.events}/>
+                        <VadSelector events={props.events}/>
+                    </div>
+                    <div className={cssStyle.header}>
+                        <a><Translatable>Sensitivity Settings</Translatable></a>
+                    </div>
+                    <div className={cssStyle.body}>
+                        <ThresholdSelector events={props.events}/>
+                    </div>
+                    <div className={cssStyle.header}>
+                        <a><Translatable>Advanced Settings</Translatable></a>
+                    </div>
+                    <div className={cssStyle.body}>
+                        <div className={cssStyle.containerAdvanced}>
+                            <PPTDelaySettings events={props.events}/>
+                        </div>
+                    </div>
+                </HighlightRegion>
             </div>
-            <MicrophoneList events={props.events} />
-        </div>
-        <div className={cssStyle.right}>
-            <div className={cssStyle.header}>
-                <a><Translatable>Microphone Settings</Translatable></a>
-            </div>
-            <div className={cssStyle.body}>
-                <VolumeSettings events={props.events} />
-                <VadSelector events={props.events} />
-            </div>
-            <div className={cssStyle.header}>
-                <a><Translatable>Sensitivity Settings</Translatable></a>
-            </div>
-            <div className={cssStyle.body}>
-                <ThresholdSelector events={props.events} />
-            </div>
-            <div className={cssStyle.header}>
-                <a><Translatable>Advanced Settings</Translatable></a>
-            </div>
-            <div className={cssStyle.body}>
-                <div className={cssStyle.containerAdvanced}>
-                    <PPTDelaySettings events={props.events} />
-                </div>
-            </div>
-        </div>
-    </div>
-)
+        </HighlightContainer>
+    );
+}

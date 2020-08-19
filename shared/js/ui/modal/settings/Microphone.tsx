@@ -24,11 +24,12 @@ export type MicrophoneDevice = {
 
 export interface MicrophoneSettingsEvents {
     "query_devices": { refresh_list: boolean },
-
+    "query_help": {},
     "query_setting": {
         setting: MicrophoneSetting
     },
 
+    "action_help_click": {},
     "action_request_permissions": {},
     "action_set_selected_device": { deviceId: string },
     "action_set_selected_device_result": {
@@ -69,6 +70,10 @@ export interface MicrophoneSettingsEvents {
 
         status: Exclude<DeviceListState, "error">
     },
+
+    notify_highlight: {
+        field: "hs-0" | "hs-1" | "hs-2" | undefined
+    }
 
     notify_destroy: {}
 }
@@ -310,7 +315,6 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     }
 }
 
-/*
 loader.register_task(Stage.LOADED, {
     name: "test",
     function: async () => {
@@ -342,4 +346,3 @@ loader.register_task(Stage.LOADED, {
     },
     priority: -2
 })
-*/
