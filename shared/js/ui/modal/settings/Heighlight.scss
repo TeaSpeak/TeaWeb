@@ -1,0 +1,115 @@
+@import "../../../../css/static/mixin.scss";
+@import "../../../../css/static/properties.scss";
+
+.container {
+    $highlight-time: .5s;
+    $backdrop-color: rgba(0, 0, 0, .9);
+
+    display: flex;
+    position: relative;
+
+    padding: .5em;
+
+    background-color: inherit;
+
+    .background {
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: none;
+        background-color: $backdrop-color;
+        border-radius: .15em;
+
+        padding: .5em;
+    }
+
+    /*
+    .highlightable {
+        display: flex;
+    }
+    */
+
+    .helpText {
+        opacity: 0;
+        z-index: 20;
+
+        pointer-events: none;
+
+        display: block;
+
+        overflow: auto;
+        @include chat-scrollbar();
+        @include transition($highlight-time ease-in-out);
+
+        a {
+            display: block;
+        }
+
+        ol {
+            margin-top: .5em;
+            margin-bottom: 0;
+        }
+
+        li {
+            margin-bottom: .5em;
+
+            .title {
+                font-weight: bold;
+            }
+        }
+
+        &.shown {
+            opacity: 1;
+            pointer-events: initial;
+
+            @include transition($highlight-time ease-in-out);
+        }
+    }
+
+    &.shown {
+        .background {
+            display: flex;
+            z-index: 1;
+
+            opacity: 1;
+        }
+
+        .highlightable {
+            border-radius: .1em;
+            position: relative;
+            z-index: 10;
+
+            background-color: inherit;
+
+            @include transition($highlight-time ease-in-out);
+
+            &::after {
+                content: ' ';
+
+                z-index: 5;
+                position: absolute;
+
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+
+                background-color: $backdrop-color;
+
+                @include transition($highlight-time ease-in-out);
+            }
+
+            &.highlighted {
+                padding: .5em;
+
+                &::after {
+                    background-color: #00000000;
+                }
+            }
+        }
+    }
+}

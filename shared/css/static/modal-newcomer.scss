@@ -14,7 +14,7 @@ html:root {
     padding: 0!important;
 
     min-width: 20em;
-    width: 50em;
+    width: 60em;
 
     @include user-select(none);
 
@@ -70,6 +70,8 @@ html:root {
         @include chat-scrollbar-horizontal();
         @include chat-scrollbar-vertical();
 
+        background-color: #19191b;
+
         .body {
             display: flex;
             flex-direction: column;
@@ -86,7 +88,7 @@ html:root {
                 &.step-welcome, &.step-finish {
                     display: flex;
                     flex-direction: row;
-                    justify-content: stretch;
+                    justify-content: center;
 
                     .text {
                         align-self: center;
@@ -119,7 +121,7 @@ html:root {
                 }
 
                 /* for step-identity or step-microphone */
-                .container-settings-identity-profile, .container-settings-audio-microphone {
+                .container-settings-identity-profile {
                     padding: .5em;
 
                     .left .body {
@@ -135,8 +137,6 @@ html:root {
                 }
 
                 &.step-identity { }
-
-                &.step-microphone { }
 
                 &.hidden {
                     display: none;
