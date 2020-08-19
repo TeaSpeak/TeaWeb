@@ -34,7 +34,7 @@ export const ModalFunctions = {
             case "string":
                 if(type == ElementType.HEADER)
                     return $.spawn("div").addClass("modal-title").text(val);
-                return $("<div>" + val + "</div>");
+                return $("<div>" + val.replace(/\n/g, "<br />") + "</div>");
             case "object": return val as JQuery;
             case "undefined":
                 return undefined;

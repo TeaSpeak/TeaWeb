@@ -7,7 +7,7 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as aplayer from "tc-backend/audio/player";
 import * as ppt from "tc-backend/ppt";
 import {getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
-import {FilterType, StateFilter} from "tc-shared/voice/Filter";
+import {FilterType, StateFilter, ThresholdFilter} from "tc-shared/voice/Filter";
 
 export type VadType = "threshold" | "push_to_talk" | "active";
 export interface RecorderProfileConfig {
@@ -38,6 +38,7 @@ export let default_recorder: RecorderProfile; /* needs initialize */
 export function set_default_recorder(recorder: RecorderProfile) {
     default_recorder = recorder;
 }
+
 export class RecorderProfile {
     readonly name;
     readonly volatile; /* not saving profile */
@@ -47,7 +48,8 @@ export class RecorderProfile {
 
     current_handler: ConnectionHandler;
 
-    callback_input_change: (oldInput: AbstractInput | undefined, newInput: AbstractInput | undefined) => Promise<void>;
+    /* attention: this callback will only be called when the audio input hasn't been initialized! */
+    callback_input_initialized: (input: AbstractInput) => void;
     callback_start: () => any;
     callback_stop: () => any;
 
@@ -58,7 +60,11 @@ export class RecorderProfile {
     private pptHookRegistered: boolean;
 
     private registeredFilter = {
-        "ppt-gate": undefined as StateFilter
+        "ppt-gate": undefined as StateFilter,
+        "threshold": undefined as ThresholdFilter,
+
+        /* disable voice transmission by default, e.g. when reinitializing filters etc. */
+        "default-disabled": undefined as StateFilter
     }
 
     constructor(name: string, volatile?: boolean) {
@@ -71,7 +77,7 @@ export class RecorderProfile {
                     clearTimeout(this.pptTimeout);
 
                 this.pptTimeout = setTimeout(() => {
-                    this.registeredFilter["ppt-gate"]?.set_state(true);
+                    this.registeredFilter["ppt-gate"]?.setState(true);
                 }, Math.max(this.config.vad_push_to_talk.delay, 0));
             },
 
@@ -79,7 +85,7 @@ export class RecorderProfile {
                 if(this.pptTimeout)
                     clearTimeout(this.pptTimeout);
 
-                this.registeredFilter["ppt-gate"]?.set_state(false);
+                this.registeredFilter["ppt-gate"]?.setState(false);
             },
 
             cancel: false
@@ -120,15 +126,16 @@ export class RecorderProfile {
         }
 
         aplayer.on_ready(async () => {
-            await getRecorderBackend().getDeviceList().awaitHealthy();
+            console.error("AWAITING DEVICE LIST");
+            await getRecorderBackend().getDeviceList().awaitInitialized();
+            console.error("AWAITING DEVICE LIST DONE");
 
-            this.initialize_input();
-            await this.load();
+            await this.initializeInput();
             await this.reinitializeFilter();
         });
     }
 
-    private initialize_input() {
+    private async initializeInput() {
         this.input = getRecorderBackend().createInput();
 
         this.input.events.on("notify_voice_start", () => {
@@ -143,28 +150,24 @@ export class RecorderProfile {
                 this.callback_stop();
         });
 
-        //TODO: Await etc?
-        this.callback_input_change && this.callback_input_change(undefined, this.input);
-    }
+        this.registeredFilter["default-disabled"] = this.input.createFilter(FilterType.STATE, 20);
+        await this.registeredFilter["default-disabled"].setState(true); /* filter */
+        this.registeredFilter["default-disabled"].setEnabled(true);
 
-    private async load() {
-        this.input.setVolume(this.config.volume / 100);
+        this.registeredFilter["ppt-gate"] = this.input.createFilter(FilterType.STATE, 100);
+        this.registeredFilter["ppt-gate"].setEnabled(false);
 
-        {
-            const allDevices = getRecorderBackend().getDeviceList().getDevices();
-            const defaultDeviceId = getRecorderBackend().getDeviceList().getDefaultDeviceId();
-            console.error("Devices: %o | Searching: %s", allDevices, this.config.device_id);
+        this.registeredFilter["threshold"] = this.input.createFilter(FilterType.THRESHOLD, 100);
+        this.registeredFilter["threshold"].setEnabled(false);
 
-            const devices = allDevices.filter(e => e.deviceId === defaultDeviceId || e.deviceId === this.config.device_id);
-            const device = devices.find(e => e.deviceId === this.config.device_id) || devices[0];
-
-            log.info(LogCategory.VOICE, tr("Loaded record profile device %s | %o (%o)"), this.config.device_id, device, allDevices);
-            try {
-                await this.input.setDevice(device);
-            } catch(error) {
-                log.error(LogCategory.VOICE, tr("Failed to set input device (%o)"), error);
-            }
+        if(this.callback_input_initialized) {
+            this.callback_input_initialized(this.input);
         }
+
+
+        /* apply initial config values */
+        this.input.setVolume(this.config.volume / 100);
+        await this.input.setDeviceId(this.config.device_id);
     }
 
     private save() {
@@ -172,13 +175,33 @@ export class RecorderProfile {
             settings.changeGlobal(Settings.FN_PROFILE_RECORD(this.name), this.config);
     }
 
+    private reinitializePPTHook() {
+        if(this.config.vad_type !== "push_to_talk")
+            return;
+
+        if(this.pptHookRegistered) {
+            ppt.unregister_key_hook(this.pptHook);
+            this.pptHookRegistered = false;
+        }
+
+        for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
+            this.pptHook[key] = this.config.vad_push_to_talk[key];
+
+        ppt.register_key_hook(this.pptHook);
+        this.pptHookRegistered = true;
+
+        this.registeredFilter["ppt-gate"]?.setState(true);
+    }
+
     private async reinitializeFilter() {
         if(!this.input) return;
 
-        /* TODO: Really required? If still same input we can just use the registered filters */
+        /* don't let any audio pass while we initialize the other filters */
+        this.registeredFilter["default-disabled"].setEnabled(true);
 
-        this.input.resetFilter();
-        delete this.registeredFilter["ppt-gate"];
+        /* disable all filter */
+        this.registeredFilter["threshold"].setEnabled(false);
+        this.registeredFilter["ppt-gate"].setEnabled(false);
 
         if(this.pptHookRegistered) {
             ppt.unregister_key_hook(this.pptHook);
@@ -186,23 +209,29 @@ export class RecorderProfile {
         }
 
         if(this.config.vad_type === "threshold") {
-            const filter = this.input.createFilter(FilterType.THRESHOLD, 100);
-            await filter.set_threshold(this.config.vad_threshold.threshold);
+            const filter = this.registeredFilter["threshold"];
+            filter.setEnabled(true);
+            filter.setThreshold(this.config.vad_threshold.threshold);
 
-            filter.set_margin_frames(10); /* 500ms */
-            filter.set_attack_smooth(.25);
-            filter.set_release_smooth(.9);
+            filter.setMarginFrames(10); /* 500ms */
+            filter.setAttackSmooth(.25);
+            filter.setReleaseSmooth(.9);
         } else if(this.config.vad_type === "push_to_talk") {
-            const filter = this.input.createFilter(FilterType.STATE, 100);
-            await filter.set_state(true);
-            this.registeredFilter["ppt-gate"] = filter;
+            const filter = this.registeredFilter["ppt-gate"];
+            filter.setEnabled(true);
+            filter.setState(true); /* by default set filtered */
 
             for(const key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
                 this.pptHook[key] = this.config.vad_push_to_talk[key];
 
             ppt.register_key_hook(this.pptHook);
             this.pptHookRegistered = true;
-        } else if(this.config.vad_type === "active") {}
+        } else if(this.config.vad_type === "active") {
+            /* we don't have to initialize any filters */
+        }
+
+
+        this.registeredFilter["default-disabled"].setEnabled(false);
     }
 
     async unmount() : Promise<void> {
@@ -218,7 +247,7 @@ export class RecorderProfile {
             }
         }
 
-        this.callback_input_change = undefined;
+        this.callback_input_initialized = undefined;
         this.callback_start = undefined;
         this.callback_stop = undefined;
         this.callback_unmount = undefined;
@@ -229,6 +258,7 @@ export class RecorderProfile {
     set_vad_type(type: VadType) : boolean {
         if(this.config.vad_type === type)
             return true;
+
         if(["push_to_talk", "threshold", "active"].findIndex(e => e === type) == -1)
             return false;
 
@@ -244,7 +274,7 @@ export class RecorderProfile {
             return;
 
         this.config.vad_threshold.threshold = value;
-        this.reinitializeFilter();
+        this.registeredFilter["threshold"]?.setThreshold(this.config.vad_threshold.threshold);
         this.save();
     }
 
@@ -253,7 +283,7 @@ export class RecorderProfile {
         for(const _key of ["key_alt", "key_ctrl", "key_shift", "key_windows", "key_code"])
             this.config.vad_push_to_talk[_key] = key[_key];
 
-        this.reinitializeFilter();
+        this.reinitializePPTHook();
         this.save();
     }
 
@@ -263,7 +293,6 @@ export class RecorderProfile {
             return;
 
         this.config.vad_push_to_talk.delay = value;
-        this.reinitializeFilter();
         this.save();
     }
 
@@ -280,7 +309,7 @@ export class RecorderProfile {
             return;
 
         this.config.volume = volume;
-        this.input && this.input.setVolume(volume / 100);
+        this.input?.setVolume(volume / 100);
         this.save();
     }
 }

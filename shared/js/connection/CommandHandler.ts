@@ -576,7 +576,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         let self = client instanceof LocalClientEntry;
 
         let channel_to = tree.findChannel(parseInt(json["ctid"]));
-        let channel_from = tree.findChannel(parseInt(json["cfid"]));
+        let channelFrom = tree.findChannel(parseInt(json["cfid"]));
 
         if(!client) {
             log.error(LogCategory.NETWORKING, tr("Unknown client move (Client)!"));
@@ -589,17 +589,17 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         }
 
         if(!self) {
-            if(!channel_from) {
+            if(!channelFrom) {
                 log.error(LogCategory.NETWORKING, tr("Unknown client move (Channel from)!"));
-                channel_from = client.currentChannel();
-            } else if(channel_from != client.currentChannel()) {
+                channelFrom = client.currentChannel();
+            } else if(channelFrom != client.currentChannel()) {
                 log.error(LogCategory.NETWORKING,
                     tr("Client move from invalid source channel! Local client registered in channel %d but server send %d."),
-                    client.currentChannel().channelId, channel_from.channelId
+                    client.currentChannel().channelId, channelFrom.channelId
                 );
             }
         } else {
-            channel_from = client.currentChannel();
+            channelFrom = client.currentChannel();
         }
 
         tree.moveClient(client, channel_to);
@@ -607,7 +607,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         if(self) {
             this.connection_handler.update_voice_status(channel_to);
 
-            for(const entry of client.channelTree.clientsByChannel(channel_from)) {
+            for(const entry of client.channelTree.clientsByChannel(channelFrom)) {
                 if(entry !== client && entry.get_audio_handle()) {
                     entry.get_audio_handle().abort_replay();
                     entry.speaking = false;
@@ -616,16 +616,18 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
 
             const side_bar = this.connection_handler.side_bar;
             side_bar.info_frame().update_channel_talk();
+        } else {
+            client.speaking = false;
         }
 
         const own_channel = this.connection.client.getClient().currentChannel();
-        const event = self ? EventType.CLIENT_VIEW_MOVE_OWN : (channel_from == own_channel || channel_to == own_channel ? EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL : EventType.CLIENT_VIEW_MOVE);
+        const event = self ? EventType.CLIENT_VIEW_MOVE_OWN : (channelFrom == own_channel || channel_to == own_channel ? EventType.CLIENT_VIEW_MOVE_OWN_CHANNEL : EventType.CLIENT_VIEW_MOVE);
         this.connection_handler.log.log(event, {
-            channel_from: channel_from ? {
-                channel_id: channel_from.channelId,
-                channel_name: channel_from.channelName()
+            channel_from: channelFrom ? {
+                channel_id: channelFrom.channelId,
+                channel_name: channelFrom.channelName()
             } : undefined,
-            channel_from_own: channel_from == own_channel,
+            channel_from_own: channelFrom == own_channel,
 
             channel_to: channel_to ? {
                 channel_id: channel_to.channelId,
@@ -650,20 +652,20 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 this.connection_handler.sound.play(Sound.USER_MOVED_SELF);
             else if(own_channel == channel_to)
                 this.connection_handler.sound.play(Sound.USER_ENTERED_MOVED);
-            else if(own_channel == channel_from)
+            else if(own_channel == channelFrom)
                 this.connection_handler.sound.play(Sound.USER_LEFT_MOVED);
         } else if(json["reasonid"] == ViewReasonId.VREASON_USER_ACTION) {
             if(self) {} //If we do an action we wait for the error response
             else if(own_channel == channel_to)
                 this.connection_handler.sound.play(Sound.USER_ENTERED);
-            else if(own_channel == channel_from)
+            else if(own_channel == channelFrom)
                 this.connection_handler.sound.play(Sound.USER_LEFT);
         } else if(json["reasonid"] == ViewReasonId.VREASON_CHANNEL_KICK) {
             if(self) {
                 this.connection_handler.sound.play(Sound.CHANNEL_KICKED);
             } else if(own_channel == channel_to)
                 this.connection_handler.sound.play(Sound.USER_ENTERED_KICKED);
-            else if(own_channel == channel_from)
+            else if(own_channel == channelFrom)
                 this.connection_handler.sound.play(Sound.USER_LEFT_KICKED_CHANNEL);
         } else {
             console.warn(tr("Unknown reason id %o"), json["reasonid"]);

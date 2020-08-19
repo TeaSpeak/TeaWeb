@@ -106,7 +106,7 @@ export abstract class AbstractDeviceList implements DeviceList {
 
         return new Promise<void>(resolve => {
             const callback = (event: DeviceListEvents["notify_state_changed"]) => {
-                if(event.newState !== "uninitialized")
+                if(event.newState === "uninitialized")
                     return;
 
                 this.events.off("notify_state_changed", callback);

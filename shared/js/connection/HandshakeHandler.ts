@@ -100,8 +100,8 @@ export class HandshakeHandler {
             client_server_password: this.parameters.password ? this.parameters.password.password : undefined,
             client_browser_engine: navigator.product,
 
-            client_input_hardware: this.connection.client.hasInputHardware(),
-            client_output_hardware: false,
+            client_input_hardware: this.connection.client.isMicrophoneDisabled(),
+            client_output_hardware: this.connection.client.hasOutputHardware(),
             client_input_muted: this.connection.client.isMicrophoneMuted(),
             client_output_muted: this.connection.client.isSpeakerMuted(),
         };
