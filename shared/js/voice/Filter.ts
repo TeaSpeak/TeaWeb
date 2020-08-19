@@ -7,41 +7,42 @@ export enum FilterType {
 export interface FilterBase {
     readonly priority: number;
 
-    set_enabled(flag: boolean) : void;
-    is_enabled() : boolean;
+    setEnabled(flag: boolean) : void;
+    isEnabled() : boolean;
 }
 
 export interface MarginedFilter {
-    get_margin_frames() : number;
-    set_margin_frames(value: number);
+    getMarginFrames() : number;
+    setMarginFrames(value: number);
 }
 
 export interface ThresholdFilter extends FilterBase, MarginedFilter {
     readonly type: FilterType.THRESHOLD;
 
-    get_threshold() : number;
-    set_threshold(value: number) : Promise<void>;
+    getThreshold() : number;
+    setThreshold(value: number);
 
-    get_attack_smooth() : number;
-    get_release_smooth() : number;
+    getAttackSmooth() : number;
+    getReleaseSmooth() : number;
 
-    set_attack_smooth(value: number);
-    set_release_smooth(value: number);
+    setAttackSmooth(value: number);
+    setReleaseSmooth(value: number);
 
-    callback_level?: (value: number) => any;
+    registerLevelCallback(callback: (value: number) => void);
+    removeLevelCallback(callback: (value: number) => void);
 }
 
 export interface VoiceLevelFilter extends FilterBase, MarginedFilter {
     type: FilterType.VOICE_LEVEL;
 
-    get_level() : number;
+    getLevel() : number;
 }
 
 export interface StateFilter extends FilterBase {
     type: FilterType.STATE;
 
-    set_state(state: boolean) : Promise<void>;
-    is_active() : boolean; /* if true the the filter allows data to pass */
+    setState(state: boolean);
+    isActive() : boolean; /* if true the the filter allows data to pass */
 }
 
 export type FilterTypeClass<T extends FilterType> =

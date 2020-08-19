@@ -4,13 +4,15 @@ export abstract class JAbstractFilter<NodeType extends AudioNode> {
     readonly priority: number;
 
     source_node: AudioNode;
-    audio_node: NodeType;
+    audioNode: NodeType;
 
     context: AudioContext;
     enabled: boolean = false;
 
     active: boolean = false; /* if true the filter filters! */
+
     callback_active_change: (new_state: boolean) => any;
+    callback_enabled_change: () => any;
 
     paused: boolean = true;
 
@@ -18,18 +20,24 @@ export abstract class JAbstractFilter<NodeType extends AudioNode> {
         this.priority = priority;
     }
 
-    abstract initialize(context: AudioContext, source_node: AudioNode);
+    /* Attention: After initialized, paused is the default state */
+    abstract initialize(context: AudioContext, sourceNode: AudioNode);
     abstract finalize();
 
     /* whatever the input has been paused and we don't expect any input */
-    abstract set_pause(flag: boolean);
+    abstract setPaused(flag: boolean);
+    abstract isPaused() : boolean;
 
-    is_enabled(): boolean {
+    isEnabled(): boolean {
         return this.enabled;
     }
 
-    set_enabled(flag: boolean) {
+    setEnabled(flag: boolean) {
         this.enabled = flag;
+
+        if(this.callback_enabled_change) {
+            this.callback_enabled_change();
+        }
     }
 }
 
@@ -37,99 +45,100 @@ export class JThresholdFilter extends JAbstractFilter<GainNode> implements Thres
     public static update_task_interval = 20; /* 20ms */
 
     readonly type = FilterType.THRESHOLD;
-    callback_level?: (value: number) => any;
 
-    private _threshold = 50;
+    private threshold = 50;
 
-    private _update_task: any;
-    private _analyser: AnalyserNode;
-    private _analyse_buffer: Uint8Array;
+    private analyzeTask: any;
+    private audioAnalyserNode: AnalyserNode;
+    private analyseBuffer: Uint8Array;
 
-    private _silence_count = 0;
-    private _margin_frames = 5;
+    private silenceCount = 0;
+    private marginFrames = 5;
 
-    private _current_level = 0;
-    private _smooth_release = 0;
-    private _smooth_attack = 0;
+    private currentLevel = 0;
+    private smoothRelease = 0;
+    private smoothAttack = 0;
+
+    private levelCallbacks: ((level: number) => void)[] = [];
 
     finalize() {
-        this.set_pause(true);
+        this.paused = true;
+        this.shutdownAnalyzer();
 
         if(this.source_node) {
-            try { this.source_node.disconnect(this._analyser) } catch (error) {}
-            try { this.source_node.disconnect(this.audio_node) } catch (error) {}
+            try { this.source_node.disconnect(this.audioAnalyserNode) } catch (error) {}
+            try { this.source_node.disconnect(this.audioNode) } catch (error) {}
         }
 
-        this._analyser = undefined;
+        this.audioAnalyserNode = undefined;
         this.source_node = undefined;
-        this.audio_node = undefined;
+        this.audioNode = undefined;
         this.context = undefined;
     }
 
     initialize(context: AudioContext, source_node: AudioNode) {
+        this.paused = true;
+
         this.context = context;
         this.source_node = source_node;
 
-        this.audio_node = context.createGain();
-        this._analyser = context.createAnalyser();
+        this.audioNode = context.createGain();
+        this.audioAnalyserNode = context.createAnalyser();
 
         const optimal_ftt_size = Math.ceil((source_node.context || context).sampleRate * (JThresholdFilter.update_task_interval / 1000));
         const base2_ftt = Math.pow(2, Math.ceil(Math.log2(optimal_ftt_size)));
-        this._analyser.fftSize = base2_ftt;
+        this.audioAnalyserNode.fftSize = base2_ftt;
 
-        if(!this._analyse_buffer || this._analyse_buffer.length < this._analyser.fftSize)
-            this._analyse_buffer = new Uint8Array(this._analyser.fftSize);
+        if(!this.analyseBuffer || this.analyseBuffer.length < this.audioAnalyserNode.fftSize)
+            this.analyseBuffer = new Uint8Array(this.audioAnalyserNode.fftSize);
 
         this.active = false;
-        this.audio_node.gain.value = 1;
+        this.audioNode.gain.value = 0; /* silence by default */
 
-        this.source_node.connect(this.audio_node);
-        this.source_node.connect(this._analyser);
-
-        /* force update paused state */
-        this.set_pause(!(this.paused = !this.paused));
+        this.source_node.connect(this.audioNode);
+        this.source_node.connect(this.audioAnalyserNode);
     }
 
-    get_margin_frames(): number { return this._margin_frames; }
-    set_margin_frames(value: number) {
-        this._margin_frames = value;
+    getMarginFrames(): number { return this.marginFrames; }
+    setMarginFrames(value: number) {
+        this.marginFrames = value;
     }
 
-    get_attack_smooth(): number {
-        return this._smooth_attack;
+    getAttackSmooth(): number {
+        return this.smoothAttack;
     }
 
-    get_release_smooth(): number {
-        return this._smooth_release;
+    getReleaseSmooth(): number {
+        return this.smoothRelease;
     }
 
-    set_attack_smooth(value: number) {
-        this._smooth_attack = value;
+    setAttackSmooth(value: number) {
+        this.smoothAttack = value;
     }
 
-    set_release_smooth(value: number) {
-        this._smooth_release = value;
+    setReleaseSmooth(value: number) {
+        this.smoothRelease = value;
     }
 
-    get_threshold(): number {
-        return this._threshold;
+    getThreshold(): number {
+        return this.threshold;
     }
 
-    set_threshold(value: number): Promise<void> {
-        this._threshold = value;
-        return Promise.resolve();
+    setThreshold(value: number) {
+        this.threshold = value;
+        this.updateGainNode(false);
     }
 
-    public static process(buffer: Uint8Array, ftt_size: number, previous: number, smooth: number) {
+    public static calculateAudioLevel(buffer: Uint8Array, fttSize: number, previous: number, smooth: number) : number {
         let level;
         {
             let total = 0, float, rms;
 
-            for(let index = 0; index < ftt_size; index++) {
+            for(let index = 0; index < fttSize; index++) {
                 float = ( buffer[index++] / 0x7f ) - 1;
                 total += (float * float);
             }
-            rms = Math.sqrt(total / ftt_size);
+            rms = Math.sqrt(total / fttSize);
             let db  = 20 * ( Math.log(rms) / Math.log(10) );
             // sanity check
 
@@ -140,38 +149,44 @@ export class JThresholdFilter extends JAbstractFilter<GainNode> implements Thres
         return previous * smooth + level * (1 - smooth);
     }
 
-    private _analyse() {
-        this._analyser.getByteTimeDomainData(this._analyse_buffer);
+    private analyzeAnalyseBuffer() {
+        if(!this.audioNode || !this.audioAnalyserNode)
+            return;
+
+        this.audioAnalyserNode.getByteTimeDomainData(this.analyseBuffer);
 
         let smooth;
-        if(this._silence_count == 0)
-            smooth = this._smooth_release;
+        if(this.silenceCount == 0)
+            smooth = this.smoothRelease;
         else
-            smooth = this._smooth_attack;
+            smooth = this.smoothAttack;
 
-        this._current_level = JThresholdFilter.process(this._analyse_buffer, this._analyser.fftSize, this._current_level, smooth);
+        this.currentLevel = JThresholdFilter.calculateAudioLevel(this.analyseBuffer, this.audioAnalyserNode.fftSize, this.currentLevel, smooth);
 
-        this._update_gain_node();
-        if(this.callback_level)
-            this.callback_level(this._current_level);
+        this.updateGainNode(true);
+        for(const callback of this.levelCallbacks)
+            callback(this.currentLevel);
     }
 
-    private _update_gain_node() {
+    private updateGainNode(increaseSilenceCount: boolean) {
         let state;
-        if(this._current_level > this._threshold) {
-            this._silence_count = 0;
+        if(this.currentLevel > this.threshold) {
+            this.silenceCount = 0;
             state = true;
         } else {
-            state = this._silence_count++ < this._margin_frames;
+            state = this.silenceCount < this.marginFrames;
+            if(increaseSilenceCount)
+                this.silenceCount++;
         }
+
         if(state) {
-            this.audio_node.gain.value = 1;
+            this.audioNode.gain.value = 1;
             if(this.active) {
                 this.active = false;
                 this.callback_active_change(false);
             }
         } else {
-            this.audio_node.gain.value = 0;
+            this.audioNode.gain.value = 0;
             if(!this.active) {
                 this.active = true;
                 this.callback_active_change(true);
@@ -179,22 +194,42 @@ export class JThresholdFilter extends JAbstractFilter<GainNode> implements Thres
         }
     }
 
-    set_pause(flag: boolean) {
-        if(flag === this.paused) return;
-        this.paused = flag;
+    isPaused(): boolean {
+        return this.paused;
+    }
 
-        if(this.paused) {
-            clearInterval(this._update_task);
-            this._update_task = undefined;
-
-            if(this.active) {
-                this.active = false;
-                this.callback_active_change(false);
-            }
-        } else {
-            if(!this._update_task && this._analyser)
-                this._update_task = setInterval(() => this._analyse(), JThresholdFilter.update_task_interval);
+    setPaused(flag: boolean) {
+        if(flag === this.paused) {
+            return;
         }
+
+        this.paused = flag;
+        this.initializeAnalyzer();
+    }
+
+    registerLevelCallback(callback: (value: number) => void) {
+        this.levelCallbacks.push(callback);
+    }
+
+    removeLevelCallback(callback: (value: number) => void) {
+        this.levelCallbacks.remove(callback);
+    }
+
+    private initializeAnalyzer() {
+        if(this.analyzeTask) {
+            return;
+        }
+
+        /* by default we're consuming the input */
+        this.active = true;
+        this.audioNode.gain.value = 0;
+
+        this.analyzeTask = setInterval(() => this.analyzeAnalyseBuffer(), JThresholdFilter.update_task_interval);
+    }
+
+    private shutdownAnalyzer() {
+        clearInterval(this.analyzeTask);
+        this.analyzeTask = undefined;
     }
 }
 
@@ -203,11 +238,11 @@ export class JStateFilter extends JAbstractFilter<GainNode> implements StateFilt
 
     finalize() {
         if(this.source_node) {
-            try { this.source_node.disconnect(this.audio_node) } catch (error) {}
+            try { this.source_node.disconnect(this.audioNode) } catch (error) {}
         }
 
         this.source_node = undefined;
-        this.audio_node = undefined;
+        this.audioNode = undefined;
         this.context = undefined;
     }
 
@@ -215,28 +250,31 @@ export class JStateFilter extends JAbstractFilter<GainNode> implements StateFilt
         this.context = context;
         this.source_node = source_node;
 
-        this.audio_node = context.createGain();
-        this.audio_node.gain.value = this.active ? 0 : 1;
+        this.audioNode = context.createGain();
+        this.audioNode.gain.value = this.active ? 0 : 1;
 
-        this.source_node.connect(this.audio_node);
+        this.source_node.connect(this.audioNode);
     }
 
-    is_active(): boolean {
+    isActive(): boolean {
         return this.active;
     }
 
-    set_state(state: boolean): Promise<void> {
+    setState(state: boolean) {
         if(this.active === state)
-            return Promise.resolve();
+            return;
 
         this.active = state;
-        if(this.audio_node)
-            this.audio_node.gain.value = state ? 0 : 1;
+        if(this.audioNode)
+            this.audioNode.gain.value = state ? 0 : 1;
         this.callback_active_change(state);
-        return Promise.resolve();
     }
 
-    set_pause(flag: boolean) {
+    isPaused(): boolean {
+        return this.paused;
+    }
+
+    setPaused(flag: boolean) {
         this.paused = flag;
     }
 }

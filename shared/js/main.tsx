@@ -336,27 +336,10 @@ function main() {
     top_menu.initialize();
 
     const initial_handler = server_connections.spawn_server_connection();
-    initial_handler.acquire_recorder(default_recorder, false);
+    initial_handler.acquireInputHardware().then(() => {});
     cmanager.server_connections.set_active_connection(initial_handler);
     /** Setup the XF forum identity **/
     fidentity.update_forum();
-
-    let _resize_timeout;
-    $(window).on('resize', event => {
-        if(event.target !== window)
-            return;
-
-        if(_resize_timeout)
-            clearTimeout(_resize_timeout);
-        _resize_timeout = setTimeout(() => {
-            for(const connection of server_connections.all_connections())
-                connection.invoke_resized_on_activate = true;
-            const active_connection = server_connections.active_connection();
-            if(active_connection)
-                active_connection.resize_elements();
-            $(".window-resize-listener").trigger('resize');
-        }, 1000);
-    });
     keycontrol.initialize();
 
     stats.initialize({

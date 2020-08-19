@@ -113,9 +113,6 @@ export class ConnectionManager {
             this._container_channel_tree.append(handler.channelTree.tag_tree());
             this._container_chat.append(handler.side_bar.html_tag());
             this._container_log_server.append(handler.log.getHTMLTag());
-
-            if(handler.invoke_resized_on_activate)
-                handler.resize_elements();
         }
         const old_handler = this.active_handler;
         this.active_handler = handler;

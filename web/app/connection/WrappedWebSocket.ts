@@ -103,7 +103,7 @@ export class WrappedWebSocket {
 
             try {
                 if(this.socket.readyState === WebSocket.OPEN) {
-                    this.socket.close();
+                    this.socket.close(3000);
                 } else if(this.socket.readyState === WebSocket.CONNECTING) {
                     if(kPreventOpeningWebSocketClosing) {
                         /* to prevent the "WebSocket is closed before the connection is established." warning in the console */

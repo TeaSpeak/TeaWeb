@@ -88,15 +88,14 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(this.currentAudioSource === recorder && !enforce)
             return;
 
-        if(recorder) {
-            await recorder.unmount();
-        }
-
         if(this.currentAudioSource) {
             await this.voiceBridge?.setInput(undefined);
             this.currentAudioSource.callback_unmount = undefined;
             await this.currentAudioSource.unmount();
         }
+
+        /* unmount our target recorder */
+        await recorder?.unmount();
 
         this.handleRecorderStop();
         this.currentAudioSource = recorder;
@@ -108,18 +107,24 @@ export class VoiceConnection extends AbstractVoiceConnection {
             recorder.callback_start = this.handleRecorderStart.bind(this);
             recorder.callback_stop = this.handleRecorderStop.bind(this);
 
-            recorder.callback_input_change = async (oldInput, newInput) => {
+            recorder.callback_input_initialized = async input => {
                 if(!this.voiceBridge)
                     return;
 
-                if(this.voiceBridge.getInput() && this.voiceBridge.getInput() !== oldInput) {
-                    logWarn(LogCategory.VOICE,
-                        tr("Having a recorder input change, but our voice bridge still has another input (Having: %o, Expecting: %o)!"),
-                        this.voiceBridge.getInput(), oldInput);
-                }
-
-                await this.voiceBridge.setInput(newInput);
+                await this.voiceBridge.setInput(input);
             };
+
+            if(recorder.input && this.voiceBridge) {
+                await this.voiceBridge.setInput(recorder.input);
+            }
+
+            if(!recorder.input || recorder.input.isFiltered()) {
+                this.handleRecorderStop();
+            } else {
+                this.handleRecorderStart();
+            }
+        } else {
+            await this.voiceBridge.setInput(undefined);
         }
 
         this.events.fire("notify_recorder_changed");

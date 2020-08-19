@@ -3,7 +3,12 @@ import {Button} from "./button";
 import {DropdownEntry} from "tc-shared/ui/frames/control-bar/dropdown";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
-import {ConnectionEvents, ConnectionHandler, ConnectionStateUpdateType} from "tc-shared/ConnectionHandler";
+import {
+    ConnectionEvents,
+    ConnectionHandler,
+    ConnectionState as CConnectionState,
+    ConnectionStateUpdateType
+} from "tc-shared/ConnectionHandler";
 import {Event, EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ConnectionManagerEvents, server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {Settings, settings} from "tc-shared/settings";
@@ -21,6 +26,7 @@ import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {default_recorder} from "tc-shared/voice/RecorderProfile";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {icon_cache_loader} from "tc-shared/file/Icons";
+import {InputState} from "tc-shared/voice/RecorderBase";
 
 const cssStyle = require("./index.scss");
 const cssButtonStyle = require("./button.scss");
@@ -704,8 +710,7 @@ function initialize(event_registry: Registry<InternalControlBarEvents>) {
 
         if(current_connection_handler) {
             current_connection_handler.setMicrophoneMuted(!state);
-            if(!current_connection_handler.getVoiceRecorder())
-                current_connection_handler.acquire_recorder(default_recorder, true); /* acquire_recorder already updates the voice status */
+            current_connection_handler.acquireInputHardware().then(() => {});
         }
     });
 
