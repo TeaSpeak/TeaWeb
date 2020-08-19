@@ -310,7 +310,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     }
 }
 
-
+/*
 loader.register_task(Stage.LOADED, {
     name: "test",
     function: async () => {
@@ -342,3 +342,4 @@ loader.register_task(Stage.LOADED, {
     },
     priority: -2
 })
+*/

@@ -11,7 +11,7 @@ import {
     NodeInputConsumer
 } from "tc-shared/voice/RecorderBase";
 import * as log from "tc-shared/log";
-import {LogCategory, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug, logWarn} from "tc-shared/log";
 import * as aplayer from "./player";
 import {JAbstractFilter, JStateFilter, JThresholdFilter} from "./RecorderFilter";
 import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
@@ -173,7 +173,7 @@ class JavascriptInput implements AbstractInput {
                 chain += FilterType[f.type] + " <- ";
             }
             chain += "input";
-            console.error("Filter chain: %s", chain);
+            logDebug(LogCategory.AUDIO, tr("Input filter chain: %s"), chain);
 
             this.switchSourceNode(currentSource);
         }
