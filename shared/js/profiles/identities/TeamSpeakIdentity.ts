@@ -9,7 +9,6 @@ import {
     IdentitifyType,
     Identity
 } from "tc-shared/profiles/Identity";
-import {settings} from "tc-shared/settings";
 import {arrayBufferBase64, base64_encode_ab, str2ab8} from "tc-shared/utils/buffers";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
@@ -259,7 +258,7 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
                     error = error.extra_message || error.message;
                 this.trigger_fail("failed to execute proof (" + error + ")");
             }).then(() => this.trigger_success());
-        }).catch(error => {
+        }).catch(() => {
             this.trigger_fail("failed to sign message");
         });
     }
@@ -702,10 +701,10 @@ export class TeaSpeakIdentity implements Identity {
 
                     const exit = () => {
                         const timeout = setTimeout(() => resolve(true), 1000);
-                        Promise.all(worker_promise).then(result => {
+                        Promise.all(worker_promise).then(() => {
                             clearTimeout(timeout);
                             resolve(true);
-                        }).catch(error => resolve(true));
+                        }).catch(() => resolve(true));
                         active = false;
                     };
 

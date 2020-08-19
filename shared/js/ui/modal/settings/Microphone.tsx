@@ -5,12 +5,6 @@ import {LevelMeter} from "tc-shared/voice/RecorderBase";
 import * as log from "tc-shared/log";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {default_recorder} from "tc-shared/voice/RecorderProfile";
-import * as loader from "tc-loader";
-import {Stage} from "tc-loader";
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
-import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
-import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
 
 export type MicrophoneSetting = "volume" | "vad-type" | "ppt-key" | "ppt-release-delay" | "ppt-release-delay-active" | "threshold-threshold";
@@ -315,6 +309,14 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     }
 }
 
+/*
+import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
+import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+import {Translatable} from "tc-shared/ui/react-elements/i18n";
+import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
+
 loader.register_task(Stage.LOADED, {
     name: "test",
     function: async () => {
@@ -346,3 +348,4 @@ loader.register_task(Stage.LOADED, {
     },
     priority: -2
 })
+*/
