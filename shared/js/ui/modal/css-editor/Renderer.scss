@@ -204,6 +204,11 @@
                     flex-shrink: 0;
 
                     margin-left: .5em;
+
+                    input {
+                        width: 0;
+                        height: 0;
+                    }
                 }
 
                 .input {
