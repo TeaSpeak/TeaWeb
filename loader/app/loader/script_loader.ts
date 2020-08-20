@@ -1,6 +1,5 @@
 import {config, critical_error, SourcePath} from "./loader";
 import {load_parallel, LoadCallback, LoadSyntaxError, ParallelOptions, script_name} from "./utils";
-import {type} from "os";
 
 let _script_promises: {[key: string]: Promise<void>} = {};
 
@@ -34,7 +33,7 @@ function load_script_url(url: string) : Promise<void> {
         const timeout_handle = setTimeout(() => {
             cleanup();
             reject("timeout");
-        }, 5000);
+        }, 10 * 1000);
         script_tag.type = "application/javascript";
         script_tag.async = true;
         script_tag.defer = true;

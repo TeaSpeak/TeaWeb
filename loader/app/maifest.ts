@@ -54,7 +54,7 @@ export async function loadManifestTarget(chunkName: string, taskId: number) {
 
     await loader.scripts.load_multiple(manifest.chunks[chunkName].files.map(e => "js/" + e.file), {
         cache_tag: undefined,
-        max_parallel_requests: -1
+        max_parallel_requests: 4
     }, (script, state) => {
         if(state !== "loading")
             return;
