@@ -263,6 +263,9 @@ function analyze_type_node(node: ts.TypeNode | ts.LeftHandSideExpression, data: 
         case SyntaxKind.TupleType:
             break;
 
+        case SyntaxKind.ConditionalType:
+            break;
+
         default:
             throw "Unknown type " + SyntaxKind[node.kind] + ". Extend me :)";
     }
