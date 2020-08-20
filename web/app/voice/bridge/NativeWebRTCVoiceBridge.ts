@@ -61,11 +61,12 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
     }
 
     async setInput(input: AbstractInput | undefined) {
+        console.error("SET INPUT: %o", input);
         if (this.currentInput === input)
             return;
 
         if (this.currentInput) {
-            await this.currentInput.set_consumer(undefined);
+            await this.currentInput.setConsumer(undefined);
             this.currentInput = undefined;
         }
 
@@ -73,7 +74,7 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
 
         if (this.currentInput) {
             try {
-                await this.currentInput.set_consumer({
+                await this.currentInput.setConsumer({
                     type: InputConsumerType.NODE,
                     callback_node: node => node.connect(this.localAudioDestinationNode),
                     callback_disconnect: node => node.disconnect(this.localAudioDestinationNode)
@@ -91,6 +92,7 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
         packet[2] = (this.voicePacketId >> 8) & 0xFF; //HIGHT (voiceID)
         packet[3] = (this.voicePacketId >> 0) & 0xFF; //LOW   (voiceID)
         packet[4] = codec; //Codec
+        this.voicePacketId++;
     }
 
     sendStopSignal(codec: number) {

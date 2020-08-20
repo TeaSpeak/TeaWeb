@@ -5,10 +5,10 @@ import {GroupManager} from "tc-shared/permission/GroupManager";
 import {ServerSettings, Settings, settings, StaticSettings} from "tc-shared/settings";
 import {Sound, SoundManager} from "tc-shared/sound/Sounds";
 import {LocalClientEntry} from "tc-shared/ui/client";
-import {ConnectionProfile, default_profile, find_profile} from "tc-shared/profiles/ConnectionProfile";
+import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {ServerAddress} from "tc-shared/ui/server";
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logError} from "tc-shared/log";
 import {createErrorModal, createInfoModal, createInputModal, Modal} from "tc-shared/ui/elements/Modal";
 import {hashPassword} from "tc-shared/utils/helpers";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
@@ -16,8 +16,7 @@ import * as htmltags from "./ui/htmltags";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import * as bipc from "./ipc/BrowserIPC";
-import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
+import {default_recorder, RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {Frame} from "tc-shared/ui/frames/chat_frame";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
@@ -38,6 +37,12 @@ import {PluginCmdRegistry} from "tc-shared/connection/PluginCmdHandler";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 import {getServerConnectionFactory} from "tc-shared/connection/ConnectionFactory";
+
+export enum InputHardwareState {
+    MISSING,
+    START_FAILED,
+    VALID
+}
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -101,7 +106,6 @@ export enum ViewReasonId {
 }
 
 export interface LocalClientStatus {
-    input_hardware: boolean;
     input_muted: boolean;
     output_muted: boolean;
 
@@ -128,7 +132,6 @@ export interface ConnectParameters {
     auto_reconnect_attempt?: boolean;
 }
 
-declare const native_client;
 export class ConnectionHandler {
     readonly handlerId: string;
 
@@ -163,8 +166,8 @@ export class ConnectionHandler {
     private pluginCmdRegistry: PluginCmdRegistry;
 
     private client_status: LocalClientStatus = {
-        input_hardware: false,
         input_muted: false,
+
         output_muted: false,
         away: false,
         channel_subscribe_all: true,
@@ -176,7 +179,8 @@ export class ConnectionHandler {
         channel_codec_decoding_supported: undefined
     };
 
-    invoke_resized_on_activate: boolean = false;
+    private inputHardwareState: InputHardwareState = InputHardwareState.MISSING;
+
     log: ServerEventLog;
 
     constructor() {
@@ -189,7 +193,10 @@ export class ConnectionHandler {
         this.serverConnection = getServerConnectionFactory().create(this);
         this.serverConnection.events.on("notify_connection_state_changed", event => this.on_connection_state_changed(event.oldState, event.newState));
 
-        this.serverConnection.getVoiceConnection().events.on("notify_recorder_changed", () => this.update_voice_status());
+        this.serverConnection.getVoiceConnection().events.on("notify_recorder_changed", () => {
+            this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
+            this.update_voice_status();
+        });
         this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", () => this.update_voice_status());
 
         this.channelTree = new ChannelTree(this);
@@ -237,7 +244,7 @@ export class ConnectionHandler {
         this.update_voice_status();
 
         this.setSubscribeToAllChannels(source ? source.client_status.channel_subscribe_all : settings.global(Settings.KEY_CLIENT_STATE_SUBSCRIBE_ALL_CHANNELS));
-        this.setAway_(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
+        this.doSetAway(source ? source.client_status.away : (settings.global(Settings.KEY_CLIENT_STATE_AWAY) ? settings.global(Settings.KEY_CLIENT_AWAY_MESSAGE) : false), false);
         this.setQueriesShown(source ? source.client_status.queries_visible : settings.global(Settings.KEY_CLIENT_STATE_QUERY_SHOWN));
     }
 
@@ -251,11 +258,10 @@ export class ConnectionHandler {
     }
 
     async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
-        this.tab_set_name(tr("Connecting"));
         this.cancel_reconnect(false);
         this._reconnect_attempt = parameters.auto_reconnect_attempt || false;
-        if(this.serverConnection)
-            this.handleDisconnect(DisconnectReason.REQUESTED);
+        this.handleDisconnect(DisconnectReason.REQUESTED);
+        this.tab_set_name(tr("Connecting"));
 
         let server_address: ServerAddress = {
             host: "",
@@ -344,7 +350,7 @@ export class ConnectionHandler {
         this.cancel_reconnect(true);
         if(!this.connected) return;
 
-        this.handleDisconnect(DisconnectReason.REQUESTED); //TODO message?
+        this.handleDisconnect(DisconnectReason.REQUESTED);
         try {
             await this.serverConnection.disconnect();
         } catch (error) {
@@ -369,42 +375,44 @@ export class ConnectionHandler {
 
 
     @EventHandler<ConnectionEvents>("notify_connection_state_changed")
-    private handleConnectionConnected(event: ConnectionEvents["notify_connection_state_changed"]) {
-        if(event.new_state !== ConnectionState.CONNECTED) return;
+    private handleConnectionStateChanged(event: ConnectionEvents["notify_connection_state_changed"]) {
         this.connection_state = event.new_state;
+        if(event.new_state === ConnectionState.CONNECTED) {
+            log.info(LogCategory.CLIENT, tr("Client connected"));
+            this.log.log(EventType.CONNECTION_CONNECTED, {
+                serverAddress: {
+                    server_port: this.channelTree.server.remote_address.port,
+                    server_hostname: this.channelTree.server.remote_address.host
+                },
+                serverName: this.channelTree.server.properties.virtualserver_name,
+                own_client: this.getClient().log_data()
+            });
+            this.sound.play(Sound.CONNECTION_CONNECTED);
 
-        log.info(LogCategory.CLIENT, tr("Client connected"));
-        this.log.log(EventType.CONNECTION_CONNECTED, {
-            serverAddress: {
-                server_port: this.channelTree.server.remote_address.port,
-                server_hostname: this.channelTree.server.remote_address.host
-            },
-            serverName: this.channelTree.server.properties.virtualserver_name,
-            own_client: this.getClient().log_data()
-        });
-        this.sound.play(Sound.CONNECTION_CONNECTED);
+            this.permissions.requestPermissionList();
+            if(this.groups.serverGroups.length == 0)
+                this.groups.requestGroups();
 
-        this.permissions.requestPermissionList();
-        if(this.groups.serverGroups.length == 0)
-            this.groups.requestGroups();
+            this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
 
-        this.settings.setServer(this.channelTree.server.properties.virtualserver_unique_identifier);
+            /* apply the server settings */
+            if(this.client_status.channel_subscribe_all)
+                this.channelTree.subscribe_all_channels();
+            else
+                this.channelTree.unsubscribe_all_channels();
+            this.channelTree.toggle_server_queries(this.client_status.queries_visible);
 
-        /* apply the server settings */
-        if(this.client_status.channel_subscribe_all)
-            this.channelTree.subscribe_all_channels();
-        else
-            this.channelTree.unsubscribe_all_channels();
-        this.channelTree.toggle_server_queries(this.client_status.queries_visible);
-
-        this.sync_status_with_server();
-        this.channelTree.server.updateProperties();
-        /*
-        No need to update the voice stuff because as soon we see ourself we're doing it
-        this.update_voice_status();
-        if(control_bar.current_connection_handler() === this)
-            control_bar.apply_server_voice_state();
-        */
+            this.sync_status_with_server();
+            this.channelTree.server.updateProperties();
+            /*
+            No need to update the voice stuff because as soon we see ourself we're doing it
+            this.update_voice_status();
+            if(control_bar.current_connection_handler() === this)
+                control_bar.apply_server_voice_state();
+            */
+        } else {
+            this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
+        }
     }
 
     get connected() : boolean {
@@ -439,52 +447,7 @@ export class ConnectionHandler {
         if(pathname.endsWith(".php"))
             pathname = pathname.substring(0, pathname.lastIndexOf("/"));
 
-        /* certaccept is currently not working! */
-        if(bipc.supported() && false) {
-            tag.attr('href', "#");
-            let popup: Window;
-            tag.on('click', event => {
-                const features = {
-                    status: "no",
-                    location: "no",
-                    toolbar: "no",
-                    menubar: "no",
-                    width: 600,
-                    height: 400
-                };
-
-                if(popup)
-                    popup.close();
-
-                properties["certificate_callback"] = bipc.getInstance().register_certificate_accept_callback(() => {
-                    log.info(LogCategory.GENERAL, tr("Received notification that the certificate has been accepted! Attempting reconnect!"));
-                    if(this._certificate_modal)
-                        this._certificate_modal.close();
-
-                    popup.close(); /* no need, but nicer */
-
-                    const profile = find_profile(properties.connect_profile) || default_profile();
-                    const cprops = this.reconnect_properties(profile);
-                    this.startConnection(properties.connect_address, profile, true, cprops);
-                });
-
-                const url = build_url(document.location.origin + pathname + "/popup/certaccept/", "", properties);
-                const features_string = Object.keys(features).map(e => e + "=" + features[e]).join(",");
-                popup = window.open(url, "TeaWeb certificate accept", features_string);
-                try {
-                    popup.focus();
-                } catch(e) {
-                    log.warn(LogCategory.GENERAL, tr("Certificate accept popup has been blocked. Trying a blank page and replacing href"));
-
-                    window.open(url, "TeaWeb certificate accept"); /* trying without features */
-                    tag.attr("target", "_blank");
-                    tag.attr("href", url);
-                    tag.unbind('click');
-                }
-            });
-        } else {
-            tag.attr('href', build_url(document.location.origin + pathname, document.location.search, properties));
-        }
+        tag.attr('href', build_url(document.location.origin + pathname, document.location.search, properties));
         return tag;
     }
 
@@ -526,7 +489,7 @@ export class ConnectionHandler {
                 else
                     log.error(LogCategory.CLIENT, tr("Could not connect to remote host!"), data);
 
-                if(native_client || !dns.resolve_address_ipv4) {
+                if(__build.target === "client" || !dns.resolve_address_ipv4) {
                     createErrorModal(
                         tr("Could not connect"),
                         tr("Could not connect to remote host (Connection refused)")
@@ -726,42 +689,47 @@ export class ConnectionHandler {
         });
     }
 
-    private _last_record_error_popup: number;
+    private _last_record_error_popup: number = 0;
     update_voice_status(targetChannel?: ChannelEntry) {
-        //TODO: Simplify this
-        if(!this._local_client) return; /* we've been destroyed */
+        if(!this._local_client) {
+            /* we've been destroyed */
+            return;
+        }
 
-        targetChannel = targetChannel || this.getClient().currentChannel();
+        if(typeof targetChannel === "undefined")
+            targetChannel = this.getClient().currentChannel();
 
         const vconnection = this.serverConnection.getVoiceConnection();
-        const basic_voice_support = vconnection.getConnectionState() === VoiceConnectionStatus.Connected && targetChannel;
-        const support_record = basic_voice_support && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
-        const support_playback = basic_voice_support && (!targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec));
+
+        const codecEncodeSupported = !targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec);
+        const codecDecodeSupported = !targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec);
 
         const property_update = {
             client_input_muted: this.client_status.input_muted,
             client_output_muted: this.client_status.output_muted
         };
 
-        if(support_record && basic_voice_support)
+        /* update the encoding codec */
+        if(codecEncodeSupported && targetChannel) {
             vconnection.set_encoder_codec(targetChannel.properties.channel_codec);
+        }
 
         if(!this.serverConnection.connected() || vconnection.getConnectionState() !== VoiceConnectionStatus.Connected) {
             property_update["client_input_hardware"] = false;
             property_update["client_output_hardware"] = false;
-            this.client_status.input_hardware = true; /* IDK if we have input hardware or not, but it dosn't matter at all so */
-
-            /* no icons are shown so no update at all */
         } else {
-            const audio_source = vconnection.voice_recorder();
-            const recording_supported = typeof(audio_source) !== "undefined" && audio_source.record_supported && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
-            const playback_supported = !targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec);
+            const recording_supported =
+                this.getInputHardwareState() === InputHardwareState.VALID &&
+                (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec)) &&
+                vconnection.getConnectionState() === VoiceConnectionStatus.Connected;
+
+            const playback_supported = this.hasOutputHardware() && (!targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec));
 
             property_update["client_input_hardware"] = recording_supported;
             property_update["client_output_hardware"] = playback_supported;
-            this.client_status.input_hardware = recording_supported;
+        }
 
-            /* update icons */
+        {
             const client_properties = this.getClient().properties;
             for(const key of Object.keys(property_update)) {
                 if(client_properties[key] === property_update[key])
@@ -771,7 +739,7 @@ export class ConnectionHandler {
             if(Object.keys(property_update).length > 0) {
                 this.serverConnection.send_command("clientupdate", property_update).catch(error => {
                     log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
-                    this.log.log(EventType.ERROR_CUSTOM, {message: tr("Failed to update audio hardware properties.")});
+                    this.log.log(EventType.ERROR_CUSTOM, { message: tr("Failed to update audio hardware properties.") });
 
                     /* Update these properties anyways (for case the server fails to handle the command) */
                     const updates = [];
@@ -782,50 +750,39 @@ export class ConnectionHandler {
             }
         }
 
-
-        if(targetChannel && basic_voice_support) {
-            const encoding_supported = vconnection && vconnection.encoding_supported(targetChannel.properties.channel_codec);
-            const decoding_supported = vconnection && vconnection.decoding_supported(targetChannel.properties.channel_codec);
-
-            if(this.client_status.channel_codec_decoding_supported !== decoding_supported || this.client_status.channel_codec_encoding_supported !== encoding_supported) {
-                this.client_status.channel_codec_decoding_supported = decoding_supported;
-                this.client_status.channel_codec_encoding_supported = encoding_supported;
+        if(targetChannel) {
+            if(this.client_status.channel_codec_decoding_supported !== codecDecodeSupported || this.client_status.channel_codec_encoding_supported !== codecEncodeSupported) {
+                this.client_status.channel_codec_decoding_supported = codecDecodeSupported;
+                this.client_status.channel_codec_encoding_supported = codecEncodeSupported;
 
                 let message;
-                if(!encoding_supported && !decoding_supported)
+                if(!codecEncodeSupported && !codecDecodeSupported) {
                     message = tr("This channel has an unsupported codec.<br>You cant speak or listen to anybody within this channel!");
-                else if(!encoding_supported)
+                } else if(!codecEncodeSupported) {
                     message = tr("This channel has an unsupported codec.<br>You cant speak within this channel!");
-                else if(!decoding_supported)
-                    message = tr("This channel has an unsupported codec.<br>You listen to anybody within this channel!"); /* implies speaking does not work as well */
-                if(message)
+                } else if(!codecDecodeSupported) {
+                    message = tr("This channel has an unsupported codec.<br>You cant listen to anybody within this channel!");
+                }
+
+                if(message) {
                     createErrorModal(tr("Channel codec unsupported"), message).open();
+                }
             }
         }
 
         this.client_status = this.client_status || {} as any;
-        this.client_status.sound_record_supported = support_record;
-        this.client_status.sound_playback_supported = support_playback;
+        this.client_status.sound_record_supported = codecEncodeSupported;
+        this.client_status.sound_playback_supported = codecDecodeSupported;
 
-        if(vconnection && vconnection.voice_recorder() && vconnection.voice_recorder().record_supported) {
-            const active = !this.client_status.input_muted && !this.client_status.output_muted;
+        {
+            const enableRecording = !this.client_status.input_muted && !this.client_status.output_muted;
             /* No need to start the microphone when we're not even connected */
 
-            const input = vconnection.voice_recorder().input;
+            const input = vconnection.voice_recorder()?.input;
             if(input) {
-                if(active && this.serverConnection.connected()) {
-                    if(input.current_state() === InputState.PAUSED) {
-                        input.start().then(result => {
-                            if(result != InputStartResult.EOK)
-                                throw result;
-                        }).catch(error => {
-                            log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
-                            if(Date.now() - (this._last_record_error_popup || 0) > 10 * 1000) {
-                                this._last_record_error_popup = Date.now();
-                                createErrorModal(tr("Failed to start recording"), formatMessage(tr("Microphone start failed.{:br:}Error: {}"), error)).open();
-                            }
-                        });
-                    }
+                if(enableRecording && this.serverConnection.connected()) {
+                    if(this.getInputHardwareState() !== InputHardwareState.START_FAILED)
+                        this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000);
                 } else {
                     input.stop();
                 }
@@ -836,6 +793,7 @@ export class ConnectionHandler {
         this.event_registry.fire("notify_state_updated", {
             state: "microphone"
         });
+
         this.event_registry.fire("notify_state_updated", {
             state: "speaker"
         });
@@ -849,7 +807,7 @@ export class ConnectionHandler {
                 client_output_muted: this.client_status.output_muted,
                 client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
                 client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
-                client_input_hardware: this.client_status.sound_record_supported && this.client_status.input_hardware,
+                client_input_hardware: this.client_status.sound_record_supported && this.getInputHardwareState() === InputHardwareState.VALID,
                 client_output_hardware: this.client_status.sound_playback_supported
             }).catch(error => {
                 log.warn(LogCategory.GENERAL, tr("Failed to sync handler state with server. Error: %o"), error);
@@ -857,15 +815,67 @@ export class ConnectionHandler {
             });
     }
 
-    resize_elements() {
-        this.invoke_resized_on_activate = false;
+    /* can be called as much as you want, does nothing if nothing changed */
+    async acquireInputHardware() {
+        /* if we're having multiple recorders, try to get the right one */
+        let recorder: RecorderProfile = default_recorder;
+
+        try {
+            await this.serverConnection.getVoiceConnection().acquire_voice_recorder(recorder);
+        } catch (error) {
+            logError(LogCategory.AUDIO, tr("Failed to acquire recorder: %o"), error);
+            createErrorModal(tr("Failed to acquire recorder"), tr("Failed to acquire recorder.\nLookup the console for more details.")).open();
+            return;
+        }
+
+        if(this.connection_state === ConnectionState.CONNECTED) {
+            await this.startVoiceRecorder(true);
+        } else {
+            this.setInputHardwareState(InputHardwareState.VALID);
+        }
     }
 
-    acquire_recorder(voice_recoder: RecorderProfile, update_control_bar: boolean) {
-        const vconnection = this.serverConnection.getVoiceConnection();
-        vconnection.acquire_voice_recorder(voice_recoder).catch(error => {
-            log.warn(LogCategory.VOICE, tr("Failed to acquire recorder (%o)"), error);
-        });
+    async startVoiceRecorder(notifyError: boolean) {
+        const input = this.getVoiceRecorder()?.input;
+        if(!input) return;
+
+        if(input.currentState() === InputState.PAUSED && this.connection_state === ConnectionState.CONNECTED) {
+            try {
+                const result = await input.start();
+                if(result !== InputStartResult.EOK) {
+                    throw result;
+                }
+
+                this.setInputHardwareState(InputHardwareState.VALID);
+                this.update_voice_status();
+            } catch (error) {
+                this.setInputHardwareState(InputHardwareState.START_FAILED);
+
+                let errorMessage;
+                if(error === InputStartResult.ENOTSUPPORTED) {
+                    errorMessage = tr("Your browser does not support voice recording");
+                } else if(error === InputStartResult.EBUSY) {
+                    errorMessage = tr("The input device is busy");
+                } else if(error === InputStartResult.EDEVICEUNKNOWN) {
+                    errorMessage = tr("Invalid input device");
+                } else if(error === InputStartResult.ENOTALLOWED) {
+                    errorMessage = tr("No permissions");
+                } else if(error instanceof Error) {
+                    errorMessage = error.message;
+                } else if(typeof error === "string") {
+                    errorMessage = error;
+                } else {
+                    errorMessage = tr("lookup the console");
+                }
+                log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
+                if(notifyError) {
+                    this._last_record_error_popup = Date.now();
+                    createErrorModal(tr("Failed to start recording"), tra("Microphone start failed.\nError: {}", errorMessage)).open();
+                }
+            }
+        } else {
+            this.setInputHardwareState(InputHardwareState.VALID);
+        }
     }
 
     getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection.getVoiceConnection().voice_recorder(); }
@@ -1015,15 +1025,9 @@ export class ConnectionHandler {
         this.update_voice_status();
     }
     toggleMicrophone() { this.setMicrophoneMuted(!this.isMicrophoneMuted()); }
-    isMicrophoneMuted() { return this.client_status.input_muted; }
 
-    /*
-     * Returns whatever the client is able to talk or not. Reasons for returning true could be:
-     * - Channel codec isn't supported
-     * - No recorder has been acquired
-     * - Voice bridge hasn't been set upped yet
-     */
-    isMicrophoneDisabled() { return !this.client_status.input_hardware; }
+    isMicrophoneMuted() { return this.client_status.input_muted; }
+    isMicrophoneDisabled() { return this.inputHardwareState !== InputHardwareState.VALID; }
 
     setSpeakerMuted(muted: boolean) {
         if(this.client_status.output_muted === muted) return;
@@ -1057,10 +1061,10 @@ export class ConnectionHandler {
     isSubscribeToAllChannels() : boolean { return this.client_status.channel_subscribe_all; }
 
     setAway(state: boolean | string) {
-        this.setAway_(state, true);
+        this.doSetAway(state, true);
     }
 
-    private setAway_(state: boolean | string, play_sound: boolean) {
+    private doSetAway(state: boolean | string, play_sound: boolean) {
         if(this.client_status.away === state)
             return;
 
@@ -1099,8 +1103,16 @@ export class ConnectionHandler {
         return this.client_status.queries_visible;
     }
 
-    hasInputHardware() : boolean { return this.client_status.input_hardware; }
-    hasOutputHardware() : boolean { return this.client_status.output_muted; }
+    getInputHardwareState() : InputHardwareState { return this.inputHardwareState; }
+    private setInputHardwareState(state: InputHardwareState) {
+        if(this.inputHardwareState === state)
+            return;
+
+        this.inputHardwareState = state;
+        this.event_registry.fire("notify_state_updated", { state: "microphone" });
+    }
+
+    hasOutputHardware() : boolean { return true; }
 
     getPluginCmdRegistry() : PluginCmdRegistry { return this.pluginCmdRegistry; }
 }

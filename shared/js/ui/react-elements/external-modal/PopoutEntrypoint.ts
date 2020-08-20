@@ -2,8 +2,6 @@ import * as loader from "tc-loader";
 import * as ipc from "../../../ipc/BrowserIPC";
 import * as i18n from "../../../i18n/localize";
 
-import "tc-shared/proto";
-
 import {Stage} from "tc-loader";
 import {AbstractModal, ModalRenderer} from "tc-shared/ui/react-elements/ModalDefinitions";
 import {Settings, SettingsKey} from "tc-shared/settings";
@@ -26,6 +24,7 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     name: "setup",
     priority: 110,
     function: async () => {
+        await import("tc-shared/proto");
         await i18n.initialize();
         ipc.setup();
     }

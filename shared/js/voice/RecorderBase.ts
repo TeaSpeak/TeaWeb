@@ -1,122 +1,98 @@
-export interface InputDevice {
-    unique_id: string;
-    driver: string;
-    name: string;
-    default_input: boolean;
-
-    supported: boolean;
-
-    sample_rate: number;
-    channels: number;
-}
+import {IDevice} from "tc-shared/audio/recorder";
+import {Registry} from "tc-shared/events";
+import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
 
 export enum InputConsumerType {
     CALLBACK,
     NODE,
     NATIVE
 }
-
-export interface InputConsumer {
-    type: InputConsumerType;
-}
-
-export interface CallbackInputConsumer extends InputConsumer {
+export interface CallbackInputConsumer {
+    type: InputConsumerType.CALLBACK;
     callback_audio?: (buffer: AudioBuffer) => any;
     callback_buffer?: (buffer: Float32Array, samples: number, channels: number) => any;
 }
 
-export interface NodeInputConsumer extends InputConsumer {
+export interface NodeInputConsumer {
+    type: InputConsumerType.NODE;
     callback_node: (source_node: AudioNode) => any;
     callback_disconnect: (source_node: AudioNode) => any;
 }
 
-
-export namespace filter {
-    export enum Type {
-        THRESHOLD,
-        VOICE_LEVEL,
-        STATE
-    }
-
-    export interface Filter {
-        type: Type;
-
-        is_enabled() : boolean;
-    }
-
-    export interface MarginedFilter {
-        get_margin_frames() : number;
-        set_margin_frames(value: number);
-    }
-
-    export interface ThresholdFilter extends Filter, MarginedFilter {
-        get_threshold() : number;
-        set_threshold(value: number) : Promise<void>;
-
-        get_attack_smooth() : number;
-        get_release_smooth() : number;
-
-        set_attack_smooth(value: number);
-        set_release_smooth(value: number);
-
-        callback_level?: (value: number) => any;
-    }
-
-    export interface VoiceLevelFilter extends Filter, MarginedFilter {
-        get_level() : number;
-    }
-
-    export interface StateFilter extends Filter {
-        set_state(state: boolean) : Promise<void>;
-        is_active() : boolean; /* if true the the filter allows data to pass */
-    }
+export interface NativeInputConsumer {
+    type: InputConsumerType.NATIVE;
 }
 
+export type InputConsumer = CallbackInputConsumer | NodeInputConsumer | NativeInputConsumer;
+
+
 export enum InputState {
+    /* Input recording has been paused */
     PAUSED,
+
+    /*
+     * Recording has been requested, and is currently initializing.
+     * This state may persist, when the audio context hasn't been initialized yet
+     */
     INITIALIZING,
-    RECORDING,
-    DRY
+
+    /* we're currently recording the input */
+    RECORDING
 }
 
 export enum InputStartResult {
     EOK = "eok",
     EUNKNOWN = "eunknown",
+    EDEVICEUNKNOWN = "edeviceunknown",
     EBUSY = "ebusy",
     ENOTALLOWED = "enotallowed",
     ENOTSUPPORTED = "enotsupported"
 }
 
-export interface AbstractInput {
-    callback_begin: () => any;
-    callback_end: () => any;
+export interface InputEvents {
+    notify_voice_start: {},
+    notify_voice_end: {}
+}
 
-    current_state() : InputState;
+export interface AbstractInput {
+    readonly events: Registry<InputEvents>;
+
+    currentState() : InputState;
 
     start() : Promise<InputStartResult>;
     stop() : Promise<void>;
 
-    current_device() : InputDevice | undefined;
-    set_device(device: InputDevice | undefined) : Promise<void>;
+    /*
+     * Returns true if the input is currently filtered.
+     * If the current state isn't recording, than it will return true.
+     */
+    isFiltered() : boolean;
 
-    current_consumer() : InputConsumer | undefined;
-    set_consumer(consumer: InputConsumer) : Promise<void>;
+    currentDeviceId() : string | undefined;
 
-    get_filter(type: filter.Type) : filter.Filter | undefined;
-    supports_filter(type: filter.Type) : boolean;
+    /*
+     * This method should not throw!
+     * If the target device is unknown than it should return EDEVICEUNKNOWN on start.
+     * After changing the device, the input state falls to InputState.PAUSED.
+     */
+    setDeviceId(device: string | undefined) : Promise<void>;
 
-    clear_filter();
-    disable_filter(type: filter.Type);
-    enable_filter(type: filter.Type);
+    currentConsumer() : InputConsumer | undefined;
+    setConsumer(consumer: InputConsumer) : Promise<void>;
 
-    get_volume() : number;
-    set_volume(volume: number);
+    supportsFilter(type: FilterType) : boolean;
+    createFilter<T extends FilterType>(type: T, priority: number) : FilterTypeClass<T>;
+    removeFilter(filter: Filter);
+    /* resetFilter(); */
+
+    getVolume() : number;
+    setVolume(volume: number);
 }
 
 export interface LevelMeter {
-    device() : InputDevice;
+    device() : IDevice;
 
     set_observer(callback: (value: number) => any);
 
-    destory();
+    destroy();
 }

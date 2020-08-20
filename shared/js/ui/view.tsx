@@ -542,13 +542,17 @@ export class ChannelTree {
             client["_channel"] = targetChannel;
             targetChannel?.registerClient(client);
 
-            if(oldChannel)
+            if(oldChannel) {
                 this.client.side_bar.info_frame().update_channel_client_count(oldChannel);
-            if(targetChannel)
+            }
+
+            if(targetChannel) {
                 this.client.side_bar.info_frame().update_channel_client_count(targetChannel);
-            if(oldChannel && targetChannel)
+            }
+
+            if(oldChannel && targetChannel) {
                 client.events.fire("notify_client_moved", { oldChannel: oldChannel, newChannel: targetChannel });
-            client.speaking = false;
+            }
         } finally {
             flush_batched_updates(BatchUpdateType.CHANNEL_TREE);
         }

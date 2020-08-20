@@ -77,7 +77,10 @@ export abstract class AbstractExternalModalController extends EventControllerBas
             });
         } catch (e) {
             this.modalState = ModalState.DESTROYED;
-            this.doDestroyWindow();
+            if(__build.mode !== "debug") {
+                /* do not destroy the window in debug mode in order to debug what happened */
+                this.doDestroyWindow();
+            }
             throw e;
         }
 

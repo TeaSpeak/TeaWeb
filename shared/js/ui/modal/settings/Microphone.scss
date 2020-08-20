@@ -1,6 +1,11 @@
 @import "../../../../css/static/properties";
 @import "../../../../css/static/mixin";
 
+.highlightContainer {
+    height: 100%;
+    width: 100%;
+}
+
 .container {
     display: flex;
     flex-direction: row;
@@ -11,6 +16,7 @@
     min-width: 43em;
     min-height: 41em;
 
+    background-color: inherit;
     position: relative;
 
     .left, .right {
@@ -241,7 +247,7 @@
 }
 
 .header {
-    height: 2.6em;
+    height: 3em;
 
     flex-grow: 0;
     flex-shrink: 0;
@@ -266,7 +272,7 @@
         white-space: nowrap;
     }
 
-    .btn {
+    button {
         flex-shrink: 0;
         flex-grow: 0;
 
@@ -452,9 +458,23 @@
             text-align: center;
         }
 
+        button {
+            width: 10em;
+            align-self: center;
+            margin-top: 2em;
+        }
+
         &.hidden {
             pointer-events: none;
             opacity: 0;
+        }
+
+        :global(.icon_em) {
+            align-self: center;
+            font-size: 10em;
+
+            margin-bottom: .25em;
+            margin-top: -.25em;
         }
     }
 }
@@ -572,6 +592,20 @@
     background: -webkit-linear-gradient(left,  rgba(112,64,126,1) 0%,rgba(69,64,126,1) 100%); /* Chrome10-25,Safari5.1-6 */
     background: linear-gradient(to right,  rgba(112,64,126,1) 0%,rgba(69,64,126,1) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
     filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#70407e', endColorstr='#45407e',GradientType=1 ); /* IE6-9 */
+}
+
+/* The help overlays */
+.help {
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    &.paddingTop {
+        padding-top: 3.6em;
+    }
 }
 
 @-moz-keyframes spin { 100% { -moz-transform: rotate(360deg); } }

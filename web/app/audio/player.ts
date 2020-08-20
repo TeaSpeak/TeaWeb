@@ -1,25 +1,3 @@
-/*
-import {Device} from "tc-shared/audio/player";
-
-export function initialize() : boolean;
-export function initialized() : boolean;
-
-export function context() : AudioContext;
-export function get_master_volume() : number;
-export function set_master_volume(volume: number);
-
-export function destination() : AudioNode;
-
-export function on_ready(cb: () => any);
-
-export function available_devices() : Promise<Device[]>;
-export function set_device(device_id: string) : Promise<void>;
-
-export function current_device() : Device;
-
-export function initializeFromGesture();
-*/
-
 import {Device} from "tc-shared/audio/player";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
@@ -52,6 +30,10 @@ function fire_initialized() {
 
 function createNewContext() {
     audioContextInstance = new (window.webkitAudioContext || window.AudioContext)();
+    audioContextInstance.onstatechange = () => {
+        if(audioContextInstance.state === "running")
+            fire_initialized();
+    };
 
     audioContextInitializeCallbacks.unshift(() => {
         globalAudioGainInstance = audioContextInstance.createGain();
@@ -128,9 +110,7 @@ export function current_device() : Device {
 export function initializeFromGesture() {
     if(audioContextInstance) {
         if(audioContextInstance.state !== "running") {
-            audioContextInstance.resume().then(() => {
-                fire_initialized();
-            }).catch(error => {
+            audioContextInstance.resume().catch(error => {
                 log.error(LogCategory.AUDIO, tr("Failed to initialize audio context instance from gesture: %o"), error);
             });
         }

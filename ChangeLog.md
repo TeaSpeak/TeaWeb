@@ -1,6 +1,9 @@
 # Changelog:
 * **11.08.20**
     - Fixed the voice push to talk delay
+    - Improved the microphone setting controller
+    - Heavily reworked the input recorder API
+    - Improved denied audio permission handling
     
 * **09.08.20**
     - Added a "watch to gather" context menu entry for clients
