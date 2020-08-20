@@ -33,7 +33,7 @@ function load_script_url(url: string) : Promise<void> {
         const timeout_handle = setTimeout(() => {
             cleanup();
             reject("timeout");
-        }, 10 * 1000);
+        }, 15 * 1000);
         script_tag.type = "application/javascript";
         script_tag.async = true;
         script_tag.defer = true;
