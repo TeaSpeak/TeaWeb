@@ -107,6 +107,8 @@ export async function load_multiple(paths: SourcePath[], options: MultipleOption
                         let prefix = "";
                         while(prefix.length < sname.length + 7) prefix += " ";
                         console.log(" - %s: %s:\n%s", sname, source.message, source.stack.split("\n").map(e => prefix + e.trim()).slice(1).join("\n"));
+                    } else if(typeof source === "string") {
+                        console.log(" - %s: %s", sname, source);
                     } else {
                         console.log(" - %s: %o", sname, source);
                     }
@@ -116,18 +118,19 @@ export async function load_multiple(paths: SourcePath[], options: MultipleOption
             }
         }
 
+        let errorMessage;
         {
             const error = result.failed[0].error;
-            console.error(error);
-            let errorMessage;
-            if(error instanceof LoadSyntaxError)
+            if(error instanceof LoadSyntaxError) {
                 errorMessage = error.source.message;
-            else if(typeof error === "string")
+            } else if(typeof error === "string") {
                 errorMessage = error;
-            else
+            } else {
+                console.error("Script %s loading error: %o", script_name(result.failed[0].request, false), error);
                 errorMessage = "View the browser console for more information!";
+            }
             critical_error("Failed to load script " + script_name(result.failed[0].request, true), errorMessage);
         }
-        throw "failed to load script " + script_name(result.failed[0].request, false);
+        throw "failed to load script " + script_name(result.failed[0].request, false) + " (" + errorMessage + ")";
     }
 }
