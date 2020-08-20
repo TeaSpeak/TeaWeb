@@ -122,6 +122,8 @@ export async function load_multiple(paths: SourcePath[], options: MultipleOption
             let errorMessage;
             if(error instanceof LoadSyntaxError)
                 errorMessage = error.source.message;
+            else if(typeof error === "string")
+                errorMessage = error;
             else
                 errorMessage = "View the browser console for more information!";
             critical_error("Failed to load script " + script_name(result.failed[0].request, true), errorMessage);
