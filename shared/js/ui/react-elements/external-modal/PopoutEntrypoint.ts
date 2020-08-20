@@ -1,23 +1,19 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
 import * as loader from "tc-loader";
 import * as ipc from "../../../ipc/BrowserIPC";
 import * as i18n from "../../../i18n/localize";
 
-import "tc-shared/file/RemoteAvatars";
 import "tc-shared/proto";
 
 import {Stage} from "tc-loader";
-import {AbstractModal} from "tc-shared/ui/react-elements/Modal";
+import {AbstractModal, ModalRenderer} from "tc-shared/ui/react-elements/ModalDefinitions";
 import {Settings, SettingsKey} from "tc-shared/settings";
 import {getPopoutController} from "./PopoutController";
 import {findPopoutHandler} from "tc-shared/ui/react-elements/external-modal/PopoutRegistry";
-import {bodyRenderer, titleRenderer} from "tc-shared/ui/react-elements/external-modal/PopoutRenderer";
 import {Registry} from "tc-shared/events";
+import {WebModalRenderer} from "tc-shared/ui/react-elements/external-modal/PopoutRendererWeb";
+import {ClientModalRenderer} from "tc-shared/ui/react-elements/external-modal/PopoutRendererClient";
 
-log.info(LogCategory.GENERAL, "Hello World");
-console.error("External modal said hello!");
-
+let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;
 let modalClass: new <T>(events: Registry<T>, userData: any) => AbstractModal;
 
@@ -41,6 +37,26 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     function: async () => {
         const ppController = getPopoutController();
         await ppController.initialize();
+    }
+});
+
+
+loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
+    name: "modal renderer loader",
+    priority: 10,
+    function: async () => {
+        if(__build.target === "web") {
+            modalRenderer = new WebModalRenderer();
+        } else {
+            modalRenderer = new ClientModalRenderer({
+                close() {
+                    getPopoutController().doClose()
+                },
+                minimize() {
+                    getPopoutController().doMinimize()
+                }
+            });
+        }
     }
 });
 
@@ -71,8 +87,7 @@ loader.register_task(Stage.LOADED, {
     function: async () => {
         try {
             modalInstance = new modalClass(getPopoutController().getEventRegistry(), getPopoutController().getUserData());
-            titleRenderer.setInstance(modalInstance);
-            bodyRenderer.setInstance(modalInstance);
+            modalRenderer.renderModal(modalInstance);
         } catch(error) {
             loader.critical_error("Failed to invoker modal", "Lookup the console for more detail");
             console.error("Failed to load modal: %o", error);

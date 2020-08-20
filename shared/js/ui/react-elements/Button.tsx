@@ -3,7 +3,7 @@ import * as React from "react";
 const cssStyle = require("./Button.scss");
 
 export interface ButtonProperties {
-    color?: "green" | "blue" | "red" | "purple" | "brown" | "yellow" | "default";
+    color?: "green" | "blue" | "red" | "purple" | "brown" | "yellow" | "default" | "none";
     type?: "normal" | "small" | "extra-small";
 
     className?: string;

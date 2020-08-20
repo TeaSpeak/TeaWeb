@@ -1,4 +1,4 @@
-import {Modal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
 import {FlatInputField, FlatSelect} from "tc-shared/ui/react-elements/InputField";
@@ -11,6 +11,7 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
+import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 
 const cssStyle = require("./ModalGroupCreate.scss");
 
@@ -232,27 +233,27 @@ const CreateButton = (props: { events: Registry<GroupCreateModalEvents> }) => {
     </Button>
 };
 
-class ModalGroupCreate extends Modal {
+class ModalGroupCreate extends InternalModal {
     readonly target: "server" | "channel";
-    readonly events = new Registry<GroupCreateModalEvents>();
+    readonly events: Registry<GroupCreateModalEvents>;
     readonly defaultSourceGroup: number;
 
-    constructor(connection: ConnectionHandler, target: "server" | "channel", defaultSourceGroup: number) {
+    constructor(connection: ConnectionHandler, events: Registry<GroupCreateModalEvents>, target: "server" | "channel", defaultSourceGroup: number) {
         super();
 
-        this.events.enableDebug("group-create");
+        this.events = events;
         this.defaultSourceGroup = defaultSourceGroup;
         this.target = target;
         initializeGroupCreateController(connection, this.events, this.target);
     }
 
     protected onInitialize() {
-        this.modalController().events.on("destroy", () => this.events.fire("notify_destroy"));
-
         this.events.fire_async("query_available_groups");
         this.events.fire_async("query_client_permissions");
+    }
 
-        this.events.on(["action_cancel", "action_create"], () => this.modalController().destroy());
+    protected onDestroy() {
+        this.events.fire("notify_destroy");
     }
 
     renderBody() {
@@ -276,8 +277,13 @@ class ModalGroupCreate extends Modal {
 }
 
 export function spawnGroupCreate(connection: ConnectionHandler, target: "server" | "channel", sourceGroup: number = 0) {
-    const modal = spawnReactModal(ModalGroupCreate, connection, target, sourceGroup);
+    const events = new Registry<GroupCreateModalEvents>();
+    events.enableDebug("group-create");
+
+    const modal = spawnReactModal(ModalGroupCreate, connection, events, target, sourceGroup);
     modal.show();
+
+    events.on(["action_cancel", "action_create"], () => modal.destroy());
 }
 
 const stringifyError = error => {

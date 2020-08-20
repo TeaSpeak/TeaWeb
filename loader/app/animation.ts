@@ -81,7 +81,12 @@ export async function initialize() {
     StageNames[Stage.LOADED] = "starting app";
 
     overlay.classList.add("initialized");
-    setupContainer.classList.add("visible");
+
+    if(parseInt(getUrlParameter("animation-short")) === 1) {
+        setupAnimationFinished();
+    } else {
+        setupContainer.classList.add("visible");
+    }
 
     initializeTimestamp = Date.now();
     return true;

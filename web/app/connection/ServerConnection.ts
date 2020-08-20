@@ -3,7 +3,6 @@ import {
     CommandOptionDefaults,
     CommandOptions,
     ConnectionStateListener,
-    voice
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";
 import {ServerAddress} from "tc-shared/ui/server";
@@ -18,7 +17,9 @@ import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHa
 import {VoiceConnection} from "../voice/VoiceHandler";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
-import AbstractVoiceConnection = voice.AbstractVoiceConnection;
+import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
+import {DummyVoiceConnection} from "tc-shared/connection/DummyVoiceConnection";
+import {ServerConnectionFactory, setServerConnectionFactory} from "tc-shared/connection/ConnectionFactory";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -42,7 +43,9 @@ export class ServerConnection extends AbstractServerConnection {
     private returnListeners: ReturnListener<CommandResult>[] = [];
 
     private _connection_state_listener: ConnectionStateListener;
-    private _voice_connection: VoiceConnection;
+
+    private dummyVoiceConnection: DummyVoiceConnection;
+    private voiceConnection: VoiceConnection;
 
     private pingStatistics = {
         thread_id: 0,
@@ -68,8 +71,11 @@ export class ServerConnection extends AbstractServerConnection {
         this.commandHandlerBoss.register_handler(this.defaultCommandHandler);
         this.command_helper.initialize();
 
-        if(!settings.static_global(Settings.KEY_DISABLE_VOICE, false))
-            this._voice_connection = new VoiceConnection(this);
+        if(!settings.static_global(Settings.KEY_DISABLE_VOICE, false)) {
+            this.voiceConnection = new VoiceConnection(this);
+        } else {
+            this.dummyVoiceConnection = new DummyVoiceConnection(this);
+        }
     }
 
     destroy() {
@@ -94,11 +100,13 @@ export class ServerConnection extends AbstractServerConnection {
             this.defaultCommandHandler && this.commandHandlerBoss.unregister_handler(this.defaultCommandHandler);
             this.defaultCommandHandler = undefined;
 
-            this._voice_connection && this._voice_connection.destroy();
-            this._voice_connection = undefined;
+            this.voiceConnection && this.voiceConnection.destroy();
+            this.voiceConnection = undefined;
 
             this.commandHandlerBoss && this.commandHandlerBoss.destroy();
             this.commandHandlerBoss = undefined;
+
+            this.events.destroy();
         });
     }
 
@@ -264,7 +272,7 @@ export class ServerConnection extends AbstractServerConnection {
         if(this.connectCancelCallback)
             this.connectCancelCallback();
 
-        if(this.connection_state_ === ConnectionState.UNCONNECTED)
+        if(this.connectionState === ConnectionState.UNCONNECTED)
             return;
 
         this.updateConnectionState(ConnectionState.DISCONNECTING);
@@ -275,11 +283,6 @@ export class ServerConnection extends AbstractServerConnection {
             if(typeof(reason) === "string") {
                 //TODO send disconnect reason
             }
-
-
-            if(this._voice_connection)
-                this._voice_connection.drop_rtp_session();
-
 
             if(this.socket) {
                 this.socket.callbackMessage = undefined;
@@ -327,17 +330,12 @@ export class ServerConnection extends AbstractServerConnection {
                     this.pingStatistics.thread_id = setInterval(() => this.doNextPing(), this.pingStatistics.interval) as any;
                     this.doNextPing();
                     this.updateConnectionState(ConnectionState.CONNECTED);
-                    if(this._voice_connection)
-                        this._voice_connection.start_rtc_session(); /* FIXME: Move it to a handler boss and not here! */
                 }
                 /* devel-block(log-networking-commands) */
                 group.end();
                 /* devel-block-end */
             } else if(json["type"] === "WebRTC") {
-                if(this._voice_connection)
-                    this._voice_connection.handleControlPacket(json);
-                else
-                    log.warn(LogCategory.NETWORKING, tr("Dropping WebRTC command packet, because we haven't a bridge."))
+                this.voiceConnection?.handleControlPacket(json);
             } else if(json["type"] === "ping") {
                 this.sendData(JSON.stringify({
                     type: 'pong',
@@ -392,12 +390,12 @@ export class ServerConnection extends AbstractServerConnection {
         Object.assign(options, CommandOptionDefaults);
         Object.assign(options, _options);
 
-        data = $.isArray(data) ? data : [data || {}];
+        data = Array.isArray(data) ? data : [data || {}];
         if(data.length == 0) /* we require min one arg to append return_code */
             data.push({});
 
         let result = new Promise<CommandResult>((resolve, failed) => {
-            let payload = $.isArray(data) ? data : [data];
+            let payload = Array.isArray(data) ? data : [data];
 
             let returnCode = typeof payload[0]["return_code"] === "string" ? payload[0].return_code : ++globalReturnCodeIndex;
             payload[0].return_code = returnCode;
@@ -427,18 +425,13 @@ export class ServerConnection extends AbstractServerConnection {
         return !!this.socket && this.socket.state === "connected";
     }
 
-    support_voice(): boolean {
-        return this._voice_connection !== undefined;
-    }
-
-    voice_connection(): AbstractVoiceConnection | undefined {
-        return this._voice_connection;
+    getVoiceConnection(): AbstractVoiceConnection {
+        return this.voiceConnection || this.dummyVoiceConnection;
     }
 
     command_handler_boss(): AbstractCommandHandlerBoss {
         return this.commandHandlerBoss;
     }
-
 
     get onconnectionstatechanged() : ConnectionStateListener {
         return this._connection_state_listener;
@@ -480,14 +473,4 @@ export class ServerConnection extends AbstractServerConnection {
             native: this.pingStatistics.currentNativeValue
         };
     }
-}
-
-export function spawn_server_connection(handle: ConnectionHandler) : AbstractServerConnection {
-    return new ServerConnection(handle); /* will be overridden by the client */
-}
-
-export function destroy_server_connection(handle: AbstractServerConnection) {
-    if(!(handle instanceof ServerConnection))
-        throw "invalid handle";
-    handle.destroy();
 }

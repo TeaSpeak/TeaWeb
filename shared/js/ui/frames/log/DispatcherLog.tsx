@@ -6,6 +6,7 @@ import {formatDate} from "tc-shared/MessageFormatter";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {format_time} from "tc-shared/ui/frames/chat";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import {XBBCodeRenderer} from "vendor/xbbcode/react";
 
 const cssStyle = require("./DispatcherLog.scss");
 const cssStyleRenderer = require("./Renderer.scss");
@@ -79,11 +80,23 @@ registerDispatcher(EventType.CONNECTION_CONNECTED, (data,handlerId) => (
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.CONNECTION_VOICE_SETUP_FAILED, (data) => (
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT, () => (
+    <Translatable>Connecting voice bridge.</Translatable>
+));
+
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, () => (
+    <Translatable>Voice bridge successfully connected.</Translatable>
+));
+
+registerDispatcher(EventType.CONNECTION_VOICE_CONNECT_FAILED, (data) => (
     <VariadicTranslatable text={"Failed to setup voice bridge: {0}. Allow reconnect: {1}"}>
         <>{data.reason}</>
         {data.reconnect_delay > 0 ? <Translatable>Yes</Translatable> : <Translatable>No</Translatable>}
     </VariadicTranslatable>
+));
+
+registerDispatcher(EventType.CONNECTION_VOICE_DROPPED, () => (
+    <Translatable>Voice bridge has been dropped. Trying to reconnect.</Translatable>
 ));
 
 registerDispatcher(EventType.ERROR_PERMISSION, data => (
@@ -472,7 +485,12 @@ registerDispatcher(EventType.CLIENT_NICKNAME_CHANGE_FAILED,(data) => (
     </VariadicTranslatable>
 ));
 
-registerDispatcher(EventType.GLOBAL_MESSAGE, () => undefined);
+registerDispatcher(EventType.GLOBAL_MESSAGE, (data, handlerId) => <>
+    <VariadicTranslatable text={"{} send a server message: {1}"}>
+        <ClientRenderer client={data.sender} handlerId={handlerId} />
+        <XBBCodeRenderer>{data.message}</XBBCodeRenderer>
+    </VariadicTranslatable>
+</>);
 
 
 registerDispatcher(EventType.DISCONNECTED,() => (

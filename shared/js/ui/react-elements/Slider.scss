@@ -18,6 +18,10 @@ html:root {
     --slider-disabled-thumb-color: #4d4d4d;
 }
 
+.documentClass {
+    @include user-select(none);
+}
+
 .container {
     font-size: .8em;
 
@@ -40,7 +44,6 @@ html:root {
     .filler {
         position: absolute;
 
-        left: 0;
         top: 0;
         bottom: 0;
 

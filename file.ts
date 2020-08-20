@@ -40,7 +40,7 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
     },
     { /* javascript files as manifest.json */
         "type": "js",
-        "search-pattern": /.*\.(js|json)$/,
+        "search-pattern": /.*\.(js|json|svg)$/,
         "build-target": "dev|rel",
 
         "path": "js/",
@@ -82,6 +82,7 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "type": "img",
         "search-pattern": /.*\.(svg|png|gif)/,
         "build-target": "dev|rel",
+        "search-exclude": /.*(client-icons|style)\/.*/,
 
         "path": "img/",
         "local-path": "./shared/img/"

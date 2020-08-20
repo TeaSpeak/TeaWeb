@@ -37,7 +37,7 @@ fi
 echo "Generating required project build files"
 npm run compile-project-base; _exit_code=$?
 if [[ $_exit_code -ne 0 ]]; then
-    echo "Failed to generate project build files"
+    echo "Failed to generate project build files ($_exit_code)"
     exit 1
 fi
 

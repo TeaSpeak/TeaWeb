@@ -74,50 +74,32 @@
 	}
 
 	&::-webkit-scrollbar-track {
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
 		border-radius: .25em;
 		background-color: transparent;
+		cursor: pointer;
 	}
 
 	&::-webkit-scrollbar {
 		width: .5em;
+		height: .5em;
+
 		background-color: transparent;
+		cursor: pointer;
 	}
 
 	&::-webkit-scrollbar-thumb {
 		border-radius: .25em;
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
 		background-color: #555;
+	}
+
+	&::-webkit-scrollbar-corner {
+		//background: #19191b;
+		background-color: transparent;
 	}
 }
 
 @mixin chat-scrollbar-vertical() {
-
-	& {
-		// for moz
-		scrollbar-color: #353535 #555;
-		scrollbarWidth: .5em;
-	}
-
-	&::-webkit-scrollbar-track {
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-		border-radius: .25em;
-		background-color: transparent;
-		cursor: pointer;
-	}
-
-	&::-webkit-scrollbar {
-		width: .5em;
-		background-color: transparent;
-		cursor: pointer;
-	}
-
-	&::-webkit-scrollbar-thumb {
-		border-radius: .25em;
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-		background-color: #555;
-	}
-
+	@include chat-scrollbar();
 
 	& > .simplebar-track {
 		.simplebar-scrollbar {
@@ -136,32 +118,7 @@
 }
 
 @mixin chat-scrollbar-horizontal() {
-
-	& {
-		// MOZ
-		scrollbar-color: #353535 #555;
-		scrollbarWidth: .5em;
-	}
-
-	&::-webkit-scrollbar-track {
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
-		border-radius: .25em;
-		background-color: transparent;
-		cursor: pointer;
-	}
-
-	&::-webkit-scrollbar {
-		height: .5em;
-		background-color: transparent;
-		cursor: pointer;
-	}
-
-	&::-webkit-scrollbar-thumb {
-		border-radius: .25em;
-		//-webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
-		background-color: #555;
-	}
-
+	@include chat-scrollbar();
 }
 
 @mixin text-dotdotdot() {

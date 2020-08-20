@@ -1,3 +1,7 @@
+@import "../../css/static/mixin";
+@import "../../css/static/properties";
+
+$sidebar-width: 20em;
 .container {
     background: #19191b;
 
@@ -11,5 +15,289 @@
     min-height: 10em;
     min-width: 20em;
 
-    padding-left: 4em;
+    position: absolute;
+
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    overflow: hidden;
+}
+
+.containerPlayer {
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    min-height: 100px;
+    min-width: 100px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    position: relative;
+}
+
+.sidebarButton {
+    z-index: 10000;
+    position: absolute;
+
+    cursor: pointer;
+
+    top: .5em;
+    right: .5em;
+
+    width: 2em;
+    height: 2em;
+
+    border-radius: 2px;
+    background-color: #373737;
+
+    margin-right: 0;
+    opacity: 1;
+
+    @include transition(background-color $button_hover_animation_time ease-in-out, margin-right .25s ease-in-out, opacity .25s ease-in-out);
+
+    &:hover {
+        background-color: #4e4e4e;
+    }
+
+    &.hidden {
+        margin-right: $sidebar-width;
+        opacity: 0;
+    }
+
+    svg {
+        height: 100%;
+        width: 100%;
+    }
+}
+
+.containerSidebar {
+    z-index: 10001;
+    position: absolute;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    background-color: #373737;
+
+    right: -$sidebar-width;
+    top: 0;
+    bottom: 0;
+
+    padding: 1em;
+    padding-top: 0;
+
+    width: $sidebar-width;
+
+    @include transition(right .25s ease-in-out);
+    &.shown {
+        right: 0;
+    }
+
+    .buttonClose {
+        font-size: 4em;
+
+        cursor: pointer;
+
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+
+        opacity: 0.3;
+
+        width: .5em;
+        height: .5em;
+
+        margin-right: .1em;
+        margin-top: .1em;
+
+        &:hover {
+            opacity: 1;
+        }
+        @include transition(opacity $button_hover_animation_time ease-in-out);
+
+        &:before, &:after {
+            position: absolute;
+            left: .25em;
+            content: ' ';
+            height: .5em;
+            width: .05em;
+            background-color: #666666;
+        }
+
+        &:before {
+            transform: rotate(45deg);
+        }
+
+        &:after {
+            transform: rotate(-45deg);
+        }
+    }
+
+    .header {
+        height: 3em;
+
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        padding-bottom: 0.5em;
+
+        a {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            align-self: flex-end;
+            font-weight: bold;
+
+            color: #e0e0e0;
+
+            @include text-dotdotdot();
+        }
+    }
+
+    .buttons {
+        flex-grow: 0;
+        flex-shrink: 0;
+
+        margin-top: .5em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        > :not(:last-of-type) {
+            margin-right: 1em;
+        }
+    }
+}
+
+.watcherList {
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    min-height: 6em;
+
+    background-color: #28292b;
+    border: 1px #161616 solid;
+    border-radius: .2em;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+    @include chat-scrollbar-vertical();
+
+    .watcher {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+
+        &:first-child {
+            border-top-right-radius: .2em;
+            border-top-left-radius: .2em;
+        }
+
+        &:last-child {
+            border-bottom-right-radius: .2em;
+            border-bottom-left-radius: .2em;
+        }
+
+        .info {
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            border-bottom: 1px solid #313132;
+
+            cursor: pointer;
+
+            @include transition($button_hover_animation_time ease-in-out);
+
+            &:hover {
+                background-color: hsla(216, 4%, 23%, 1);
+            }
+
+            &.following {
+                background-color: #28292b;
+            }
+
+            &.ownClient {
+                background-color: #0d260e;
+            }
+
+            .containerAvatar {
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                position: relative;
+                display: inline-block;
+                margin: 5px 10px 5px 5px;
+
+                .avatar {
+                    overflow: hidden;
+
+                    width: 2em;
+                    height: 2em;
+
+                    border-radius: 50%;
+                }
+            }
+
+            .containerDetail {
+                flex-grow: 1;
+                flex-shrink: 1;
+                min-width: 50px;
+
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                > * {
+                    flex-grow: 0;
+                    flex-shrink: 0;
+
+                    display: inline-block;
+                    width: 100%;
+
+                    @include text-dotdotdot();
+                }
+
+                .username {
+                    color: #CCCCCC;
+                    font-weight: bold;
+                    margin-bottom: -.4em;
+                }
+
+                .status {
+                    color: #555353;
+                    display: inline-block;
+                    font-size: .66em;
+                }
+            }
+
+            &.watcher {}
+            &.follower {
+                padding-left: 1em;
+            }
+        }
+
+        .followerList {
+
+            .follower {
+
+                border-bottom: 1px solid #313132;
+            }
+        }
+    }
 }

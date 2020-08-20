@@ -5,6 +5,8 @@ const cssStyle = require("./InputField.scss");
 
 export interface BoxedInputFieldProperties {
     prefix?: string;
+    suffix?: string;
+
     placeholder?: string;
 
     disabled?: boolean;
@@ -79,6 +81,7 @@ export class BoxedInputField extends React.Component<BoxedInputFieldProperties, 
                         onInput={this.props.onInput && (event => this.props.onInput(event.currentTarget.value))}
                         onKeyDown={e => this.onKeyDown(e)}
                     />}
+                {this.props.suffix ? <a key={"suffix"} className={cssStyle.suffix}>{this.props.suffix}</a> : undefined}
                 {this.props.rightIcon ? this.props.rightIcon() : ""}
             </div>
         )

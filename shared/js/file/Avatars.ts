@@ -2,6 +2,7 @@ import {Registry} from "tc-shared/events";
 import * as hex from "tc-shared/crypto/hex";
 
 export const kIPCAvatarChannel = "avatars";
+export const kLoadingAvatarImage = "img/loading_image.svg";
 export const kDefaultAvatarImage = "img/style/avatar.png";
 export type AvatarState = "unset" | "loading" | "errored" | "loaded";
 

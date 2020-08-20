@@ -14,7 +14,11 @@ export enum EventType {
 
     DISCONNECTED = "disconnected",
 
-    CONNECTION_VOICE_SETUP_FAILED = "connection.voice.setup.failed",
+    CONNECTION_VOICE_CONNECT = "connection.voice.connect",
+    CONNECTION_VOICE_CONNECT_FAILED = "connection.voice.connect.failed",
+    CONNECTION_VOICE_CONNECT_SUCCEEDED = "connection.voice.connect.succeeded",
+    CONNECTION_VOICE_DROPPED = "connection.voice.dropped",
+
     CONNECTION_COMMAND_ERROR = "connection.command.error",
 
     GLOBAL_MESSAGE = "global.message",
@@ -185,10 +189,18 @@ export namespace event {
         message: string;
     }
 
-    export type EventConnectionVoiceSetupFailed = {
+    export type EventConnectionVoiceConnectFailed = {
         reason: string;
         reconnect_delay: number; /* if less or equal to 0 reconnect is prohibited */
     }
+
+    export type EventConnectionVoiceConnectSucceeded = {}
+
+    export type EventConnectionVoiceConnect = {
+        attemptCount: number
+    }
+
+    export type EventConnectionVoiceDropped = {}
 
     export type EventConnectionCommandError = {
         error: any;
@@ -259,7 +271,10 @@ export interface TypeInfo {
     "connection.failed": event.EventConnectionFailed;
     "connection.login": event.EventConnectionLogin;
     "connection.connected": event.EventConnectionConnected;
-    "connection.voice.setup.failed": event.EventConnectionVoiceSetupFailed;
+    "connection.voice.dropped": event.EventConnectionVoiceDropped;
+    "connection.voice.connect": event.EventConnectionVoiceConnect;
+    "connection.voice.connect.failed": event.EventConnectionVoiceConnectFailed;
+    "connection.voice.connect.succeeded": event.EventConnectionVoiceConnectSucceeded;
     "connection.command.error": event.EventConnectionCommandError;
 
     "reconnect.scheduled": event.EventReconnectScheduled;

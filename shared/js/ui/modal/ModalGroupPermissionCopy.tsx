@@ -1,4 +1,4 @@
-import {Modal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
 import {useRef, useState} from "react";
@@ -11,6 +11,7 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
+import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 
 const cssStyle = require("./ModalGroupPermissionCopy.scss");
 
@@ -119,15 +120,16 @@ const CopyButton = (props: { events: Registry<GroupPermissionCopyModalEvents> })
     </Button>
 };
 
-class ModalGroupPermissionCopy extends Modal {
-    readonly events = new Registry<GroupPermissionCopyModalEvents>();
+class ModalGroupPermissionCopy extends InternalModal {
+    readonly events: Registry<GroupPermissionCopyModalEvents>;
 
     readonly defaultSource: number;
     readonly defaultTarget: number;
 
-    constructor(connection: ConnectionHandler, target: "server" | "channel", sourceGroup?: number, targetGroup?: number) {
+    constructor(connection: ConnectionHandler, events: Registry<GroupPermissionCopyModalEvents>, target: "server" | "channel", sourceGroup?: number, targetGroup?: number) {
         super();
 
+        this.events = events;
         this.defaultSource = sourceGroup;
         this.defaultTarget = targetGroup;
 
@@ -135,12 +137,13 @@ class ModalGroupPermissionCopy extends Modal {
     }
 
     protected onInitialize() {
-        this.modalController().events.on("destroy", () => this.events.fire("notify_destroy"));
-
         this.events.fire_async("query_available_groups");
         this.events.fire_async("query_client_permissions");
+    }
 
-        this.events.on(["action_cancel", "action_copy"], () => this.modalController().destroy());
+    protected onDestroy() {
+        this.events.fire("notify_destroy");
+        this.events.destroy();
     }
 
     renderBody() {
@@ -162,8 +165,11 @@ class ModalGroupPermissionCopy extends Modal {
 }
 
 export function spawnModalGroupPermissionCopy(connection: ConnectionHandler, target: "channel" | "server", sourceGroup?: number, targetGroup?: number) {
-    const modal = spawnReactModal(ModalGroupPermissionCopy, connection, target, sourceGroup, targetGroup);
+    const events = new Registry<GroupPermissionCopyModalEvents>();
+    const modal = spawnReactModal(ModalGroupPermissionCopy, connection, events, target, sourceGroup, targetGroup);
     modal.show();
+
+    events.on(["action_cancel", "action_copy"], () => modal.destroy());
 }
 
 const stringifyError = error => {

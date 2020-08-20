@@ -1,10 +1,11 @@
-import {Modal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import * as React from "react";
 import {Slider} from "tc-shared/ui/react-elements/Slider";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ClientEntry, MusicClientEntry} from "tc-shared/ui/client";
+import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 const cssStyle = require("./ModalChangeVolume.scss");
 
 export interface VolumeChangeEvents {
@@ -238,7 +239,7 @@ export function spawnClientVolumeChange(client: ClientEntry) {
         client.setAudioVolume(event.newValue);
     });
 
-    const modal = spawnReactModal(class extends Modal {
+    const modal = spawnReactModal(class extends InternalModal {
         constructor() {
             super();
         }
@@ -277,7 +278,7 @@ export function spawnMusicBotVolumeChange(client: MusicClientEntry, maxValue: nu
         });
     });
 
-    const modal = spawnReactModal(class extends Modal {
+    const modal = spawnReactModal(class extends InternalModal {
         constructor() {
             super();
         }

@@ -9,15 +9,13 @@ import {
     QueryListEntry, ServerGroupClient
 } from "tc-shared/connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "tc-shared/ui/channel";
-import {ClientEntry} from "tc-shared/ui/client";
-import {ChatType} from "tc-shared/ui/frames/chat";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {tr} from "tc-shared/i18n/localize";
 
 export class CommandHelper extends AbstractCommandHandler {
     private _who_am_i: any;
-    private _awaiters_unique_ids: {[unique_id: string]:((resolved: ClientNameInfo) => any)[]} = {};
-    private _awaiters_unique_dbid: {[database_id: number]:((resolved: ClientNameInfo) => any)[]} = {};
+    private infoByUniqueIdRequest: {[unique_id: string]:((resolved: ClientNameInfo) => any)[]} = {};
+    private infoByDatabaseIdRequest: {[database_id: number]:((resolved: ClientNameInfo) => any)[]} = {};
 
     constructor(connection) {
         super(connection);
@@ -35,7 +33,7 @@ export class CommandHelper extends AbstractCommandHandler {
             const hboss = this.connection.command_handler_boss();
             hboss && hboss.unregister_handler(this);
         }
-        this._awaiters_unique_ids = undefined;
+        this.infoByUniqueIdRequest = undefined;
     }
 
     handle_command(command: ServerCommand): boolean {
@@ -56,21 +54,6 @@ export class CommandHelper extends AbstractCommandHandler {
         });
     }
 
-    sendMessage(message: string, type: ChatType, target?: ChannelEntry | ClientEntry) : Promise<CommandResult> {
-        if(type == ChatType.SERVER)
-            return this.connection.send_command("sendtextmessage", {"targetmode": 3, "target": 0, "msg": message});
-        else if(type == ChatType.CHANNEL)
-            return this.connection.send_command("sendtextmessage", {"targetmode": 2, "target": (target as ChannelEntry).getChannelId(), "msg": message});
-        else if(type == ChatType.CLIENT)
-            return this.connection.send_command("sendtextmessage", {"targetmode": 1, "target": (target as ClientEntry).clientId(), "msg": message});
-    }
-
-    updateClient(key: string, value: string) : Promise<CommandResult> {
-        let data = {};
-        data[key] = value;
-        return this.connection.send_command("clientupdate", data);
-    }
-
     async info_from_uid(..._unique_ids: string[]) : Promise<ClientNameInfo[]> {
         const response: ClientNameInfo[] = [];
         const request = [];
@@ -82,7 +65,7 @@ export class CommandHelper extends AbstractCommandHandler {
 
         for(const unique_id of unique_ids) {
             request.push({'cluid': unique_id});
-            (this._awaiters_unique_ids[unique_id] || (this._awaiters_unique_ids[unique_id] = []))
+            (this.infoByUniqueIdRequest[unique_id] || (this.infoByUniqueIdRequest[unique_id] = []))
                 .push(unique_id_resolvers[unique_id] = info => response.push(info));
         }
 
@@ -97,7 +80,7 @@ export class CommandHelper extends AbstractCommandHandler {
         } finally {
             /* cleanup */
             for(const unique_id of Object.keys(unique_id_resolvers))
-                (this._awaiters_unique_ids[unique_id] || []).remove(unique_id_resolvers[unique_id]);
+                (this.infoByUniqueIdRequest[unique_id] || []).remove(unique_id_resolvers[unique_id]);
         }
 
         return response;
@@ -111,8 +94,8 @@ export class CommandHelper extends AbstractCommandHandler {
                 client_database_id: parseInt(entry["cldbid"])
             };
 
-            const functions = this._awaiters_unique_dbid[info.client_database_id] || [];
-            delete this._awaiters_unique_dbid[info.client_database_id];
+            const functions = this.infoByDatabaseIdRequest[info.client_database_id] || [];
+            delete this.infoByDatabaseIdRequest[info.client_database_id];
 
             for(const fn of functions)
                 fn(info);
@@ -130,7 +113,7 @@ export class CommandHelper extends AbstractCommandHandler {
 
         for(const cldbid of unique_cldbid) {
             request.push({'cldbid': cldbid});
-            (this._awaiters_unique_dbid[cldbid] || (this._awaiters_unique_dbid[cldbid] = []))
+            (this.infoByDatabaseIdRequest[cldbid] || (this.infoByDatabaseIdRequest[cldbid] = []))
                 .push(unique_cldbid_resolvers[cldbid] = info => response.push(info));
         }
 
@@ -145,7 +128,7 @@ export class CommandHelper extends AbstractCommandHandler {
         } finally {
             /* cleanup */
             for(const cldbid of Object.keys(unique_cldbid_resolvers))
-                (this._awaiters_unique_dbid[cldbid] || []).remove(unique_cldbid_resolvers[cldbid]);
+                (this.infoByDatabaseIdRequest[cldbid] || []).remove(unique_cldbid_resolvers[cldbid]);
         }
 
         return response;
@@ -159,8 +142,8 @@ export class CommandHelper extends AbstractCommandHandler {
                 client_database_id: parseInt(entry["cldbid"])
             };
 
-            const functions = this._awaiters_unique_ids[entry["cluid"]] || [];
-            delete this._awaiters_unique_ids[entry["cluid"]];
+            const functions = this.infoByUniqueIdRequest[entry["cluid"]] || [];
+            delete this.infoByUniqueIdRequest[entry["cluid"]];
 
             for(const fn of functions)
                 fn(info);
@@ -362,7 +345,7 @@ export class CommandHelper extends AbstractCommandHandler {
         });
     }
 
-    async request_clients_by_server_group(group_id: number) : Promise<ServerGroupClient[]> {
+    request_clients_by_server_group(group_id: number) : Promise<ServerGroupClient[]> {
         //servergroupclientlist sgid=2
         //notifyservergroupclientlist sgid=6 cldbid=2 client_nickname=WolverinDEV client_unique_identifier=xxjnc14LmvTk+Lyrm8OOeo4tOqw=
         return new Promise<ServerGroupClient[]>((resolve, reject) => {
@@ -452,7 +435,7 @@ export class CommandHelper extends AbstractCommandHandler {
     /**
      * @deprecated
      *  Its just a workaround for the query management.
-     *  There is no garante that the whoami trick will work forever
+     *  There is no garantee that the whoami trick will work forever
      */
     current_virtual_server_id() : Promise<number> {
         if(this._who_am_i)

@@ -1,3 +1,5 @@
+@import "../../../../css/static/mixin";
+
 /* FIXME: Remove this wired import */
 :global {
     @import "../../../../css/static/general";
@@ -10,6 +12,8 @@ html, body {
 
     height: 100vh;
     width: 100vw;
+
+    background: #212529;
 }
 
 .container {
@@ -28,4 +32,25 @@ html, body {
     max-width: 100vw;
 
     overflow: hidden;
+}
+
+.container {
+    margin: 0!important;
+
+    height: 100% !important;
+    width: 100% !important;
+
+    .header {
+        -webkit-user-select: none;
+        -webkit-app-region: drag;
+
+        .title {
+            --stay-alive: none;
+        }
+    }
+
+    .body {
+        overflow: auto;
+        @include chat-scrollbar();
+    }
 }

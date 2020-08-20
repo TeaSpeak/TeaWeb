@@ -12,8 +12,6 @@ import * as htmltags from "tc-shared/ui/htmltags";
 import {CommandResult, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {ConnectionHandler, ViewReasonId} from "tc-shared/ConnectionHandler";
-import {voice} from "tc-shared/connection/ConnectionBase";
-import VoiceClient = voice.VoiceClient;
 import {createServerGroupAssignmentModal} from "tc-shared/ui/modal/ModalGroupAssignment";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 import {spawnBanClient} from "tc-shared/ui/modal/ModalBanClient";
@@ -27,6 +25,10 @@ import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "tc-shared/ui/modal/ModalChangeVolumeNew";
 import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
 import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
+import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import { ClientIcon } from "svg-sprites/client-icons";
+import {VoiceClient} from "tc-shared/connection/VoiceConnection";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -508,29 +510,42 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined) {
+        const w2gPlugin = this.channelTree.client.getPluginCmdRegistry().getPluginHandler<W2GPluginCmdHandler>(W2GPluginCmdHandler.kPluginChannel);
+
         let trigger_close = true;
         contextmenu.spawn_context_menu(x, y,
             ...this.contextmenu_info(), {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-change_nickname",
+                icon_class: ClientIcon.ChangeNickname,
                 name:   (contextmenu.get_provider().html_format_enabled() ? "<b>" : "") +
                     tr("Open text chat") +
                     (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 callback: () => {
                     this.open_text_chat();
                 }
+            }, {
+                type: contextmenu.MenuEntryType.ENTRY,
+                name: tr("Watch clients video"),
+                icon_class: ClientIcon.W2g,
+                visible: w2gPlugin?.getCurrentWatchers().findIndex(e => e.clientId === this.clientId()) !== -1,
+                callback: () => {
+                    global_client_actions.fire("action_w2g", {
+                        following: this.clientId(),
+                        handlerId: this.channelTree.client.handlerId
+                    });
+                }
             },
             contextmenu.Entry.HR(),
             {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-about",
+                icon_class: ClientIcon.About,
                 name: tr("Show client info"),
                 callback: () => openClientInfo(this)
             },
             contextmenu.Entry.HR(),
             {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-poke",
+                icon_class: ClientIcon.Poke,
                 name: tr("Poke client"),
                 callback: () => {
                     createInputModal(tr("Poke client"), tr("Poke message:<br>"), text => true, result => {
@@ -549,7 +564,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 }
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-edit",
+                icon_class: ClientIcon.Edit,
                 name: tr("Change description"),
                 callback: () => {
                     createInputModal(tr("Change client description"), tr("New description:<br>"), text => true, result => {
@@ -569,7 +584,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
             ...this.assignment_context(),
             contextmenu.Entry.HR(), {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-move_client_to_own_channel",
+                icon_class: ClientIcon.MoveClientToOwnChannel,
                 name: tr("Move client to your channel"),
                 callback: () => {
                     this.channelTree.client.serverConnection.send_command("clientmove", {
@@ -579,7 +594,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 }
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-kick_channel",
+                icon_class: ClientIcon.KickChannel,
                 name: tr("Kick client from channel"),
                 callback: () => {
                     createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
@@ -597,7 +612,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 }
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-kick_server",
+                icon_class: ClientIcon.KickServer,
                 name: tr("Kick client fom server"),
                 callback: () => {
                     createInputModal(tr("Kick client from server"), tr("Kick reason:<br>"), text => true, result => {
@@ -615,7 +630,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 }
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-ban_client",
+                icon_class: ClientIcon.BanClient,
                 name: tr("Ban client"),
                 invalidPermission: !this.channelTree.client.permissions.neededPermission(PermissionType.I_CLIENT_BAN_MAX_BANTIME).granted(1),
                 callback: () => {
@@ -656,7 +671,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
             */
             {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-volume",
+                icon_class: ClientIcon.Volume,
                 name: tr("Change Volume"),
                 callback: () => spawnClientVolumeChange(this)
             },
@@ -674,13 +689,13 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 visible: this._audio_handle && this._audio_handle.support_latency_settings()
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-input_muted_local",
+                icon_class: ClientIcon.InputMutedLocal,
                 name: tr("Mute client"),
                 visible: !this._audio_muted,
                 callback: () => this.set_muted(true, false)
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
-                icon_class: "client-input_muted_local",
+                icon_class: ClientIcon.InputMutedLocal,
                 name: tr("Unmute client"),
                 visible: this._audio_muted,
                 callback: () => this.set_muted(false, false)
@@ -979,7 +994,7 @@ export class LocalClientEntry extends ClientEntry {
     renameSelf(new_name: string) : Promise<boolean> {
         const old_name = this.properties.client_nickname;
         this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
-        return this.handle.serverConnection.command_helper.updateClient("client_nickname", new_name).then((e) => {
+        return this.handle.serverConnection.send_command("clientupdate", { client_nickname: new_name }).then((e) => {
             settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, new_name);
             this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGED_OWN, {
                 client: this.log_data(),

@@ -32,38 +32,3 @@ fi
 [[ $_exit_code -ne 0 ]] && {
     echo "Failed to generate shared ($_exit_code)"
 }
-
-exit 0
-#Easy going: Each "module" has it's exports and imports
-#So lets first build the exports and ignore any errors
-#Note: For the client we have to use the given file
-
-#Web
-npm run dtsgen -- --config web/tsconfig/dtsconfig.json -v
-replace_tribble web/declarations/exports.d.ts
-echo "Generated web declarations"
-
-#Client
-npm run dtsgen -- --config client/tsconfig/dtsconfig.json -v
-replace_tribble client/declarations/exports.d.ts
-echo "Generated client declarations"
-
-#replace_tribble shared/declarations/exports.d.ts
-echo "Generated shared declarations"
-
-#Now build the merged declaration for the shared project
-#Link the declaration files (All interface declarations should be equal!)
-if [[ ! -d shared/declarations ]]; then
-    mkdir shared/declarations
-    if [[ $? -ne 0 ]]; then
-        echo "Failed to create directory shared/declarations"
-        exit 1
-    fi
-fi
-
-#Last but not least the client imports
-generate_link shared/declarations/exports_app.d.ts web/declarations/imports_shared.d.ts
-generate_link shared/declarations/exports_loader_app.d.ts web/declarations/imports_shared_loader.d.ts
-
-generate_link shared/declarations/exports_app.d.ts client/declarations/imports_shared.d.ts
-generate_link shared/declarations/exports_loader_app.d.ts client/declarations/imports_shared_loader.d.ts

@@ -5,6 +5,8 @@ import {loadManifest, loadManifestTarget} from "../maifest";
 import {getUrlParameter} from "../loader/utils";
 
 export default class implements ApplicationLoader {
+
+
     execute() {
         loader.register_task(Stage.SETUP, {
             function: async taskId => {
@@ -27,24 +29,28 @@ export default class implements ApplicationLoader {
             name: "page setup",
             function: async () => {
                 const body = document.body;
+
                 /* top menu */
                 {
                     const container = document.createElement("div");
                     container.setAttribute('id', "top-menu-bar");
                     body.append(container);
                 }
+
                 /* template containers */
                 {
                     const container = document.createElement("div");
                     container.setAttribute('id', "templates");
                     body.append(container);
                 }
+
                 /* sounds container */
                 {
                     const container = document.createElement("div");
                     container.setAttribute('id', "sounds");
                     body.append(container);
                 }
+
                 /* mouse move container */
                 {
                     const container = document.createElement("div");
@@ -52,6 +58,7 @@ export default class implements ApplicationLoader {
 
                     body.append(container);
                 }
+
                 /* tooltip container */
                 {
                     const container = document.createElement("div");
@@ -77,6 +84,26 @@ export default class implements ApplicationLoader {
             },
             priority: 10
         });
+
+        if(__build.target === "client") {
+            loader.register_task(Stage.SETUP, {
+                name: "native setup",
+                function: async () => {
+                    const path = __non_webpack_require__("path");
+                    const remote = __non_webpack_require__('electron').remote;
+
+                    const render_entry = path.join(remote.app.getAppPath(), "/modules/", "renderer-manifest", "index");
+                    const render = __non_webpack_require__(render_entry);
+
+                    loader.register_task(loader.Stage.SETUP, {
+                        name: "teaclient setup",
+                        function: async () => await render.initialize(getUrlParameter("chunk")),
+                        priority: 40
+                    });
+                },
+                priority: 50
+            });
+        }
 
         loader.execute_managed();
     }

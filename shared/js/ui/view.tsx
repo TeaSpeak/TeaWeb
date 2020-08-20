@@ -487,7 +487,7 @@ export class ChannelTree {
         }
 
         //FIXME: Trigger the notify_clients_changed event!
-        const voice_connection = this.client.serverConnection.voice_connection();
+        const voice_connection = this.client.serverConnection.getVoiceConnection();
         if(client.get_audio_handle()) {
             if(!voice_connection) {
                 log.warn(LogCategory.VOICE, tr("Deleting client with a voice handle, but we haven't a voice connection!"));
@@ -503,7 +503,7 @@ export class ChannelTree {
         this.clients.push(client);
         client.channelTree = this;
 
-        const voice_connection = this.client.serverConnection.voice_connection();
+        const voice_connection = this.client.serverConnection.getVoiceConnection();
         if(voice_connection)
             client.set_audio_handle(voice_connection.register_client(client.clientId()));
     }
@@ -846,7 +846,7 @@ export class ChannelTree {
         try {
             this.selection.reset();
 
-            const voice_connection = this.client.serverConnection ? this.client.serverConnection.voice_connection() : undefined;
+            const voice_connection = this.client.serverConnection ? this.client.serverConnection.getVoiceConnection() : undefined;
             for(const client of this.clients) {
                 if(client.get_audio_handle() && voice_connection) {
                     voice_connection.unregister_client(client.get_audio_handle());

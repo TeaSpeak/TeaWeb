@@ -1,13 +1,12 @@
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
 import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
-import {voice} from "tc-shared/connection/ConnectionBase";
-import PlayerState = voice.PlayerState;
 import {LogCategory} from "tc-shared/log";
 import {CommandResult, ErrorID, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import * as log from "tc-shared/log";
 import * as image_preview from "../image_preview";
 import {Registry} from "tc-shared/events";
+import {PlayerState} from "tc-shared/connection/VoiceConnection";
 
 export interface MusicSidebarEvents {
     "open": {}, /* triggers when frame should be shown */
@@ -167,12 +166,14 @@ export class MusicInfo {
             this.events.on(["bot_change", "bot_property_update"], event => {
                 if(event.type === "bot_property_update" && event.as<"bot_property_update">().properties.indexOf("player_state") == -1) return;
 
+                /* FIXME: Is this right, using our player state?! */
                 button_play.toggleClass("hidden", this._current_bot === undefined || this._current_bot.properties.player_state < PlayerState.STOPPING);
             });
 
             this.events.on(["bot_change", "bot_property_update"], event => {
                 if(event.type === "bot_property_update" && event.as<"bot_property_update">().properties.indexOf("player_state") == -1) return;
 
+                /* FIXME: Is this right, using our player state?! */
                 button_pause.toggleClass("hidden", this._current_bot !== undefined && this._current_bot.properties.player_state >= PlayerState.STOPPING);
             });
 

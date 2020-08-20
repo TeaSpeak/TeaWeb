@@ -129,6 +129,11 @@ export function finished() {
 export function running() { return typeof(currentStage) !== "undefined"; }
 
 export function register_task(stage: Stage, task: Task) {
+    if(!task.function) {
+        debugger;
+        throw "tried to register a loader task without a function";
+    }
+
     if(currentStage > stage) {
         if(config.error)
             console.warn("Register loading task, but it had already been finished. Executing task anyways!");

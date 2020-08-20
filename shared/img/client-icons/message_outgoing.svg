@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="client-message_outgoing"
+     width="16" height="16" viewBox="0 0 16 16" x="192" y="192">
+    <path fill="#7289da"
+          d="M8.001 4l-3.984 4.744h2.312v6.607c0 0.148 0.051 0.271 0.152 0.372s0.225 0.152 0.373 0.152h2.298c0.142 0 0.264-0.050 0.368-0.152s0.156-0.225 0.156-0.372v-6.607h2.31l-3.983-4.744z"></path>
+</svg>

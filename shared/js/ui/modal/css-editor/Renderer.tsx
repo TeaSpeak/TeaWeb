@@ -1,7 +1,6 @@
 import * as React from "react";
 import {CssEditorEvents, CssEditorUserData, CssVariable} from "tc-shared/ui/modal/css-editor/Definitions";
 import {Registry} from "tc-shared/events";
-import {AbstractModal} from "tc-shared/ui/react-elements/Modal";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {BoxedInputField, FlatInputField} from "tc-shared/ui/react-elements/InputField";
 import {useState} from "react";
@@ -9,6 +8,7 @@ import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
+import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 
 const cssStyle = require("./Renderer.scss");
 

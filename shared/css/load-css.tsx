@@ -1,7 +1,6 @@
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/properties.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/main-layout.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/general.scss"
-import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/channel-tree.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/connection_handlers.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/context_menu.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/frame-chat.scss"
@@ -38,6 +37,4 @@ import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/m
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/overlay-image-preview.scss"
 
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/tab.scss"
-import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/icons.scss"
-import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/icons_em.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/ts/country.scss"

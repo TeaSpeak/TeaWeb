@@ -4,7 +4,6 @@ import {sliderfy} from "tc-shared/ui/elements/Slider";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {ClientEntry} from "tc-shared/ui/client";
 import * as htmltags from "tc-shared/ui/htmltags";
-import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 
 let modal: Modal;
 export function spawnChangeVolume(client: ClientEntry, local: boolean, current: number, max: number | undefined, callback: (number) => void) {

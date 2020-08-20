@@ -284,12 +284,14 @@ export function format_time(time: number, default_value: string) {
     return result.length > 0 ? result.substring(1) : default_value;
 }
 
-let _icon_size_style: JQuery<HTMLStyleElement>;
+let _icon_size_style: HTMLStyleElement;
 export function set_icon_size(size: string) {
-    if(!_icon_size_style)
-        _icon_size_style = $.spawn("style").appendTo($("#style"));
+    if(!_icon_size_style) {
+        _icon_size_style = document.createElement("style");
+        document.head.append(_icon_size_style);
+    }
 
-    _icon_size_style.text("\n" +
+    _icon_size_style.innerText = ("\n" +
         ".chat-emoji {\n" +
         "  height: " + size + "!important;\n" +
         "  width: " + size + "!important;\n" +

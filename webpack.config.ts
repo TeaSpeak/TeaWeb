@@ -3,6 +3,8 @@ import * as fs from "fs";
 import trtransformer from "./tools/trgen/ts_transformer";
 import {exec} from "child_process";
 import * as util from "util";
+import { Plugin as SvgSpriteGenerator } from "webpack-svg-sprite-generator";
+
 import LoaderIndexGenerator = require("./loader/IndexGenerator");
 import {Configuration} from "webpack";
 
@@ -81,6 +83,42 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
             maxSize: 1024 * 128
         }),
         new webpack.DefinePlugin(await generate_definitions(target)),
+        new SvgSpriteGenerator({
+            dtsOutputFolder: path.join(__dirname, "shared", "svg-sprites"),
+            configurations: {
+                "client-icons": {
+                    folder: path.join(__dirname, "shared", "img", "client-icons"),
+                    cssClassPrefix: "client-",
+                    cssOptions: [
+                        {
+                            scale: 1,
+                            selector: ".icon",
+                            unit: "px"
+                        },
+                        {
+                            scale: 1.5,
+                            selector: ".icon_x24",
+                            unit: "px"
+                        },
+                        {
+                            scale: 2,
+                            selector: ".icon_x32",
+                            unit: "px"
+                        },
+                        {
+                            scale: 1,
+                            selector: ".icon_em",
+                            unit: "em"
+                        }
+                    ],
+                    dtsOptions: {
+                        enumName: "ClientIcon",
+                        classUnionName: "ClientIconClass",
+                        module: false
+                    }
+                }
+            }
+        }),
 
         new LoaderIndexGenerator({
             buildTarget: target,

@@ -24,7 +24,6 @@ import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {connection_log, Regex} from "tc-shared/ui/modal/ModalConnect";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnAvatarUpload} from "tc-shared/ui/modal/ModalAvatar";
-import * as connection from "tc-backend/connection";
 import * as dns from "tc-backend/dns";
 import * as top_menu from "tc-shared/ui/frames/MenuBar";
 import {EventHandler, Registry} from "tc-shared/events";
@@ -35,6 +34,10 @@ import {md5} from "tc-shared/crypto/md5";
 import {guid} from "tc-shared/crypto/uid";
 import {ServerEventLog} from "tc-shared/ui/frames/log/ServerEventLog";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
+import {PluginCmdRegistry} from "tc-shared/connection/PluginCmdHandler";
+import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
+import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
+import {getServerConnectionFactory} from "tc-shared/connection/ConnectionFactory";
 
 export enum DisconnectReason {
     HANDLER_DESTROYED,
@@ -157,6 +160,8 @@ export class ConnectionHandler {
 
     private _connect_initialize_id: number = 1;
 
+    private pluginCmdRegistry: PluginCmdRegistry;
+
     private client_status: LocalClientStatus = {
         input_hardware: false,
         input_muted: false,
@@ -181,12 +186,17 @@ export class ConnectionHandler {
 
         this.settings = new ServerSettings();
 
-        this.serverConnection = connection.spawn_server_connection(this);
-        this.serverConnection.onconnectionstatechanged = this.on_connection_state_changed.bind(this);
+        this.serverConnection = getServerConnectionFactory().create(this);
+        this.serverConnection.events.on("notify_connection_state_changed", event => this.on_connection_state_changed(event.oldState, event.newState));
+
+        this.serverConnection.getVoiceConnection().events.on("notify_recorder_changed", () => this.update_voice_status());
+        this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", () => this.update_voice_status());
 
         this.channelTree = new ChannelTree(this);
         this.fileManager = new FileManager(this);
         this.permissions = new PermissionManager(this);
+
+        this.pluginCmdRegistry = new PluginCmdRegistry(this);
 
         this.log = new ServerEventLog(this);
         this.side_bar = new Frame(this);
@@ -217,6 +227,8 @@ export class ConnectionHandler {
 
         this.event_registry.register_handler(this);
         this.events().fire("notify_handler_initialized");
+
+        this.pluginCmdRegistry.registerHandler(new W2GPluginCmdHandler());
     }
 
     initialize_client_state(source?: ConnectionHandler) {
@@ -721,8 +733,8 @@ export class ConnectionHandler {
 
         targetChannel = targetChannel || this.getClient().currentChannel();
 
-        const vconnection = this.serverConnection.voice_connection();
-        const basic_voice_support = this.serverConnection.support_voice() && vconnection.connected() && targetChannel;
+        const vconnection = this.serverConnection.getVoiceConnection();
+        const basic_voice_support = vconnection.getConnectionState() === VoiceConnectionStatus.Connected && targetChannel;
         const support_record = basic_voice_support && (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec));
         const support_playback = basic_voice_support && (!targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec));
 
@@ -734,7 +746,7 @@ export class ConnectionHandler {
         if(support_record && basic_voice_support)
             vconnection.set_encoder_codec(targetChannel.properties.channel_codec);
 
-        if(!this.serverConnection.support_voice() || !this.serverConnection.connected() || !vconnection.connected()) {
+        if(!this.serverConnection.connected() || vconnection.getConnectionState() !== VoiceConnectionStatus.Connected) {
             property_update["client_input_hardware"] = false;
             property_update["client_output_hardware"] = false;
             this.client_status.input_hardware = true; /* IDK if we have input hardware or not, but it dosn't matter at all so */
@@ -850,16 +862,13 @@ export class ConnectionHandler {
     }
 
     acquire_recorder(voice_recoder: RecorderProfile, update_control_bar: boolean) {
-        /* TODO: If the voice connection hasn't been set upped cache the target recorder */
-        const vconnection = this.serverConnection.voice_connection();
-        (vconnection ? vconnection.acquire_voice_recorder(voice_recoder) : Promise.resolve()).catch(error => {
+        const vconnection = this.serverConnection.getVoiceConnection();
+        vconnection.acquire_voice_recorder(voice_recoder).catch(error => {
             log.warn(LogCategory.VOICE, tr("Failed to acquire recorder (%o)"), error);
-        }).then(() => {
-            this.update_voice_status(undefined);
         });
     }
 
-    getVoiceRecorder() :RecorderProfile | undefined { return this.serverConnection?.voice_connection()?.voice_recorder(); }
+    getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection.getVoiceConnection().voice_recorder(); }
 
     reconnect_properties(profile?: ConnectionProfile) : ConnectParameters {
         const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
@@ -962,6 +971,9 @@ export class ConnectionHandler {
         this.hostbanner && this.hostbanner.destroy();
         this.hostbanner = undefined;
 
+        this.pluginCmdRegistry && this.pluginCmdRegistry.destroy();
+        this.pluginCmdRegistry = undefined;
+
         this._local_client && this._local_client.destroy();
         this._local_client = undefined;
 
@@ -987,8 +999,7 @@ export class ConnectionHandler {
         this.settings = undefined;
 
         if(this.serverConnection) {
-            this.serverConnection.onconnectionstatechanged = undefined;
-            connection.destroy_server_connection(this.serverConnection);
+            getServerConnectionFactory().destroy(this.serverConnection);
         }
         this.serverConnection = undefined;
 
@@ -1031,7 +1042,7 @@ export class ConnectionHandler {
      * - Voice bridge hasn't been set upped yet
      */
     //TODO: This currently returns false
-    isSpeakerDisabled() { return false; }
+    isSpeakerDisabled() : boolean { return false; }
 
     setSubscribeToAllChannels(flag: boolean) {
         if(this.client_status.channel_subscribe_all === flag) return;
@@ -1043,7 +1054,7 @@ export class ConnectionHandler {
         this.event_registry.fire("notify_state_updated", { state: "subscribe" });
     }
 
-    isSubscribeToAllChannels() { return this.client_status.channel_subscribe_all; }
+    isSubscribeToAllChannels() : boolean { return this.client_status.channel_subscribe_all; }
 
     setAway(state: boolean | string) {
         this.setAway_(state, true);
@@ -1084,12 +1095,14 @@ export class ConnectionHandler {
         });
     }
 
-    areQueriesShown() {
+    areQueriesShown() : boolean {
         return this.client_status.queries_visible;
     }
 
-    hasInputHardware() { return this.client_status.input_hardware; }
-    hasOutputHardware() { return this.client_status.output_muted; }
+    hasInputHardware() : boolean { return this.client_status.input_hardware; }
+    hasOutputHardware() : boolean { return this.client_status.output_muted; }
+
+    getPluginCmdRegistry() : PluginCmdRegistry { return this.pluginCmdRegistry; }
 }
 
 export type ConnectionStateUpdateType = "microphone" | "speaker" | "away" | "subscribe" | "query";

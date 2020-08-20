@@ -33,6 +33,7 @@ import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
+import "svg-sprites/client-icons";
 
 /* required import for init */
 import "../css/load-css"
@@ -41,8 +42,7 @@ import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./connection/CommandHandler";
 import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
-import {spawnVideoPopout} from "tc-shared/video-viewer/Controller";
-import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller"; /* else it might not get bundled because only the backends are accessing it */
+import "./video-viewer/Controller";
 
 declare global {
     interface Window {
@@ -498,7 +498,7 @@ function main() {
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
 
-    (window as any).spawnVideoPopout = spawnVideoPopout;
+    //spawnVideoPopout(server_connections.active_connection(), "https://www.youtube.com/watch?v=9683D18fyvs");
 }
 
 const task_teaweb_starter: loader.Task = {

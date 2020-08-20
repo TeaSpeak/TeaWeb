@@ -40,7 +40,7 @@ function eliminate_imports(node: ts.Node, ctx: ts.TransformationContext, data: I
         case SyntaxKind.ImportDeclaration:
             const import_decl = node as ts.ImportDeclaration;
             const clause = import_decl.importClause;
-            if(!clause.namedBindings) return node;
+            if(!clause?.namedBindings) return node;
 
             let new_binding;
             if(clause.namedBindings.kind === SyntaxKind.NamedImports) {
@@ -258,6 +258,9 @@ function analyze_type_node(node: ts.TypeNode | ts.LeftHandSideExpression, data: 
         case SyntaxKind.ConstructorType:
             let ct = node as ts.ConstructorTypeNode;
             analyze_type_node(ct.type, data);
+            break;
+
+        case SyntaxKind.TupleType:
             break;
 
         default:

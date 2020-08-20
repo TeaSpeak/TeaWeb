@@ -18,13 +18,15 @@ class ManifestGenerator {
     apply(compiler: webpack.Compiler) {
         compiler.hooks.afterCompile.tap(this.constructor.name,  compilation => {
             const chunks_data = {};
-            for(const chunk_group of compilation.chunkGroups) {
-                const js_files = [];
-                const css_files = [];
+            for(const chunkGroup of compilation.chunkGroups) {
+                const fileJs = [];
+                const filesCss = [];
                 const modules = [];
 
-                for(const chunk of chunk_group.chunks) {
-                    if(!chunk.files.length) continue;
+                for(const chunk of chunkGroup.chunks) {
+                    if(!chunk.files.length)
+                        continue;
+
                     if(chunk.files.length !== 1) {
                         console.error("Expected only one file per chunk but got " + chunk.files.length);
                         chunk.files.forEach(e => console.log(" - %s", e));
@@ -33,25 +35,39 @@ class ManifestGenerator {
 
                     for(const file of chunk.files) {
                         const extension = path.extname(file);
-                        if(extension === ".js")
-                            js_files.push({
+                        if(extension === ".js") {
+                            fileJs.push({
                                 hash: chunk.hash,
                                 file: file
                             });
-                        else if(extension === ".css")
-                            css_files.push({
+                        } else if(extension === ".css") {
+                            filesCss.push({
                                 hash: chunk.hash,
                                 file: file
                             });
-                        else
+                        } else {
                             throw "Unknown chunk file with extension " + extension;
+                        }
                     }
 
-                    for(const module of chunk._modules) {
+                    for(const module of chunk.getModules()) {
                         if(!module.type.startsWith("javascript/"))
                             continue;
 
-                        if(!module.resource || !module.context)
+                        if(!module.context)
+                            continue;
+
+                        if(module.context.startsWith("svg-sprites/")) {
+                            /* custom svg sprite handler */
+                            modules.push({
+                                id: module.id,
+                                context: "svg-sprites",
+                                resource: module.context.substring("svg-sprites/".length)
+                            });
+                            continue;
+                        }
+
+                        if(!module.resource)
                             continue;
 
                         if(module.context !== path.dirname(module.resource))
@@ -65,9 +81,9 @@ class ManifestGenerator {
                     }
                 }
 
-                chunks_data[chunk_group.options.name] = {
-                    files: js_files,
-                    css_files: css_files,
+                chunks_data[chunkGroup.options.name] = {
+                    files: fileJs,
+                    css_files: filesCss,
                     modules: modules
                 };
             }

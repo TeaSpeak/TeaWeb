@@ -1,4 +1,4 @@
-import {Modal, spawnReactModal} from "tc-shared/ui/react-elements/Modal";
+import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as React from "react";
 import {useState} from "react";
@@ -31,6 +31,7 @@ import {
 } from "tc-shared/ui/modal/permission/SenselessPermissions";
 import {spawnGroupCreate} from "tc-shared/ui/modal/ModalGroupCreate";
 import {spawnModalGroupPermissionCopy} from "tc-shared/ui/modal/ModalGroupPermissionCopy";
+import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
 
 const cssStyle = require("./ModalPermissionEditor.scss");
 
@@ -267,7 +268,7 @@ const TabSelector = (props: { events: Registry<PermissionModalEvents> }) => {
 };
 
 export type DefaultTabValues = { groupId?: number, channelId?: number, clientDatabaseId?: number };
-class PermissionEditorModal extends Modal {
+class PermissionEditorModal extends InternalModal {
     readonly modalEvents = new Registry<PermissionModalEvents>();
     readonly editorEvents = new Registry<PermissionEditorEvents>();
 
@@ -294,7 +295,6 @@ class PermissionEditorModal extends Modal {
     }
 
     protected onInitialize() {
-        this.modalController().events.on("destroy", () => this.modalEvents.fire("notify_destroy"));
         this.modalEvents.fire("query_client_permissions");
         this.modalEvents.fire("action_activate_tab", {
             tab: this.defaultTab,
@@ -302,6 +302,11 @@ class PermissionEditorModal extends Modal {
             activeGroupId: this.defaultTabValues?.groupId,
             activeClientDatabaseId: this.defaultTabValues?.clientDatabaseId
         });
+    }
+
+    protected onDestroy() {
+        this.modalEvents.fire("notify_destroy");
+        this.modalEvents.destroy();
     }
 
     renderBody() {

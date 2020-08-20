@@ -252,6 +252,9 @@ export class PrivateConversation extends AbstractChat<PrivateConversationUIEvent
         /* TODO: Move this somehow to the client itself? */
         if(this.activeClient instanceof ClientEntry)
             this.activeClient.setUnread(timestamp !== undefined);
+
+        /* TODO: Eliminate this cross reference? */
+        this.connection.side_bar.info_frame().update_chat_counter();
     }
 
     protected canClientAccessChat(): boolean {

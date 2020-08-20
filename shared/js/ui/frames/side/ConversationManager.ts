@@ -8,7 +8,6 @@ import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {Settings} from "tc-shared/settings";
 import {tra, traj} from "tc-shared/i18n/localize";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
-import {helpers} from "tc-shared/ui/frames/side/chat_helper";
 import ReactDOM = require("react-dom");
 import {
     ChatEvent,
@@ -19,7 +18,6 @@ import {
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {ConversationPanel} from "tc-shared/ui/frames/side/ConversationUI";
 import {preprocessChatMessageForSend} from "tc-shared/text/chat";
-import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
 
 const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 

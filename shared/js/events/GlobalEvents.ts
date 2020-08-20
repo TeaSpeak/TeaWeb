@@ -16,6 +16,14 @@ export interface ClientGlobalControlEvents {
         connection?: ConnectionHandler
     },
 
+    action_w2g: {
+        following: number,
+        handlerId: string
+    } | {
+        videoUrl: string,
+        handlerId: string
+    }
+
     /* some more specific window openings */
     action_open_window_connect: {
         new_tab: boolean

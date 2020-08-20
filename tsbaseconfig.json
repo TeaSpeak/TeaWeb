@@ -5,7 +5,7 @@
     "module": "commonjs",
     "sourceMap": true,
     "lib": ["es6", "dom"],
-    "removeComments": false,
+    "removeComments": false
   },
   "include": [
     "webpack.config.ts",
@@ -17,10 +17,10 @@
     "webpack/EJSGenerator.ts",
     "webpack/WatLoader.ts",
     "webpack/DevelBlocks.ts",
-    "webpack/EmscriptenLoader.ts",
 
     "loader/IndexGenerator.ts",
 
+    "babel.config.ts",
     "file.ts"
   ],
   "exclude": [
