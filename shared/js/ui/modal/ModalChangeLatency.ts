@@ -1,9 +1,8 @@
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {ClientEntry} from "tc-shared/ui/client";
-import {voice} from "tc-shared/connection/ConnectionBase";
-import LatencySettings = voice.LatencySettings;
 import {Slider, sliderfy} from "tc-shared/ui/elements/Slider";
 import * as htmltags from "tc-shared/ui/htmltags";
+import {LatencySettings} from "tc-shared/connection/VoiceConnection";
 
 let modal: Modal;
 export function spawnChangeLatency(client: ClientEntry, current: LatencySettings, reset: () => LatencySettings, apply: (settings: LatencySettings) => any, callback_flush?: () => any) {

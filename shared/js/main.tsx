@@ -40,6 +40,7 @@ import "./proto";
 import "./ui/elements/ContextDivider";
 import "./ui/elements/Tab";
 import "./connection/CommandHandler";
+import "./connection/ConnectionBase";
 import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "./video-viewer/Controller";
 

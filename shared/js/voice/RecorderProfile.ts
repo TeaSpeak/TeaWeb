@@ -298,7 +298,7 @@ export class RecorderProfile {
     set_device(device: IDevice | undefined) : Promise<void> {
         this.config.device_id = device ? device.deviceId : IDevice.NoDeviceId;
         this.save();
-        return this.input?.setDevice(device) || Promise.resolve();
+        return this.input?.setDeviceId(this.config.device_id) || Promise.resolve();
     }
 
     get_volume() : number { return this.input ? (this.input.getVolume() * 100) : this.config.volume; }

@@ -244,6 +244,9 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
         path: path.resolve(__dirname, 'dist'),
         publicPath: "js/"
     },
+    performance: {
+        hints: false
+    },
     optimization: {
         splitChunks: {
             chunks: "all"
