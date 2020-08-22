@@ -4,7 +4,7 @@ import {
     ServerBandwidthInfoUpdateCallback
 } from "tc-shared/ui/modal/ModalServerInfoBandwidth";
 import {ServerEntry} from "tc-shared/ui/server";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
@@ -13,6 +13,7 @@ import * as i18nc from "tc-shared/i18n/country";
 import {format_time, formatMessage} from "tc-shared/ui/frames/chat";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
 import * as moment from "moment";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export function openServerInfo(server: ServerEntry) {
     let modal: Modal;
@@ -58,7 +59,7 @@ export function openServerInfo(server: ServerEntry) {
 
     const updater = setInterval(() => {
         server.request_connection_info().then(info => update_callbacks.forEach(e => e(RequestInfoStatus.SUCCESS, info))).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorID.PERMISSION_ERROR) {
+            if(error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 update_callbacks.forEach(e => e(RequestInfoStatus.NO_PERMISSION));
                 return;
             }

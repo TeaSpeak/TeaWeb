@@ -3,7 +3,7 @@ import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {EventHandler, Registry} from "tc-shared/events";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
 import {Settings} from "tc-shared/settings";
 import {traj} from "tc-shared/i18n/localize";
@@ -15,6 +15,7 @@ import {
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
 import {ConversationPanel} from "tc-shared/ui/frames/side/ConversationUI";
 import {AbstractChat, AbstractChatManager, kMaxChatFrameMessageSize} from "./AbstractConversion";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 const kSuccessQueryThrottle = 5 * 1000;
 const kErrorQueryThrottle = 30 * 1000;
@@ -69,7 +70,7 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
                 }).catch(error => {
                     let errorMessage;
                     if(error instanceof CommandResult) {
-                        if(error.id === ErrorID.CONVERSATION_MORE_DATA || error.id === ErrorID.EMPTY_RESULT) {
+                        if(error.id === ErrorCode.CONVERSATION_MORE_DATA || error.id === ErrorCode.DATABASE_EMPTY_RESULT) {
                             resolve({ status: "success", events: this.historyQueryResponse.map(e => {
                                     return {
                                         type: "message",
@@ -78,22 +79,22 @@ export class Conversation extends AbstractChat<ConversationUIEvents> {
                                         uniqueId: "cm-" + this.conversationId + "-" + e.timestamp + "-" + Date.now(),
                                         isOwnMessage: false
                                     }
-                                }), moreEvents: error.id === ErrorID.CONVERSATION_MORE_DATA, nextAllowedQuery: Date.now() + kSuccessQueryThrottle });
+                                }), moreEvents: error.id === ErrorCode.CONVERSATION_MORE_DATA, nextAllowedQuery: Date.now() + kSuccessQueryThrottle });
                             return;
-                        } else if(error.id === ErrorID.PERMISSION_ERROR) {
+                        } else if(error.id === ErrorCode.PERMISSION_ERROR) {
                             resolve({
                                 status: "no-permission",
                                 failedPermission: this.handle.connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon"),
                                 nextAllowedQuery: Date.now() + kErrorQueryThrottle
                             });
                             return;
-                        } else if(error.id === ErrorID.CONVERSATION_IS_PRIVATE) {
+                        } else if(error.id === ErrorCode.CONVERSATION_IS_PRIVATE) {
                             resolve({
                                 status: "private",
                                 nextAllowedQuery: Date.now() + kErrorQueryThrottle
                             });
                             return;
-                        } else if(error.id === ErrorID.COMMAND_NOT_FOUND) {
+                        } else if(error.id === ErrorCode.COMMAND_NOT_FOUND) {
                             resolve({
                                 status: "unsupported",
                                 nextAllowedQuery: Date.now() + kErrorQueryThrottle

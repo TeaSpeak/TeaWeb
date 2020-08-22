@@ -4,13 +4,14 @@ import {LogCategory} from "tc-shared/log";
 import {
     ClientNameInfo,
     CommandResult,
-    ErrorID, Playlist, PlaylistInfo, PlaylistSong,
+    Playlist, PlaylistInfo, PlaylistSong,
     QueryList,
     QueryListEntry, ServerGroupClient
 } from "tc-shared/connection/ServerConnectionDeclaration";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {tr} from "tc-shared/i18n/localize";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export class CommandHelper extends AbstractCommandHandler {
     private _who_am_i: any;
@@ -72,7 +73,7 @@ export class CommandHelper extends AbstractCommandHandler {
         try {
             await this.connection.send_command("clientgetnamefromuid", request);
         } catch(error) {
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+            if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                 /* nothing */
             } else {
                 throw error;
@@ -120,7 +121,7 @@ export class CommandHelper extends AbstractCommandHandler {
         try {
             await this.connection.send_command("clientgetnamefromdbid", request);
         } catch(error) {
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+            if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                 /* nothing */
             } else {
                 throw error;
@@ -186,7 +187,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 this.handler_boss.remove_single_handler(single_handler);
 
                 if(error instanceof CommandResult) {
-                    if(error.id == ErrorID.EMPTY_RESULT) {
+                    if(error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                         resolve(undefined);
                         return;
                     }
@@ -236,7 +237,7 @@ export class CommandHelper extends AbstractCommandHandler {
                 this.handler_boss.remove_single_handler(single_handler);
 
                 if(error instanceof CommandResult) {
-                    if(error.id == ErrorID.EMPTY_RESULT) {
+                    if(error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                         resolve([]);
                         return;
                     }
@@ -301,7 +302,7 @@ export class CommandHelper extends AbstractCommandHandler {
             this.connection.send_command("playlistsonglist", {playlist_id: playlist_id}, { process_result: process_result }).catch(error => {
                 this.handler_boss.remove_single_handler(single_handler);
                 if(error instanceof CommandResult) {
-                    if(error.id == ErrorID.EMPTY_RESULT) {
+                    if(error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                         resolve([]);
                         return;
                     }
@@ -336,7 +337,7 @@ export class CommandHelper extends AbstractCommandHandler {
 
             this.connection.send_command("playlistclientlist", {playlist_id: playlist_id}).catch(error => {
                 this.handler_boss.remove_single_handler(single_handler);
-                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                     resolve([]);
                     return;
                 }

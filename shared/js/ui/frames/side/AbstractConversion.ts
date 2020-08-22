@@ -7,10 +7,11 @@ import {
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {EventHandler, Registry} from "tc-shared/events";
 import {preprocessChatMessageForSend} from "tc-shared/text/chat";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {tra} from "tc-shared/i18n/localize";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export const kMaxChatFrameMessageSize = 50; /* max 100 messages, since the server does not support more than 100 messages queried at once */
 
@@ -172,7 +173,7 @@ export abstract class AbstractChat<Events extends ConversationUIEvents> {
             msg: msg
         }, { process_result: false }).then(async () => true).catch(error => {
             if(error instanceof CommandResult) {
-                if(error.id === ErrorID.PERMISSION_ERROR) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     this.registerChatEvent({
                         type: "message-failed",
                         uniqueId: "msf-" + this.chatId + "-" + Date.now(),

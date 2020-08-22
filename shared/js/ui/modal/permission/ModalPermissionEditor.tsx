@@ -14,7 +14,7 @@ import {
 import {SideBar} from "tc-shared/ui/modal/permission/TabHandler";
 import {Group, GroupTarget, GroupType} from "tc-shared/permission/GroupManager";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
-import {ClientNameInfo, CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {ClientNameInfo, CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {tra} from "tc-shared/i18n/localize";
@@ -32,6 +32,7 @@ import {
 import {spawnGroupCreate} from "tc-shared/ui/modal/ModalGroupCreate";
 import {spawnModalGroupPermissionCopy} from "tc-shared/ui/modal/ModalGroupPermissionCopy";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 const cssStyle = require("./ModalPermissionEditor.scss");
 
@@ -387,7 +388,7 @@ function initializePermissionModalResultHandlers(events: Registry<PermissionModa
 
 const stringifyError = error => {
     if(error instanceof CommandResult) {
-        if(error.id === ErrorID.PERMISSION_ERROR)
+        if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
             return tr("insufficient permissions");
         else
             return error.message + (error.extra_message ? " (" + error.extra_message + ")" : "");
@@ -598,7 +599,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
                 };
             })});
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) {
+            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 events.fire("query_group_clients_result", { id: event.id, status: "no-permissions" });
                 return;
             }
@@ -620,7 +621,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
         })).then(() => {
             events.fire("action_server_group_add_client_result", { id: event.id, client: event.client, status: "success" });
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) {
+            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 events.fire("action_server_group_add_client_result", { id: event.id, client: event.client, status: "no-permissions" });
                 return;
             }
@@ -898,7 +899,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 }})
             });
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) {
+            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 events.fire("action_set_mode", { mode: "no-permissions", failedPermission: connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon") });
                 return;
             }

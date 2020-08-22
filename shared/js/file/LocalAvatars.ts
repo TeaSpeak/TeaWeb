@@ -13,7 +13,7 @@ import {
     TransferProvider,
     TransferTargetType
 } from "tc-shared/file/Transfer";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {ClientEntry} from "tc-shared/ui/client";
 import {tr} from "tc-shared/i18n/localize";
@@ -29,6 +29,7 @@ import {
 } from "tc-shared/file/Avatars";
 import {IPCChannel} from "tc-shared/ipc/BrowserIPC";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 /* FIXME: Retry avatar download after some time! */
 
@@ -127,7 +128,7 @@ export class AvatarManager extends AbstractAvatarManager {
                 if(typeof error === "object" && 'error' in error && error.error === "initialize") {
                     const commandResult = error.commandResult;
                     if(commandResult instanceof CommandResult) {
-                        if(commandResult.id === ErrorID.FILE_NOT_FOUND) {
+                        if(commandResult.id === ErrorCode.FILE_NOT_FOUND) {
                             if(avatar.getAvatarHash() !== initialAvatarHash) {
                                 log.debug(LogCategory.GENERAL, tr("Ignoring avatar not found since the avatar itself got updated. Out version: %s, current version: %s"), initialAvatarHash, avatar.getAvatarHash());
                                 return;
@@ -135,7 +136,7 @@ export class AvatarManager extends AbstractAvatarManager {
 
                             avatar.setUnset();
                             return;
-                        } else if(commandResult.id === ErrorID.PERMISSION_ERROR) {
+                        } else if(commandResult.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                             throw tr("No permissions to download the avatar");
                         } else {
                             throw commandResult.message + (commandResult.extra_message ? " (" + commandResult.extra_message + ")" : "");

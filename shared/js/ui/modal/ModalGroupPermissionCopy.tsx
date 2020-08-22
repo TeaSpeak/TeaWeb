@@ -8,10 +8,11 @@ import * as React from "react";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {GroupType} from "tc-shared/permission/GroupManager";
 import PermissionType from "tc-shared/permission/PermissionType";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 const cssStyle = require("./ModalGroupPermissionCopy.scss");
 
@@ -174,7 +175,7 @@ export function spawnModalGroupPermissionCopy(connection: ConnectionHandler, tar
 
 const stringifyError = error => {
     if(error instanceof CommandResult) {
-        if(error.id === ErrorID.PERMISSION_ERROR)
+        if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
             return tr("insufficient permissions");
         else
             return error.message + (error.extra_message ? " (" + error.extra_message + ")" : "");
@@ -215,7 +216,7 @@ function initializeGroupPermissionCopyController(connection: ConnectionHandler, 
         }).then(() => {
             createInfoModal(tr("Group permissions have been copied"), tr("The group permissions have been successfully copied.")).open();
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) {
+            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 createErrorModal(tr("Failed to copy group permissions"),
                     tra("Failed to copy group permissions.\nMissing permission {}", connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon"))).open();
                 return;

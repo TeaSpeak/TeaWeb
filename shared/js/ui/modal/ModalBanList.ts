@@ -1,7 +1,7 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createErrorModal, createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {SingleCommandHandler} from "tc-shared/connection/ConnectionBase";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
@@ -9,6 +9,7 @@ import * as tooltip from "tc-shared/ui/elements/Tooltip";
 import * as htmltags from "tc-shared/ui/htmltags";
 import {format_time, formatMessage} from "tc-shared/ui/frames/chat";
 import * as moment from "moment";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export function openBanList(client: ConnectionHandler) {
     let modal: Modal;
@@ -90,7 +91,7 @@ export function openBanList(client: ConnectionHandler) {
                     }),
                     client.serverConnection.send_command("banlist").catch(async error => {
                         if(error instanceof CommandResult)
-                            if(error.id === ErrorID.EMPTY_RESULT)
+                            if(error.id === ErrorCode.DATABASE_EMPTY_RESULT)
                                 return;
                         throw error;
                     })
@@ -121,7 +122,7 @@ export function openBanList(client: ConnectionHandler) {
                     data["sid"] = ban.server_id;
                 client.serverConnection.send_command("bantriggerlist", data).catch(async error => {
                     if(error instanceof CommandResult)
-                        if(error.id === ErrorID.EMPTY_RESULT)
+                        if(error.id === ErrorCode.DATABASE_EMPTY_RESULT)
                             return;
                     throw error;
                 }).then(() => {
@@ -397,7 +398,7 @@ function generate_dom(controller: BanListController) : JQuery {
             }).catch(error => {
                 log.error(LogCategory.CLIENT, tr("Failed to delete ban: %o"), error);
                 if(error instanceof CommandResult)
-                    error = error.id === ErrorID.PERMISSION_ERROR ? "no permissions" : error.extra_message || error.message;
+                    error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? "no permissions" : error.extra_message || error.message;
                 createErrorModal(tr("Failed to delete ban"), formatMessage(tr("Failed to delete ban. {:br:}Error: {}"), error)).open();
             });
         });
@@ -454,7 +455,7 @@ function generate_dom(controller: BanListController) : JQuery {
         }).catch(error => {
             log.info(LogCategory.CLIENT, tr("Failed to update ban list: %o"), error);
             if(error instanceof CommandResult)
-                error = error.id === ErrorID.PERMISSION_ERROR ? tr("no permissions") : error.extra_message || error.message;
+                error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? tr("no permissions") : error.extra_message || error.message;
             container_ban_entries_error.show().find("a").text(tr("Failed to receive banlist: ") + error);
             container_ban_entries_empty.hide();
         });
@@ -532,7 +533,7 @@ function generate_dom(controller: BanListController) : JQuery {
         }).catch(error => {
             log.info(LogCategory.CLIENT, tr("Failed to update trigger list: %o"), error);
             if(error instanceof CommandResult)
-                error = error.id === ErrorID.PERMISSION_ERROR ? tr("no permissions") : error.extra_message || error.message;
+                error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? tr("no permissions") : error.extra_message || error.message;
             container_trigger_entries_error.show().find("a").text(tr("Failed to receive trigger list: ") + error);
             container_trigger_entries_empty.hide();
         });
@@ -788,7 +789,7 @@ function generate_dom(controller: BanListController) : JQuery {
             }).catch(error => {
                 log.error(LogCategory.CLIENT, tr("Failed to edited ban: %o"), error);
                 if(error instanceof CommandResult)
-                    error = error.id === ErrorID.PERMISSION_ERROR ? "no permissions" : error.extra_message || error.message;
+                    error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? "no permissions" : error.extra_message || error.message;
                 createErrorModal(tr("Failed to edited ban"), formatMessage(tr("Failed to edited ban. {:br:}Error: {}"), error)).open();
             });
         });
@@ -856,7 +857,7 @@ function generate_dom(controller: BanListController) : JQuery {
             }).catch(error => {
                 log.error(LogCategory.CLIENT, tr("Failed to add ban: %o"), error);
                 if(error instanceof CommandResult)
-                    error = error.id === ErrorID.PERMISSION_ERROR ? "no permissions" : error.extra_message || error.message;
+                    error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? "no permissions" : error.extra_message || error.message;
                 createErrorModal(tr("Failed to add ban"), formatMessage(tr("Failed to add ban. {:br:}Error: {}"), error)).open();
             });
         });

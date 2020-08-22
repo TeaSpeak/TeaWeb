@@ -2,7 +2,7 @@ import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {MusicClientEntry} from "tc-shared/ui/client";
 import {Registry} from "tc-shared/events";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
 import {tra} from "tc-shared/i18n/localize";
@@ -12,6 +12,7 @@ import * as i18nc from "tc-shared/i18n/country";
 import {find} from "tc-shared/permission/PermissionManager";
 import ServerGroup = find.ServerGroup;
 import * as htmltags from "tc-shared/ui/htmltags";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry) {
     const ev_registry = new Registry<modal.music_manage>();
@@ -40,7 +41,7 @@ export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry
 function permission_controller(event_registry: Registry<modal.music_manage>, bot: MusicClientEntry, client: ConnectionHandler) {
     const error_msg = error => {
         if(error instanceof CommandResult) {
-            if(error.id === ErrorID.PERMISSION_ERROR) {
+            if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 const permission = client.permissions.resolveInfo(error.json["failed_permid"]);
                 return tr("failed on permission ") + (permission ? permission.name : tr("unknown"));
             }

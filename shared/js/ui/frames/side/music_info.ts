@@ -1,12 +1,13 @@
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
 import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
 import {LogCategory} from "tc-shared/log";
-import {CommandResult, ErrorID, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import * as log from "tc-shared/log";
 import * as image_preview from "../image_preview";
 import {Registry} from "tc-shared/events";
 import {PlayerState} from "tc-shared/connection/VoiceConnection";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export interface MusicSidebarEvents {
     "open": {}, /* triggers when frame should be shown */
@@ -426,7 +427,7 @@ export class MusicInfo {
                     units: event.units
                 };
                 this.handle.handle.serverConnection.send_command("musicbotplayeraction", data).catch(error => {
-                    if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) return;
+                    if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
 
                     log.error(LogCategory.CLIENT, tr("Failed to perform action %s on bot: %o"), event.type, error);
                     //TODO: Better error dialog
@@ -445,7 +446,7 @@ export class MusicInfo {
                 playlist_id: this._current_bot.properties.client_playlist_id,
                 song_id: event.song_id
             }).catch(error => {
-                if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) return;
+                if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
 
                 log.error(LogCategory.CLIENT, tr("Failed to set current song on bot: %o"), event.type, error);
                 //TODO: Better error dialog
@@ -471,7 +472,7 @@ export class MusicInfo {
                     playlist_id: this._current_bot.properties.client_playlist_id,
                     url: result
                 }).catch(error => {
-                    if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) return;
+                    if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
 
                     log.error(LogCategory.CLIENT, tr("Failed to add song to bot playlist: %o"), error);
 
@@ -491,7 +492,7 @@ export class MusicInfo {
                 playlist_id: this._current_bot.properties.client_playlist_id,
                 song_id: event.song_id
             }).catch(error => {
-                if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) return;
+                if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
 
                 log.error(LogCategory.CLIENT, tr("Failed to delete song from bot playlist: %o"), error);
 
@@ -688,7 +689,7 @@ export class MusicInfo {
                         song_id: data.song_id,
                         song_previous_song_id: data.previous_entry
                     }).catch(error => {
-                        if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) return;
+                        if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
 
                         log.error(LogCategory.CLIENT, tr("Failed to add song to bot playlist: %o"), error);
 
@@ -796,7 +797,7 @@ export class MusicInfo {
                 for(const song of this.sort_songs(songs))
                     this.events.fire("playlist_song_add", { song: song, insert_effect: false });
             }).catch(error => {
-                if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) {
+                if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     this._container_playlist.find(".overlay-no-permissions").removeClass("hidden");
                     return;
                 }

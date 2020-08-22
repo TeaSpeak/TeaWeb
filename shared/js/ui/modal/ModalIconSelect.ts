@@ -3,13 +3,13 @@ import PermissionType from "tc-shared/permission/PermissionType";
 import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {tra, traj} from "tc-shared/i18n/localize";
 import {arrayBufferBase64} from "tc-shared/utils/buffers";
-import {Settings, settings} from "tc-shared/settings";
 import * as crc32 from "tc-shared/crypto/crc32";
 import {FileInfo} from "tc-shared/file/FileManager";
 import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
     selected_icon = selected_icon || 0;
@@ -138,7 +138,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
             container_loading.hide();
             container_no_permissions.hide();
         }).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorID.PERMISSION_ERROR) {
+            if(error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 container_no_permissions.show();
             } else {
                 log.error(LogCategory.GENERAL, tr("Failed to fetch icon list. Error: %o"), error);
@@ -161,7 +161,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
         client.fileManager.icons.delete_icon(selected_icon).then(() => {
             selected.detach();
         }).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorID.PERMISSION_ERROR)
+            if(error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
                 return;
             console.warn(tr("Failed to delete icon %d: %o"), selected_icon, error);
 

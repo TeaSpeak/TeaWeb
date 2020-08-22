@@ -3,11 +3,12 @@ import {LogCategory, LogType} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
 import {LaterPromise} from "tc-shared/utils/LaterPromise";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {Registry} from "tc-shared/events";
 import {tr} from "tc-shared/i18n/localize";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export class PermissionInfo {
     name: string;
@@ -446,7 +447,7 @@ export class PermissionManager extends AbstractCommandHandler {
 
     private execute_channel_permission_request(request: PermissionRequestKeys) {
         this.handle.serverConnection.send_command("channelpermlist", {"cid": request.channel_id}).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+            if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT)
                 this.fullfill_permission_request("requests_channel_permissions", request, "success", []);
             else
                 this.fullfill_permission_request("requests_channel_permissions", request, "error", error);
@@ -470,7 +471,7 @@ export class PermissionManager extends AbstractCommandHandler {
 
     private execute_client_permission_request(request: PermissionRequestKeys) {
         this.handle.serverConnection.send_command("clientpermlist", {cldbid: request.client_id}).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+            if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT)
                 this.fullfill_permission_request("requests_client_permissions", request, "success", []);
             else
                 this.fullfill_permission_request("requests_client_permissions", request, "error", error);
@@ -498,7 +499,7 @@ export class PermissionManager extends AbstractCommandHandler {
     private execute_client_channel_permission_request(request: PermissionRequestKeys) {
         this.handle.serverConnection.send_command("channelclientpermlist", {cldbid: request.client_id, cid: request.channel_id})
         .catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+            if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT)
                 this.fullfill_permission_request("requests_client_channel_permissions", request, "success", []);
             else
                 this.fullfill_permission_request("requests_client_channel_permissions", request, "error", error);
@@ -525,7 +526,7 @@ export class PermissionManager extends AbstractCommandHandler {
     private execute_playlist_permission_request(request: PermissionRequestKeys) {
         this.handle.serverConnection.send_command("playlistpermlist", {playlist_id: request.playlist_id})
             .catch(error => {
-                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT)
                     this.fullfill_permission_request("requests_playlist_permissions", request, "success", []);
                 else
                     this.fullfill_permission_request("requests_playlist_permissions", request, "error", error);
@@ -553,7 +554,7 @@ export class PermissionManager extends AbstractCommandHandler {
     private execute_playlist_client_permission_request(request: PermissionRequestKeys) {
         this.handle.serverConnection.send_command("playlistclientpermlist", {playlist_id: request.playlist_id, cldbid: request.client_id})
             .catch(error => {
-                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT)
+                if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT)
                     this.fullfill_permission_request("requests_playlist_client_permissions", request, "success", []);
                 else
                     this.fullfill_permission_request("requests_playlist_client_permissions", request, "error", error);
@@ -675,7 +676,7 @@ export class PermissionManager extends AbstractCommandHandler {
             this.connection.send_command("permfind", permission_ids.map(e => { return {permid: e }})).catch(error => {
                 this.handler_boss.remove_single_handler(single_handler);
 
-                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                     resolve([]);
                     return;
                 }

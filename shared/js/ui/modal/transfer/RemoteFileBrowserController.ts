@@ -1,7 +1,7 @@
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {Registry} from "tc-shared/events";
 import {FileType} from "tc-shared/file/FileManager";
-import {CommandResult, ErrorCode, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import PermissionType from "tc-shared/permission/PermissionType";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
@@ -26,7 +26,7 @@ import {
     ListedFileInfo,
     PathInfo
 } from "tc-shared/ui/modal/transfer/ModalFileTransfer";
-import {Settings, settings} from "tc-shared/settings";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 function parsePath(path: string, connection: ConnectionHandler) : PathInfo {
     if(path === "/" || !path) {
@@ -230,7 +230,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }).catch(error => {
             let message;
             if(error instanceof CommandResult) {
-                if(error.id === ErrorID.PERMISSION_ERROR) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
                     events.fire_async("query_files_result", {
                         path: event.path,
@@ -330,7 +330,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }).catch(error => {
             let message;
             if(error instanceof CommandResult) {
-                if(error.id === ErrorID.PERMISSION_ERROR) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
                     events.fire_async("action_rename_file_result", {
                         oldPath: event.oldPath,
@@ -523,7 +523,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
 
                     let results = [];
                     result.getBulks().forEach((e, index) => {
-                        if(e.id === ErrorID.PERMISSION_ERROR) {
+                        if(e.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                             const permission = connection.permissions.resolveInfo(e.json["failed_permid"] as number);
                             results.push({
                                 path: fileInfos[index].path,
@@ -620,7 +620,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }).catch(error => {
             let message;
             if(error instanceof CommandResult) {
-                if(error.id === ErrorID.PERMISSION_ERROR) {
+                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
                     events.fire_async("action_create_directory_result", {
                         name: event.name,

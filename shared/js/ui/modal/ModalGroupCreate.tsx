@@ -8,10 +8,11 @@ import {GroupType} from "tc-shared/permission/GroupManager";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import PermissionType from "tc-shared/permission/PermissionType";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInfoModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 const cssStyle = require("./ModalGroupCreate.scss");
 
@@ -288,7 +289,7 @@ export function spawnGroupCreate(connection: ConnectionHandler, target: "server"
 
 const stringifyError = error => {
     if(error instanceof CommandResult) {
-        if(error.id === ErrorID.PERMISSION_ERROR)
+        if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
             return tr("insufficient permissions");
         else
             return error.message + (error.extra_message ? " (" + error.extra_message + ")" : "");
@@ -341,7 +342,7 @@ function initializeGroupCreateController(connection: ConnectionHandler, events: 
         promise.then(() => {
             createInfoModal(tr("Group has been created"), tr("The group has been successfully created.")).open();
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) {
+            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 createErrorModal(tr("Failed to create group"),
                     tra("Failed to create group.\nMissing permission {}", connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon"))).open();
                 return;

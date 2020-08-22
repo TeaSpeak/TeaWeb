@@ -158,7 +158,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
 
 //tmpl_query_manager
 import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {CommandResult, ErrorID, QueryListEntry} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult, QueryListEntry} from "tc-shared/connection/ServerConnectionDeclaration";
 import {SingleCommandHandler} from "tc-shared/connection/ConnectionBase";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
@@ -168,6 +168,7 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as log from "tc-shared/log";
 import {spawnQueryCreate, spawnQueryCreated} from "tc-shared/ui/modal/ModalQuery";
 import {formatMessage} from "tc-shared/ui/frames/chat";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export function spawnQueryManage(client: ConnectionHandler) {
     let modal: Modal;
@@ -259,7 +260,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
                         button_update.prop('disabled', false);
                     }).catch(error => {
                         button_update.prop('disabled', false);
-                        if(error instanceof CommandResult && error.id === ErrorID.PERMISSION_ERROR) {
+                        if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                             set_error(tr("No permissions"));
                             return;
                         }

@@ -1,9 +1,10 @@
 import {ServerConnectionInfo, ServerEntry} from "tc-shared/ui/server";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {Graph} from "tc-shared/ui/elements/NetGraph";
 import * as tooltip from "tc-shared/ui/elements/Tooltip";
 import {network} from "tc-shared/ui/frames/chat";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export enum RequestInfoStatus {
     SUCCESS,
@@ -36,7 +37,7 @@ export function openServerInfoBandwidth(server: ServerEntry, update_callbacks?: 
     if(own_callbacks) {
         const updater = setInterval(() => {
             server.request_connection_info().then(info => update_callbacks.forEach(e => e(RequestInfoStatus.SUCCESS, info))).catch(error => {
-                if(error instanceof CommandResult && error.id == ErrorID.PERMISSION_ERROR) {
+                if(error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     update_callbacks.forEach(e => e(RequestInfoStatus.NO_PERMISSION));
                     return;
                 }

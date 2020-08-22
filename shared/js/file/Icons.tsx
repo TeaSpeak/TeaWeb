@@ -2,7 +2,7 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {Registry} from "tc-shared/events";
 import {format_time} from "tc-shared/ui/frames/chat";
-import {CommandResult, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {image_type, ImageCache, ImageType, media_image_type} from "tc-shared/file/ImageCache";
 import {FileInfo, FileManager} from "tc-shared/file/FileManager";
 import {
@@ -12,6 +12,7 @@ import {
 } from "tc-shared/file/Transfer";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {tr} from "tc-shared/i18n/localize";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 const icon_cache: ImageCache = new ImageCache("icons");
 export interface IconManagerEvents {
@@ -294,9 +295,9 @@ export class IconManager {
                 }
             } catch(error) {
                 if(error instanceof CommandResult) {
-                    if(error.id === ErrorID.FILE_NOT_FOUND)
+                    if(error.id === ErrorCode.FILE_NOT_FOUND)
                         throw tr("Icon could not be found");
-                    else if(error.id === ErrorID.PERMISSION_ERROR)
+                    else if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
                         throw tr("No permissions to download icon");
                     else
                         throw error.extra_message || error.message;

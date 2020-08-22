@@ -2,7 +2,7 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {CommandResult, ErrorCode, ErrorID} from "tc-shared/connection/ServerConnectionDeclaration";
+import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {IconManager} from "tc-shared/file/Icons";
 import {AvatarManager} from "tc-shared/file/LocalAvatars";
@@ -21,6 +21,7 @@ import {
 } from "tc-shared/file/Transfer";
 import {Registry} from "tc-shared/events";
 import {tr, tra} from "tc-shared/i18n/localize";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export enum FileType {
     DIRECTORY = 0,
@@ -433,7 +434,7 @@ export class FileManager {
             }).then(() => {
                 reject(tr("Missing server file list response"));
             }).catch(error => {
-                if(error instanceof CommandResult && error.id == ErrorID.EMPTY_RESULT) {
+                if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                     resolve([]);
                     return;
                 }
