@@ -1,4 +1,8 @@
 # Changelog:
+* **22.08.20**
+    - Added a fancy client updated, change log window for the native and web client
+    - Implemented the changed audio API into the client
+    
 * **11.08.20**
     - Fixed the voice push to talk delay
     - Improved the microphone setting controller
@@ -51,18 +55,18 @@
       - Improved chat box behaviour
       - Automatically crawling all channels on server join for new messages (requires TeaSpeak 1.4.16-b2 or higher)
       - Improved the channel chat history browsing experience
-  - Added support for the `qote` bbcode and markdown syntax
-  - Recoded the private conversation UI and manager
-      - Improved client disconnect/reconnect handing
-      - Updated several chat box issues
-      - Improved history view
-      - Improved chat experience when chatting with two different users which have the same identity
-      - Automatically reopening the last open private chats
-      - Fixed the chat partner typing indicator
-  - Fixed chat scroll bar after switching tabs
-  - Fixed the chat "scroll to new messages" button
-  - Finalized the loader animation
-  - Improved the channel tree scroll fix handler
+    - Added support for the `qote` bbcode and markdown syntax
+    - Recoded the private conversation UI and manager
+        - Improved client disconnect/reconnect handing
+        - Updated several chat box issues
+        - Improved history view
+        - Improved chat experience when chatting with two different users which have the same identity
+        - Automatically reopening the last open private chats
+        - Fixed the chat partner typing indicator
+    - Fixed chat scroll bar after switching tabs
+    - Fixed the chat "scroll to new messages" button
+    - Finalized the loader animation
+    - Improved the channel tree scroll fix handler
   
 * **12.07.20**
     - Made the loader compatible with ES5 to support older browsers
@@ -261,11 +265,11 @@
     - Fixed bookmark server password
     - Improved UI performance
     
-    Big UI Improvement:
-    - New "dark theme" design
-    - All elements are responsive to the font-size (Supporting now large & small screens (No mobile support yet))
-    - Implemented an active ping calculation
-    - And a lot more....
+    - Big UI Improvement:
+      - New "dark theme" design
+      - All elements are responsive to the font-size (Supporting now large & small screens (No mobile support yet))
+      - Implemented an active ping calculation
+      - And a lot more....
     
 * **22.06.19**
     - Fixed channel create not working issue
@@ -486,29 +490,29 @@
     
 * **30.09.18**
     - Added the permission system (Assignments and management)
-    * Fixed poke and client description with empty message
-    * Fixed channel tree icons
-    * Fixed group sorting
+    - Fixed poke and client description with empty message
+    - Fixed channel tree icons
+    - Fixed group sorting
     
-* **26.09.18**:
+* **26.09.18**
     - Added Safari support
     
-* **25.09.18**:
+* **25.09.18**
     - Added support for token use
     - Added support for away messages
-    * Fixed away display within information bar
+    - Fixed away display within information bar
     - Capturing last given address and nickname within connect modal
-    * Using random password field ids for server connect modal
-    + Improved forum not authenticated message within connect modal
+    - Using random password field ids for server connect modal
+    - Improved forum not authenticated message within connect modal
     - Added partitional MS Edge support
-    * Fixed chat new line indeed
+    - Fixed chat new line indeed
     
-* **24.09.18**:
+* **24.09.18**
     - Added server passwords within login modal
     - Fixed native encoding for opera and firefox
     - Made the default music bot group configurable
 
-* **0.0.1-Alpha**:  
-- First public upload of the Web client  
-  All TeaSpeak premium & alpha testers have access  
-  You require a valid TeaSpeak forum account  
+* **27.02.18**
+    - The first public upload of the Web client  
+      All TeaSpeak premium & alpha testers have access  
+      You require a valid TeaSpeak forum account  
