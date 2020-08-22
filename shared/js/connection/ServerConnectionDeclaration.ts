@@ -1,9 +1,6 @@
 import {LaterPromise} from "tc-shared/utils/LaterPromise";
 import {ErrorCode} from "./ErrorCode";
 
-/* legacy */
-export const ErrorID = ErrorCode;
-
 export class CommandResult {
     success: boolean;
     id: number;

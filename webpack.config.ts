@@ -226,6 +226,13 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
             {
                 test: /\.svg$/,
                 loader: 'svg-inline-loader'
+            },
+            {
+                test: /ChangeLog\.md$/i,
+                loader: "raw-loader",
+                options: {
+                    esModule: false
+                }
             }
         ],
     },

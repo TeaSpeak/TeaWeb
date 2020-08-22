@@ -44,6 +44,9 @@ import "./connection/ConnectionBase";
 import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "./video-viewer/Controller";
 
+import "./update/UpdaterWeb";
+import {checkForUpdatedApp} from "tc-shared/update";
+
 declare global {
     interface Window {
         open_connected_question: () => Promise<boolean>;
@@ -299,7 +302,7 @@ function main() {
     });
 
     server_connections.set_active_connection(server_connections.all_connections()[0]);
-
+    checkForUpdatedApp();
 
     /*
     (window as any).test_upload = (message?: string) => {

@@ -50,7 +50,8 @@ export class Translatable extends React.Component<{
     }
 }
 
-export const VariadicTranslatable = (props: { text: string, __cacheKey?: string, children?: React.ReactElement[] | React.ReactElement }) => {
+export type VariadicTranslatableChild = React.ReactElement | string;
+export const VariadicTranslatable = (props: { text: string, __cacheKey?: string, children?: VariadicTranslatableChild[] | VariadicTranslatableChild }) => {
     const args = Array.isArray(props.children) ? props.children : [props.children];
     const argsUseCount = [...new Array(args.length)].map(() => 0);
 
@@ -63,8 +64,13 @@ export const VariadicTranslatable = (props: { text: string, __cacheKey?: string,
                     return e;
 
                 let element = args[e];
-                if(argsUseCount[e])
-                    element = cloneElement(element);
+                if(argsUseCount[e]) {
+                    if(typeof element === "string") {
+                        /* do nothing */
+                    } else {
+                        element = cloneElement(element);
+                    }
+                }
                 argsUseCount[e]++;
 
                 return <React.Fragment key={"argument-" + e + "-" + argsUseCount[e]}>{element}</React.Fragment>;

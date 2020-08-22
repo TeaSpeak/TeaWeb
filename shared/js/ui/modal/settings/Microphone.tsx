@@ -347,5 +347,5 @@ loader.register_task(Stage.LOADED, {
         });
     },
     priority: -2
-})
+});
 */
