@@ -22,7 +22,7 @@ stages:
 jobs:
   include:
     - stage: compile
-      script: "./scripts/travis/build.sh --enable-release --enable-debug --verbose || travis_terminate 1;"
+      script: "./scripts/travis/build.sh --enable-release --enable-debug || travis_terminate 1;"
 
 deploy:
   - provider: script

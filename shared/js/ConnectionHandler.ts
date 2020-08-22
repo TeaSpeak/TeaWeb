@@ -850,6 +850,7 @@ export class ConnectionHandler {
                 this.update_voice_status();
             } catch (error) {
                 this.setInputHardwareState(InputHardwareState.START_FAILED);
+                this.update_voice_status();
 
                 let errorMessage;
                 if(error === InputStartResult.ENOTSUPPORTED) {

@@ -255,3 +255,8 @@ export function set_default_profile(profile: ConnectionProfile) {
 export function delete_profile(profile: ConnectionProfile) {
     available_profiles.remove(profile);
 }
+
+window.addEventListener("beforeunload", event => {
+    if(requires_save())
+        save();
+});

@@ -1,6 +1,5 @@
 import {config, critical_error, SourcePath} from "./loader";
 import {load_parallel, LoadCallback, LoadSyntaxError, ParallelOptions, script_name} from "./utils";
-import {type} from "os";
 
 let _script_promises: {[key: string]: Promise<void>} = {};
 
@@ -34,7 +33,7 @@ function load_script_url(url: string) : Promise<void> {
         const timeout_handle = setTimeout(() => {
             cleanup();
             reject("timeout");
-        }, 5000);
+        }, 15 * 1000);
         script_tag.type = "application/javascript";
         script_tag.async = true;
         script_tag.defer = true;
@@ -108,6 +107,8 @@ export async function load_multiple(paths: SourcePath[], options: MultipleOption
                         let prefix = "";
                         while(prefix.length < sname.length + 7) prefix += " ";
                         console.log(" - %s: %s:\n%s", sname, source.message, source.stack.split("\n").map(e => prefix + e.trim()).slice(1).join("\n"));
+                    } else if(typeof source === "string") {
+                        console.log(" - %s: %s", sname, source);
                     } else {
                         console.log(" - %s: %o", sname, source);
                     }
@@ -117,16 +118,19 @@ export async function load_multiple(paths: SourcePath[], options: MultipleOption
             }
         }
 
+        let errorMessage;
         {
             const error = result.failed[0].error;
-            console.error(error);
-            let errorMessage;
-            if(error instanceof LoadSyntaxError)
+            if(error instanceof LoadSyntaxError) {
                 errorMessage = error.source.message;
-            else
+            } else if(typeof error === "string") {
+                errorMessage = error;
+            } else {
+                console.error("Script %s loading error: %o", script_name(result.failed[0].request, false), error);
                 errorMessage = "View the browser console for more information!";
+            }
             critical_error("Failed to load script " + script_name(result.failed[0].request, true), errorMessage);
         }
-        throw "failed to load script " + script_name(result.failed[0].request, false);
+        throw "failed to load script " + script_name(result.failed[0].request, false) + " (" + errorMessage + ")";
     }
 }
