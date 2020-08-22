@@ -50,58 +50,6 @@ declare global {
     }
 }
 
-function setup_close() {
-    window.onbeforeunload = event => {
-        if(profiles.requires_save())
-            profiles.save();
-
-        if(!settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG, false)) {
-            const active_connections = server_connections.all_connections().filter(e => e.connected);
-            if(active_connections.length == 0) return;
-
-            if(__build.target === "web") {
-                event.returnValue = "Are you really sure?<br>You're still connected!";
-            } else {
-                const do_exit = () => {
-                    const dp = server_connections.all_connections().map(e => {
-                        if(e.serverConnection.connected())
-                            return e.serverConnection.disconnect(tr("client closed"));
-                        return Promise.resolve();
-                    }).map(e => e.catch(() => {
-                        console.warn(tr("Failed to disconnect from server on client close: %o"), e);
-                    }));
-
-                    const exit = () => {
-                        const {remote} = window.require('electron');
-                        remote.getCurrentWindow().close();
-                    };
-
-                    Promise.all(dp).then(exit);
-                    /* force exit after 2500ms */
-                    setTimeout(exit, 2500);
-                };
-                if(window.open_connected_question) {
-                    event.preventDefault();
-                    event.returnValue = "question";
-                    window.open_connected_question().then(result => {
-                        if(result) {
-                            /* prevent quitting because we try to disconnect */
-                            window.onbeforeunload = e => e.preventDefault();
-
-                            /* allow a force quit after 5 seconds */
-                            setTimeout(() => window.onbeforeunload, 5000);
-                            do_exit();
-                        }
-                    });
-                } else {
-                    /* we're in debugging mode */
-                    do_exit();
-                }
-            }
-        }
-    };
-}
-
 function setup_jsrender() : boolean {
     if(!$.views) {
         loader.critical_error("Missing jsrender viewer extension!");
@@ -203,8 +151,6 @@ async function initialize_app() {
         loader.critical_error(tr("Failed to initialize ppt!"));
         return;
     }
-
-    setup_close();
 }
 
 /*

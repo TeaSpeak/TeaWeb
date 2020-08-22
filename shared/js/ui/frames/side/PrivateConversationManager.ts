@@ -14,10 +14,10 @@ import {
     ConversationHistoryResponse,
     ConversationUIEvents
 } from "tc-shared/ui/frames/side/ConversationDefinitions";
-import {AbstractChat, AbstractChatManager} from "tc-shared/ui/frames/side/ConversationManager";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {queryConversationEvents, registerConversationEvent} from "tc-shared/ui/frames/side/PrivateConversationHistory";
+import {AbstractChat, AbstractChatManager} from "tc-shared/ui/frames/side/AbstractConversion";
 
 export type OutOfViewClient = {
     nickname: string,

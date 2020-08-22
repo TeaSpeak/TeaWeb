@@ -113,14 +113,14 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 if(ex instanceof CommandResult) {
                     let res = ex;
                     if(!res.success) {
-                        if(res.id == ErrorID.PERMISSION_ERROR) { //Permission error
+                        if(res.id == ErrorID.SERVER_INSUFFICIENT_PERMISSIONS) { //Permission error
                             const permission = this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number);
                             res.message = tr("Insufficient client permissions. Failed on permission ") + (permission ? permission.name : "unknown");
                             this.connection_handler.log.log(EventType.ERROR_PERMISSION, {
                                 permission: this.connection_handler.permissions.resolveInfo(res.json["failed_permid"] as number)
                             });
                             this.connection_handler.sound.play(Sound.ERROR_INSUFFICIENT_PERMISSIONS);
-                        } else if(res.id != ErrorID.EMPTY_RESULT) {
+                        } else if(res.id != ErrorID.DATABASE_EMPTY_RESULT) {
                             this.connection_handler.log.log(EventType.ERROR_CUSTOM, {
                                 message: res.extra_message.length == 0 ? res.message : res.extra_message
                             });

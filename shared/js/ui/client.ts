@@ -795,15 +795,15 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         }
 
         /* process updates after variables have been set */
-        const side_bar = this.channelTree.client.side_bar;
-        {
+        const side_bar = this.channelTree?.client?.side_bar;
+        if(side_bar) {
             const client_info = side_bar.client_info();
             if(client_info.current_client() === this)
                 client_info.set_current_client(this, true); /* force an update */
         }
 
         if(update_avatar)
-            this.channelTree.client.fileManager.avatars.updateCache(this.avatarId(), this.properties.client_flag_avatar);
+            this.channelTree.client?.fileManager?.avatars.updateCache(this.avatarId(), this.properties.client_flag_avatar);
 
         /* devel-block(log-client-property-updates) */
         group.end();
