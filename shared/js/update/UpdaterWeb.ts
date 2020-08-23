@@ -3,7 +3,7 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {setUIUpdater} from "tc-shared/update/index";
 import {Updater} from "tc-shared/update/Updater";
-import {LogCategory, logError, logWarn} from "tc-shared/log";
+import {LogCategory, logError} from "tc-shared/log";
 
 const ChangeLogContents: string = require("../../../ChangeLog.md");
 const EntryRegex = /^\* \*\*([0-9]{2})\.([0-9]{2})\.([0-9]{2})\*\*$/m;
@@ -47,9 +47,6 @@ function parseChangeLogEntry(lines: string[], index: number) : { entries: Change
                 currentEntry = trimmed.substr(1).trim();
             }
         } else {
-            if(typeof currentEntry === "undefined")
-                throw "this should never happen!";
-
             currentEntry += "\n" + trimmed;
         }
 

@@ -112,7 +112,7 @@ export const WhatsNew = (props: { changesUI?: ChangeLog, changesClient?: ChangeL
         infoText = <VariadicTranslatable key={"info-native-ui"} text={"The native clients UI has been updated to the version from 18.08.2020."}>{versionUIDate}</VariadicTranslatable>;
     }
 
-    const changes = [ changesUI, changesClient ].filter(e => !!e);
+    const changes = [ changesClient, changesUI ].filter(e => !!e);
     return (
         <div className={cssStyle.container}>
             <div className={cssStyle.info}>
