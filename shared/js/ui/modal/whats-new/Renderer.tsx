@@ -124,7 +124,7 @@ export const WhatsNew = (props: { changesUI?: ChangeLog, changesClient?: ChangeL
                     <h2 className={cssStyle.subtitleLong}>{subtitleLong}</h2>
                     <h2 className={cssStyle.subtitleShort}><Translatable>The client has been updated.</Translatable></h2>
                     <p>
-                        <Translatable>While you've been away resting, we did some work.</Translatable> <br />
+                        <Translatable>While you've been away, resting, we did some work.</Translatable> <br />
                         {infoText} <br />
                         <Translatable>A list of changes, bugfixes and new features can be found bellow.</Translatable>
                     </p>
