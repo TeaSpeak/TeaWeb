@@ -1,6 +1,7 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {KeyCode} from "tc-shared/PPTListener";
+import * as $ from "jquery";
 
 export enum ElementType {
     HEADER,
@@ -65,7 +66,7 @@ export class ModalProperties {
     closeListener: (() => void) | (() => void)[] = () => {};
     registerCloseListener(listener: () => void) : this {
         if(this.closeListener) {
-            if($.isArray(this.closeListener))
+            if(Array.isArray(this.closeListener))
                 this.closeListener.push(listener);
             else
                 this.closeListener = [this.closeListener, listener];

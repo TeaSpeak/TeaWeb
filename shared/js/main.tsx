@@ -1,4 +1,3 @@
-import * as moment from "moment";
 import * as loader from "tc-loader";
 import {settings, Settings} from "tc-shared/settings";
 import * as profiles from "tc-shared/profiles/ConnectionProfile";
@@ -31,6 +30,8 @@ import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {FileTransferState, TransferProvider,} from "tc-shared/file/Transfer";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
+import {checkForUpdatedApp} from "tc-shared/update";
+import {setupJSRender} from "tc-shared/ui/jsrender";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 import "svg-sprites/client-icons";
 
@@ -45,43 +46,6 @@ import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "./video-viewer/Controller";
 
 import "./update/UpdaterWeb";
-import {checkForUpdatedApp} from "tc-shared/update";
-
-declare global {
-    interface Window {
-        open_connected_question: () => Promise<boolean>;
-    }
-}
-
-function setup_jsrender() : boolean {
-    if(!$.views) {
-        loader.critical_error("Missing jsrender viewer extension!");
-        return false;
-    }
-    $.views.settings.allowCode(true);
-    $.views.tags("rnd", (argument) => {
-        let min = parseInt(argument.substr(0, argument.indexOf('~')));
-        let max = parseInt(argument.substr(argument.indexOf('~') + 1));
-
-        return (Math.round(Math.random() * (min + max + 1) - min)).toString();
-    });
-
-    $.views.tags("fmt_date", (...args) => {
-        return moment(args[0]).format(args[1]);
-    });
-
-    $.views.tags("tr", (...args) => {
-        return /* @tr-ignore */ tr(args[0]);
-    });
-
-    $(".jsrender-template").each((idx, _entry) => {
-        if(!$.templates(_entry.id, _entry.innerHTML)) {
-            log.error(LogCategory.GENERAL, tr("Failed to setup cache for js renderer template %s!"), _entry.id);
-        } else
-            log.trace(LogCategory.GENERAL, tr("Successfully loaded jsrender template %s"), _entry.id);
-    });
-    return true;
-}
 
 async function initialize() {
     try {
@@ -578,7 +542,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
     name: "jrendere initialize",
     function: async () => {
         try {
-            if(!setup_jsrender())
+            if(!setupJSRender())
                 throw "invalid load";
         } catch (error) {
             loader.critical_error(tr("Failed to setup jsrender"));

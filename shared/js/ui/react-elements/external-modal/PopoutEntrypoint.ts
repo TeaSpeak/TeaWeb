@@ -10,6 +10,7 @@ import {findPopoutHandler} from "tc-shared/ui/react-elements/external-modal/Popo
 import {Registry} from "tc-shared/events";
 import {WebModalRenderer} from "tc-shared/ui/react-elements/external-modal/PopoutRendererWeb";
 import {ClientModalRenderer} from "tc-shared/ui/react-elements/external-modal/PopoutRendererClient";
+import {setupJSRender} from "tc-shared/ui/jsrender";
 
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;
@@ -27,6 +28,8 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
         await import("tc-shared/proto");
         await i18n.initialize();
         ipc.setup();
+
+        setupJSRender();
     }
 });
 
