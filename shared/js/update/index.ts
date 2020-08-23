@@ -23,19 +23,7 @@ function getChangedChangeLog(updater: Updater) : ChangeLog | undefined {
     if(updater.getCurrentVersion() === updater.getLastUsedVersion())
         return undefined;
 
-    let changes = {
-        changes: [],
-        currentVersion: updater.getCurrentVersion()
-    } as ChangeLog;
-
-    let usedVersion = updater.getLastUsedVersion();
-    for(const change of updater.getChangeLog().changes) {
-        if(change.timestamp === usedVersion)
-            break;
-
-        changes.changes.push(change);
-    }
-
+    const changes = updater.getChangeList(updater.getLastUsedVersion());
     return changes.changes.length > 0 ? changes : undefined;
 }
 

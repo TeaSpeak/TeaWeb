@@ -3,9 +3,11 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {setUIUpdater} from "tc-shared/update/index";
 import {Updater} from "tc-shared/update/Updater";
+import {LogCategory, logError, logWarn} from "tc-shared/log";
 
 const ChangeLogContents: string = require("../../../ChangeLog.md");
 const EntryRegex = /^\* \*\*([0-9]{2})\.([0-9]{2})\.([0-9]{2})\*\*$/m;
+const TimeStampRegex = /^([0-9]{2})\.([0-9]{2})\.([0-9]{2})$/m;
 
 function parseChangeLogEntry(lines: string[], index: number) : { entries: ChangeSetEntry[], index: number } {
     const entryDepth = lines[index].indexOf("-");
@@ -106,6 +108,33 @@ class WebUpdater implements Updater {
 
     getChangeLog(): ChangeLog {
         return this.changeLog;
+    }
+
+    getChangeList(oldVersion: string): ChangeLog {
+        let changes = {
+            changes: [],
+            currentVersion: this.currentVersion
+        } as ChangeLog;
+
+        try {
+            const [ _, oldDay, oldMonth, oldYear ] = oldVersion.match(TimeStampRegex);
+            const oldDate = new Date(parseInt(oldYear), parseInt(oldMonth), parseInt(oldDay));
+
+            for(const change of this.getChangeLog().changes) {
+                const [ _, currentDay, currentMonth, currentYear ] = change.timestamp.match(TimeStampRegex);
+                const currentDate = new Date(parseInt(currentYear), parseInt(currentMonth), parseInt(currentDay));
+
+                if(currentDate.getTime() <= oldDate.getTime())
+                    break;
+
+                changes.changes.push(change);
+            }
+        } catch (error) {
+            logError(LogCategory.GENERAL, tr("Failed to gather a change list from version %s: %o"), oldVersion, error);
+            return this.getChangeLog();
+        }
+
+        return changes;
     }
 
     getCurrentVersion(): string {
