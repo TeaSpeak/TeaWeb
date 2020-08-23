@@ -18,7 +18,7 @@ export interface CssEditorEvents {
     action_reset: { },
     action_randomize: {},
 
-    action_export: {},
+    action_export: { allValues: boolean },
     action_import: { config: string }
 
     query_css_variables: {},

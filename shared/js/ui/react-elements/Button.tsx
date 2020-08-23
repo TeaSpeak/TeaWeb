@@ -7,10 +7,12 @@ export interface ButtonProperties {
     type?: "normal" | "small" | "extra-small";
 
     className?: string;
-    onClick?: () => void;
+    onClick?: (event: React.MouseEvent) => void;
 
     hidden?: boolean;
     disabled?: boolean;
+
+    title?: string;
 }
 
 export interface ButtonState {
@@ -36,6 +38,7 @@ export class Button extends ReactComponentBase<ButtonProperties, ButtonState> {
                     cssStyle["type-" + this.props.type] || cssStyle["type-normal"],
                     this.props.className
                 )}
+                title={this.props.title}
                 disabled={typeof this.state.disabled === "boolean" ? this.state.disabled : this.props.disabled}
                 onClick={this.props.onClick}
             >

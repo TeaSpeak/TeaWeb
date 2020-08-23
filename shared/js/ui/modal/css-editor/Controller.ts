@@ -3,6 +3,7 @@ import {Stage} from "tc-loader";
 import {CssEditorEvents, CssVariable} from "tc-shared/ui/modal/css-editor/Definitions";
 import {spawnExternalModal} from "tc-shared/ui/react-elements/external-modal";
 import {Registry} from "tc-shared/events";
+import {LogCategory, logWarn} from "tc-shared/log";
 
 interface CustomVariable {
     name: string;
@@ -14,13 +15,28 @@ class CssVariableManager {
     private customVariables: {[key: string]: CustomVariable} = {};
     private htmlTag: HTMLStyleElement;
 
-    constructor() {
+    private loadLocalStorage() {
+        try {
+            const payloadString = localStorage.getItem("css-custom-variables");
+            if(typeof payloadString === "undefined" || !payloadString)
+                return;
 
+            const payload = JSON.parse(payloadString);
+            if(payload.version !== 1)
+                throw "invalid payload version";
+
+            this.customVariables = payload["customVariables"];
+        } catch (error) {
+            logWarn(LogCategory.GENERAL, tr("Failed to load custom variables: %o"), error);
+        }
     }
 
     initialize() {
         this.htmlTag = document.createElement("style");
         document.body.appendChild(this.htmlTag);
+
+        this.loadLocalStorage();
+        this.updateCustomVariables(false);
     }
 
     getAllCssVariables() : CssVariable[] {
@@ -61,7 +77,7 @@ class CssVariableManager {
         const customVariable = this.customVariables[name] || (this.customVariables[name] = { name: name, value: undefined, enabled: false });
         customVariable.enabled = true;
         customVariable.value = value;
-        this.updateCustomVariables();
+        this.updateCustomVariables(true);
     }
 
     toggleCustomVariable(name: string, flag: boolean, value?: string) {
@@ -76,14 +92,31 @@ class CssVariableManager {
         customVariable.enabled = flag;
         if(flag && typeof value === "string")
             customVariable.value = value;
-        this.updateCustomVariables();
+        this.updateCustomVariables(true);
     }
 
-    exportConfig() {
-        return JSON.stringify({
-            version: 1,
-            variables: this.customVariables
-        });
+    exportConfig(allValues: boolean) {
+        if(allValues) {
+            return JSON.stringify({
+                version: 1,
+                variables: this.getAllCssVariables().map<CustomVariable>(variable => {
+                    if(this.customVariables[variable.name]) {
+                        return this.customVariables[variable.name];
+                    }
+
+                    return {
+                        name: variable.name,
+                        enabled: typeof variable.customValue !== "undefined",
+                        value: typeof variable.customValue === "undefined" ? variable.defaultValue : variable.customValue
+                    }
+                })
+            });
+        } else {
+            return JSON.stringify({
+                version: 1,
+                variables: this.customVariables
+            });
+        }
     }
 
     importConfig(config: string) {
@@ -92,12 +125,12 @@ class CssVariableManager {
             throw "unsupported config version";
 
         this.customVariables = data.variables;
-        this.updateCustomVariables();
+        this.updateCustomVariables(true);
     }
 
     reset() {
         this.customVariables = {};
-        this.updateCustomVariables();
+        this.updateCustomVariables(true);
     }
 
     randomize() {
@@ -109,15 +142,22 @@ class CssVariableManager {
                 name: e.name
             }
         });
-        this.updateCustomVariables();
+        this.updateCustomVariables(true);
     }
 
-    private updateCustomVariables() {
+    private updateCustomVariables(updateConfig: boolean) {
         let text = "html:root {\n";
         for(const variable of Object.values(this.customVariables))
             text += "    " + variable.name + ": " + variable.value + ";\n";
         text += "}";
         this.htmlTag.textContent = text;
+
+        if(updateConfig) {
+            localStorage.setItem("css-custom-variables", JSON.stringify({
+                version: 1,
+                customVariables: this.customVariables
+            }));
+        }
     }
 }
 let cssVariableManager: CssVariableManager;
@@ -145,9 +185,9 @@ function cssVariableEditorController(events: Registry<CssEditorEvents>) {
         cssVariableManager.setVariable(event.variableName, event.value);
     });
 
-    events.on("action_export", () => {
+    events.on("action_export", event => {
         events.fire_async("notify_export_result", {
-            config: cssVariableManager.exportConfig()
+            config: cssVariableManager.exportConfig(event.allValues)
         });
     });
 

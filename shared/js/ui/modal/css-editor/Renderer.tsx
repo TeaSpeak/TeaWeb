@@ -324,7 +324,8 @@ const ControlButtons = (props: { events: Registry<CssEditorEvents> }) => {
                 color={"blue"}
                 type={"normal"}
                 className={cssStyle.button}
-                onClick={() => props.events.fire("action_export")}
+                onClick={event => props.events.fire("action_export", { allValues: event.shiftKey })}
+                title={tr("Click to export the changed values, Shift click to export all values")}
             ><Translatable>Export</Translatable></Button>
             <Button
                 color={"green"}
