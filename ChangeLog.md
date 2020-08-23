@@ -1,4 +1,11 @@
 # Changelog:
+* **23.08.20**
+    - Fixed the CSS-Variable editor export and import functionality for the native client
+    - Fixed the nasty scroll bar within the CSS-Variable editor for the native client
+    - Added the possibility, by shift clicking the export button, to export the full variable set, including the default values
+    - Made the CSS-Variable changes persistent. This means changes will still effect the client after a restart.
+    - Fixed the steam animation for the native client in development mode
+    
 * **22.08.20**
     - Added a fancy client updated, change log window for the native and web client
     - Implemented the changed audio API into the client
