@@ -61,7 +61,6 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
     }
 
     async setInput(input: AbstractInput | undefined) {
-        console.error("SET INPUT: %o", input);
         if (this.currentInput === input)
             return;
 
