@@ -147,7 +147,7 @@ class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, 
 
         switch (voiceState) {
             case VoiceConnectionStatus.Connected:
-                state.is_codec_supported = voiceConnection.decoding_supported(currentCodec);
+                state.is_codec_supported = voiceConnection.decodingSupported(currentCodec);
                 break;
 
             default:

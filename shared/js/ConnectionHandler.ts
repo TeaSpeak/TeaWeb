@@ -8,7 +8,7 @@ import {LocalClientEntry} from "tc-shared/ui/client";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {ServerAddress} from "tc-shared/ui/server";
 import * as log from "tc-shared/log";
-import {LogCategory, logError} from "tc-shared/log";
+import {LogCategory, logError, logInfo} from "tc-shared/log";
 import {createErrorModal, createInfoModal, createInputModal, Modal} from "tc-shared/ui/elements/Modal";
 import {hashPassword} from "tc-shared/utils/helpers";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
@@ -35,8 +35,9 @@ import {ServerEventLog} from "tc-shared/ui/frames/log/ServerEventLog";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {PluginCmdRegistry} from "tc-shared/connection/PluginCmdHandler";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
-import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
+import {VoiceConnectionStatus, WhisperSessionInitializeData} from "tc-shared/connection/VoiceConnection";
 import {getServerConnectionFactory} from "tc-shared/connection/ConnectionFactory";
+import {WhisperSession} from "tc-shared/voice/Whisper";
 
 export enum InputHardwareState {
     MISSING,
@@ -198,6 +199,8 @@ export class ConnectionHandler {
             this.update_voice_status();
         });
         this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", () => this.update_voice_status());
+
+        this.serverConnection.getVoiceConnection().setWhisperSessionInitializer(this.initializeWhisperSession.bind(this));
 
         this.channelTree = new ChannelTree(this);
         this.fileManager = new FileManager(this);
@@ -701,8 +704,8 @@ export class ConnectionHandler {
 
         const vconnection = this.serverConnection.getVoiceConnection();
 
-        const codecEncodeSupported = !targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec);
-        const codecDecodeSupported = !targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec);
+        const codecEncodeSupported = !targetChannel || vconnection.encodingSupported(targetChannel.properties.channel_codec);
+        const codecDecodeSupported = !targetChannel || vconnection.decodingSupported(targetChannel.properties.channel_codec);
 
         const property_update = {
             client_input_muted: this.client_status.input_muted,
@@ -711,7 +714,7 @@ export class ConnectionHandler {
 
         /* update the encoding codec */
         if(codecEncodeSupported && targetChannel) {
-            vconnection.set_encoder_codec(targetChannel.properties.channel_codec);
+            vconnection.setEncoderCodec(targetChannel.properties.channel_codec);
         }
 
         if(!this.serverConnection.connected() || vconnection.getConnectionState() !== VoiceConnectionStatus.Connected) {
@@ -720,10 +723,10 @@ export class ConnectionHandler {
         } else {
             const recording_supported =
                 this.getInputHardwareState() === InputHardwareState.VALID &&
-                (!targetChannel || vconnection.encoding_supported(targetChannel.properties.channel_codec)) &&
+                (!targetChannel || vconnection.encodingSupported(targetChannel.properties.channel_codec)) &&
                 vconnection.getConnectionState() === VoiceConnectionStatus.Connected;
 
-            const playback_supported = this.hasOutputHardware() && (!targetChannel || vconnection.decoding_supported(targetChannel.properties.channel_codec));
+            const playback_supported = this.hasOutputHardware() && (!targetChannel || vconnection.decodingSupported(targetChannel.properties.channel_codec));
 
             property_update["client_input_hardware"] = recording_supported;
             property_update["client_output_hardware"] = playback_supported;
@@ -778,7 +781,7 @@ export class ConnectionHandler {
             const enableRecording = !this.client_status.input_muted && !this.client_status.output_muted;
             /* No need to start the microphone when we're not even connected */
 
-            const input = vconnection.voice_recorder()?.input;
+            const input = vconnection.voiceRecorder()?.input;
             if(input) {
                 if(enableRecording && this.serverConnection.connected()) {
                     if(this.getInputHardwareState() !== InputHardwareState.START_FAILED)
@@ -821,7 +824,7 @@ export class ConnectionHandler {
         let recorder: RecorderProfile = default_recorder;
 
         try {
-            await this.serverConnection.getVoiceConnection().acquire_voice_recorder(recorder);
+            await this.serverConnection.getVoiceConnection().acquireVoiceRecorder(recorder);
         } catch (error) {
             logError(LogCategory.AUDIO, tr("Failed to acquire recorder: %o"), error);
             createErrorModal(tr("Failed to acquire recorder"), tr("Failed to acquire recorder.\nLookup the console for more details.")).open();
@@ -879,7 +882,7 @@ export class ConnectionHandler {
         }
     }
 
-    getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection.getVoiceConnection().voice_recorder(); }
+    getVoiceRecorder() : RecorderProfile | undefined { return this.serverConnection.getVoiceConnection().voiceRecorder(); }
 
     reconnect_properties(profile?: ConnectionProfile) : ConnectParameters {
         const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
@@ -970,6 +973,23 @@ export class ConnectionHandler {
 
             }
         });
+    }
+
+    private async initializeWhisperSession(session: WhisperSession) : Promise<WhisperSessionInitializeData> {
+        /* TODO: Try to load the clients unique via a clientgetuidfromclid */
+        if(!session.getClientUniqueId())
+            throw "missing clients unique id";
+
+        logInfo(LogCategory.CLIENT, tr("Initializing a whisper session for client %d (%s | %s)"), session.getClientId(), session.getClientUniqueId(), session.getClientName());
+        return {
+            clientName: session.getClientName(),
+            clientUniqueId: session.getClientUniqueId(),
+
+            blocked: false,
+            volume: 1,
+
+            sessionTimeout: 60 * 1000
+        }
     }
 
     destroy() {

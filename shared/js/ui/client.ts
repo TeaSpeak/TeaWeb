@@ -2,7 +2,7 @@ import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {Registry} from "tc-shared/events";
 import {ChannelTree} from "tc-shared/ui/view";
 import * as log from "tc-shared/log";
-import {LogCategory, LogType} from "tc-shared/log";
+import {LogCategory, logInfo, LogType} from "tc-shared/log";
 import {Settings, settings} from "tc-shared/settings";
 import {Sound} from "tc-shared/sound/Sounds";
 import {Group, GroupManager, GroupTarget, GroupType} from "tc-shared/permission/GroupManager";
@@ -19,7 +19,7 @@ import {spawnChangeLatency} from "tc-shared/ui/modal/ModalChangeLatency";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import * as hex from "tc-shared/crypto/hex";
-import { ClientEntry as ClientEntryView } from "./tree/Client";
+import {ClientEntry as ClientEntryView} from "./tree/Client";
 import * as React from "react";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
 import {spawnClientVolumeChange, spawnMusicBotVolumeChange} from "tc-shared/ui/modal/ModalChangeVolumeNew";
@@ -27,7 +27,7 @@ import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPer
 import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
-import { ClientIcon } from "svg-sprites/client-icons";
+import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceClient} from "tc-shared/connection/VoiceConnection";
 
 export enum ClientType {
@@ -279,11 +279,11 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         if(flag) {
             this.channelTree.client.serverConnection.send_command('clientmute', {
                 clid: this.clientId()
-            });
+            }).then(() => {});
         } else if(this._audio_muted) {
             this.channelTree.client.serverConnection.send_command('clientunmute', {
                 clid: this.clientId()
-            });
+            }).then(() => {});
         }
         this._audio_muted = flag;
 
@@ -393,7 +393,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
                         sgid: group.id,
                         cldbid: this.properties.client_database_id
-                    });
+                    }).then(() => {});
                 };
                 entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
             } else {
@@ -401,7 +401,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
                         sgid: group.id,
                         cldbid: this.properties.client_database_id
-                    });
+                    }).then(() => {});
                 };
                 entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_REMOVE_POWER).granted(group.requiredMemberAddPower);
             }
@@ -424,7 +424,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     cldbid: this.properties.client_database_id,
                     cgid: group.id,
                     cid: this.currentChannel().channelId
-                });
+                }).then(() => {});
             };
             entry.disabled = !this.channelTree.client.permissions.neededPermission(PermissionType.I_GROUP_MEMBER_ADD_POWER).granted(group.requiredMemberRemovePower);
             entry.type = contextmenu.MenuEntryType.CHECKBOX;
@@ -482,20 +482,20 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     return this.channelTree.client.serverConnection.send_command("servergroupaddclient", {
                         sgid: groups[0],
                         cldbid: this.properties.client_database_id
-                    }).then(result => true);
+                    }).then(() => true);
                 } else
                     return this.channelTree.client.serverConnection.send_command("servergroupdelclient", {
                         sgid: groups[0],
                         cldbid: this.properties.client_database_id
-                    }).then(result => true);
+                    }).then(() => true);
             } else {
                 const data = groups.map(e => { return {sgid: e}; });
                 data[0]["cldbid"] = this.properties.client_database_id;
 
                 if(flag) {
-                    return this.channelTree.client.serverConnection.send_command("clientaddservergroup", data, {flagset: ["continueonerror"]}).then(result => true);
+                    return this.channelTree.client.serverConnection.send_command("clientaddservergroup", data, {flagset: ["continueonerror"]}).then(() => true);
                 } else
-                    return this.channelTree.client.serverConnection.send_command("clientdelservergroup", data, {flagset: ["continueonerror"]}).then(result => true);
+                    return this.channelTree.client.serverConnection.send_command("clientdelservergroup", data, {flagset: ["continueonerror"]}).then(() => true);
             }
         });
     }
@@ -548,7 +548,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 icon_class: ClientIcon.Poke,
                 name: tr("Poke client"),
                 callback: () => {
-                    createInputModal(tr("Poke client"), tr("Poke message:<br>"), text => true, result => {
+                    createInputModal(tr("Poke client"), tr("Poke message:<br>"), () => true, result => {
                         if(typeof(result) === "string") {
                             this.channelTree.client.serverConnection.send_command("clientpoke", {
                                 clid: this.clientId(),
@@ -567,14 +567,14 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 icon_class: ClientIcon.Edit,
                 name: tr("Change description"),
                 callback: () => {
-                    createInputModal(tr("Change client description"), tr("New description:<br>"), text => true, result => {
+                    createInputModal(tr("Change client description"), tr("New description:<br>"), () => true, result => {
                         if(typeof(result) === "string") {
                             //TODO tr
                             console.log("Changing " + this.clientNickName() + "'s description to " + result);
                             this.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: this.clientId(),
                                 client_description: result
-                            });
+                            }).then(() => {});
 
                         }
                     }, { width: 400, maxLength: 1024 }).open();
@@ -590,22 +590,21 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                     this.channelTree.client.serverConnection.send_command("clientmove", {
                         clid: this.clientId(),
                         cid: this.channelTree.client.getClient().currentChannel().getChannelId()
-                    });
+                    }).then(() => {});
                 }
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: ClientIcon.KickChannel,
                 name: tr("Kick client from channel"),
                 callback: () => {
-                    createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
+                    createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), () => true, result => {
                         if(typeof(result) !== 'boolean' || result) {
-                            //TODO tr
-                            console.log("Kicking client " + this.clientNickName() + " from channel with reason " + result);
+                            logInfo(LogCategory.CLIENT, tr("Kicking client %s from channel with reason %s"), this.clientNickName(), result);
                             this.channelTree.client.serverConnection.send_command("clientkick", {
                                 clid: this.clientId(),
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
                                 reasonmsg: result
-                            });
+                            }).then(() => {});
 
                         }
                     }, { width: 400, maxLength: 255 }).open();
@@ -615,16 +614,14 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 icon_class: ClientIcon.KickServer,
                 name: tr("Kick client fom server"),
                 callback: () => {
-                    createInputModal(tr("Kick client from server"), tr("Kick reason:<br>"), text => true, result => {
+                    createInputModal(tr("Kick client from server"), tr("Kick reason:<br>"), () => true, result => {
                         if(typeof(result) !== 'boolean' || result) {
-                            //TODO tr
-                            console.log("Kicking client " + this.clientNickName() + " from server with reason " + result);
+                            logInfo(LogCategory.CLIENT, tr("Kicking client %s from server with reason %s"), this.clientNickName(), result);
                             this.channelTree.client.serverConnection.send_command("clientkick", {
                                 clid: this.clientId(),
                                 reasonid: ViewReasonId.VREASON_SERVER_KICK,
                                 reasonmsg: result
-                            });
-
+                            }).then(() => {});
                         }
                     }, { width: 400, maxLength: 255 }).open();
                 }
@@ -945,16 +942,12 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 export class LocalClientEntry extends ClientEntry {
     handle: ConnectionHandler;
 
-    private renaming: boolean;
-
     constructor(handle: ConnectionHandler) {
         super(0, "local client");
         this.handle = handle;
     }
 
     showContextMenu(x: number, y: number, on_close: () => void = undefined): void {
-        const _self = this;
-
         contextmenu.spawn_context_menu(x, y,
             ...this.contextmenu_info(), {
 
@@ -962,19 +955,19 @@ export class LocalClientEntry extends ClientEntry {
                     tr("Change name") +
                     (contextmenu.get_provider().html_format_enabled() ? "</b>" : ""),
                 icon_class: "client-change_nickname",
-                callback: () =>_self.openRename(),
+                callback: () => this.openRename(),
                 type: contextmenu.MenuEntryType.ENTRY
             }, {
                 name: tr("Change description"),
                 icon_class: "client-edit",
                 callback: () => {
-                    createInputModal(tr("Change own description"), tr("New description:<br>"), text => true, result => {
+                    createInputModal(tr("Change own description"), tr("New description:<br>"), () => true, result => {
                         if(result) {
-                            console.log(tr("Changing own description to %s"), result);
-                            _self.channelTree.client.serverConnection.send_command("clientedit", {
-                                clid: _self.clientId(),
+                            logInfo(LogCategory.CLIENT, tr("Changing own description to %s"), result);
+                            this.channelTree.client.serverConnection.send_command("clientedit", {
+                                clid: this.clientId(),
                                 client_description: result
-                            });
+                            }).then(() => {});
 
                         }
                     }, { width: 400, maxLength: 1024 }).open();
@@ -994,7 +987,7 @@ export class LocalClientEntry extends ClientEntry {
     renameSelf(new_name: string) : Promise<boolean> {
         const old_name = this.properties.client_nickname;
         this.updateVariables({ key: "client_nickname", value: new_name }); /* change it locally */
-        return this.handle.serverConnection.send_command("clientupdate", { client_nickname: new_name }).then((e) => {
+        return this.handle.serverConnection.send_command("clientupdate", { client_nickname: new_name }).then(() => {
             settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, new_name);
             this.channelTree.client.log.log(EventType.CLIENT_NICKNAME_CHANGED_OWN, {
                 client: this.log_data(),
@@ -1122,8 +1115,7 @@ export class MusicClientEntry extends ClientEntry {
                             this.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: this.clientId(),
                                 client_nickname: result
-                            });
-
+                            }).then(() => {});
                         }
                     }, { width: "40em", min_width: "10em", maxLength: 255 }).open();
                 },
@@ -1133,13 +1125,12 @@ export class MusicClientEntry extends ClientEntry {
                 icon_class: "client-edit",
                 disabled: false,
                 callback: () => {
-                    createInputModal(tr("Change music bots description"), tr("New description:<br>"), text => true, result => {
+                    createInputModal(tr("Change music bots description"), tr("New description:<br>"), () => true, result => {
                         if(typeof(result) === 'string') {
                             this.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: this.clientId(),
                                 client_description: result
-                            });
-
+                            }).then(() => {});
                         }
                     }, { width: "60em", min_width: "10em", maxLength: 255 }).open();
                 },
@@ -1159,7 +1150,7 @@ export class MusicClientEntry extends ClientEntry {
                 icon_class: "client-edit",
                 disabled: false,
                 callback: () => {
-                    createInputModal(tr("Please enter the URL"), tr("URL:"), text => true, result => {
+                    createInputModal(tr("Please enter the URL"), tr("URL:"), () => true, result => {
                         if(result) {
                             this.channelTree.client.serverConnection.send_command("musicbotqueueadd", {
                                 bot_id: this.properties.client_database_id,
@@ -1187,21 +1178,21 @@ export class MusicClientEntry extends ClientEntry {
                     this.channelTree.client.serverConnection.send_command("clientmove", {
                         clid: this.clientId(),
                         cid: this.channelTree.client.getClient().currentChannel().getChannelId()
-                    });
+                    }).then(() => {});
                 }
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: "client-kick_channel",
                 name: tr("Kick client from channel"),
                 callback: () => {
-                    createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), text => true, result => {
+                    createInputModal(tr("Kick client from channel"), tr("Kick reason:<br>"), () => true, result => {
                         if(typeof(result) !== 'boolean' || result) {
-                            console.log(tr("Kicking client %o from channel with reason %o"), this.clientNickName(), result);
+                            logInfo(LogCategory.CLIENT, tr("Kicking client %o from channel with reason %o"), this.clientNickName(), result);
                             this.channelTree.client.serverConnection.send_command("clientkick", {
                                 clid: this.clientId(),
                                 reasonid: ViewReasonId.VREASON_CHANNEL_KICK,
                                 reasonmsg: result
-                            });
+                            }).then(() => {});
                         }
                     }, { width: 400, maxLength: 255 }).open();
                 }
@@ -1249,7 +1240,7 @@ export class MusicClientEntry extends ClientEntry {
                         if(result) {
                             this.channelTree.client.serverConnection.send_command("musicbotdelete", {
                                 bot_id: this.properties.client_database_id
-                            });
+                            }).then(() => {});
                         }
                     });
                 },
@@ -1282,7 +1273,7 @@ export class MusicClientEntry extends ClientEntry {
             this._info_promise_resolve = resolve;
         });
 
-        this.channelTree.client.serverConnection.send_command("musicbotplayerinfo", {bot_id: this.properties.client_database_id });
+        this.channelTree.client.serverConnection.send_command("musicbotplayerinfo", {bot_id: this.properties.client_database_id }).then(() => {});
         return this._info_promise;
     }
 }

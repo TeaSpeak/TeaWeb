@@ -505,7 +505,7 @@ export class ChannelTree {
 
         const voice_connection = this.client.serverConnection.getVoiceConnection();
         if(voice_connection)
-            client.set_audio_handle(voice_connection.register_client(client.clientId()));
+            client.set_audio_handle(voice_connection.registerClient(client.clientId()));
     }
 
     unregisterClient(client: ClientEntry) {

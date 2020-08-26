@@ -17,11 +17,17 @@ export interface VoicePacket {
     payload: Uint8Array;
 }
 
+export interface VoiceWhisperPacket extends VoicePacket {
+    clientUniqueId?: string;
+    clientNickname?: string;
+}
+
 export abstract class VoiceBridge {
     protected muted: boolean;
 
     callback_send_control_data: (request: string, payload: any) => void;
     callback_incoming_voice: (packet: VoicePacket) => void;
+    callback_incoming_whisper: (packet: VoiceWhisperPacket) => void;
 
     callback_disconnect: () => void;
 
@@ -36,11 +42,9 @@ export abstract class VoiceBridge {
     handleControlData(request: string, payload: any) { }
 
     abstract connect(): Promise<VoiceBridgeConnectResult>;
-
     abstract disconnect();
 
     abstract getInput(): AbstractInput | undefined;
-
     abstract setInput(input: AbstractInput | undefined): Promise<void>;
 
     abstract sendStopSignal(codec: number);

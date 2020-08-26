@@ -25,7 +25,7 @@ export namespace CryptoHelper {
         return str.replace(/-/g, '+').replace(/_/g, '/');
     }
 
-    export function arraybuffer_to_string(buf) {
+    export function arraybuffer_to_string(buf) : string {
         return String.fromCharCode.apply(null, new Uint16Array(buf));
     }
 

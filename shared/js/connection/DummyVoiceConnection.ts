@@ -66,7 +66,7 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         super(connection);
     }
 
-    async acquire_voice_recorder(recorder: RecorderProfile | undefined): Promise<void> {
+    async acquireVoiceRecorder(recorder: RecorderProfile | undefined): Promise<void> {
         if(this.recorder === recorder)
             return;
 
@@ -88,15 +88,15 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         this.events.fire("notify_recorder_changed", {});
     }
 
-    available_clients(): VoiceClient[] {
+    availableClients(): VoiceClient[] {
         return this.voiceClients;
     }
 
-    decoding_supported(codec: number): boolean {
+    decodingSupported(codec: number): boolean {
         return false;
     }
 
-    encoding_supported(codec: number): boolean {
+    encodingSupported(codec: number): boolean {
         return false;
     }
 
@@ -104,23 +104,23 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         return VoiceConnectionStatus.ClientUnsupported;
     }
 
-    get_encoder_codec(): number {
+    getEncoderCodec(): number {
         return 0;
     }
 
-    register_client(clientId: number): VoiceClient {
+    registerClient(clientId: number): VoiceClient {
         const client = new DummyVoiceClient(clientId);
         this.voiceClients.push(client);
         return client;
     }
 
-    set_encoder_codec(codec: number) {}
+    setEncoderCodec(codec: number) {}
 
     async unregister_client(client: VoiceClient): Promise<void> {
         this.voiceClients.remove(client as any);
     }
 
-    voice_recorder(): RecorderProfile {
+    voiceRecorder(): RecorderProfile {
         return this.recorder;
     }
 

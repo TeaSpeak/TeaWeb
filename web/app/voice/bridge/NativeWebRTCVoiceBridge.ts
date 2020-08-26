@@ -4,6 +4,9 @@ import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
 import {WebRTCVoiceBridge} from "./WebRTCVoiceBridge";
+import {VoiceWhisperPacket} from "tc-backend/web/voice/bridge/VoiceBridge";
+import {CryptoHelper} from "tc-shared/profiles/identities/TeamSpeakIdentity";
+import arraybuffer_to_string = CryptoHelper.arraybuffer_to_string;
 
 export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
     static isSupported(): boolean {
@@ -40,8 +43,8 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
         connection.addStream(this.localAudioDestinationNode.stream);
     }
 
-    protected handleMainDataChannelMessage(message: MessageEvent) {
-        super.handleMainDataChannelMessage(message);
+    protected handleVoiceDataChannelMessage(message: MessageEvent) {
+        super.handleVoiceDataChannelMessage(message);
 
         let bin = new Uint8Array(message.data);
         let clientId = bin[2] << 8 | bin[3];
@@ -54,6 +57,33 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
             codec: codec,
             payload: new Uint8Array(message.data, 5)
         });
+    }
+
+    protected handleWhisperDataChannelMessage(message: MessageEvent) {
+        super.handleWhisperDataChannelMessage(message);
+
+        let payload = new Uint8Array(message.data);
+        let payload_offset = 0;
+
+        const flags = payload[payload_offset++];
+
+        let packet = {} as VoiceWhisperPacket;
+        if((flags & 0x01) === 1) {
+            packet.clientUniqueId = arraybuffer_to_string(payload.subarray(payload_offset, payload_offset + 28));
+            payload_offset += 28;
+
+            packet.clientNickname = arraybuffer_to_string(payload.subarray(payload_offset + 1, payload_offset + 1 + payload[payload_offset]));
+            payload_offset += payload[payload_offset] + 1;
+        }
+        packet.voiceId = payload[payload_offset] << 8 | payload[payload_offset + 1];
+        payload_offset += 2;
+
+        packet.clientId = payload[payload_offset] << 8 | payload[payload_offset + 1];
+        payload_offset += 2;
+
+        packet.codec = payload[payload_offset];
+
+        this.callback_incoming_whisper(packet);
     }
 
     getInput(): AbstractInput | undefined {
@@ -103,5 +133,11 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
             return;
 
         channel.send(packet);
+    }
+
+    startWhisper() {
+    }
+
+    stopWhisper() {
     }
 }

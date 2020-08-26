@@ -10,7 +10,9 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     private connectionState: "unconnected" | "connecting" | "connected";
 
     private rtcConnection: RTCPeerConnection;
-    private mainDataChannel: RTCDataChannel;
+    private voiceDataChannel: RTCDataChannel;
+    private whisperDataChannel: RTCDataChannel;
+
     private cachedIceCandidates: RTCIceCandidateInit[];
 
     private callbackRtcAnswer: (answer: any) => void;
@@ -18,7 +20,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     private callbackConnectCanceled: (() => void)[] = [];
     private callbackRtcConnected: () => void;
     private callbackRtcConnectFailed: (error: any) => void;
-    private callbackMainDatachannelOpened: (() => void)[] = [];
+    private callbackVoiceDataChannelOpened: (() => void)[] = [];
 
     private allowReconnect: boolean;
 
@@ -90,15 +92,23 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
 
             this.initializeRtpConnection(this.rtcConnection);
         }
-        (window as any).dropVoice = () => this.callback_disconnect();
 
         {
             const dataChannelConfig = { ordered: false, maxRetransmits: 0 };
 
-            this.mainDataChannel = this.rtcConnection.createDataChannel('main', dataChannelConfig);
-            this.mainDataChannel.onmessage = this.handleMainDataChannelMessage.bind(this);
-            this.mainDataChannel.onopen = this.handleMainDataChannelOpen.bind(this);
-            this.mainDataChannel.binaryType = "arraybuffer";
+            this.voiceDataChannel = this.rtcConnection.createDataChannel('main', dataChannelConfig);
+            this.voiceDataChannel.onmessage = this.handleVoiceDataChannelMessage.bind(this);
+            this.voiceDataChannel.onopen = this.handleVoiceDataChannelOpen.bind(this);
+            this.voiceDataChannel.binaryType = "arraybuffer";
+        }
+
+        {
+            const dataChannelConfig = { ordered: false, maxRetransmits: 0 };
+
+            this.whisperDataChannel = this.rtcConnection.createDataChannel('voice-whisper', dataChannelConfig);
+            this.whisperDataChannel.onmessage = this.handleWhisperDataChannelMessage.bind(this);
+            this.whisperDataChannel.onopen = this.handleWhisperDataChannelOpen.bind(this);
+            this.whisperDataChannel.binaryType = "arraybuffer";
         }
 
         let offer: RTCSessionDescriptionInit;
@@ -218,10 +228,10 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     }
 
     private cleanupRtcResources() {
-        if(this.mainDataChannel) {
-            this.mainDataChannel.onclose = undefined;
-            this.mainDataChannel.close();
-            this.mainDataChannel = undefined;
+        if(this.voiceDataChannel) {
+            this.voiceDataChannel.onclose = undefined;
+            this.voiceDataChannel.close();
+            this.voiceDataChannel = undefined;
         }
 
         if(this.rtcConnection) {
@@ -240,15 +250,15 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     }
 
     protected async awaitMainChannelOpened(timeout: number) {
-        if(typeof this.mainDataChannel === "undefined")
+        if(typeof this.voiceDataChannel === "undefined")
             throw tr("missing main data channel");
 
-        if(this.mainDataChannel.readyState === "open")
+        if(this.voiceDataChannel.readyState === "open")
             return;
 
         await new Promise((resolve, reject) => {
             const id = setTimeout(reject, timeout);
-            this.callbackMainDatachannelOpened.push(() => {
+            this.callbackVoiceDataChannelOpened.push(() => {
                 clearTimeout(id);
                 resolve();
             });
@@ -332,13 +342,19 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
         }
     }
 
-    protected handleMainDataChannelOpen() {
-        logDebug(LogCategory.WEBRTC, tr("Main data channel is open now"));
-        while(this.callbackMainDatachannelOpened.length > 0)
-            this.callbackMainDatachannelOpened.pop()();
+    protected handleVoiceDataChannelOpen() {
+        logDebug(LogCategory.WEBRTC, tr("Voice data channel is open now"));
+        while(this.callbackVoiceDataChannelOpened.length > 0)
+            this.callbackVoiceDataChannelOpened.pop()();
     }
 
-    protected handleMainDataChannelMessage(message: MessageEvent) { }
+    protected handleVoiceDataChannelMessage(message: MessageEvent) { }
+
+    protected handleWhisperDataChannelOpen() {
+        logDebug(LogCategory.WEBRTC, tr("Whisper data channel is open now"));
+    }
+
+    protected handleWhisperDataChannelMessage(message: MessageEvent) { }
 
     handleControlData(request: string, payload: any) {
         super.handleControlData(request, payload);
@@ -368,7 +384,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     }
 
     public getMainDataChannel() : RTCDataChannel {
-        return this.mainDataChannel;
+        return this.voiceDataChannel;
     }
 
     protected abstract initializeRtpConnection(connection: RTCPeerConnection);

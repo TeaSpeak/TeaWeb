@@ -1,6 +1,7 @@
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {Registry} from "tc-shared/events";
+import {WhisperSession} from "tc-shared/voice/Whisper";
 
 export enum PlayerState {
     PREBUFFERING,
@@ -55,8 +56,30 @@ export interface VoiceConnectionEvents {
         newStatus: VoiceConnectionStatus
     },
 
-    "notify_recorder_changed": {}
+    "notify_recorder_changed": {},
+
+    "notify_whisper_created": {
+        session: WhisperSession
+    },
+    "notify_whisper_initialized": {
+        session: WhisperSession
+    },
+    "notify_whisper_destroyed": {
+        session: WhisperSession
+    }
 }
+
+export type WhisperSessionInitializeData = {
+    clientName: string,
+    clientUniqueId: string,
+
+    sessionTimeout: number,
+
+    blocked: boolean,
+    volume: number
+};
+
+export type WhisperSessionInitializer = (session: WhisperSession) => Promise<WhisperSessionInitializeData>;
 
 export abstract class AbstractVoiceConnection {
     readonly events: Registry<VoiceConnectionEvents>;
@@ -69,16 +92,23 @@ export abstract class AbstractVoiceConnection {
 
     abstract getConnectionState() : VoiceConnectionStatus;
 
-    abstract encoding_supported(codec: number) : boolean;
-    abstract decoding_supported(codec: number) : boolean;
+    abstract encodingSupported(codec: number) : boolean;
+    abstract decodingSupported(codec: number) : boolean;
 
-    abstract register_client(client_id: number) : VoiceClient;
-    abstract available_clients() : VoiceClient[];
+    abstract registerClient(client_id: number) : VoiceClient;
+    abstract availableClients() : VoiceClient[];
     abstract unregister_client(client: VoiceClient) : Promise<void>;
 
-    abstract voice_recorder() : RecorderProfile;
-    abstract acquire_voice_recorder(recorder: RecorderProfile | undefined) : Promise<void>;
+    abstract voiceRecorder() : RecorderProfile;
+    abstract acquireVoiceRecorder(recorder: RecorderProfile | undefined) : Promise<void>;
 
-    abstract get_encoder_codec() : number;
-    abstract set_encoder_codec(codec: number);
+    abstract getEncoderCodec() : number;
+    abstract setEncoderCodec(codec: number);
+
+    /* the whisper API */
+    abstract getWhisperSessions() : WhisperSession[];
+    abstract dropWhisperSession(session: WhisperSession);
+
+    abstract setWhisperSessionInitializer(initializer: WhisperSessionInitializer | undefined);
+    abstract getWhisperSessionInitializer() : WhisperSessionInitializer | undefined;
 }

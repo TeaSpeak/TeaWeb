@@ -6,14 +6,20 @@ import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {VoiceClientController} from "./VoiceClient";
 import {settings, ValuedSettingsKey} from "tc-shared/settings";
 import {tr} from "tc-shared/i18n/localize";
-import {AbstractVoiceConnection, VoiceClient, VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
+import {
+    AbstractVoiceConnection,
+    VoiceClient,
+    VoiceConnectionStatus,
+    WhisperSessionInitializer
+} from "tc-shared/connection/VoiceConnection";
 import {codecPool} from "./CodecConverter";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {ServerConnectionEvents} from "tc-shared/connection/ConnectionBase";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
-import {VoiceBridge, VoicePacket} from "./bridge/VoiceBridge";
+import {VoiceBridge, VoicePacket, VoiceWhisperPacket} from "./bridge/VoiceBridge";
 import {NativeWebRTCVoiceBridge} from "./bridge/NativeWebRTCVoiceBridge";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
+import {kUnknownWhisperClientUniqueId, WhisperSession} from "tc-shared/voice/Whisper";
 
 export enum VoiceEncodeType {
     JS_ENCODE,
@@ -46,12 +52,17 @@ export class VoiceConnection extends AbstractVoiceConnection {
     private currentAudioSource: RecorderProfile;
     private voiceClients: VoiceClientController[] = [];
 
+    private whisperSessionInitializer: WhisperSessionInitializer;
+    private whisperSessions: {[key: number]: WhisperSession} = {};
+
     private voiceBridge: VoiceBridge;
 
     private encoderCodec: number = 5;
 
     constructor(connection: ServerConnection) {
         super(connection);
+
+        this.setWhisperSessionInitializer(undefined);
 
         this.connectionState = VoiceConnectionStatus.Disconnected;
 
@@ -69,7 +80,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
     destroy() {
         this.connection.events.off(this.serverConnectionStateListener);
         this.dropVoiceBridge();
-        this.acquire_voice_recorder(undefined, true).catch(error => {
+        this.acquireVoiceRecorder(undefined, true).catch(error => {
             log.warn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
         }).then(() => {
             for(const client of this.voiceClients)  {
@@ -84,7 +95,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.events.destroy();
     }
 
-    async acquire_voice_recorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
+    async acquireVoiceRecorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
         if(this.currentAudioSource === recorder && !enforce)
             return;
 
@@ -151,6 +162,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
         this.voiceBridge = new NativeWebRTCVoiceBridge();
         this.voiceBridge.callback_incoming_voice = packet => this.handleVoicePacket(packet);
+        this.voiceBridge.callback_incoming_whisper = packet => this.handleWhisperPacket(packet);
         this.voiceBridge.callback_send_control_data = (request, payload) => {
             this.connection.sendData(JSON.stringify(Object.assign({
                 type: "WebRTC",
@@ -176,7 +188,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 this.connectAttemptCounter = 0;
 
                 this.connection.client.log.log(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, { });
-                const currentInput = this.voice_recorder()?.input;
+                const currentInput = this.voiceRecorder()?.input;
                 if(currentInput) {
                     this.voiceBridge.setInput(currentInput).catch(error => {
                         createErrorModal(tr("Input recorder attechment failed"), tr("Failed to apply the current microphone recorder to the voice sender.")).open();
@@ -284,7 +296,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
     private handleRecorderUnmount() {
         log.info(LogCategory.VOICE, "Lost recorder!");
         this.currentAudioSource = undefined;
-        this.acquire_voice_recorder(undefined, true); /* we can ignore the promise because we should finish this directly */
+        this.acquireVoiceRecorder(undefined, true); /* we can ignore the promise because we should finish this directly */
     }
 
     private setConnectionState(state: VoiceConnectionStatus) {
@@ -304,11 +316,11 @@ export class VoiceConnection extends AbstractVoiceConnection {
         }
     }
 
-    voice_recorder(): RecorderProfile {
+    voiceRecorder(): RecorderProfile {
         return this.currentAudioSource;
     }
 
-    available_clients(): VoiceClient[] {
+    availableClients(): VoiceClient[] {
         return this.voiceClients;
     }
 
@@ -327,26 +339,60 @@ export class VoiceConnection extends AbstractVoiceConnection {
         return Promise.resolve();
     }
 
-    register_client(client_id: number): VoiceClient {
+    registerClient(client_id: number): VoiceClient {
         const client = new VoiceClientController(client_id);
         this.voiceClients.push(client);
         return client;
     }
 
-    decoding_supported(codec: number): boolean {
+    decodingSupported(codec: number): boolean {
         return VoiceConnection.codecSupported(codec);
     }
 
-    encoding_supported(codec: number): boolean {
+    encodingSupported(codec: number): boolean {
         return VoiceConnection.codecSupported(codec);
     }
 
-    get_encoder_codec(): number {
+    getEncoderCodec(): number {
         return this.encoderCodec;
     }
 
-    set_encoder_codec(codec: number) {
+    setEncoderCodec(codec: number) {
         this.encoderCodec = codec;
+    }
+
+    protected handleWhisperPacket(packet: VoiceWhisperPacket) {
+        console.error("Received voice whisper packet: %o", packet);
+    }
+
+    getWhisperSessions(): WhisperSession[] {
+        return Object.values(this.whisperSessions);
+    }
+
+    dropWhisperSession(session: WhisperSession) {
+        throw "this is currently not supported";
+    }
+
+    setWhisperSessionInitializer(initializer: WhisperSessionInitializer | undefined) {
+        this.whisperSessionInitializer = initializer;
+        if(!this.whisperSessionInitializer) {
+            this.whisperSessionInitializer = async session => {
+                logWarn(LogCategory.VOICE, tr("Missing whisper session initializer. Blocking whisper from %d (%s)"), session.getClientId(), session.getClientUniqueId());
+                return {
+                    clientName: session.getClientName() || tr("Unknown client"),
+                    clientUniqueId: session.getClientUniqueId() || kUnknownWhisperClientUniqueId,
+
+                    blocked: true,
+                    volume: 1,
+
+                    sessionTimeout: 60 * 1000
+                }
+            }
+        }
+    }
+
+    getWhisperSessionInitializer(): WhisperSessionInitializer | undefined {
+        return this.whisperSessionInitializer;
     }
 }
 
