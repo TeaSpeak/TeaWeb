@@ -38,7 +38,7 @@ install_rust() {
     rustup_version=$(rustup --version 2>/dev/null)
     if [[ $? -ne 0 ]]; then
         echo "> Missing rustup, installing..."
-        curl https://build.travis-ci.org/files/rustup-init.sh -sSf | sh -s -- -y --default-toolchain nightly --default-host wasm32-unknown-unknown
+        curl https://build.travis-ci.org/files/rustup-init.sh -sSf | sh -s -- -y --default-toolchain nightly
         # shellcheck disable=SC2181
         [[ $? -ne 0 ]] && {
             echo "> Failed to install rustup"
