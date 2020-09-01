@@ -45,6 +45,7 @@ install_rust() {
             exit 1
         }
 
+        PATH="$PATH:$HOME/.cargo/bin"
         rustup_version=$(rustup --version 2>/dev/null)
         echo "> Installed $rustup_version"
     else
