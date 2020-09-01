@@ -10,7 +10,7 @@ export = () => config_base.config("web").then(config => {
 
     Object.assign(config.resolve.alias, {
         "tc-shared": path.resolve(__dirname, "shared/js"),
-        "tc-backend/web/assembly": path.resolve(__dirname, "web/native-codec/generated"),
+        "tc-backend/audio-lib": path.resolve(__dirname, "web/audio-lib/pkg"),
         "tc-backend/web": path.resolve(__dirname, "web/app"),
         "tc-backend": path.resolve(__dirname, "web/app"),
     });
@@ -22,6 +22,7 @@ export = () => config_base.config("web").then(config => {
         crateDirectory: path.resolve(__dirname, "web", "audio-lib"),
         outName: "index",
         //forceMode: "profiling",
-        outDir: "pkg"    }));
+        outDir: "pkg"
+    }));
     return Promise.resolve(config);
 });

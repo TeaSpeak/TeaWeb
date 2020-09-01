@@ -4,8 +4,8 @@
  */
 module.exports = {
     getAudioLibraryInstance() {
-        return import("../../../audio-lib/pkg/index_bg.wasm").then(wasm => {
-            return import("../../../audio-lib/pkg/index").then(pkg => {
+        return import("tc-backend/audio-lib/index_bg.wasm").then(wasm => {
+            return import("tc-backend/audio-lib/index").then(pkg => {
                 return Object.assign(pkg, { memory: wasm.memory });
             });
         });
