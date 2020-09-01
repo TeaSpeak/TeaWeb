@@ -4,12 +4,7 @@ language: node_js
 node_js:
   - "12"
 
-services:
-  - docker
-
 before_install:
-  # If ever run on windows make sure you don't run this in the git bash!
-  - docker run -dit --name emscripten -v "$(pwd)":"/src/" trzeci/emscripten:sdk-incoming-64bit bash
   - chmod +x ./scripts/travis/build.sh
   - chmod +x ./scripts/travis/deploy_server.sh
   - chmod +x ./scripts/travis/deploy_github.sh

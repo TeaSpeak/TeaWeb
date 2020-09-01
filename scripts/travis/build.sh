@@ -148,22 +148,13 @@ if [[ -e "$LOG_FILE" ]]; then
     rm "$LOG_FILE"
 fi
 
-chmod +x ./web/native-codec/build.sh
-if hash emcmake 2>/dev/null; then
-    hash cmake 2>/dev/null || { echo "Missing cmake. Please install cmake before retrying. (apt-get install cmake)"; exit 1; }
-    hash make 2>/dev/null || { echo "Missing make. Please install build-essential before retrying. (apt-get install build-essential)"; exit 1; }
+echo "----------     Setup       ----------"
+chmod +x ./scripts/install_dependencies.sh
+execute \
+    "Installing dependencies" \
+    "Failed to install required dependencies" \
+    "./scripts/install_dependencies.sh"
 
-    echo "Found installation of emcmake locally. Don't use docker in order to build the native parts."
-    execute \
-        "Building native codes" \
-        "Failed to build native opus codec" \
-        "./web/native-codec/build.sh"
-else
-    execute \
-        "Building native codes" \
-        "Failed to build native opus codec" \
-        "docker exec -it emscripten bash -c 'web/native-codec/build.sh'"
-fi
 echo "----------   Web client    ----------"
 
 function move_target_file() {
