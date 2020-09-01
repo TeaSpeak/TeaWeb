@@ -87,6 +87,11 @@ loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
     priority: 10,
     function: async () => {
         audioLibrary = new AudioLibrary();
-        await audioLibrary.initialize();
+        try {
+            await audioLibrary.initialize();
+        } catch (error) {
+            loader.critical_error("Audio library initialisation failed", "Lookup the console for more details");
+            throw error;
+        }
     }
 });
