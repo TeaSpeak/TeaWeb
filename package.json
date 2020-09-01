@@ -41,6 +41,7 @@
     "@types/twemoji": "^12.1.1",
     "@types/websocket": "0.0.40",
     "@types/xml-parser": "^1.2.29",
+    "@wasm-tool/wasm-pack-plugin": "^1.3.1",
     "babel-loader": "^8.1.0",
     "chunk-manifest-webpack-plugin": "^1.1.2",
     "circular-dependency-plugin": "^5.2.0",
@@ -78,7 +79,7 @@
     "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^3.3.11",
     "webpack-svg-sprite-generator": "^1.0.16",
-    "worker-plugin": "^4.0.2",
+    "worker-plugin": "^4.0.3",
     "xml-parser": "^1.2.1"
   },
   "repository": {

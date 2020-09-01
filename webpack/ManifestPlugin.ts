@@ -27,11 +27,13 @@ class ManifestGenerator {
                     if(!chunk.files.length)
                         continue;
 
+                    /*
                     if(chunk.files.length !== 1) {
                         console.error("Expected only one file per chunk but got " + chunk.files.length);
                         chunk.files.forEach(e => console.log(" - %s", e));
                         throw "expected only one file per chunk";
                     }
+                    */
 
                     for(const file of chunk.files) {
                         const extension = path.extname(file);
@@ -45,6 +47,8 @@ class ManifestGenerator {
                                 hash: chunk.hash,
                                 file: file
                             });
+                        } else if(extension === ".wasm") {
+                            /* do nothing */
                         } else {
                             throw "Unknown chunk file with extension " + extension;
                         }

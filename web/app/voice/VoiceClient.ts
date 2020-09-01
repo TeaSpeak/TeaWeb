@@ -1,8 +1,10 @@
-import {CodecClientCache} from "../codec/Codec";
 import * as aplayer from "../audio/player";
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
+import {LogCategory, logDebug, logError, logWarn} from "tc-shared/log";
 import {LatencySettings, PlayerState, VoiceClient} from "tc-shared/connection/VoiceConnection";
+import {AudioResampler} from "tc-backend/web/voice/AudioResampler";
+import {AudioClient} from "tc-backend/web/audio-lib/AudioClient";
+import {getAudioLibrary} from "tc-backend/web/audio-lib";
+import {VoicePacket} from "tc-backend/web/voice/bridge/VoiceBridge";
 
 export class VoiceClientController implements VoiceClient {
     callback_playback: () => any;
@@ -10,227 +12,281 @@ export class VoiceClientController implements VoiceClient {
     callback_stopped: () => any;
     client_id: number;
 
-    speakerContext: AudioContext;
-    private _player_state: PlayerState = PlayerState.STOPPED;
-    private _codecCache: CodecClientCache[] = [];
+    private speakerContext: AudioContext;
+    private gainNode: GainNode;
 
-    private _time_index: number = 0;
-    private _latency_buffer_length: number = 3;
-    private _buffer_timeout: number;
+    private playerState: PlayerState = PlayerState.STOPPED;
 
-    private _buffered_samples: AudioBuffer[] = [];
-    private _playing_nodes: AudioBufferSourceNode[] = [];
+    private currentPlaybackTime: number = 0;
+    private bufferTimeout: number;
 
-    private _volume: number = 1;
-    allowBuffering: boolean = true;
+    private bufferQueueTime: number = 0;
+    private bufferQueue: AudioBuffer[] = [];
+    private playingNodes: AudioBufferSourceNode[] = [];
+
+    private currentVolume: number = 1;
+    private latencySettings: LatencySettings;
+
+    private audioInitializePromise: Promise<void>;
+    private audioClient: AudioClient;
+    private resampler: AudioResampler;
 
     constructor(client_id: number) {
         this.client_id = client_id;
+        this.reset_latency_settings();
 
-        aplayer.on_ready(() => this.speakerContext = aplayer.context());
+        this.resampler = new AudioResampler(48000);
+        aplayer.on_ready(() => {
+            this.speakerContext = aplayer.context();
+            this.gainNode = aplayer.context().createGain();
+            this.gainNode.connect(this.speakerContext.destination);
+            this.gainNode.gain.value = this.currentVolume;
+        });
     }
 
-    public initialize() { }
+    private initializeAudio() : Promise<void> {
+        if(this.audioInitializePromise) {
+            return this.audioInitializePromise;
+        }
 
-    public close(){ }
+        this.audioInitializePromise = (async () => {
+            this.audioClient = await getAudioLibrary().createClient();
+            this.audioClient.callback_decoded = buffer => {
+                this.resampler.resample(buffer).then(buffer => {
+                    this.playbackAudioBuffer(buffer);
+                });
+            }
+            this.audioClient.callback_ended = () => {
+                this.stopAudio(false);
+            };
+        })();
+        return this.audioInitializePromise;
+    }
 
-    playback_buffer(buffer: AudioBuffer) {
+    public enqueuePacket(packet: VoicePacket) {
+        if(!this.audioClient && packet.payload.length === 0) {
+            return;
+        } else {
+            this.initializeAudio().then(() => {
+                if(!this.audioClient) {
+                    /* we've already been destroyed */
+                    return;
+                }
+
+                this.audioClient.enqueueBuffer(packet.payload, packet.voiceId, packet.codec);
+            });
+        }
+    }
+
+    public destroy() {
+        this.audioClient?.destroy();
+        this.audioClient = undefined;
+    }
+
+    playbackAudioBuffer(buffer: AudioBuffer) {
         if(!buffer) {
-            log.warn(LogCategory.VOICE, tr("[AudioController] Got empty or undefined buffer! Dropping it"));
+            logWarn(LogCategory.VOICE, tr("[AudioController] Got empty or undefined buffer! Dropping it"));
             return;
         }
 
         if(!this.speakerContext) {
-            log.warn(LogCategory.VOICE, tr("[AudioController] Failed to replay audio. Global audio context not initialized yet!"));
+            logWarn(LogCategory.VOICE, tr("[AudioController] Failed to replay audio. Global audio context not initialized yet!"));
             return;
         }
 
-        if (buffer.sampleRate != this.speakerContext.sampleRate)
-            log.warn(LogCategory.VOICE, tr("[AudioController] Source sample rate isn't equal to playback sample rate! (%o | %o)"), buffer.sampleRate, this.speakerContext.sampleRate);
-
-        this.apply_volume_to_buffer(buffer);
-
-        this._buffered_samples.push(buffer);
-        if(this._player_state == PlayerState.STOPPED || this._player_state == PlayerState.STOPPING) {
-            log.info(LogCategory.VOICE, tr("[Audio] Starting new playback"));
-            this.set_state(PlayerState.PREBUFFERING);
+        if (buffer.sampleRate != this.speakerContext.sampleRate) {
+            logWarn(LogCategory.VOICE, tr("[AudioController] Source sample rate isn't equal to playback sample rate! (%o | %o)"), buffer.sampleRate, this.speakerContext.sampleRate);
         }
 
-
-        switch (this._player_state) {
-            case PlayerState.PREBUFFERING:
-            case PlayerState.BUFFERING:
-                this.reset_buffer_timeout(true); //Reset timeout, we got a new buffer
-                if(this._buffered_samples.length <= this._latency_buffer_length) {
-                    if(this._player_state == PlayerState.BUFFERING) {
-                        if(this.allowBuffering)
-                            break;
-                    } else
-                        break;
-                }
-                if(this._player_state == PlayerState.PREBUFFERING) {
-                    log.info(LogCategory.VOICE, tr("[Audio] Prebuffering succeeded (Replaying now)"));
-                    if(this.callback_playback)
-                        this.callback_playback();
-                } else if(this.allowBuffering) {
-                    log.info(LogCategory.VOICE, tr("[Audio] Buffering succeeded (Replaying now)"));
-                }
-                this._player_state = PlayerState.PLAYING;
-            case PlayerState.PLAYING:
-                this.replay_queue();
-                break;
-            default:
-                break;
+        if(this.playerState == PlayerState.STOPPED || this.playerState == PlayerState.STOPPING) {
+            logDebug(LogCategory.VOICE, tr("[Audio] Starting new playback"));
+            this.setPlayerState(PlayerState.PREBUFFERING);
         }
-    }
 
-    private replay_queue() {
-        let buffer: AudioBuffer;
-        while((buffer = this._buffered_samples.pop_front())) {
-            if(this._playing_nodes.length >= this._latency_buffer_length * 1.5 + 3) {
-                log.info(LogCategory.VOICE, tr("Dropping buffer because playing queue grows to much"));
-                continue; /* drop the data (we're behind) */
+        if(this.playerState === PlayerState.PREBUFFERING || this.playerState === PlayerState.BUFFERING) {
+            this.resetBufferTimeout(true);
+            this.bufferQueue.push(buffer);
+            this.bufferQueueTime += buffer.duration;
+            if(this.bufferQueueTime <= this.latencySettings.min_buffer / 1000) {
+                return;
             }
-            if(this._time_index < this.speakerContext.currentTime)
-                this._time_index = this.speakerContext.currentTime;
 
-            const player = this.speakerContext.createBufferSource();
-            player.buffer = buffer;
-
-            player.onended = () => this.on_buffer_replay_finished(player);
-            this._playing_nodes.push(player);
-
-            player.connect(aplayer.destination());
-            player.start(this._time_index);
-            this._time_index += buffer.duration;
-        }
-    }
-
-    private on_buffer_replay_finished(node: AudioBufferSourceNode) {
-        this._playing_nodes.remove(node);
-        this.test_buffer_queue();
-    }
-
-    stopAudio(now: boolean = false) {
-        this._player_state = PlayerState.STOPPING;
-        if(now) {
-            this._player_state = PlayerState.STOPPED;
-            this._buffered_samples = [];
-
-            for(const entry of this._playing_nodes)
-                entry.stop(0);
-            this._playing_nodes = [];
-
-            if(this.callback_stopped)
-                this.callback_stopped();
-        } else {
-            this.test_buffer_queue(); /* test if we're not already done */
-            this.replay_queue(); /* flush the queue */
-        }
-    }
-
-    private test_buffer_queue() {
-        if(this._buffered_samples.length == 0 && this._playing_nodes.length == 0) {
-            if(this._player_state != PlayerState.STOPPING && this._player_state != PlayerState.STOPPED) {
-                if(this._player_state == PlayerState.BUFFERING)
-                    return; //We're already buffering
-
-                this._player_state = PlayerState.BUFFERING;
-                if(!this.allowBuffering)
-                    log.warn(LogCategory.VOICE, tr("[Audio] Detected a buffer underflow!"));
-                this.reset_buffer_timeout(true);
+            /* finished buffering */
+            if(this.playerState == PlayerState.PREBUFFERING) {
+                logDebug(LogCategory.VOICE, tr("[Audio] Prebuffering succeeded (Replaying now)"));
+                if(this.callback_playback) {
+                    this.callback_playback();
+                }
             } else {
-                this._player_state = PlayerState.STOPPED;
-                if(this.callback_stopped)
-                    this.callback_stopped();
+                logDebug(LogCategory.VOICE, tr("[Audio] Buffering succeeded (Replaying now)"));
             }
+
+            this.replayBufferQueue();
+            this.setPlayerState(PlayerState.PLAYING);
+        } else if(this.playerState === PlayerState.PLAYING) {
+            const latency = this.getCurrentPlaybackLatency();
+            if(latency > (this.latencySettings.max_buffer / 1000)) {
+                logWarn(LogCategory.VOICE, tr("Dropping replay buffer for client %d because of too high replay latency. (Current: %f, Max: %f)"),
+                    this.client_id, latency.toFixed(3), (this.latencySettings.max_buffer / 1000).toFixed(3));
+                return;
+            }
+            this.enqueueBufferForPayback(buffer);
+        } else {
+            logError(LogCategory.AUDIO, tr("This block should be unreachable!"));
+            return;
         }
     }
 
-    private reset_buffer_timeout(restart: boolean) {
-        if(this._buffer_timeout)
-            clearTimeout(this._buffer_timeout);
+    getCurrentPlaybackLatency() {
+        return Math.max(this.currentPlaybackTime - this.speakerContext.currentTime, 0);
+    }
 
-        if(restart)
-            this._buffer_timeout = setTimeout(() => {
-                if(this._player_state == PlayerState.PREBUFFERING || this._player_state == PlayerState.BUFFERING) {
-                    log.warn(LogCategory.VOICE, tr("[Audio] Buffering exceeded timeout. Flushing and stopping replay"));
-                    this.stopAudio();
+    stopAudio(abortPlayback: boolean) {
+        if(abortPlayback) {
+            this.setPlayerState(PlayerState.STOPPED);
+            this.flush();
+            if(this.callback_stopped) {
+                this.callback_stopped();
+            }
+        } else {
+            this.setPlayerState(PlayerState.STOPPING);
+
+            /* replay all pending buffers */
+            this.replayBufferQueue();
+
+            /* test if there are any buffers which are currently played, if not the state will change to stopped */
+            this.testReplayState();
+        }
+    }
+
+    private replayBufferQueue() {
+        for(const buffer of this.bufferQueue)
+            this.enqueueBufferForPayback(buffer);
+        this.bufferQueue = [];
+        this.bufferQueueTime = 0;
+    }
+
+    private enqueueBufferForPayback(buffer: AudioBuffer) {
+        /* advance the playback time index, we seem to be behind a bit */
+        if(this.currentPlaybackTime < this.speakerContext.currentTime)
+            this.currentPlaybackTime = this.speakerContext.currentTime;
+
+        const player = this.speakerContext.createBufferSource();
+        player.buffer = buffer;
+
+        player.onended = () => this.handleBufferPlaybackEnded(player);
+        this.playingNodes.push(player);
+
+        player.connect(this.gainNode);
+        player.start(this.currentPlaybackTime);
+
+        this.currentPlaybackTime += buffer.duration;
+    }
+
+    private handleBufferPlaybackEnded(node: AudioBufferSourceNode) {
+        this.playingNodes.remove(node);
+        this.testReplayState();
+    }
+
+    private testReplayState() {
+        if(this.bufferQueue.length > 0 || this.playingNodes.length > 0) {
+            return;
+        }
+
+        if(this.playerState === PlayerState.STOPPING) {
+            /* All buffers have been replayed successfully */
+            this.setPlayerState(PlayerState.STOPPED);
+            if(this.callback_stopped) {
+                this.callback_stopped();
+            }
+        } else if(this.playerState === PlayerState.PLAYING) {
+            logDebug(LogCategory.VOICE, tr("Client %d has a buffer underflow. Changing state to buffering."), this.client_id);
+            this.setPlayerState(PlayerState.BUFFERING);
+        }
+    }
+
+    /***
+     * Schedule a new buffer timeout.
+     * The buffer timeout is used to playback even small amounts of audio, which are less than the min. buffer size.
+     * @param scheduleNewTimeout
+     * @private
+     */
+    private resetBufferTimeout(scheduleNewTimeout: boolean) {
+        clearTimeout(this.bufferTimeout);
+
+        if(scheduleNewTimeout) {
+            this.bufferTimeout = setTimeout(() => {
+                if(this.playerState == PlayerState.PREBUFFERING || this.playerState == PlayerState.BUFFERING) {
+                    logWarn(LogCategory.VOICE, tr("[Audio] Buffering exceeded timeout. Flushing and stopping replay."));
+                    this.stopAudio(false);
                 }
-                this._buffer_timeout = undefined;
+                this.bufferTimeout = undefined;
             }, 1000);
-    }
-
-    private apply_volume_to_buffer(buffer: AudioBuffer) {
-        if(this._volume == 1)
-            return;
-
-        for(let channel = 0; channel < buffer.numberOfChannels; channel++) {
-            let data = buffer.getChannelData(channel);
-            for(let sample = 0; sample < data.length; sample++) {
-                let lane = data[sample];
-                lane *= this._volume;
-                data[sample] = lane;
-            }
         }
     }
 
-    private set_state(state: PlayerState) {
-        if(this._player_state == state)
+    private setPlayerState(state: PlayerState) {
+        if(this.playerState === state) {
             return;
+        }
 
-        this._player_state = state;
-        if(this.callback_state_changed)
-            this.callback_state_changed(this._player_state);
-    }
-
-    get_codec_cache(codec: number) : CodecClientCache {
-        while(this._codecCache.length <= codec)
-            this._codecCache.push(new CodecClientCache());
-
-        return this._codecCache[codec];
+        this.playerState = state;
+        if(this.callback_state_changed) {
+            this.callback_state_changed(this.playerState);
+        }
     }
 
     get_state(): PlayerState {
-        return this._player_state;
+        return this.playerState;
     }
 
     get_volume(): number {
-        return this._volume;
+        return this.currentVolume;
     }
 
     set_volume(volume: number): void {
-        if(this._volume == volume)
+        if(this.currentVolume == volume)
             return;
 
-        this._volume = volume;
-
-        /* apply the volume to all other buffers */
-        for(const buffer of this._buffered_samples)
-            this.apply_volume_to_buffer(buffer);
+        this.currentVolume = volume;
+        if(this.gainNode) {
+            this.gainNode.gain.value = volume;
+        }
     }
 
     abort_replay() {
         this.stopAudio(true);
     }
 
-    latency_settings(settings?: LatencySettings): LatencySettings {
-        throw "not supported";
-    }
-
-    reset_latency_settings() {
-        throw "not supported";
-    }
-
-    support_latency_settings(): boolean {
-        return false;
-    }
-
     support_flush(): boolean {
-        return false;
+        return true;
     }
 
     flush() {
-        throw "not supported";
+        this.bufferQueue = [];
+        this.bufferQueueTime = 0;
+
+        for(const entry of this.playingNodes) {
+            entry.stop(0);
+        }
+        this.playingNodes = [];
+    }
+
+    latency_settings(settings?: LatencySettings): LatencySettings {
+        if(typeof settings !== "undefined") {
+            this.latencySettings = settings;
+        }
+        return this.latencySettings;
+    }
+
+    reset_latency_settings() {
+        this.latencySettings = {
+            min_buffer: 60,
+            max_buffer: 400
+        };
+    }
+
+    support_latency_settings(): boolean {
+        return true;
     }
 }

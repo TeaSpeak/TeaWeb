@@ -215,15 +215,6 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                 ]
             },
             {
-                test: /\.wasm$/,
-                type: 'javascript/auto',
-                loader: 'file-loader',
-                options: {
-                    /* the public path will already be set by emscripten base path */
-                    publicPath: './'
-                }
-            },
-            {
                 test: /\.svg$/,
                 loader: 'svg-inline-loader'
             },
@@ -234,10 +225,10 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
                     esModule: false
                 }
             }
-        ],
-    },
+        ]
+    } as any,
     resolve: {
-        extensions: ['.tsx', '.ts', '.js', ".scss", ".css"],
+        extensions: ['.tsx', '.ts', '.js', ".scss", ".css", ".wasm"],
         alias: {
             "vendor/xbbcode": path.resolve(__dirname, "vendor/xbbcode/src")
         },
@@ -249,7 +240,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
         filename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
         chunkFilename: isDevelopment ? "[name].[contenthash].js" : "[contenthash].js",
         path: path.resolve(__dirname, 'dist'),
-        publicPath: "js/"
+        publicPath: "/js/"
     },
     performance: {
         hints: false

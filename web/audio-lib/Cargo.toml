@@ -1,0 +1,35 @@
+[package]
+name = "teaweb-audo-lib"
+version = "0.1.0"
+authors = ["WolverinDEV <git@teaspeak.de>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4.17"
+js-sys = "0.3.44"
+wasm-timer = "0.2.4"
+futures = "0.3.5"
+log = "0.4"
+once_cell = "1.4.1"
+
+[dev-dependencies]
+tokio = { version = "0.2", features = ["full"] }
+tokio-test = "0.2.1"
+ntest = "0.7.1"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+opus-prebuild-wasm = { path = "D:\\git\\web\\opus-prebuild-wasm" }
+console_log = "0.2.0"
+console_error_panic_hook = "0.1.6"
+
+# Used for the tests as an alternative (Attention: The opus library version differs!)
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+opus-cmake-sys = "1.0.6"
+simple_logger = "1.6.0"
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = ["-O2", "--enable-mutable-globals"]

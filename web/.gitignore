@@ -7,3 +7,5 @@ app/**/*.css.map
 
 app/**/*.js
 app/**/*.js.map
+
+!app/audio-lib/async_require.js

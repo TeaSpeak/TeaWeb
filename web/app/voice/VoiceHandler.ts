@@ -12,7 +12,6 @@ import {
     VoiceConnectionStatus,
     WhisperSessionInitializer
 } from "tc-shared/connection/VoiceConnection";
-import {codecPool} from "./CodecConverter";
 import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {ServerConnectionEvents} from "tc-shared/connection/ConnectionBase";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
@@ -33,10 +32,6 @@ const KEY_VOICE_CONNECTION_TYPE: ValuedSettingsKey<number> = {
 };
 
 export class VoiceConnection extends AbstractVoiceConnection {
-    static codecSupported(type: number) : boolean {
-        return !!codecPool && codecPool.length > type && codecPool[type].supported();
-    }
-
     readonly connection: ServerConnection;
 
     private readonly serverConnectionStateListener;
@@ -240,26 +235,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
             return;
         }
 
-        let codec_pool = codecPool[packet.codec];
-        if(!codec_pool) {
-            log.error(LogCategory.VOICE, tr("Could not playback codec %o"), packet.codec);
-            return;
-        }
-
-        if(packet.payload.length == 0) {
-            client.stopAudio();
-            codec_pool.releaseCodec(packet.clientId);
-        } else {
-            codec_pool.ownCodec(packet.clientId, () => {
-                logWarn(LogCategory.VOICE, tr("Received an encoded voice packet even thou we're only decoding!"));
-            }, true)
-                .then(decoder => decoder.decodeSamples(client.get_codec_cache(packet.codec), packet.payload))
-                .then(buffer => client.playback_buffer(buffer)).catch(error => {
-                log.error(LogCategory.VOICE, tr("Could not playback client's (%o) audio (%o)"), packet.clientId, error);
-                if(error instanceof Error)
-                    log.error(LogCategory.VOICE, error.stack);
-            });
-        }
+        client.enqueuePacket(packet);
     }
 
     private handleRecorderStop() {
@@ -335,6 +311,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(!(client instanceof VoiceClientController))
             throw "Invalid client type";
 
+        client.destroy();
         this.voiceClients.remove(client);
         return Promise.resolve();
     }
@@ -346,11 +323,11 @@ export class VoiceConnection extends AbstractVoiceConnection {
     }
 
     decodingSupported(codec: number): boolean {
-        return VoiceConnection.codecSupported(codec);
+        return codec >= 4 && codec <= 5;
     }
 
     encodingSupported(codec: number): boolean {
-        return VoiceConnection.codecSupported(codec);
+        return codec >= 4 && codec <= 5;
     }
 
     getEncoderCodec(): number {
