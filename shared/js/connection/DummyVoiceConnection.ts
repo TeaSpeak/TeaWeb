@@ -2,10 +2,11 @@ import {
     AbstractVoiceConnection, LatencySettings,
     PlayerState,
     VoiceClient,
-    VoiceConnectionStatus
+    VoiceConnectionStatus, WhisperSessionInitializer
 } from "tc-shared/connection/VoiceConnection";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
+import {WhisperSession} from "tc-shared/voice/Whisper";
 
 class DummyVoiceClient implements VoiceClient {
     client_id: number;
@@ -124,4 +125,15 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         return this.recorder;
     }
 
+    dropWhisperSession(session: WhisperSession) { }
+
+    getWhisperSessionInitializer(): WhisperSessionInitializer | undefined {
+        return undefined;
+    }
+
+    getWhisperSessions(): WhisperSession[] {
+        return [];
+    }
+
+    setWhisperSessionInitializer(initializer: WhisperSessionInitializer | undefined) { }
 }
