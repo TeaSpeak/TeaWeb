@@ -1,8 +1,9 @@
 # Changelog:
 * **02.09.20**
     - Fixed web client hangup on no device error
-    - Improved default recorder device detection (selectes by default the best device)
+    - Improved default recorder device detection (selects by default the best device)
     - Decreased playback latency for the web client
+    - The newcomer help texts are now forward able via the next button
     
 * **31.08.20**
     - Reworked the audio decode system 
