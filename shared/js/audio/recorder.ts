@@ -40,6 +40,7 @@ export interface IDevice {
 }
 export namespace IDevice {
     export const NoDeviceId = "none";
+    export const DefaultDeviceId = "default";
 }
 
 export type PermissionState = "granted" | "denied" | "unknown";

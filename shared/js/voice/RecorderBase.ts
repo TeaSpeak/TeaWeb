@@ -75,7 +75,7 @@ export interface AbstractInput {
      * If the target device is unknown than it should return EDEVICEUNKNOWN on start.
      * After changing the device, the input state falls to InputState.PAUSED.
      */
-    setDeviceId(device: string | undefined) : Promise<void>;
+    setDeviceId(device: string) : Promise<void>;
 
     currentConsumer() : InputConsumer | undefined;
     setConsumer(consumer: InputConsumer) : Promise<void>;

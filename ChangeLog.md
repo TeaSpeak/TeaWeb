@@ -1,4 +1,8 @@
 # Changelog:
+* **02.09.20**
+    - Fixed web client hangup on no device error
+    - Improved default recorder device detection (selectes by default the best device)
+    
 * **31.08.20**
     - Reworked the audio decode system 
       - Improved audio decode performance

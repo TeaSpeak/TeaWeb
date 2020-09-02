@@ -165,7 +165,11 @@ export class RecorderProfile {
 
         /* apply initial config values */
         this.input.setVolume(this.config.volume / 100);
-        await this.input.setDeviceId(this.config.device_id);
+        if(this.config.device_id) {
+            await this.input.setDeviceId(this.config.device_id);
+        } else {
+            await this.input.setDeviceId(IDevice.DefaultDeviceId);
+        }
     }
 
     private save() {

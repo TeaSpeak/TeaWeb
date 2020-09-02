@@ -203,17 +203,22 @@ class JavascriptInput implements AbstractInput {
         if(this.state != InputState.PAUSED)
             return;
 
-        return await (this.startPromise = this.doStart());
+        /* do it async since if the doStart fails on the first iteration, we're setting the start promise, after it's getting cleared */
+        return await (this.startPromise = Promise.resolve().then(() => this.doStart()));
     }
 
     private async doStart() : Promise<InputStartResult> {
         try {
-            if(this.state != InputState.PAUSED)
+            if(this.state != InputState.PAUSED) {
                 throw tr("recorder already started");
+            }
 
             this.state = InputState.INITIALIZING;
-            if(!this.deviceId) {
-                throw tr("invalid device");
+            let deviceId;
+            if(this.deviceId === IDevice.NoDeviceId) {
+                throw tr("no device selected");
+            } else if(this.deviceId === IDevice.DefaultDeviceId) {
+                deviceId = undefined;
             }
 
             if(!this.audioContext) {
@@ -221,7 +226,7 @@ class JavascriptInput implements AbstractInput {
                 return;
             }
 
-            const requestResult = await requestMediaStream(this.deviceId, undefined);
+            const requestResult = await requestMediaStream(deviceId, undefined);
             if(!(requestResult instanceof MediaStream)) {
                 this.state = InputState.PAUSED;
                 return requestResult;
@@ -292,7 +297,7 @@ class JavascriptInput implements AbstractInput {
     }
 
 
-    async setDeviceId(deviceId: string | undefined) {
+    async setDeviceId(deviceId: string) {
         if(this.deviceId === deviceId)
             return;
 
