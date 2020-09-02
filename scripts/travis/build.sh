@@ -150,10 +150,7 @@ fi
 
 echo "----------     Setup       ----------"
 chmod +x ./scripts/install_dependencies.sh
-execute \
-    "Installing dependencies" \
-    "Failed to install required dependencies" \
-    "./scripts/install_dependencies.sh"
+source ./scripts/install_dependencies.sh
 
 echo "----------   Web client    ----------"
 

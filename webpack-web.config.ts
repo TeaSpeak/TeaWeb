@@ -1,4 +1,3 @@
-import * as fs from "fs-extra";
 import * as path from "path";
 import * as config_base from "./webpack.config";
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
@@ -18,8 +17,6 @@ export = () => config_base.config("web").then(config => {
     config.node = config.node || {};
     config.node["fs"] = "empty";
 
-    console.error("Directory: %s", path.resolve(__dirname, "web", "audio-lib"));
-    console.error("Stats: %o", fs.statSync(path.resolve(__dirname, "web", "audio-lib")));
     config.plugins.push(new WasmPackPlugin({
         crateDirectory: path.resolve(__dirname, "web", "audio-lib"),
         outName: "index",
