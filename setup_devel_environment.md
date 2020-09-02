@@ -5,7 +5,7 @@ The following tools or applications are required to develop the web client:
 - [1.2 NodeJS](#12-nodejs)
 - [1.2.2 NPM](#122-npm)
 - [1.3 Git bash](#13-git-bash)
-- [1.4 Docker](#14-docker)
+- [1.4 Rust (Options)](#14-rust-optional-will-be-installed-automatically)
 
 ### 1.1 IDE
 It does not matter which IDE you use,  
@@ -27,16 +27,9 @@ IMPORTANT: NPM must be available within the PATH environment variable!
 For using the `.sh` build scripts you require Git Bash.  
 A minimum of 4.2 is recommend, but in general every modern version should work.  
 
-### 1.4 Docker
-For building the native scripts you need docker.  
-Just install docker from [docker.com](https://docs.docker.com).  
-Attention: If you're having Windows make sure you're running linux containers!  
-  
-In order to setup the later required containers, just execute these commands:  
-Make sure you're within the web source directory! If not replace the `$(pwd)` the the path the web client is located at  
-```shell script
-docker run -dit --name emscripten -v "$(pwd)":"/src/" trzeci/emscripten:sdk-incoming-64bit bash
-```
+### 1.4 Rust (Optional, will be installed automatically)
+For building the web client audio library, you may want to install rust in advance.  
+Since it will be installed when executing the install libraries script, I'm not going into more detail here.  
   
 ## 2.0 Project initialization
 
@@ -48,23 +41,30 @@ git clone https://github.com/TeaSpeak/TeaWeb.git
 After closing the project you've to update the submodules.  
 Simply execute:  
 ```shell script
-git submodule update --init
-```
-
-### 2.2 Setting up native scripts  
-TeaWeb uses the Opus audio codec. Because almost no browser supports it out of the box  
-we've to implement our own de/encoder. For this we're using `emscripten` to compile the codec.  
-In order to build the required javascript and wasm files just executing this in your git bash:  
-```shell script
-docker exec -it emscripten bash -c 'web/native-codec/build.sh'
+git submodule update --init --recursive
 ```
   
-### 2.3 Initializing NPM
+### 2.2 Initializing NPM
 To download all required packages simply type:  
 ```shell script
 npm install
 ```
 
+### 2.3 Installing required dependencies
+In order to build the project you need some libraries and applications (`rustup` and `wasm-pack`).  
+To install them, just execute:
+```shell script
+./scripts/install_dependencies.sh
+```
+You may need to follow some additional steps, depending on the scripts output.  
+  
+Attention: If you've not installed `rustup` or `wasm-pack`, you may need to restart the bash,  
+since the path variable needs to be updated. If you don't want to do so, you may just run:  
+```shell script
+source ./scripts/install_dependencies.sh
+```
+Attention: On error it will close your bash session with an exit code of 1!    
+  
 ### 2.4 You're ready to go and start developing
 To start the development environment which automatically compiles all your changed  
 scripts and style sheets you simply have to execute:
