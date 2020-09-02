@@ -22,7 +22,8 @@ tokio-test = "0.2.1"
 ntest = "0.7.1"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-opus-prebuild-wasm = { path = "D:\\git\\web\\opus-prebuild-wasm" }
+# opus-prebuild-wasm = { path = "D:\\git\\web\\opus-prebuild-wasm" }
+opus-prebuild-wasm = { git = "https://github.com/WolverinDEV/opus-prebuild-wasm.git" }
 console_log = "0.2.0"
 console_error_panic_hook = "0.1.6"
 
