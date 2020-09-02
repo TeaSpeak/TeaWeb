@@ -2,6 +2,7 @@ import {Updater} from "./Updater";
 import {ChangeLog} from "tc-shared/update/ChangeLog";
 import {spawnUpdatedModal} from "tc-shared/ui/modal/whats-new/Controller";
 
+const kIsNewUserKey = "updater-set";
 let updaterUi: Updater;
 let updaterNative: Updater;
 
@@ -28,15 +29,21 @@ function getChangedChangeLog(updater: Updater) : ChangeLog | undefined {
 }
 
 export function checkForUpdatedApp() {
-    let changesUI = updaterUi ? getChangedChangeLog(updaterUi) : undefined;
-    let changesNative = updaterNative ? getChangedChangeLog(updaterNative) : undefined;
+    if(localStorage.getItem(kIsNewUserKey)) {
+        let changesUI = updaterUi ? getChangedChangeLog(updaterUi) : undefined;
+        let changesNative = updaterNative ? getChangedChangeLog(updaterNative) : undefined;
 
-    if(changesUI !== undefined || changesNative !== undefined) {
-        spawnUpdatedModal({
-            changesUI: changesUI,
-            changesClient: changesNative
-        });
+        if(changesUI !== undefined || changesNative !== undefined) {
+            spawnUpdatedModal({
+                changesUI: changesUI,
+                changesClient: changesNative
+            });
 
+            updaterUi?.updateUsedVersion();
+            updaterNative?.updateUsedVersion();
+        }
+    } else {
+        localStorage.setItem(kIsNewUserKey, "1");
         updaterUi?.updateUsedVersion();
         updaterNative?.updateUsedVersion();
     }

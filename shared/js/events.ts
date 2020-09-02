@@ -462,23 +462,6 @@ export namespace modal {
         }
     }
 
-    export interface newcomer {
-        "show_step": {
-            "step": "welcome" | "microphone" | "identity" | "finish"
-        },
-        "exit_guide": {
-            ask_yesno: boolean
-        },
-
-        "modal-shown": {},
-
-
-        "step-status": {
-            next_button: boolean,
-            previous_button: boolean
-        }
-    }
-
     export namespace settings {
         export type ProfileInfo = {
             id: string,

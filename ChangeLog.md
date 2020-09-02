@@ -4,6 +4,7 @@
     - Improved default recorder device detection (selects by default the best device)
     - Decreased playback latency for the web client
     - The newcomer help texts are now forward able via the next button
+    - Do not show the what's new screen for new users
     
 * **31.08.20**
     - Reworked the audio decode system 

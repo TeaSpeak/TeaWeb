@@ -1,7 +1,6 @@
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
-import { modal as emodal } from "tc-shared/events";
 import {modal_settings} from "tc-shared/ui/modal/ModalSettings";
 import {profiles} from "tc-shared/profiles/ConnectionProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
@@ -9,6 +8,23 @@ import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import { modal as emodal } from "tc-shared/events";
+
+export interface EventModalNewcomer {
+    "show_step": {
+        "step": "welcome" | "microphone" | "identity" | "finish"
+    },
+    "exit_guide": {
+        ask_yesno: boolean
+    },
+    "modal-shown": {},
+
+    "action-next-help": {},
+    "step-status": {
+        allowNextStep: boolean,
+        allowPreviousStep: boolean
+    }
+}
 
 const next_step: {[key: string]:string} = {
     "welcome": "microphone",
@@ -37,7 +53,7 @@ export function openModalNewcomer() : Modal {
         closeable: false
     });
 
-    const event_registry = new Registry<emodal.newcomer>();
+    const event_registry = new Registry<EventModalNewcomer>();
     event_registry.enableDebug("newcomer");
 
     modal.htmlTag.find(".modal-body").addClass("modal-newcomer");
@@ -49,13 +65,14 @@ export function openModalNewcomer() : Modal {
     initializeStepFinish(modal.htmlTag.find(".container-body .step.step-finish"), event_registry);
 
     event_registry.on("exit_guide", event => {
-        if(event.ask_yesno)
+        if(event.ask_yesno) {
             spawnYesNo(tr("Are you sure?"), tr("Do you really want to skip the basic setup guide?"), result => {
                 if(result)
                     event_registry.fire("exit_guide", {ask_yesno: false});
             });
-        else
+        } else {
             modal.close();
+        }
     });
 
     event_registry.fire("show_step", {step: "welcome"});
@@ -64,7 +81,7 @@ export function openModalNewcomer() : Modal {
     return modal;
 }
 
-function initializeBasicFunctionality(tag: JQuery, event_registry: Registry<emodal.newcomer>) {
+function initializeBasicFunctionality(tag: JQuery, event_registry: Registry<EventModalNewcomer>) {
     const container_header = tag.find(".container-header");
     const tag_body = tag.find(".container-body .body");
 
@@ -82,6 +99,7 @@ function initializeBasicFunctionality(tag: JQuery, event_registry: Registry<emod
         const buttons = tag.find(".buttons");
         const button_last_step = buttons.find(".button-last-step");
         const button_next_step = buttons.find(".button-next-step");
+        let allowNextStep = true;
 
         button_last_step.on('click', () => {
             if(last_step[current_step])
@@ -92,10 +110,16 @@ function initializeBasicFunctionality(tag: JQuery, event_registry: Registry<emod
 
         let current_step;
         button_next_step.on('click', event => {
-            if(next_step[current_step])
+            if(!allowNextStep) {
+                event_registry.fire("action-next-help");
+                return;
+            }
+
+            if(next_step[current_step]) {
                 event_registry.fire("show_step", { step: next_step[current_step] as any });
-            else
-                event_registry.fire("exit_guide", {ask_yesno: false});
+            } else {
+                event_registry.fire("exit_guide", { ask_yesno: false });
+            }
         });
 
         event_registry.on("show_step", event => {
@@ -104,46 +128,45 @@ function initializeBasicFunctionality(tag: JQuery, event_registry: Registry<emod
             button_last_step.text(last_step[current_step] ? tr("Last step") : tr("Skip guide"));
         });
 
-        event_registry.on("show_step", () => button_next_step.prop("disabled", true));
+        event_registry.on("show_step", () => button_next_step.prop("disabled", false));
         event_registry.on("show_step", () => button_last_step.prop("disabled", true));
 
-        event_registry.on("step-status", event => button_next_step.prop("disabled", !event.next_button));
-        event_registry.on("step-status", event => button_last_step.prop("disabled", !event.previous_button));
+        event_registry.on("step-status", event => allowNextStep = event.allowNextStep);
+        event_registry.on("step-status", event => button_last_step.prop("disabled", !event.allowPreviousStep));
     }
 }
 
-function initializeStepWelcome(tag: JQuery, event_registry: Registry<emodal.newcomer>) {
+function initializeStepWelcome(tag: JQuery, event_registry: Registry<EventModalNewcomer>) {
     event_registry.on("show_step", e => {
         if(e.step !== "welcome") return;
 
-        event_registry.fire_async("step-status", { next_button: true, previous_button: true });
+        event_registry.fire_async("step-status", { allowNextStep: true, allowPreviousStep: true });
     });
 }
 
-function initializeStepFinish(tag: JQuery, event_registry: Registry<emodal.newcomer>) {
+function initializeStepFinish(tag: JQuery, event_registry: Registry<EventModalNewcomer>) {
     event_registry.on("show_step", e => {
         if(e.step !== "finish") return;
 
-        event_registry.fire_async("step-status", {next_button: true, previous_button: true });
+        event_registry.fire_async("step-status", {allowNextStep: true, allowPreviousStep: true });
     });
 }
 
-function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.newcomer>) {
+function initializeStepIdentity(tag: JQuery, event_registry: Registry<EventModalNewcomer>) {
     const profile_events = new Registry<emodal.settings.profiles>();
     profile_events.enableDebug("settings-identity");
     modal_settings.initialize_identity_profiles_controller(profile_events);
     modal_settings.initialize_identity_profiles_view(tag, profile_events, { forum_setuppable: false });
 
-    let step_shown = false;
+    let stepShown = false;
     let help_animation_done = false;
-    const profiles_valid = () => profiles().findIndex(e => e.valid()) !== -1;
     const update_step_status = () => {
-        event_registry.fire_async("step-status", { next_button: help_animation_done && profiles_valid(), previous_button: help_animation_done });
+        event_registry.fire_async("step-status", { allowNextStep: help_animation_done, allowPreviousStep: help_animation_done });
     };
-    profile_events.on("query-profile-validity-result", event => step_shown && event.status === "success" && event.valid && update_step_status());
+    profile_events.on("query-profile-validity-result", event => stepShown && event.status === "success" && event.valid && update_step_status());
     event_registry.on("show_step", e => {
-        step_shown = e.step === "identity";
-        if(!step_shown) return;
+        stepShown = e.step === "identity";
+        if(!stepShown) return;
 
         update_step_status();
     });
@@ -157,15 +180,24 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
         const container_profile_settings = tag.find(".highlight-profile-settings");
         const container_identity_settings = tag.find(".highlight-identity-settings");
 
-        let is_first_show = true;
+        let helpStep = 0;
+
+        const set_help_text = text => {
+            container_help_text.empty();
+            text.split("\n").forEach(e => container_help_text.append(e == "" ? $.spawn("br") : $.spawn("a").text(e)));
+        };
 
         event_registry.on("show_step", event => {
-            if(!is_first_show || event.step !== "identity") return;
-            is_first_show = false;
+            if(helpStep > 0 || event.step !== "identity") {
+                document.body.removeEventListener("mousedown", listenerClick);
+                return;
+            }
 
-            container.addClass("help-shown");
+            document.body.addEventListener("mousedown", listenerClick);
+            steps[helpStep++]();
+        });
 
-
+        const show_initial_help = () => {
             const text = tr( /* @tr-ignore */
                 "After you've successfully set upped your microphone,\n" +
                 "lets setup some profiles and identities!\n" +
@@ -177,12 +209,7 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
                 "To continue click anywhere on the screen."
             );
             set_help_text(text);
-            $("body").one('mousedown', event => show_profile_list_help());
-        });
-
-        const set_help_text = text => {
-            container_help_text.empty();
-            text.split("\n").forEach(e => container_help_text.append(e == "" ? $.spawn("br") : $.spawn("a").text(e)));
+            container.addClass("help-shown");
         };
 
         const show_profile_list_help = () => {
@@ -219,7 +246,6 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
                 "To continue click anywhere on the screen."
             );
             set_help_text(text);
-            $("body").one('mousedown', event => show_profile_settings_help());
         };
 
         const show_profile_settings_help = () => {
@@ -251,8 +277,6 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
             ));
             update_position();
             container_help_text.off('resize').on('resize', update_position);
-
-            $("body").one('mousedown', event => show_identity_settings_help());
         };
 
         const show_identity_settings_help = () => {
@@ -279,8 +303,6 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
             ));
             update_position();
             container_help_text.off('resize').on('resize', update_position);
-
-            $("body").one('mousedown', event => hide_help());
         };
 
         const hide_help = () => {
@@ -290,22 +312,49 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<emodal.new
             container_help_text.off('resize');
 
             help_animation_done = true;
-            update_step_status();
         };
+
+        const steps = [
+            show_initial_help,
+            show_profile_list_help,
+            show_profile_settings_help,
+            show_identity_settings_help,
+            hide_help
+        ];
+
+        const listenerClick = () => event_registry.fire("action-next-help");
+        event_registry.on("action-next-help", () => {
+            if(!stepShown) {
+                return;
+            }
+
+            const fn = steps[helpStep++];
+            if(typeof fn === "function") {
+                fn();
+            }
+            update_step_status();
+            document.body.addEventListener("mousedown", listenerClick);
+        });
     }
 }
 
-function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.newcomer>, modal: Modal) {
+function initializeStepMicrophone(tag: JQuery, event_registry: Registry<EventModalNewcomer>, modal: Modal) {
     let helpStep = 0;
+    let stepShown = false;
 
     const settingEvents = new Registry<MicrophoneSettingsEvents>();
     settingEvents.on("query_help", () => settingEvents.fire_async("notify_highlight", { field: helpStep <= 2 ? ("hs-" + helpStep) as any : undefined }));
     settingEvents.on("action_help_click", () => {
+        if(!stepShown) {
+            return;
+        }
+
         helpStep++;
         settingEvents.fire("query_help");
 
-        event_registry.fire_async("step-status", { next_button: helpStep > 2, previous_button: helpStep > 2 })
+        event_registry.fire_async("step-status", { allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2 })
     });
+    event_registry.on("action-next-help", () => settingEvents.fire("action_help_click"));
 
     initialize_audio_microphone_controller(settingEvents);
     ReactDOM.render(<MicrophoneSettings events={settingEvents} />, tag[0]);
@@ -317,7 +366,11 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<emodal.n
 
 
     event_registry.on("show_step", event => {
-        if(event.step !== "microphone") return;
-        event_registry.fire_async("step-status", { next_button: helpStep > 2, previous_button: helpStep > 2 });
+        stepShown = event.step === "microphone";
+        if(!stepShown) {
+            return;
+        }
+
+        event_registry.fire_async("step-status", { allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2 });
     });
 }
