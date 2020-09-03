@@ -73,7 +73,7 @@ export function parseCommand(command: string): ParsedCommand {
 
             const separator = keyValue.indexOf('=');
             if(separator === -1)
-                payload[keyValue] = undefined;
+                payload[keyValue] = "";
             else
                 payload[keyValue.substring(0, separator)] = unescapeCommandValue(keyValue.substring(separator + 1));
         }
