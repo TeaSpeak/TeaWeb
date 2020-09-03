@@ -11,7 +11,7 @@ import {ConnectionCommandHandler, ServerConnectionCommandBoss} from "tc-shared/c
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {LogCategory, logTrace} from "tc-shared/log";
 import {Regex} from "tc-shared/ui/modal/ModalConnect";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {VoiceConnection} from "../voice/VoiceHandler";
@@ -19,6 +19,7 @@ import {EventType} from "tc-shared/ui/frames/log/Definitions";
 import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
 import {DummyVoiceConnection} from "tc-shared/connection/DummyVoiceConnection";
+import {parseCommand} from "tc-backend/web/connection/CommandParser";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
@@ -256,7 +257,10 @@ export class ServerConnection extends AbstractServerConnection {
             this.socket.socketUrl(),
             connectEndTimestamp - connectBeginTimestamp);
 
-
+        /* enabling raw commands, if the server supports it */
+        this.sendData(JSON.stringify({
+            type: "enable-raw-commands"
+        }))
         this.start_handshake();
     }
 
@@ -333,6 +337,19 @@ export class ServerConnection extends AbstractServerConnection {
                 /* devel-block(log-networking-commands) */
                 group.end();
                 /* devel-block-end */
+            } else if(json["type"] === "command-raw") {
+                const command = parseCommand(json["payload"]);
+                logTrace(LogCategory.NETWORKING, tr("Received command %s"), command.command);
+                this.commandHandlerBoss.invoke_handle({
+                    command: command.command,
+                    arguments: command.payload
+                });
+
+                if(command.command === "initserver") {
+                    this.pingStatistics.thread_id = setInterval(() => this.doNextPing(), this.pingStatistics.interval) as any;
+                    this.doNextPing();
+                    this.updateConnectionState(ConnectionState.CONNECTED);
+                }
             } else if(json["type"] === "WebRTC") {
                 this.voiceConnection?.handleControlPacket(json);
             } else if(json["type"] === "ping") {
