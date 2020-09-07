@@ -1,4 +1,7 @@
 # Changelog:
+* **07.09.20**
+    - Fixed the web client for safari
+    
 * **05.09.20**
     - Smoother voice playback start (web client only)
     
