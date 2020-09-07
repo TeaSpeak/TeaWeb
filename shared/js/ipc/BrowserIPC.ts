@@ -284,6 +284,9 @@ export function getInstanceConnectHandler() {
 }
 
 export function supported() {
+    /* we've a polyfill now */
+    return true;
+
     /* ios does not support this */
     return typeof(window.BroadcastChannel) !== "undefined";
 }

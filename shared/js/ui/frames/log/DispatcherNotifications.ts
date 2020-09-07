@@ -486,11 +486,18 @@ loader.register_task(Stage.LOADED, {
         if(Notification.permission === "granted")
             return;
 
-        Notification.requestPermission().then(result => {
-            log.info(LogCategory.GENERAL, tr("Notification permission request resulted in %s"), result);
-        }).catch(error => {
-            log.warn(LogCategory.GENERAL, tr("Failed to execute notification permission request: %O"), error);
-        });
+        /* yeahr fuck safari */
+        const promise = Notification.requestPermission(result => {
+            log.info(LogCategory.GENERAL, tr("Notification permission request (callback) resulted in %s"), result);
+        })
+
+        if(typeof promise !== "undefined" && 'then' in promise) {
+            promise.then(result => {
+                log.info(LogCategory.GENERAL, tr("Notification permission request resulted in %s"), result);
+            }).catch(error => {
+                log.warn(LogCategory.GENERAL, tr("Failed to execute notification permission request: %O"), error);
+            });
+        }
     },
     name: "Request notifications",
     priority: 1

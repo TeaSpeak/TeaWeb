@@ -91,6 +91,7 @@
   },
   "homepage": "https://www.teaspeak.de",
   "dependencies": {
+    "broadcastchannel-polyfill": "^1.0.1",
     "detect-browser": "^5.1.1",
     "dompurify": "^2.0.8",
     "emoji-mart": "git+https://github.com/WolverinDEV/emoji-mart.git",
