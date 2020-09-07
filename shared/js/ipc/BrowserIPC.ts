@@ -1,3 +1,4 @@
+import "broadcastchannel-polyfill";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {ConnectHandler} from "tc-shared/ipc/ConnectHandler";

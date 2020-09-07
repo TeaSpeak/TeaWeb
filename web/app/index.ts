@@ -1,5 +1,4 @@
 import "webrtc-adapter";
-import "broadcastchannel-polyfill";
 import "./index.scss";
 import "./FileTransfer";
 

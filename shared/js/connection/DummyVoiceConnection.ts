@@ -5,14 +5,17 @@ import {
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
-import {VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
-import {WhisperSession} from "tc-shared/voice/VoiceWhisper";
+import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
+import {WhisperSession, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
+import {Registry} from "tc-shared/events";
 
 class DummyVoiceClient implements VoiceClient {
+    readonly events: Registry<VoicePlayerEvents>;
     private readonly clientId: number;
     private volume: number;
 
     constructor(clientId: number) {
+        this.events = new Registry<VoicePlayerEvents>();
         this.clientId = clientId;
         this.volume = 1;
     }
@@ -41,6 +44,10 @@ class DummyVoiceClient implements VoiceClient {
 
     flushBuffer() { }
     abortReplay() { }
+
+
+    resetLatencySettings() {
+    }
 }
 
 export class DummyVoiceConnection extends AbstractVoiceConnection {
@@ -120,4 +127,14 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
     }
 
     setWhisperSessionInitializer(initializer: WhisperSessionInitializer | undefined) { }
+
+    getWhisperTarget(): WhisperTarget | undefined {
+        return undefined;
+    }
+
+    startWhisper(target: WhisperTarget): Promise<void> {
+        return Promise.reject(tr("not supported"));
+    }
+
+    stopWhisper() { }
 }
