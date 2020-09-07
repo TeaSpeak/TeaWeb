@@ -7,6 +7,7 @@ export interface AWCommand {
         clientId: number,
         packetId: number,
         codec: number,
+        head: boolean,
 
         buffer: ArrayBuffer,
         byteLength: number,

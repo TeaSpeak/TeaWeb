@@ -488,14 +488,16 @@ export class ChannelTree {
 
         //FIXME: Trigger the notify_clients_changed event!
         const voice_connection = this.client.serverConnection.getVoiceConnection();
-        if(client.get_audio_handle()) {
+        if(client.getVoiceClient()) {
+            const voiceClient = client.getVoiceClient();
+            client.setVoiceClient(undefined);
+
             if(!voice_connection) {
                 log.warn(LogCategory.VOICE, tr("Deleting client with a voice handle, but we haven't a voice connection!"));
             } else {
-                voice_connection.unregister_client(client.get_audio_handle());
+                voice_connection.unregisterVoiceClient(voiceClient);
             }
         }
-        client.set_audio_handle(undefined);
         client.destroy();
     }
 
@@ -503,9 +505,10 @@ export class ChannelTree {
         this.clients.push(client);
         client.channelTree = this;
 
-        const voice_connection = this.client.serverConnection.getVoiceConnection();
-        if(voice_connection)
-            client.set_audio_handle(voice_connection.registerClient(client.clientId()));
+        const voiceConnection = this.client.serverConnection.getVoiceConnection();
+        if(voiceConnection) {
+            client.setVoiceClient(voiceConnection.registerVoiceClient(client.clientId()));
+        }
     }
 
     unregisterClient(client: ClientEntry) {
@@ -852,9 +855,9 @@ export class ChannelTree {
 
             const voice_connection = this.client.serverConnection ? this.client.serverConnection.getVoiceConnection() : undefined;
             for(const client of this.clients) {
-                if(client.get_audio_handle() && voice_connection) {
-                    voice_connection.unregister_client(client.get_audio_handle());
-                    client.set_audio_handle(undefined);
+                if(client.getVoiceClient() && voice_connection) {
+                    voice_connection.unregisterVoiceClient(client.getVoiceClient());
+                    client.setVoiceClient(undefined);
                 }
                 client.destroy();
             }

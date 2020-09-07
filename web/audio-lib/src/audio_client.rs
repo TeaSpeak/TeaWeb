@@ -1,18 +1,14 @@
-use wasm_bindgen::prelude::*;
 use std::collections::HashMap;
-use std::sync::{ Arc, Mutex, MutexGuard };
+use std::sync::{ Arc, Mutex };
 use std::sync::atomic::{ AtomicU32, Ordering };
-use std::cell::RefCell;
 use once_cell::sync::Lazy;
 use crate::audio::packet_queue::{AudioPacketQueue, AudioPacketQueueEvent, EnqueueError};
-use futures::task::Context;
 use futures;
-use crate::audio::decoder::{AudioDecoder, AudioDecodeError};
+use crate::audio::decoder::{AudioDecoder};
 use wasm_bindgen_futures::spawn_local;
 use futures::future::{ poll_fn };
-use crate::audio::{AudioPacket, Codec};
+use crate::audio::{AudioPacket};
 use log::*;
-use crate::audio::converter::interleaved2sequenced;
 
 pub type AudioClientId = u32;
 
@@ -22,11 +18,6 @@ pub trait AudioCallback {
 
     fn handle_audio(&mut self, sample_count: usize, channel_count: u8);
     fn handle_stop(&mut self);
-}
-
-struct CallbackData {
-    callback: Option<js_sys::Function>,
-    buffer: Vec<f32>
 }
 
 pub struct AudioClient {
@@ -68,12 +59,8 @@ impl AudioClient {
         self.abort_audio_processing();
     }
 
-    pub fn client_id(&self) -> AudioClientId {
-        self.client_id
-    }
-
-    pub fn enqueue_audio_packet(&self, packet: Box<AudioPacket>) -> Result<(), EnqueueError> {
-        self.packet_queue.lock().unwrap().enqueue_packet(packet)?;
+    pub fn enqueue_audio_packet(&self, packet: Box<AudioPacket>, is_head_packet: bool) -> Result<(), EnqueueError> {
+        self.packet_queue.lock().unwrap().enqueue_packet(packet, is_head_packet)?;
         Ok(())
     }
 
@@ -82,15 +69,11 @@ impl AudioClient {
     }
 
     pub fn abort_audio_processing(&self) {
-        let mut handle = &mut *self.audio_process_abort_handle.lock().unwrap();
+        let handle = &mut *self.audio_process_abort_handle.lock().unwrap();
         if let Some(ref abort_handle) = handle {
             abort_handle.abort()
         }
         *handle = None;
-    }
-
-    pub fn is_audio_processing(&self) -> bool {
-        self.audio_process_abort_handle.lock().unwrap().is_some()
     }
 
     pub fn dispatch_processing_in_this_thread(client: Arc<AudioClient>) {
@@ -119,7 +102,7 @@ impl AudioClient {
                                 break;
                             }
 
-                            let mut callback = callback.as_mut().unwrap();
+                            let callback = callback.as_mut().unwrap();
                             let callback_buffer = callback.callback_buffer();
 
                             let decode_result = client.decoder.lock().unwrap().decode(&*packet, callback_buffer);

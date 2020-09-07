@@ -1,44 +1,8 @@
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {Registry} from "tc-shared/events";
-import {WhisperSession} from "tc-shared/voice/Whisper";
-
-export enum PlayerState {
-    PREBUFFERING,
-    PLAYING,
-    BUFFERING,
-    STOPPING,
-    STOPPED
-}
-
-export type LatencySettings = {
-    min_buffer: number; /* milliseconds */
-    max_buffer: number; /* milliseconds */
-}
-
-export interface VoiceClient {
-    client_id: number;
-
-    callback_playback: () => any;
-    callback_stopped: () => any;
-
-    callback_state_changed: (new_state: PlayerState) => any;
-
-    get_state() : PlayerState;
-
-    get_volume() : number;
-    set_volume(volume: number) : void;
-
-    abort_replay();
-
-    support_latency_settings() : boolean;
-
-    reset_latency_settings();
-    latency_settings(settings?: LatencySettings) : LatencySettings;
-
-    support_flush() : boolean;
-    flush();
-}
+import {VoiceClient} from "tc-shared/voice/VoiceClient";
+import {WhisperSession, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
 
 export enum VoiceConnectionStatus {
     ClientUnsupported,
@@ -95,9 +59,9 @@ export abstract class AbstractVoiceConnection {
     abstract encodingSupported(codec: number) : boolean;
     abstract decodingSupported(codec: number) : boolean;
 
-    abstract registerClient(client_id: number) : VoiceClient;
-    abstract availableClients() : VoiceClient[];
-    abstract unregister_client(client: VoiceClient) : Promise<void>;
+    abstract registerVoiceClient(clientId: number);
+    abstract availableVoiceClients() : VoiceClient[];
+    abstract unregisterVoiceClient(client: VoiceClient);
 
     abstract voiceRecorder() : RecorderProfile;
     abstract acquireVoiceRecorder(recorder: RecorderProfile | undefined) : Promise<void>;
@@ -111,4 +75,8 @@ export abstract class AbstractVoiceConnection {
 
     abstract setWhisperSessionInitializer(initializer: WhisperSessionInitializer | undefined);
     abstract getWhisperSessionInitializer() : WhisperSessionInitializer | undefined;
+
+    abstract startWhisper(target: WhisperTarget) : Promise<void>;
+    abstract getWhisperTarget() : WhisperTarget | undefined;
+    abstract stopWhisper();
 }

@@ -2,16 +2,18 @@ import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {ClientEntry} from "tc-shared/ui/client";
 import {Slider, sliderfy} from "tc-shared/ui/elements/Slider";
 import * as htmltags from "tc-shared/ui/htmltags";
-import {LatencySettings} from "tc-shared/connection/VoiceConnection";
+import {VoicePlayerLatencySettings} from "tc-shared/voice/VoicePlayer";
 
-let modal: Modal;
-export function spawnChangeLatency(client: ClientEntry, current: LatencySettings, reset: () => LatencySettings, apply: (settings: LatencySettings) => any, callback_flush?: () => any) {
-    if(modal) modal.close();
+let modalInstance: Modal;
+export function spawnChangeLatency(client: ClientEntry, current: VoicePlayerLatencySettings, reset: () => VoicePlayerLatencySettings, apply: (settings: VoicePlayerLatencySettings) => void, callback_flush?: () => any) {
+    if(modalInstance) {
+        modalInstance.close();
+    }
 
     const begin = Object.assign({}, current);
     current = Object.assign({}, current);
 
-    modal = createModal({
+    modalInstance = createModal({
         header: tr("Change playback latency"),
         body: function () {
             let tag = $("#tmpl_change_latency").renderTag({
@@ -26,10 +28,10 @@ export function spawnChangeLatency(client: ClientEntry, current: LatencySettings
             });
 
             const update_value = () => {
-                const valid = current.min_buffer < current.max_buffer;
+                const valid = current.minBufferTime < current.maxBufferTime;
 
-                modal.htmlTag.find(".modal-body").toggleClass("modal-red", !valid);
-                modal.htmlTag.find(".modal-body").toggleClass("modal-green", valid);
+                modalInstance.htmlTag.find(".modal-body").toggleClass("modal-red", !valid);
+                modalInstance.htmlTag.find(".modal-body").toggleClass("modal-green", valid);
 
                 if(!valid)
                     return;
@@ -44,7 +46,7 @@ export function spawnChangeLatency(client: ClientEntry, current: LatencySettings
 
                 const slider_tag = container.find(".container-slider");
                 slider_min = sliderfy(slider_tag, {
-                    initial_value: current.min_buffer,
+                    initial_value: current.minBufferTime,
                     step: 20,
                     max_value: 1000,
                     min_value: 0,
@@ -52,12 +54,12 @@ export function spawnChangeLatency(client: ClientEntry, current: LatencySettings
                     unit: 'ms'
                 });
                 slider_tag.on('change', event => {
-                    current.min_buffer = parseInt(slider_tag.attr("value"));
-                    tag_value.text(current.min_buffer + "ms");
+                    current.minBufferTime = parseInt(slider_tag.attr("value"));
+                    tag_value.text(current.minBufferTime + "ms");
                     update_value();
                 });
 
-                tag_value.text(current.min_buffer + "ms");
+                tag_value.text(current.minBufferTime + "ms");
             }
 
             {
@@ -66,7 +68,7 @@ export function spawnChangeLatency(client: ClientEntry, current: LatencySettings
 
                 const slider_tag = container.find(".container-slider");
                 slider_max = sliderfy(slider_tag, {
-                    initial_value: current.max_buffer,
+                    initial_value: current.maxBufferTime,
                     step: 20,
                     max_value: 1020,
                     min_value: 20,
@@ -75,28 +77,28 @@ export function spawnChangeLatency(client: ClientEntry, current: LatencySettings
                 });
 
                 slider_tag.on('change', event => {
-                    current.max_buffer = parseInt(slider_tag.attr("value"));
-                    tag_value.text(current.max_buffer + "ms");
+                    current.maxBufferTime = parseInt(slider_tag.attr("value"));
+                    tag_value.text(current.maxBufferTime + "ms");
                     update_value();
                 });
 
-                tag_value.text(current.max_buffer + "ms");
+                tag_value.text(current.maxBufferTime + "ms");
             }
             setTimeout(update_value, 0);
 
             tag.find(".button-close").on('click', event => {
-                modal.close();
+                modalInstance.close();
             });
 
             tag.find(".button-cancel").on('click', event => {
                 apply(begin);
-                modal.close();
+                modalInstance.close();
             });
 
             tag.find(".button-reset").on('click', event => {
                 current = Object.assign({}, reset());
-                slider_max.value(current.max_buffer);
-                slider_min.value(current.min_buffer);
+                slider_max.value(current.maxBufferTime);
+                slider_min.value(current.minBufferTime);
             });
 
             tag.find(".button-flush").on('click', event => callback_flush());
@@ -108,7 +110,7 @@ export function spawnChangeLatency(client: ClientEntry, current: LatencySettings
         width: 600
     });
 
-    modal.close_listener.push(() => modal = undefined);
-    modal.open();
-    modal.htmlTag.find(".modal-body").addClass("modal-latency");
+    modalInstance.close_listener.push(() => modalInstance = undefined);
+    modalInstance.open();
+    modalInstance.htmlTag.find(".modal-body").addClass("modal-latency");
 }

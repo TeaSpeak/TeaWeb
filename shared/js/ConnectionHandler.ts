@@ -8,15 +8,15 @@ import {LocalClientEntry} from "tc-shared/ui/client";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {ServerAddress} from "tc-shared/ui/server";
 import * as log from "tc-shared/log";
-import {LogCategory, logError, logInfo} from "tc-shared/log";
+import {LogCategory, logError, logInfo, logWarn} from "tc-shared/log";
 import {createErrorModal, createInfoModal, createInputModal, Modal} from "tc-shared/ui/elements/Modal";
 import {hashPassword} from "tc-shared/utils/helpers";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
 import * as htmltags from "./ui/htmltags";
 import {ChannelEntry} from "tc-shared/ui/channel";
-import {InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
+import {FilterMode, InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {default_recorder, RecorderProfile} from "tc-shared/voice/RecorderProfile";
+import {defaultRecorder, RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {Frame} from "tc-shared/ui/frames/chat_frame";
 import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
@@ -37,7 +37,9 @@ import {PluginCmdRegistry} from "tc-shared/connection/PluginCmdHandler";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 import {VoiceConnectionStatus, WhisperSessionInitializeData} from "tc-shared/connection/VoiceConnection";
 import {getServerConnectionFactory} from "tc-shared/connection/ConnectionFactory";
-import {WhisperSession} from "tc-shared/voice/Whisper";
+import {WhisperSession} from "tc-shared/voice/VoiceWhisper";
+import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
+import {ServerFeature, ServerFeatures} from "tc-shared/connection/ServerFeatures";
 
 export enum InputHardwareState {
     MISSING,
@@ -110,12 +112,7 @@ export interface LocalClientStatus {
     input_muted: boolean;
     output_muted: boolean;
 
-    channel_codec_encoding_supported: boolean;
-    channel_codec_decoding_supported: boolean;
-    sound_playback_supported: boolean;
-
-    sound_record_supported;
-
+    lastChannelCodecWarned: number,
     away: boolean | string;
 
     channel_subscribe_all: boolean;
@@ -156,6 +153,8 @@ export class ConnectionHandler {
 
     tag_connection_handler: JQuery;
 
+    serverFeatures: ServerFeatures;
+
     private _clientId: number = 0;
     private _local_client: LocalClientEntry;
 
@@ -163,6 +162,7 @@ export class ConnectionHandler {
     private _reconnect_attempt: boolean = false;
 
     private _connect_initialize_id: number = 1;
+    private echoTestRunning = false;
 
     private pluginCmdRegistry: PluginCmdRegistry;
 
@@ -174,10 +174,7 @@ export class ConnectionHandler {
         channel_subscribe_all: true,
         queries_visible: false,
 
-        sound_playback_supported: undefined,
-        sound_record_supported: undefined,
-        channel_codec_encoding_supported: undefined,
-        channel_codec_decoding_supported: undefined
+        lastChannelCodecWarned: -1
     };
 
     private inputHardwareState: InputHardwareState = InputHardwareState.MISSING;
@@ -199,8 +196,9 @@ export class ConnectionHandler {
             this.update_voice_status();
         });
         this.serverConnection.getVoiceConnection().events.on("notify_connection_status_changed", () => this.update_voice_status());
-
         this.serverConnection.getVoiceConnection().setWhisperSessionInitializer(this.initializeWhisperSession.bind(this));
+
+        this.serverFeatures = new ServerFeatures(this);
 
         this.channelTree = new ChannelTree(this);
         this.fileManager = new FileManager(this);
@@ -413,6 +411,20 @@ export class ConnectionHandler {
             if(control_bar.current_connection_handler() === this)
                 control_bar.apply_server_voice_state();
             */
+
+            /*
+            this.serverConnection.getVoiceConnection().startWhisper({ target: "echo" }).catch(error => {
+                logError(LogCategory.CLIENT, tr("Failed to start local echo: %o"), error);
+            });
+             */
+            this.serverFeatures.awaitFeatures().then(result => {
+                if(!result) {
+                    return;
+                }
+                if(this.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
+                    spawnEchoTestModal(this);
+                }
+            });
         } else {
             this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
         }
@@ -652,6 +664,7 @@ export class ConnectionHandler {
             this.serverConnection.disconnect();
 
         this.hostbanner.update();
+        this.client_status.lastChannelCodecWarned = 0;
 
         if(auto_reconnect) {
             if(!this.serverConnection) {
@@ -692,115 +705,98 @@ export class ConnectionHandler {
         });
     }
 
-    private _last_record_error_popup: number = 0;
-    update_voice_status(targetChannel?: ChannelEntry) {
+    private updateVoiceStatus() {
         if(!this._local_client) {
             /* we've been destroyed */
             return;
         }
 
-        if(typeof targetChannel === "undefined")
-            targetChannel = this.getClient().currentChannel();
+        let shouldRecord = false;
 
-        const vconnection = this.serverConnection.getVoiceConnection();
+        const voiceConnection = this.serverConnection.getVoiceConnection();
+        if(this.serverConnection.connected()) {
+            let localClientUpdates: {
+                client_output_hardware?: boolean,
+                client_input_hardware?: boolean
+            } = {};
 
-        const codecEncodeSupported = !targetChannel || vconnection.encodingSupported(targetChannel.properties.channel_codec);
-        const codecDecodeSupported = !targetChannel || vconnection.decodingSupported(targetChannel.properties.channel_codec);
+            const currentChannel = this.getClient().currentChannel();
 
-        const property_update = {
-            client_input_muted: this.client_status.input_muted,
-            client_output_muted: this.client_status.output_muted
-        };
+            if(!currentChannel) {
+                /* Don't update the voice state, firstly await for us to be fully connected */
+            } else if(voiceConnection.getConnectionState() !== VoiceConnectionStatus.Connected) {
+                /* We're currently not having a valid voice connection. We need to await that. */
+            } else {
+                let codecSupportEncode = voiceConnection.encodingSupported(currentChannel.properties.channel_codec);
+                let codecSupportDecode = voiceConnection.decodingSupported(currentChannel.properties.channel_codec);
 
-        /* update the encoding codec */
-        if(codecEncodeSupported && targetChannel) {
-            vconnection.setEncoderCodec(targetChannel.properties.channel_codec);
-        }
+                localClientUpdates.client_input_hardware = codecSupportEncode;
+                localClientUpdates.client_output_hardware = codecSupportDecode;
 
-        if(!this.serverConnection.connected() || vconnection.getConnectionState() !== VoiceConnectionStatus.Connected) {
-            property_update["client_input_hardware"] = false;
-            property_update["client_output_hardware"] = false;
-        } else {
-            const recording_supported =
-                this.getInputHardwareState() === InputHardwareState.VALID &&
-                (!targetChannel || vconnection.encodingSupported(targetChannel.properties.channel_codec)) &&
-                vconnection.getConnectionState() === VoiceConnectionStatus.Connected;
+                if(this.client_status.lastChannelCodecWarned !== currentChannel.getChannelId()) {
+                    this.client_status.lastChannelCodecWarned = currentChannel.getChannelId();
 
-            const playback_supported = this.hasOutputHardware() && (!targetChannel || vconnection.decodingSupported(targetChannel.properties.channel_codec));
+                    if(!codecSupportEncode || !codecSupportDecode) {
+                        let message;
+                        if(!codecSupportEncode && !codecSupportDecode) {
+                            message = tr("This channel has an unsupported codec.<br>You cant speak or listen to anybody within this channel!");
+                        } else if(!codecSupportEncode) {
+                            message = tr("This channel has an unsupported codec.<br>You cant speak within this channel!");
+                        } else if(!codecSupportDecode) {
+                            message = tr("This channel has an unsupported codec.<br>You cant listen to anybody within this channel!");
+                        }
 
-            property_update["client_input_hardware"] = recording_supported;
-            property_update["client_output_hardware"] = playback_supported;
-        }
+                        createErrorModal(tr("Channel codec unsupported"), message).open();
+                    }
+                }
 
-        {
-            const client_properties = this.getClient().properties;
-            for(const key of Object.keys(property_update)) {
-                if(client_properties[key] === property_update[key])
-                    delete property_update[key];
+                shouldRecord = codecSupportEncode && !!voiceConnection.voiceRecorder()?.input;
             }
 
-            if(Object.keys(property_update).length > 0) {
-                this.serverConnection.send_command("clientupdate", property_update).catch(error => {
-                    log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
-                    this.log.log(EventType.ERROR_CUSTOM, { message: tr("Failed to update audio hardware properties.") });
+            /* update our owns client properties */
+            {
+                const currentClientProperties = this.getClient().properties;
+                for(const key of Object.keys(localClientUpdates)) {
+                    if(currentClientProperties[key] === localClientUpdates[key])
+                        delete localClientUpdates[key];
+                }
 
-                    /* Update these properties anyways (for case the server fails to handle the command) */
-                    const updates = [];
-                    for(const key of Object.keys(property_update))
-                        updates.push({key: key, value: (property_update[key]) + ""});
-                    this.getClient().updateVariables(...updates);
+                if(Object.keys(localClientUpdates).length > 0) {
+                    this.serverConnection.send_command("clientupdate", localClientUpdates).catch(error => {
+                        log.warn(LogCategory.GENERAL, tr("Failed to update client audio hardware properties. Error: %o"), error);
+                        this.log.log(EventType.ERROR_CUSTOM, { message: tr("Failed to update audio hardware properties.") });
+
+                        /* Update these properties anyways (for case the server fails to handle the command) */
+                        const updates = [];
+                        for(const key of Object.keys(localClientUpdates))
+                            updates.push({ key: key, value: localClientUpdates[key] ? "1" : "0" });
+                        this.getClient().updateVariables(...updates);
+                    });
+                }
+            }
+        } else {
+            /* we're not connect, so we should not record either */
+        }
+
+        /* update the recorder state */
+        const currentInput = voiceConnection.voiceRecorder()?.input;
+        if(currentInput) {
+            if(shouldRecord) {
+                if(this.getInputHardwareState() !== InputHardwareState.START_FAILED) {
+                    this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {});
+                }
+            } else {
+                currentInput.stop().catch(error => {
+                    logWarn(LogCategory.AUDIO, tr("Failed to stop the microphone input recorder: %o"), error);
                 });
             }
         }
+    }
 
-        if(targetChannel) {
-            if(this.client_status.channel_codec_decoding_supported !== codecDecodeSupported || this.client_status.channel_codec_encoding_supported !== codecEncodeSupported) {
-                this.client_status.channel_codec_decoding_supported = codecDecodeSupported;
-                this.client_status.channel_codec_encoding_supported = codecEncodeSupported;
-
-                let message;
-                if(!codecEncodeSupported && !codecDecodeSupported) {
-                    message = tr("This channel has an unsupported codec.<br>You cant speak or listen to anybody within this channel!");
-                } else if(!codecEncodeSupported) {
-                    message = tr("This channel has an unsupported codec.<br>You cant speak within this channel!");
-                } else if(!codecDecodeSupported) {
-                    message = tr("This channel has an unsupported codec.<br>You cant listen to anybody within this channel!");
-                }
-
-                if(message) {
-                    createErrorModal(tr("Channel codec unsupported"), message).open();
-                }
-            }
-        }
-
-        this.client_status = this.client_status || {} as any;
-        this.client_status.sound_record_supported = codecEncodeSupported;
-        this.client_status.sound_playback_supported = codecDecodeSupported;
-
-        {
-            const enableRecording = !this.client_status.input_muted && !this.client_status.output_muted;
-            /* No need to start the microphone when we're not even connected */
-
-            const input = vconnection.voiceRecorder()?.input;
-            if(input) {
-                if(enableRecording && this.serverConnection.connected()) {
-                    if(this.getInputHardwareState() !== InputHardwareState.START_FAILED)
-                        this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000);
-                } else {
-                    input.stop();
-                }
-            }
-        }
-
-        //TODO: Only trigger events for stuff which has been updated
-        this.event_registry.fire("notify_state_updated", {
-            state: "microphone"
-        });
-
-        this.event_registry.fire("notify_state_updated", {
-            state: "speaker"
-        });
-        top_menu.update_state(); //TODO: Top-Menu should register their listener
+    private _last_record_error_popup: number = 0;
+    update_voice_status(targetChannel?: ChannelEntry) {
+        this.updateVoiceStatus();
+        return;
     }
 
     sync_status_with_server() {
@@ -810,8 +806,9 @@ export class ConnectionHandler {
                 client_output_muted: this.client_status.output_muted,
                 client_away: typeof(this.client_status.away) === "string" || this.client_status.away,
                 client_away_message: typeof(this.client_status.away) === "string" ? this.client_status.away : "",
-                client_input_hardware: this.client_status.sound_record_supported && this.getInputHardwareState() === InputHardwareState.VALID,
-                client_output_hardware: this.client_status.sound_playback_supported
+                /* TODO: Somehow store this? */
+                //client_input_hardware: this.client_status.sound_record_supported && this.getInputHardwareState() === InputHardwareState.VALID,
+                //client_output_hardware: this.client_status.sound_playback_supported
             }).catch(error => {
                 log.warn(LogCategory.GENERAL, tr("Failed to sync handler state with server. Error: %o"), error);
                 this.log.log(EventType.ERROR_CUSTOM, {message: tr("Failed to sync handler state with server.")});
@@ -821,7 +818,7 @@ export class ConnectionHandler {
     /* can be called as much as you want, does nothing if nothing changed */
     async acquireInputHardware() {
         /* if we're having multiple recorders, try to get the right one */
-        let recorder: RecorderProfile = default_recorder;
+        let recorder: RecorderProfile = defaultRecorder;
 
         try {
             await this.serverConnection.getVoiceConnection().acquireVoiceRecorder(recorder);
@@ -838,9 +835,11 @@ export class ConnectionHandler {
         }
     }
 
-    async startVoiceRecorder(notifyError: boolean) {
+    async startVoiceRecorder(notifyError: boolean) : Promise<{ state: "success" | "no-input" } | { state: "error", message: string }> {
         const input = this.getVoiceRecorder()?.input;
-        if(!input) return;
+        if(!input) {
+            return { state: "no-input" };
+        }
 
         if(input.currentState() === InputState.PAUSED && this.connection_state === ConnectionState.CONNECTED) {
             try {
@@ -851,6 +850,7 @@ export class ConnectionHandler {
 
                 this.setInputHardwareState(InputHardwareState.VALID);
                 this.update_voice_status();
+                return { state: "success" };
             } catch (error) {
                 this.setInputHardwareState(InputHardwareState.START_FAILED);
                 this.update_voice_status();
@@ -871,14 +871,17 @@ export class ConnectionHandler {
                 } else {
                     errorMessage = tr("lookup the console");
                 }
+
                 log.warn(LogCategory.VOICE, tr("Failed to start microphone input (%s)."), error);
                 if(notifyError) {
                     this._last_record_error_popup = Date.now();
                     createErrorModal(tr("Failed to start recording"), tra("Microphone start failed.\nError: {}", errorMessage)).open();
                 }
+                return { state: "error", message: errorMessage };
             }
         } else {
             this.setInputHardwareState(InputHardwareState.VALID);
+            return { state: "success" };
         }
     }
 
@@ -985,10 +988,10 @@ export class ConnectionHandler {
             clientName: session.getClientName(),
             clientUniqueId: session.getClientUniqueId(),
 
-            blocked: false,
+            blocked: session.getClientId() !== this.getClient().clientId(),
             volume: 1,
 
-            sessionTimeout: 60 * 1000
+            sessionTimeout: 5 * 1000
         }
     }
 
@@ -996,35 +999,38 @@ export class ConnectionHandler {
         this.event_registry.unregister_handler(this);
         this.cancel_reconnect(true);
 
-        this.tag_connection_handler && this.tag_connection_handler.remove();
+        this.tag_connection_handler?.remove();
         this.tag_connection_handler = undefined;
 
-        this.hostbanner && this.hostbanner.destroy();
+        this.hostbanner?.destroy();
         this.hostbanner = undefined;
 
-        this.pluginCmdRegistry && this.pluginCmdRegistry.destroy();
+        this.pluginCmdRegistry?.destroy();
         this.pluginCmdRegistry = undefined;
 
-        this._local_client && this._local_client.destroy();
+        this._local_client?.destroy();
         this._local_client = undefined;
 
-        this.channelTree && this.channelTree.destroy();
+        this.channelTree?.destroy();
         this.channelTree = undefined;
 
-        this.side_bar && this.side_bar.destroy();
+        this.side_bar?.destroy();
         this.side_bar = undefined;
 
-        this.log && this.log.destroy();
+        this.log?.destroy();
         this.log = undefined;
 
-        this.permissions && this.permissions.destroy();
+        this.permissions?.destroy();
         this.permissions = undefined;
 
-        this.groups && this.groups.destroy();
+        this.groups?.destroy();
         this.groups = undefined;
 
-        this.fileManager && this.fileManager.destroy();
+        this.fileManager?.destroy();
         this.fileManager = undefined;
+
+        this.serverFeatures?.destroy();
+        this.serverFeatures = undefined;
 
         this.settings && this.settings.destroy();
         this.settings = undefined;
@@ -1136,6 +1142,37 @@ export class ConnectionHandler {
     hasOutputHardware() : boolean { return true; }
 
     getPluginCmdRegistry() : PluginCmdRegistry { return this.pluginCmdRegistry; }
+
+    async startEchoTest() : Promise<void> {
+        await this.serverConnection.getVoiceConnection().startWhisper({ target: "echo" });
+
+        /* TODO: store and later restore microphone status! */
+        this.client_status.input_muted = false;
+        this.update_voice_status();
+
+        try {
+            this.echoTestRunning = true;
+            const startResult = await this.startVoiceRecorder(false);
+
+            /* FIXME: Don't do it like that! */
+            this.getVoiceRecorder()?.input?.setFilterMode(FilterMode.Bypass);
+
+            if(startResult.state === "error") {
+                throw startResult.message;
+            }
+        } catch (error) {
+            this.echoTestRunning = false;
+            /* TODO: Restore voice recorder state! */
+            throw error;
+        }
+    }
+
+    stopEchoTest() {
+        this.echoTestRunning = false;
+        this.serverConnection.getVoiceConnection().stopWhisper();
+        this.getVoiceRecorder()?.input?.setFilterMode(FilterMode.Filter);
+        this.update_voice_status();
+    }
 }
 
 export type ConnectionStateUpdateType = "microphone" | "speaker" | "away" | "subscribe" | "query";

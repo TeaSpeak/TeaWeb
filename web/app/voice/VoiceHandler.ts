@@ -1,5 +1,5 @@
 import * as log from "tc-shared/log";
-import {LogCategory, logDebug, logInfo, logWarn} from "tc-shared/log";
+import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import * as aplayer from "../audio/player";
 import {ServerConnection} from "../connection/ServerConnection";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
@@ -8,7 +8,6 @@ import {settings, ValuedSettingsKey} from "tc-shared/settings";
 import {tr} from "tc-shared/i18n/localize";
 import {
     AbstractVoiceConnection,
-    VoiceClient,
     VoiceConnectionStatus,
     WhisperSessionInitializer
 } from "tc-shared/connection/VoiceConnection";
@@ -18,7 +17,14 @@ import {ConnectionState} from "tc-shared/ConnectionHandler";
 import {VoiceBridge, VoicePacket, VoiceWhisperPacket} from "./bridge/VoiceBridge";
 import {NativeWebRTCVoiceBridge} from "./bridge/NativeWebRTCVoiceBridge";
 import {EventType} from "tc-shared/ui/frames/log/Definitions";
-import {kUnknownWhisperClientUniqueId, WhisperSession} from "tc-shared/voice/Whisper";
+import {
+    kUnknownWhisperClientUniqueId,
+    WhisperSession,
+    WhisperSessionState,
+    WhisperTarget
+} from "tc-shared/voice/VoiceWhisper";
+import {VoiceClient} from "tc-shared/voice/VoiceClient";
+import {WebWhisperSession} from "tc-backend/web/voice/VoiceWhisper";
 
 export enum VoiceEncodeType {
     JS_ENCODE,
@@ -30,6 +36,8 @@ const KEY_VOICE_CONNECTION_TYPE: ValuedSettingsKey<number> = {
     valueType: "number",
     defaultValue: VoiceEncodeType.NATIVE_ENCODE
 };
+
+type CancelableWhisperTarget = WhisperTarget & { canceled: boolean };
 
 export class VoiceConnection extends AbstractVoiceConnection {
     readonly connection: ServerConnection;
@@ -45,10 +53,13 @@ export class VoiceConnection extends AbstractVoiceConnection {
     private awaitingAudioInitialize = false;
 
     private currentAudioSource: RecorderProfile;
-    private voiceClients: VoiceClientController[] = [];
+    private voiceClients: {[key: number]: VoiceClientController} = {};
 
     private whisperSessionInitializer: WhisperSessionInitializer;
-    private whisperSessions: {[key: number]: WhisperSession} = {};
+    private whisperSessions: {[key: number]: WebWhisperSession} = {};
+
+    private whisperTarget: CancelableWhisperTarget | undefined;
+    private whisperTargetInitialize: Promise<void>;
 
     private voiceBridge: VoiceBridge;
 
@@ -78,11 +89,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.acquireVoiceRecorder(undefined, true).catch(error => {
             log.warn(LogCategory.VOICE, tr("Failed to release voice recorder: %o"), error);
         }).then(() => {
-            for(const client of this.voiceClients)  {
-                client.abort_replay();
-                client.callback_playback = undefined;
-                client.callback_state_changed = undefined;
-                client.callback_stopped = undefined;
+            for(const client of Object.values(this.voiceClients))  {
+                client.abortReplay();
             }
             this.voiceClients = undefined;
             this.currentAudioSource = undefined;
@@ -229,13 +237,13 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(chandler.isSpeakerMuted() || chandler.isSpeakerDisabled()) /* we dont need to do anything with sound playback when we're not listening to it */
             return;
 
-        let client = this.find_client(packet.clientId);
+        let client = this.findVoiceClient(packet.clientId);
         if(!client) {
             log.error(LogCategory.VOICE, tr("Having voice from unknown audio client? (ClientID: %o)"), packet.clientId);
             return;
         }
 
-        client.enqueuePacket(packet);
+        client.enqueueAudioPacket(packet.voiceId, packet.codec, packet.head, packet.payload);
     }
 
     private handleRecorderStop() {
@@ -296,29 +304,29 @@ export class VoiceConnection extends AbstractVoiceConnection {
         return this.currentAudioSource;
     }
 
-    availableClients(): VoiceClient[] {
-        return this.voiceClients;
+    availableVoiceClients(): VoiceClient[] {
+        return Object.values(this.voiceClients);
     }
 
-    find_client(client_id: number) : VoiceClientController | undefined {
-        for(const client of this.voiceClients)
-            if(client.client_id === client_id)
-                return client;
-        return undefined;
+    findVoiceClient(clientId: number) : VoiceClientController | undefined {
+        return this.voiceClients[clientId];
     }
 
-    unregister_client(client: VoiceClient): Promise<void> {
+    unregisterVoiceClient(client: VoiceClient) {
         if(!(client instanceof VoiceClientController))
             throw "Invalid client type";
 
+        delete this.voiceClients[client.getClientId()];
         client.destroy();
-        this.voiceClients.remove(client);
-        return Promise.resolve();
     }
 
-    registerClient(client_id: number): VoiceClient {
-        const client = new VoiceClientController(client_id);
-        this.voiceClients.push(client);
+    registerVoiceClient(clientId: number): VoiceClient {
+        if(typeof this.voiceClients[clientId] !== "undefined") {
+            throw tr("voice client already registered");
+        }
+
+        const client = new VoiceClientController(clientId);
+        this.voiceClients[clientId] = client;
         return client;
     }
 
@@ -339,7 +347,36 @@ export class VoiceConnection extends AbstractVoiceConnection {
     }
 
     protected handleWhisperPacket(packet: VoiceWhisperPacket) {
-        console.error("Received voice whisper packet: %o", packet);
+        const clientId = packet.clientId;
+
+        let session = this.whisperSessions[clientId];
+        if(typeof session !== "object") {
+            logDebug(LogCategory.VOICE, tr("Received new whisper from %d (%s)"), packet.clientId, packet.clientNickname);
+            session = (this.whisperSessions[clientId] = new WebWhisperSession(packet));
+            this.whisperSessionInitializer(session).then(result => {
+                session.initializeFromData(result).then(() => {
+                    if(this.whisperSessions[clientId] !== session) {
+                        /* seems to be an old session */
+                        return;
+                    }
+                    this.events.fire("notify_whisper_initialized", { session });
+                }).catch(error => {
+                    logError(LogCategory.VOICE, tr("Failed to internally initialize a voice whisper session: %o"), error);
+                    session.setSessionState(WhisperSessionState.INITIALIZE_FAILED);
+                });
+            }).catch(error => {
+                logError(LogCategory.VOICE, tr("Failed to initialize whisper session: %o."), error);
+                session.initializeFailed();
+            });
+
+            session.events.on("notify_timed_out", () => {
+                logTrace(LogCategory.VOICE, tr("Whisper session %d timed out. Dropping session."), session.getClientId());
+                this.dropWhisperSession(session);
+            });
+            this.events.fire("notify_whisper_created", { session: session });
+        }
+
+        session.enqueueWhisperPacket(packet);
     }
 
     getWhisperSessions(): WhisperSession[] {
@@ -347,7 +384,12 @@ export class VoiceConnection extends AbstractVoiceConnection {
     }
 
     dropWhisperSession(session: WhisperSession) {
-        throw "this is currently not supported";
+        if(!(session instanceof WebWhisperSession)) {
+            throw tr("Session isn't an instance of the web whisper system");
+        }
+
+        delete this.whisperSessions[session.getClientId()];
+        session.destroy();
     }
 
     setWhisperSessionInitializer(initializer: WhisperSessionInitializer | undefined) {
@@ -370,6 +412,57 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     getWhisperSessionInitializer(): WhisperSessionInitializer | undefined {
         return this.whisperSessionInitializer;
+    }
+
+    async startWhisper(target: WhisperTarget): Promise<void> {
+        while(this.whisperTargetInitialize) {
+            this.whisperTarget.canceled = true;
+            await this.whisperTargetInitialize;
+        }
+
+        this.whisperTarget = Object.assign({ canceled: false }, target);
+        try {
+            await (this.whisperTargetInitialize = this.doStartWhisper(this.whisperTarget));
+        } finally {
+            this.whisperTargetInitialize = undefined;
+        }
+    }
+
+    private async doStartWhisper(target: CancelableWhisperTarget) {
+        if(target.target === "echo") {
+            await this.connection.send_command("setwhispertarget", {
+                type: 0x10, /* self */
+                target: 0,
+                id: 0
+            }, { flagset: ["new"] });
+        } else if(target.target === "channel-clients") {
+            throw "target not yet supported";
+        } else if(target.target === "groups") {
+            throw "target not yet supported";
+        } else {
+            throw "target not yet supported";
+        }
+
+        if(target.canceled) {
+            return;
+        }
+
+        this.voiceBridge.startWhispering();
+    }
+
+    getWhisperTarget(): WhisperTarget | undefined {
+        return this.whisperTarget;
+    }
+
+    stopWhisper() {
+        if(this.whisperTarget) {
+            this.whisperTarget.canceled = true;
+            this.whisperTargetInitialize = undefined;
+            this.connection.send_command("clearwhispertarget").catch(error => {
+                logWarn(LogCategory.CLIENT, tr("Failed to clear the whisper target: %o"), error);
+            });
+        }
+        this.voiceBridge.stopWhispering();
     }
 }
 

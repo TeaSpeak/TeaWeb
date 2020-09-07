@@ -4,7 +4,7 @@ import {Registry} from "tc-shared/events";
 import {LevelMeter} from "tc-shared/voice/RecorderBase";
 import * as log from "tc-shared/log";
 import {LogCategory, logWarn} from "tc-shared/log";
-import {default_recorder} from "tc-shared/voice/RecorderProfile";
+import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
 
 export type MicrophoneSetting = "volume" | "vad-type" | "ppt-key" | "ppt-release-delay" | "ppt-release-delay-active" | "threshold-threshold";
@@ -98,7 +98,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
             for(const device of recorderBackend.getDeviceList().getDevices()) {
                 let promise = recorderBackend.createLevelMeter(device).then(meter => {
-                    meter.set_observer(level => {
+                    meter.setObserver(level => {
                         if(level_meters[device.deviceId] !== promise) return; /* old level meter */
 
                         level_info[device.deviceId] = {
@@ -172,7 +172,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
                 events.fire_async("notify_devices", {
                     status: "success",
-                    selectedDevice: default_recorder.getDeviceId(),
+                    selectedDevice: defaultRecorder.getDeviceId(),
                     devices: devices.map(e => { return { id: e.deviceId, name: e.name, driver: e.driver }})
                 });
             }
@@ -181,11 +181,11 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         events.on("action_set_selected_device", event => {
             const device = recorderBackend.getDeviceList().getDevices().find(e => e.deviceId === event.deviceId);
             if(!device && event.deviceId !== IDevice.NoDeviceId) {
-                events.fire_async("action_set_selected_device_result", { status: "error", error: tr("Invalid device id"), deviceId: default_recorder.getDeviceId() });
+                events.fire_async("action_set_selected_device_result", { status: "error", error: tr("Invalid device id"), deviceId: defaultRecorder.getDeviceId() });
                 return;
             }
 
-            default_recorder.set_device(device).then(() => {
+            defaultRecorder.setDevice(device).then(() => {
                 console.debug(tr("Changed default microphone device to %s"), event.deviceId);
                 events.fire_async("action_set_selected_device_result", { status: "success", deviceId: event.deviceId });
             }).catch((error) => {
@@ -201,27 +201,27 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
             let value;
             switch (event.setting) {
                 case "volume":
-                    value = default_recorder.get_volume();
+                    value = defaultRecorder.getVolume();
                     break;
 
                 case "threshold-threshold":
-                    value = default_recorder.get_vad_threshold();
+                    value = defaultRecorder.getThresholdThreshold();
                     break;
 
                 case "vad-type":
-                    value = default_recorder.get_vad_type();
+                    value = defaultRecorder.getVadType();
                     break;
 
                 case "ppt-key":
-                    value = default_recorder.get_vad_ppt_key();
+                    value = defaultRecorder.getPushToTalkKey();
                     break;
 
                 case "ppt-release-delay":
-                    value = Math.abs(default_recorder.get_vad_ppt_delay());
+                    value = Math.abs(defaultRecorder.getPushToTalkDelay());
                     break;
 
                 case "ppt-release-delay-active":
-                    value = default_recorder.get_vad_ppt_delay() > 0;
+                    value = defaultRecorder.getPushToTalkDelay() > 0;
                     break;
 
                 default:
@@ -246,17 +246,17 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
             switch (event.setting) {
                 case "volume":
                     if(!ensure_type("number")) return;
-                    default_recorder.set_volume(event.value);
+                    defaultRecorder.setVolume(event.value);
                     break;
 
                 case "threshold-threshold":
                     if(!ensure_type("number")) return;
-                    default_recorder.set_vad_threshold(event.value);
+                    defaultRecorder.setThresholdThreshold(event.value);
                     break;
 
                 case "vad-type":
                     if(!ensure_type("string")) return;
-                    if(!default_recorder.set_vad_type(event.value)) {
+                    if(!defaultRecorder.setVadType(event.value)) {
                         logWarn(LogCategory.GENERAL, tr("Failed to change recorders VAD type to %s"), event.value);
                         return;
                     }
@@ -264,18 +264,18 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
                 case "ppt-key":
                     if(!ensure_type("object")) return;
-                    default_recorder.set_vad_ppt_key(event.value);
+                    defaultRecorder.setPushToTalkKey(event.value);
                     break;
 
                 case "ppt-release-delay":
                     if(!ensure_type("number")) return;
-                    const sign = default_recorder.get_vad_ppt_delay() >= 0 ? 1 : -1;
-                    default_recorder.set_vad_ppt_delay(sign * event.value);
+                    const sign = defaultRecorder.getPushToTalkDelay() >= 0 ? 1 : -1;
+                    defaultRecorder.setPushToTalkDelay(sign * event.value);
                     break;
 
                 case "ppt-release-delay-active":
                     if(!ensure_type("boolean")) return;
-                    default_recorder.set_vad_ppt_delay(Math.abs(default_recorder.get_vad_ppt_delay()) * (event.value ? 1 : -1));
+                    defaultRecorder.setPushToTalkDelay(Math.abs(defaultRecorder.getPushToTalkDelay()) * (event.value ? 1 : -1));
                     break;
 
                 default:

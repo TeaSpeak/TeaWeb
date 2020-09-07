@@ -18,12 +18,13 @@ export class AudioClient {
         this.handle.destroyClient(this.clientId);
     }
 
-    enqueueBuffer(buffer: Uint8Array, packetId: number, codec: number) {
+    enqueueBuffer(buffer: Uint8Array, packetId: number, codec: number, head: boolean) {
         this.handle.getWorker().executeThrow("enqueue-audio-packet", {
             clientId: this.clientId,
 
             codec: codec,
             packetId: packetId,
+            head: head,
 
             buffer: buffer.buffer,
             byteLength: buffer.byteLength,

@@ -1,0 +1,257 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    @include user-select(none);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    position: relative;
+
+    width: 40em;
+    height: 23em;
+
+    padding: 1em;
+
+    .header {
+        flex-shrink: 0;
+        all: unset;
+
+        display: block;
+
+        font-size: 1.3em;
+        margin-top: 0;
+        margin-bottom: .2em;
+    }
+
+    .buttons {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+
+        position: relative;
+
+        margin-top: 2em;
+        padding-bottom: 4.5em;
+
+        .buttonContainer {
+            position: relative;
+
+            .button {
+                font-size: 6.5em;
+
+                height: 1em;
+                width: 1em;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+
+                border: 2px solid;
+                border-radius: 50%;
+
+                box-sizing: content-box;
+                padding: .1em;
+
+                cursor: pointer;
+
+                @include transition(ease-in-out $button_hover_animation_time);
+
+                &.success {
+                    border-color: #1ca037;
+
+                    &:hover {
+                        background-color: rgba(28, 160, 55, .1);
+                    }
+                }
+
+                &.fail {
+                    border-color: #c90709;
+
+                    &:hover {
+                        background-color: #c907091a;
+                    }
+                }
+
+                &:hover {
+                    @include transform(scale(1.05));
+                }
+            }
+
+            a {
+                position: absolute;
+
+                margin-top: .3em;
+                font-size: 1.1rem;
+
+                top: 100%;
+                left: 0;
+                right: 0;
+
+                text-align: center;
+            }
+        }
+
+        .overlay {
+            z-index: 1;
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            pointer-events: none;
+            opacity: 0;
+
+            background-color: #19191bcc;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            text-align: center;
+            padding-bottom: 3.5em;
+
+            font-size: 1.2em;
+
+            @include transition(ease-in-out .2s);
+
+            &.shown {
+                pointer-events: all;
+                opacity: 1;
+            }
+        }
+    }
+
+    .footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        margin-top: auto;
+
+        label {
+            align-self: flex-end;
+        }
+    }
+
+    > .overlay {
+        z-index: 1;
+        position: absolute;
+
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+
+        display: none;
+        background: #19191b;
+
+        &.shown {
+            display: flex;
+        }
+    }
+}
+
+.troubleshoot {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+
+    padding: 1em;
+
+    .top {
+        display: flex;
+        flex-direction: row;
+        justify-content: stretch;
+
+        min-height: 6em;
+
+        flex-shrink: 1;
+    }
+
+    .containerIcon {
+        padding: 0 2em;
+
+        flex-grow: 0;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        .icon {
+            align-self: center;
+            font-size: 12em;
+        }
+    }
+
+    .help {
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        min-height: 6em;
+
+        flex-shrink: 1;
+        flex-grow: 1;
+
+        h1 {
+            font-size: 1.4em;
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+
+        ol {
+            overflow: auto;
+            flex-shrink: 1;
+            flex-grow: 1;
+            min-height: 4em;
+
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-left: 1.1em;
+            padding-right: .5em;
+
+            padding-inline-start: 1em;
+
+            @include chat-scrollbar-vertical();
+
+            li {
+                color: #557EDC;
+                margin-top: .5em;
+
+                p {
+                    margin: 0;
+                    color: #999;
+                }
+            }
+        }
+
+        h2 {
+            all: unset;
+            display: block;
+            position: relative;
+
+            button {
+                vertical-align: middle;
+
+                position: absolute;
+                right: 0;
+                top: 0;
+                bottom: 0;
+            }
+        }
+    }
+
+    .buttons {
+        flex-shrink: 0;
+        padding: 0;
+        margin-top: 1em;
+
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}

@@ -169,6 +169,10 @@ export class JThresholdFilter extends JAbstractFilter<GainNode> implements Thres
     }
 
     private updateGainNode(increaseSilenceCount: boolean) {
+        if(!this.audioNode) {
+            return;
+        }
+
         let state;
         if(this.currentLevel > this.threshold) {
             this.silenceCount = 0;
@@ -204,7 +208,10 @@ export class JThresholdFilter extends JAbstractFilter<GainNode> implements Thres
         }
 
         this.paused = flag;
-        this.initializeAnalyzer();
+
+        if(!this.paused) {
+            this.initializeAnalyzer();
+        }
     }
 
     registerLevelCallback(callback: (value: number) => void) {
@@ -216,7 +223,7 @@ export class JThresholdFilter extends JAbstractFilter<GainNode> implements Thres
     }
 
     private initializeAnalyzer() {
-        if(this.analyzeTask) {
+        if(this.analyzeTask || !this.audioNode) {
             return;
         }
 

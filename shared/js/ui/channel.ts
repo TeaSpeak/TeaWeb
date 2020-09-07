@@ -22,6 +22,7 @@ import {ChannelEntryView as ChannelEntryView} from "./tree/Channel";
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {ViewReasonId} from "tc-shared/ConnectionHandler";
 import {EventChannelData} from "tc-shared/ui/frames/log/Definitions";
+import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export enum ChannelType {
     PERMANENT,
@@ -653,11 +654,15 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
             return;
         }
 
-        this.channelTree.client.getServerConnection().command_helper.joinChannel(this, this.cachedPasswordHash).then(() => {
+        this.channelTree.client.serverConnection.send_command("clientmove", {
+            "clid": this.channelTree.client.getClientId(),
+            "cid": this.getChannelId(),
+            "cpw": this.cachedPasswordHash || ""
+        }).then(() => {
             this.channelTree.client.sound.play(Sound.CHANNEL_JOINED);
         }).catch(error => {
             if(error instanceof CommandResult) {
-                if(error.id == 781) { //Invalid password
+                if(error.id == ErrorCode.CHANNEL_INVALID_PASSWORD) { //Invalid password
                     this.invalidateCachedPassword();
                 }
             }

@@ -5,7 +5,7 @@ use std::collections::VecDeque;
 use std::ops::{ Deref };
 use std::time::{SystemTime, Duration, UNIX_EPOCH};
 use futures::{FutureExt};
-use crate::audio::{AudioPacket, Codec, PacketId};
+use crate::audio::{AudioPacket, PacketId};
 
 #[derive(Debug, PartialEq)]
 pub enum AudioPacketQueueEvent {
@@ -127,21 +127,40 @@ impl AudioPacketQueue {
         instance
     }
 
+    fn test_sequence(&self, packet: &Box<AudioPacket>) -> Result<(), EnqueueError> {
+        if !self.last_packet_id.is_less(&packet.packet_id, Some(self.clipping_window)) {
+            return Err(EnqueueError::PacketTooOld);
+        } else if self.last_packet_id.difference(&packet.packet_id, Some(self.clipping_window)) > 20 {
+            return Err(EnqueueError::PacketSequenceMismatch(self.last_packet_id.clone()));
+        }
+
+        Ok(())
+    }
+
+    fn initialize_sequence(&mut self, packet: &Box<AudioPacket>) {
+        self.reset_sequence(false);
+        self.last_packet_timestamp = current_time_millis();
+        self.last_packet_id = packet.packet_id - 1; /* reduce the last packet id by one so this packet is the next packet */
+    }
+
     /// Enqueue a new audio packet
-    pub fn enqueue_packet(&mut self, packet: Box<AudioPacket>) -> Result<(), EnqueueError> {
+    pub fn enqueue_packet(&mut self, packet: Box<AudioPacket>, is_head_packet: bool) -> Result<(), EnqueueError> {
         let current_time = current_time_millis();
 
         /* check if we're expecting a sequence */
         if current_time - self.last_packet_timestamp < 1000 {
-            if !self.last_packet_id.is_less(&packet.packet_id, Some(self.clipping_window)) {
-                return Err(EnqueueError::PacketTooOld);
-            } else if self.last_packet_id.difference(&packet.packet_id, Some(self.clipping_window)) > 20 {
-                return Err(EnqueueError::PacketSequenceMismatch(self.last_packet_id.clone()));
+            let sequence_result = self.test_sequence(&packet);
+            if let Err(error) = sequence_result {
+                if !is_head_packet {
+                    return Err(error);
+                }
+
+                /* enforce a new sequence */
+                self.initialize_sequence(&packet);
             }
         } else {
             /* we've a new sequence */
-            self.last_packet_timestamp = current_time;
-            self.last_packet_id = packet.packet_id - 1; /* reduce the last packet id by one so this packet is the next packet */
+            self.initialize_sequence(&packet);
         }
 
         let mut index = 0;
@@ -380,7 +399,7 @@ mod tests {
             client_id: 0,
             codec: Codec::Opus,
             payload: vec![]
-        }))
+        }), false)
     }
 
     fn darin_queued_events(queue: &mut AudioPacketQueue, _expect_events: bool) {

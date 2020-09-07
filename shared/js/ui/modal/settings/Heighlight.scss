@@ -8,8 +8,6 @@
     display: flex;
     position: relative;
 
-    padding: .5em;
-
     background-color: inherit;
 
     .background {
@@ -71,6 +69,8 @@
     }
 
     &.shown {
+        padding: .5em;
+
         .background {
             display: flex;
             z-index: 1;

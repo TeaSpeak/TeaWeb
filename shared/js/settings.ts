@@ -162,7 +162,9 @@ export interface SettingsEvents {
         mode: "global" | "server",
 
         oldValue: string,
-        newValue: string
+        newValue: string,
+
+        newCastedValue: any
     }
 }
 
@@ -483,6 +485,12 @@ export class Settings extends StaticSettings {
         valueType: "boolean",
     };
 
+    static readonly KEY_VOICE_ECHO_TEST_ENABLED: ValuedSettingsKey<boolean> = {
+        key: 'voice_echo_test_enabled',
+        defaultValue: true,
+        valueType: "boolean",
+    };
+
     static readonly FN_LOG_ENABLED: (category: string) => SettingsKey<boolean> = category => {
         return {
             key: "log." + category.toLowerCase() + ".enabled",
@@ -661,10 +669,19 @@ export class Settings extends StaticSettings {
             mode: "global",
             newValue: this.cacheGlobal[key.key],
             oldValue: oldValue,
-            setting: key.key
+            setting: key.key,
+            newCastedValue: value
         });
         if(Settings.UPDATE_DIRECT)
             this.save();
+    }
+
+    globalChangeListener<T extends ConfigValueTypes>(key: SettingsKey<T>, listener: (newValue: T) => void) : () => void {
+        return this.events.on("notify_setting_changed", event => {
+            if(event.setting === key.key && event.mode === "global") {
+                listener(event.newCastedValue);
+            }
+        })
     }
 
     save() {

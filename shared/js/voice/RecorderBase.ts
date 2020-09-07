@@ -9,14 +9,14 @@ export enum InputConsumerType {
 }
 export interface CallbackInputConsumer {
     type: InputConsumerType.CALLBACK;
-    callback_audio?: (buffer: AudioBuffer) => any;
-    callback_buffer?: (buffer: Float32Array, samples: number, channels: number) => any;
+    callbackAudio?: (buffer: AudioBuffer) => any;
+    callbackBuffer?: (buffer: Float32Array, samples: number, channels: number) => any;
 }
 
 export interface NodeInputConsumer {
     type: InputConsumerType.NODE;
-    callback_node: (source_node: AudioNode) => any;
-    callback_disconnect: (source_node: AudioNode) => any;
+    callbackNode: (source_node: AudioNode) => any;
+    callbackDisconnect: (source_node: AudioNode) => any;
 }
 
 export interface NativeInputConsumer {
@@ -54,6 +54,23 @@ export interface InputEvents {
     notify_voice_end: {}
 }
 
+export enum FilterMode {
+    /**
+     * Apply all filters and act according to the output
+     */
+    Filter,
+
+    /**
+     * Bypass all filters and replay the audio
+     */
+    Bypass,
+
+    /**
+     * Block all communication
+     */
+    Block
+}
+
 export interface AbstractInput {
     readonly events: Registry<InputEvents>;
 
@@ -67,6 +84,9 @@ export interface AbstractInput {
      * If the current state isn't recording, than it will return true.
      */
     isFiltered() : boolean;
+
+    getFilterMode() : FilterMode;
+    setFilterMode(mode: FilterMode);
 
     currentDeviceId() : string | undefined;
 
@@ -90,9 +110,9 @@ export interface AbstractInput {
 }
 
 export interface LevelMeter {
-    device() : IDevice;
+    getDevice() : IDevice;
 
-    set_observer(callback: (value: number) => any);
+    setObserver(callback: (value: number) => any);
 
     destroy();
 }

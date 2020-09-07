@@ -63,7 +63,7 @@ impl Add<u16> for PacketId {
     type Output = PacketId;
 
     fn add(self, rhs: u16) -> Self::Output {
-        PacketId{ packet_id: self.packet_id.wrapping_add(rhs) }
+        PacketId::new(self.packet_id.wrapping_add(rhs))
     }
 }
 
@@ -71,7 +71,7 @@ impl Sub<u16> for PacketId {
     type Output = PacketId;
 
     fn sub(self, rhs: u16) -> Self::Output {
-        PacketId{ packet_id: self.packet_id.wrapping_sub(rhs) }
+        PacketId::new(self.packet_id.wrapping_sub(rhs))
     }
 }
 

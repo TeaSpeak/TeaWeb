@@ -141,10 +141,10 @@ export function spawnAvatarList(client: ConnectionHandler) {
             if(container_list.hasScrollBar())
                 container_list.addClass("scrollbar");
 
-            client.serverConnection.command_helper.info_from_uid(...Object.keys(username_resolve)).then(result => {
+            client.serverConnection.command_helper.getInfoFromUniqueId(...Object.keys(username_resolve)).then(result => {
                 for(const info of result) {
-                    username_resolve[info.client_unique_id].forEach(e => e(info.client_nickname));
-                    delete username_resolve[info.client_unique_id];
+                    username_resolve[info.clientUniqueId].forEach(e => e(info.clientNickname));
+                    delete username_resolve[info.clientUniqueId];
                 }
                 for(const uid of Object.keys(username_resolve)) {
                     (username_resolve[uid] || []).forEach(e => e(undefined));

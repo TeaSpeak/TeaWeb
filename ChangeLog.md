@@ -1,4 +1,7 @@
 # Changelog:
+* **05.09.20**
+    - Smoother voice playback start (web client only)
+    
 * **02.09.20**
     - Fixed web client hangup on no device error
     - Improved default recorder device detection (selects by default the best device)
