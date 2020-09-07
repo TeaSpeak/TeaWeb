@@ -82,7 +82,7 @@ const APP_FILE_LIST_SHARED_SOURCE: ProjectResource[] = [
         "type": "img",
         "search-pattern": /.*\.(svg|png|gif)/,
         "build-target": "dev|rel",
-        "search-exclude": /.*(client-icons|style)\/.*/,
+        "search-exclude": /.*(client-icons)\/.*/,
 
         "path": "img/",
         "local-path": "./shared/img/"

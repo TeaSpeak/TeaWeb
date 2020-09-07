@@ -224,10 +224,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 filter_callbacks = [];
                 container_list.find(".entry").remove();
 
-                client.serverConnection.command_helper.current_virtual_server_id().then(server_id => {
+                client.serverConnection.command_helper.getCurrentVirtualServerId().then(server_id => {
                     current_server = server_id;
 
-                    client.serverConnection.command_helper.request_query_list(server_id).then(result => {
+                    client.serverConnection.command_helper.requestQueryList(server_id).then(result => {
                         if(!result || !result.queries.length) {
                             container_list_empty.text(tr("No queries available"));
                             return;

@@ -53,10 +53,14 @@ workerHandler.registerMessageHandler("create-client", () => {
     }
 });
 
+workerHandler.registerMessageHandler("destroy-client", payload => {
+    audioLibrary.audio_client_destroy(payload.clientId);
+})
+
 workerHandler.registerMessageHandler("initialize", async () => {
     await initializeAudioLib();
 })
 
 workerHandler.registerMessageHandler("enqueue-audio-packet", payload => {
-    audioLibrary.audio_client_enqueue_buffer(payload.clientId, new Uint8Array(payload.buffer, payload.byteOffset, payload.byteLength), payload.packetId, payload.codec);
+    audioLibrary.audio_client_enqueue_buffer(payload.clientId, new Uint8Array(payload.buffer, payload.byteOffset, payload.byteLength), payload.packetId, payload.codec, payload.head);
 });

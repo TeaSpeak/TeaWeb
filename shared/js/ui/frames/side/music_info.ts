@@ -1,13 +1,13 @@
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
-import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/ui/client";
+import {ClientEvents, MusicClientEntry, MusicClientPlayerState, SongInfo} from "tc-shared/ui/client";
 import {LogCategory} from "tc-shared/log";
 import {CommandResult, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import * as log from "tc-shared/log";
 import * as image_preview from "../image_preview";
 import {Registry} from "tc-shared/events";
-import {PlayerState} from "tc-shared/connection/VoiceConnection";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 
 export interface MusicSidebarEvents {
     "open": {}, /* triggers when frame should be shown */
@@ -72,7 +72,7 @@ export class MusicInfo {
     private _html_tag: JQuery;
     private _container_playlist: JQuery;
 
-    private _current_bot: MusicClientEntry | undefined;
+    private currentMusicBot: MusicClientEntry | undefined;
     private update_song_info: number = 0; /* timestamp when we force update the info */
     private time_select: {
         active: boolean,
@@ -113,7 +113,7 @@ export class MusicInfo {
         this._html_tag && this._html_tag.remove();
         this._html_tag = undefined;
 
-        this._current_bot = undefined;
+        this.currentMusicBot = undefined;
         this.previous_frame_content = undefined;
     }
 
@@ -167,15 +167,13 @@ export class MusicInfo {
             this.events.on(["bot_change", "bot_property_update"], event => {
                 if(event.type === "bot_property_update" && event.as<"bot_property_update">().properties.indexOf("player_state") == -1) return;
 
-                /* FIXME: Is this right, using our player state?! */
-                button_play.toggleClass("hidden", this._current_bot === undefined || this._current_bot.properties.player_state < PlayerState.STOPPING);
+                button_play.toggleClass("hidden", this.currentMusicBot === undefined || this.currentMusicBot.isCurrentlyPlaying());
             });
 
             this.events.on(["bot_change", "bot_property_update"], event => {
                 if(event.type === "bot_property_update" && event.as<"bot_property_update">().properties.indexOf("player_state") == -1) return;
 
-                /* FIXME: Is this right, using our player state?! */
-                button_pause.toggleClass("hidden", this._current_bot !== undefined && this._current_bot.properties.player_state >= PlayerState.STOPPING);
+                button_pause.toggleClass("hidden", this.currentMusicBot !== undefined && !this.currentMusicBot.isCurrentlyPlaying());
             });
 
             this._html_tag.find(".control-buttons .button-rewind").on('click', () => this.events.fire("action_rewind"));
@@ -197,7 +195,7 @@ export class MusicInfo {
             thumb.on('mousedown', event => event.button === 0 && this.events.fire("playtime_move_begin"));
 
             this.events.on(["bot_change", "player_song_change", "player_time_update", "playtime_move_end"], event => {
-                if(!this._current_bot) {
+                if(!this.currentMusicBot) {
                     this.time_select.max_time = 0;
                     indicator_buffered.each((_, e) => { e.style.width = "0%"; });
                     indicator_playtime.each((_, e) => { e.style.width = "0%"; });
@@ -210,7 +208,7 @@ export class MusicInfo {
                 if(event.type === "playtime_move_end" && !event.as<"playtime_move_end">().canceled) return;
 
                 const update_info = Date.now() > this.update_song_info;
-                this._current_bot.requestPlayerInfo(update_info ? 1000 : 60 * 1000).then(data => {
+                this.currentMusicBot.requestPlayerInfo(update_info ? 1000 : 60 * 1000).then(data => {
                     if(update_info)
                         this.display_song_info(data);
 
@@ -313,9 +311,9 @@ export class MusicInfo {
             let song: SongInfo;
 
             /* update the player info so we dont get old data */
-            if(this._current_bot) {
+            if(this.currentMusicBot) {
                 this.update_song_info = 0;
-                this._current_bot.requestPlayerInfo(1000).then(data => {
+                this.currentMusicBot.requestPlayerInfo(1000).then(data => {
                     this.display_song_info(data);
                 }).catch(error => {
                     log.warn(LogCategory.CLIENT, tr("Failed to update current song for side bar: %o"), error);
@@ -366,9 +364,9 @@ export class MusicInfo {
     private initialize_listener() {
         //Must come at first!
         this.events.on("player_song_change", event => {
-            if(!this._current_bot) return;
+            if(!this.currentMusicBot) return;
 
-            this._current_bot.requestPlayerInfo(0); /* enforce an info refresh */
+            this.currentMusicBot.requestPlayerInfo(0); /* enforce an info refresh */
         });
 
         /* bot property listener */
@@ -414,7 +412,7 @@ export class MusicInfo {
             };
 
             this.events.on(Object.keys(action_map) as any, event => {
-                if(!this._current_bot) return;
+                if(!this.currentMusicBot) return;
 
                 const action_id = action_map[event.type];
                 if(typeof action_id === "undefined") {
@@ -422,7 +420,7 @@ export class MusicInfo {
                     return;
                 }
                 const data = {
-                    bot_id: this._current_bot.properties.client_database_id,
+                    bot_id: this.currentMusicBot.properties.client_database_id,
                     action: action_id,
                     units: event.units
                 };
@@ -437,13 +435,13 @@ export class MusicInfo {
         }
 
         this.events.on("action_song_set", event => {
-            if(!this._current_bot) return;
+            if(!this.currentMusicBot) return;
 
             const connection = this.handle.handle.serverConnection;
             if(!connection || !connection.connected()) return;
 
             connection.send_command("playlistsongsetcurrent", {
-                playlist_id: this._current_bot.properties.client_playlist_id,
+                playlist_id: this.currentMusicBot.properties.client_playlist_id,
                 song_id: event.song_id
             }).catch(error => {
                 if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
@@ -455,7 +453,7 @@ export class MusicInfo {
         });
 
         this.events.on("action_song_add", () => {
-            if(!this._current_bot) return;
+            if(!this.currentMusicBot) return;
 
             createInputModal(tr("Enter song URL"), tr("Please enter the target song URL"), text => {
                 try {
@@ -465,11 +463,11 @@ export class MusicInfo {
                     return false;
                 }
             }, result => {
-                if(!result || !this._current_bot) return;
+                if(!result || !this.currentMusicBot) return;
 
                 const connection = this.handle.handle.serverConnection;
                 connection.send_command("playlistsongadd", {
-                    playlist_id: this._current_bot.properties.client_playlist_id,
+                    playlist_id: this.currentMusicBot.properties.client_playlist_id,
                     url: result
                 }).catch(error => {
                     if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
@@ -483,13 +481,13 @@ export class MusicInfo {
         });
 
         this.events.on("action_song_delete", event => {
-            if(!this._current_bot) return;
+            if(!this.currentMusicBot) return;
 
             const connection = this.handle.handle.serverConnection;
             if(!connection || !connection.connected()) return;
 
             connection.send_command("playlistsongremove", {
-                playlist_id: this._current_bot.properties.client_playlist_id,
+                playlist_id: this.currentMusicBot.properties.client_playlist_id,
                 song_id: event.song_id
             }).catch(error => {
                 if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) return;
@@ -506,7 +504,7 @@ export class MusicInfo {
             const connection = this.handle.handle.serverConnection;
             if(!connection || !connection.connected()) return;
 
-            const bot_id = this._current_bot ? this._current_bot.properties.client_database_id : 0;
+            const bot_id = this.currentMusicBot ? this.currentMusicBot.properties.client_database_id : 0;
             this.handle.handle.serverConnection.send_command("musicbotsetsubscription", { bot_id: bot_id }).catch(error => {
                 log.warn(LogCategory.CLIENT, tr("Failed to subscribe to displayed bot within the side bar: %o"), error);
             });
@@ -682,10 +680,10 @@ export class MusicInfo {
 
                     const connection = this.handle.handle.serverConnection;
                     if(!connection || !connection.connected()) return;
-                    if(!this._current_bot) return;
+                    if(!this.currentMusicBot) return;
 
                     connection.send_command("playlistsongreorder", {
-                        playlist_id: this._current_bot.properties.client_playlist_id,
+                        playlist_id: this.currentMusicBot.properties.client_playlist_id,
                         song_id: data.song_id,
                         song_previous_song_id: data.previous_entry
                     }).catch(error => {
@@ -701,12 +699,12 @@ export class MusicInfo {
             });
 
             this.events.on(["bot_change", "player_song_change"], event => {
-                if(!this._current_bot) {
+                if(!this.currentMusicBot) {
                     this._html_tag.find(".playlist .current-song").removeClass("current-song");
                     return;
                 }
 
-                this._current_bot.requestPlayerInfo(1000).then(data => {
+                this.currentMusicBot.requestPlayerInfo(1000).then(data => {
                      const song_id = data ? data.song_id : 0;
                     this._html_tag.find(".playlist .current-song").removeClass("current-song");
                     this._html_tag.find(".playlist .entry[song-id=" + song_id + "]").addClass("current-song");
@@ -717,11 +715,11 @@ export class MusicInfo {
 
     set_current_bot(client: MusicClientEntry | undefined, enforce?: boolean) {
         if(client) client.updateClientVariables(); /* just to ensure */
-        if(client === this._current_bot && (typeof(enforce) === "undefined" || !enforce))
+        if(client === this.currentMusicBot && (typeof(enforce) === "undefined" || !enforce))
             return;
 
-        const old = this._current_bot;
-        this._current_bot = client;
+        const old = this.currentMusicBot;
+        this.currentMusicBot = client;
         this.events.fire("bot_change", {
             new: client,
             old: old
@@ -729,7 +727,7 @@ export class MusicInfo {
     }
 
     current_bot() : MusicClientEntry | undefined {
-        return this._current_bot;
+        return this.currentMusicBot;
     }
 
     private sort_songs(data: PlaylistSong[]) {
@@ -776,7 +774,7 @@ export class MusicInfo {
         const playlist = this._container_playlist.find(".playlist");
         playlist.empty();
 
-        if(!this.handle.handle.serverConnection || !this.handle.handle.serverConnection.connected() || !this._current_bot) {
+        if(!this.handle.handle.serverConnection || !this.handle.handle.serverConnection.connected() || !this.currentMusicBot) {
             this._container_playlist.find(".overlay-empty").removeClass("hidden");
             return;
         }
@@ -784,10 +782,10 @@ export class MusicInfo {
         const overlay_loading = this._container_playlist.find(".overlay-loading");
         overlay_loading.removeClass("hidden");
 
-        this._current_bot.updateClientVariables(true).catch(error => {
+        this.currentMusicBot.updateClientVariables(true).catch(error => {
             log.warn(LogCategory.CLIENT, tr("Failed to update music bot variables: %o"), error);
         }).then(() => {
-            this.handle.handle.serverConnection.command_helper.request_playlist_songs(this._current_bot.properties.client_playlist_id, false).then(songs => {
+            this.handle.handle.serverConnection.command_helper.requestPlaylistSongs(this.currentMusicBot.properties.client_playlist_id, false).then(songs => {
                 this.playlist_subscribe(false); /* we're allowed to see the playlist */
                 if(!songs) {
                     this._container_playlist.find(".overlay-empty").removeClass("hidden");
@@ -813,7 +811,7 @@ export class MusicInfo {
     private playlist_subscribe(unsubscribe: boolean) {
         if(!this.handle.handle.serverConnection) return;
 
-        if(unsubscribe || !this._current_bot) {
+        if(unsubscribe || !this.currentMusicBot) {
             if(!this._playlist_subscribed) return;
             this._playlist_subscribed = false;
 
@@ -822,7 +820,7 @@ export class MusicInfo {
             });
         } else {
             this.handle.handle.serverConnection.send_command("playlistsetsubscription", {
-                playlist_id: this._current_bot.properties.client_playlist_id
+                playlist_id: this.currentMusicBot.properties.client_playlist_id
             }).then(() => this._playlist_subscribed = true).catch(error => {
                 log.warn(LogCategory.CLIENT, tr("Failed to subscribe to bots playlist: %o"), error);
             });
@@ -891,8 +889,8 @@ export class MusicInfo {
             document.addEventListener("mousemove", move_listener);
         });
 
-        if(this._current_bot) {
-            this._current_bot.requestPlayerInfo(60 * 1000).then(pdata => {
+        if(this.currentMusicBot) {
+            this.currentMusicBot.requestPlayerInfo(60 * 1000).then(pdata => {
                 if(pdata.song_id === data.song_id)
                     tag.addClass("current-song");
             });

@@ -51,7 +51,7 @@ class ClientSpeakIcon extends ReactComponentBase<ClientIconProperties, {}> {
         } else {
             if (properties.client_away) {
                 icon = ClientIcon.Away;
-            } else if (!client.get_audio_handle() && !(this instanceof LocalClientEntry)) {
+            } else if (!client.getVoiceClient() && !(this instanceof LocalClientEntry)) {
                 icon = ClientIcon.InputMutedLocal;
             } else if(!properties.client_output_hardware) {
                 icon = ClientIcon.HardwareOutputMuted;
@@ -338,7 +338,7 @@ class ClientNameEdit extends ReactComponentBase<ClientNameEditProps, {}> {
             contentEditable={true}
             ref={this.ref_div}
             dangerouslySetInnerHTML={{__html: DOMPurify.sanitize(this.props.initialName)}}
-            onBlur={e => this.onBlur()}
+            onBlur={() => this.onBlur()}
             onKeyPress={e => this.onKeyPress(e)}
         />
     }

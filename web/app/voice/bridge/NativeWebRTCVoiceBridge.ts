@@ -20,15 +20,18 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
         return true;
     }
 
-    private readonly localAudioDestinationNode: MediaStreamAudioDestinationNode;
+    private readonly localVoiceDestinationNode: MediaStreamAudioDestinationNode;
+    private readonly localWhisperDestinationNode: MediaStreamAudioDestinationNode;
+    private currentInputNode: AudioNode;
     private currentInput: AbstractInput;
-    private voicePacketId: number;
+    private whispering: boolean;
 
     constructor() {
         super();
 
-        this.voicePacketId = 0;
-        this.localAudioDestinationNode = aplayer.context().createMediaStreamDestination();
+        this.whispering = false;
+        this.localVoiceDestinationNode = aplayer.context().createMediaStreamDestination();
+        this.localWhisperDestinationNode = aplayer.context().createMediaStreamDestination();
     }
 
     protected generateRtpOfferOptions(): RTCOfferOptions {
@@ -40,7 +43,8 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
     }
 
     protected initializeRtpConnection(connection: RTCPeerConnection) {
-        connection.addStream(this.localAudioDestinationNode.stream);
+        connection.addStream(this.localVoiceDestinationNode.stream);
+        connection.addStream(this.localWhisperDestinationNode.stream);
     }
 
     protected handleVoiceDataChannelMessage(message: MessageEvent) {
@@ -55,6 +59,7 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
             clientId: clientId,
             voiceId: packetId,
             codec: codec,
+            head: false,
             payload: new Uint8Array(message.data, 5)
         });
     }
@@ -67,8 +72,11 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
 
         const flags = payload[payload_offset++];
 
-        let packet = {} as VoiceWhisperPacket;
-        if((flags & 0x01) === 1) {
+        let packet = {
+            head: (flags & 0x01) === 1
+        } as VoiceWhisperPacket;
+
+        if(packet.head) {
             packet.clientUniqueId = arraybuffer_to_string(payload.subarray(payload_offset, payload_offset + 28));
             payload_offset += 28;
 
@@ -81,8 +89,8 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
         packet.clientId = payload[payload_offset] << 8 | payload[payload_offset + 1];
         payload_offset += 2;
 
-        packet.codec = payload[payload_offset];
-
+        packet.codec = payload[payload_offset++];
+        packet.payload = new Uint8Array(message.data, payload_offset);
         this.callback_incoming_whisper(packet);
     }
 
@@ -105,8 +113,14 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
             try {
                 await this.currentInput.setConsumer({
                     type: InputConsumerType.NODE,
-                    callback_node: node => node.connect(this.localAudioDestinationNode),
-                    callback_disconnect: node => node.disconnect(this.localAudioDestinationNode)
+                    callbackNode: node => {
+                        this.currentInputNode = node;
+                        node.connect(this.whispering ? this.localWhisperDestinationNode : this.localVoiceDestinationNode);
+                    },
+                    callbackDisconnect: node => {
+                        this.currentInputNode = undefined;
+                        node.disconnect(this.whispering ? this.localWhisperDestinationNode : this.localVoiceDestinationNode);
+                    }
                 } as NodeInputConsumer);
                 log.debug(LogCategory.VOICE, tr("Successfully set/updated to the new input for the recorder"));
             } catch (e) {
@@ -115,29 +129,34 @@ export class NativeWebRTCVoiceBridge extends WebRTCVoiceBridge {
         }
     }
 
-    private fillVoicePacketHeader(packet: Uint8Array, codec: number) {
-        packet[0] = 0; //Flag header
-        packet[1] = 0; //Flag fragmented
-        packet[2] = (this.voicePacketId >> 8) & 0xFF; //HIGHT (voiceID)
-        packet[3] = (this.voicePacketId >> 0) & 0xFF; //LOW   (voiceID)
-        packet[4] = codec; //Codec
-        this.voicePacketId++;
-    }
-
     sendStopSignal(codec: number) {
-        const packet = new Uint8Array(5);
-        this.fillVoicePacketHeader(packet, codec);
+        /*
+         * No stop signal needs to be send.
+         * The server will automatically send one, when the stream contains silence.
+         */
+    }
 
-        const channel = this.getMainDataChannel();
-        if (!channel || channel.readyState !== "open")
+    startWhispering() {
+        if(this.whispering) {
             return;
+        }
 
-        channel.send(packet);
+        this.whispering = true;
+        if(this.currentInputNode) {
+            this.currentInputNode.disconnect(this.localVoiceDestinationNode);
+            this.currentInputNode.connect(this.localWhisperDestinationNode);
+        }
     }
 
-    startWhisper() {
-    }
+    stopWhispering() {
+        if(!this.whispering) {
+            return;
+        }
 
-    stopWhisper() {
+        this.whispering = false;
+        if(this.currentInputNode) {
+            this.currentInputNode.connect(this.localVoiceDestinationNode);
+            this.currentInputNode.disconnect(this.localWhisperDestinationNode);
+        }
     }
 }

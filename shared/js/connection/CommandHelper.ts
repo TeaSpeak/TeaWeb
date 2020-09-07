@@ -8,13 +8,12 @@ import {
     QueryList,
     QueryListEntry, ServerGroupClient
 } from "tc-shared/connection/ServerConnectionDeclaration";
-import {ChannelEntry} from "tc-shared/ui/channel";
 import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
 import {tr} from "tc-shared/i18n/localize";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export class CommandHelper extends AbstractCommandHandler {
-    private _who_am_i: any;
+    private whoAmIResponse: any;
     private infoByUniqueIdRequest: {[unique_id: string]:((resolved: ClientNameInfo) => any)[]} = {};
     private infoByDatabaseIdRequest: {[database_id: number]:((resolved: ClientNameInfo) => any)[]} = {};
 
@@ -32,42 +31,37 @@ export class CommandHelper extends AbstractCommandHandler {
     destroy() {
         if(this.connection) {
             const hboss = this.connection.command_handler_boss();
-            hboss && hboss.unregister_handler(this);
+            hboss?.unregister_handler(this);
         }
+
         this.infoByUniqueIdRequest = undefined;
+        this.infoByDatabaseIdRequest = undefined;
     }
 
     handle_command(command: ServerCommand): boolean {
-        if(command.command == "notifyclientnamefromuid")
-            this.handle_notifyclientnamefromuid(command.arguments);
-        if(command.command == "notifyclientgetnamefromdbid")
-            this.handle_notifyclientgetnamefromdbid(command.arguments);
-        else
+        if(command.command == "notifyclientnamefromuid") {
+            this.handleNotifyClientNameFromUniqueId(command.arguments);
+        } else if(command.command == "notifyclientgetnamefromdbid") {
+            this.handleNotifyClientGetNameFromDatabaseId(command.arguments);
+        } else {
             return false;
+        }
         return true;
     }
 
-    joinChannel(channel: ChannelEntry, password?: string) : Promise<CommandResult> {
-        return this.connection.send_command("clientmove", {
-            "clid": this.connection.client.getClientId(),
-            "cid": channel.getChannelId(),
-            "cpw": password || ""
-        });
-    }
-
-    async info_from_uid(..._unique_ids: string[]) : Promise<ClientNameInfo[]> {
+    async getInfoFromUniqueId(...uniqueIds: string[]) : Promise<ClientNameInfo[]> {
         const response: ClientNameInfo[] = [];
         const request = [];
-        const unique_ids = new Set(_unique_ids);
-        if(!unique_ids.size) return [];
+        const uniqueUniqueIds = new Set(uniqueIds);
+        if(uniqueUniqueIds.size === 0) return [];
 
-        const unique_id_resolvers: {[unique_id: string]: (resolved: ClientNameInfo) => any} = {};
+        const resolvers: {[uniqueId: string]: (resolved: ClientNameInfo) => any} = {};
 
+        for(const uniqueId of uniqueUniqueIds) {
+            request.push({ cluid: uniqueId });
 
-        for(const unique_id of unique_ids) {
-            request.push({'cluid': unique_id});
-            (this.infoByUniqueIdRequest[unique_id] || (this.infoByUniqueIdRequest[unique_id] = []))
-                .push(unique_id_resolvers[unique_id] = info => response.push(info));
+            const requestCallbacks = this.infoByUniqueIdRequest[uniqueId] || (this.infoByUniqueIdRequest[uniqueId] = []);
+            requestCallbacks.push(resolvers[uniqueId] = info => response.push(info));
         }
 
         try {
@@ -80,42 +74,43 @@ export class CommandHelper extends AbstractCommandHandler {
             }
         } finally {
             /* cleanup */
-            for(const unique_id of Object.keys(unique_id_resolvers))
-                (this.infoByUniqueIdRequest[unique_id] || []).remove(unique_id_resolvers[unique_id]);
+            for(const uniqueId of Object.keys(resolvers)) {
+                this.infoByUniqueIdRequest[uniqueId]?.remove(resolvers[uniqueId]);
+            }
         }
 
         return response;
     }
 
-    private handle_notifyclientgetnamefromdbid(json: any[]) {
+    private handleNotifyClientGetNameFromDatabaseId(json: any[]) {
         for(const entry of json) {
             const info: ClientNameInfo = {
-                client_unique_id: entry["cluid"],
-                client_nickname: entry["clname"],
-                client_database_id: parseInt(entry["cldbid"])
+                clientUniqueId: entry["cluid"],
+                clientNickname: entry["clname"],
+                clientDatabaseId: parseInt(entry["cldbid"])
             };
 
-            const functions = this.infoByDatabaseIdRequest[info.client_database_id] || [];
-            delete this.infoByDatabaseIdRequest[info.client_database_id];
+            const callbacks = this.infoByDatabaseIdRequest[info.clientDatabaseId] || [];
+            delete this.infoByDatabaseIdRequest[info.clientDatabaseId];
 
-            for(const fn of functions)
-                fn(info);
+            callbacks.forEach(callback => callback(info));
         }
     }
 
-    async info_from_cldbid(..._cldbid: number[]) : Promise<ClientNameInfo[]> {
+    async getInfoFromClientDatabaseId(...clientDatabaseIds: number[]) : Promise<ClientNameInfo[]> {
         const response: ClientNameInfo[] = [];
         const request = [];
-        const unique_cldbid = new Set(_cldbid);
-        if(!unique_cldbid.size) return [];
+        const uniqueClientDatabaseIds = new Set(clientDatabaseIds);
+        if(!uniqueClientDatabaseIds.size) return [];
 
-        const unique_cldbid_resolvers: {[dbid: number]: (resolved: ClientNameInfo) => any} = {};
+        const resolvers: {[dbid: number]: (resolved: ClientNameInfo) => any} = {};
 
 
-        for(const cldbid of unique_cldbid) {
-            request.push({'cldbid': cldbid});
-            (this.infoByDatabaseIdRequest[cldbid] || (this.infoByDatabaseIdRequest[cldbid] = []))
-                .push(unique_cldbid_resolvers[cldbid] = info => response.push(info));
+        for(const clientDatabaseId of uniqueClientDatabaseIds) {
+            request.push({ cldbid: clientDatabaseId });
+
+            const requestCallbacks = this.infoByUniqueIdRequest[clientDatabaseId] || (this.infoByUniqueIdRequest[clientDatabaseId] = []);
+            requestCallbacks.push(resolvers[clientDatabaseId] = info => response.push(info));
         }
 
         try {
@@ -128,30 +123,32 @@ export class CommandHelper extends AbstractCommandHandler {
             }
         } finally {
             /* cleanup */
-            for(const cldbid of Object.keys(unique_cldbid_resolvers))
-                (this.infoByDatabaseIdRequest[cldbid] || []).remove(unique_cldbid_resolvers[cldbid]);
+            for(const cldbid of Object.keys(resolvers)) {
+                this.infoByDatabaseIdRequest[cldbid]?.remove(resolvers[cldbid]);
+            }
         }
 
         return response;
     }
 
-    private handle_notifyclientnamefromuid(json: any[]) {
+    private handleNotifyClientNameFromUniqueId(json: any[]) {
         for(const entry of json) {
             const info: ClientNameInfo = {
-                client_unique_id: entry["cluid"],
-                client_nickname: entry["clname"],
-                client_database_id: parseInt(entry["cldbid"])
+                clientUniqueId: entry["cluid"],
+                clientNickname: entry["clname"],
+                clientDatabaseId: parseInt(entry["cldbid"])
             };
 
             const functions = this.infoByUniqueIdRequest[entry["cluid"]] || [];
             delete this.infoByUniqueIdRequest[entry["cluid"]];
 
-            for(const fn of functions)
+            for(const fn of functions) {
                 fn(info);
+            }
         }
     }
 
-    request_query_list(server_id: number = undefined) : Promise<QueryList> {
+    requestQueryList(server_id: number = undefined) : Promise<QueryList> {
         return new Promise<QueryList>((resolve, reject) => {
             const single_handler = {
                 command: "notifyquerylist",
@@ -180,12 +177,11 @@ export class CommandHelper extends AbstractCommandHandler {
             this.handler_boss.register_single_handler(single_handler);
 
             let data = {};
-            if(server_id !== undefined)
+            if(server_id !== undefined) {
                 data["server_id"] = server_id;
+            }
 
             this.connection.send_command("querylist", data).catch(error => {
-                this.handler_boss.remove_single_handler(single_handler);
-
                 if(error instanceof CommandResult) {
                     if(error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                         resolve(undefined);
@@ -193,11 +189,13 @@ export class CommandHelper extends AbstractCommandHandler {
                     }
                 }
                 reject(error);
+            }).then(() => {
+                this.handler_boss.remove_single_handler(single_handler);
             });
         });
     }
 
-    request_playlist_list() : Promise<Playlist[]> {
+    requestPlaylistList() : Promise<Playlist[]> {
         return new Promise((resolve, reject) => {
             const single_handler: SingleCommandHandler = {
                 command: "notifyplaylistlist",
@@ -234,8 +232,6 @@ export class CommandHelper extends AbstractCommandHandler {
             this.handler_boss.register_single_handler(single_handler);
 
             this.connection.send_command("playlistlist").catch(error => {
-                this.handler_boss.remove_single_handler(single_handler);
-
                 if(error instanceof CommandResult) {
                     if(error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                         resolve([]);
@@ -243,11 +239,13 @@ export class CommandHelper extends AbstractCommandHandler {
                     }
                 }
                 reject(error);
-            })
+            }).then(() => {
+                this.handler_boss.remove_single_handler(single_handler);
+            });
         });
     }
 
-    request_playlist_songs(playlist_id: number, process_result?: boolean) : Promise<PlaylistSong[]> {
+    requestPlaylistSongs(playlist_id: number, process_result?: boolean) : Promise<PlaylistSong[]> {
         let bulked_response = false;
         let bulk_index = 0;
 
@@ -300,7 +298,6 @@ export class CommandHelper extends AbstractCommandHandler {
             this.handler_boss.register_single_handler(single_handler);
 
             this.connection.send_command("playlistsonglist", {playlist_id: playlist_id}, { process_result: process_result }).catch(error => {
-                this.handler_boss.remove_single_handler(single_handler);
                 if(error instanceof CommandResult) {
                     if(error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                         resolve([]);
@@ -308,7 +305,9 @@ export class CommandHelper extends AbstractCommandHandler {
                     }
                 }
                 reject(error);
-            })
+            }).catch(() => {
+                this.handler_boss.remove_single_handler(single_handler);
+            });
         });
     }
 
@@ -326,8 +325,9 @@ export class CommandHelper extends AbstractCommandHandler {
 
                     const result: number[] = [];
 
-                    for(const entry of json)
+                    for(const entry of json) {
                         result.push(parseInt(entry["cldbid"]));
+                    }
 
                     resolve(result.filter(e => !isNaN(e)));
                     return true;
@@ -336,17 +336,18 @@ export class CommandHelper extends AbstractCommandHandler {
             this.handler_boss.register_single_handler(single_handler);
 
             this.connection.send_command("playlistclientlist", {playlist_id: playlist_id}).catch(error => {
-                this.handler_boss.remove_single_handler(single_handler);
                 if(error instanceof CommandResult && error.id == ErrorCode.DATABASE_EMPTY_RESULT) {
                     resolve([]);
                     return;
                 }
                 reject(error);
-            })
+            }).then(() => {
+                this.handler_boss.remove_single_handler(single_handler);
+            });
         });
     }
 
-    request_clients_by_server_group(group_id: number) : Promise<ServerGroupClient[]> {
+    requestClientsByServerGroup(group_id: number) : Promise<ServerGroupClient[]> {
         //servergroupclientlist sgid=2
         //notifyservergroupclientlist sgid=6 cldbid=2 client_nickname=WolverinDEV client_unique_identifier=xxjnc14LmvTk+Lyrm8OOeo4tOqw=
         return new Promise<ServerGroupClient[]>((resolve, reject) => {
@@ -380,14 +381,13 @@ export class CommandHelper extends AbstractCommandHandler {
             };
             this.handler_boss.register_single_handler(single_handler);
 
-            this.connection.send_command("servergroupclientlist", {sgid: group_id}).catch(error => {
+            this.connection.send_command("servergroupclientlist", {sgid: group_id}).catch(reject).then(() => {
                 this.handler_boss.remove_single_handler(single_handler);
-                reject(error);
-            })
+            });
         });
     }
 
-    request_playlist_info(playlist_id: number) : Promise<PlaylistInfo> {
+    requestPlaylistInfo(playlist_id: number) : Promise<PlaylistInfo> {
         return new Promise((resolve, reject) => {
             const single_handler: SingleCommandHandler = {
                 command: "notifyplaylistinfo",
@@ -399,7 +399,6 @@ export class CommandHelper extends AbstractCommandHandler {
                     }
 
                     try {
-                        //resolve
                         resolve({
                             playlist_id: parseInt(json["playlist_id"]),
                             playlist_title: json["playlist_title"],
@@ -426,10 +425,9 @@ export class CommandHelper extends AbstractCommandHandler {
             };
             this.handler_boss.register_single_handler(single_handler);
 
-            this.connection.send_command("playlistinfo", {playlist_id: playlist_id}).catch(error => {
+            this.connection.send_command("playlistinfo", { playlist_id: playlist_id }).catch(reject).then(() => {
                 this.handler_boss.remove_single_handler(single_handler);
-                reject(error);
-            })
+            });
         });
     }
 
@@ -438,9 +436,10 @@ export class CommandHelper extends AbstractCommandHandler {
      *  Its just a workaround for the query management.
      *  There is no garantee that the whoami trick will work forever
      */
-    current_virtual_server_id() : Promise<number> {
-        if(this._who_am_i)
-            return Promise.resolve(parseInt(this._who_am_i["virtualserver_id"]));
+    getCurrentVirtualServerId() : Promise<number> {
+        if(this.whoAmIResponse) {
+            return Promise.resolve(parseInt(this.whoAmIResponse["virtualserver_id"]));
+        }
 
         return new Promise<number>((resolve, reject) => {
             const single_handler: SingleCommandHandler = {
@@ -448,8 +447,8 @@ export class CommandHelper extends AbstractCommandHandler {
                     if(command.command != "" && command.command.indexOf("=") == -1)
                         return false;
 
-                    this._who_am_i = command.arguments[0];
-                    resolve(parseInt(this._who_am_i["virtualserver_id"]));
+                    this.whoAmIResponse = command.arguments[0];
+                    resolve(parseInt(this.whoAmIResponse["virtualserver_id"]));
                     return true;
                 }
             };

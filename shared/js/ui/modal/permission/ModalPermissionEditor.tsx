@@ -590,7 +590,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
     }
 
     events.on("query_group_clients", event => {
-        connection.serverConnection.command_helper.request_clients_by_server_group(event.id).then(clients => {
+        connection.serverConnection.command_helper.requestClientsByServerGroup(event.id).then(clients => {
             events.fire("query_group_clients_result", { id: event.id, status: "success", clients: clients.map(e => {
                 return {
                     name: e.client_nickname,
@@ -614,7 +614,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             if(typeof client === "number")
                 return Promise.resolve(client);
 
-            return connection.serverConnection.command_helper.info_from_uid(client.trim()).then(info => info[0].client_database_id);
+            return connection.serverConnection.command_helper.getInfoFromUniqueId(client.trim()).then(info => info[0].clientDatabaseId);
         }).then(clientDatabaseId => connection.serverConnection.send_command("servergroupaddclient", {
             sgid: event.id,
             cldbid: clientDatabaseId
@@ -667,9 +667,9 @@ function initializePermissionModalController(connection: ConnectionHandler, even
     events.on("query_client_info", event => {
         let promise: Promise<ClientNameInfo[]>;
         if(typeof event.client === "number") {
-            promise = connection.serverConnection.command_helper.info_from_cldbid(event.client);
+            promise = connection.serverConnection.command_helper.getInfoFromClientDatabaseId(event.client);
         } else {
-            promise = connection.serverConnection.command_helper.info_from_uid(event.client.trim());
+            promise = connection.serverConnection.command_helper.getInfoFromUniqueId(event.client.trim());
         }
         promise.then(result => {
             if(result.length === 0) {
@@ -682,7 +682,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             events.fire("query_client_info_result", {
                 client: event.client,
                 state: "success",
-                info: { name: result[0].client_nickname, databaseId: result[0].client_database_id, uniqueId: result[0].client_unique_id }
+                info: { name: result[0].clientNickname, databaseId: result[0].clientDatabaseId, uniqueId: result[0].clientUniqueId }
             });
         }).catch(error => {
             if(error instanceof CommandResult) {

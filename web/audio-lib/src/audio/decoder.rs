@@ -1,6 +1,5 @@
 use crate::audio::{AudioPacket, Codec};
-use crate::audio::codec::opus::{Application, Decoder, Channels};
-use std::cell::Cell;
+use crate::audio::codec::opus::{Channels};
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::fmt::Formatter;
@@ -72,7 +71,7 @@ impl AudioDecoder {
     }
 
     fn get_decoder(&mut self, codec: Codec, initialize: bool) -> Result<Rc<RefCell<dyn AudioCodecDecoder>>, AudioDecodeError> {
-        let mut decoder_state = self.decoder_state(codec)?;
+        let decoder_state = self.decoder_state(codec)?;
 
         match decoder_state {
             DecoderState::Initialized(decoder) => {
@@ -86,7 +85,7 @@ impl AudioDecoder {
                     return Err(AudioDecodeError::DecoderUninitialized);
                 }
 
-                let mut decoder: Option<Rc<RefCell<dyn AudioCodecDecoder>>> = None;
+                let decoder: Option<Rc<RefCell<dyn AudioCodecDecoder>>>;
                 match codec {
                     Codec::Opus => {
                         decoder = Some(Rc::new(RefCell::new(decoder::AudioOpusDecoder::new(Channels::Mono))));
@@ -99,7 +98,7 @@ impl AudioDecoder {
                     }
                 }
 
-                let mut decoder = decoder.unwrap();
+                let decoder = decoder.unwrap();
                 if let Err(error) = decoder.borrow_mut().initialize() {
                     *decoder_state = DecoderState::InitializeFailed(error.clone());
                     return Err(AudioDecodeError::DecoderInitializeFailed(error, true));
@@ -111,13 +110,8 @@ impl AudioDecoder {
         }
     }
 
-    pub fn initialize_codec(&mut self, codec: Codec) -> Result<(), AudioDecodeError> {
-        let _ = self.get_decoder(codec, true)?;
-        Ok(())
-    }
-
     pub fn decode(&mut self, packet: &AudioPacket, dest: &mut Vec<f32>) -> Result<(usize /* samples */, u8 /* channels */), AudioDecodeError> {
-        let mut audio_decoder = self.get_decoder(packet.codec, true)?;
+        let audio_decoder = self.get_decoder(packet.codec, true)?;
         let mut audio_decoder = audio_decoder.borrow_mut();
 
         let result = audio_decoder.decode(&packet.payload, dest)?;
@@ -149,7 +143,7 @@ trait AudioCodecDecoder {
 
 mod decoder {
     /* the opus implementation */
-    use crate::audio::codec::opus::{Application, Decoder, Channels, ErrorCode};
+    use crate::audio::codec::opus::{Decoder, Channels, ErrorCode};
     use crate::audio::decoder::{AudioCodecDecoder, AudioDecodeError};
     use log::warn;
 
@@ -234,6 +228,7 @@ mod decoder {
     }
 }
 
+#[cfg(test)]
 mod tests {
     use crate::audio::decoder::{AudioDecoder, AudioDecodeError};
     use crate::audio::{AudioPacket, PacketId, Codec};

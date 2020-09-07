@@ -55,7 +55,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
     {
         event_registry.on("query_playlist_status", event => {
             const playlist_id = bot.properties.client_playlist_id;
-            client.serverConnection.command_helper.request_playlist_info(playlist_id).then(result => {
+            client.serverConnection.command_helper.requestPlaylistInfo(playlist_id).then(result => {
                 event_registry.fire("playlist_status", {
                     status: "success",
                     data: {
@@ -285,15 +285,15 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
         event_registry.on("query_special_clients", event => {
             const playlist_id = bot.properties.client_playlist_id;
             client.serverConnection.command_helper.request_playlist_client_list(playlist_id).then(clients => {
-                return client.serverConnection.command_helper.info_from_cldbid(...clients);
+                return client.serverConnection.command_helper.getInfoFromClientDatabaseId(...clients);
             }).then(clients => {
                 event_registry.fire("special_client_list", {
                     status: "success",
                     clients: clients.map(e => {
                         return {
-                            name: e.client_nickname,
-                            unique_id: e.client_unique_id,
-                            database_id: e.client_database_id
+                            name: e.clientNickname,
+                            unique_id: e.clientUniqueId,
+                            database_id: e.clientDatabaseId
                         }
                     })
                 });
@@ -316,9 +316,9 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     is_uuid = atob(text).length === 32;
                 } catch(e) {}
                 if(is_uuid) {
-                    return client.serverConnection.command_helper.info_from_uid(text);
+                    return client.serverConnection.command_helper.getInfoFromUniqueId(text);
                 } else if(text.match(/^[0-9]{1,7}$/) && !isNaN(parseInt(text))) {
-                    return client.serverConnection.command_helper.info_from_cldbid(parseInt(text));
+                    return client.serverConnection.command_helper.getInfoFromClientDatabaseId(parseInt(text));
                 } else {
                     //TODO: Database name lookup?
                     return Promise.reject("no results");
@@ -329,9 +329,9 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
                     event_registry.fire("search_client_result", {
                         status: "success",
                         client: {
-                            name: client.client_nickname,
-                            unique_id: client.client_unique_id,
-                            database_id: client.client_database_id
+                            name: client.clientNickname,
+                            unique_id: client.clientUniqueId,
+                            database_id: client.clientDatabaseId
                         }
                     });
                 } else {

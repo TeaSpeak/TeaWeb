@@ -11,7 +11,7 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
-import {default_recorder, RecorderProfile, set_default_recorder} from "tc-shared/voice/RecorderProfile";
+import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
 import * as cmanager from "tc-shared/ui/frames/connection_handlers";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
@@ -99,8 +99,8 @@ async function initialize_app() {
             log.warn(LogCategory.GENERAL, tr("Client does not support aplayer.set_master_volume()... May client is too old?"));
     });
 
-    set_default_recorder(new RecorderProfile("default"));
-    default_recorder.initialize().catch(error => {
+    setDefaultRecorder(new RecorderProfile("default"));
+    defaultRecorder.initialize().catch(error => {
         log.error(LogCategory.AUDIO, tr("Failed to initialize default recorder: %o"), error);
     });
 

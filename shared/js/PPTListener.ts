@@ -149,36 +149,40 @@ export interface KeyEvent extends KeyDescriptor {
 export interface KeyHook extends KeyDescriptor {
     cancel: boolean;
 
-
     callback_press: () => any;
     callback_release: () => any;
 }
 
 export function key_description(key: KeyDescriptor) {
     let result = "";
-    if(key.key_shift)
+    if(key.key_shift) {
         result += " + " + tr("Shift");
-    if(key.key_alt)
-        result += " + " + tr("Alt");
-    if(key.key_ctrl)
-        result += " + " + tr("CTRL");
-    if(key.key_windows)
-        result += " + " + tr("Win");
+    }
 
-    if(!result && !key.key_code)
-        return tr("unset");
+    if(key.key_alt) {
+        result += " + " + tr("Alt");
+    }
+
+    if(key.key_ctrl) {
+        result += " + " + tr("CTRL");
+    }
+
+    if(key.key_windows) {
+        result += " + " + tr("Win");
+    }
 
     if(key.key_code) {
         let key_name;
-        if(key.key_code.startsWith("Key"))
+        if(key.key_code.startsWith("Key")) {
             key_name = key.key_code.substr(3);
-        else if(key.key_code.startsWith("Digit"))
+        } else if(key.key_code.startsWith("Digit")) {
             key_name = key.key_code.substr(5);
-        else if(key.key_code.startsWith("Numpad"))
+        } else if(key.key_code.startsWith("Numpad")) {
             key_name = "Numpad " + key.key_code.substr(6);
-        else
+        } else {
             key_name = key.key_code;
+        }
         result += " + " + key_name;
     }
-    return result.substr(3);
+    return result ? result.substr(3) : tr("unset");
 }

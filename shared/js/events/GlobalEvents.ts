@@ -5,14 +5,14 @@ export interface ClientGlobalControlEvents {
     /* open a basic window */
     action_open_window: {
         window:
+            "settings" | /* use action_open_window_settings! */
             "bookmark-manage" |
             "query-manage" |
             "query-create" |
             "ban-list" |
             "permissions" |
             "token-list" |
-            "token-use" |
-            "settings",
+            "token-use",
         connection?: ConnectionHandler
     },
 
@@ -26,7 +26,11 @@ export interface ClientGlobalControlEvents {
 
     /* some more specific window openings */
     action_open_window_connect: {
-        new_tab: boolean
+        newTab: boolean
+    }
+
+    action_open_window_settings: {
+        defaultCategory?: string
     }
 }
 

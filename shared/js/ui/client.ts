@@ -28,7 +28,8 @@ import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
 import {W2GPluginCmdHandler} from "tc-shared/video-viewer/W2GPlugin";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {ClientIcon} from "svg-sprites/client-icons";
-import {VoiceClient} from "tc-shared/connection/VoiceConnection";
+import {VoiceClient} from "tc-shared/voice/VoiceClient";
+import {VoicePlayerEvents, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 
 export enum ClientType {
     CLIENT_VOICE,
@@ -138,9 +139,9 @@ export class ClientConnectionInfo {
 }
 
 export interface ClientEvents extends ChannelTreeEntryEvents {
-    "notify_enter_view": {},
+    notify_enter_view: {},
     notify_client_moved: { oldChannel: ChannelEntry, newChannel: ChannelEntry }
-    "notify_left_view": {
+    notify_left_view: {
         reason: ViewReasonId;
         message?: string;
         serverLeave: boolean;
@@ -152,27 +153,27 @@ export interface ClientEvents extends ChannelTreeEntryEvents {
     },
     notify_mute_state_change: { muted: boolean }
     notify_speak_state_change: { speaking: boolean },
-    "notify_audio_level_changed": { newValue: number },
+    notify_audio_level_changed: { newValue: number },
 
-    "music_status_update": {
+    music_status_update: {
         player_buffered_index: number,
         player_replay_index: number
     },
-    "music_song_change": {
+    music_song_change: {
         "song": SongInfo
     },
 
     /* TODO: Move this out of the music bots interface? */
-    "playlist_song_add": { song: PlaylistSong },
-    "playlist_song_remove": { song_id: number },
-    "playlist_song_reorder": { song_id: number, previous_song_id: number },
-    "playlist_song_loaded": { song_id: number, success: boolean, error_msg?: string, metadata?: string },
-
+    playlist_song_add: { song: PlaylistSong },
+    playlist_song_remove: { song_id: number },
+    playlist_song_reorder: { song_id: number, previous_song_id: number },
+    playlist_song_loaded: { song_id: number, success: boolean, error_msg?: string, metadata?: string },
 }
 
 export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     readonly events: Registry<ClientEvents>;
     readonly view: React.RefObject<ClientEntryView> = React.createRef<ClientEntryView>();
+    channelTree: ChannelTree;
 
     protected _clientId: number;
     protected _channel: ChannelEntry;
@@ -182,19 +183,18 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     protected _speaking: boolean;
     protected _listener_initialized: boolean;
 
-    protected _audio_handle: VoiceClient;
-    protected _audio_volume: number;
-    protected _audio_muted: boolean;
+    protected voiceHandle: VoiceClient;
+    protected voiceVolume: number;
+    protected voiceMuted: boolean;
+    private readonly voiceCallbackStateChanged;
 
-    private _info_variables_promise: Promise<void>;
-    private _info_variables_promise_timestamp: number;
+    private promiseClientInfo: Promise<void>;
+    private promiseClientInfoTimestamp: number;
 
-    private _info_connection_promise: Promise<ClientConnectionInfo>;
-    private _info_connection_promise_timestamp: number;
-    private _info_connection_promise_resolve: any;
-    private _info_connection_promise_reject: any;
-
-    channelTree: ChannelTree;
+    private promiseConnectionInfo: Promise<ClientConnectionInfo>;
+    private promiseConnectionInfoTimestamp: number;
+    private promiseConnectionInfoResolve: any;
+    private promiseConnectionInfoReject: any;
 
     constructor(clientId: number, clientName, properties: ClientProperties = new ClientProperties()) {
         super();
@@ -205,61 +205,59 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         this._clientId = clientId;
         this.channelTree = null;
         this._channel = null;
+
+        this.voiceCallbackStateChanged = this.handleVoiceStateChange.bind(this);
     }
 
     destroy() {
-        if(this._audio_handle) {
+        if(this.voiceHandle) {
             log.warn(LogCategory.AUDIO, tr("Destroying client with an active audio handle. This could cause memory leaks!"));
-            try {
-                this._audio_handle.abort_replay();
-            } catch(error) {
-                log.warn(LogCategory.AUDIO, tr("Failed to abort replay: %o"), error);
-            }
-            this._audio_handle.callback_playback = undefined;
-            this._audio_handle.callback_stopped = undefined;
-            this._audio_handle = undefined;
+            /* TODO: Unregister all voice events? */
+            this.voiceHandle.abortReplay();
+            this.voiceHandle = undefined;
         }
 
         this._channel = undefined;
     }
 
-    tree_unregistered() {
-        this.channelTree = undefined;
-        if(this._audio_handle) {
-            try {
-                this._audio_handle.abort_replay();
-            } catch(error) {
-                log.warn(LogCategory.AUDIO, tr("Failed to abort replay: %o"), error);
-            }
-            this._audio_handle.callback_playback = undefined;
-            this._audio_handle.callback_stopped = undefined;
-            this._audio_handle = undefined;
-        }
-
-        this._channel = undefined;
-    }
-
-    set_audio_handle(handle: VoiceClient) {
-        if(this._audio_handle === handle)
+    setVoiceClient(handle: VoiceClient) {
+        if(this.voiceHandle === handle)
             return;
 
-        if(this._audio_handle) {
-            this._audio_handle.callback_playback = undefined;
-            this._audio_handle.callback_stopped = undefined;
-        }
-        //TODO may ensure that the id is the same?
-        this._audio_handle = handle;
-        if(!handle) {
-            this.speaking = false;
-            return;
+        if(this.voiceHandle) {
+            this.voiceHandle.events.off(this.voiceCallbackStateChanged);
         }
 
-        handle.callback_playback = () => this.speaking = true;
-        handle.callback_stopped = () => this.speaking = false;
+        this.voiceHandle = handle;
+        if(handle) {
+            this.voiceHandle.events.on("notify_state_changed", this.voiceCallbackStateChanged);
+            this.handleVoiceStateChange({ oldState: VoicePlayerState.STOPPED, newState: handle.getState() });
+        }
     }
 
-    get_audio_handle() : VoiceClient {
-        return this._audio_handle;
+    private handleVoiceStateChange(event: VoicePlayerEvents["notify_state_changed"]) {
+        switch (event.newState) {
+            case VoicePlayerState.PLAYING:
+            case VoicePlayerState.STOPPING:
+                this.speaking = true;
+                break;
+
+            case VoicePlayerState.STOPPED:
+            case VoicePlayerState.INITIALIZING:
+                this.speaking = false;
+                break;
+        }
+    }
+
+    private updateVoiceVolume() {
+        let volume = this.voiceMuted ? 0 : this.voiceVolume;
+
+        /* TODO: If a whisper session has been set, update this as well */
+        this.voiceHandle?.setVolume(volume);
+    }
+
+    getVoiceClient() : VoiceClient {
+        return this.voiceHandle;
     }
 
     get properties() : ClientProperties {
@@ -271,36 +269,33 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     clientUid(){ return this.properties.client_unique_identifier; }
     clientId(){ return this._clientId; }
 
-    is_muted() { return !!this._audio_muted; }
-    set_muted(flag: boolean, force: boolean) {
-        if(this._audio_muted === flag && !force)
-            return;
+    isMuted() { return !!this.voiceMuted; }
 
-        if(flag) {
+    /* TODO: Move this method to the view (e.g. channel tree) and rename with to setClientMuted */
+    setMuted(flagMuted: boolean, force: boolean) {
+        if(this.voiceMuted === flagMuted && !force) {
+            return;
+        }
+
+        if(flagMuted) {
             this.channelTree.client.serverConnection.send_command('clientmute', {
                 clid: this.clientId()
             }).then(() => {});
-        } else if(this._audio_muted) {
+        } else if(this.voiceMuted) {
             this.channelTree.client.serverConnection.send_command('clientunmute', {
                 clid: this.clientId()
             }).then(() => {});
         }
-        this._audio_muted = flag;
+        this.voiceMuted = flagMuted;
 
-        this.channelTree.client.settings.changeServer(Settings.FN_CLIENT_MUTED(this.clientUid()), flag);
-        if(this._audio_handle) {
-            if(flag) {
-                this._audio_handle.set_volume(0);
-            } else {
-                this._audio_handle.set_volume(this._audio_volume);
-            }
-        }
+        this.channelTree.client.settings.changeServer(Settings.FN_CLIENT_MUTED(this.clientUid()), flagMuted);
+        this.updateVoiceVolume();
 
-        this.events.fire("notify_mute_state_change", { muted: flag });
+        this.events.fire("notify_mute_state_change", { muted: flagMuted });
         for(const client of this.channelTree.clients) {
             if(client === this || client.properties.client_unique_identifier !== this.properties.client_unique_identifier)
                 continue;
-            client.set_muted(flag, false);
+            client.setMuted(flagMuted, false);
         }
     }
 
@@ -676,26 +671,24 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Change playback latency"),
                 callback: () => {
-                    spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
-                        this._audio_handle.reset_latency_settings();
-                        return this._audio_handle.latency_settings();
-                    }, settings => this._audio_handle.latency_settings(settings), this._audio_handle.support_flush ? () => {
-                        this._audio_handle.flush();
-                    } : undefined);
+                    spawnChangeLatency(this, this.voiceHandle.getLatencySettings(), () => {
+                        this.voiceHandle.resetLatencySettings();
+                        return this.voiceHandle.getLatencySettings();
+                    }, settings => this.voiceHandle.setLatencySettings(settings), () => this.voiceHandle.flushBuffer());
                 },
-                visible: this._audio_handle && this._audio_handle.support_latency_settings()
+                visible: !!this.voiceHandle
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: ClientIcon.InputMutedLocal,
                 name: tr("Mute client"),
-                visible: !this._audio_muted,
-                callback: () => this.set_muted(true, false)
+                visible: !this.voiceMuted,
+                callback: () => this.setMuted(true, false)
             }, {
                 type: contextmenu.MenuEntryType.ENTRY,
                 icon_class: ClientIcon.InputMutedLocal,
                 name: tr("Unmute client"),
-                visible: this._audio_muted,
-                callback: () => this.set_muted(false, false)
+                visible: this.voiceMuted,
+                callback: () => this.setMuted(false, false)
             },
             contextmenu.Entry.CLOSE(() => trigger_close && on_close ? on_close() : {})
         );
@@ -767,14 +760,11 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 reorder_channel = true;
             }
             if(variable.key == "client_unique_identifier") {
-                this._audio_volume = this.channelTree.client.settings.server(Settings.FN_CLIENT_VOLUME(this.clientUid()), 1);
+                this.voiceVolume = this.channelTree.client.settings.server(Settings.FN_CLIENT_VOLUME(this.clientUid()), 1);
                 const mute_status = this.channelTree.client.settings.server(Settings.FN_CLIENT_MUTED(this.clientUid()), false);
-                this.set_muted(mute_status, mute_status); /* force only needed when we want to mute the client */
-
-                if(this._audio_handle)
-                    this._audio_handle.set_volume(this._audio_muted ? 0 : this._audio_volume);
-
-                log.debug(LogCategory.CLIENT, tr("Loaded client (%s) server specific properties. Volume: %o Muted: %o."), this.clientUid(), this._audio_volume, this._audio_muted);
+                this.setMuted(mute_status, mute_status); /* force only needed when we want to mute the client */
+                this.updateVoiceVolume();
+                log.debug(LogCategory.CLIENT, tr("Loaded client (%s) server specific properties. Volume: %o Muted: %o."), this.clientUid(), this.voiceVolume, this.voiceMuted);
             }
             if(variable.key == "client_talk_power") {
                 reorder_channel = true;
@@ -815,13 +805,13 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     }
 
     updateClientVariables(force_update?: boolean) : Promise<void> {
-        if(Date.now() - 10 * 60 * 1000 < this._info_variables_promise_timestamp && this._info_variables_promise && (typeof(force_update) !== "boolean" || force_update))
-            return this._info_variables_promise;
+        if(Date.now() - 10 * 60 * 1000 < this.promiseClientInfoTimestamp && this.promiseClientInfo && (typeof(force_update) !== "boolean" || force_update))
+            return this.promiseClientInfo;
 
-        this._info_variables_promise_timestamp = Date.now();
-        return (this._info_variables_promise = new Promise<void>((resolve, reject) => {
+        this.promiseClientInfoTimestamp = Date.now();
+        return (this.promiseClientInfo = new Promise<void>((resolve, reject) => {
             this.channelTree.client.serverConnection.send_command("clientgetvariables", {clid: this.clientId()}).then(() => resolve()).catch(error => {
-                this._info_connection_promise_timestamp = 0; /* not succeeded */
+                this.promiseConnectionInfoTimestamp = 0; /* not succeeded */
                 reject(error);
             });
         }));
@@ -896,46 +886,46 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
 
     /* max 1s ago, so we could update every second */
     request_connection_info() : Promise<ClientConnectionInfo> {
-        if(Date.now() - 900 < this._info_connection_promise_timestamp && this._info_connection_promise)
-            return this._info_connection_promise;
+        if(Date.now() - 900 < this.promiseConnectionInfoTimestamp && this.promiseConnectionInfo)
+            return this.promiseConnectionInfo;
 
-        if(this._info_connection_promise_reject)
-            this._info_connection_promise_resolve("timeout");
+        if(this.promiseConnectionInfoReject)
+            this.promiseConnectionInfoResolve("timeout");
 
         let _local_reject; /* to ensure we're using the right resolve! */
-        this._info_connection_promise = new Promise<ClientConnectionInfo>((resolve, reject) => {
-            this._info_connection_promise_resolve = resolve;
-            this._info_connection_promise_reject = reject;
+        this.promiseConnectionInfo = new Promise<ClientConnectionInfo>((resolve, reject) => {
+            this.promiseConnectionInfoResolve = resolve;
+            this.promiseConnectionInfoReject = reject;
             _local_reject = reject;
         });
 
-        this._info_connection_promise_timestamp = Date.now();
+        this.promiseConnectionInfoTimestamp = Date.now();
         this.channelTree.client.serverConnection.send_command("getconnectioninfo", {clid: this._clientId}).catch(error => _local_reject(error));
-        return this._info_connection_promise;
+        return this.promiseConnectionInfo;
     }
 
     set_connection_info(info: ClientConnectionInfo) {
-        if(!this._info_connection_promise_resolve)
+        if(!this.promiseConnectionInfoResolve)
             return;
-        this._info_connection_promise_resolve(info);
-        this._info_connection_promise_resolve = undefined;
-        this._info_connection_promise_reject = undefined;
+        this.promiseConnectionInfoResolve(info);
+        this.promiseConnectionInfoResolve = undefined;
+        this.promiseConnectionInfoReject = undefined;
     }
 
     setAudioVolume(value: number) {
-        if(this._audio_volume == value)
+        if(this.voiceVolume == value)
             return;
 
-        this._audio_volume = value;
+        this.voiceVolume = value;
 
-        this.get_audio_handle()?.set_volume(value);
+        this.updateVoiceVolume();
         this.channelTree.client.settings.changeServer(Settings.FN_CLIENT_VOLUME(this.clientUid()), value);
 
         this.events.fire("notify_audio_level_changed", { newValue: value });
     }
 
     getAudioVolume() {
-        return this._audio_volume;
+        return this.voiceVolume;
     }
 }
 
@@ -1021,8 +1011,17 @@ export class LocalClientEntry extends ClientEntry {
     }
 }
 
+export enum MusicClientPlayerState {
+    SLEEPING,
+    LOADING,
+
+    PLAYING,
+    PAUSED,
+    STOPPED
+}
+
 export class MusicClientProperties extends ClientProperties {
-    player_state: number = 0;
+    player_state: number = 0; /* MusicClientPlayerState */
     player_volume: number = 0;
 
     client_playlist_id: number = 0;
@@ -1032,26 +1031,6 @@ export class MusicClientProperties extends ClientProperties {
     client_bot_type: number = 0;
     client_uptime_mode: number = 0;
 }
-
-/*
- *     command[index]["song_id"] = element ? element->getSongId() : 0;
- command[index]["song_url"] = element ? element->getUrl() : "";
- command[index]["song_invoker"] = element ? element->getInvoker() : 0;
- command[index]["song_loaded"] = false;
-
- auto entry = dynamic_pointer_cast<ts::music::PlayableSong>(element);
- if(entry) {
-        auto data = entry->song_loaded_data();
-        command[index]["song_loaded"] = entry->song_loaded() && data;
-
-        if(entry->song_loaded() && data) {
-            command[index]["song_title"] = data->title;
-            command[index]["song_description"] = data->description;
-            command[index]["song_thumbnail"] = data->thumbnail;
-            command[index]["song_length"] = data->length.count();
-        }
-    }
- */
 
 export class SongInfo {
     song_id: number = 0;
@@ -1220,14 +1199,12 @@ export class MusicClientEntry extends ClientEntry {
                 type: contextmenu.MenuEntryType.ENTRY,
                 name: tr("Change playback latency"),
                 callback: () => {
-                    spawnChangeLatency(this, this._audio_handle.latency_settings(), () => {
-                        this._audio_handle.reset_latency_settings();
-                        return this._audio_handle.latency_settings();
-                    }, settings => this._audio_handle.latency_settings(settings), this._audio_handle.support_flush ? () => {
-                        this._audio_handle.flush();
-                    } : undefined);
+                    spawnChangeLatency(this, this.voiceHandle.getLatencySettings(), () => {
+                        this.voiceHandle.resetLatencySettings();
+                        return this.voiceHandle.getLatencySettings();
+                    }, settings => this.voiceHandle.setLatencySettings(settings), () => this.voiceHandle.flushBuffer());
                 },
-                visible: this._audio_handle && this._audio_handle.support_latency_settings()
+                visible: !!this.voiceHandle
             },
             contextmenu.Entry.HR(),
             {
@@ -1275,5 +1252,16 @@ export class MusicClientEntry extends ClientEntry {
 
         this.channelTree.client.serverConnection.send_command("musicbotplayerinfo", {bot_id: this.properties.client_database_id }).then(() => {});
         return this._info_promise;
+    }
+
+    isCurrentlyPlaying() {
+        switch (this.properties.player_state) {
+            case MusicClientPlayerState.PLAYING:
+            case MusicClientPlayerState.LOADING:
+                return true;
+
+            default:
+                return false;
+        }
     }
 }

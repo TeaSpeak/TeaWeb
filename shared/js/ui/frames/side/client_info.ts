@@ -136,7 +136,7 @@ export class ClientInfo {
             }
 
             const volume = this._html_tag.find(".client-local-volume");
-            volume.text((client && client.get_audio_handle() ? (client.get_audio_handle().get_volume() * 100) : -1).toFixed(0) + "%");
+            volume.text((client && client.getVoiceClient() ? (client.getVoiceClient().getVolume() * 100) : -1).toFixed(0) + "%");
         }
 
         /* teaspeak forum */
@@ -184,7 +184,7 @@ export class ClientInfo {
                         )
                     )
                 }
-                if(client.is_muted()) {
+                if(client.isMuted()) {
                     container_status_entries.append(
                         $.spawn("div").addClass("status-entry").append(
                             $.spawn("div").addClass("icon_em client-input_muted_local"),

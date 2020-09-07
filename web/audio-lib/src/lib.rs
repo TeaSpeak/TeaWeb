@@ -8,21 +8,16 @@ mod audio;
 mod audio_client;
 
 use wasm_bindgen::prelude::*;
-use wasm_bindgen_futures::{ spawn_local };
 
 use js_sys;
-use wasm_timer;
 
-use std::time::Duration;
 use log::*;
-use audio::packet_queue::AudioPacketQueue;
 use crate::audio::codec::opus;
 use crate::audio_client::{AudioClientId, AudioClient, AudioCallback};
 use crate::audio::{AudioPacket, Codec, PacketId};
 use crate::audio::packet_queue::EnqueueError;
 use crate::audio::converter::interleaved2sequenced;
 use once_cell::unsync::Lazy;
-use std::sync::Mutex;
 
 #[cfg(not(target_arch = "wasm32"))]
 extern crate simple_logger;
@@ -60,14 +55,14 @@ pub fn audio_client_create() -> AudioClientId {
 /// Let the audio client say hi (mutable).
 /// If an error occurs or the client isn't known an exception will be thrown.
 #[wasm_bindgen]
-pub fn audio_client_enqueue_buffer(client_id: AudioClientId, buffer: &[u8], packet_id: u16, codec: u8) -> Result<(), JsValue> {
+pub fn audio_client_enqueue_buffer(client_id: AudioClientId, buffer: &[u8], packet_id: u16, codec: u8, is_head_packet: bool) -> Result<(), JsValue> {
     let client = AudioClient::find_client(client_id).ok_or_else(|| JsValue::from_str("missing audio client"))?;
     let result = client.enqueue_audio_packet(Box::new(AudioPacket{
         client_id: 0,
         codec: Codec::from_u8(codec),
         packet_id: PacketId{ packet_id },
         payload: buffer.to_vec()
-    }));
+    }), is_head_packet);
     if let Err(error) = result {
         return Err(match error {
             EnqueueError::PacketAlreadyExists => JsValue::from_str("packet already exists"),
@@ -94,7 +89,7 @@ impl AudioCallback for JsAudioCallback {
 
     fn handle_audio(&mut self, sample_count: usize, channel_count: u8) {
         if channel_count > 1 {
-            let mut sequenced_buffer = unsafe { &mut *AUDIO_SEQUENCED_BUFFER };
+            let sequenced_buffer = unsafe { &mut *AUDIO_SEQUENCED_BUFFER };
             sequenced_buffer.resize(sample_count * channel_count as usize, 0f32);
             interleaved2sequenced(
                 unsafe { &mut *AUDIO_BUFFER }.as_slice(),

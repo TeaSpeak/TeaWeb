@@ -2,6 +2,7 @@ import {AudioRecorderBacked, DeviceList, IDevice,} from "tc-shared/audio/recorde
 import {Registry} from "tc-shared/events";
 import {
     AbstractInput,
+    FilterMode,
     InputConsumer,
     InputConsumerType,
     InputEvents,
@@ -124,6 +125,7 @@ class JavascriptInput implements AbstractInput {
 
     private registeredFilters: (Filter & JAbstractFilter<AudioNode>)[] = [];
     private inputFiltered: boolean = false;
+    private filterMode: FilterMode = FilterMode.Block;
 
     private startPromise: Promise<InputStartResult>;
 
@@ -159,8 +161,13 @@ class JavascriptInput implements AbstractInput {
     private initializeFilters() {
         this.registeredFilters.forEach(e => e.finalize());
         this.registeredFilters.sort((a, b) => a.priority - b.priority);
+        if(!this.audioContext || !this.audioNodeVolume) {
+            return;
+        }
 
-        if(this.audioContext && this.audioNodeVolume) {
+        if(this.filterMode === FilterMode.Block) {
+            this.switchSourceNode(this.audioNodeMute);
+        } else if(this.filterMode === FilterMode.Filter) {
             const activeFilters = this.registeredFilters.filter(e => e.isEnabled());
 
             let chain = "output <- ";
@@ -176,7 +183,10 @@ class JavascriptInput implements AbstractInput {
             logDebug(LogCategory.AUDIO, tr("Input filter chain: %s"), chain);
 
             this.switchSourceNode(currentSource);
+        } else if(this.filterMode === FilterMode.Bypass) {
+            this.switchSourceNode(this.audioNodeVolume);
         }
+
     }
 
     private handleAudio(event: AudioProcessingEvent) {
@@ -184,11 +194,11 @@ class JavascriptInput implements AbstractInput {
             return;
         }
 
-        if(this.consumer.callback_audio) {
-            this.consumer.callback_audio(event.inputBuffer);
+        if(this.consumer.callbackAudio) {
+            this.consumer.callbackAudio(event.inputBuffer);
         }
 
-        if(this.consumer.callback_buffer) {
+        if(this.consumer.callbackBuffer) {
             log.warn(LogCategory.AUDIO, tr("AudioInput has callback buffer, but this isn't supported yet!"));
         }
     }
@@ -245,7 +255,7 @@ class JavascriptInput implements AbstractInput {
             this.currentAudioStream.connect(this.audioNodeVolume);
 
             this.state = InputState.RECORDING;
-            this.recalculateFilterStatus(true);
+            this.updateFilterStatus(true);
 
             return InputStartResult.EOK;
         } catch(error) {
@@ -329,12 +339,12 @@ class JavascriptInput implements AbstractInput {
                 throw tr("unknown filter type");
         }
 
-        filter.callback_active_change = () => this.recalculateFilterStatus(false);
+        filter.callback_active_change = () => this.updateFilterStatus(false);
         filter.callback_enabled_change = () => this.initializeFilters();
 
         this.registeredFilters.push(filter);
         this.initializeFilters();
-        this.recalculateFilterStatus(false);
+        this.updateFilterStatus(false);
         return filter as any;
     }
 
@@ -356,7 +366,7 @@ class JavascriptInput implements AbstractInput {
 
         this.registeredFilters = [];
         this.initializeFilters();
-        this.recalculateFilterStatus(false);
+        this.updateFilterStatus(false);
     }
 
     removeFilter(filterInstance: Filter) {
@@ -368,11 +378,24 @@ class JavascriptInput implements AbstractInput {
         filter.enabled = false;
 
         this.initializeFilters();
-        this.recalculateFilterStatus(false);
+        this.updateFilterStatus(false);
     }
 
-    private recalculateFilterStatus(forceUpdate: boolean) {
-        let filtered = this.registeredFilters.filter(e => e.isEnabled()).filter(e => e.active).length > 0;
+    private calculateCurrentFilterStatus() {
+        switch (this.filterMode) {
+            case FilterMode.Block:
+                return true;
+
+            case FilterMode.Bypass:
+                return false;
+
+            case FilterMode.Filter:
+                return this.registeredFilters.filter(e => e.isEnabled()).filter(e => e.active).length > 0;
+        }
+    }
+
+    private updateFilterStatus(forceUpdate: boolean) {
+        let filtered = this.calculateCurrentFilterStatus();
         if(filtered === this.inputFiltered && !forceUpdate)
             return;
 
@@ -391,21 +414,25 @@ class JavascriptInput implements AbstractInput {
     async setConsumer(consumer: InputConsumer) {
         if(this.consumer) {
             if(this.consumer.type == InputConsumerType.NODE) {
-                if(this.sourceNode)
-                    (this.consumer as NodeInputConsumer).callback_disconnect(this.sourceNode)
+                if(this.sourceNode) {
+                    this.consumer.callbackDisconnect(this.sourceNode);
+                }
             } else if(this.consumer.type === InputConsumerType.CALLBACK) {
-                if(this.sourceNode)
+                if(this.sourceNode) {
                     this.sourceNode.disconnect(this.audioNodeCallbackConsumer);
+                }
             }
         }
 
         if(consumer) {
             if(consumer.type == InputConsumerType.CALLBACK) {
-                if(this.sourceNode)
+                if(this.sourceNode) {
                     this.sourceNode.connect(this.audioNodeCallbackConsumer);
+                }
             } else if(consumer.type == InputConsumerType.NODE) {
-                if(this.sourceNode)
-                    (consumer as NodeInputConsumer).callback_node(this.sourceNode);
+                if(this.sourceNode) {
+                    consumer.callbackNode(this.sourceNode);
+                }
             } else {
                 throw "native callback consumers are not supported!";
             }
@@ -418,11 +445,11 @@ class JavascriptInput implements AbstractInput {
             if(this.consumer.type == InputConsumerType.NODE) {
                 const node_consumer = this.consumer as NodeInputConsumer;
                 if(this.sourceNode) {
-                    node_consumer.callback_disconnect(this.sourceNode);
+                    node_consumer.callbackDisconnect(this.sourceNode);
                 }
 
                 if(newNode) {
-                    node_consumer.callback_node(newNode);
+                    node_consumer.callbackNode(newNode);
                 }
             } else if(this.consumer.type == InputConsumerType.CALLBACK) {
                 this.sourceNode.disconnect(this.audioNodeCallbackConsumer);
@@ -460,6 +487,20 @@ class JavascriptInput implements AbstractInput {
 
     isFiltered(): boolean {
         return this.state === InputState.RECORDING ? this.inputFiltered : true;
+    }
+
+    getFilterMode(): FilterMode {
+        return this.filterMode;
+    }
+
+    setFilterMode(mode: FilterMode) {
+        if(this.filterMode === mode) {
+            return;
+        }
+
+        this.filterMode = mode;
+        this.updateFilterStatus(false);
+        this.initializeFilters();
     }
 }
 
@@ -570,11 +611,11 @@ class JavascriptLevelMeter implements LevelMeter {
         }
     }
 
-    device(): IDevice {
+    getDevice(): IDevice {
         return this._device;
     }
 
-    set_observer(callback: (value: number) => any) {
+    setObserver(callback: (value: number) => any) {
         this._callback = callback;
     }
 

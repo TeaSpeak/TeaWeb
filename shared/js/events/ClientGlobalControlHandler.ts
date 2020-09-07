@@ -148,7 +148,11 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
 
     event_registry.on("action_open_window_connect", event => {
         spawnConnectModal({
-            default_connect_new_tab: event.new_tab
+            default_connect_new_tab: event.newTab
         });
+    });
+
+    event_registry.on("action_open_window_settings", event => {
+        spawnSettingsModal(event.defaultCategory);
     });
 }

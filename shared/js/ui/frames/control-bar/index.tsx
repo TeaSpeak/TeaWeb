@@ -6,7 +6,6 @@ import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase
 import {
     ConnectionEvents,
     ConnectionHandler,
-    ConnectionState as CConnectionState,
     ConnectionStateUpdateType
 } from "tc-shared/ConnectionHandler";
 import {Event, EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
@@ -23,10 +22,8 @@ import {
 } from "tc-shared/bookmarks";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
-import {default_recorder} from "tc-shared/voice/RecorderProfile";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {icon_cache_loader} from "tc-shared/file/Icons";
-import {InputState} from "tc-shared/voice/RecorderBase";
 
 const cssStyle = require("./index.scss");
 const cssButtonStyle = require("./button.scss");
@@ -51,7 +48,7 @@ class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_re
             if(!this.state.connected) {
                 subentries.push(
                     <DropdownEntry key={"connect-server"} icon={"client-connect"} text={<Translatable>Connect to a server</Translatable>}
-                                   onClick={ () => global_client_actions.fire("action_open_window_connect", {new_tab: false }) } />
+                                   onClick={ () => global_client_actions.fire("action_open_window_connect", {newTab: false }) } />
                 );
             } else {
                 subentries.push(
@@ -67,14 +64,14 @@ class ConnectButton extends ReactComponentBase<{ multiSession: boolean; event_re
             }
             subentries.push(
                 <DropdownEntry key={"connect-new-tab"} icon={"client-connect"} text={<Translatable>Connect to a server in another tab</Translatable>}
-                               onClick={ () => global_client_actions.fire("action_open_window_connect", { new_tab: true }) } />
+                               onClick={ () => global_client_actions.fire("action_open_window_connect", { newTab: true }) } />
             );
         }
 
         if(!this.state.connected) {
             return (
                 <Button colorTheme={"default"} autoSwitch={false} iconNormal={"client-connect"} tooltip={tr("Connect to a server")}
-                        onToggle={ () => global_client_actions.fire("action_open_window_connect", { new_tab: false }) }>
+                        onToggle={ () => global_client_actions.fire("action_open_window_connect", { newTab: false }) }>
                     {subentries}
                 </Button>
             );

@@ -478,7 +478,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
                 value: string
             }[] = [];
 
-            for(let key in entry) {
+            for(let key of Object.keys(entry)) {
                 if(key == "cfid") continue;
                 if(key == "ctid") continue;
                 if(key === "invokerid") continue;
@@ -609,10 +609,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
             this.connection_handler.update_voice_status(channel_to);
 
             for(const entry of client.channelTree.clientsByChannel(channelFrom)) {
-                if(entry !== client && entry.get_audio_handle()) {
-                    entry.get_audio_handle().abort_replay();
-                    entry.speaking = false;
-                }
+                entry.getVoiceClient()?.abortReplay();
             }
 
             const side_bar = this.connection_handler.side_bar;

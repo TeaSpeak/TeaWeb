@@ -14,6 +14,8 @@ export interface VoicePacket {
     voiceId: number;
     clientId: number;
     codec: number;
+
+    head: boolean;
     payload: Uint8Array;
 }
 
@@ -48,4 +50,7 @@ export abstract class VoiceBridge {
     abstract setInput(input: AbstractInput | undefined): Promise<void>;
 
     abstract sendStopSignal(codec: number);
+
+    abstract startWhispering();
+    abstract stopWhispering();
 }

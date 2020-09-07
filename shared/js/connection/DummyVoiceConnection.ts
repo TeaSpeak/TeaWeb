@@ -1,62 +1,46 @@
 import {
-    AbstractVoiceConnection, LatencySettings,
-    PlayerState,
-    VoiceClient,
+    AbstractVoiceConnection,
     VoiceConnectionStatus, WhisperSessionInitializer
 } from "tc-shared/connection/VoiceConnection";
 import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {WhisperSession} from "tc-shared/voice/Whisper";
+import {VoiceClient} from "tc-shared/voice/VoiceClient";
+import {VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
+import {WhisperSession} from "tc-shared/voice/VoiceWhisper";
 
 class DummyVoiceClient implements VoiceClient {
-    client_id: number;
-
-    callback_playback: () => any;
-    callback_stopped: () => any;
-
-    callback_state_changed: (new_state: PlayerState) => any;
-
+    private readonly clientId: number;
     private volume: number;
 
     constructor(clientId: number) {
-        this.client_id = clientId;
-
+        this.clientId = clientId;
         this.volume = 1;
-        this.reset_latency_settings();
     }
 
-    abort_replay() { }
-
-    flush() {
-        throw "flush isn't supported";}
-
-    get_state(): PlayerState {
-        return PlayerState.STOPPED;
+    getClientId(): number {
+        return this.clientId;
     }
 
-    latency_settings(settings?: LatencySettings): LatencySettings {
-        throw "latency settings are not supported";
-    }
-
-    reset_latency_settings() {
-        throw "latency settings are not supported";
-    }
-
-    set_volume(volume: number): void {
-        this.volume = volume;
-    }
-
-    get_volume(): number {
+    getVolume(): number {
         return this.volume;
     }
 
-    support_flush(): boolean {
-        return false;
+    setVolume(volume: number) {
+        this.volume = volume;
     }
 
-    support_latency_settings(): boolean {
-        return false;
+    getState(): VoicePlayerState {
+        return VoicePlayerState.STOPPED;
     }
+
+    getLatencySettings(): Readonly<VoicePlayerLatencySettings> {
+        return { maxBufferTime: 0, minBufferTime: 0 };
+    }
+
+    setLatencySettings(settings) { }
+
+    flushBuffer() { }
+    abortReplay() { }
 }
 
 export class DummyVoiceConnection extends AbstractVoiceConnection {
@@ -89,7 +73,7 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         this.events.fire("notify_recorder_changed", {});
     }
 
-    availableClients(): VoiceClient[] {
+    availableVoiceClients(): VoiceClient[] {
         return this.voiceClients;
     }
 
@@ -109,7 +93,7 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
         return 0;
     }
 
-    registerClient(clientId: number): VoiceClient {
+    async registerVoiceClient(clientId: number): Promise<VoiceClient> {
         const client = new DummyVoiceClient(clientId);
         this.voiceClients.push(client);
         return client;
@@ -117,7 +101,7 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
 
     setEncoderCodec(codec: number) {}
 
-    async unregister_client(client: VoiceClient): Promise<void> {
+    async unregisterVoiceClient(client: VoiceClient): Promise<void> {
         this.voiceClients.remove(client as any);
     }
 

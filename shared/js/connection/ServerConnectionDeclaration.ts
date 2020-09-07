@@ -32,10 +32,9 @@ export class CommandResult {
 }
 
 export interface ClientNameInfo {
-    //cluid=tYzKUryn\/\/Y8VBMf8PHUT6B1eiE= name=Exp clname=Exp cldbid=9
-    client_unique_id: string;
-    client_nickname: string;
-    client_database_id: number;
+    clientUniqueId: string;
+    clientNickname: string;
+    clientDatabaseId: number;
 }
 
 export interface ClientNameFromUid {
