@@ -1,22 +1,22 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import * as log from "../log";
+import {LogCategory} from "../log";
 import * as ipc from "../ipc/BrowserIPC";
 import {ChannelMessage} from "../ipc/BrowserIPC";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {image_type, ImageCache, media_image_type} from "tc-shared/file/ImageCache";
-import {FileManager} from "tc-shared/file/FileManager";
+import {image_type, ImageCache, media_image_type} from "../file/ImageCache";
+import {FileManager} from "../file/FileManager";
 import {
     FileDownloadTransfer,
     FileTransferState,
     ResponseTransferTarget,
     TransferProvider,
     TransferTargetType
-} from "tc-shared/file/Transfer";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {ClientEntry} from "tc-shared/tree/Client";
-import {tr} from "tc-shared/i18n/localize";
+} from "../file/Transfer";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {server_connections} from "../ui/frames/connection_handlers";
+import {ClientEntry} from "../tree/Client";
+import {tr} from "../i18n/localize";
 import {
     AbstractAvatarManager,
     AbstractAvatarManagerFactory,
@@ -26,10 +26,10 @@ import {
     kIPCAvatarChannel,
     setGlobalAvatarManagerFactory,
     uniqueId2AvatarId
-} from "tc-shared/file/Avatars";
-import {IPCChannel} from "tc-shared/ipc/BrowserIPC";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+} from "../file/Avatars";
+import {IPCChannel} from "../ipc/BrowserIPC";
+import {ConnectionHandler} from "../ConnectionHandler";
+import {ErrorCode} from "../connection/ErrorCode";
 
 /* FIXME: Retry avatar download after some time! */
 

@@ -1,8 +1,8 @@
-import {createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {ChannelEntry} from "tc-shared/tree/Channel";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import {formatMessage} from "tc-shared/ui/frames/chat";
+import {createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
+import {ChannelEntry} from "../../tree/Channel";
+import {copy_to_clipboard} from "../../utils/helpers";
+import * as tooltip from "../../ui/elements/Tooltip";
+import {formatMessage} from "../../ui/frames/chat";
 
 export function openChannelInfo(channel: ChannelEntry) {
     let modal: Modal;
@@ -39,12 +39,13 @@ export function openChannelInfo(channel: ChannelEntry) {
 }
 
 declare const xbbcode;
+
 function apply_channel_description(container: JQuery, channel: ChannelEntry) {
     const container_value = container.find(".value");
     const container_no_value = container.find(".no-value");
 
     channel.getChannelDescription().then(description => {
-        if(description) {
+        if (description) {
             const result = xbbcode.parse(description, {});
             container_value[0].innerHTML = result.build_html();
             container_no_value.hide();
@@ -71,9 +72,9 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
     /* channel type */
     {
         const tag = container.find(".channel-type .value").empty();
-        if(channel.properties.channel_flag_permanent)
+        if (channel.properties.channel_flag_permanent)
             tag.text(tr("Permanent"));
-        else if(channel.properties.channel_flag_semi_permanent)
+        else if (channel.properties.channel_flag_semi_permanent)
             tag.text(tr("Semi permanent"));
         else
             //TODO: Channel delete delay!
@@ -83,12 +84,12 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
     /* chat mode */
     {
         const tag = container.find(".chat-mode .value").empty();
-        if(channel.properties.channel_flag_conversation_private || channel.properties.channel_flag_password) {
+        if (channel.properties.channel_flag_conversation_private || channel.properties.channel_flag_password) {
             tag.text(tr("Private"));
         } else {
-            if(channel.properties.channel_conversation_history_length == -1)
+            if (channel.properties.channel_conversation_history_length == -1)
                 tag.text(tr("Public; Semi permanent message saving"));
-            else if(channel.properties.channel_conversation_history_length == 0)
+            else if (channel.properties.channel_conversation_history_length == 0)
                 tag.text(tr("Public; Permanent message saving"));
             else
                 tag.append(formatMessage(tr("Public; Saving last {} messages"), channel.properties.channel_conversation_history_length));
@@ -99,13 +100,13 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
     {
         const tag = container.find(".current-clients .value").empty();
 
-        if(channel.flag_subscribed) {
+        if (channel.flag_subscribed) {
             const current = channel.clients().length;
             let channel_limit = tr("Unlimited");
-            if(!channel.properties.channel_flag_maxclients_unlimited)
+            if (!channel.properties.channel_flag_maxclients_unlimited)
                 channel_limit = "" + channel.properties.channel_maxclients;
-            else if(!channel.properties.channel_flag_maxfamilyclients_unlimited) {
-                if(channel.properties.channel_maxfamilyclients >= 0)
+            else if (!channel.properties.channel_flag_maxfamilyclients_unlimited) {
+                if (channel.properties.channel_maxfamilyclients >= 0)
                     channel_limit = "" + channel.properties.channel_maxfamilyclients;
             }
 
@@ -126,9 +127,9 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
         const tag = container.find(".audio-encrypted .value").empty();
         const mode = channel.channelTree.server.properties.virtualserver_codec_encryption_mode;
         let appendix;
-        if(mode == 1)
+        if (mode == 1)
             appendix = tr("Overridden by the server with Unencrypted!");
-        else if(mode == 2)
+        else if (mode == 2)
             appendix = tr("Overridden by the server with Encrypted!");
 
         tag.html((channel.properties.channel_codec_is_unencrypted ? tr("Unencrypted") : tr("Encrypted")) + (appendix ? "<br>" + appendix : ""))
@@ -137,7 +138,7 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
     /* flag password */
     {
         const tag = container.find(".flag-password .value").empty();
-        if(channel.properties.channel_flag_password)
+        if (channel.properties.channel_flag_password)
             tag.text(tr("Yes"));
         else
             tag.text(tr("No"));
@@ -147,7 +148,7 @@ function apply_general(container: JQuery, channel: ChannelEntry) {
     {
         const container_tag = container.find(".topic");
         const tag = container_tag.find(".value").empty();
-        if(channel.properties.channel_topic) {
+        if (channel.properties.channel_topic) {
             container_tag.show();
             tag.text(channel.properties.channel_topic);
         } else {

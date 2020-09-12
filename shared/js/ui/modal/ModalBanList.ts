@@ -1,15 +1,15 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {createErrorModal, createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {SingleCommandHandler} from "tc-shared/connection/ConnectionBase";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import PermissionType from "tc-shared/permission/PermissionType";
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import * as htmltags from "tc-shared/ui/htmltags";
-import {format_time, formatMessage} from "tc-shared/ui/frames/chat";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {createErrorModal, createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
+import {SingleCommandHandler} from "../../connection/ConnectionBase";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import PermissionType from "../../permission/PermissionType";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import * as tooltip from "../../ui/elements/Tooltip";
+import * as htmltags from "../../ui/htmltags";
+import {format_time, formatMessage} from "../../ui/frames/chat";
 import * as moment from "moment";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {ErrorCode} from "../../connection/ErrorCode";
 
 export function openBanList(client: ConnectionHandler) {
     let modal: Modal;
@@ -22,7 +22,7 @@ export function openBanList(client: ConnectionHandler) {
             const json = command.arguments;
 
             let bans: BanEntry[] = [];
-            for(const entry of json) {
+            for (const entry of json) {
                 bans.push({
                     server_id: parseInt(entry["sid"]),
                     banid: parseInt(entry["banid"]),
@@ -55,7 +55,7 @@ export function openBanList(client: ConnectionHandler) {
             const json = command.arguments;
 
             let triggers: TriggerEntry[] = [];
-            for(const entry of json) {
+            for (const entry of json) {
                 triggers.push({
                     unique_id: entry["client_unique_identifier"],
                     client_nickname: entry["client_nickname"],
@@ -86,20 +86,20 @@ export function openBanList(client: ConnectionHandler) {
                 };
 
                 Promise.all([
-                    client.serverConnection.send_command("banlist", { sid: 0 }, {process_result: false}).catch(error => {
+                    client.serverConnection.send_command("banlist", {sid: 0}, {process_result: false}).catch(error => {
                         //TODO: May lookup for permissions
                     }),
                     client.serverConnection.send_command("banlist").catch(async error => {
-                        if(error instanceof CommandResult)
-                            if(error.id === ErrorCode.DATABASE_EMPTY_RESULT)
+                        if (error instanceof CommandResult)
+                            if (error.id === ErrorCode.DATABASE_EMPTY_RESULT)
                                 return;
                         throw error;
                     })
                 ]).then(() => {
-                    if(_callback_bans) resolve();
+                    if (_callback_bans) resolve();
                     cleanup();
                 }).catch(error => {
-                    if(_callback_bans) reject(error);
+                    if (_callback_bans) reject(error);
                     cleanup();
                 });
             });
@@ -118,18 +118,18 @@ export function openBanList(client: ConnectionHandler) {
                 };
 
                 const data = {banid: ban.ban_id};
-                if(typeof ban.server_id !== "undefined")
+                if (typeof ban.server_id !== "undefined")
                     data["sid"] = ban.server_id;
                 client.serverConnection.send_command("bantriggerlist", data).catch(async error => {
-                    if(error instanceof CommandResult)
-                        if(error.id === ErrorCode.DATABASE_EMPTY_RESULT)
+                    if (error instanceof CommandResult)
+                        if (error.id === ErrorCode.DATABASE_EMPTY_RESULT)
                             return;
                     throw error;
                 }).then(() => {
-                    if(_callback_triggers) resolve();
+                    if (_callback_triggers) resolve();
                     cleanup();
                 }).catch(error => {
-                    if(_callback_triggers) reject(error);
+                    if (_callback_triggers) reject(error);
                     cleanup();
                 });
             });
@@ -153,27 +153,33 @@ export function openBanList(client: ConnectionHandler) {
         add_ban(entry: BanEntry): Promise<void> {
             const data = {};
 
-            if(entry.ip) data["ip"] = entry.ip;
-            if(entry.name) data["name"] = entry.name;
-            if(entry.unique_id) data["uid"] = entry.unique_id;
-            if(entry.hardware_id) data["hwid"] = entry.hardware_id;
-            if(entry.reason) data["banreason"] = entry.reason;
-            if(entry.timestamp_expire) data["time"] = Math.floor((entry.timestamp_expire - entry.timestamp_created) / 1000);
-            if(typeof(entry.server_id) === "number") data["sid"] = entry.server_id;
+            if (entry.ip) data["ip"] = entry.ip;
+            if (entry.name) data["name"] = entry.name;
+            if (entry.unique_id) data["uid"] = entry.unique_id;
+            if (entry.hardware_id) data["hwid"] = entry.hardware_id;
+            if (entry.reason) data["banreason"] = entry.reason;
+            if (entry.timestamp_expire) data["time"] = Math.floor((entry.timestamp_expire - entry.timestamp_created) / 1000);
+            if (typeof (entry.server_id) === "number") data["sid"] = entry.server_id;
 
-            return client.serverConnection.send_command("banadd", data).then(e => { if(!e.success) throw e; });
+            return client.serverConnection.send_command("banadd", data).then(e => {
+                if (!e.success) throw e;
+            });
         },
         edit_ban(data: any): Promise<void> {
-            return client.serverConnection.send_command("banedit", data).then(e => { if(!e.success) throw e; });
+            return client.serverConnection.send_command("banedit", data).then(e => {
+                if (!e.success) throw e;
+            });
         },
         delete_ban(entry_id, server_id): Promise<void> {
             const data = {
                 banid: entry_id
             };
-            if(typeof(server_id) === "number")
+            if (typeof (server_id) === "number")
                 data["sid"] = server_id;
 
-            return client.serverConnection.send_command("bandel", data).then(e => { if(!e.success) throw e; });
+            return client.serverConnection.send_command("bandel", data).then(e => {
+                if (!e.success) throw e;
+            });
         }
     };
 
@@ -232,16 +238,21 @@ interface TriggerEntry {
 }
 
 interface BanListController {
-    request_list(callback_bans: (entries: BanEntry[]) => any) : Promise<void>;
-    request_trigger_list(ban: {ban_id: number, server_id: number | undefined}, callback_triggers: (entries: TriggerEntry[]) => any) : Promise<void>;
+    request_list(callback_bans: (entries: BanEntry[]) => any): Promise<void>;
 
-    max_bantime() : Promise<number>;
-    permission_edit() : Promise<boolean[]>;
-    permission_add() : Promise<boolean[]>;
+    request_trigger_list(ban: { ban_id: number, server_id: number | undefined }, callback_triggers: (entries: TriggerEntry[]) => any): Promise<void>;
 
-    add_ban(entry: BanEntry) : Promise<void>;
-    edit_ban(data: any) : Promise<void>;
-    delete_ban(entry_id: number, server_id: number | undefined) : Promise<void>;
+    max_bantime(): Promise<number>;
+
+    permission_edit(): Promise<boolean[]>;
+
+    permission_add(): Promise<boolean[]>;
+
+    add_ban(entry: BanEntry): Promise<void>;
+
+    edit_ban(data: any): Promise<void>;
+
+    delete_ban(entry_id: number, server_id: number | undefined): Promise<void>;
 }
 
 //Note: This object must be sorted (from shortest to longest)!
@@ -272,7 +283,7 @@ export const duration_data = {
     },
 };
 
-function generate_dom(controller: BanListController) : JQuery {
+function generate_dom(controller: BanListController): JQuery {
     const template = $("#tmpl_ban_list").renderTag();
 
     let callback_ban_filter: ((text: string, flag_own: boolean, highlight_own: boolean) => boolean)[] = [];
@@ -312,17 +323,17 @@ function generate_dom(controller: BanListController) : JQuery {
     controller.permission_add().then(result => permission_add = result).catch(error => {
         log.error(LogCategory.CLIENT, tr("Failed to query ban add permissions: %o"), error);
     }).then(() => {
-        if(permission_add[0] !== permission_add[1]) {
+        if (permission_add[0] !== permission_add[1]) {
             const input_global = container_add.find(".group-global input");
             input_global.prop("checked", permission_add[1]).prop("disabled", true).firstParent(".checkbox").addClass("disabled");
-        } else if(!permission_add[0])
+        } else if (!permission_add[0])
             container_add_no_permissions.show();
     });
 
     controller.permission_edit().then(result => permission_edit = result).catch(error => {
         log.error(LogCategory.CLIENT, tr("Failed to query ban edit permissions: %o"), error);
     }).then(() => {
-        if(selected_ban) update_edit_window(false);
+        if (selected_ban) update_edit_window(false);
     });
 
     /* category switch */
@@ -342,7 +353,7 @@ function generate_dom(controller: BanListController) : JQuery {
         });
 
         category_edit.on('click', event => {
-            if(!selected_ban) return;
+            if (!selected_ban) return;
 
             container_add.addClass("hidden");
             category_add.removeClass("selected");
@@ -377,7 +388,7 @@ function generate_dom(controller: BanListController) : JQuery {
         );
 
         tag.on('click', event => {
-            if(selected_ban === entry || event.isDefaultPrevented()) return;
+            if (selected_ban === entry || event.isDefaultPrevented()) return;
             selected_ban = entry;
 
             container_ban_entries.find(".entry.selected").removeClass("selected");
@@ -391,19 +402,19 @@ function generate_dom(controller: BanListController) : JQuery {
 
             controller.delete_ban(entry.banid, entry.server_id).then(() => {
                 tag.css({opacity: 1}).animate({opacity: 0}, 250, () => tag.animate({"max-height": 0}, 250, () => tag.remove()));
-                if(entry === selected_ban) {
+                if (entry === selected_ban) {
                     selected_ban = undefined;
                     update_edit_window(false);
                 }
             }).catch(error => {
                 log.error(LogCategory.CLIENT, tr("Failed to delete ban: %o"), error);
-                if(error instanceof CommandResult)
+                if (error instanceof CommandResult)
                     error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? "no permissions" : error.extra_message || error.message;
                 createErrorModal(tr("Failed to delete ban"), formatMessage(tr("Failed to delete ban. {:br:}Error: {}"), error)).open();
             });
         });
 
-        if(selected) {
+        if (selected) {
             selected_ban = entry;
             update_edit_window(false);
         }
@@ -415,12 +426,12 @@ function generate_dom(controller: BanListController) : JQuery {
             (entry.ip || "").toLowerCase() + " " +
             (entry.hardware_id || "").toLowerCase();
         callback_ban_filter.push((text, flag_own, highlight_own) => {
-            if(text && lower_mesh.indexOf(text) == -1) {
+            if (text && lower_mesh.indexOf(text) == -1) {
                 tag.hide();
                 return false;
             }
 
-            if(flag_own && !entry.flag_own) {
+            if (flag_own && !entry.flag_own) {
                 tag.hide();
                 return false;
             }
@@ -445,7 +456,7 @@ function generate_dom(controller: BanListController) : JQuery {
 
         let bans = [];
         controller.request_list(_bans => bans.push(..._bans)).then(() => {
-            if(bans.length) {
+            if (bans.length) {
                 container_ban_entries.append(...bans.map(e => build_ban_entry(e, e.banid === selected_ban)));
                 container_ban_entries_empty.hide();
             } else {
@@ -454,7 +465,7 @@ function generate_dom(controller: BanListController) : JQuery {
             update_ban_filter();
         }).catch(error => {
             log.info(LogCategory.CLIENT, tr("Failed to update ban list: %o"), error);
-            if(error instanceof CommandResult)
+            if (error instanceof CommandResult)
                 error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? tr("no permissions") : error.extra_message || error.message;
             container_ban_entries_error.show().find("a").text(tr("Failed to receive banlist: ") + error);
             container_ban_entries_empty.hide();
@@ -475,7 +486,7 @@ function generate_dom(controller: BanListController) : JQuery {
         let cause_hwid = !cause_ip && !!selected_ban.hardware_id && selected_ban.hardware_id.toLowerCase() === (entry.hardware_id || "").toLowerCase();
 
         /* we guess that IP is the cause because we dont see the IP and there is no other reason */
-        if(!cause_name && !cause_uid && !cause_ip && !cause_hwid && entry.connection_ip === "hidden")
+        if (!cause_name && !cause_uid && !cause_ip && !cause_hwid && entry.connection_ip === "hidden")
             cause_ip = true;
 
         const time_str = moment(entry.timestamp).format('DD.MM.YYYY hh:mm');
@@ -498,7 +509,7 @@ function generate_dom(controller: BanListController) : JQuery {
             time_str + " " +
             entry.timestamp;
         callback_trigger_filter.push(text => {
-            if(text && lower_mesh.indexOf(text) == -1) {
+            if (text && lower_mesh.indexOf(text) == -1) {
                 tag.hide();
                 return false;
             }
@@ -522,7 +533,7 @@ function generate_dom(controller: BanListController) : JQuery {
             ban_id: selected_ban.banid,
             server_id: selected_ban.server_id
         }, _triggers => triggers.push(..._triggers)).then(() => {
-            if(triggers.length) {
+            if (triggers.length) {
                 container_trigger_entries.append(...triggers.sort((a, b) => b.timestamp - a.timestamp).map(e => build_trigger_entry(e)));
                 container_trigger_entries_empty.hide();
             } else {
@@ -532,7 +543,7 @@ function generate_dom(controller: BanListController) : JQuery {
             update_trigger_filter();
         }).catch(error => {
             log.info(LogCategory.CLIENT, tr("Failed to update trigger list: %o"), error);
-            if(error instanceof CommandResult)
+            if (error instanceof CommandResult)
                 error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? tr("no permissions") : error.extra_message || error.message;
             container_trigger_entries_error.show().find("a").text(tr("Failed to receive trigger list: ") + error);
             container_trigger_entries_empty.hide();
@@ -562,7 +573,7 @@ function generate_dom(controller: BanListController) : JQuery {
             {
                 //TODO: Check if in regex mode or not
                 const value = input_name.val() as string || "";
-                if(value.length > 255) {
+                if (value.length > 255) {
                     _input_invalid = true;
                     input_name.firstParent(".input-boxed").addClass("is-invalid");
                 } else {
@@ -574,7 +585,7 @@ function generate_dom(controller: BanListController) : JQuery {
             {
                 //TODO: Check if in regex mode or not
                 const value = input_ip.val() as string || "";
-                if(value.length > 255) {
+                if (value.length > 255) {
                     _input_invalid = true;
                     input_ip.firstParent(".input-boxed").addClass("is-invalid");
                 } else {
@@ -586,11 +597,11 @@ function generate_dom(controller: BanListController) : JQuery {
             {
                 const value = input_uid.val() as string || "";
                 try {
-                    if(value && atob(value).length != 20) throw "";
+                    if (value && atob(value).length != 20) throw "";
 
                     _criteria_set = _criteria_set || !!value;
                     input_uid.firstParent(".input-boxed").removeClass("is-invalid");
-                } catch(e) {
+                } catch (e) {
                     _input_invalid = true;
                     input_uid.firstParent(".input-boxed").addClass("is-invalid");
                 }
@@ -598,7 +609,7 @@ function generate_dom(controller: BanListController) : JQuery {
 
             {
                 const value = input_hwid.val() as string || "";
-                if(value.length > 255) {
+                if (value.length > 255) {
                     _input_invalid = true;
                     input_hwid.firstParent(".input-boxed").addClass("is-invalid");
                 } else {
@@ -609,7 +620,7 @@ function generate_dom(controller: BanListController) : JQuery {
 
             {
                 const value = input_reason.val() as string || "";
-                if(value.length > 512) {
+                if (value.length > 512) {
                     _input_invalid = true;
                     input_reason.firstParent(".input-boxed").addClass("is-invalid");
                 } else {
@@ -623,8 +634,8 @@ function generate_dom(controller: BanListController) : JQuery {
                 const disabled = input_duration_type.prop("disabled");
 
                 input_duration_value.prop("disabled", type === "perm" || disabled).firstParent(".input-boxed").toggleClass("disabled", type === "perm" || disabled);
-                if(type !== "perm") {
-                    if(input_duration_value.attr("x-saved-value")) {
+                if (type !== "perm") {
+                    if (input_duration_value.attr("x-saved-value")) {
                         input_duration_value.val(parseInt(input_duration_value.attr("x-saved-value")));
                         input_duration_value.attr("x-saved-value", null);
                     }
@@ -633,19 +644,19 @@ function generate_dom(controller: BanListController) : JQuery {
                     const max = parseInt(selected_option.attr("duration-max"));
 
                     input_duration_value.attr("max", max);
-                    if((value > max && max != -1) || value < 1) {
+                    if ((value > max && max != -1) || value < 1) {
                         _input_invalid = true;
                         input_duration_value.firstParent(".input-boxed").addClass("is-invalid");
                     } else {
                         input_duration_value.firstParent(".input-boxed").removeClass("is-invalid");
                     }
 
-                    if(max != -1)
+                    if (max != -1)
                         tooltip_duration_max.html(tr("You're allowed to ban a maximum of ") + "<b>" + max + " " + duration_data[type][max == 1 ? "1-text" : "text"] + "</b>");
                     else
                         tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
                 } else {
-                    if(value && !Number.isNaN(value))
+                    if (value && !Number.isNaN(value))
                         input_duration_value.attr("x-saved-value", value);
                     input_duration_value.attr("placeholder", tr("for ever")).val(null);
                     tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
@@ -656,15 +667,17 @@ function generate_dom(controller: BanListController) : JQuery {
         };
 
         /* initialize ban time */
-        controller.max_bantime().catch(error => { /* TODO: Error handling? */ return 0; }).then(max_time => {
+        controller.max_bantime().catch(error => { /* TODO: Error handling? */
+            return 0;
+        }).then(max_time => {
             let unlimited = max_time == 0 || max_time == -1;
-            if(unlimited) max_time = 0;
+            if (unlimited) max_time = 0;
 
-            for(const value of Object.keys(duration_data)) {
+            for (const value of Object.keys(duration_data)) {
                 input_duration_type.find("option[value='" + value + "']")
                     .prop("disabled", !unlimited && max_time >= duration_data[value].scale)
                     .attr("duration-scale", duration_data[value].scale)
-                    .attr("duration-max", unlimited ? -1 : Math.floor(max_time  / duration_data[value].scale));
+                    .attr("duration-max", unlimited ? -1 : Math.floor(max_time / duration_data[value].scale));
             }
 
             input_duration_type.find("option[value='perm']")
@@ -706,7 +719,7 @@ function generate_dom(controller: BanListController) : JQuery {
             input_hwid.val(selected_ban ? selected_ban.hardware_id : null).prop("disabled", !editable).firstParent(".input-boxed").toggleClass("disabled", !editable);
             input_reason.val(selected_ban ? selected_ban.reason : null).prop("disabled", !editable).firstParent(".input-boxed").toggleClass("disabled", !editable);
 
-            input_interpret.find("option").eq(selected_ban && typeof(selected_ban.name_type) === "number" ? selected_ban.name_type : 2).prop("selected", true).prop("disabled", !editable).firstParent(".input-boxed").toggleClass("disabled", !editable);
+            input_interpret.find("option").eq(selected_ban && typeof (selected_ban.name_type) === "number" ? selected_ban.name_type : 2).prop("selected", true).prop("disabled", !editable).firstParent(".input-boxed").toggleClass("disabled", !editable);
             label_enforcement_count.text((selected_ban ? selected_ban.enforcements : 0) || 0);
             button_enforcement_list.prop("disabled", !selected_ban || selected_ban.enforcements == 0);
 
@@ -715,17 +728,17 @@ function generate_dom(controller: BanListController) : JQuery {
             input_duration_type.prop("disabled", !editable).firstParent(".input-boxed").toggleClass("disabled", !editable);
             input_duration_value.prop("disabled", !editable).firstParent(".input-boxed").toggleClass("disabled", !editable);
 
-            if(selected_ban) {
-                if(selected_ban.timestamp_expire > selected_ban.timestamp_created) {
+            if (selected_ban) {
+                if (selected_ban.timestamp_expire > selected_ban.timestamp_created) {
                     const duration = Math.ceil((selected_ban.timestamp_expire - selected_ban.timestamp_created) / 1000);
 
                     const periods = Object.keys(duration_data);
                     let index;
-                    for(index = 0; index < periods.length; index++) {
-                        if(duration_data[periods[index]].scale > duration + 1 || ((duration + 1) % duration_data[periods[index]].scale) > 1.9)
+                    for (index = 0; index < periods.length; index++) {
+                        if (duration_data[periods[index]].scale > duration + 1 || ((duration + 1) % duration_data[periods[index]].scale) > 1.9)
                             break;
                     }
-                    if(index > 0) index--;
+                    if (index > 0) index--;
                     input_duration_type.find("option[value='" + periods[index] + "']").prop("selected", true);
                     input_duration_value.val(Math.ceil(duration / duration_data[periods[index]].scale));
                     tooltip_duration_detailed.text($.spawn("div").append(...formatMessage(tr("The ban lasts for exact {}."), format_time(duration * 1000, "never"))).text());
@@ -737,7 +750,7 @@ function generate_dom(controller: BanListController) : JQuery {
             }
 
             container_creator.empty();
-            if(selected_ban) {
+            if (selected_ban) {
                 container_creator.append(
                     htmltags.generate_client_object({
                         client_id: 0,
@@ -748,7 +761,7 @@ function generate_dom(controller: BanListController) : JQuery {
                 );
             }
 
-            if(switch_to)
+            if (switch_to)
                 category_edit.trigger('click');
         };
 
@@ -757,26 +770,26 @@ function generate_dom(controller: BanListController) : JQuery {
 
             const data = {banid: selected_ban.banid};
 
-            if(input_ip.val() != selected_ban.ip)
+            if (input_ip.val() != selected_ban.ip)
                 data["ip"] = input_ip.val();
 
-            if(input_name.val() != selected_ban.name)
+            if (input_name.val() != selected_ban.name)
                 data["name"] = input_name.val();
 
-            if(input_uid.val() != selected_ban.unique_id)
+            if (input_uid.val() != selected_ban.unique_id)
                 data["uid"] = input_uid.val();
 
-            if(input_hwid.val() != selected_ban.hardware_id)
+            if (input_hwid.val() != selected_ban.hardware_id)
                 data["hwid"] = input_hwid.val();
 
-            if(input_reason.val() != selected_ban.reason)
+            if (input_reason.val() != selected_ban.reason)
                 data["banreason"] = input_reason.val();
 
-            if(input_reason.val() != selected_ban.reason)
+            if (input_reason.val() != selected_ban.reason)
                 data["reason"] = input_reason.val();
 
-            const duration = input_duration_type.val() === "perm" ? 0 : (1000 * parseInt(input_duration_type.find("option[value='" +  input_duration_type.val() + "']").attr("duration-scale")) * parseInt(input_duration_value.val() as string));
-            if(selected_ban.timestamp_expire > 0 ? (selected_ban.timestamp_expire - selected_ban.timestamp_created != duration) : duration != 0)
+            const duration = input_duration_type.val() === "perm" ? 0 : (1000 * parseInt(input_duration_type.find("option[value='" + input_duration_type.val() + "']").attr("duration-scale")) * parseInt(input_duration_value.val() as string));
+            if (selected_ban.timestamp_expire > 0 ? (selected_ban.timestamp_expire - selected_ban.timestamp_created != duration) : duration != 0)
                 data["time"] = Math.floor(duration / 1000);
 
             controller.edit_ban(data).then(() => {
@@ -788,7 +801,7 @@ function generate_dom(controller: BanListController) : JQuery {
                 createInfoModal(tr("Ban successfully edited"), tr("Your ban has been successfully edited.")).open();
             }).catch(error => {
                 log.error(LogCategory.CLIENT, tr("Failed to edited ban: %o"), error);
-                if(error instanceof CommandResult)
+                if (error instanceof CommandResult)
                     error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? "no permissions" : error.extra_message || error.message;
                 createErrorModal(tr("Failed to edited ban"), formatMessage(tr("Failed to edited ban. {:br:}Error: {}"), error)).open();
             });
@@ -814,34 +827,34 @@ function generate_dom(controller: BanListController) : JQuery {
         const input_duration_type = tag.find(".group-duration select");
 
         button_apply.on('click', event => {
-            if(!button_apply_state[0] || button_apply_state_index != 0) return;
+            if (!button_apply_state[0] || button_apply_state_index != 0) return;
 
             const data: BanEntry = {
                 banid: 0,
                 enforcements: 0,
             } as any;
 
-            if(input_global.prop('checked'))
+            if (input_global.prop('checked'))
                 data.server_id = 0;
 
-            if(input_ip.val())
+            if (input_ip.val())
                 data.ip = input_ip.val() as any;
 
-            if(input_name.val())
+            if (input_name.val())
                 data.name = input_name.val() as any;
 
-            if(input_uid.val())
+            if (input_uid.val())
                 data.unique_id = input_uid.val() as any;
 
-            if(input_hwid.val())
+            if (input_hwid.val())
                 data.hardware_id = input_hwid.val() as any;
 
-            if(input_reason.val())
+            if (input_reason.val())
                 data.reason = input_reason.val() as any;
 
             data.timestamp_created = Date.now();
 
-            data.timestamp_expire = input_duration_type.val() === "perm" ? 0 : (data.timestamp_created + 1000 * parseInt(input_duration_type.find("option[value='" +  input_duration_type.val() + "']").attr("duration-scale")) * parseInt(input_duration_value.val() as string));
+            data.timestamp_expire = input_duration_type.val() === "perm" ? 0 : (data.timestamp_created + 1000 * parseInt(input_duration_type.find("option[value='" + input_duration_type.val() + "']").attr("duration-scale")) * parseInt(input_duration_value.val() as string));
             //TODO: input_interpret (Currently not supported by TeaSpeak)
 
             controller.add_ban(data).then(() => {
@@ -856,7 +869,7 @@ function generate_dom(controller: BanListController) : JQuery {
                 createInfoModal(tr("Ban successfully added"), tr("Your ban has been successfully added.")).open();
             }).catch(error => {
                 log.error(LogCategory.CLIENT, tr("Failed to add ban: %o"), error);
-                if(error instanceof CommandResult)
+                if (error instanceof CommandResult)
                     error = error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS ? "no permissions" : error.extra_message || error.message;
                 createErrorModal(tr("Failed to add ban"), formatMessage(tr("Failed to add ban. {:br:}Error: {}"), error)).open();
             });
@@ -875,11 +888,11 @@ function generate_dom(controller: BanListController) : JQuery {
             const flag_hightlight_own = option_hightlight_own.prop('checked');
 
             let count = 0;
-            for(const entry of callback_ban_filter)
-                if(entry(text, flag_show_own, flag_hightlight_own))
+            for (const entry of callback_ban_filter)
+                if (entry(text, flag_show_own, flag_hightlight_own))
                     count++;
-            if(callback_ban_filter.length != 0) {
-                if(count > 0)
+            if (callback_ban_filter.length != 0) {
+                if (count > 0)
                     container_ban_entries_empty.hide();
                 else
                     container_ban_entries_empty.show().find("a").text(tr("No bans found"));
@@ -897,11 +910,11 @@ function generate_dom(controller: BanListController) : JQuery {
             const text = (input_filter.val() as string || "").toLowerCase();
 
             let count = 0;
-            for(const entry of callback_trigger_filter)
-                if(entry(text))
+            for (const entry of callback_trigger_filter)
+                if (entry(text))
                     count++;
-            if(callback_trigger_filter.length != 0) {
-                if(count > 0)
+            if (callback_trigger_filter.length != 0) {
+                if (count > 0)
                     container_trigger_entries_empty.hide();
                 else
                     container_trigger_entries_empty.show().find("a").text(tr("No trigger events found"));

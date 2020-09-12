@@ -1,6 +1,6 @@
-import {Registry} from "tc-shared/events";
+import {Registry} from "../../../events";
 import "./Controller";
-import {ModalController} from "tc-shared/ui/react-elements/ModalDefinitions"; /* we've to reference him here, else the client would not */
+import {ModalController} from "../../../ui/react-elements/ModalDefinitions"; /* we've to reference him here, else the client would not */
 
 export type ControllerFactory = (modal: string, events: Registry, userData: any) => ModalController;
 let modalControllerFactory: ControllerFactory;

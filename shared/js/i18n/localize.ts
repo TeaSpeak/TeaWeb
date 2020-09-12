@@ -1,9 +1,9 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {guid} from "tc-shared/crypto/uid";
-import {Settings, StaticSettings} from "tc-shared/settings";
+import * as log from "../log";
+import {LogCategory} from "../log";
+import {guid} from "../crypto/uid";
+import {Settings, StaticSettings} from "../settings";
 import * as loader from "tc-loader";
-import {formatMessage, formatMessageString} from "tc-shared/ui/frames/chat";
+import {formatMessage, formatMessageString} from "../ui/frames/chat";
 
 export interface TranslationKey {
     message: string;

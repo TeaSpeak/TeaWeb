@@ -1,11 +1,11 @@
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {IdentitifyType} from "tc-shared/profiles/Identity";
-import {TeaSpeakIdentity} from "tc-shared/profiles/identities/TeamSpeakIdentity";
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
-import {settings} from "tc-shared/settings";
-import {ConnectParameters, DisconnectReason} from "tc-shared/ConnectionHandler";
-import {tr} from "tc-shared/i18n/localize";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {IdentitifyType} from "../profiles/Identity";
+import {TeaSpeakIdentity} from "../profiles/identities/TeamSpeakIdentity";
+import {AbstractServerConnection} from "../connection/ConnectionBase";
+import {ConnectionProfile} from "../profiles/ConnectionProfile";
+import {settings} from "../settings";
+import {ConnectParameters, DisconnectReason} from "../ConnectionHandler";
+import {tr} from "../i18n/localize";
 
 export interface HandshakeIdentityHandler {
     connection: AbstractServerConnection;

@@ -36,13 +36,15 @@ interface NavigationBarState {
     state: "editing" | "navigating" | "normal";
 }
 
-const ArrowRight = () => <div className={cssStyle.arrow}><div className={cssStyle.inner} /></div>;
+const ArrowRight = () => <div className={cssStyle.arrow}>
+    <div className={cssStyle.inner}/>
+</div>;
 
 const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: string, name: string }) => {
     const [dragHovered, setDragHovered] = useState(false);
 
     useEffect(() => {
-        if(!dragHovered)
+        if (!dragHovered)
             return;
 
         const dragListener = () => setDragHovered(false);
@@ -54,16 +56,16 @@ const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: str
         <a
             className={(props.name.length > 9 ? cssStyle.pathShrink : "") + " " + (dragHovered ? cssStyle.hovered : "")}
             title={props.name}
-            onClick={() => props.events.fire("action_navigate_to", { path: props.path })}
+            onClick={() => props.events.fire("action_navigate_to", {path: props.path})}
             onDragOver={event => {
                 const types = event.dataTransfer.types;
-                if(types.length !== 1)
+                if (types.length !== 1)
                     return;
 
-                if(types[0] === FileTransferUrlMediaType) {
+                if (types[0] === FileTransferUrlMediaType) {
                     /* TODO: Detect if its remote move or internal move */
                     event.dataTransfer.effectAllowed = "move";
-                } else if(types[0] === "Files") {
+                } else if (types[0] === "Files") {
                     event.dataTransfer.effectAllowed = "copy";
                 } else {
                     return;
@@ -75,14 +77,14 @@ const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: str
             onDragLeave={() => setDragHovered(false)}
             onDrop={event => {
                 const types = event.dataTransfer.types;
-                if(types.length !== 1)
+                if (types.length !== 1)
                     return;
 
                 /* TODO: Fix this code duplicate! */
-                if(types[0] === FileTransferUrlMediaType) {
+                if (types[0] === FileTransferUrlMediaType) {
                     /* TODO: If cross move upload! */
                     const fileUrls = event.dataTransfer.getData(FileTransferUrlMediaType).split("&").map(e => decodeURIComponent(e));
-                    for(const fileUrl of fileUrls) {
+                    for (const fileUrl of fileUrls) {
                         const name = fileUrl.split("/").last();
                         const oldPath = fileUrl.split("/").slice(0, -1).join("/") + "/";
 
@@ -93,8 +95,12 @@ const NavigationEntry = (props: { events: Registry<FileBrowserEvents>, path: str
                             newName: name
                         });
                     }
-                } else if(types[0] === "Files") {
-                    props.events.fire("action_start_upload", { path: props.path, mode: "files", files: [...event.dataTransfer.files] });
+                } else if (types[0] === "Files") {
+                    props.events.fire("action_start_upload", {
+                        path: props.path,
+                        mode: "files",
+                        files: [...event.dataTransfer.files]
+                    });
                 } else {
                     log.warn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
                     event.preventDefault();
@@ -123,23 +129,25 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     render() {
         let input;
         let path = this.state.currentPath;
-        if(!path.endsWith("/"))
+        if (!path.endsWith("/"))
             path += "/";
 
-        if(this.state.state === "editing") {
+        if (this.state.state === "editing") {
             input = (
                 <BoxedInputField key={"nav-editing"}
                                  ref={this.refInput}
                                  defaultValue={path}
                                  leftIcon={() =>
-                                     <div key={"left-icon"} className={cssStyle.directoryIcon + " " + cssStyle.containerIcon}>
-                                         <div className={"icon_em client-file_home"} />
+                                     <div key={"left-icon"}
+                                          className={cssStyle.directoryIcon + " " + cssStyle.containerIcon}>
+                                         <div className={"icon_em client-file_home"}/>
                                      </div>
                                  }
 
                                  rightIcon={() =>
-                                     <div key={"right-icon"} className={cssStyle.refreshIcon + " " + cssStyle.containerIcon}>
-                                         <div className={"icon_em client-refresh"} />
+                                     <div key={"right-icon"}
+                                          className={cssStyle.refreshIcon + " " + cssStyle.containerIcon}>
+                                         <div className={"icon_em client-refresh"}/>
                                      </div>
                                  }
 
@@ -147,13 +155,15 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
                                  onBlur={() => this.onInputPathBluer()}
                 />
             );
-        } else if(this.state.state === "navigating" || this.state.state === "normal") {
+        } else if (this.state.state === "navigating" || this.state.state === "normal") {
             input = (
                 <BoxedInputField key={"nav-rendered"}
                                  ref={this.refInput}
                                  leftIcon={() =>
-                                     <div key={"left-icon"} className={cssStyle.directoryIcon + " " + cssStyle.containerIcon} onClick={event => this.onPathClicked(event, -1)}>
-                                         <div className={"icon_em client-file_home"} />
+                                     <div key={"left-icon"}
+                                          className={cssStyle.directoryIcon + " " + cssStyle.containerIcon}
+                                          onClick={event => this.onPathClicked(event, -1)}>
+                                         <div className={"icon_em client-file_home"}/>
                                      </div>
                                  }
 
@@ -161,16 +171,19 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
                                      <div
                                          key={"right-icon"}
                                          className={cssStyle.refreshIcon + " " + (this.state.state === "normal" ? cssStyle.enabled : "") + " " + cssStyle.containerIcon}
-                                         onClick={() => this.onButtonRefreshClicked()} >
-                                         <div className={"icon_em client-refresh"} />
+                                         onClick={() => this.onButtonRefreshClicked()}>
+                                         <div className={"icon_em client-refresh"}/>
                                      </div>
                                  }
 
                                  inputBox={() =>
-                                     <div key={"custom-input"} className={cssStyle.containerPath} ref={this.refRendered}>
+                                     <div key={"custom-input"} className={cssStyle.containerPath}
+                                          ref={this.refRendered}>
                                          {this.state.currentPath.split("/").filter(e => !!e).map((e, index, arr) => [
-                                             <ArrowRight key={"arrow-right-" + index + "-" + e} />,
-                                             <NavigationEntry key={"de-" + index + "-" + e} path={"/" + arr.slice(0, index + 1).join("/") + "/"} name={e} events={this.props.events} />
+                                             <ArrowRight key={"arrow-right-" + index + "-" + e}/>,
+                                             <NavigationEntry key={"de-" + index + "-" + e}
+                                                              path={"/" + arr.slice(0, index + 1).join("/") + "/"}
+                                                              name={e} events={this.props.events}/>
                                          ])}
                                      </div>
                                  }
@@ -186,24 +199,24 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
     componentDidUpdate(prevProps: Readonly<NavigationBarProperties>, prevState: Readonly<NavigationBarState>, snapshot?: any): void {
         setTimeout(() => {
-            if(this.refRendered.current)
+            if (this.refRendered.current)
                 this.refRendered.current.scrollLeft = 999999;
         }, 10);
     }
 
     private onPathClicked(event: React.MouseEvent, index: number) {
         let path;
-        if(index === -1)
+        if (index === -1)
             path = "/";
         else
             path = "/" + this.state.currentPath.split("/").filter(e => !!e).slice(0, index + 1).join("/") + "/";
-        this.props.events.fire("action_navigate_to", { path: path });
+        this.props.events.fire("action_navigate_to", {path: path});
 
         event.stopPropagation();
     }
 
     private onRenderedPathClicked() {
-        if(this.state.state !== "normal")
+        if (this.state.state !== "normal")
             return;
 
         this.setState({
@@ -212,7 +225,7 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     }
 
     private onInputPathBluer() {
-        if(this.state.state !== "editing" || this.ignoreBlur)
+        if (this.state.state !== "editing" || this.ignoreBlur)
             return;
 
         this.setState({
@@ -221,21 +234,21 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
     }
 
     private onPathEntered(newPath: string) {
-        if(newPath === this.state.currentPath)
+        if (newPath === this.state.currentPath)
             return;
 
         this.ignoreBlur = true;
-        this.props.events.fire("action_navigate_to", { path: newPath });
+        this.props.events.fire("action_navigate_to", {path: newPath});
         this.setState({
             currentPath: newPath
         });
     }
 
     private onButtonRefreshClicked() {
-        if(this.state.state !== "normal")
+        if (this.state.state !== "normal")
             return;
 
-        this.props.events.fire("action_navigate_to", { path: this.state.currentPath });
+        this.props.events.fire("action_navigate_to", {path: this.state.currentPath});
     }
 
     @EventHandler<FileBrowserEvents>("action_navigate_to")
@@ -247,7 +260,7 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
 
     @EventHandler<FileBrowserEvents>("action_navigate_to_result")
     private handleNavigateResult(event: FileBrowserEvents["action_navigate_to_result"]) {
-        if(event.status === "success")
+        if (event.status === "success")
             this.lastSucceededPath = event.path;
 
         this.setState({
@@ -255,8 +268,8 @@ export class NavigationBar extends ReactComponentBase<NavigationBarProperties, N
             currentPath: this.lastSucceededPath
         });
 
-        if(event.status !== "success") {
-            if(event.status === "timeout") {
+        if (event.status !== "success") {
+            if (event.status === "timeout") {
                 createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path.{:br:}Action resulted in a timeout.")).open();
             } else {
                 createErrorModal(tr("Failed to enter path"), tra("Failed to enter given path:{:br:}{0}", event.error)).open();
@@ -281,22 +294,25 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
     const refInput = useRef<HTMLInputElement>();
 
     let icon;
-    if(props.file.type === FileType.FILE) {
-        icon = <img key={"nicon"} src={"img/icon_file_text.svg"} alt={tr("File")} draggable={false} />;
+    if (props.file.type === FileType.FILE) {
+        icon = <img key={"nicon"} src={"img/icon_file_text.svg"} alt={tr("File")} draggable={false}/>;
     } else {
         switch (props.file.mode) {
             case "normal":
-                icon = <img key={"nicon"} src={"img/icon_folder.svg"} alt={tr("Directory icon")} title={tr("Directory")} draggable={false} />;
+                icon = <img key={"nicon"} src={"img/icon_folder.svg"} alt={tr("Directory icon")} title={tr("Directory")}
+                            draggable={false}/>;
                 break;
 
             case "create":
             case "creating":
             case "empty":
-                icon = <img key={"nicon"} src={"img/icon_folder_empty.svg"} alt={tr("Empty directory icon")} title={tr("Empty directory")} draggable={false} />;
+                icon = <img key={"nicon"} src={"img/icon_folder_empty.svg"} alt={tr("Empty directory icon")}
+                            title={tr("Empty directory")} draggable={false}/>;
                 break;
 
             case "password":
-                icon = <img key={"nicon"} src={"img/icon_folder_password.svg"} alt={tr("Directory password protected")} title={tr("Password protected directory")} draggable={false} />;
+                icon = <img key={"nicon"} src={"img/icon_folder_password.svg"} alt={tr("Directory password protected")}
+                            title={tr("Password protected directory")} draggable={false}/>;
                 break;
 
             default:
@@ -305,7 +321,7 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
     }
 
     let name;
-    if(editing && props.file.mode !== "creating" && props.file.mode !== "uploading") {
+    if (editing && props.file.mode !== "creating" && props.file.mode !== "uploading") {
         name = <input
             ref={refInput}
             defaultValue={fileName}
@@ -314,7 +330,7 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
                 let name = event.target.value;
                 setEditing(false);
 
-                if(props.file.mode === "create") {
+                if (props.file.mode === "create") {
                     name = name || props.file.name;
 
                     props.events.fire("action_create_directory", {
@@ -325,18 +341,23 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
                     props.file.name = name;
                     props.file.mode = "creating";
                 } else {
-                    if(name.length > 0 && name !== props.file.name) {
-                        props.events.fire("action_rename_file", { oldName: props.file.name, newName: name, oldPath: props.path, newPath: props.path });
+                    if (name.length > 0 && name !== props.file.name) {
+                        props.events.fire("action_rename_file", {
+                            oldName: props.file.name,
+                            newName: name,
+                            oldPath: props.path,
+                            newPath: props.path
+                        });
                         setFileName(name);
                     }
                 }
             }}
 
             onKeyPress={event => {
-                if(event.key === "Enter") {
+                if (event.key === "Enter") {
                     event.currentTarget.blur();
                     return;
-                } else if(event.key === "/") {
+                } else if (event.key === "/") {
                     event.preventDefault();
                     return;
                 }
@@ -353,14 +374,17 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
         />;
     } else {
         name = <a key={"name"} onDoubleClick={event => {
-            if(props.file.virtual || props.file.mode === "creating" || props.file.mode === "uploading")
+            if (props.file.virtual || props.file.mode === "creating" || props.file.mode === "uploading")
                 return;
 
-            if(!ppt.key_pressed(SpecialKey.SHIFT))
+            if (!ppt.key_pressed(SpecialKey.SHIFT))
                 return;
 
             event.stopPropagation();
-            props.events.fire("action_select_files", { mode: "exclusive", files: [{ name: props.file.name, type: props.file.type }]});
+            props.events.fire("action_select_files", {
+                mode: "exclusive",
+                files: [{name: props.file.name, type: props.file.type}]
+            });
             props.events.fire("action_start_rename", {
                 path: props.path,
                 name: props.file.name
@@ -370,17 +394,17 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
 
     props.events.reactUse("action_start_rename", event => setEditing(event.name === props.file.name && event.path === props.path));
     props.events.reactUse("action_rename_file_result", event => {
-        if(event.oldPath !== props.path || event.oldName !== props.file.name)
+        if (event.oldPath !== props.path || event.oldName !== props.file.name)
             return;
 
-        if(event.status === "no-changes")
+        if (event.status === "no-changes")
             return;
 
-        if(event.status === "success") {
+        if (event.status === "success") {
             props.file.name = event.newName;
         } else {
             setFileName(props.file.name);
-            if(event.status === "timeout") {
+            if (event.status === "timeout") {
                 createErrorModal(tr("Failed to rename file"), tra("Failed to rename file.{:br:}Action resulted in a timeout.")).open();
             } else {
                 createErrorModal(tr("Failed to rename file"), tra("Failed to rename file:{:br:}{0}", event.error)).open();
@@ -395,13 +419,13 @@ const FileName = (props: { path: string, events: Registry<FileBrowserEvents>, fi
 };
 
 const FileSize = (props: { path: string, events: Registry<FileBrowserEvents>, file: ListedFileInfo }) => {
-    const [ size, setSize ] = useState(-1);
+    const [size, setSize] = useState(-1);
 
     props.events.reactUse("notify_transfer_status", event => {
-        if(event.id !== props.file.transfer?.id)
+        if (event.id !== props.file.transfer?.id)
             return;
 
-        if(props.file.transfer?.direction !== "upload")
+        if (props.file.transfer?.direction !== "upload")
             return;
 
         switch (event.status) {
@@ -417,18 +441,22 @@ const FileSize = (props: { path: string, events: Registry<FileBrowserEvents>, fi
     });
 
     props.events.reactUse("notify_transfer_progress", event => {
-        if(event.id !== props.file.transfer?.id)
+        if (event.id !== props.file.transfer?.id)
             return;
 
-        if(props.file.transfer?.direction !== "upload")
+        if (props.file.transfer?.direction !== "upload")
             return;
 
         setSize(event.fileSize);
     });
 
-    if(size < 0 && (props.file.size < 0 || typeof props.file.size === "undefined"))
+    if (size < 0 && (props.file.size < 0 || typeof props.file.size === "undefined"))
         return <a key={"size-invalid"}><Translatable>unknown</Translatable></a>;
-    return <a key={"size"}>{network.format_bytes(size >= 0 ? size : props.file.size, { unit: "B", time: "", exact: false })}</a>;
+    return <a key={"size"}>{network.format_bytes(size >= 0 ? size : props.file.size, {
+        unit: "B",
+        time: "",
+        exact: false
+    })}</a>;
 };
 
 const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<FileBrowserEvents> }) => {
@@ -436,23 +464,23 @@ const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<F
     const [transferProgress, setTransferProgress] = useState(props.file.transfer?.percent | 0);
 
     props.events.reactUse("notify_transfer_start", event => {
-        if(event.path !== props.file.path || event.name !== props.file.name)
+        if (event.path !== props.file.path || event.name !== props.file.name)
             return;
 
         setTransferStatus("pending");
     });
 
     props.events.reactUse("notify_transfer_status", event => {
-        if(event.id !== props.file.transfer?.id)
+        if (event.id !== props.file.transfer?.id)
             return;
 
         setTransferStatus(event.status);
-        if(event.status === "finished" || event.status === "errored")
+        if (event.status === "finished" || event.status === "errored")
             setTransferProgress(100);
     });
 
     props.events.reactUse("notify_transfer_progress", event => {
-        if(event.id !== props.file.transfer?.id)
+        if (event.id !== props.file.transfer?.id)
             return;
 
         setTransferProgress(event.progress);
@@ -461,7 +489,7 @@ const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<F
 
     /* reset the status after two seconds */
     useEffect(() => {
-        if(transferStatus !== "finished" && transferStatus !== "errored")
+        if (transferStatus !== "finished" && transferStatus !== "errored")
             return;
 
         const id = setTimeout(() => {
@@ -470,7 +498,7 @@ const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<F
         return () => clearTimeout(id);
     });
 
-    if(!props.file.transfer)
+    if (!props.file.transfer)
         return null;
 
     let color;
@@ -493,8 +521,8 @@ const FileTransferIndicator = (props: { file: ListedFileInfo, events: Registry<F
             break;
     }
     return (
-        <div className={cssStyle.indicator + " " + color} style={{ right: ((1 - transferProgress) * 100) + "%"}}>
-            <div className={cssStyle.status} />
+        <div className={cssStyle.indicator + " " + color} style={{right: ((1 - transferProgress) * 100) + "%"}}>
+            <div className={cssStyle.status}/>
         </div>
     );
 };
@@ -506,15 +534,15 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
     const [dropHovered, setDropHovered] = useState(false);
 
     const onDoubleClicked = () => {
-        if(file.type === FileType.DIRECTORY) {
-            if(file.mode === "creating" || file.mode === "create")
+        if (file.type === FileType.DIRECTORY) {
+            if (file.mode === "creating" || file.mode === "create")
                 return;
 
             props.events.fire("action_navigate_to", {
                 path: file.path + file.name + "/"
             });
         } else {
-            if(file.mode === "uploading" || file.virtual)
+            if (file.mode === "uploading" || file.virtual)
                 return;
 
             props.events.fire("action_start_download", {
@@ -528,9 +556,9 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
 
     props.events.reactUse("action_select_files", event => {
         const contains = event.files.findIndex(e => e.name === file.name && e.type === file.type) !== -1;
-        if(event.mode === "toggle" && contains)
+        if (event.mode === "toggle" && contains)
             setSelected(!selected);
-        else if(event.mode === "exclusive") {
+        else if (event.mode === "exclusive") {
             setSelected(contains);
         }
     });
@@ -539,17 +567,17 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
 
     props.events.reactUse("action_delete_file_result", event => {
         event.results.forEach(e => {
-            if(e.status !== "success")
+            if (e.status !== "success")
                 return;
 
-            if(e.path !== file.path || e.name !== file.name)
+            if (e.path !== file.path || e.name !== file.name)
                 return;
 
             setHidden(true);
         });
     }, !hidden);
 
-    if(hidden)
+    if (hidden)
         return null;
 
     return (
@@ -559,14 +587,20 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
             columns={props.columns}
             onDoubleClick={onDoubleClicked}
 
-            onClick={() => props.events.fire("action_select_files", { files: [{ name: file.name, type: file.type }], mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive" })}
+            onClick={() => props.events.fire("action_select_files", {
+                files: [{name: file.name, type: file.type}],
+                mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
+            })}
             onContextMenu={e => {
-                if(!selected) {
-                    if(!(e.target instanceof HTMLDivElement)) {
+                if (!selected) {
+                    if (!(e.target instanceof HTMLDivElement)) {
                         /* explicitly clicked on one file */
-                        props.events.fire("action_select_files", { files: [{ name: file.name, type: file.type }], mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive" });
+                        props.events.fire("action_select_files", {
+                            files: [{name: file.name, type: file.type}],
+                            mode: ppt.key_pressed(SpecialKey.SHIFT) ? "toggle" : "exclusive"
+                        });
                     } else {
-                        props.events.fire("action_select_files", { files: [], mode: "exclusive" });
+                        props.events.fire("action_select_files", {files: [], mode: "exclusive"});
                     }
                 }
 
@@ -578,27 +612,30 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
             }}
             draggable={!props.row.userData.virtual}
             onDragStart={event => {
-                if(!selected) {
+                if (!selected) {
                     setSelected(true);
-                    props.events.fire("action_select_files", { files: [{ name: file.name, type: file.type }], mode: "exclusive" });
+                    props.events.fire("action_select_files", {
+                        files: [{name: file.name, type: file.type}],
+                        mode: "exclusive"
+                    });
                 }
-                props.events.fire("notify_drag_started", { event: event.nativeEvent });
+                props.events.fire("notify_drag_started", {event: event.nativeEvent});
             }}
 
             onDragOver={event => {
                 const types = event.dataTransfer.types;
-                if(types.length !== 1)
+                if (types.length !== 1)
                     return;
 
-                if(props.row.userData.type !== FileType.DIRECTORY) {
+                if (props.row.userData.type !== FileType.DIRECTORY) {
                     event.stopPropagation();
                     return;
                 }
 
-                if(types[0] === FileTransferUrlMediaType) {
+                if (types[0] === FileTransferUrlMediaType) {
                     /* TODO: Detect if its remote move or internal move */
                     event.dataTransfer.effectAllowed = "move";
-                } else if(types[0] === "Files") {
+                } else if (types[0] === "Files") {
                     event.dataTransfer.effectAllowed = "copy";
                 } else {
                     return;
@@ -613,7 +650,7 @@ const FileListEntry = (props: { row: TableRow<ListedFileInfo>, columns: TableCol
 
             x-drag-upload-path={props.row.userData.type === FileType.DIRECTORY ? props.row.userData.path + props.row.userData.name + "/" : undefined}
         >
-            <FileTransferIndicator events={props.events} file={props.row.userData} />
+            <FileTransferIndicator events={props.events} file={props.row.userData}/>
         </TableRowElement>
     );
 };
@@ -635,43 +672,45 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
         let rows: TableRow[] = [];
 
         let overlay, overlayOnly;
-        if(this.state.state === "querying") {
+        if (this.state.state === "querying") {
             overlayOnly = true;
             overlay = () => (
                 <div key={"loading"} className={cssStyle.overlay}>
-                    <a><Translatable>loading</Translatable><LoadingDots maxDots={3} /></a>
+                    <a><Translatable>loading</Translatable><LoadingDots maxDots={3}/></a>
                 </div>
             );
-        } else if(this.state.state === "error") {
+        } else if (this.state.state === "error") {
             overlayOnly = true;
             overlay = () => (
                 <div key={"query-error"} className={cssStyle.overlay + " " + cssStyle.overlayError}>
-                    <a><Translatable>Failed to query directory:</Translatable><br />{this.state.errorMessage}</a>
+                    <a><Translatable>Failed to query directory:</Translatable><br/>{this.state.errorMessage}</a>
                 </div>
             );
-        } else if(this.state.state === "query-timeout") {
+        } else if (this.state.state === "query-timeout") {
             overlayOnly = true;
             overlay = () => (
                 <div key={"query-timeout"} className={cssStyle.overlay + " " + cssStyle.overlayError}>
-                    <a><Translatable>Directory query timed out.</Translatable><br /><Translatable>Please try again.</Translatable></a>
+                    <a><Translatable>Directory query timed out.</Translatable><br/><Translatable>Please try
+                        again.</Translatable></a>
                 </div>
             );
-        } else if(this.state.state === "no-permissions") {
+        } else if (this.state.state === "no-permissions") {
             overlayOnly = true;
             overlay = () => (
                 <div key={"no-permissions"} className={cssStyle.overlay + " " + cssStyle.overlayError}>
-                    <a><Translatable>Directory query failed on permission</Translatable><br />{this.state.errorMessage}</a>
+                    <a><Translatable>Directory query failed on permission</Translatable><br/>{this.state.errorMessage}
+                    </a>
                 </div>
             );
-        }  else if(this.state.state === "invalid-password") {
+        } else if (this.state.state === "invalid-password") {
             overlayOnly = true;
             overlay = () => (
                 <div key={"invalid-password"} className={cssStyle.overlay + " " + cssStyle.overlayError}>
                     <a><Translatable>Directory query failed because it is password protected</Translatable></a>
                 </div>
             );
-        } else if(this.state.state === "normal") {
-            if(this.fileList.length === 0) {
+        } else if (this.state.state === "normal") {
+            if (this.fileList.length === 0) {
                 overlayOnly = true;
                 overlay = () => (
                     <div key={"no-files"} className={cssStyle.overlayEmptyFolder}>
@@ -682,25 +721,28 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
                 const directories = this.fileList.filter(e => e.type === FileType.DIRECTORY);
                 const files = this.fileList.filter(e => e.type === FileType.FILE);
 
-                for(const directory of directories.sort((a, b) => a.name > b.name ? 1 : -1)) {
+                for (const directory of directories.sort((a, b) => a.name > b.name ? 1 : -1)) {
                     rows.push({
                         columns: {
-                            "name": () => <FileName path={this.currentPath} events={this.props.events} file={directory} />,
+                            "name": () => <FileName path={this.currentPath} events={this.props.events}
+                                                    file={directory}/>,
                             "type": () => <a key={"type"}><Translatable>Directory</Translatable></a>,
-                            "change-date": () => directory.datetime ? <a>{Moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
+                            "change-date": () => directory.datetime ?
+                                <a>{Moment(directory.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
                         },
                         className: cssStyle.directoryEntry,
                         userData: directory
                     })
                 }
 
-                for(const file of files.sort((a, b) => a.name > b.name ? 1 : -1)) {
+                for (const file of files.sort((a, b) => a.name > b.name ? 1 : -1)) {
                     rows.push({
                         columns: {
-                            "name": () => <FileName path={this.currentPath} events={this.props.events} file={file} />,
-                            "size": () => <FileSize path={this.currentPath} events={this.props.events} file={file} /> ,
+                            "name": () => <FileName path={this.currentPath} events={this.props.events} file={file}/>,
+                            "size": () => <FileSize path={this.currentPath} events={this.props.events} file={file}/>,
                             "type": () => <a key={"type"}><Translatable>File</Translatable></a>,
-                            "change-date": () => file.datetime ? <a key={"date"}>{Moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
+                            "change-date": () => file.datetime ?
+                                <a key={"date"}>{Moment(file.datetime).format("DD/MM/YYYY HH:mm")}</a> : undefined
                         },
                         className: cssStyle.directoryEntry,
                         userData: file
@@ -716,18 +758,30 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
                 bodyClassName={cssStyle.body}
                 headerClassName={cssStyle.header}
                 columns={[
-                    { name: "name", header: () => [
-                            <a key={"name-name"}><Translatable>Name</Translatable></a>, <div key={"seperator-name"} className={cssStyle.seperator} />
-                        ], width: 80, className: cssStyle.columnName },
-                    { name: "type", header: () => [
-                            <a key={"name-type"}><Translatable>Type</Translatable></a>, <div key={"seperator-type"} className={cssStyle.seperator} />
-                        ], fixedWidth: "8em", className: cssStyle.columnType },
-                    { name: "size", header: () => [
-                            <a key={"name-size"}><Translatable>Size</Translatable></a>, <div key={"seperator-size"} className={cssStyle.seperator} />
-                        ], fixedWidth: "8em", className: cssStyle.columnSize },
-                    { name: "change-date", header: () => [
-                            <a key={"name-date"}><Translatable>Last changed</Translatable></a>, <div key={"seperator-date"} className={cssStyle.seperator} />
-                        ], fixedWidth: "8em", className: cssStyle.columnChanged },
+                    {
+                        name: "name", header: () => [
+                            <a key={"name-name"}><Translatable>Name</Translatable></a>,
+                            <div key={"seperator-name"} className={cssStyle.seperator}/>
+                        ], width: 80, className: cssStyle.columnName
+                    },
+                    {
+                        name: "type", header: () => [
+                            <a key={"name-type"}><Translatable>Type</Translatable></a>,
+                            <div key={"seperator-type"} className={cssStyle.seperator}/>
+                        ], fixedWidth: "8em", className: cssStyle.columnType
+                    },
+                    {
+                        name: "size", header: () => [
+                            <a key={"name-size"}><Translatable>Size</Translatable></a>,
+                            <div key={"seperator-size"} className={cssStyle.seperator}/>
+                        ], fixedWidth: "8em", className: cssStyle.columnSize
+                    },
+                    {
+                        name: "change-date", header: () => [
+                            <a key={"name-date"}><Translatable>Last changed</Translatable></a>,
+                            <div key={"seperator-date"} className={cssStyle.seperator}/>
+                        ], fixedWidth: "8em", className: cssStyle.columnChanged
+                    },
                 ]}
                 rows={rows}
 
@@ -741,13 +795,13 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
                 onDrop={e => this.onDrop(e)}
                 onDragOver={event => {
                     const types = event.dataTransfer.types;
-                    if(types.length !== 1)
+                    if (types.length !== 1)
                         return;
 
-                    if(types[0] === FileTransferUrlMediaType) {
+                    if (types[0] === FileTransferUrlMediaType) {
                         /* TODO: Detect if its remote move or internal move */
                         event.dataTransfer.effectAllowed = "move";
-                    } else if(types[0] === "Files") {
+                    } else if (types[0] === "Files") {
                         event.dataTransfer.effectAllowed = "copy";
                     } else {
                         return;
@@ -756,7 +810,9 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
                     event.preventDefault();
                 }}
 
-                renderRow={(row: TableRow<ListedFileInfo>, columns, uniqueId) => <FileListEntry columns={columns} row={row} key={uniqueId} events={this.props.events} />}
+                renderRow={(row: TableRow<ListedFileInfo>, columns, uniqueId) => <FileListEntry columns={columns}
+                                                                                                row={row} key={uniqueId}
+                                                                                                events={this.props.events}/>}
             />
         );
     }
@@ -771,24 +827,24 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
     private onDrop(event: React.DragEvent) {
         const types = event.dataTransfer.types;
-        if(types.length !== 1)
+        if (types.length !== 1)
             return;
 
         event.stopPropagation();
         let targetPath;
         {
             let currentTarget = event.target as HTMLElement;
-            while(currentTarget && !currentTarget.hasAttribute("x-drag-upload-path"))
+            while (currentTarget && !currentTarget.hasAttribute("x-drag-upload-path"))
                 currentTarget = currentTarget.parentElement;
             targetPath = currentTarget?.getAttribute("x-drag-upload-path") || this.currentPath;
             console.log("Target: %o %s", currentTarget, targetPath);
         }
 
-        if(types[0] === FileTransferUrlMediaType) {
+        if (types[0] === FileTransferUrlMediaType) {
             /* TODO: If cross move upload! */
             console.error(event.dataTransfer.getData(FileTransferUrlMediaType));
             const fileUrls = event.dataTransfer.getData(FileTransferUrlMediaType).split("&").map(e => decodeURIComponent(e));
-            for(const fileUrl of fileUrls) {
+            for (const fileUrl of fileUrls) {
                 const name = fileUrl.split("/").last();
                 const oldPath = fileUrl.split("/").slice(0, -1).join("/") + "/";
 
@@ -799,8 +855,12 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
                     newName: name
                 });
             }
-        } else if(types[0] === "Files") {
-            this.props.events.fire("action_start_upload", { path: targetPath, mode: "files", files: [...event.dataTransfer.files] });
+        } else if (types[0] === "Files") {
+            this.props.events.fire("action_start_upload", {
+                path: targetPath,
+                mode: "files",
+                files: [...event.dataTransfer.files]
+            });
         } else {
             log.warn(LogCategory.FILE_TRANSFER, tr("Received an unknown drop media type (%o)"), types);
             event.preventDefault();
@@ -841,16 +901,16 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     }
 
     private onBodyContextMenu(event: React.MouseEvent) {
-        if(event.isDefaultPrevented()) return;
+        if (event.isDefaultPrevented()) return;
         event.preventDefault();
 
-        this.props.events.fire("action_select_files", { mode: "exclusive", files: [] });
-        this.props.events.fire("action_selection_context_menu", { pageY: event.pageY, pageX: event.pageX });
+        this.props.events.fire("action_select_files", {mode: "exclusive", files: []});
+        this.props.events.fire("action_selection_context_menu", {pageY: event.pageY, pageX: event.pageX});
     }
 
     @EventHandler<FileBrowserEvents>("action_navigate_to_result")
     private handleNavigationResult(event: FileBrowserEvents["action_navigate_to_result"]) {
-        if(event.status !== "success")
+        if (event.status !== "success")
             return;
 
         this.currentPath = event.path;
@@ -862,7 +922,7 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
     @EventHandler<FileBrowserEvents>("query_files")
     private handleQueryFiles(event: FileBrowserEvents["query_files"]) {
-        if(event.path !== this.currentPath)
+        if (event.path !== this.currentPath)
             return;
 
         this.setState({
@@ -872,26 +932,26 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
     @EventHandler<FileBrowserEvents>("query_files_result")
     private handleQueryFilesResult(event: FileBrowserEvents["query_files_result"]) {
-        if(event.status === "timeout") {
+        if (event.status === "timeout") {
             this.setState({
                 state: "query-timeout"
             });
-        } else if(event.status === "error") {
+        } else if (event.status === "error") {
             this.setState({
                 state: "error",
                 errorMessage: event.error || tr("unknown query error")
             });
-        } else if(event.status === "success") {
+        } else if (event.status === "success") {
             this.fileList = event.files;
             this.setState({
                 state: "normal"
             });
-        } else if(event.status === "no-permissions") {
+        } else if (event.status === "no-permissions") {
             this.setState({
                 state: "no-permissions",
                 errorMessage: event.error || tr("unknown")
             });
-        } else if(event.status === "invalid-password") {
+        } else if (event.status === "invalid-password") {
             this.setState({
                 state: "invalid-password"
             });
@@ -907,15 +967,15 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     private handleActionDeleteResult(event: FileBrowserEvents["action_delete_file_result"]) {
         event.results.forEach(e => {
             const index = this.fileList.findIndex(e1 => e1.name === e.name && e1.path === e.path);
-            if(index === -1)
+            if (index === -1)
                 return;
 
-            if(e.status === "success")
+            if (e.status === "success")
                 this.fileList.splice(index, 1);
         });
 
         event.results.forEach(e => {
-            if(e.status === "success")
+            if (e.status === "success")
                 return;
 
             createErrorModal(tr("Failed to delete entry"), tra("Failed to delete \"{0}\":{:br:}{1}", e.name, e.error || tr("Unknown error"))).open();
@@ -925,7 +985,7 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     @EventHandler<FileBrowserEvents>("action_start_create_directory")
     private handleActionFileCreateBegin(event: FileBrowserEvents["action_start_create_directory"]) {
         let index = 0;
-        while(this.fileList.find(e => e.name === (event.defaultName + (index > 0 ? " (" + index + ")" : ""))))
+        while (this.fileList.find(e => e.name === (event.defaultName + (index > 0 ? " (" + index + ")" : ""))))
             index++;
 
         const name = event.defaultName + (index > 0 ? " (" + index + ")" : "");
@@ -940,28 +1000,33 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
         });
 
         /* fire_async because our children have to render first in order to have the row selected! */
-        this.forceUpdate(() => this.props.events.fire_async("action_select_files", { files: [{ name: name, type: FileType.DIRECTORY }] , mode: "exclusive" }));
+        this.forceUpdate(() => this.props.events.fire_async("action_select_files", {
+            files: [{
+                name: name,
+                type: FileType.DIRECTORY
+            }], mode: "exclusive"
+        }));
     }
 
     @EventHandler<FileBrowserEvents>("action_create_directory_result")
     private handleActionFileCreateResult(event: FileBrowserEvents["action_create_directory_result"]) {
         let fileIndex = this.fileList.slice().reverse().findIndex(e => e.path === event.path && e.name === event.name);
-        if(fileIndex === -1)
+        if (fileIndex === -1)
             return;
         fileIndex = this.fileList.length - fileIndex - 1;
 
         const file = this.fileList[fileIndex];
-        if(event.status === "success") {
-            if(file.mode === "creating")
+        if (event.status === "success") {
+            if (file.mode === "creating")
                 file.mode = "empty";
             return;
-        } else if(file.mode !== "creating")
+        } else if (file.mode !== "creating")
             return;
 
         this.fileList.splice(fileIndex, 1);
         this.forceUpdate();
 
-        if(event.status === "timeout") {
+        if (event.status === "timeout") {
             createErrorModal(tr("Failed to create directory"), tra("Failed to create directory.{:br:}Action resulted in a timeout.")).open();
         } else {
             createErrorModal(tr("Failed to create directory"), tra("Failed to create directory:{:br:}{0}", event.error)).open();
@@ -970,12 +1035,12 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
     @EventHandler<FileBrowserEvents>("action_select_files")
     private handleActionSelectFiles(event: FileBrowserEvents["action_select_files"]) {
-        if(event.mode === "exclusive") {
+        if (event.mode === "exclusive") {
             this.selection = event.files.slice(0);
-        } else if(event.mode === "toggle") {
+        } else if (event.mode === "toggle") {
             event.files.forEach(e => {
                 const index = this.selection.map(e => e.name).findIndex(b => b === e.name);
-                if(index === -1)
+                if (index === -1)
                     this.selection.push(e);
                 else
                     this.selection.splice(index);
@@ -985,7 +1050,7 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
     @EventHandler<FileBrowserEvents>("notify_drag_started")
     private handleNotifyDragStarted(event: FileBrowserEvents["notify_drag_started"]) {
-        if(this.selection.length === 0) {
+        if (this.selection.length === 0) {
             event.event.preventDefault();
             return;
         } else {
@@ -996,30 +1061,30 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
 
     @EventHandler<FileBrowserEvents>("action_rename_file_result")
     private handleFileRenameResult(event: FileBrowserEvents["action_rename_file_result"]) {
-        if(event.oldPath !== this.currentPath && event.newPath !== this.currentPath)
+        if (event.oldPath !== this.currentPath && event.newPath !== this.currentPath)
             return;
 
-        if(event.status !== "success")
+        if (event.status !== "success")
             return;
 
-        if(event.oldPath === event.newPath) {
+        if (event.oldPath === event.newPath) {
             const index = this.selection.findIndex(e => e.name === event.oldName);
-            if(index !== -1)
+            if (index !== -1)
                 this.selection[index].name = event.newName;
         } else {
             /* re query files, because list has changed */
-            this.props.events.fire("query_files", { path: this.currentPath });
+            this.props.events.fire("query_files", {path: this.currentPath});
         }
     }
 
     @EventHandler<FileBrowserEvents>("notify_transfer_start")
     private handleTransferStart(event: FileBrowserEvents["notify_transfer_start"]) {
-        if(event.path !== this.currentPath)
+        if (event.path !== this.currentPath)
             return;
 
         let entry = this.fileList.find(e => e.name === event.name);
-        if(!entry) {
-            if(event.mode !== "upload") {
+        if (!entry) {
+            if (event.mode !== "upload") {
                 log.warn(LogCategory.FILE_TRANSFER, tr("Having file download start notification for current path, but target file is unknown (%s%s)"), event.path, event.name);
                 return;
             }
@@ -1049,19 +1114,19 @@ export class FileBrowser extends ReactComponentBase<FileListTableProperties, Fil
     @EventHandler<FileBrowserEvents>("notify_transfer_status")
     private handleTransferStatus(event: FileBrowserEvents["notify_transfer_status"]) {
         const index = this.fileList.findIndex(e => e.transfer?.id === event.id);
-        if(index === -1)
+        if (index === -1)
             return;
 
         let element = this.fileList[index];
-        if(event.status === "errored") {
-            if(element.mode === "uploading") {
+        if (event.status === "errored") {
+            if (element.mode === "uploading") {
                 /* re query files, because we don't know what the server did with the errored upload */
-                this.props.events.fire("query_files", { path: this.currentPath });
+                this.props.events.fire("query_files", {path: this.currentPath});
                 return;
             }
         } else {
             element.transfer.status = event.status;
-            if(element.mode === "uploading" && event.status === "finished") {
+            if (element.mode === "uploading" && event.status === "finished") {
                 /* upload finished, the element rerenders already with the correct values */
                 element.size = event.fileSize;
                 element.mode = "normal";

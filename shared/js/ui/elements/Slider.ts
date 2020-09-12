@@ -1,4 +1,4 @@
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
+import * as tooltip from "../../ui/elements/Tooltip";
 
 export interface SliderOptions {
     min_value?: number;

@@ -1,5 +1,5 @@
-import {EventType} from "tc-shared/ui/frames/log/Definitions";
-import {Settings, settings} from "tc-shared/settings";
+import {EventType} from "../../../ui/frames/log/Definitions";
+import {Settings, settings} from "../../../settings";
 
 const focusDefaultStatus = {};
 focusDefaultStatus[EventType.CLIENT_POKE_RECEIVED] = true;

@@ -1,11 +1,11 @@
-import {decode_identity, IdentitifyType, Identity} from "tc-shared/profiles/Identity";
-import {guid} from "tc-shared/crypto/uid";
-import {TeaForumIdentity} from "tc-shared/profiles/identities/TeaForumIdentity";
-import {TeaSpeakIdentity} from "tc-shared/profiles/identities/TeamSpeakIdentity";
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {HandshakeIdentityHandler} from "tc-shared/connection/HandshakeHandler";
-import {createErrorModal} from "tc-shared/ui/elements/Modal";
-import {formatMessage} from "tc-shared/ui/frames/chat";
+import {decode_identity, IdentitifyType, Identity} from "../profiles/Identity";
+import {guid} from "../crypto/uid";
+import {TeaForumIdentity} from "../profiles/identities/TeaForumIdentity";
+import {TeaSpeakIdentity} from "../profiles/identities/TeamSpeakIdentity";
+import {AbstractServerConnection} from "../connection/ConnectionBase";
+import {HandshakeIdentityHandler} from "../connection/HandshakeHandler";
+import {createErrorModal} from "../ui/elements/Modal";
+import {formatMessage} from "../ui/frames/chat";
 
 export class ConnectionProfile {
     id: string;

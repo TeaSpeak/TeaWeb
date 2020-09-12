@@ -1,6 +1,6 @@
-import {createModal} from "tc-shared/ui/elements/Modal";
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
+import {createModal} from "../../ui/elements/Modal";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
 
 function format_date(date: number) {
     const d = new Date(date);
@@ -29,7 +29,7 @@ export function spawnAbout() {
     connectModal.htmlTag.find(".modal-body").addClass("modal-about");
     connectModal.open();
 
-    if(__build.target !== "web") {
+    if (__build.target !== "web") {
         (window as any).native.client_version().then(version => {
             connectModal.htmlTag.find(".version-client").text(version);
         }).catch(error => {

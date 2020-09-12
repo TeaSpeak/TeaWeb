@@ -1,7 +1,7 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {BasicIPCHandler, IPCChannel, ChannelMessage} from "tc-shared/ipc/BrowserIPC";
-import {guid} from "tc-shared/crypto/uid";
+import * as log from "../log";
+import {LogCategory} from "../log";
+import {BasicIPCHandler, IPCChannel, ChannelMessage} from "../ipc/BrowserIPC";
+import {guid} from "../crypto/uid";
 
 export interface MethodProxyInvokeData {
     method_name: string;

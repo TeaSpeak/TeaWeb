@@ -7,7 +7,13 @@ import {LogCategory, logWarn} from "tc-shared/log";
 import {defaultRecorder} from "tc-shared/voice/RecorderProfile";
 import {DeviceListState, getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
 
-export type MicrophoneSetting = "volume" | "vad-type" | "ppt-key" | "ppt-release-delay" | "ppt-release-delay-active" | "threshold-threshold";
+export type MicrophoneSetting =
+    "volume"
+    | "vad-type"
+    | "ppt-key"
+    | "ppt-release-delay"
+    | "ppt-release-delay-active"
+    | "threshold-threshold";
 
 export type MicrophoneDevice = {
     id: string,
@@ -52,15 +58,17 @@ export interface MicrophoneSettingsEvents {
         devices?: MicrophoneDevice[]
         selectedDevice?: string;
     },
-    
-    notify_device_level: {
-        level: {[key: string]: {
-            deviceId: string,
-            status: "success" | "error",
 
-            level?: number,
-            error?: string
-        }},
+    notify_device_level: {
+        level: {
+            [key: string]: {
+                deviceId: string,
+                status: "success" | "error",
+
+                level?: number,
+                error?: string
+            }
+        },
 
         status: Exclude<DeviceListState, "error">
     },
@@ -77,8 +85,8 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
     /* level meters */
     {
-        const level_meters: {[key: string]:Promise<LevelMeter>} = {};
-        const level_info: {[key: string]:any} = {};
+        const level_meters: { [key: string]: Promise<LevelMeter> } = {};
+        const level_info: { [key: string]: any } = {};
         let level_update_task;
 
         const destroy_meters = () => {
@@ -94,12 +102,12 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         const update_level_meter = () => {
             destroy_meters();
 
-            level_info["none"] = { deviceId: "none", status: "success", level: 0 };
+            level_info["none"] = {deviceId: "none", status: "success", level: 0};
 
-            for(const device of recorderBackend.getDeviceList().getDevices()) {
+            for (const device of recorderBackend.getDeviceList().getDevices()) {
                 let promise = recorderBackend.createLevelMeter(device).then(meter => {
                     meter.setObserver(level => {
-                        if(level_meters[device.deviceId] !== promise) return; /* old level meter */
+                        if (level_meters[device.deviceId] !== promise) return; /* old level meter */
 
                         level_info[device.deviceId] = {
                             deviceId: device.deviceId,
@@ -109,7 +117,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     });
                     return Promise.resolve(meter);
                 }).catch(error => {
-                    if(level_meters[device.deviceId] !== promise) return; /* old level meter */
+                    if (level_meters[device.deviceId] !== promise) return; /* old level meter */
                     level_info[device.deviceId] = {
                         deviceId: device.deviceId,
                         status: "error",
@@ -134,7 +142,7 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         }, 50);
 
         events.on("notify_devices", event => {
-            if(event.status !== "success") return;
+            if (event.status !== "success") return;
 
             update_level_meter();
         });
@@ -148,49 +156,59 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
     /* device list */
     {
         events.on("query_devices", event => {
-            if(!aplayer.initialized()) {
-                events.fire_async("notify_devices", { status: "audio-not-initialized" });
+            if (!aplayer.initialized()) {
+                events.fire_async("notify_devices", {status: "audio-not-initialized"});
                 return;
             }
 
             const deviceList = recorderBackend.getDeviceList();
             switch (deviceList.getStatus()) {
                 case "no-permissions":
-                    events.fire_async("notify_devices", { status: "no-permissions", shouldAsk: deviceList.getPermissionState() === "denied" });
+                    events.fire_async("notify_devices", {
+                        status: "no-permissions",
+                        shouldAsk: deviceList.getPermissionState() === "denied"
+                    });
                     return;
 
                 case "uninitialized":
-                    events.fire_async("notify_devices", { status: "audio-not-initialized" });
+                    events.fire_async("notify_devices", {status: "audio-not-initialized"});
                     return;
             }
 
-            if(event.refresh_list && deviceList.isRefreshAvailable()) {
+            if (event.refresh_list && deviceList.isRefreshAvailable()) {
                 /* will automatically trigger a device list changed event if something has changed */
-                deviceList.refresh().then(() => {});
+                deviceList.refresh().then(() => {
+                });
             } else {
                 const devices = deviceList.getDevices();
 
                 events.fire_async("notify_devices", {
                     status: "success",
                     selectedDevice: defaultRecorder.getDeviceId(),
-                    devices: devices.map(e => { return { id: e.deviceId, name: e.name, driver: e.driver }})
+                    devices: devices.map(e => {
+                        return {id: e.deviceId, name: e.name, driver: e.driver}
+                    })
                 });
             }
         });
 
         events.on("action_set_selected_device", event => {
             const device = recorderBackend.getDeviceList().getDevices().find(e => e.deviceId === event.deviceId);
-            if(!device && event.deviceId !== IDevice.NoDeviceId) {
-                events.fire_async("action_set_selected_device_result", { status: "error", error: tr("Invalid device id"), deviceId: defaultRecorder.getDeviceId() });
+            if (!device && event.deviceId !== IDevice.NoDeviceId) {
+                events.fire_async("action_set_selected_device_result", {
+                    status: "error",
+                    error: tr("Invalid device id"),
+                    deviceId: defaultRecorder.getDeviceId()
+                });
                 return;
             }
 
             defaultRecorder.setDevice(device).then(() => {
                 console.debug(tr("Changed default microphone device to %s"), event.deviceId);
-                events.fire_async("action_set_selected_device_result", { status: "success", deviceId: event.deviceId });
+                events.fire_async("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
             }).catch((error) => {
                 log.warn(LogCategory.AUDIO, tr("Failed to change microphone to device %s: %o"), device ? device.deviceId : IDevice.NoDeviceId, error);
-                events.fire_async("action_set_selected_device_result", { status: "success", deviceId: event.deviceId });
+                events.fire_async("action_set_selected_device_result", {status: "success", deviceId: event.deviceId});
             });
         });
     }
@@ -228,12 +246,12 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
                     return;
             }
 
-            events.fire_async("notify_setting", { setting: event.setting, value: value });
+            events.fire_async("notify_setting", {setting: event.setting, value: value});
         });
 
         events.on("action_set_setting", event => {
             const ensure_type = (type: "object" | "string" | "boolean" | "number" | "undefined") => {
-                if(typeof event.value !== type) {
+                if (typeof event.value !== type) {
                     logWarn(LogCategory.GENERAL, tr("Failed to change microphone setting (Invalid value type supplied. Expected %s, Received: %s)"),
                         type,
                         typeof event.value
@@ -245,53 +263,53 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
 
             switch (event.setting) {
                 case "volume":
-                    if(!ensure_type("number")) return;
+                    if (!ensure_type("number")) return;
                     defaultRecorder.setVolume(event.value);
                     break;
 
                 case "threshold-threshold":
-                    if(!ensure_type("number")) return;
+                    if (!ensure_type("number")) return;
                     defaultRecorder.setThresholdThreshold(event.value);
                     break;
 
                 case "vad-type":
-                    if(!ensure_type("string")) return;
-                    if(!defaultRecorder.setVadType(event.value)) {
+                    if (!ensure_type("string")) return;
+                    if (!defaultRecorder.setVadType(event.value)) {
                         logWarn(LogCategory.GENERAL, tr("Failed to change recorders VAD type to %s"), event.value);
                         return;
                     }
                     break;
 
                 case "ppt-key":
-                    if(!ensure_type("object")) return;
+                    if (!ensure_type("object")) return;
                     defaultRecorder.setPushToTalkKey(event.value);
                     break;
 
                 case "ppt-release-delay":
-                    if(!ensure_type("number")) return;
+                    if (!ensure_type("number")) return;
                     const sign = defaultRecorder.getPushToTalkDelay() >= 0 ? 1 : -1;
                     defaultRecorder.setPushToTalkDelay(sign * event.value);
                     break;
 
                 case "ppt-release-delay-active":
-                    if(!ensure_type("boolean")) return;
+                    if (!ensure_type("boolean")) return;
                     defaultRecorder.setPushToTalkDelay(Math.abs(defaultRecorder.getPushToTalkDelay()) * (event.value ? 1 : -1));
                     break;
 
                 default:
                     return;
             }
-            events.fire_async("notify_setting", { setting: event.setting, value: event.value });
+            events.fire_async("notify_setting", {setting: event.setting, value: event.value});
         });
     }
 
     events.on("action_request_permissions", () => recorderBackend.getDeviceList().requestPermissions().then(result => {
         console.error("Permission request result: %o", result);
 
-        if(result === "granted") {
+        if (result === "granted") {
             /* we've nothing to do, the device change event will already update out list */
         } else {
-            events.fire_async("notify_devices", { status: "no-permissions", shouldAsk: result === "denied" });
+            events.fire_async("notify_devices", {status: "no-permissions", shouldAsk: result === "denied"});
             return;
         }
     }));
@@ -304,8 +322,10 @@ export function initialize_audio_microphone_controller(events: Registry<Micropho
         events.fire("query_devices");
     }));
 
-    if(!aplayer.initialized()) {
-        aplayer.on_ready(() => { events.fire_async("query_devices"); });
+    if (!aplayer.initialized()) {
+        aplayer.on_ready(() => {
+            events.fire_async("query_devices");
+        });
     }
 }
 

@@ -1,6 +1,6 @@
-import {AbstractServerConnection, ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {HandshakeIdentityHandler} from "tc-shared/connection/HandshakeHandler";
-import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
+import {AbstractServerConnection, ServerCommand} from "../connection/ConnectionBase";
+import {HandshakeIdentityHandler} from "../connection/HandshakeHandler";
+import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
 
 export enum IdentitifyType {
     TEAFORO,

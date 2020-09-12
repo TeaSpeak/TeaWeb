@@ -1,11 +1,11 @@
-import {GroupManager} from "tc-shared/permission/GroupManager";
-import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
-import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
-import * as htmltags from "tc-shared/ui/htmltags";
+import {GroupManager} from "../../../permission/GroupManager";
+import {Frame, FrameContent} from "../../../ui/frames/chat_frame";
+import {openClientInfo} from "../../../ui/modal/ModalClientInfo";
+import * as htmltags from "../../../ui/htmltags";
 import * as image_preview from "../image_preview";
-import * as i18nc from "tc-shared/i18n/country";
-import {ClientEntry, LocalClientEntry} from "tc-shared/tree/Client";
-import {format_online_time} from "tc-shared/utils/TimeUtils";
+import * as i18nc from "../../../i18n/country";
+import {ClientEntry, LocalClientEntry} from "../../../tree/Client";
+import {format_online_time} from "../../../utils/TimeUtils";
 
 export class ClientInfo {
     readonly handle: Frame;

@@ -52,7 +52,7 @@ html:root {
         }
 
         &:focus-within .label, .labelFloating {
-            top: -0.4em!important;
+            top: -0.4em !important;
         }
     }
 
@@ -160,6 +160,7 @@ html:root {
 
             &:hover {
                 border-bottom-right-radius: 0;
+
                 .dropdown {
                     display: flex;
                 }
@@ -263,11 +264,11 @@ html:root {
 
 
         &.active {
-            color: var(--modal-permissions-table-entry-active-text)!important;
+            color: var(--modal-permissions-table-entry-active-text) !important;
         }
 
         &.group {
-            color: var(--modal-permissions-table-entry-group-text)!important;
+            color: var(--modal-permissions-table-entry-group-text) !important;
             font-weight: bold;
 
             :global(.arrow) {
@@ -276,7 +277,8 @@ html:root {
             }
         }
 
-        &.permission {}
+        &.permission {
+        }
     }
 
     .header {
@@ -420,7 +422,9 @@ html:root {
             display: none;
         }
 
-        &.unset {}
+        &.unset {
+        }
+
         &.noPermissions {
             justify-content: flex-start;
             padding-top: 2em;

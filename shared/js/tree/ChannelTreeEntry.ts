@@ -1,4 +1,4 @@
-import {Registry} from "tc-shared/events";
+import {Registry} from "../events";
 
 export interface ChannelTreeEntryEvents {
     notify_select_state_change: { selected: boolean },

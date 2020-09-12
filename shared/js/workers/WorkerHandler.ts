@@ -1,6 +1,6 @@
 import {GenericCommandMapping, GenericCommands, GenericNotify} from "./Definitions";
-import {WorkerCommunication} from "tc-shared/workers/Worker";
-import {WorkerMessage} from "tc-shared/workers/Protocol";
+import {WorkerCommunication} from "../workers/Worker";
+import {WorkerMessage} from "../workers/Protocol";
 
 export class WorkerHandler<
     CommandsToWorker extends GenericCommands,

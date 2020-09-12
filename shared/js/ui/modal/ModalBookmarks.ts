@@ -1,4 +1,4 @@
-import {createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
+import {createInputModal, createModal, Modal} from "../../ui/elements/Modal";
 import {
     Bookmark,
     bookmarks,
@@ -9,25 +9,25 @@ import {
     delete_bookmark,
     DirectoryBookmark,
     save_bookmark
-} from "tc-shared/bookmarks";
-import {connection_log, Regex} from "tc-shared/ui/modal/ModalConnect";
-import {profiles} from "tc-shared/profiles/ConnectionProfile";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import {Settings, settings} from "tc-shared/settings";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import * as i18nc from "tc-shared/i18n/country";
-import {formatMessage} from "tc-shared/ui/frames/chat";
+} from "../../bookmarks";
+import {connection_log, Regex} from "../../ui/modal/ModalConnect";
+import {profiles} from "../../profiles/ConnectionProfile";
+import {spawnYesNo} from "../../ui/modal/ModalYesNo";
+import {Settings, settings} from "../../settings";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import * as i18nc from "../../i18n/country";
+import {formatMessage} from "../../ui/frames/chat";
 import * as top_menu from "../frames/MenuBar";
-import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
-import {icon_cache_loader, IconManager} from "tc-shared/file/Icons";
+import {control_bar_instance} from "../../ui/frames/control-bar";
+import {icon_cache_loader, IconManager} from "../../file/Icons";
 
 export function spawnBookmarkModal() {
     let modal: Modal;
     modal = createModal({
         header: tr("Manage bookmarks"),
         body: () => {
-            let template = $("#tmpl_manage_bookmarks").renderTag({ });
+            let template = $("#tmpl_manage_bookmarks").renderTag({});
             let selected_bookmark: Bookmark | DirectoryBookmark | undefined;
 
             const button_delete = template.find(".button-delete");
@@ -61,11 +61,11 @@ export function spawnBookmarkModal() {
             };
 
             const update_connect_info = () => {
-                if(selected_bookmark && selected_bookmark.type === BookmarkType.ENTRY) {
+                if (selected_bookmark && selected_bookmark.type === BookmarkType.ENTRY) {
                     const entry = selected_bookmark as Bookmark;
 
                     const history = connection_log.history().find(e => e.address.hostname === entry.server_properties.server_address && e.address.port === entry.server_properties.server_port);
-                    if(history) {
+                    if (history) {
                         label_server_name.text(history.name);
                         label_server_region.empty().append(
                             $.spawn("div").addClass("country flag-" + history.country.toLowerCase()),
@@ -99,12 +99,12 @@ export function spawnBookmarkModal() {
                 input_server_address.prop("disabled", !selected_bookmark || selected_bookmark.type !== BookmarkType.ENTRY);
                 input_server_password.prop("disabled", !selected_bookmark || selected_bookmark.type !== BookmarkType.ENTRY);
 
-                if(selected_bookmark) {
+                if (selected_bookmark) {
                     input_bookmark_name.val(selected_bookmark.display_name);
                     label_bookmark_name.text(selected_bookmark.display_name);
                 }
 
-                if(selected_bookmark && selected_bookmark.type === BookmarkType.ENTRY) {
+                if (selected_bookmark && selected_bookmark.type === BookmarkType.ENTRY) {
                     const entry = selected_bookmark as Bookmark;
 
                     const address = entry.server_properties.server_address + (entry.server_properties.server_port == 9987 ? "" : (" " + entry.server_properties.server_port));
@@ -112,7 +112,7 @@ export function spawnBookmarkModal() {
                     input_server_address.val(address);
 
                     let profile = input_connect_profile.find("option[value='" + entry.connect_profile + "']");
-                    if(profile.length == 0) {
+                    if (profile.length == 0) {
                         log.warn(LogCategory.GENERAL, tr("Failed to find bookmark profile %s. Displaying default one."), entry.connect_profile);
                         profile = input_connect_profile.find("option[value=default]");
                     }
@@ -136,7 +136,7 @@ export function spawnBookmarkModal() {
                 update_selected();
 
                 const hide_links: boolean[] = [];
-                const build_entry = (entry: Bookmark | DirectoryBookmark, sibling_data: {first: boolean; last: boolean;}, index: number) => {
+                const build_entry = (entry: Bookmark | DirectoryBookmark, sibling_data: { first: boolean; last: boolean; }, index: number) => {
                     let container = $.spawn("div")
                         .addClass(entry.type === BookmarkType.ENTRY ? "bookmark" : "directory")
                         .addClass(index > 0 ? "linked" : "")
@@ -169,7 +169,7 @@ export function spawnBookmarkModal() {
 
                     container.appendTo(container_bookmarks);
                     container.on('click', event => {
-                        if(selected_bookmark === entry)
+                        if (selected_bookmark === entry)
                             return;
 
                         selected_bookmark = entry;
@@ -178,7 +178,7 @@ export function spawnBookmarkModal() {
                         update_buttons();
                         update_selected();
                     });
-                    if(entry.unique_id === _current_selected)
+                    if (entry.unique_id === _current_selected)
                         container.trigger('click');
 
                     hide_links.push(sibling_data.last);
@@ -203,7 +203,7 @@ export function spawnBookmarkModal() {
                         .text("")
                         .css("display", "none")
                 );
-                for(const profile of profiles()) {
+                for (const profile of profiles()) {
                     input_connect_profile.append(
                         $.spawn("option")
                             .attr("value", profile.id)
@@ -215,11 +215,11 @@ export function spawnBookmarkModal() {
             /* buttons */
             {
                 button_delete.on('click', event => {
-                    if(!selected_bookmark) return;
+                    if (!selected_bookmark) return;
 
-                    if(selected_bookmark.type === BookmarkType.DIRECTORY && (selected_bookmark as DirectoryBookmark).content.length > 0) {
+                    if (selected_bookmark.type === BookmarkType.DIRECTORY && (selected_bookmark as DirectoryBookmark).content.length > 0) {
                         spawnYesNo(tr("Are you sure"), tr("Do you really want to delete this non empty directory?"), answer => {
-                            if(answer) {
+                            if (answer) {
                                 delete_bookmark(selected_bookmark);
                                 save_bookmark(selected_bookmark);
                                 update_bookmark_list(undefined);
@@ -236,7 +236,7 @@ export function spawnBookmarkModal() {
                     createInputModal(tr("Enter a folder name"), tr("Enter the folder name"), text => {
                         return true;
                     }, result => {
-                        if(result) {
+                        if (result) {
                             const mark = create_bookmark_directory(
                                 selected_bookmark ?
                                     selected_bookmark.type === BookmarkType.DIRECTORY ?
@@ -255,7 +255,7 @@ export function spawnBookmarkModal() {
                     createInputModal(tr("Enter a bookmark name"), tr("Enter the bookmark name"), text => {
                         return true;
                     }, result => {
-                        if(result) {
+                        if (result) {
                             const mark = create_bookmark(result as string,
                                 selected_bookmark ?
                                     selected_bookmark.type === BookmarkType.DIRECTORY ?
@@ -285,8 +285,8 @@ export function spawnBookmarkModal() {
 
                 button_duplicate.on('click', event => {
                     createInputModal(tr("Enter a bookmark name"), tr("Enter the bookmark name for the duplicate"), text => text.length > 0, result => {
-                        if(result) {
-                            if(!selected_bookmark) return;
+                        if (result) {
+                            if (!selected_bookmark) return;
 
                             const original = selected_bookmark as Bookmark;
                             const mark = create_bookmark(result as string,
@@ -307,7 +307,7 @@ export function spawnBookmarkModal() {
                     const valid = name.length > 3;
                     input_bookmark_name.firstParent(".input-boxed").toggleClass("is-invalid", !valid);
 
-                    if(event.type === "change" && valid) {
+                    if (event.type === "change" && valid) {
                         selected_bookmark.display_name = name;
                         label_bookmark_name.text(name);
                         save_bookmark(selected_bookmark);
@@ -319,11 +319,11 @@ export function spawnBookmarkModal() {
                     const valid = !!address.match(Regex.IP_V4) || !!address.match(Regex.IP_V6) || !!address.match(Regex.DOMAIN);
                     input_server_address.firstParent(".input-boxed").toggleClass("is-invalid", !valid);
 
-                    if(valid) {
+                    if (valid) {
                         const entry = selected_bookmark as Bookmark;
                         let _v6_end = address.indexOf(']');
                         let idx = address.lastIndexOf(':');
-                        if(idx != -1 && idx > _v6_end) {
+                        if (idx != -1 && idx > _v6_end) {
                             entry.server_properties.server_port = parseInt(address.substr(idx + 1));
                             entry.server_properties.server_address = address.substr(0, idx);
                         } else {
@@ -346,7 +346,7 @@ export function spawnBookmarkModal() {
                 input_connect_profile.on('change', event => {
                     const id = input_connect_profile.val() as string;
                     const profile = profiles().find(e => e.id === id);
-                    if(profile) {
+                    if (profile) {
                         (selected_bookmark as Bookmark).connect_profile = id;
                         save_bookmark(selected_bookmark);
                     } else {
@@ -364,8 +364,8 @@ export function spawnBookmarkModal() {
                 _focus_listener = event => {
                     _focused = false;
                     let element = event.target as HTMLElement;
-                    while(element) {
-                        if(element === container_bookmarks[0]) {
+                    while (element) {
+                        if (element === container_bookmarks[0]) {
                             _focused = true;
                             break;
                         }
@@ -374,11 +374,11 @@ export function spawnBookmarkModal() {
                 };
 
                 _key_listener = event => {
-                    if(!_focused) return;
+                    if (!_focused) return;
 
-                    if(event.key.toLowerCase() === "arrowdown") {
+                    if (event.key.toLowerCase() === "arrowdown") {
                         container_bookmarks.find(".selected").next().trigger('click');
-                    } else if(event.key.toLowerCase() === "arrowup") {
+                    } else if (event.key.toLowerCase() === "arrowup") {
                         container_bookmarks.find(".selected").prev().trigger('click');
                     }
                 };
@@ -404,7 +404,7 @@ export function spawnBookmarkModal() {
 
     modal.htmlTag.dividerfy().find(".modal-body").addClass("modal-bookmarks");
     modal.close_listener.push(() => {
-        control_bar_instance()?.events().fire("update_state", { state: "bookmarks" });
+        control_bar_instance()?.events().fire("update_state", {state: "bookmarks"});
         top_menu.rebuild_bookmarks();
     });
 

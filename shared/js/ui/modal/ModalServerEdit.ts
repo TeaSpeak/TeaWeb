@@ -1,35 +1,35 @@
-import {ServerEntry, ServerProperties} from "tc-shared/tree/Server";
-import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import PermissionType from "tc-shared/permission/PermissionType";
-import {GroupManager} from "tc-shared/permission/GroupManager";
-import {hashPassword} from "tc-shared/utils/helpers";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
-import {network} from "tc-shared/ui/frames/chat";
+import {ServerEntry, ServerProperties} from "../../tree/Server";
+import {createModal, Modal} from "../../ui/elements/Modal";
+import PermissionType from "../../permission/PermissionType";
+import {GroupManager} from "../../permission/GroupManager";
+import {hashPassword} from "../../utils/helpers";
+import * as tooltip from "../../ui/elements/Tooltip";
+import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
+import {network} from "../../ui/frames/chat";
 
 export function createServerModal(server: ServerEntry, callback: (properties?: ServerProperties) => Promise<void>) {
     const properties = Object.assign({}, server.properties);
 
-    let _valid_states: {[key: string]:boolean} = {
+    let _valid_states: { [key: string]: boolean } = {
         general: false
     };
 
     let _toggle_valid = (key: string | undefined, value?: boolean) => {
-        if(typeof(key) === "string") {
+        if (typeof (key) === "string") {
             _valid_states[key] = value;
         }
 
         let flag = true;
-        for(const key of Object.keys(_valid_states))
-            if(!_valid_states[key]) {
+        for (const key of Object.keys(_valid_states))
+            if (!_valid_states[key]) {
                 flag = false;
                 break;
             }
 
-        if(flag) {
+        if (flag) {
             flag = false;
-            for(const property_name of Object.keys(properties)) {
-                if(server.properties[property_name] !== properties[property_name]) {
+            for (const property_name of Object.keys(properties)) {
+                if (server.properties[property_name] !== properties[property_name]) {
                     flag = true;
                     break;
                 }
@@ -43,7 +43,7 @@ export function createServerModal(server: ServerEntry, callback: (properties?: S
         header: tr("Manage the Virtual Server"),
         body: () => {
             const template = $("#tmpl_server_edit").renderTag(Object.assign(Object.assign({}, server.properties), {
-                    server_icon: server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id)
+                server_icon: server.channelTree.client.fileManager.icons.generateTag(server.properties.virtualserver_icon_id)
             }));
 
             /* the tab functionality */
@@ -80,8 +80,8 @@ export function createServerModal(server: ServerEntry, callback: (properties?: S
     const button_save = modal.htmlTag.find(".button-save");
     button_save.on('click', event => {
         const changed = {} as ServerProperties;
-        for(const property_name of Object.keys(properties))
-            if(server.properties[property_name] !== properties[property_name])
+        for (const property_name of Object.keys(properties))
+            if (server.properties[property_name] !== properties[property_name])
                 changed[property_name] = properties[property_name];
         callback(changed).then(() => {
             _toggle_valid(undefined);
@@ -125,7 +125,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
                 console.log("Selected icon ID: %d", id);
                 properties.virtualserver_icon_id = id;
                 callback_valid(undefined); //Toggle save button update
-            },  properties.virtualserver_icon_id);
+            }, properties.virtualserver_icon_id);
         });
 
         tag.find(".button-icon-remove").on('click', event => {
@@ -148,7 +148,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
         container.on('change', event => {
             const password = container.val() as string;
             properties.virtualserver_flag_password = !!password;
-            if(properties.virtualserver_flag_password) {
+            if (properties.virtualserver_flag_password) {
                 hashPassword(password).then(pass => properties.virtualserver_password = pass);
             }
             callback_valid(undefined); //Toggle save button update
@@ -196,7 +196,7 @@ function apply_general_listener(tag: JQuery, server: ServerEntry, properties: Se
         const input = container.find("textarea");
 
         const insert_tag = (open: string, close: string) => {
-            if(input.prop("disabled"))
+            if (input.prop("disabled"))
                 return;
 
             const node = input[0] as HTMLTextAreaElement;
@@ -347,27 +347,27 @@ function apply_network_listener(tag: JQuery, server: ServerEntry, properties: Se
     }
 
     /* quota update task */
-    if(server.channelTree.client.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CONNECTIONINFO_VIEW).granted(1)) {
+    if (server.channelTree.client.permissions.neededPermission(PermissionType.B_VIRTUALSERVER_CONNECTIONINFO_VIEW).granted(1)) {
         const month_bytes_downloaded = tag.find(".value.virtualserver_month_bytes_downloaded")[0];
         const month_bytes_uploaded = tag.find(".value.virtualserver_month_bytes_uploaded")[0];
         const total_bytes_downloaded = tag.find(".value.virtualserver_total_bytes_downloaded")[0];
         const total_bytes_uploaded = tag.find(".value.virtualserver_total_bytes_uploaded")[0];
 
         let id = setInterval(() => {
-            if(!modal.shown) {
+            if (!modal.shown) {
                 clearInterval(id);
                 return;
             }
 
             server.request_connection_info().then(info => {
-                if(info.connection_filetransfer_bytes_sent_month && month_bytes_downloaded)
+                if (info.connection_filetransfer_bytes_sent_month && month_bytes_downloaded)
                     month_bytes_downloaded.innerText = network.format_bytes(info.connection_filetransfer_bytes_sent_month);
-                if(info.connection_filetransfer_bytes_received_month && month_bytes_uploaded)
+                if (info.connection_filetransfer_bytes_received_month && month_bytes_uploaded)
                     month_bytes_uploaded.innerText = network.format_bytes(info.connection_filetransfer_bytes_received_month);
 
-                if(info.connection_filetransfer_bytes_sent_total && total_bytes_downloaded)
+                if (info.connection_filetransfer_bytes_sent_total && total_bytes_downloaded)
                     total_bytes_downloaded.innerText = network.format_bytes(info.connection_filetransfer_bytes_sent_total);
-                if(info.connection_filetransfer_bytes_received_total && total_bytes_uploaded)
+                if (info.connection_filetransfer_bytes_received_total && total_bytes_uploaded)
                     total_bytes_uploaded.innerText = network.format_bytes(info.connection_filetransfer_bytes_received_total);
             });
         }, 1000);
@@ -624,10 +624,10 @@ function apply_misc_listener(tag: JQuery, server: ServerEntry, properties: Serve
                 callback_valid(undefined); //Toggle save button update
             }).prop("disabled", !permission).firstParent(".input-boxed").toggleClass("disabled", !permission);
 
-            for(const group of server.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
-                if(group.type != 2) continue;
+            for (const group of server.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
+                if (group.type != 2) continue;
                 let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
-                if(group.id == server.properties.virtualserver_default_server_group)
+                if (group.id == server.properties.virtualserver_default_server_group)
                     group_tag.prop("selected", true);
                 group_tag.appendTo(container);
             }
@@ -643,10 +643,10 @@ function apply_misc_listener(tag: JQuery, server: ServerEntry, properties: Serve
                 callback_valid(undefined); //Toggle save button update
             }).prop("disabled", !permission).firstParent(".input-boxed").toggleClass("disabled", !permission);
 
-            for(const group of server.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
-                if(group.type != 2) continue;
+            for (const group of server.channelTree.client.groups.serverGroups.sort(GroupManager.sorter())) {
+                if (group.type != 2) continue;
                 let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
-                if(group.id == server.properties.virtualserver_default_music_group)
+                if (group.id == server.properties.virtualserver_default_music_group)
                     group_tag.prop("selected", true);
                 group_tag.appendTo(container);
             }
@@ -662,10 +662,10 @@ function apply_misc_listener(tag: JQuery, server: ServerEntry, properties: Serve
                 callback_valid(undefined); //Toggle save button update
             }).prop("disabled", !permission).firstParent(".input-boxed").toggleClass("disabled", !permission);
 
-            for(const group of server.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
-                if(group.type != 2) continue;
+            for (const group of server.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
+                if (group.type != 2) continue;
                 let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
-                if(group.id == server.properties.virtualserver_default_channel_admin_group)
+                if (group.id == server.properties.virtualserver_default_channel_admin_group)
                     group_tag.prop("selected", true);
                 group_tag.appendTo(container);
             }
@@ -681,10 +681,10 @@ function apply_misc_listener(tag: JQuery, server: ServerEntry, properties: Serve
                 callback_valid(undefined); //Toggle save button update
             }).prop("disabled", !permission).firstParent(".input-boxed").toggleClass("disabled", !permission);
 
-            for(const group of server.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
-                if(group.type != 2) continue;
+            for (const group of server.channelTree.client.groups.channelGroups.sort(GroupManager.sorter())) {
+                if (group.type != 2) continue;
                 let group_tag = $.spawn("option").text(group.name + " [" + (group.properties.savedb ? "perm" : "tmp") + "]").attr("group-id", group.id);
-                if(group.id == server.properties.virtualserver_default_channel_group)
+                if (group.id == server.properties.virtualserver_default_channel_group)
                     group_tag.prop("selected", true);
                 group_tag.appendTo(container);
             }

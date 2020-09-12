@@ -1,4 +1,4 @@
-import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
+import {AbstractModal} from "../../../ui/react-elements/ModalDefinitions";
 
 export interface PopoutHandler {
     name: string;

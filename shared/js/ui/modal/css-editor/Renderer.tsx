@@ -1,9 +1,9 @@
 import * as React from "react";
+import {useState} from "react";
 import {CssEditorEvents, CssEditorUserData, CssVariable} from "tc-shared/ui/modal/css-editor/Definitions";
 import {Registry} from "tc-shared/events";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {BoxedInputField, FlatInputField} from "tc-shared/ui/react-elements/InputField";
-import {useState} from "react";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Checkbox} from "tc-shared/ui/react-elements/Checkbox";
 import {Button} from "tc-shared/ui/react-elements/Button";
@@ -13,22 +13,22 @@ import {AbstractModal} from "tc-shared/ui/react-elements/ModalDefinitions";
 const cssStyle = require("./Renderer.scss");
 
 const CssVariableRenderer = React.memo((props: { events: Registry<CssEditorEvents>, variable: CssVariable, selected: boolean }) => {
-    const [ selected, setSelected ] = useState(props.selected);
-    const [ override, setOverride ] = useState(props.variable.overwriteValue);
-    const [ overrideColor, setOverrideColor ] = useState(props.variable.customValue);
+    const [selected, setSelected] = useState(props.selected);
+    const [override, setOverride] = useState(props.variable.overwriteValue);
+    const [overrideColor, setOverrideColor] = useState(props.variable.customValue);
 
     props.events.reactUse("action_select_entry", event => setSelected(event.variable === props.variable));
     props.events.reactUse("action_override_toggle", event => {
-        if(event.variableName !== props.variable.name)
+        if (event.variableName !== props.variable.name)
             return;
 
         setOverride(event.enabled);
-        if(event.enabled)
+        if (event.enabled)
             setOverrideColor(event.value);
     });
 
     props.events.reactUse("action_change_override_value", event => {
-        if(event.variableName !== props.variable.name)
+        if (event.variableName !== props.variable.name)
             return;
 
         setOverrideColor(event.value);
@@ -38,22 +38,22 @@ const CssVariableRenderer = React.memo((props: { events: Registry<CssEditorEvent
         <div
             className={cssStyle.variable + " " + (selected ? cssStyle.selected : "")}
             onClick={() => {
-                if(selected)
+                if (selected)
                     return;
 
-                props.events.fire("action_select_entry", { variable: props.variable })
+                props.events.fire("action_select_entry", {variable: props.variable})
             }}
         >
             <div className={cssStyle.preview}>
                 <div
                     className={cssStyle.color}
-                    style={{ backgroundColor: props.variable.defaultValue }}
+                    style={{backgroundColor: props.variable.defaultValue}}
                 />
             </div>
             <div className={cssStyle.preview}>
                 <div
                     className={cssStyle.color}
-                    style={{ backgroundColor: override ? overrideColor : undefined }}
+                    style={{backgroundColor: override ? overrideColor : undefined}}
                 />
             </div>
             <a>{props.variable.name}</a>
@@ -62,31 +62,31 @@ const CssVariableRenderer = React.memo((props: { events: Registry<CssEditorEvent
 });
 
 const CssVariableListBodyRenderer = (props: { events: Registry<CssEditorEvents> }) => {
-    const [ variables, setVariables ] = useState<"loading" | CssVariable[]>(() => {
+    const [variables, setVariables] = useState<"loading" | CssVariable[]>(() => {
         props.events.fire_async("query_css_variables");
         return "loading";
     });
 
-    const [ filter, setFilter ] = useState(undefined);
-    const [ selectedVariable, setSelectedVariable ] = useState(undefined);
+    const [filter, setFilter] = useState(undefined);
+    const [selectedVariable, setSelectedVariable] = useState(undefined);
 
     props.events.reactUse("action_select_entry", event => setSelectedVariable(event.variable));
     props.events.reactUse("query_css_variables", () => setVariables("loading"));
 
     let content;
-    if(variables === "loading") {
+    if (variables === "loading") {
         content = (
             <div className={cssStyle.overlay} key={"loading"}>
                 <a>
                     <Translatable>Loading</Translatable>&nbsp;
-                    <LoadingDots />
+                    <LoadingDots/>
                 </a>
             </div>
         );
     } else {
         content = [];
-        for(const variable of variables) {
-            if(filter && variable.name.toLowerCase().indexOf(filter) === -1)
+        for (const variable of variables) {
+            if (filter && variable.name.toLowerCase().indexOf(filter) === -1)
                 continue;
 
             content.push(<CssVariableRenderer
@@ -97,7 +97,7 @@ const CssVariableListBodyRenderer = (props: { events: Registry<CssEditorEvents> 
             />);
         }
 
-        if(content.length === 0) {
+        if (content.length === 0) {
             content.push(
                 <div className={cssStyle.overlay} key={"no-match"}>
                     <a><Translatable>No variable matched your filter</Translatable></a>
@@ -111,27 +111,27 @@ const CssVariableListBodyRenderer = (props: { events: Registry<CssEditorEvents> 
 
     return (
         <div className={cssStyle.body} onKeyPress={event => {
-            if(variables === "loading")
+            if (variables === "loading")
                 return;
 
             /* TODO: This isn't working since the div isn't focused properly yet */
             let offset = 0;
-            if(event.key === "ArrowDown") {
+            if (event.key === "ArrowDown") {
                 offset = 1;
-            } else if(event.key === "ArrowUp") {
+            } else if (event.key === "ArrowUp") {
                 offset = -1;
             }
 
-            if(offset !== 0) {
+            if (offset !== 0) {
                 const selectIndex = variables.findIndex(e => e === selectedVariable);
-                if(selectIndex === -1)
+                if (selectIndex === -1)
                     return;
 
                 const variable = variables[selectIndex + offset];
-                if(!variable)
+                if (!variable)
                     return;
 
-                props.events.fire("action_select_entry", { variable: variable });
+                props.events.fire("action_select_entry", {variable: variable});
             }
         }} tabIndex={0}>
             {content}
@@ -140,7 +140,7 @@ const CssVariableListBodyRenderer = (props: { events: Registry<CssEditorEvents> 
 };
 
 const CssVariableListSearchRenderer = (props: { events: Registry<CssEditorEvents> }) => {
-    const [ isLoading, setLoading ] = useState(true);
+    const [isLoading, setLoading] = useState(true);
 
     props.events.reactUse("notify_css_variables", () => setLoading(false));
     props.events.reactUse("query_css_variables", () => setLoading(true));
@@ -151,7 +151,7 @@ const CssVariableListSearchRenderer = (props: { events: Registry<CssEditorEvents
                 label={<Translatable>Filter variables</Translatable>}
                 labelType={"floating"}
                 className={cssStyle.input}
-                onInput={text => props.events.fire("action_set_filter", { filter: text })}
+                onInput={text => props.events.fire("action_set_filter", {filter: text})}
                 disabled={isLoading}
             />
         </div>
@@ -164,14 +164,14 @@ const CssVariableListRenderer = (props: { events: Registry<CssEditorEvents> }) =
             <a><Translatable>CSS Variable list</Translatable></a>
         </div>
         <div className={cssStyle.list} onKeyPress={event => console.error(event.key)}>
-            <CssVariableListBodyRenderer events={props.events} />
-            <CssVariableListSearchRenderer events={props.events} />
+            <CssVariableListBodyRenderer events={props.events}/>
+            <CssVariableListSearchRenderer events={props.events}/>
         </div>
     </div>
 );
 
 const SelectedVariableInfo = (props: { events: Registry<CssEditorEvents> }) => {
-    const [ selectedVariable, setSelectedVariable ] = useState<CssVariable>(undefined);
+    const [selectedVariable, setSelectedVariable] = useState<CssVariable>(undefined);
     props.events.reactUse("action_select_entry", event => setSelectedVariable(event.variable));
 
     return (<>
@@ -201,9 +201,9 @@ const SelectedVariableInfo = (props: { events: Registry<CssEditorEvents> }) => {
 };
 
 const OverrideVariableInfo = (props: { events: Registry<CssEditorEvents> }) => {
-    const [ selectedVariable, setSelectedVariable ] = useState<CssVariable>(undefined);
-    const [ overwriteValue, setOverwriteValue ] = useState<string>(undefined);
-    const [ overwriteEnabled, setOverwriteEnabled ] = useState(false);
+    const [selectedVariable, setSelectedVariable] = useState<CssVariable>(undefined);
+    const [overwriteValue, setOverwriteValue] = useState<string>(undefined);
+    const [overwriteEnabled, setOverwriteEnabled] = useState(false);
 
     props.events.reactUse("action_select_entry", event => {
         setSelectedVariable(event.variable);
@@ -212,17 +212,17 @@ const OverrideVariableInfo = (props: { events: Registry<CssEditorEvents> }) => {
     });
 
     props.events.reactUse("action_override_toggle", event => {
-        if(event.variableName !== selectedVariable?.name)
+        if (event.variableName !== selectedVariable?.name)
             return;
 
         selectedVariable.overwriteValue = event.enabled;
         setOverwriteEnabled(event.enabled);
-        if(event.enabled)
+        if (event.enabled)
             setOverwriteValue(event.value);
     });
 
     props.events.reactUse("action_change_override_value", event => {
-        if(event.variableName !== selectedVariable?.name)
+        if (event.variableName !== selectedVariable?.name)
             return;
 
         setOverwriteValue(event.value);
@@ -251,31 +251,34 @@ const OverrideVariableInfo = (props: { events: Registry<CssEditorEvents> }) => {
                     value={overwriteValue || " "}
                     onInput={text => {
                         selectedVariable.customValue = text;
-                        props.events.fire("action_change_override_value", { value: text, variableName: selectedVariable.name });
+                        props.events.fire("action_change_override_value", {
+                            value: text,
+                            variableName: selectedVariable.name
+                        });
                     }}
                 />
-                <CssVariableColorPicker events={props.events} selectedVariable={selectedVariable} />
+                <CssVariableColorPicker events={props.events} selectedVariable={selectedVariable}/>
             </div>
         </div>
     </>);
 };
 
 const CssVariableColorPicker = (props: { events: Registry<CssEditorEvents>, selectedVariable: CssVariable }) => {
-    const [ overwriteValue, setOverwriteValue ] = useState<string>(undefined);
-    const [ overwriteEnabled, setOverwriteEnabled ] = useState(false);
+    const [overwriteValue, setOverwriteValue] = useState<string>(undefined);
+    const [overwriteEnabled, setOverwriteEnabled] = useState(false);
 
     props.events.reactUse("action_override_toggle", event => {
-        if(event.variableName !== props.selectedVariable?.name)
+        if (event.variableName !== props.selectedVariable?.name)
             return;
 
         props.selectedVariable.overwriteValue = event.enabled;
         setOverwriteEnabled(event.enabled);
-        if(event.enabled)
+        if (event.enabled)
             setOverwriteValue(event.value);
     });
 
     props.events.reactUse("action_change_override_value", event => {
-        if(event.variableName !== props.selectedVariable?.name || 'cpInvoker' in event)
+        if (event.variableName !== props.selectedVariable?.name || 'cpInvoker' in event)
             return;
 
         setOverwriteValue(event.value);
@@ -284,23 +287,26 @@ const CssVariableColorPicker = (props: { events: Registry<CssEditorEvents>, sele
     let currentInput: string;
     let inputTimeout: number;
     return (
-        <label className={cssStyle.colorButton} >
+        <label className={cssStyle.colorButton}>
             <input
                 disabled={!overwriteEnabled}
                 type={"color"}
                 value={overwriteValue}
                 onChange={event => {
                     currentInput = event.target.value;
-                    if(inputTimeout)
+                    if (inputTimeout)
                         return;
 
                     inputTimeout = setTimeout(() => {
                         inputTimeout = undefined;
-                        props.events.fire("action_change_override_value", { value: currentInput, variableName: props.selectedVariable.name });
+                        props.events.fire("action_change_override_value", {
+                            value: currentInput,
+                            variableName: props.selectedVariable.name
+                        });
                     }, 150);
                 }}
             />
-            <a className="rainbow-letter" style={{ borderBottomColor: overwriteValue }}>C</a>
+            <a className="rainbow-letter" style={{borderBottomColor: overwriteValue}}>C</a>
         </label>
     )
 };
@@ -324,7 +330,7 @@ const ControlButtons = (props: { events: Registry<CssEditorEvents> }) => {
                 color={"blue"}
                 type={"normal"}
                 className={cssStyle.button}
-                onClick={event => props.events.fire("action_export", { allValues: event.shiftKey })}
+                onClick={event => props.events.fire("action_export", {allValues: event.shiftKey})}
                 title={tr("Click to export the changed values, Shift click to export all values")}
             ><Translatable>Export</Translatable></Button>
             <Button
@@ -332,7 +338,7 @@ const ControlButtons = (props: { events: Registry<CssEditorEvents> }) => {
                 type={"normal"}
                 className={cssStyle.button}
                 onClick={() => requestFileAsText().then(content => {
-                    props.events.fire("action_import", { config: content })
+                    props.events.fire("action_import", {config: content})
                 })}
             ><Translatable>Import</Translatable></Button>
         </div>
@@ -345,9 +351,9 @@ const CssVariableEditor = (props: { events: Registry<CssEditorEvents> }) => {
             <div className={cssStyle.header}>
                 <a><Translatable>Variable details</Translatable></a>
             </div>
-            <SelectedVariableInfo events={props.events} />
-            <OverrideVariableInfo events={props.events} />
-            <ControlButtons events={props.events} />
+            <SelectedVariableInfo events={props.events}/>
+            <OverrideVariableInfo events={props.events}/>
+            <ControlButtons events={props.events}/>
         </div>
     )
 };
@@ -374,7 +380,7 @@ const requestFileAsText = async (): Promise<string> => {
         element.onchange = resolve;
     });
 
-    if(element.files.length !== 1)
+    if (element.files.length !== 1)
         return undefined;
     const file = element.files[0];
     element.remove();
@@ -397,7 +403,7 @@ class PopoutConversationUI extends AbstractModal {
             downloadTextAsFile(event.config, "teaweb-style.json");
         });
         this.events.on("notify_import_result", event => {
-            if(event.success)
+            if (event.success)
                 createInfoModal(tr("Config imported successfully"), tr("The config has been imported successfully.")).open();
             else
                 createErrorModal(tr("Config imported failed"), tr("The config import has been failed.")).open();
@@ -407,8 +413,8 @@ class PopoutConversationUI extends AbstractModal {
     renderBody() {
         return (
             <div className={cssStyle.container}>
-                <CssVariableListRenderer events={this.events} />
-                <CssVariableEditor events={this.events} />
+                <CssVariableListRenderer events={this.events}/>
+                <CssVariableEditor events={this.events}/>
             </div>
         );
     }

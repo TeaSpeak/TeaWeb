@@ -1,10 +1,10 @@
 //https://regex101.com/r/YQbfcX/2
 //static readonly URL_REGEX = /^(?<hostname>([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/(?<path>(?:[^\s?]+)?)(?:\?(?<query>\S+))?)?$/gm;
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {Settings, settings} from "tc-shared/settings";
-import {renderMarkdownAsBBCode} from "tc-shared/text/markdown";
-import {escapeBBCode} from "tc-shared/text/bbcode";
+import * as log from "../log";
+import {LogCategory} from "../log";
+import {Settings, settings} from "../settings";
+import {renderMarkdownAsBBCode} from "../text/markdown";
+import {escapeBBCode} from "../text/bbcode";
 
 const URL_REGEX = /^(([a-zA-Z0-9-]+\.)+[a-zA-Z0-9-]{2,63})(?:\/((?:[^\s?]+)?)(?:\?(\S+))?)?$/gm;
 function process_urls(message: string) : string {

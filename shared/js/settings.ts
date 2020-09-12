@@ -1,8 +1,8 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import * as log from "./log";
+import {LogCategory} from "./log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {Registry} from "tc-shared/events";
+import {Registry} from "./events";
 
 type ConfigValueTypes = boolean | number | string | object;
 type ConfigValueTypeNames = "boolean" | "number" | "string" | "object";

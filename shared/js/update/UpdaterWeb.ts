@@ -1,9 +1,9 @@
-import {ChangeLog, ChangeSetEntry} from "tc-shared/update/ChangeLog";
+import {ChangeLog, ChangeSetEntry} from "../update/ChangeLog";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {setUIUpdater} from "tc-shared/update/index";
-import {Updater} from "tc-shared/update/Updater";
-import {LogCategory, logError} from "tc-shared/log";
+import {setUIUpdater} from "../update/index";
+import {Updater} from "../update/Updater";
+import {LogCategory, logError} from "../log";
 
 const ChangeLogContents: string = require("../../../ChangeLog.md");
 const EntryRegex = /^\* \*\*([0-9]{2})\.([0-9]{2})\.([0-9]{2})\*\*$/m;

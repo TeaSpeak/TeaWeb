@@ -1,28 +1,28 @@
 import {ChannelTree} from "./ChannelTree";
 import {ClientEntry, ClientEvents} from "./Client";
-import * as log from "tc-shared/log";
-import {LogCategory, LogType} from "tc-shared/log";
-import {PermissionType} from "tc-shared/permission/PermissionType";
-import {settings, Settings} from "tc-shared/settings";
-import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
-import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
-import {Sound} from "tc-shared/sound/Sounds";
-import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
+import * as log from "../log";
+import {LogCategory, LogType} from "../log";
+import {PermissionType} from "../permission/PermissionType";
+import {settings, Settings} from "../settings";
+import * as contextmenu from "../ui/elements/ContextMenu";
+import {MenuEntryType} from "../ui/elements/ContextMenu";
+import {Sound} from "../sound/Sounds";
+import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import * as htmltags from "../ui/htmltags";
-import {hashPassword} from "tc-shared/utils/helpers";
-import {openChannelInfo} from "tc-shared/ui/modal/ModalChannelInfo";
-import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
-import {formatMessage} from "tc-shared/ui/frames/chat";
+import {hashPassword} from "../utils/helpers";
+import {openChannelInfo} from "../ui/modal/ModalChannelInfo";
+import {createChannelModal} from "../ui/modal/ModalCreateChannel";
+import {formatMessage} from "../ui/frames/chat";
 
 import * as React from "react";
-import {Registry} from "tc-shared/events";
+import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 import {ChannelEntryView as ChannelEntryView} from "../ui/tree/Channel";
-import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
-import {ViewReasonId} from "tc-shared/ConnectionHandler";
-import {EventChannelData} from "tc-shared/ui/frames/log/Definitions";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {spawnFileTransferModal} from "../ui/modal/transfer/ModalFileTransfer";
+import {ViewReasonId} from "../ConnectionHandler";
+import {EventChannelData} from "../ui/frames/log/Definitions";
+import {ErrorCode} from "../connection/ErrorCode";
 
 export enum ChannelType {
     PERMANENT,

@@ -246,22 +246,22 @@
         height: 1.5em;
         width: 5em; /* the column width minus one */
 
-        /* fix the column padding
-        padding-left: 1em;
-        margin-left: -.5em; /* have a bit of space on both sides
+/* fix the column padding
+padding-left: 1em;
+margin-left: -.5em; /* have a bit of space on both sides
 
-        border-bottom: 2px solid transparent;
+border-bottom: 2px solid transparent;
 
-        @include transition(border-bottom-color $button_hover_animation_time ease-in-out);
+@include transition(border-bottom-color $button_hover_animation_time ease-in-out);
 
-        &:not(.applying):focus {
-            border-bottom-color: var(--modal-permissions-table-input-focus);
-        }
-
-
-        &.applying {
-            padding-left: 0;
-        }
-    }
+&:not(.applying):focus {
+    border-bottom-color: var(--modal-permissions-table-input-focus);
 }
- */
+
+
+&.applying {
+    padding-left: 0;
+}
+}
+}
+*/

@@ -1,16 +1,16 @@
-import {ServerCommand, SingleCommandHandler} from "tc-shared/connection/ConnectionBase";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import {ServerCommand, SingleCommandHandler} from "../connection/ConnectionBase";
+import * as log from "../log";
+import {LogCategory} from "../log";
 import {
     ClientNameInfo,
     CommandResult,
     Playlist, PlaylistInfo, PlaylistSong,
     QueryList,
     QueryListEntry, ServerGroupClient
-} from "tc-shared/connection/ServerConnectionDeclaration";
-import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
-import {tr} from "tc-shared/i18n/localize";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+} from "../connection/ServerConnectionDeclaration";
+import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
+import {tr} from "../i18n/localize";
+import {ErrorCode} from "../connection/ErrorCode";
 
 export class CommandHelper extends AbstractCommandHandler {
     private whoAmIResponse: any;

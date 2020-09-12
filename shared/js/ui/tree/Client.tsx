@@ -46,30 +46,30 @@ class ClientSpeakIcon extends ReactComponentBase<ClientIconProperties, {}> {
         const properties = client.properties;
 
         let icon: ClientIcon;
-        if(properties.client_type_exact == ClientType.CLIENT_QUERY) {
+        if (properties.client_type_exact == ClientType.CLIENT_QUERY) {
             icon = ClientIcon.ServerQuery;
         } else {
             if (properties.client_away) {
                 icon = ClientIcon.Away;
             } else if (!client.getVoiceClient() && !(this instanceof LocalClientEntry)) {
                 icon = ClientIcon.InputMutedLocal;
-            } else if(!properties.client_output_hardware) {
+            } else if (!properties.client_output_hardware) {
                 icon = ClientIcon.HardwareOutputMuted;
-            } else if(properties.client_output_muted) {
+            } else if (properties.client_output_muted) {
                 icon = ClientIcon.OutputMuted;
-            } else if(!properties.client_input_hardware) {
+            } else if (!properties.client_input_hardware) {
                 icon = ClientIcon.HardwareInputMuted;
-            } else if(properties.client_input_muted) {
+            } else if (properties.client_input_muted) {
                 icon = ClientIcon.InputMuted;
             } else {
-                if(client.isSpeaking()) {
-                    if(properties.client_is_channel_commander) {
+                if (client.isSpeaking()) {
+                    if (properties.client_is_channel_commander) {
                         icon = ClientIcon.PlayerCommanderOn;
                     } else {
                         icon = ClientIcon.PlayerOn;
                     }
                 } else {
-                    if(properties.client_is_channel_commander) {
+                    if (properties.client_is_channel_commander) {
                         icon = ClientIcon.PlayerCommanderOff;
                     } else {
                         icon = ClientIcon.PlayerOff;
@@ -78,13 +78,13 @@ class ClientSpeakIcon extends ReactComponentBase<ClientIconProperties, {}> {
             }
         }
 
-        return <ClientIconRenderer icon={icon} />
+        return <ClientIconRenderer icon={icon}/>
     }
 
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesUpdated(event: ClientEvents["notify_properties_updated"]) {
-        for(const key of ClientSpeakIcon.IconUpdateKeys)
-            if(key in event.updated_properties) {
+        for (const key of ClientSpeakIcon.IconUpdateKeys)
+            if (key in event.updated_properties) {
                 this.forceUpdate();
                 return;
             }
@@ -113,7 +113,7 @@ class ClientServerGroupIcons extends ReactComponentBase<ClientServerGroupIconsPr
 
     protected initialize() {
         this.group_updated_callback = (event: GroupEvents["notify_properties_updated"]) => {
-            if(event.updated_properties.indexOf("sort-id") !== -1 || event.updated_properties.indexOf("icon") !== -1)
+            if (event.updated_properties.indexOf("sort-id") !== -1 || event.updated_properties.indexOf("icon") !== -1)
                 this.forceUpdate();
         };
     }
@@ -131,8 +131,8 @@ class ClientServerGroupIcons extends ReactComponentBase<ClientServerGroupIconsPr
         this.unsubscribeGroupEvents();
 
         const groups = this.props.client.assignedServerGroupIds()
-                            .map(e => this.props.client.channelTree.client.groups.findServerGroup(e)).filter(e => !!e);
-        if(groups.length === 0) return null;
+            .map(e => this.props.client.channelTree.client.groups.findServerGroup(e)).filter(e => !!e);
+        if (groups.length === 0) return null;
 
         groups.forEach(e => {
             e.events.on("notify_properties_updated", this.group_updated_callback);
@@ -140,18 +140,19 @@ class ClientServerGroupIcons extends ReactComponentBase<ClientServerGroupIconsPr
         });
 
         const group_icons = groups.filter(e => e?.properties.iconid)
-                                  .sort((a, b) => a.properties.sortid - b.properties.sortid);
-        if(group_icons.length === 0) return null;
+            .sort((a, b) => a.properties.sortid - b.properties.sortid);
+        if (group_icons.length === 0) return null;
         return [
             group_icons.map(e => {
-                return <LocalIconRenderer key={"group-icon-" + e.id} icon={this.props.client.channelTree.client.fileManager.icons.load_icon(e.properties.iconid)} />;
+                return <LocalIconRenderer key={"group-icon-" + e.id}
+                                          icon={this.props.client.channelTree.client.fileManager.icons.load_icon(e.properties.iconid)}/>;
             })
         ];
     }
 
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesUpdated(event: ClientEvents["notify_properties_updated"]) {
-        if(typeof event.updated_properties.client_servergroups)
+        if (typeof event.updated_properties.client_servergroups)
             this.forceUpdate();
     }
 }
@@ -168,7 +169,7 @@ class ClientChannelGroupIcon extends ReactComponentBase<ClientChannelGroupIconPr
 
     protected initialize() {
         this.group_updated_callback = (event: GroupEvents["notify_properties_updated"]) => {
-            if(event.updated_properties.indexOf("sort-id") !== -1 || event.updated_properties.indexOf("icon") !== -1)
+            if (event.updated_properties.indexOf("sort-id") !== -1 || event.updated_properties.indexOf("icon") !== -1)
                 this.forceUpdate();
         };
     }
@@ -185,21 +186,22 @@ class ClientChannelGroupIcon extends ReactComponentBase<ClientChannelGroupIconPr
         this.unsubscribeGroupEvent();
 
         const cgid = this.props.client.assignedChannelGroup();
-        if(cgid === 0) return null;
+        if (cgid === 0) return null;
 
         const channel_group = this.props.client.channelTree.client.groups.findChannelGroup(cgid);
-        if(!channel_group) return null;
+        if (!channel_group) return null;
 
         channel_group.events.on("notify_properties_updated", this.group_updated_callback);
         this.subscribed_group = channel_group;
 
-        if(channel_group.properties.iconid === 0) return null;
-        return <LocalIconRenderer key={"cg-icon"} icon={this.props.client.channelTree.client.fileManager.icons.load_icon(channel_group.properties.iconid)} />;
+        if (channel_group.properties.iconid === 0) return null;
+        return <LocalIconRenderer key={"cg-icon"}
+                                  icon={this.props.client.channelTree.client.fileManager.icons.load_icon(channel_group.properties.iconid)}/>;
     }
 
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesUpdated(event: ClientEvents["notify_properties_updated"]) {
-        if(typeof event.updated_properties.client_servergroups)
+        if (typeof event.updated_properties.client_servergroups)
             this.forceUpdate();
     }
 }
@@ -215,13 +217,14 @@ class ClientIcons extends ReactComponentBase<ClientIconsProperties, {}> {
         const icons = [];
         const talk_power = this.props.client.properties.client_talk_power;
         const needed_talk_power = this.props.client.currentChannel()?.properties.channel_needed_talk_power || 0;
-        if(talk_power !== -1 && needed_talk_power !== 0 && needed_talk_power > talk_power)
-            icons.push(<div key={"muted"} className={"icon icon_talk_power client-input_muted"} />);
+        if (talk_power !== -1 && needed_talk_power !== 0 && needed_talk_power > talk_power)
+            icons.push(<div key={"muted"} className={"icon icon_talk_power client-input_muted"}/>);
 
-        icons.push(<ClientServerGroupIcons key={"sg-icons"} client={this.props.client} />);
-        icons.push(<ClientChannelGroupIcon key={"channel-icons"} client={this.props.client} />);
-        if(this.props.client.properties.client_icon_id !== 0)
-            icons.push(<LocalIconRenderer key={"client-icon"} icon={this.props.client.channelTree.client.fileManager.icons.load_icon(this.props.client.properties.client_icon_id)} />);
+        icons.push(<ClientServerGroupIcons key={"sg-icons"} client={this.props.client}/>);
+        icons.push(<ClientChannelGroupIcon key={"channel-icons"} client={this.props.client}/>);
+        if (this.props.client.properties.client_icon_id !== 0)
+            icons.push(<LocalIconRenderer key={"client-icon"}
+                                          icon={this.props.client.channelTree.client.fileManager.icons.load_icon(this.props.client.properties.client_icon_id)}/>);
 
         return (
             <div className={clientStyle.containerIcons}>
@@ -232,7 +235,7 @@ class ClientIcons extends ReactComponentBase<ClientIconsProperties, {}> {
 
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesUpdated(event: ClientEvents["notify_properties_updated"]) {
-        if(typeof event.updated_properties.client_channel_group_id !== "undefined" || typeof event.updated_properties.client_talk_power !== "undefined" || typeof event.updated_properties.client_icon_id !== "undefined")
+        if (typeof event.updated_properties.client_channel_group_id !== "undefined" || typeof event.updated_properties.client_talk_power !== "undefined" || typeof event.updated_properties.client_icon_id !== "undefined")
             this.forceUpdate();
     }
 }
@@ -268,7 +271,8 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
     }
 
     render() {
-        return <div className={this.classList(clientStyle.clientName, this.props.client instanceof LocalClientEntry && clientStyle.clientNameOwn)}>
+        return <div
+            className={this.classList(clientStyle.clientName, this.props.client instanceof LocalClientEntry && clientStyle.clientNameOwn)}>
             {this.state.group_prefix + this.props.client.clientNickName() + this.state.group_suffix + this.state.away_message}
         </div>
     }
@@ -276,21 +280,21 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
     private updateGroups(state: ClientNameState) {
         let prefix_groups: string[] = [];
         let suffix_groups: string[] = [];
-        for(const group_id of this.props.client.assignedServerGroupIds()) {
+        for (const group_id of this.props.client.assignedServerGroupIds()) {
             const group = this.props.client.channelTree.client.groups.findServerGroup(group_id);
-            if(!group) continue;
+            if (!group) continue;
 
-            if(group.properties.namemode == 1)
+            if (group.properties.namemode == 1)
                 prefix_groups.push(group.name);
-            else if(group.properties.namemode == 2)
+            else if (group.properties.namemode == 2)
                 suffix_groups.push(group.name);
         }
 
         const channel_group = this.props.client.channelTree.client.groups.findChannelGroup(this.props.client.assignedChannelGroup());
-        if(channel_group) {
-            if(channel_group.properties.namemode == 1)
+        if (channel_group) {
+            if (channel_group.properties.namemode == 1)
                 prefix_groups.push(channel_group.name);
-            else if(channel_group.properties.namemode == 2)
+            else if (channel_group.properties.namemode == 2)
                 suffix_groups.splice(0, 0, channel_group.name);
         }
 
@@ -305,16 +309,16 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
     @EventHandler<ClientEvents>("notify_properties_updated")
     private handlePropertiesChanged(event: ClientEvents["notify_properties_updated"]) {
         const updatedState: ClientNameState = {} as any;
-        if(typeof event.updated_properties.client_away !== "undefined" || typeof event.updated_properties.client_away_message !== "undefined") {
+        if (typeof event.updated_properties.client_away !== "undefined" || typeof event.updated_properties.client_away_message !== "undefined") {
             this.updateAwayMessage(updatedState);
         }
-        if(typeof event.updated_properties.client_servergroups !== "undefined" || typeof event.updated_properties.client_channel_group_id !== "undefined") {
+        if (typeof event.updated_properties.client_servergroups !== "undefined" || typeof event.updated_properties.client_channel_group_id !== "undefined") {
             this.updateGroups(updatedState);
         }
 
-        if(Object.keys(updatedState).length > 0)
+        if (Object.keys(updatedState).length > 0)
             this.setState(updatedState);
-        else if(typeof event.updated_properties.client_nickname !== "undefined") {
+        else if (typeof event.updated_properties.client_nickname !== "undefined") {
             this.forceUpdate();
         }
     }
@@ -348,7 +352,7 @@ class ClientNameEdit extends ReactComponentBase<ClientNameEditProps, {}> {
     }
 
     private onKeyPress(event: React.KeyboardEvent) {
-        if(event.key === "Enter") {
+        if (event.key === "Enter") {
             event.preventDefault();
             this.onBlur();
         }
@@ -371,35 +375,38 @@ export interface ClientEntryState {
 export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntryState> {
     shouldComponentUpdate(nextProps: Readonly<ClientEntryProperties>, nextState: Readonly<ClientEntryState>, nextContext: any): boolean {
         return nextState.rename !== this.state.rename ||
-               nextProps.offset !== this.props.offset ||
-               nextProps.client !== this.props.client ||
-               nextProps.depth !== this.props.depth;
+            nextProps.offset !== this.props.offset ||
+            nextProps.client !== this.props.client ||
+            nextProps.depth !== this.props.depth;
     }
 
     render() {
         return (
-            <div className={this.classList(clientStyle.clientEntry, viewStyle.treeEntry, this.props.client.isSelected() && viewStyle.selected)}
-                 style={{ paddingLeft: (this.props.depth * 16 + 2) + "px", top: this.props.offset }}
-                 onDoubleClick={() => this.onDoubleClick()}
-                 onMouseUp={e => this.onMouseUp(e)}
-                 onContextMenu={e => this.onContextMenu(e)}
+            <div
+                className={this.classList(clientStyle.clientEntry, viewStyle.treeEntry, this.props.client.isSelected() && viewStyle.selected)}
+                style={{paddingLeft: (this.props.depth * 16 + 2) + "px", top: this.props.offset}}
+                onDoubleClick={() => this.onDoubleClick()}
+                onMouseUp={e => this.onMouseUp(e)}
+                onContextMenu={e => this.onContextMenu(e)}
             >
-                <UnreadMarker entry={this.props.client} />
-                <ClientSpeakIcon client={this.props.client} />
+                <UnreadMarker entry={this.props.client}/>
+                <ClientSpeakIcon client={this.props.client}/>
                 {this.state.rename ?
-                    <ClientNameEdit key={"rename"} editFinished={name => this.onEditFinished(name)} initialName={this.state.renameInitialName || this.props.client.properties.client_nickname} /> :
-                    [<ClientName key={"name"} client={this.props.client} />, <ClientIcons key={"icons"} client={this.props.client} />] }
+                    <ClientNameEdit key={"rename"} editFinished={name => this.onEditFinished(name)}
+                                    initialName={this.state.renameInitialName || this.props.client.properties.client_nickname}/> :
+                    [<ClientName key={"name"} client={this.props.client}/>,
+                        <ClientIcons key={"icons"} client={this.props.client}/>]}
             </div>
         )
     }
 
     private onDoubleClick() {
         const client = this.props.client;
-        if(client.channelTree.selection.is_multi_select()) return;
+        if (client.channelTree.selection.is_multi_select()) return;
 
-        if(this.props.client instanceof LocalClientEntry) {
+        if (this.props.client instanceof LocalClientEntry) {
             this.props.client.openRename();
-        } else if(this.props.client instanceof MusicClientEntry) {
+        } else if (this.props.client instanceof MusicClientEntry) {
             /* no action defined yet */
         } else {
             this.props.client.open_text_chat();
@@ -407,37 +414,37 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
     }
 
     private onEditFinished(new_name?: string) {
-        if(!(this.props.client instanceof LocalClientEntry))
+        if (!(this.props.client instanceof LocalClientEntry))
             throw "Only local clients could be renamed";
 
-        if(new_name && new_name !== this.state.renameInitialName) {
+        if (new_name && new_name !== this.state.renameInitialName) {
             const client = this.props.client;
             client.renameSelf(new_name).then(result => {
-                if(!result)
-                    this.setState({ rename: true, renameInitialName: new_name }); //TODO: Keep last name?
+                if (!result)
+                    this.setState({rename: true, renameInitialName: new_name}); //TODO: Keep last name?
             });
         }
-        this.setState({ rename: false });
+        this.setState({rename: false});
     }
 
     private onMouseUp(event: React.MouseEvent) {
-        if(event.button !== 0) return; /* only left mouse clicks */
+        if (event.button !== 0) return; /* only left mouse clicks */
         const tree = this.props.client.channelTree;
-        if(tree.isClientMoveActive()) return;
+        if (tree.isClientMoveActive()) return;
 
-        tree.events.fire("action_select_entries", { entries: [this.props.client], mode: "auto" });
+        tree.events.fire("action_select_entries", {entries: [this.props.client], mode: "auto"});
     }
 
     private onContextMenu(event: React.MouseEvent) {
-        if(settings.static(Settings.KEY_DISABLE_CONTEXT_MENU))
+        if (settings.static(Settings.KEY_DISABLE_CONTEXT_MENU))
             return;
 
         event.preventDefault();
         const client = this.props.client;
-        if(client.channelTree.selection.is_multi_select() && client.isSelected()) return;
+        if (client.channelTree.selection.is_multi_select() && client.isSelected()) return;
 
         client.channelTree.events.fire("action_select_entries", {
-            entries: [ client ],
+            entries: [client],
             mode: "exclusive"
         });
         client.showContextMenu(event.pageX, event.pageY);

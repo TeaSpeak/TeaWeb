@@ -1,5 +1,5 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import * as log from "../log";
+import {LogCategory} from "../log";
 import {
     CodeToken, Env, FenceToken, HeadingOpenToken,
     ImageToken,
@@ -10,7 +10,7 @@ import {
     TextToken,
     Token
 } from "remarkable/lib";
-import {escapeBBCode} from "tc-shared/text/bbcode";
+import {escapeBBCode} from "../text/bbcode";
 const { Remarkable } = require("remarkable");
 
 export class MD2BBCodeRenderer {

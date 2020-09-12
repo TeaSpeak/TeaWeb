@@ -1,11 +1,11 @@
-import {CommandHelper} from "tc-shared/connection/CommandHelper";
-import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ServerAddress} from "tc-shared/tree/Server";
-import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
-import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
-import {Registry} from "tc-shared/events";
-import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
+import {CommandHelper} from "../connection/CommandHelper";
+import {HandshakeHandler} from "../connection/HandshakeHandler";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {ServerAddress} from "../tree/Server";
+import {ConnectionHandler, ConnectionState} from "../ConnectionHandler";
+import {AbstractCommandHandlerBoss} from "../connection/AbstractCommandHandler";
+import {Registry} from "../events";
+import {AbstractVoiceConnection} from "../connection/VoiceConnection";
 
 export interface CommandOptions {
     flagset?: string[]; /* default: [] */

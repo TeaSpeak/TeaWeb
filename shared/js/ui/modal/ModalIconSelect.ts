@@ -1,15 +1,15 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import PermissionType from "tc-shared/permission/PermissionType";
-import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {tra, traj} from "tc-shared/i18n/localize";
-import {arrayBufferBase64} from "tc-shared/utils/buffers";
-import * as crc32 from "tc-shared/crypto/crc32";
-import {FileInfo} from "tc-shared/file/FileManager";
-import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import PermissionType from "../../permission/PermissionType";
+import {createErrorModal, createModal} from "../../ui/elements/Modal";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import {tra, traj} from "../../i18n/localize";
+import {arrayBufferBase64} from "../../utils/buffers";
+import * as crc32 from "../../crypto/crc32";
+import {FileInfo} from "../../file/FileManager";
+import {FileTransferState, TransferProvider} from "../../file/Transfer";
+import {ErrorCode} from "../../connection/ErrorCode";
 
 export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: number) => any, selected_icon?: number) {
     selected_icon = selected_icon || 0;
@@ -49,9 +49,9 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
     const update_local_icons = (icons: number[]) => {
         container_icons_local.empty();
 
-        for(const icon_id of icons) {
+        for (const icon_id of icons) {
             const tag = client.fileManager.icons.generateTag(icon_id, {animate: false}).attr('title', "Icon " + icon_id);
-            if(callback_icon) {
+            if (callback_icon) {
                 tag.on('click', event => {
                     container_icons.find(".selected").removeClass("selected");
                     tag.addClass("selected");
@@ -64,7 +64,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
                     callback_icon(icon_id);
                     modal.close();
                 });
-                if(icon_id == selected_icon)
+                if (icon_id == selected_icon)
                     tag.trigger('click');
             }
             tag.appendTo(container_icons_local);
@@ -76,7 +76,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
         container_error.hide();
         container_loading.show();
         const display_remote_error = (error?: string) => {
-            if(typeof(error) === "string") {
+            if (typeof (error) === "string") {
                 container_error.find(".error-message").text(error);
                 container_error.show();
             } else {
@@ -91,23 +91,23 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
             const chunk_size = 50;
             const icon_chunks: FileInfo[][] = [];
             let index = 0;
-            while(icons.length > index) {
+            while (icons.length > index) {
                 icon_chunks.push(icons.slice(index, index + chunk_size));
                 index += chunk_size;
             }
 
             const process_next_chunk = () => {
                 const chunk = icon_chunks.pop_front();
-                if(!chunk) return;
+                if (!chunk) return;
 
-                for(const icon of chunk) {
+                for (const icon of chunk) {
                     const icon_id = parseInt(icon.name.substr("icon_".length));
-                    if(Number.isNaN(icon_id)) {
+                    if (Number.isNaN(icon_id)) {
                         log.warn(LogCategory.GENERAL, tr("Received an unparsable icon within icon list (%o)"), icon);
                         continue;
                     }
                     const tag = client.fileManager.icons.generateTag(icon_id, {animate: false}).attr('title', "Icon " + icon_id);
-                    if(callback_icon || allow_manage) {
+                    if (callback_icon || allow_manage) {
                         tag.on('click', event => {
                             container_icons.find(".selected").removeClass("selected");
                             tag.addClass("selected");
@@ -118,13 +118,13 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
                             button_delete.prop("disabled", !allow_manage);
                         });
                         tag.on('dblclick', event => {
-                            if(!callback_icon)
+                            if (!callback_icon)
                                 return;
 
                             callback_icon(icon_id);
                             modal.close();
                         });
-                        if(icon_id == selected_icon)
+                        if (icon_id == selected_icon)
                             tag.trigger('click');
                     }
                     tag.appendTo(container_icons_remote);
@@ -138,7 +138,7 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
             container_loading.hide();
             container_no_permissions.hide();
         }).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+            if (error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 container_no_permissions.show();
             } else {
                 log.error(LogCategory.GENERAL, tr("Failed to fetch icon list. Error: %o"), error);
@@ -149,19 +149,19 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
     };
 
     button_delete.on('click', event => {
-        if(!selected_icon)
+        if (!selected_icon)
             return;
 
         const selected = modal.htmlTag.find(".selected");
-        if(selected.length != 1)
+        if (selected.length != 1)
             console.warn(tr("UI selected icon length does not equal with 1! (%o)"), selected.length);
 
-        if(selected_icon < 1000) return; /* we cant delete local icons */
+        if (selected_icon < 1000) return; /* we cant delete local icons */
 
         client.fileManager.icons.delete_icon(selected_icon).then(() => {
             selected.detach();
         }).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
+            if (error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
                 return;
             console.warn(tr("Failed to delete icon %d: %o"), selected_icon, error);
 
@@ -177,11 +177,11 @@ export function spawnIconSelect(client: ConnectionHandler, callback_icon?: (id: 
     update_remote_icons();
     modal.htmlTag.find('.button-reload').on('click', () => update_remote_icons());
     button_select.prop("disabled", true).on('click', () => {
-        if(callback_icon) callback_icon(selected_icon);
+        if (callback_icon) callback_icon(selected_icon);
         modal.close();
     });
     modal.htmlTag.find(".button-select-no-icon").on('click', () => {
-        if(callback_icon) callback_icon(0);
+        if (callback_icon) callback_icon(0);
         modal.close();
     });
     modal.open();
@@ -203,7 +203,7 @@ interface UploadingIcon {
     icon_id: string;
 }
 
-function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIcon {
+function handle_icon_upload(file: File, client: ConnectionHandler): UploadingIcon {
     const icon = {} as UploadingIcon;
     icon.file = file;
     icon.upload_state = "unset";
@@ -213,9 +213,9 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
         createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>The given file is too big!", file.name)).open();
         icon.state = "error";
     };
-    if(file.size > 1024 * 1024 * 512) {
+    if (file.size > 1024 * 1024 * 512) {
         file_too_big();
-    } else if((file.size | 0) <= 0) {
+    } else if ((file.size | 0) <= 0) {
         console.error(tr("Failed to load file %s: Your browser does not support file sizes!"), file.name);
         createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Your browser does not support file sizes!", file.name)).open();
         icon.state = "error";
@@ -231,7 +231,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
                     reader.onerror = reject;
                     reader.readAsDataURL(file);
                 });
-            } catch(error) {
+            } catch (error) {
                 console.log("Image failed to load (%o)", error);
                 console.error(tr("Failed to load file %s: Image failed to load"), file.name);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Failed to load image", file.name)).open();
@@ -240,7 +240,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
             }
 
             const result = reader.result as string;
-            if(typeof(result) !== "string") {
+            if (typeof (result) !== "string") {
                 console.error(tr("Failed to load file %s: Result is not an media string (%o)"), file.name, result);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Result is not an media string", file.name)).open();
                 icon.state = "error";
@@ -250,7 +250,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
 
             /* get the CRC32 sum */
             {
-                if(!result.startsWith("data:image/")) {
+                if (!result.startsWith("data:image/")) {
                     console.error(tr("Failed to load file %s: Invalid data media type (%o)"), file.name, result);
                     createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>File is not an image", file.name)).open();
                     icon.state = "error";
@@ -259,7 +259,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
                 const semi = result.indexOf(';');
                 const type = result.substring(11, semi);
                 console.log(tr("Given image has type %s"), type);
-                if(!result.substr(semi + 1).startsWith("base64,")) {
+                if (!result.substr(semi + 1).startsWith("base64,")) {
                     console.error(tr("Failed to load file %s: Mimetype isnt base64 encoded (%o)"), file.name, result.substr(semi + 1));
                     createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.<br>Decoder returned unknown result", file.name)).open();
                     icon.state = "error";
@@ -279,7 +279,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
                     image.onerror = reject;
                     image.src = result;
                 });
-            } catch(error) {
+            } catch (error) {
                 console.log("Image failed to load (%o)", error);
                 console.error(tr("Failed to load file %s: Image failed to load"), file.name);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to upload icon {}.{:br:}Failed to load image", file.name)).open();
@@ -292,16 +292,16 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
                 icon.state = "error";
             };
 
-            if(!result.startsWith("data:image/svg+xml")) {
-                if(image.naturalWidth > 128 && image.naturalHeight > 128) {
+            if (!result.startsWith("data:image/svg+xml")) {
+                if (image.naturalWidth > 128 && image.naturalHeight > 128) {
                     width_error("width and height (max 32px). Given: " + image.naturalWidth + "x" + image.naturalHeight);
                     return;
                 }
-                if(image.naturalWidth > 128) {
+                if (image.naturalWidth > 128) {
                     width_error("width (max 32px)");
                     return;
                 }
-                if(image.naturalHeight > 128) {
+                if (image.naturalHeight > 128) {
                     width_error("height (max 32px)");
                     return;
                 }
@@ -322,7 +322,7 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
                 const message = $.spawn("div").addClass("progress-message");
                 const set_value = value => {
                     indicator.stop(true, false).animate({width: value + "%"}, 250);
-                    if(value === 100)
+                    if (value === 100)
                         setTimeout(() => indicator.removeClass("progress-bar-striped progress-bar-animated"), 900)
                 };
 
@@ -349,14 +349,14 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
             };
 
             const html_tag = $.spawn("div")
-                    .addClass("upload-entry")
-                    .append(container_image)
-                    .append(bar.html_tag);
+                .addClass("upload-entry")
+                .append(container_image)
+                .append(bar.html_tag);
 
             icon.upload_html_tag = html_tag;
 
             let icon_added = false;
-            if(icon.image_element) {
+            if (icon.image_element) {
                 container_image.append(icon.image_element());
                 icon_added = true;
             }
@@ -368,21 +368,21 @@ function handle_icon_upload(file: File, client: ConnectionHandler) : UploadingIc
             return async () => {
                 const time_begin = Date.now();
 
-                if(icon.state === "loading") {
+                if (icon.state === "loading") {
                     bar.set_message(tr("Awaiting local processing"));
                     await icon.loader;
                     // @ts-ignore Could happen because the loader function updates the state
-                    if(icon.state !== "valid") {
+                    if (icon.state !== "valid") {
                         set_error(tr("local processing failed"));
                         icon.upload_state = "error";
                         return;
                     }
-                } else if(icon.state === "error") {
+                } else if (icon.state === "error") {
                     set_error(tr("local processing error"));
                     icon.upload_state = "error";
                     return;
                 }
-                if(!icon_added)
+                if (!icon_added)
                     container_image.append(icon.image_element());
 
                 bar.set_value(25);
@@ -474,11 +474,11 @@ export function spawnIconUpload(client: ConnectionHandler) {
     const add_icon = (icon: UploadingIcon) => {
         icons.push(icon);
         icon.loader.then(e => {
-            if(icon.state === "valid") {
+            if (icon.state === "valid") {
                 const image = icon.image_element();
                 const element = $.spawn("div")
-                                    .addClass("icon-container")
-                                    .append(image);
+                    .addClass("icon-container")
+                    .append(image);
                 container_icons.append(icon.html_tag = element);
 
                 element.on('click', event => {
@@ -494,10 +494,10 @@ export function spawnIconUpload(client: ConnectionHandler) {
         });
     };
     button_delete.on('click', event => {
-        if(!selected_icon)
+        if (!selected_icon)
             return;
         icons = icons.filter(e => e !== selected_icon);
-        if(selected_icon.html_tag)
+        if (selected_icon.html_tag)
             selected_icon.html_tag.detach();
         button_delete.prop("disabled", true);
         update_upload_button();
@@ -505,18 +505,18 @@ export function spawnIconUpload(client: ConnectionHandler) {
 
     button_add.on('click', event => input_file.click());
     input_file.on('change', event => {
-        if(input_file[0].files.length > 0) {
-            for(let index = 0; index < input_file[0].files.length; index++) {
+        if (input_file[0].files.length > 0) {
+            for (let index = 0; index < input_file[0].files.length; index++) {
                 const file = input_file[0].files.item(index);
                 {
                     let duplicate = false;
 
-                    for(const icon of icons)
-                        if(icon.file.name === file.name && icon.file.lastModified === file.lastModified && icon.state !== "error") {
+                    for (const icon of icons)
+                        if (icon.file.name === file.name && icon.file.lastModified === file.lastModified && icon.state !== "error") {
                             duplicate = true;
                             break;
                         }
-                    if(duplicate)
+                    if (duplicate)
                         continue;
                 }
 
@@ -534,17 +534,17 @@ export function spawnIconUpload(client: ConnectionHandler) {
         event.stopPropagation();
         event.preventDefault();
 
-        for(let index = 0; index < event.dataTransfer.files.length; index++) {
+        for (let index = 0; index < event.dataTransfer.files.length; index++) {
             const file = event.dataTransfer.files.item(index);
             {
                 let duplicate = false;
 
-                for(const icon of icons)
-                    if(icon.file === file && icon.state !== "error") {
+                for (const icon of icons)
+                    if (icon.file === file && icon.state !== "error") {
                         duplicate = true;
                         break;
                     }
-                if(duplicate)
+                if (duplicate)
                     continue;
             }
 
@@ -568,7 +568,7 @@ export function spawnIconUpload(client: ConnectionHandler) {
 
         const finish_upload = () => {
             icons = icons.filter(e => {
-                if(e.upload_state === "uploaded") {
+                if (e.upload_state === "uploaded") {
                     e.html_tag.detach();
                     return false;
                 }
@@ -585,13 +585,13 @@ export function spawnIconUpload(client: ConnectionHandler) {
 
 
         const execute_upload = async () => {
-            if(!client || !client.fileManager) {
-              show_critical_error(tr("Invalid client handle"));
-              return;
+            if (!client || !client.fileManager) {
+                show_critical_error(tr("Invalid client handle"));
+                return;
             }
-            if(!client.connected) {
-              show_critical_error(tr("Not connected"));
-              return;
+            if (!client.connected) {
+                show_critical_error(tr("Not connected"));
+                return;
             }
 
             let invoke_count = 0;
@@ -600,28 +600,28 @@ export function spawnIconUpload(client: ConnectionHandler) {
 
             const uploads = icons.filter(e => e.state !== "error");
 
-            const executes: {icon: UploadingIcon, task: () => Promise<void>}[] = [];
-            for(const icon of uploads) {
+            const executes: { icon: UploadingIcon, task: () => Promise<void> }[] = [];
+            for (const icon of uploads) {
                 executes.push({
                     icon: icon,
                     task: icon.upload_icon()
                 });
 
-                if(!icon.upload_html_tag)
+                if (!icon.upload_html_tag)
                     continue; /* TODO: error? */
                 icon.upload_html_tag.appendTo(container_process);
             }
 
             const update_state = () => container_statistics.text(invoke_count + " | " + succeed_count + " | " + failed_count);
-            for(const execute of executes) {
+            for (const execute of executes) {
                 invoke_count++;
                 update_state();
                 try {
                     await execute.task();
-                    if(execute.icon.upload_state !== "uploaded")
+                    if (execute.icon.upload_state !== "uploaded")
                         throw "failed";
                     succeed_count++;
-                } catch(error) {
+                } catch (error) {
                     failed_count++;
                 }
                 update_state();

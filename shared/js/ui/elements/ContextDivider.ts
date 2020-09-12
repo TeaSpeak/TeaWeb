@@ -1,6 +1,6 @@
-import {Settings, settings} from "tc-shared/settings";
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
+import {Settings, settings} from "../../settings";
+import {LogCategory} from "../../log";
+import * as log from "../../log";
 
 declare global {
     interface JQuery<TElement = HTMLElement> {

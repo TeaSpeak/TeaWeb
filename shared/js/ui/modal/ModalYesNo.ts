@@ -1,4 +1,4 @@
-import {BodyCreator, createModal, ModalFunctions} from "tc-shared/ui/elements/Modal";
+import {BodyCreator, createModal, ModalFunctions} from "../../ui/elements/Modal";
 
 export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_: boolean) => any, properties?: {
     text_yes?: string,
@@ -17,14 +17,14 @@ export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_:
     props.header = header;
     props.template_properties.question = ModalFunctions.jqueriefy(body);
 
-    props.closeable = typeof(properties.closeable) !== "boolean" || properties.closeable;
+    props.closeable = typeof (properties.closeable) !== "boolean" || properties.closeable;
     const modal = createModal(props);
     let submited = false;
     const button_yes = modal.htmlTag.find(".button-yes");
     const button_no = modal.htmlTag.find(".button-no");
 
     button_yes.on('click', event => {
-        if(!submited) {
+        if (!submited) {
             submited = true;
             callback(true);
         }
@@ -32,7 +32,7 @@ export function spawnYesNo(header: BodyCreator, body: BodyCreator, callback: (_:
     });
 
     button_no.on('click', event => {
-        if(!submited) {
+        if (!submited) {
             submited = true;
             callback(false);
         }

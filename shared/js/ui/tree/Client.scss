@@ -7,105 +7,105 @@ html:root {
 }
 
 .clientEntry {
-     cursor: pointer;
+    cursor: pointer;
 
-     display: flex;
-     flex-direction: row;
+    display: flex;
+    flex-direction: row;
 
-     align-items: center;
+    align-items: center;
 
-     > div {
-         margin-right: 2px;
-     }
+    > div {
+        margin-right: 2px;
+    }
 
-     .clientName {
-         line-height: 16px;
-         min-width: 2em;
+    .clientName {
+        line-height: 16px;
+        min-width: 2em;
 
-         flex-grow: 0;
-         flex-shrink: 1;
+        flex-grow: 0;
+        flex-shrink: 1;
 
-         padding-right: .25em;
-         color: var(--channel-tree-entry-color);
+        padding-right: .25em;
+        color: var(--channel-tree-entry-color);
 
-         &:not(.edit) {
-             @include text-dotdotdot();
-         }
+        &:not(.edit) {
+            @include text-dotdotdot();
+        }
 
-         &.clientNameOwn {
-             font-weight: bold;
-         }
+        &.clientNameOwn {
+            font-weight: bold;
+        }
 
-         &.edit {
-             width: 100%;
-             font-weight: normal;
+        &.edit {
+            width: 100%;
+            font-weight: normal;
 
-             color: var(--channel-tree-name-edit-color);
-             background-color: var(--channel-tree-name-edit-background);
-             border: 1px solid var(--channel-tree-name-edit-border);
+            color: var(--channel-tree-name-edit-color);
+            background-color: var(--channel-tree-name-edit-background);
+            border: 1px solid var(--channel-tree-name-edit-border);
 
-             overflow-y: hidden;
-             overflow-x: hidden;
-         }
-     }
+            overflow-y: hidden;
+            overflow-x: hidden;
+        }
+    }
 
-     .clientAwayMessage {
-         color: var(--channel-tree-entry-color);
-     }
+    .clientAwayMessage {
+        color: var(--channel-tree-entry-color);
+    }
 
-     .containerIcons {
-         margin-right: 0; /* override from previous thing */
-         height: 100%;
+    .containerIcons {
+        margin-right: 0; /* override from previous thing */
+        height: 100%;
 
-         position: absolute;
-         right: 0;
-         padding-right: 5px;
-         padding-left: 4px;
+        position: absolute;
+        right: 0;
+        padding-right: 5px;
+        padding-left: 4px;
 
-         display: flex;
-         flex-direction: row;
+        display: flex;
+        flex-direction: row;
 
-         align-items: center;
+        align-items: center;
 
-         .containerIconsGroup {
-             display: flex;
-             flex-direction: row;
+        .containerIconsGroup {
+            display: flex;
+            flex-direction: row;
 
-             .containerHroupIcon {
-                 display: flex;
-                 flex-direction: column;
-                 justify-content: center;
-             }
-         }
-     }
+            .containerHroupIcon {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+        }
+    }
 
-     &.selected {
-         &:focus-within {
-             .containerIcons {
-                 background-color: var(--channel-tree-entry-selected); /* overpaint the name change box */
+    &.selected {
+        &:focus-within {
+            .containerIcons {
+                background-color: var(--channel-tree-entry-selected); /* overpaint the name change box */
 
-                 padding-left: 5px;
-                 z-index: 1001; /* show before client name */
+                padding-left: 5px;
+                z-index: 1001; /* show before client name */
 
-                 height: 18px;
-             }
-         }
+                height: 18px;
+            }
+        }
 
-         .clientName {
-             &:focus {
-                 position: absolute;
-                 color: var(--channel-tree-name-edit-color);
+        .clientName {
+            &:focus {
+                position: absolute;
+                color: var(--channel-tree-name-edit-color);
 
-                 padding-top: 1px;
-                 padding-bottom: 1px;
+                padding-top: 1px;
+                padding-bottom: 1px;
 
-                 z-index: 1000;
+                z-index: 1000;
 
-                 margin-right: -10px;
-                 margin-left: 18px;
+                margin-right: -10px;
+                margin-left: 18px;
 
-                 width: 100%;
-             }
-         }
-     }
- }
+                width: 100%;
+            }
+        }
+    }
+}

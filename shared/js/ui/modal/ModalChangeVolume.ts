@@ -1,13 +1,14 @@
 //TODO: Use the max limit!
 
-import {sliderfy} from "tc-shared/ui/elements/Slider";
-import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {ClientEntry} from "tc-shared/tree/Client";
-import * as htmltags from "tc-shared/ui/htmltags";
+import {sliderfy} from "../../ui/elements/Slider";
+import {createModal, Modal} from "../../ui/elements/Modal";
+import {ClientEntry} from "../../tree/Client";
+import * as htmltags from "../../ui/htmltags";
 
 let modal: Modal;
+
 export function spawnChangeVolume(client: ClientEntry, local: boolean, current: number, max: number | undefined, callback: (number) => void) {
-    if(modal) modal.close();
+    if (modal) modal.close();
 
     let new_value: number;
     modal = createModal({
@@ -29,7 +30,7 @@ export function spawnChangeVolume(client: ClientEntry, local: boolean, current: 
                 container_value.html((value == 100 ? "&plusmn;" : value > 100 ? "+" : "-") + number + "%");
 
                 new_value = value / 100;
-                if(local) callback(new_value);
+                if (local) callback(new_value);
             };
             set_value(current * 100);
 
@@ -45,7 +46,7 @@ export function spawnChangeVolume(client: ClientEntry, local: boolean, current: 
             slider_tag.on('change', event => set_value(parseInt(slider_tag.attr("value"))));
 
             tag.find(".button-save").on('click', event => {
-                if(typeof(new_value) !== "undefined") callback(new_value);
+                if (typeof (new_value) !== "undefined") callback(new_value);
                 modal.close();
             });
 

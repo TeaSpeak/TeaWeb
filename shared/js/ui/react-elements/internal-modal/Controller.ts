@@ -1,8 +1,8 @@
-import {Registry} from "tc-shared/events";
+import {Registry} from "../../../events";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import {AbstractModal, ModalController, ModalEvents, ModalOptions, ModalState} from "tc-shared/ui/react-elements/ModalDefinitions";
-import {InternalModalRenderer} from "tc-shared/ui/react-elements/internal-modal/Renderer";
+import {AbstractModal, ModalController, ModalEvents, ModalOptions, ModalState} from "../../../ui/react-elements/ModalDefinitions";
+import {InternalModalRenderer} from "../../../ui/react-elements/internal-modal/Renderer";
 
 export class InternalModalController<InstanceType extends InternalModal = InternalModal> implements ModalController {
     readonly events: Registry<ModalEvents>;

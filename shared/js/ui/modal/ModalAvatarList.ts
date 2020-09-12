@@ -1,15 +1,15 @@
-import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import {LogCategory} from "tc-shared/log";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {base64_encode_ab} from "tc-shared/utils/buffers";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import {ClientEntry} from "tc-shared/tree/Client";
-import * as log from "tc-shared/log";
+import {createErrorModal, createModal} from "../../ui/elements/Modal";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {base64_encode_ab} from "../../utils/buffers";
+import {spawnYesNo} from "../../ui/modal/ModalYesNo";
+import {ClientEntry} from "../../tree/Client";
 import * as moment from "moment";
 
 const avatar_to_uid = (id: string) => {
     const buffer = new Uint8Array(id.length / 2);
-    for(let index = 0; index < id.length; index += 2) {
+    for (let index = 0; index < id.length; index += 2) {
         const upper_nibble = id.charCodeAt(index) - 97;
         const lower_nibble = id.charCodeAt(index + 1) - 97;
         buffer[index / 2] = (upper_nibble << 4) | lower_nibble;
@@ -18,7 +18,7 @@ const avatar_to_uid = (id: string) => {
 };
 
 export const human_file_size = (size: number) => {
-    if(size < 1000)
+    if (size < 1000)
         return size + "B";
     const exp = Math.floor(Math.log2(size) / 10);
     return (size / Math.pow(1024, exp)).toFixed(2) + 'KMGTPE'.charAt(exp - 1) + "iB";
@@ -48,7 +48,7 @@ export function spawnAvatarList(client: ConnectionHandler) {
     const set_selected_avatar = (unique_id: string, avatar_id: string, size: number) => {
         button_download.prop("disabled", true);
         callback_download = undefined;
-        if(!unique_id) {
+        if (!unique_id) {
             overlay_no_user.show();
             return;
         }
@@ -93,7 +93,7 @@ export function spawnAvatarList(client: ConnectionHandler) {
 
         callback_delete = () => {
             spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this avatar?"), result => {
-                if(result) {
+                if (result) {
                     createErrorModal(tr("Not implemented"), tr("Avatar delete hasn't implemented yet")).open();
                     //TODO Implement avatar delete
                 }
@@ -108,8 +108,8 @@ export function spawnAvatarList(client: ConnectionHandler) {
         list_entries.empty();
 
         client.fileManager.requestFileList("/").then(files => {
-            const username_resolve: {[unique_id: string]:((name:string) => any)[]} = {};
-            for(const entry of files) {
+            const username_resolve: { [unique_id: string]: ((name: string) => any)[] } = {};
+            for (const entry of files) {
                 const avatar_id = entry.name.substr('avatar_'.length);
                 const unique_id = avatar_to_uid(avatar_id);
 
@@ -122,7 +122,7 @@ export function spawnAvatarList(client: ConnectionHandler) {
 
                 (username_resolve[unique_id] || (username_resolve[unique_id] = [])).push(name => {
                     const tag_username = tag.find(".column-username").empty();
-                    if(name) {
+                    if (name) {
                         tag_username.append(ClientEntry.chatTag(0, name, unique_id, false));
                     } else {
                         tag_username.text("unknown");
@@ -138,15 +138,15 @@ export function spawnAvatarList(client: ConnectionHandler) {
                 });
             }
 
-            if(container_list.hasScrollBar())
+            if (container_list.hasScrollBar())
                 container_list.addClass("scrollbar");
 
             client.serverConnection.command_helper.getInfoFromUniqueId(...Object.keys(username_resolve)).then(result => {
-                for(const info of result) {
+                for (const info of result) {
                     username_resolve[info.clientUniqueId].forEach(e => e(info.clientNickname));
                     delete username_resolve[info.clientUniqueId];
                 }
-                for(const uid of Object.keys(username_resolve)) {
+                for (const uid of Object.keys(username_resolve)) {
                     (username_resolve[uid] || []).forEach(e => e(undefined));
                 }
             }).catch(error => {
@@ -160,8 +160,10 @@ export function spawnAvatarList(client: ConnectionHandler) {
         });
     };
 
-    button_download.on('click', () => (callback_download || (() => {}))());
-    button_delete.on('click', () => (callback_delete || (() => {}))());
+    button_download.on('click', () => (callback_download || (() => {
+    }))());
+    button_delete.on('click', () => (callback_delete || (() => {
+    }))());
     setTimeout(() => update_avatar_list(), 250);
     modal.open();
 }

@@ -157,18 +157,18 @@ export function spawnQueryManage(client: ConnectionHandler) {
  */
 
 //tmpl_query_manager
-import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {CommandResult, QueryListEntry} from "tc-shared/connection/ServerConnectionDeclaration";
-import {SingleCommandHandler} from "tc-shared/connection/ConnectionBase";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import {LogCategory} from "tc-shared/log";
-import PermissionType from "tc-shared/permission/PermissionType";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import * as log from "tc-shared/log";
-import {spawnQueryCreate, spawnQueryCreated} from "tc-shared/ui/modal/ModalQuery";
-import {formatMessage} from "tc-shared/ui/frames/chat";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "../../ui/elements/Modal";
+import {CommandResult, QueryListEntry} from "../../connection/ServerConnectionDeclaration";
+import {SingleCommandHandler} from "../../connection/ConnectionBase";
+import {copy_to_clipboard} from "../../utils/helpers";
+import {spawnYesNo} from "../../ui/modal/ModalYesNo";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import PermissionType from "../../permission/PermissionType";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {spawnQueryCreate, spawnQueryCreated} from "../../ui/modal/ModalQuery";
+import {formatMessage} from "../../ui/frames/chat";
+import {ErrorCode} from "../../connection/ErrorCode";
 
 export function spawnQueryManage(client: ConnectionHandler) {
     let modal: Modal;
@@ -210,7 +210,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
             button_create.prop('disabled', !permission_create);
 
             const set_error = (error: string | undefined) => {
-                if(typeof(error) === "string")
+                if (typeof (error) === "string")
                     container_list_error.text(error).show();
                 else
                     container_list_error.hide();
@@ -228,12 +228,12 @@ export function spawnQueryManage(client: ConnectionHandler) {
                     current_server = server_id;
 
                     client.serverConnection.command_helper.requestQueryList(server_id).then(result => {
-                        if(!result || !result.queries.length) {
+                        if (!result || !result.queries.length) {
                             container_list_empty.text(tr("No queries available"));
                             return;
                         }
 
-                        for(const entry of result.queries) {
+                        for (const entry of result.queries) {
                             const tag = $.spawn("div").addClass("entry").text(entry.username + " (" + entry.unique_id + ")");
                             tag.on('click', event => {
                                 container_list.find(".selected").removeClass("selected");
@@ -241,11 +241,11 @@ export function spawnQueryManage(client: ConnectionHandler) {
                                 set_selected(entry, false);
                             });
                             container_list.append(tag);
-                            if(entry.username === selected_entry) tag.trigger('click');
+                            if (entry.username === selected_entry) tag.trigger('click');
 
                             const text_mesh = (entry.username + " " + entry.unique_id + " " + entry.bounded_server).toLowerCase();
                             filter_callbacks.push(text => {
-                                if(typeof(text) === "undefined" || text_mesh.indexOf(text) != -1) {
+                                if (typeof (text) === "undefined" || text_mesh.indexOf(text) != -1) {
                                     tag.show();
                                     return true;
                                 } else {
@@ -260,7 +260,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
                         button_update.prop('disabled', false);
                     }).catch(error => {
                         button_update.prop('disabled', false);
-                        if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                        if (error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                             set_error(tr("No permissions"));
                             return;
                         }
@@ -275,10 +275,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
             };
 
             const set_selected = (entry: QueryListEntry | undefined, force: boolean) => {
-                if(entry === selected_query && !force) return;
+                if (entry === selected_query && !force) return;
                 selected_query = entry;
 
-                if(!selected_query) {
+                if (!selected_query) {
                     detail_name.text("-");
                     detail_unique_id.text("-");
                     detail_bound_server.text("-");
@@ -289,16 +289,16 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 } else {
                     detail_name.text(selected_query.username);
                     detail_unique_id.text(selected_query.unique_id);
-                    if(selected_query.bounded_server == 0)
+                    if (selected_query.bounded_server == 0)
                         detail_bound_server.text(tr("On the instance"));
-                    else if(selected_query.bounded_server === current_server)
+                    else if (selected_query.bounded_server === current_server)
                         detail_bound_server.text(tr("On the current server"));
                     else
                         detail_bound_server.text(selected_query.bounded_server.toString());
 
                     button_delete.prop('disabled', !permission_delete && !(selected_query.unique_id === client.getClient().properties.client_unique_identifier && permission_delete_own));
                     button_rename.prop('disabled', !permission_rename && !(selected_query.unique_id === client.getClient().properties.client_unique_identifier && permission_rename_own));
-                    if(selected_query.bounded_server != 0) {
+                    if (selected_query.bounded_server != 0) {
                         button_change_password.prop('disabled', !permission_password && !(selected_query.unique_id === client.getClient().properties.client_unique_identifier && permission_password_own));
                     } else {
                         button_change_password.prop('disabled', !permission_password_global && !(selected_query.unique_id === client.getClient().properties.client_unique_identifier && permission_password_own));
@@ -308,11 +308,11 @@ export function spawnQueryManage(client: ConnectionHandler) {
 
             const update_filter = () => {
                 let value = input_filter.val() as string;
-                if(!value) value = undefined;
+                if (!value) value = undefined;
                 else value = value.toLowerCase();
 
                 const shown = filter_callbacks.filter(e => e(value)).length;
-                if(shown > 0) {
+                if (shown > 0) {
                     container_list_empty.hide();
                 } else {
                     container_list_empty.text(tr("No accounts found")).show();
@@ -323,7 +323,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
             /* all buttons */
             {
                 detail_unique_id_copy.on('click', event => {
-                    if(!selected_query) return;
+                    if (!selected_query) return;
 
                     copy_to_clipboard(selected_query.unique_id);
                     createInfoModal(tr("Unique ID copied"), tr("The unique id has been successfully copied to your clipboard.")).open();
@@ -334,17 +334,17 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 });
 
                 button_delete.on('click', event => {
-                    if(!selected_query) return;
+                    if (!selected_query) return;
 
                     spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this account?"), result => {
-                        if(result) {
+                        if (result) {
                             client.serverConnection.send_command("querydelete", {
                                 client_login_name: selected_query.username
                             }).then(() => {
                                 createInfoModal(tr("Account successfully deleted"), tr("The query account has been successfully deleted!")).open();
                                 update_list(undefined);
                             }).catch(error => {
-                                if(error instanceof CommandResult)
+                                if (error instanceof CommandResult)
                                     error = error.extra_message || error.message;
                                 createErrorModal(tr("Unable to delete account"), formatMessage(tr("Failed to delete account{:br:}Message: {}"), error)).open();
                             });
@@ -353,10 +353,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 });
 
                 button_rename.on('click', () => {
-                    if(!selected_query) return;
+                    if (!selected_query) return;
 
                     createInputModal(tr("Change account name"), tr("Enter the new name for the login:"), text => text.length >= 3, result => {
-                        if(result) {
+                        if (result) {
                             client.serverConnection.send_command("queryrename", {
                                 client_login_name: selected_query.username,
                                 client_new_login_name: result
@@ -364,7 +364,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
                                 createInfoModal(tr("Account successfully renamed"), tr("The query account has been renamed!")).open();
                                 update_list(result as string);
                             }).catch(error => {
-                                if(error instanceof CommandResult)
+                                if (error instanceof CommandResult)
                                     error = error.extra_message || error.message;
                                 createErrorModal(tr("Unable to rename account"), formatMessage(tr("Failed to rename account{:br:}Message: {}"), error)).open();
                             });
@@ -373,10 +373,10 @@ export function spawnQueryManage(client: ConnectionHandler) {
                 });
 
                 button_change_password.on('click', () => {
-                    if(!selected_query) return;
+                    if (!selected_query) return;
 
                     createInputModal(tr("Change account's password"), tr("Enter a new password (leave blank for auto generation):"), text => true, result => {
-                        if(result !== false) {
+                        if (result !== false) {
                             const single_handler: SingleCommandHandler = {
                                 command: "notifyquerypasswordchanges",
                                 function: command => {
@@ -395,7 +395,7 @@ export function spawnQueryManage(client: ConnectionHandler) {
                                 client_login_password: result
                             }).catch(error => {
                                 client.serverConnection.command_handler_boss().remove_single_handler(single_handler);
-                                if(error instanceof CommandResult)
+                                if (error instanceof CommandResult)
                                     error = error.extra_message || error.message;
                                 createErrorModal(tr("Unable to change password"), formatMessage(tr("Failed to change password{:br:}Message: {}"), error)).open();
                             });

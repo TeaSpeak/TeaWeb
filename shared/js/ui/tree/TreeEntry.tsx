@@ -12,9 +12,9 @@ export interface UnreadMarkerProperties {
 @ReactEventHandler<UnreadMarker>(e => e.props.entry.events)
 export class UnreadMarker extends ReactComponentBase<UnreadMarkerProperties, {}> {
     render() {
-        if(!this.props.entry.isUnread())
+        if (!this.props.entry.isUnread())
             return null;
-        return <div className={viewStyle.markerUnread} />;
+        return <div className={viewStyle.markerUnread}/>;
     }
 
     @EventHandler<ChannelTreeEntryEvents>("notify_unread_state_change")
@@ -23,4 +23,5 @@ export class UnreadMarker extends ReactComponentBase<UnreadMarkerProperties, {}>
     }
 }
 
-export class TreeEntry<Props, State> extends ReactComponentBase<Props, State> { }
+export class TreeEntry<Props, State> extends ReactComponentBase<Props, State> {
+}

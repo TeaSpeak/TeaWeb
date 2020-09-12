@@ -1,13 +1,13 @@
-import * as log from "tc-shared/log";
-import {LogCategory, logError, logWarn} from "tc-shared/log";
-import {AbstractInput, FilterMode} from "tc-shared/voice/RecorderBase";
-import {KeyDescriptor, KeyHook} from "tc-shared/PPTListener";
-import {Settings, settings} from "tc-shared/settings";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import * as log from "../log";
+import {LogCategory, logError, logWarn} from "../log";
+import {AbstractInput, FilterMode} from "../voice/RecorderBase";
+import {KeyDescriptor, KeyHook} from "../PPTListener";
+import {Settings, settings} from "../settings";
+import {ConnectionHandler} from "../ConnectionHandler";
 import * as aplayer from "tc-backend/audio/player";
 import * as ppt from "tc-backend/ppt";
-import {getRecorderBackend, IDevice} from "tc-shared/audio/recorder";
-import {FilterType, StateFilter, ThresholdFilter} from "tc-shared/voice/Filter";
+import {getRecorderBackend, IDevice} from "../audio/recorder";
+import {FilterType, StateFilter, ThresholdFilter} from "../voice/Filter";
 
 export type VadType = "threshold" | "push_to_talk" | "active";
 export interface RecorderProfileConfig {

@@ -1,4 +1,4 @@
-import {ChangeLog} from "tc-shared/update/ChangeLog";
+import {ChangeLog} from "../update/ChangeLog";
 
 export interface Updater {
     getChangeLog() : ChangeLog;

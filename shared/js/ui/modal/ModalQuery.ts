@@ -1,7 +1,7 @@
-import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {SingleCommandHandler} from "tc-shared/connection/ConnectionBase";
+import {createErrorModal, createModal} from "../../ui/elements/Modal";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {SingleCommandHandler} from "../../connection/ConnectionBase";
 
 export function spawnQueryCreate(connection: ConnectionHandler, callback_created?: (user, pass) => any) {
     let modal;
@@ -14,7 +14,7 @@ export function spawnQueryCreate(connection: ConnectionHandler, callback_created
             template.find(".button-close").on('click', event => modal.close());
             template.find(".button-create").on('click', event => {
                 const name = template.find(".input-name").val() as string;
-                    if(name.length < 3 || name.length > 64) {
+                if (name.length < 3 || name.length > 64) {
                     createErrorModal(tr("Invalid username"), tr("Please enter a valid name!")).open();
                     return;
                 }
@@ -28,7 +28,7 @@ export function spawnQueryCreate(connection: ConnectionHandler, callback_created
                             password: json.client_login_password
                         }, true);
 
-                        if(callback_created)
+                        if (callback_created)
                             callback_created(name, json.client_login_password);
                         return true;
                     },
@@ -38,7 +38,7 @@ export function spawnQueryCreate(connection: ConnectionHandler, callback_created
                 connection.serverConnection.send_command("querycreate", {
                     client_login_name: name
                 }).catch(error => {
-                    if(error instanceof CommandResult)
+                    if (error instanceof CommandResult)
                         error = error.extra_message || error.message;
                     createErrorModal(tr("Unable to create account"), tr("Failed to create account<br>Message: ") + error).open();
                 }).then(() => connection.serverConnection.command_handler_boss().remove_single_handler(single_handler));

@@ -4,10 +4,7 @@ import {FileType} from "tc-shared/file/FileManager";
 import {Registry} from "tc-shared/events";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {FileBrowser, NavigationBar} from "tc-shared/ui/modal/transfer/FileBrowser";
-import {
-    TransferInfo,
-    TransferInfoEvents
-} from "tc-shared/ui/modal/transfer/TransferInfo";
+import {TransferInfo, TransferInfoEvents} from "tc-shared/ui/modal/transfer/TransferInfo";
 import {initializeRemoteFileBrowserController} from "tc-shared/ui/modal/transfer/RemoteFileBrowserController";
 import {ChannelEntry} from "tc-shared/ui/channel";
 import {initializeTransferInfoController} from "tc-shared/ui/modal/transfer/TransferInfoController";
@@ -169,7 +166,6 @@ export interface FileBrowserEvents {
     }
 
 
-
     notify_modal_closed: {},
     notify_drag_ended: {},
 
@@ -200,7 +196,7 @@ class FileTransferModal extends InternalModal {
 
     protected onInitialize() {
         const path = this.defaultChannelId ? "/" + channelPathPrefix + this.defaultChannelId + "/" : "/";
-        this.remoteBrowseEvents.fire("action_navigate_to", { path: path });
+        this.remoteBrowseEvents.fire("action_navigate_to", {path: path});
     }
 
     protected onDestroy() {
@@ -215,9 +211,9 @@ class FileTransferModal extends InternalModal {
     renderBody() {
         const path = this.defaultChannelId ? "/" + channelPathPrefix + this.defaultChannelId + "/" : "/";
         return <div className={cssStyle.container}>
-            <NavigationBar events={this.remoteBrowseEvents} currentPath={path} />
-            <FileBrowser events={this.remoteBrowseEvents} currentPath={path} />
-            <TransferInfo events={this.transferInfoEvents} />
+            <NavigationBar events={this.remoteBrowseEvents} currentPath={path}/>
+            <FileBrowser events={this.remoteBrowseEvents} currentPath={path}/>
+            <TransferInfo events={this.transferInfoEvents}/>
         </div>
     }
 }

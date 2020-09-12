@@ -225,7 +225,7 @@
                 color: #245184;
 
                 cursor: pointer;
-                
+
                 top: 0;
                 right: .5em;
 
@@ -250,16 +250,16 @@
 
 @media all and (max-width: 40em) {
     .container .logo {
-        display: none!important;
+        display: none !important;
     }
 
     .container .text {
         .subtitleShort {
-            display: block!important;
+            display: block !important;
         }
 
         .subtitleLong {
-            display: none!important;;
+            display: none !important;;
         }
 
         p br {

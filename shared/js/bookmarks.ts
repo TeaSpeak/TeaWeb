@@ -1,13 +1,13 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {guid} from "tc-shared/crypto/uid";
-import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {default_profile, find_profile} from "tc-shared/profiles/ConnectionProfile";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
+import * as log from "./log";
+import {LogCategory} from "./log";
+import {guid} from "./crypto/uid";
+import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements/Modal";
+import {default_profile, find_profile} from "./profiles/ConnectionProfile";
+import {server_connections} from "./ui/frames/connection_handlers";
+import {spawnConnectModal} from "./ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
-import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {control_bar_instance} from "./ui/frames/control-bar";
+import {ConnectionHandler} from "./ConnectionHandler";
 
 export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
     const profile = find_profile(mark.connect_profile) || default_profile();

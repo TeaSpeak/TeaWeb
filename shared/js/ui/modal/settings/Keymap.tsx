@@ -3,6 +3,7 @@ import {KeyDescriptor} from "tc-shared/PPTListener";
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import * as React from "react";
+import {useRef} from "react";
 import {Button} from "tc-shared/ui/react-elements/Button";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {KeyTypes, TypeCategories} from "tc-shared/KeyControl";
@@ -12,7 +13,6 @@ import {createErrorModal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import * as keycontrol from "./../../../KeyControl";
 import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
-import {useRef} from "react";
 
 const cssStyle = require("./Keymap.scss");
 
@@ -62,7 +62,7 @@ interface KeyActionEntryProperties {
 
 @ReactEventHandler(e => e.props.eventRegistry)
 class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyActionEntryState> {
-    protected defaultState() : KeyActionEntryState {
+    protected defaultState(): KeyActionEntryState {
         return {
             assignedKey: undefined,
             selected: false,
@@ -71,21 +71,25 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
     }
 
     componentDidMount(): void {
-        this.props.eventRegistry.fire("query_keymap", { action: this.props.action, query_type: "general" });
+        this.props.eventRegistry.fire("query_keymap", {action: this.props.action, query_type: "general"});
     }
 
     render() {
         let rightItem;
-        if(this.state.state === "loading") {
-            rightItem = <div key={"status-loading"} className={cssStyle.status}><Translatable>loading...</Translatable></div>;
-        } else if(this.state.state === "applying") {
-            rightItem = <div key={"status-applying"} className={cssStyle.status}><Translatable>applying...</Translatable></div>;
-        } else if(this.state.state === "loaded") {
+        if (this.state.state === "loading") {
+            rightItem =
+                <div key={"status-loading"} className={cssStyle.status}><Translatable>loading...</Translatable></div>;
+        } else if (this.state.state === "applying") {
+            rightItem =
+                <div key={"status-applying"} className={cssStyle.status}><Translatable>applying...</Translatable></div>;
+        } else if (this.state.state === "loaded") {
             rightItem = null;
-            if(this.state.assignedKey)
+            if (this.state.assignedKey)
                 rightItem = <div className={cssStyle.key}>{ppt.key_description(this.state.assignedKey)}</div>;
         } else {
-            rightItem = <div key={"status-error"} className={this.classList(cssStyle.status, cssStyle.error)}><Translatable trIgnore={true}>{this.state.error || "unknown error"}</Translatable></div>;
+            rightItem =
+                <div key={"status-error"} className={this.classList(cssStyle.status, cssStyle.error)}><Translatable
+                    trIgnore={true}>{this.state.error || "unknown error"}</Translatable></div>;
         }
         return (
             <div
@@ -104,14 +108,14 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
     }
 
     private onClick() {
-        this.props.eventRegistry.fire("set_selected_action", { action: this.props.action });
+        this.props.eventRegistry.fire("set_selected_action", {action: this.props.action});
     }
 
     private onDoubleClick() {
         spawnKeySelect(key => {
-            if(!key) return;
+            if (!key) return;
 
-            this.props.eventRegistry.fire("set_keymap", { action: this.props.action, key: key });
+            this.props.eventRegistry.fire("set_keymap", {action: this.props.action, key: key});
         });
     }
 
@@ -127,7 +131,7 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
             type: MenuEntryType.ENTRY,
             name: tr("Remove key"),
             icon_class: "client-delete",
-            callback: () => this.props.eventRegistry.fire("set_keymap", { action: this.props.action, key: undefined }),
+            callback: () => this.props.eventRegistry.fire("set_keymap", {action: this.props.action, key: undefined}),
             visible: !!this.state.assignedKey
         });
     }
@@ -141,8 +145,8 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
 
     @EventHandler<KeyMapEvents>("query_keymap")
     private handleQueryKeymap(event: KeyMapEvents["query_keymap"]) {
-        if(event.action !== this.props.action) return;
-        if(event.query_type !== "general") return;
+        if (event.action !== this.props.action) return;
+        if (event.query_type !== "general") return;
 
         this.setState({
             state: "loading"
@@ -151,9 +155,9 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
 
     @EventHandler<KeyMapEvents>("query_keymap_result")
     private handleQueryKeymapResult(event: KeyMapEvents["query_keymap_result"]) {
-        if(event.action !== this.props.action) return;
+        if (event.action !== this.props.action) return;
 
-        if(event.status === "success") {
+        if (event.status === "success") {
             this.setState({
                 state: "loaded",
                 assignedKey: event.key
@@ -168,22 +172,22 @@ class KeyActionEntry extends ReactComponentBase<KeyActionEntryProperties, KeyAct
 
     @EventHandler<KeyMapEvents>("set_keymap")
     private handleSetKeymap(event: KeyMapEvents["set_keymap"]) {
-        if(event.action !== this.props.action) return;
+        if (event.action !== this.props.action) return;
 
-        this.setState({ state: "applying" });
+        this.setState({state: "applying"});
     }
 
     @EventHandler<KeyMapEvents>("set_keymap_result")
     private handleSetKeymapResult(event: KeyMapEvents["set_keymap_result"]) {
-        if(event.action !== this.props.action) return;
+        if (event.action !== this.props.action) return;
 
-        if(event.status === "success") {
+        if (event.status === "success") {
             this.setState({
                 state: "loaded",
                 assignedKey: event.key
             });
         } else {
-            this.setState({ state: "loaded" });
+            this.setState({state: "loaded"});
             createErrorModal(tr("Failed to change key"), tra("Failed to change key for action \"{}\":{:br:}{}", this.props.action, event.status === "timeout" ? tr("timeout") : event.error));
         }
     }
@@ -197,18 +201,20 @@ interface KeyActionGroupProperties {
 
 class KeyActionGroup extends ReactComponentBase<KeyActionGroupProperties, { collapsed: boolean }> {
     protected defaultState(): { collapsed: boolean } {
-        return { collapsed: false }
+        return {collapsed: false}
     }
 
     render() {
         const result = [];
-        result.push(<div key={"category-" + this.props.id} className={this.classList(cssStyle.row, cssStyle.category)} onClick={() => this.toggleCollapsed()}>
-            <div className={this.classList("arrow", this.state.collapsed ? "right" : "down")} />
+        result.push(<div key={"category-" + this.props.id} className={this.classList(cssStyle.row, cssStyle.category)}
+                         onClick={() => this.toggleCollapsed()}>
+            <div className={this.classList("arrow", this.state.collapsed ? "right" : "down")}/>
             <a><Translatable trIgnore={true}>{this.props.name}</Translatable></a>
         </div>);
 
         result.push(...Object.keys(KeyTypes).filter(e => KeyTypes[e].category === this.props.id).map(e => (
-            <KeyActionEntry hidden={this.state.collapsed} key={e} action={e} icon={KeyTypes[e].icon} description={KeyTypes[e].description} eventRegistry={this.props.eventRegistry} />
+            <KeyActionEntry hidden={this.state.collapsed} key={e} action={e} icon={KeyTypes[e].icon}
+                            description={KeyTypes[e].description} eventRegistry={this.props.eventRegistry}/>
         )));
         return result;
     }
@@ -232,8 +238,9 @@ class KeyActionList extends ReactComponentBase<KeyActionListProperties, {}> {
     render() {
         const categories = [];
 
-        for(const category of Object.keys(TypeCategories)) {
-            categories.push(<KeyActionGroup eventRegistry={this.props.eventRegistry} key={category} id={category} name={TypeCategories[category].name} />)
+        for (const category of Object.keys(TypeCategories)) {
+            categories.push(<KeyActionGroup eventRegistry={this.props.eventRegistry} key={category} id={category}
+                                            name={TypeCategories[category].name}/>)
         }
 
         return (
@@ -263,7 +270,8 @@ class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEven
     render() {
         return (
             <div className={cssStyle.buttons}>
-                <Button color={"red"} disabled={!this.state.active_action || this.state.loading || !this.state.has_key} onClick={() => this.onButtonClick()}>
+                <Button color={"red"} disabled={!this.state.active_action || this.state.loading || !this.state.has_key}
+                        onClick={() => this.onButtonClick()}>
                     <Translatable>Clear Key</Translatable>
                 </Button>
             </div>
@@ -276,7 +284,7 @@ class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEven
             active_action: event.action,
             loading: true
         }, () => {
-            this.props.event_registry.fire("query_keymap", { action: event.action, query_type: "query-selected" });
+            this.props.event_registry.fire("query_keymap", {action: event.action, query_type: "query-selected"});
         });
     }
 
@@ -289,14 +297,14 @@ class ButtonBar extends ReactComponentBase<{ event_registry: Registry<KeyMapEven
     }
 
     private onButtonClick() {
-        this.props.event_registry.fire("set_keymap", { action: this.state.active_action, key: undefined });
+        this.props.event_registry.fire("set_keymap", {action: this.state.active_action, key: undefined});
     }
 }
 
 export const KeyMapSettings = () => {
     const events = useRef<Registry<KeyMapEvents>>(undefined);
 
-    if(events.current === undefined) {
+    if (events.current === undefined) {
         events.current = new Registry<KeyMapEvents>();
         initialize_timeouts(events.current);
         initialize_controller(events.current);
@@ -307,8 +315,8 @@ export const KeyMapSettings = () => {
             <a><Translatable>Keymap</Translatable></a>
         </div>
         <div key={"body"} className={cssStyle.containerList}>
-            <KeyActionList eventRegistry={events.current} />
-            <ButtonBar event_registry={events.current} />
+            <KeyActionList eventRegistry={events.current}/>
+            <ButtonBar event_registry={events.current}/>
         </div>
     </>);
 };
@@ -320,7 +328,7 @@ function initialize_timeouts(event_registry: Registry<KeyMapEvents>) {
         event_registry.on("query_keymap", event => {
             clearTimeout(timeouts[event.action]);
             timeouts[event.action] = setTimeout(() => {
-                event_registry.fire("query_keymap_result", { action: event.action, status: "timeout" });
+                event_registry.fire("query_keymap_result", {action: event.action, status: "timeout"});
             }, 5000);
         });
         event_registry.on("query_keymap_result", event => {
@@ -335,7 +343,7 @@ function initialize_timeouts(event_registry: Registry<KeyMapEvents>) {
         event_registry.on("set_keymap", event => {
             clearTimeout(timeouts[event.action]);
             timeouts[event.action] = setTimeout(() => {
-                event_registry.fire("set_keymap_result", { action: event.action, status: "timeout" });
+                event_registry.fire("set_keymap_result", {action: event.action, status: "timeout"});
             }, 5000);
         });
 
@@ -358,10 +366,14 @@ function initialize_controller(event_registry: Registry<KeyMapEvents>) {
     event_registry.on("set_keymap", event => {
         try {
             keycontrol.set_key(event.action, event.key);
-            event_registry.fire_async("set_keymap_result", { status: "success", action: event.action, key: event.key });
+            event_registry.fire_async("set_keymap_result", {status: "success", action: event.action, key: event.key});
         } catch (error) {
             console.warn("Failed to change key for action %s: %o", event.action, error);
-            event_registry.fire_async("set_keymap_result", { status: "error", action: event.action, error: error instanceof Error ? error.message : error?.toString() });
+            event_registry.fire_async("set_keymap_result", {
+                status: "error",
+                action: event.action,
+                error: error instanceof Error ? error.message : error?.toString()
+            });
         }
     })
 }

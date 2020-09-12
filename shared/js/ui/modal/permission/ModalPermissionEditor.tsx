@@ -37,13 +37,19 @@ import {ErrorCode} from "tc-shared/connection/ErrorCode";
 const cssStyle = require("./ModalPermissionEditor.scss");
 
 export type PermissionEditorTab = "groups-server" | "groups-channel" | "channel" | "client" | "client-channel";
-export type PermissionEditorSubject = "groups-server" | "groups-channel" | "channel" | "client" | "client-channel" | "none";
-export const PermissionTabName: {[T in PermissionEditorTab]: { name: string, translated: string }} = {
-    "groups-server": { name: "Server Groups", translated: tr("Server Groups") },
-    "groups-channel": { name: "Channel Groups", translated: tr("Channel Groups") },
-    "channel":  { name: "Channel Permissions", translated: tr("Channel Permissions") },
-    "client":  { name: "Client Permissions", translated: tr("Client Permissions") },
-    "client-channel":  { name: "Client Channel Permissions", translated: tr("Client Channel Permissions") },
+export type PermissionEditorSubject =
+    "groups-server"
+    | "groups-channel"
+    | "channel"
+    | "client"
+    | "client-channel"
+    | "none";
+export const PermissionTabName: { [T in PermissionEditorTab]: { name: string, translated: string } } = {
+    "groups-server": {name: "Server Groups", translated: tr("Server Groups")},
+    "groups-channel": {name: "Channel Groups", translated: tr("Channel Groups")},
+    "channel": {name: "Channel Permissions", translated: tr("Channel Permissions")},
+    "client": {name: "Client Permissions", translated: tr("Client Permissions")},
+    "client-channel": {name: "Client Channel Permissions", translated: tr("Client Channel Permissions")},
 };
 
 export type GroupProperties = {
@@ -233,8 +239,9 @@ export interface PermissionModalEvents {
 
     notify_destroy: {}
 }
+
 const ActiveTabInfo = (props: { events: Registry<PermissionModalEvents> }) => {
-    const [ activeTab, setActiveTab ] = useState<PermissionEditorTab>("groups-server");
+    const [activeTab, setActiveTab] = useState<PermissionEditorTab>("groups-server");
     props.events.reactUse("action_activate_tab", event => setActiveTab(event.tab));
 
     return <div className={cssStyle.header + " " + cssStyle.activeTabInfo}>
@@ -247,11 +254,12 @@ const ActiveTabInfo = (props: { events: Registry<PermissionModalEvents> }) => {
 };
 
 const TabSelectorEntry = (props: { events: Registry<PermissionModalEvents>, entry: PermissionEditorTab }) => {
-    const [ active, setActive ] = useState(props.entry === "groups-server");
+    const [active, setActive] = useState(props.entry === "groups-server");
 
-    props.events.reactUse("action_activate_tab", event => setActive(event.tab === props.entry ));
+    props.events.reactUse("action_activate_tab", event => setActive(event.tab === props.entry));
 
-    return <div className={cssStyle.entry + " " + (active ? cssStyle.selected : "")} onClick={() => !active && props.events.fire("action_activate_tab", { tab: props.entry })}>
+    return <div className={cssStyle.entry + " " + (active ? cssStyle.selected : "")}
+                onClick={() => !active && props.events.fire("action_activate_tab", {tab: props.entry})}>
         <a title={PermissionTabName[props.entry].translated}>
             <Translatable trIgnore={true}>{PermissionTabName[props.entry].translated}</Translatable>
         </a>
@@ -260,15 +268,16 @@ const TabSelectorEntry = (props: { events: Registry<PermissionModalEvents>, entr
 
 const TabSelector = (props: { events: Registry<PermissionModalEvents> }) => {
     return <div className={cssStyle.header + " " + cssStyle.tabSelector}>
-        <TabSelectorEntry events={props.events} entry={"groups-server"} />
-        <TabSelectorEntry events={props.events} entry={"groups-channel"} />
-        <TabSelectorEntry events={props.events} entry={"channel"} />
-        <TabSelectorEntry events={props.events} entry={"client"} />
-        <TabSelectorEntry events={props.events} entry={"client-channel"} />
+        <TabSelectorEntry events={props.events} entry={"groups-server"}/>
+        <TabSelectorEntry events={props.events} entry={"groups-channel"}/>
+        <TabSelectorEntry events={props.events} entry={"channel"}/>
+        <TabSelectorEntry events={props.events} entry={"client"}/>
+        <TabSelectorEntry events={props.events} entry={"client-channel"}/>
     </div>;
 };
 
 export type DefaultTabValues = { groupId?: number, channelId?: number, clientDatabaseId?: number };
+
 class PermissionEditorModal extends InternalModal {
     readonly modalEvents = new Registry<PermissionModalEvents>();
     readonly editorEvents = new Registry<PermissionEditorEvents>();
@@ -291,8 +300,8 @@ class PermissionEditorModal extends InternalModal {
         initializePermissionModalController(connection, this.modalEvents);
         initializePermissionEditor(connection, this.modalEvents, this.editorEvents);
 
-        this.modalEvents.on("action_activate_tab", event => this.editorEvents.fire("action_toggle_client_button", { visible: event.tab === "groups-server" }));
-        this.editorEvents.on("action_toggle_client_list", event => this.modalEvents.fire("notify_client_list_toggled", { visible: event.visible }));
+        this.modalEvents.on("action_activate_tab", event => this.editorEvents.fire("action_toggle_client_button", {visible: event.tab === "groups-server"}));
+        this.editorEvents.on("action_toggle_client_list", event => this.modalEvents.fire("notify_client_list_toggled", {visible: event.visible}));
     }
 
     protected onInitialize() {
@@ -315,19 +324,20 @@ class PermissionEditorModal extends InternalModal {
             <div className={cssStyle.container}>
                 <ContextDivider id={"permission-editor"} defaultValue={25} direction={"horizontal"}>
                     <div className={cssStyle.contextContainer + " " + cssStyle.left}>
-                        <ActiveTabInfo events={this.modalEvents} />
-                        <SideBar modalEvents={this.modalEvents} editorEvents={this.editorEvents} connection={this.connection} />
+                        <ActiveTabInfo events={this.modalEvents}/>
+                        <SideBar modalEvents={this.modalEvents} editorEvents={this.editorEvents}
+                                 connection={this.connection}/>
                     </div>
                     <div className={cssStyle.contextContainer + " " + cssStyle.right}>
-                        <TabSelector events={this.modalEvents} />
-                        <PermissionEditor events={this.editorEvents} connection={this.connection} />
+                        <TabSelector events={this.modalEvents}/>
+                        <PermissionEditor events={this.editorEvents} connection={this.connection}/>
                     </div>
                 </ContextDivider>
             </div>
         );
     }
 
-    title() : React.ReactElement<Translatable> {
+    title(): React.ReactElement<Translatable> {
         return <Translatable>Server permissions</Translatable>;
     }
 
@@ -337,12 +347,13 @@ export function spawnPermissionEditorModal(connection: ConnectionHandler, defaul
     const modal = spawnReactModal(PermissionEditorModal, connection, defaultTab, values);
     modal.show();
 }
+
 const spawn = () => spawnPermissionEditorModal(server_connections.active_connection());
 (window as any).spawn_permissions = spawn;
 
 function initializePermissionModalResultHandlers(events: Registry<PermissionModalEvents>) {
     events.on("action_rename_group_result", event => {
-        if(event.status === "error") {
+        if (event.status === "error") {
             createErrorModal(tr("Failed to rename group"), formatMessage(tr("Failed to rename group:{:br:}"), event.error)).open();
         } else {
             createInfoModal(tr("Group renamed"), tr("The group has been renamed.")).open();
@@ -350,19 +361,19 @@ function initializePermissionModalResultHandlers(events: Registry<PermissionModa
     });
 
     events.on("action_delete_group", event => {
-        if(event.mode === "force")
+        if (event.mode === "force")
             return;
 
         spawnYesNo(tr("Are you sure?"), formatMessage(tr("Do you really want to delete this group?")), result => {
-            if(result !== true)
+            if (result !== true)
                 return;
 
-            events.fire("action_delete_group", { id: event.id, mode: "force", target: event.target });
+            events.fire("action_delete_group", {id: event.id, mode: "force", target: event.target});
         });
     });
 
     events.on("action_delete_group_result", event => {
-        if(event.status === "success") {
+        if (event.status === "success") {
             createInfoModal(tr("Group deleted"), tr("The channel group has been deleted.")).open();
         } else {
             createErrorModal(tr("Failed to delete group"), tra("Failed to delete group:\n{}", event.error)).open();
@@ -370,31 +381,31 @@ function initializePermissionModalResultHandlers(events: Registry<PermissionModa
     });
 
     events.on("action_server_group_remove_client_result", event => {
-        if(event.status === "error") {
+        if (event.status === "error") {
             createErrorModal(tr("Failed to remove client"), tra("Failed to remove client from server group:\n{}", event.error)).open();
-        } else if(event.status === "no-permissions") {
+        } else if (event.status === "no-permissions") {
             createErrorModal(tr("Failed to remove client"), tra("Failed to remove client from server group:\nNo permissions.")).open();
         }
     });
 
     events.on("action_server_group_add_client_result", event => {
-        if(event.status === "error") {
+        if (event.status === "error") {
             createErrorModal(tr("Failed to add client"), tra("Failed to add client to server group:\n{}", event.error)).open();
-        } else if(event.status === "no-permissions") {
+        } else if (event.status === "no-permissions") {
             createErrorModal(tr("Failed to add client"), tra("Failed to add client to group:\nNo permissions.")).open();
         }
     });
 }
 
 const stringifyError = error => {
-    if(error instanceof CommandResult) {
-        if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
+    if (error instanceof CommandResult) {
+        if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS)
             return tr("insufficient permissions");
         else
             return error.message + (error.extra_message ? " (" + error.extra_message + ")" : "");
-    } else if(error instanceof Error) {
+    } else if (error instanceof Error) {
         return error.message;
-    } else if(typeof error !== "string") {
+    } else if (typeof error !== "string") {
         return tr("Lookup the console");
     }
     return error;
@@ -403,21 +414,23 @@ const stringifyError = error => {
 function initializePermissionModalController(connection: ConnectionHandler, events: Registry<PermissionModalEvents>) {
     events.on("query_groups", event => {
         const groups = event.target === "server" ? connection.groups.serverGroups : connection.groups.channelGroups;
-        events.fire_async("query_groups_result", { target: event.target, groups: groups.map(group => {
-            return {
-                id: group.id,
-                name: group.name,
+        events.fire_async("query_groups_result", {
+            target: event.target, groups: groups.map(group => {
+                return {
+                    id: group.id,
+                    name: group.name,
 
-                iconId: group.properties.iconid,
-                sortId: group.properties.sortid,
-                saveDB: group.properties.savedb,
-                type: group.type === GroupType.QUERY ? "query" : group.type === GroupType.TEMPLATE ? "template" : "normal",
+                    iconId: group.properties.iconid,
+                    sortId: group.properties.sortid,
+                    saveDB: group.properties.savedb,
+                    type: group.type === GroupType.QUERY ? "query" : group.type === GroupType.TEMPLATE ? "template" : "normal",
 
-                needed_member_add: group.requiredMemberAddPower,
-                needed_member_remove: group.requiredMemberRemovePower,
-                needed_modify_power: group.requiredModifyPower
-            } as GroupProperties
-        })});
+                    needed_member_add: group.requiredMemberAddPower,
+                    needed_member_remove: group.requiredMemberRemovePower,
+                    needed_modify_power: group.requiredModifyPower
+                } as GroupProperties
+            })
+        });
     });
 
     /* group update listener */
@@ -425,29 +438,33 @@ function initializePermissionModalController(connection: ConnectionHandler, even
         const initializeGroupListener = (group: Group) => {
             let unregister = group.events.on("notify_properties_updated", event => {
                 let updates: GroupUpdateEntry[] = [];
-                for(const update of event.updated_properties) {
+                for (const update of event.updated_properties) {
                     switch (update) {
                         case "name":
-                            updates.push({ property: "name", value: group.name });
+                            updates.push({property: "name", value: group.name});
                             break;
 
                         case "icon":
-                            updates.push({ property: "icon", value: group.properties.iconid });
+                            updates.push({property: "icon", value: group.properties.iconid});
                             break;
 
                         case "sort-id":
-                            updates.push({ property: "sort", value: group.properties.sortid });
+                            updates.push({property: "sort", value: group.properties.sortid});
                             break;
 
                         case "save-db":
-                            updates.push({ property: "save", value: group.properties.savedb });
+                            updates.push({property: "save", value: group.properties.savedb});
                             break;
 
                         default:
                             break;
                     }
                 }
-                events.fire("notify_group_updated", { target: group.target === GroupTarget.SERVER ? "server" : "channel", id: group.id, properties: updates });
+                events.fire("notify_group_updated", {
+                    target: group.target === GroupTarget.SERVER ? "server" : "channel",
+                    id: group.id,
+                    properties: updates
+                });
             });
 
             const doUnregister = () => {
@@ -466,7 +483,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             const channelGroups: GroupProperties[] = [];
             const serverGroups: GroupProperties[] = [];
 
-            for(const group of event.groups) {
+            for (const group of event.groups) {
                 (group.target === GroupTarget.SERVER ? serverGroups : channelGroups).push({
                     iconId: group.properties.iconid,
                     id: group.id,
@@ -481,25 +498,25 @@ function initializePermissionModalController(connection: ConnectionHandler, even
                 initializeGroupListener(group);
             }
 
-            if(channelGroups.length > 0)
-                events.fire("notify_groups_created", { groups: channelGroups, target: "channel" });
+            if (channelGroups.length > 0)
+                events.fire("notify_groups_created", {groups: channelGroups, target: "channel"});
 
-            if(serverGroups.length > 0)
-                events.fire("notify_groups_created", { groups: serverGroups, target: "server" });
+            if (serverGroups.length > 0)
+                events.fire("notify_groups_created", {groups: serverGroups, target: "server"});
         }));
 
         events.on("notify_destroy", connection.groups.events.on("notify_groups_deleted", event => {
             const channelGroups: number[] = [];
             const serverGroups: number[] = [];
 
-            for(const group of event.groups)
+            for (const group of event.groups)
                 (group.target === GroupTarget.SERVER ? serverGroups : channelGroups).push(group.id);
 
-            if(channelGroups.length > 0)
-                events.fire("notify_groups_deleted", { groups: channelGroups, target: "channel" });
+            if (channelGroups.length > 0)
+                events.fire("notify_groups_deleted", {groups: channelGroups, target: "channel"});
 
-            if(serverGroups.length > 0)
-                events.fire("notify_groups_deleted", { groups: serverGroups, target: "server" });
+            if (serverGroups.length > 0)
+                events.fire("notify_groups_deleted", {groups: serverGroups, target: "server"});
         }));
 
         connection.groups.serverGroups.forEach(initializeGroupListener);
@@ -510,7 +527,7 @@ function initializePermissionModalController(connection: ConnectionHandler, even
         /* group actions */
         let selectedChannelGroup = 0, selectedServerGroup = 0;
         events.on("action_select_group", event => {
-            if(event.target === "channel")
+            if (event.target === "channel")
                 selectedChannelGroup = event.id;
             else
                 selectedServerGroup = event.id;
@@ -519,39 +536,49 @@ function initializePermissionModalController(connection: ConnectionHandler, even
         events.on("action_rename_group", event => {
             const groupId = event.id === "selected" ? event.target === "channel" ? selectedChannelGroup : selectedServerGroup : event.id;
 
-            let payload = { name: event.newName } as any;
-            if(event.target === "channel")
+            let payload = {name: event.newName} as any;
+            if (event.target === "channel")
                 payload.cgid = groupId;
             else
                 payload.sgid = groupId;
 
             connection.serverConnection.send_command(event.target + "grouprename", payload).then(() => {
-                events.fire("action_rename_group_result", { id: groupId, status: "success", target: event.target });
+                events.fire("action_rename_group_result", {id: groupId, status: "success", target: event.target});
             }).catch(error => {
                 console.warn(tr("Failed to rename group: %o"), error);
-                events.fire("action_rename_group_result", { id: groupId, status: "error", target: event.target, error: stringifyError(error) });
+                events.fire("action_rename_group_result", {
+                    id: groupId,
+                    status: "error",
+                    target: event.target,
+                    error: stringifyError(error)
+                });
             });
         });
 
 
         events.on("action_delete_group", event => {
             /* ask will be handled within the modal */
-            if(event.mode === "ask")
+            if (event.mode === "ask")
                 return;
 
             const groupId = event.id === "selected" ? event.target === "channel" ? selectedChannelGroup : selectedServerGroup : event.id;
 
-            let payload = { force: true } as any;
-            if(event.target === "channel")
+            let payload = {force: true} as any;
+            if (event.target === "channel")
                 payload.cgid = groupId;
             else
                 payload.sgid = groupId;
 
             connection.serverConnection.send_command(event.target + "groupdel", payload).then(() => {
-                events.fire("action_delete_group_result", { id: groupId, status: "success", target: event.target });
+                events.fire("action_delete_group_result", {id: groupId, status: "success", target: event.target});
             }).catch(error => {
                 console.warn(tr("Failed to delete group: %o"), error);
-                events.fire("action_delete_group_result", { id: groupId, status: "error", target: event.target, error: stringifyError(error) });
+                events.fire("action_delete_group_result", {
+                    id: groupId,
+                    status: "error",
+                    target: event.target,
+                    error: stringifyError(error)
+                });
             });
         });
 
@@ -591,27 +618,29 @@ function initializePermissionModalController(connection: ConnectionHandler, even
 
     events.on("query_group_clients", event => {
         connection.serverConnection.command_helper.requestClientsByServerGroup(event.id).then(clients => {
-            events.fire("query_group_clients_result", { id: event.id, status: "success", clients: clients.map(e => {
-                return {
-                    name: e.client_nickname,
-                    uniqueId: e.client_unique_identifier,
-                    databaseId: e.client_database_id
-                };
-            })});
+            events.fire("query_group_clients_result", {
+                id: event.id, status: "success", clients: clients.map(e => {
+                    return {
+                        name: e.client_nickname,
+                        uniqueId: e.client_unique_identifier,
+                        databaseId: e.client_database_id
+                    };
+                })
+            });
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
-                events.fire("query_group_clients_result", { id: event.id, status: "no-permissions" });
+            if (error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                events.fire("query_group_clients_result", {id: event.id, status: "no-permissions"});
                 return;
             }
 
             console.warn(tr("Failed to request server group client list: %o"), error);
-            events.fire("query_group_clients_result", { id: event.id, status: "error", error: stringifyError(error) });
+            events.fire("query_group_clients_result", {id: event.id, status: "error", error: stringifyError(error)});
         });
     });
 
     events.on("action_server_group_add_client", event => {
         Promise.resolve(event.client).then(client => {
-            if(typeof client === "number")
+            if (typeof client === "number")
                 return Promise.resolve(client);
 
             return connection.serverConnection.command_helper.getInfoFromUniqueId(client.trim()).then(info => info[0].clientDatabaseId);
@@ -619,15 +648,28 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             sgid: event.id,
             cldbid: clientDatabaseId
         })).then(() => {
-            events.fire("action_server_group_add_client_result", { id: event.id, client: event.client, status: "success" });
+            events.fire("action_server_group_add_client_result", {
+                id: event.id,
+                client: event.client,
+                status: "success"
+            });
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
-                events.fire("action_server_group_add_client_result", { id: event.id, client: event.client, status: "no-permissions" });
+            if (error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                events.fire("action_server_group_add_client_result", {
+                    id: event.id,
+                    client: event.client,
+                    status: "no-permissions"
+                });
                 return;
             }
 
             console.warn(tr("Failed to add client %s to server group %d: %o"), event.client.toString(), event.id, error);
-            events.fire("action_server_group_add_client_result", { id: event.id, client: event.client, status: "error", error: stringifyError(error) });
+            events.fire("action_server_group_add_client_result", {
+                id: event.id,
+                client: event.client,
+                status: "error",
+                error: stringifyError(error)
+            });
         })
     });
 
@@ -636,19 +678,35 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             sgid: event.id,
             cldbid: event.client
         }).then(() => {
-            events.fire("action_server_group_remove_client_result", { id: event.id, client: event.client, status: "success" });
+            events.fire("action_server_group_remove_client_result", {
+                id: event.id,
+                client: event.client,
+                status: "success"
+            });
         }).catch(error => {
             console.log(tr("Failed to delete client %d from server group %d: %o"), event.client, event.id, error);
-            events.fire("action_server_group_remove_client_result", { id: event.id, client: event.client, status: "success" });
+            events.fire("action_server_group_remove_client_result", {
+                id: event.id,
+                client: event.client,
+                status: "success"
+            });
         });
     });
 
     events.on("notify_destroy", connection.channelTree.events.on("notify_channel_updated", event => {
-        if('channel_icon_id' in event.updatedProperties)
-            events.fire("notify_channel_updated", { id: event.channel.channelId, property: "icon", value: event.updatedProperties.channel_icon_id });
+        if ('channel_icon_id' in event.updatedProperties)
+            events.fire("notify_channel_updated", {
+                id: event.channel.channelId,
+                property: "icon",
+                value: event.updatedProperties.channel_icon_id
+            });
 
-        if('channel_name' in event.updatedProperties)
-            events.fire("notify_channel_updated", { id: event.channel.channelId, property: "name", value: event.updatedProperties.channel_name });
+        if ('channel_name' in event.updatedProperties)
+            events.fire("notify_channel_updated", {
+                id: event.channel.channelId,
+                property: "name",
+                value: event.updatedProperties.channel_name
+            });
     }));
 
     events.on("query_channels", () => {
@@ -666,13 +724,13 @@ function initializePermissionModalController(connection: ConnectionHandler, even
 
     events.on("query_client_info", event => {
         let promise: Promise<ClientNameInfo[]>;
-        if(typeof event.client === "number") {
+        if (typeof event.client === "number") {
             promise = connection.serverConnection.command_helper.getInfoFromClientDatabaseId(event.client);
         } else {
             promise = connection.serverConnection.command_helper.getInfoFromUniqueId(event.client.trim());
         }
         promise.then(result => {
-            if(result.length === 0) {
+            if (result.length === 0) {
                 events.fire("query_client_info_result", {
                     client: event.client,
                     state: "no-such-client"
@@ -682,10 +740,14 @@ function initializePermissionModalController(connection: ConnectionHandler, even
             events.fire("query_client_info_result", {
                 client: event.client,
                 state: "success",
-                info: { name: result[0].clientNickname, databaseId: result[0].clientDatabaseId, uniqueId: result[0].clientUniqueId }
+                info: {
+                    name: result[0].clientNickname,
+                    databaseId: result[0].clientDatabaseId,
+                    uniqueId: result[0].clientUniqueId
+                }
             });
         }).catch(error => {
-            if(error instanceof CommandResult) {
+            if (error instanceof CommandResult) {
                 events.fire("query_client_info_result", {
                     client: event.client,
                     state: "no-permission",
@@ -723,27 +785,27 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
         channelId = 0;
         groupId = 0;
 
-        events.fire("action_set_mode", { mode: "unset" });
+        events.fire("action_set_mode", {mode: "unset"});
 
         switch (event.tab) {
             case "groups-server":
-                events.fire("action_set_senseless_permissions", { permissions: senseless_server_group_permissions });
+                events.fire("action_set_senseless_permissions", {permissions: senseless_server_group_permissions});
                 break;
 
             case "groups-channel":
-                events.fire("action_set_senseless_permissions", { permissions: senseless_channel_group_permissions });
+                events.fire("action_set_senseless_permissions", {permissions: senseless_channel_group_permissions});
                 break;
 
             case "channel":
-                events.fire("action_set_senseless_permissions", { permissions: senseless_channel_permissions });
+                events.fire("action_set_senseless_permissions", {permissions: senseless_channel_permissions});
                 break;
 
             case "client":
-                events.fire("action_set_senseless_permissions", { permissions: senseless_client_permissions });
+                events.fire("action_set_senseless_permissions", {permissions: senseless_client_permissions});
                 break;
 
             case "client-channel":
-                events.fire("action_set_senseless_permissions", { permissions: senseless_client_channel_permissions });
+                events.fire("action_set_senseless_permissions", {permissions: senseless_client_channel_permissions});
                 break;
         }
     });
@@ -773,10 +835,10 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
         clientChannelPermissionList = event.clientChannelPermissionList;
 
         const failed = failedPermission();
-        if(failed) {
-            events.fire("action_set_mode", { mode: "no-permissions", failedPermission: failed });
+        if (failed) {
+            events.fire("action_set_mode", {mode: "no-permissions", failedPermission: failed});
         }
-        events.fire("action_set_default_value", { value: event.permissionModifyPower });
+        events.fire("action_set_default_value", {value: event.permissionModifyPower});
     });
 
     modalEvents.on("action_set_permission_editor_subject", event => {
@@ -811,8 +873,8 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
         }
 
         const failed = failedPermission();
-        events.fire("action_set_mode", { mode: failed ? "no-permissions" : editorMode, failedPermission: failed });
-        if(!failed && editorMode === "normal")
+        events.fire("action_set_mode", {mode: failed ? "no-permissions" : editorMode, failedPermission: failed});
+        if (!failed && editorMode === "normal")
             events.fire("query_permission_values");
     });
 
@@ -823,7 +885,9 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
             return {
                 groupId: group.group.name + " - " + group.group.begin.toString(),
                 groupName: group.group.name,
-                permissions: group.permissions.map(e => { return { id: e.id, name: e.name, description: e.description }}),
+                permissions: group.permissions.map(e => {
+                    return {id: e.id, name: e.name, description: e.description}
+                }),
                 children: (group.children || []).map(visitGroup)
             };
         };
@@ -843,13 +907,13 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
 
             case "groups-server":
             case "groups-channel":
-                if(!groupId) {
+                if (!groupId) {
                     promise = Promise.reject(tr("Invalid server group"));
                     break;
                 }
 
                 const group = mode === "groups-server" ? connection.groups.findServerGroup(groupId) : connection.groups.findChannelGroup(groupId);
-                if(!group) {
+                if (!group) {
                     promise = Promise.reject(tr("Invalid server group"));
                     break;
                 }
@@ -857,7 +921,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
 
             case "channel":
-                if(!channelId) {
+                if (!channelId) {
                     promise = Promise.reject(tr("Invalid channel id"));
                     break;
                 }
@@ -865,7 +929,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 promise = connection.permissions.requestChannelPermissions(channelId);
                 break;
             case "client":
-                if(!clientDatabaseId) {
+                if (!clientDatabaseId) {
                     promise = Promise.reject(tr("Invalid client database id"));
                     break;
                 }
@@ -874,12 +938,12 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
 
             case "client-channel":
-                if(!clientDatabaseId) {
+                if (!clientDatabaseId) {
                     promise = Promise.reject(tr("Invalid client database id"));
                     break;
                 }
 
-                if(!channelId) {
+                if (!channelId) {
                     promise = Promise.reject(tr("Invalid channel id"));
                     break;
                 }
@@ -889,23 +953,28 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
         }
 
         promise.then(permissions => {
-            events.fire("query_permission_values_result", { status: "success", permissions: permissions.map(e => {
-                return {
-                    value: e.value,
-                    name: e.type.name,
-                    granted: e.granted_value,
-                    flagNegate: e.flag_negate,
-                    flagSkip: e.flag_skip
-                }})
+            events.fire("query_permission_values_result", {
+                status: "success", permissions: permissions.map(e => {
+                    return {
+                        value: e.value,
+                        name: e.type.name,
+                        granted: e.granted_value,
+                        flagNegate: e.flag_negate,
+                        flagSkip: e.flag_skip
+                    }
+                })
             });
         }).catch(error => {
-            if(error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
-                events.fire("action_set_mode", { mode: "no-permissions", failedPermission: connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon") });
+            if (error instanceof CommandResult && error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                events.fire("action_set_mode", {
+                    mode: "no-permissions",
+                    failedPermission: connection.permissions.resolveInfo(parseInt(error.json["failed_permid"]))?.name || tr("unknwon")
+                });
                 return;
             }
 
             console.warn(tr("Failed to query permissions: %o"), error);
-            events.fire("query_permission_values_result", { status: "error", error: stringifyError(error) });
+            events.fire("query_permission_values_result", {status: "error", error: stringifyError(error)});
         });
     });
 
@@ -928,13 +997,13 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
 
             case "groups-server":
             case "groups-channel": {
-                if(!groupId) {
+                if (!groupId) {
                     promise = Promise.reject(tr("Invalid server group"));
                     break;
                 }
 
                 let prefix = mode === "groups-server" ? "server" : "channel";
-                if(mode === "groups-server")
+                if (mode === "groups-server")
                     payload[0].sgid = groupId;
                 else
                     payload[0].cgid = groupId;
@@ -943,7 +1012,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
             }
             case "channel":
-                if(!channelId) {
+                if (!channelId) {
                     promise = Promise.reject(tr("Invalid channel id"));
                     break;
                 }
@@ -953,7 +1022,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
 
             case "client":
-                if(!clientDatabaseId) {
+                if (!clientDatabaseId) {
                     promise = Promise.reject(tr("Invalid client database id"));
                     break;
                 }
@@ -963,11 +1032,11 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
 
             case "client-channel":
-                if(!clientDatabaseId) {
+                if (!clientDatabaseId) {
                     promise = Promise.reject(tr("Invalid client database id"));
                     break;
                 }
-                if(!channelId) {
+                if (!channelId) {
                     promise = Promise.reject(tr("Invalid channel id"));
                     break;
                 }
@@ -978,9 +1047,11 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
         }
 
-        promise.then(result => { throw result; }).catch(error => {
-            if(error instanceof CommandResult) {
-                if(error.getBulks().length === event.permissions.length) {
+        promise.then(result => {
+            throw result;
+        }).catch(error => {
+            if (error instanceof CommandResult) {
+                if (error.getBulks().length === event.permissions.length) {
                     events.fire("action_set_permissions_result", {
                         permissions: error.getBulks().map((e, index) => {
                             return {
@@ -1027,13 +1098,13 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
 
             case "groups-server":
             case "groups-channel": {
-                if(!groupId) {
+                if (!groupId) {
                     promise = Promise.reject(tr("Invalid server group"));
                     break;
                 }
 
                 let prefix = mode === "groups-server" ? "server" : "channel";
-                if(mode === "groups-server")
+                if (mode === "groups-server")
                     payload[0].sgid = groupId;
                 else
                     payload[0].cgid = groupId;
@@ -1042,7 +1113,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
             }
             case "channel":
-                if(!channelId) {
+                if (!channelId) {
                     promise = Promise.reject(tr("Invalid channel id"));
                     break;
                 }
@@ -1052,7 +1123,7 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
 
             case "client":
-                if(!clientDatabaseId) {
+                if (!clientDatabaseId) {
                     promise = Promise.reject(tr("Invalid client database id"));
                     break;
                 }
@@ -1062,12 +1133,12 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
 
             case "client-channel":
-                if(!clientDatabaseId) {
+                if (!clientDatabaseId) {
                     promise = Promise.reject(tr("Invalid client database id"));
                     break;
                 }
 
-                if(!channelId) {
+                if (!channelId) {
                     promise = Promise.reject(tr("Invalid channel id"));
                     break;
                 }
@@ -1078,9 +1149,11 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
                 break;
         }
 
-        promise.then(result => { throw result; }).catch(error => {
-            if(error instanceof CommandResult) {
-                if(error.getBulks().length === event.permissions.length) {
+        promise.then(result => {
+            throw result;
+        }).catch(error => {
+            if (error instanceof CommandResult) {
+                if (error.getBulks().length === event.permissions.length) {
                     events.fire("action_remove_permissions_result", {
                         permissions: error.getBulks().map((e, index) => {
                             return {
@@ -1109,7 +1182,15 @@ function initializePermissionEditor(connection: ConnectionHandler, modalEvents: 
 
     events.on("action_open_icon_select", event => {
         spawnIconSelect(connection,
-                id => events.fire("action_set_permissions", { permissions: [{ mode: "value", name: PermissionType.I_ICON_ID, flagSkip: false, flagNegate: false, value: id }] }),
+            id => events.fire("action_set_permissions", {
+                permissions: [{
+                    mode: "value",
+                    name: PermissionType.I_ICON_ID,
+                    flagSkip: false,
+                    flagNegate: false,
+                    value: id
+                }]
+            }),
             event.iconId);
     });
 }

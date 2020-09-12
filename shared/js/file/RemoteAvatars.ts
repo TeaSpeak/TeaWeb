@@ -7,11 +7,11 @@ import {
     AbstractAvatarManagerFactory, AvatarState, AvatarStateData, ClientAvatar,
     kIPCAvatarChannel,
     setGlobalAvatarManagerFactory, uniqueId2AvatarId
-} from "tc-shared/file/Avatars";
-import {IPCChannel} from "tc-shared/ipc/BrowserIPC";
-import {Settings} from "tc-shared/settings";
+} from "../file/Avatars";
+import {IPCChannel} from "../ipc/BrowserIPC";
+import {Settings} from "../settings";
 import {ChannelMessage} from "../ipc/BrowserIPC";
-import {guid} from "tc-shared/crypto/uid";
+import {guid} from "../crypto/uid";
 
 function isEquivalent(a, b) {
     // Create arrays of property names

@@ -1,7 +1,7 @@
-import {settings, Settings} from "tc-shared/settings";
-import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ServerAddress} from "tc-shared/tree/Server";
+import {settings, Settings} from "../../settings";
+import {createModal, Modal} from "../../ui/elements/Modal";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {ServerAddress} from "../../tree/Server";
 
 type URLGeneratorSettings = {
     flag_direct: boolean,
@@ -23,16 +23,16 @@ type URLGenerator = {
 };
 
 const build_url = (base, params) => {
-    if(Object.keys(params).length == 0)
+    if (Object.keys(params).length == 0)
         return base;
 
     return base + "?" + Object.keys(params)
-                            .map(e => e + "=" + encodeURIComponent(params[e]))
-                            .join("&");
+        .map(e => e + "=" + encodeURIComponent(params[e]))
+        .join("&");
 };
 
 //TODO: Server password
-const url_generators: {[key: string]:URLGenerator} = {
+const url_generators: { [key: string]: URLGenerator } = {
     "tea-web": {
         generate: properties => {
             const address = properties.resolved_address ? properties.resolved_address : properties.address;
@@ -40,15 +40,15 @@ const url_generators: {[key: string]:URLGenerator} = {
             const parameter = "connect_default=" + (properties.flag_direct ? 1 : 0) + "&connect_address=" + encodeURIComponent(address_str);
 
             let pathbase = "";
-            if(document.location.protocol !== 'https:') {
+            if (document.location.protocol !== 'https:') {
                 /*
                  * Seems to be a test environment or the TeaClient for localhost where we dont have to use https.
                  */
                 pathbase = "https://web.teaspeak.de/";
-            } else if(document.location.hostname === "localhost" || document.location.host.startsWith("127.")) {
+            } else if (document.location.hostname === "localhost" || document.location.host.startsWith("127.")) {
                 pathbase = "https://web.teaspeak.de/";
             } else {
-                pathbase = document.location.origin +  document.location.pathname;
+                pathbase = document.location.origin + document.location.pathname;
             }
             return pathbase + "?" + parameter;
         },
@@ -68,7 +68,7 @@ const url_generators: {[key: string]:URLGenerator} = {
                 connect_default: properties.flag_direct ? 1 : 0
             };
 
-            if(address.port != 9987)
+            if (address.port != 9987)
                 parameters["port"] = address.port;
 
             return build_url("teaclient://" + address.host + "/", parameters);
@@ -85,7 +85,7 @@ const url_generators: {[key: string]:URLGenerator} = {
             const address = properties.resolved_address ? properties.resolved_address : properties.address;
 
             let parameters = {};
-            if(address.port != 9987)
+            if (address.port != 9987)
                 parameters["port"] = address.port;
 
             /*
@@ -138,7 +138,7 @@ export function spawnInviteEditor(connection: ConnectionHandler) {
             value: node => node.prop('checked'),
             set_value: (node, value) => node.prop('checked', value == "1"),
             disable: (node, flag) => node.prop('disabled', flag)
-                                        .firstParent('.checkbox').toggleClass('disabled', flag)
+                .firstParent('.checkbox').toggleClass('disabled', flag)
         },
 
         {
@@ -147,25 +147,25 @@ export function spawnInviteEditor(connection: ConnectionHandler) {
             value: node => node.prop('checked'),
             set_value: (node, value) => node.prop('checked', value == "1"),
             disable: (node, flag) => node.prop('disabled', flag)
-                                        .firstParent('.checkbox').toggleClass('disabled', flag)
+                .firstParent('.checkbox').toggleClass('disabled', flag)
         }
     ];
 
     const update_buttons = () => {
         const generator = url_generators[input_type.val() as string];
-        if(!generator) {
-            for(const s of invite_settings)
+        if (!generator) {
+            for (const s of invite_settings)
                 s.disable(s.node, true);
             return;
         }
 
-        for(const s of invite_settings)
+        for (const s of invite_settings)
             s.disable(s.node, !generator.setting_available(s.key as any));
     };
 
     const update_link = () => {
         const generator = url_generators[input_type.val() as string];
-        if(!generator) {
+        if (!generator) {
             button_copy.prop('disabled', true);
             label_output.text(tr("Missing link generator"));
             return;
@@ -176,14 +176,14 @@ export function spawnInviteEditor(connection: ConnectionHandler) {
             address: connection.channelTree.server.remote_address,
             resolved_address: connection.channelTree.client.serverConnection.remote_address()
         };
-        for(const s of invite_settings)
+        for (const s of invite_settings)
             properties[s.key] = s.value(s.node);
 
         label_output.text(generator.generate(properties as any));
     };
 
 
-    for(const s of invite_settings) {
+    for (const s of invite_settings) {
         s.node.on('change keyup', () => {
             settings.changeGlobal(Settings.FN_INVITE_LINK_SETTING(s.key), s.value(s.node));
             update_link()
@@ -193,10 +193,10 @@ export function spawnInviteEditor(connection: ConnectionHandler) {
     }
 
     input_type.on('change', () => {
-                    settings.changeGlobal(Settings.KEY_LAST_INVITE_LINK_TYPE, input_type.val() as string);
-                    update_buttons();
-                    update_link();
-                }).val(settings.global(Settings.KEY_LAST_INVITE_LINK_TYPE));
+        settings.changeGlobal(Settings.KEY_LAST_INVITE_LINK_TYPE, input_type.val() as string);
+        update_buttons();
+        update_link();
+    }).val(settings.global(Settings.KEY_LAST_INVITE_LINK_TYPE));
 
     button_copy.on('click', event => {
         label_output.select();

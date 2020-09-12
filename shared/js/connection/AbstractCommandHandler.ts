@@ -2,8 +2,8 @@ import {
     AbstractServerConnection,
     ServerCommand,
     SingleCommandHandler
-} from "tc-shared/connection/ConnectionBase";
-import {tr} from "tc-shared/i18n/localize";
+} from "../connection/ConnectionBase";
+import {tr} from "../i18n/localize";
 
 export abstract class AbstractCommandHandler {
     readonly connection: AbstractServerConnection;

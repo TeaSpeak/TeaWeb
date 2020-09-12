@@ -1,9 +1,9 @@
-import {ConnectionEvents, ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
-import {Registry} from "tc-shared/events";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
-import {LogCategory, logDebug, logTrace, logWarn} from "tc-shared/log";
-import {ExplicitCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
+import {ConnectionEvents, ConnectionHandler, ConnectionState} from "../ConnectionHandler";
+import {Registry} from "../events";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {ErrorCode} from "../connection/ErrorCode";
+import {LogCategory, logDebug, logTrace, logWarn} from "../log";
+import {ExplicitCommandHandler} from "../connection/AbstractCommandHandler";
 
 export type ServerFeatureSupport = "unsupported" | "supported" | "experimental" | "deprecated";
 

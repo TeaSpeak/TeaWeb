@@ -1,23 +1,23 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {Registry} from "tc-shared/events";
-import {FileType} from "tc-shared/file/FileManager";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import PermissionType from "tc-shared/permission/PermissionType";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
+import {ConnectionHandler} from "../../../ConnectionHandler";
+import {Registry} from "../../../events";
+import {FileType} from "../../../file/FileManager";
+import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
+import PermissionType from "../../../permission/PermissionType";
+import * as log from "../../../log";
+import {LogCategory} from "../../../log";
+import {Entry, MenuEntry, MenuEntryType, spawn_context_menu} from "../../../ui/elements/ContextMenu";
 import * as ppt from "tc-backend/ppt";
-import {SpecialKey} from "tc-shared/PPTListener";
-import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import {tra, traj} from "tc-shared/i18n/localize";
+import {SpecialKey} from "../../../PPTListener";
+import {spawnYesNo} from "../../../ui/modal/ModalYesNo";
+import {tra, traj} from "../../../i18n/localize";
 import {
     FileTransfer,
     FileTransferState,
     FileUploadTransfer,
     TransferProvider,
     TransferTargetType
-} from "tc-shared/file/Transfer";
-import {createErrorModal} from "tc-shared/ui/elements/Modal";
+} from "../../../file/Transfer";
+import {createErrorModal} from "../../../ui/elements/Modal";
 import {
     avatarsPathPrefix,
     channelPathPrefix,
@@ -25,27 +25,27 @@ import {
     iconPathPrefix,
     ListedFileInfo,
     PathInfo
-} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+} from "../../../ui/modal/transfer/ModalFileTransfer";
+import {ErrorCode} from "../../../connection/ErrorCode";
 
-function parsePath(path: string, connection: ConnectionHandler) : PathInfo {
-    if(path === "/" || !path) {
+function parsePath(path: string, connection: ConnectionHandler): PathInfo {
+    if (path === "/" || !path) {
         return {
             channel: undefined,
             channelId: 0,
             path: "/",
             type: "root"
         };
-    } else if(path.startsWith("/" + channelPathPrefix)) {
+    } else if (path.startsWith("/" + channelPathPrefix)) {
         const pathParts = path.split("/");
 
         const channelId = parseInt(pathParts[1].substr(channelPathPrefix.length));
-        if(isNaN(channelId)) {
+        if (isNaN(channelId)) {
             throw tr("Invalid channel id (ID is NaN)");
         }
 
         const channel = connection.channelTree.findChannel(channelId);
-        if(!channel) {
+        if (!channel) {
             throw tr("Channel not visible anymore");
         }
 
@@ -55,14 +55,14 @@ function parsePath(path: string, connection: ConnectionHandler) : PathInfo {
             channelId: channelId,
             channel: channel
         };
-    } else if(path == "/" + iconPathPrefix + "/") {
+    } else if (path == "/" + iconPathPrefix + "/") {
         return {
             type: "icon",
             path: "/icons/",
             channelId: 0,
             channel: undefined
         };
-    } else if(path == "/" + avatarsPathPrefix + "/") {
+    } else if (path == "/" + avatarsPathPrefix + "/") {
         return {
             type: "avatar",
             path: "/",
@@ -106,7 +106,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             return;
         }
         let request: Promise<ListedFileInfo[]>;
-        if(path.type === "root") {
+        if (path.type === "root") {
             request = (async () => {
                 const result: ListedFileInfo[] = [];
 
@@ -141,10 +141,10 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     }
                 });
                 const channelInfos = await connection.fileManager.requestFileInfo(requestArray.map(e => e.request));
-                for(let index = 0; index < requestArray.length; index++) {
+                for (let index = 0; index < requestArray.length; index++) {
                     const response = channelInfos[index];
 
-                    if(response instanceof CommandResult) {
+                    if (response instanceof CommandResult) {
                         /* some kind of error occured (maybe password set, or non existing) */
                         result.push({
                             type: FileType.DIRECTORY,
@@ -170,7 +170,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
 
                 return result;
             })();
-        } else if(path.type === "channel") {
+        } else if (path.type === "channel") {
             request = (async () => {
                 const hash = path.channel.properties.channel_flag_password ? await path.channel.requestChannelPassword(PermissionType.B_FT_IGNORE_PASSWORD) : undefined;
                 return connection.fileManager.requestFileList(path.path, path.channelId, hash?.hash).then(result => result.map(e => {
@@ -191,17 +191,17 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     } as ListedFileInfo;
                 })).catch(async error => {
                     /* patch for the case that the channel directory hasn't been created yet */
-                    if(error instanceof CommandResult) {
-                        if(error.id === ErrorCode.FILE_NOT_FOUND && path.path === "/") {
+                    if (error instanceof CommandResult) {
+                        if (error.id === ErrorCode.FILE_NOT_FOUND && path.path === "/") {
                             return [];
-                        } else if(error.id === 781) { //Invalid password
+                        } else if (error.id === 781) { //Invalid password
                             path.channel.invalidateCachedPassword();
                         }
                     }
                     throw error;
                 });
             })();
-        } else if(path.type === "icon" || path.type === "avatar") {
+        } else if (path.type === "icon" || path.type === "avatar") {
             request = connection.fileManager.requestFileList(path.path, 0).then(result => result.map(e => {
                 return {
                     datetime: e.datetime,
@@ -225,12 +225,15 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             events.fire_async("query_files_result", {
                 path: event.path,
                 status: "success",
-                files: files.map(e => { e.datetime *= 1000; return e; })
+                files: files.map(e => {
+                    e.datetime *= 1000;
+                    return e;
+                })
             });
         }).catch(error => {
             let message;
-            if(error instanceof CommandResult) {
-                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+            if (error instanceof CommandResult) {
+                if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
                     events.fire_async("query_files_result", {
                         path: event.path,
@@ -238,7 +241,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                         error: permission ? permission.name : "unknown"
                     });
                     return;
-                } else if(error.id === 781) { //Invalid password
+                } else if (error.id === 781) { //Invalid password
                     events.fire_async("query_files_result", {
                         path: event.path,
                         status: "invalid-password"
@@ -247,7 +250,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 }
 
                 message = error.message + (error.extra_message ? " (" + error.extra_message + ")" : "");
-            } else if(typeof error === "string") {
+            } else if (typeof error === "string") {
                 message = error;
             } else {
                 log.error(LogCategory.FILE_TRANSFER, tr("Failed to query channel directory files: %o"), error);
@@ -263,7 +266,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     });
 
     events.on("action_rename_file", event => {
-        if(event.newPath === event.oldPath && event.newName === event.oldName) {
+        if (event.newPath === event.oldPath && event.newName === event.oldName) {
             events.fire_async("action_rename_file_result", {
                 oldPath: event.oldPath,
                 oldName: event.oldName,
@@ -279,7 +282,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         let sourcePath: PathInfo, targetPath: PathInfo;
         try {
             sourcePath = parsePath(event.oldPath, connection);
-            if(sourcePath.type !== "channel")
+            if (sourcePath.type !== "channel")
                 throw tr("Icon/avatars could not be renamed");
         } catch (error) {
             events.fire_async("action_rename_file_result", {
@@ -292,7 +295,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }
         try {
             targetPath = parsePath(event.newPath, connection);
-            if(sourcePath.type !== "channel")
+            if (sourcePath.type !== "channel")
                 throw tr("Target path isn't a channel");
         } catch (error) {
             events.fire_async("action_rename_file_result", {
@@ -316,7 +319,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 newname: targetPath.path + event.newName
             })
         })().then(result => {
-            if(result.id !== 0)
+            if (result.id !== 0)
                 throw result;
 
             events.fire("action_rename_file_result", {
@@ -329,8 +332,8 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             });
         }).catch(error => {
             let message;
-            if(error instanceof CommandResult) {
-                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+            if (error instanceof CommandResult) {
+                if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
                     events.fire_async("action_rename_file_result", {
                         oldPath: event.oldPath,
@@ -339,7 +342,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                         error: tr("Failed on permission ") + (permission ? permission.name : "unknown")
                     });
                     return;
-                } else if(error.id === 781) { //Invalid password
+                } else if (error.id === 781) { //Invalid password
                     events.fire_async("action_rename_file_result", {
                         oldPath: event.oldPath,
                         oldName: event.oldName,
@@ -350,7 +353,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 }
 
                 message = error.message + (error.extra_message ? " (" + error.extra_message + ")" : "");
-            } else if(typeof error === "string") {
+            } else if (typeof error === "string") {
                 message = error;
             } else {
                 log.error(LogCategory.FILE_TRANSFER, tr("Failed to rename/move files: %o"), error);
@@ -370,7 +373,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     let currentPathInfo: PathInfo;
     let selection: { name: string, type: FileType }[] = [];
     events.on("action_navigate_to_result", result => {
-        if(result.status !== "success")
+        if (result.status !== "success")
             return;
 
         currentPathInfo = result.pathInfo;
@@ -379,23 +382,23 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     });
 
     events.on("action_rename_file_result", result => {
-        if(result.status !== "success")
+        if (result.status !== "success")
             return;
-        if(result.oldPath !== currentPath)
+        if (result.oldPath !== currentPath)
             return;
 
         const index = selection.map(e => e.name).findIndex(e => e === result.oldName);
-        if(index !== -1)
+        if (index !== -1)
             selection[index].name = result.newName;
     });
 
     events.on("action_select_files", event => {
-        if(event.mode === "exclusive") {
+        if (event.mode === "exclusive") {
             selection = event.files.slice(0);
-        } else if(event.mode === "toggle") {
+        } else if (event.mode === "toggle") {
             event.files.forEach(e => {
                 const index = selection.map(e => e.name).findIndex(b => b === e.name);
-                if(index === -1)
+                if (index === -1)
                     selection.push(e);
                 else
                     selection.splice(index);
@@ -407,7 +410,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     events.on("action_selection_context_menu", event => {
         const entries = [] as MenuEntry[];
 
-        if(currentPathInfo.type === "root") {
+        if (currentPathInfo.type === "root") {
             entries.push({
                 type: MenuEntryType.ENTRY,
                 name: tr("Refresh file list"),
@@ -415,77 +418,94 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             });
         } else {
             const forceDelete = ppt.key_pressed(SpecialKey.SHIFT);
-            if(selection.length === 0) {
+            if (selection.length === 0) {
                 entries.push({
                     type: MenuEntryType.ENTRY,
                     name: tr("Upload"),
                     icon_class: "client-upload",
-                    callback: () => events.fire("action_start_upload", { mode: "browse", path: currentPath })
+                    callback: () => events.fire("action_start_upload", {mode: "browse", path: currentPath})
                 });
-            } else if(selection.length === 1) {
+            } else if (selection.length === 1) {
                 const file = selection[0];
-                if(file.type === FileType.FILE) {
+                if (file.type === FileType.FILE) {
                     entries.push({
                         type: MenuEntryType.ENTRY,
                         name: tr("Download"),
                         icon_class: "client-download",
-                        callback: () => events.fire("action_start_download", { files: [{ name: file.name, path: currentPath }] })
+                        callback: () => events.fire("action_start_download", {
+                            files: [{
+                                name: file.name,
+                                path: currentPath
+                            }]
+                        })
                     });
                 }
-                if(currentPathInfo.type === "channel") {
+                if (currentPathInfo.type === "channel") {
                     entries.push({
                         type: MenuEntryType.ENTRY,
                         name: tr("Rename"),
                         icon_class: "client-change_nickname",
-                        callback: () => events.fire("action_start_rename", { name: file.name, path: currentPath })
+                        callback: () => events.fire("action_start_rename", {name: file.name, path: currentPath})
                     });
                 }
                 entries.push({
                     type: MenuEntryType.ENTRY,
                     name: forceDelete ? tr("Force delete file") : tr("Delete file"),
                     icon_class: "client-delete",
-                    callback: () => events.fire("action_delete_file", { mode: forceDelete ? "force" : "ask", files: "selection" })
+                    callback: () => events.fire("action_delete_file", {
+                        mode: forceDelete ? "force" : "ask",
+                        files: "selection"
+                    })
                 });
                 entries.push(Entry.HR());
-            } else if(selection.length > 1) {
-                if(selection.findIndex(e => e.type === FileType.DIRECTORY) === -1) {
+            } else if (selection.length > 1) {
+                if (selection.findIndex(e => e.type === FileType.DIRECTORY) === -1) {
                     entries.push({
                         type: MenuEntryType.ENTRY,
                         name: tr("Download"),
                         icon_class: "client-download",
-                        callback: () => events.fire("action_start_download", { files: selection.map(file => { return { name: file.name, path: currentPath }}) })
+                        callback: () => events.fire("action_start_download", {
+                            files: selection.map(file => {
+                                return {name: file.name, path: currentPath}
+                            })
+                        })
                     });
                 }
                 entries.push({
                     type: MenuEntryType.ENTRY,
                     name: forceDelete ? tr("Force delete files") : tr("Delete files"),
                     icon_class: "client-delete",
-                    callback: () => events.fire("action_delete_file", { mode: forceDelete ? "force" : "ask", files: "selection" })
+                    callback: () => events.fire("action_delete_file", {
+                        mode: forceDelete ? "force" : "ask",
+                        files: "selection"
+                    })
                 });
             }
             entries.push({
                 type: MenuEntryType.ENTRY,
                 name: tr("Refresh file list"),
                 icon_class: "client-file_refresh",
-                callback: () => events.fire("action_navigate_to", { path: currentPath })
+                callback: () => events.fire("action_navigate_to", {path: currentPath})
             });
             entries.push(Entry.HR());
             entries.push({
                 type: MenuEntryType.ENTRY,
                 name: tr("Create folder"),
                 icon_class: "client-add_folder",
-                callback: () => events.fire("action_start_create_directory", { defaultName: tr("New folder") })
+                callback: () => events.fire("action_start_create_directory", {defaultName: tr("New folder")})
             });
         }
         spawn_context_menu(event.pageX, event.pageY, ...entries);
     });
 
     events.on("action_delete_file", event => {
-        const files = event.files === "selection" ? selection.map(e => { return { path: currentPath, name: e.name }}) : event.files;
+        const files = event.files === "selection" ? selection.map(e => {
+            return {path: currentPath, name: e.name}
+        }) : event.files;
 
-        if(event.mode === "ask") {
+        if (event.mode === "ask") {
             spawnYesNo(tr("Are you sure?"), tra("Do you really want to delete {0} {1}?", files.length, files.length === 1 ? tr("files") : tr("files")), result => {
-                if(result)
+                if (result)
                     events.fire("action_delete_file", {
                         files: files,
                         mode: "force"
@@ -495,19 +515,23 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         }
 
         try {
-            const fileInfos = files.map(e => { return { info: parsePath(e.path, connection), path: e.path, name: e.name }});
+            const fileInfos = files.map(e => {
+                return {info: parsePath(e.path, connection), path: e.path, name: e.name}
+            });
 
-            connection.serverConnection.send_command("ftdeletefile", fileInfos.map(e => { return {
-                path: e.info.path,
-                cid: e.info.channelId,
-                cpw: e.info.channel?.cached_password(),
-                name: e.name
-            }})).then(async result => {
+            connection.serverConnection.send_command("ftdeletefile", fileInfos.map(e => {
+                return {
+                    path: e.info.path,
+                    cid: e.info.channelId,
+                    cpw: e.info.channel?.cached_password(),
+                    name: e.name
+                }
+            })).then(async result => {
                 throw result;
             }).catch(result => {
                 let message;
-                if(result instanceof CommandResult) {
-                    if(result.bulks.length !== fileInfos.length) {
+                if (result instanceof CommandResult) {
+                    if (result.bulks.length !== fileInfos.length) {
                         events.fire_async("action_delete_file_result", {
                             results: fileInfos.map((e) => {
                                 return {
@@ -523,7 +547,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
 
                     let results = [];
                     result.getBulks().forEach((e, index) => {
-                        if(e.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+                        if (e.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                             const permission = connection.permissions.resolveInfo(e.json["failed_permid"] as number);
                             results.push({
                                 path: fileInfos[index].path,
@@ -532,7 +556,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                                 error: tr("Failed on permission ") + (permission ? permission.name : "unknown")
                             });
                             return;
-                        } else if(e.id === 781) { //Invalid password
+                        } else if (e.id === 781) { //Invalid password
                             results.push({
                                 path: fileInfos[index].path,
                                 name: fileInfos[index].name,
@@ -540,7 +564,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                                 error: tr("Invalid channel password")
                             });
                             return;
-                        } else if(e.id !== 0) {
+                        } else if (e.id !== 0) {
                             results.push({
                                 path: fileInfos[index].path,
                                 name: fileInfos[index].name,
@@ -562,7 +586,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                         results: results
                     });
                     return;
-                } else if(typeof result === "string") {
+                } else if (typeof result === "string") {
                     message = result;
                 } else {
                     log.error(LogCategory.FILE_TRANSFER, tr("Failed to create directory: %o"), result);
@@ -598,7 +622,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         let path: PathInfo;
         try {
             path = parsePath(event.path, connection);
-            if(path.type !== "channel")
+            if (path.type !== "channel")
                 throw tr("Directories could only created for channels");
         } catch (error) {
             events.fire_async("action_create_directory_result", {
@@ -616,11 +640,11 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
             cpw: path.channel.cached_password(),
             dirname: path.path + event.name
         }).then(() => {
-            events.fire("action_create_directory_result", { path: event.path, name: event.name, status: "success" });
+            events.fire("action_create_directory_result", {path: event.path, name: event.name, status: "success"});
         }).catch(error => {
             let message;
-            if(error instanceof CommandResult) {
-                if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+            if (error instanceof CommandResult) {
+                if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                     const permission = connection.permissions.resolveInfo(error.json["failed_permid"] as number);
                     events.fire_async("action_create_directory_result", {
                         name: event.name,
@@ -629,7 +653,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                         error: tr("Failed on permission ") + (permission ? permission.name : "unknown")
                     });
                     return;
-                } else if(error.id === 781) { //Invalid password
+                } else if (error.id === 781) { //Invalid password
                     events.fire_async("action_create_directory_result", {
                         name: event.name,
                         path: event.path,
@@ -640,7 +664,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                 }
 
                 message = error.message + (error.extra_message ? " (" + error.extra_message + ")" : "");
-            } else if(typeof error === "string") {
+            } else if (typeof error === "string") {
                 message = error;
             } else {
                 log.error(LogCategory.FILE_TRANSFER, tr("Failed to create directory: %o"), error);
@@ -659,10 +683,10 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
         event.files.forEach(file => {
             try {
                 let targetSupplier;
-                if(__build.target === "client" && TransferProvider.provider().targetSupported(TransferTargetType.FILE)) {
+                if (__build.target === "client" && TransferProvider.provider().targetSupported(TransferTargetType.FILE)) {
                     const target = TransferProvider.provider().createFileTarget(undefined, file.name);
                     targetSupplier = async () => target;
-                } else if(TransferProvider.provider().targetSupported(TransferTargetType.DOWNLOAD)) {
+                } else if (TransferProvider.provider().targetSupported(TransferTargetType.DOWNLOAD)) {
                     targetSupplier = async () => await TransferProvider.provider().createDownloadTarget();
                 } else {
                     createErrorModal(tr("Failed to create transfer target"), tr("Failed to create transfer target.\nAll targets are unsupported")).open();
@@ -679,7 +703,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     targetSupplier: targetSupplier
                 });
                 transfer.awaitFinished().then(() => {
-                    if(transfer.transferState() === FileTransferState.ERRORED) {
+                    if (transfer.transferState() === FileTransferState.ERRORED) {
                         createErrorModal(tr("Failed to download file"), traj("Failed to download {0}:{:br:}{1}", fileName, transfer.currentErrorMessage())).open();
                     }
                 });
@@ -690,31 +714,31 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     });
 
     events.on("action_start_upload", event => {
-        if(event.mode === "browse") {
+        if (event.mode === "browse") {
             const input = document.createElement("input");
             input.type = "file";
             input.multiple = true;
 
             document.body.appendChild(input);
             input.onchange = () => {
-                if((input.files?.length | 0) === 0)
+                if ((input.files?.length | 0) === 0)
                     return;
 
-                events.fire("action_start_upload", { mode: "files", path: event.path, files: [...input.files] });
+                events.fire("action_start_upload", {mode: "files", path: event.path, files: [...input.files]});
             };
             input.onblur = () => input.remove();
             setTimeout(() => {
-                input.focus({ preventScroll: true });
+                input.focus({preventScroll: true});
                 input.click();
             });
             return;
-        } else if(event.mode === "files") {
+        } else if (event.mode === "files") {
             const pathInfo = parsePath(event.path, connection);
-            if(pathInfo.type !== "channel") {
+            if (pathInfo.type !== "channel") {
                 createErrorModal(tr("Failed to upload file(s)"), tra("Failed to upload files:{:br:}File uplaod is only supported in channel directories")).open();
                 return;
             }
-            for(const file of event.files) {
+            for (const file of event.files) {
                 const fileName = file.name;
                 const transfer = connection.fileManager.initializeFileUpload({
                     channel: pathInfo.channelId,
@@ -724,7 +748,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                     source: async () => TransferProvider.provider().createBrowserFileSource(file)
                 });
                 transfer.awaitFinished().then(() => {
-                    if(transfer.transferState() === FileTransferState.ERRORED) {
+                    if (transfer.transferState() === FileTransferState.ERRORED) {
                         createErrorModal(tr("Failed to upload file"), tra("Failed to upload {0}:{:br:}{1}", fileName, transfer.currentErrorMessage())).open();
                     }
                 });
@@ -736,7 +760,7 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
     {
         const listenToTransfer = (transfer: FileTransfer) => {
             /* We've currently only support for channel files */
-            if(transfer.properties.channel_id === 0)
+            if (transfer.properties.channel_id === 0)
                 return;
 
             const progressListener = event => events.fire("notify_transfer_progress", {
@@ -756,20 +780,24 @@ export function initializeRemoteFileBrowserController(connection: ConnectionHand
                         break;
 
                     case FileTransferState.RUNNING:
-                        events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: "transferring" });
+                        events.fire("notify_transfer_status", {id: transfer.clientTransferId, status: "transferring"});
                         break;
 
                     case FileTransferState.FINISHED:
                     case FileTransferState.CANCELED:
-                        events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: "finished", fileSize: transfer.transferProperties().fileSize });
+                        events.fire("notify_transfer_status", {
+                            id: transfer.clientTransferId,
+                            status: "finished",
+                            fileSize: transfer.transferProperties().fileSize
+                        });
                         break;
 
                     case FileTransferState.ERRORED:
-                        events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: "errored" });
+                        events.fire("notify_transfer_status", {id: transfer.clientTransferId, status: "errored"});
                         break;
                 }
 
-                if(transfer.isFinished()) {
+                if (transfer.isFinished()) {
                     unregisterEvents();
                     return;
                 }

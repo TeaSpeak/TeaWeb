@@ -1,6 +1,6 @@
 import * as log from "./log";
 import {LogCategory} from "./log";
-import {guid} from "tc-shared/crypto/uid";
+import {guid} from "./crypto/uid";
 import * as React from "react";
 import {useEffect} from "react";
 

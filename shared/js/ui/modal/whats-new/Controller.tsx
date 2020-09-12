@@ -12,7 +12,7 @@ export function spawnUpdatedModal(changes: { changesUI?: ChangeLog, changesClien
         }
 
         renderBody(): React.ReactElement {
-            return <WhatsNew changesUI={changes.changesUI} changesClient={changes.changesClient} />;
+            return <WhatsNew changesUI={changes.changesUI} changesClient={changes.changesClient}/>;
         }
 
         title(): string | React.ReactElement<Translatable> {

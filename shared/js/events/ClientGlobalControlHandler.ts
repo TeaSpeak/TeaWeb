@@ -1,19 +1,19 @@
-import {Registry} from "tc-shared/events";
-import {ClientGlobalControlEvents} from "tc-shared/events/GlobalEvents";
-import {Sound} from "tc-shared/sound/Sounds";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {settings} from "tc-shared/settings";
-import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
-import PermissionType from "tc-shared/permission/PermissionType";
-import {spawnQueryCreate} from "tc-shared/ui/modal/ModalQuery";
-import {openBanList} from "tc-shared/ui/modal/ModalBanList";
-import {formatMessage} from "tc-shared/ui/frames/chat";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
-import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
-import {tr} from "tc-shared/i18n/localize";
+import {Registry} from "../events";
+import {ClientGlobalControlEvents} from "../events/GlobalEvents";
+import {Sound} from "../sound/Sounds";
+import {ConnectionHandler} from "../ConnectionHandler";
+import {server_connections} from "../ui/frames/connection_handlers";
+import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
+import {settings} from "../settings";
+import {spawnConnectModal} from "../ui/modal/ModalConnect";
+import PermissionType from "../permission/PermissionType";
+import {spawnQueryCreate} from "../ui/modal/ModalQuery";
+import {openBanList} from "../ui/modal/ModalBanList";
+import {formatMessage} from "../ui/frames/chat";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {spawnSettingsModal} from "../ui/modal/ModalSettings";
+import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
+import {tr} from "../i18n/localize";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {

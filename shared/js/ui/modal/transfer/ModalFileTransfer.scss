@@ -109,11 +109,12 @@ html:root {
 
                 @include text-dotdotdot();
             }
-            
+
             a {
                 cursor: pointer;
 
                 @include transition(color $button_hover_animation_time ease-in-out);
+
                 &:hover, &.hovered {
                     color: var(--modal-transfer-path-hover);
                 }
@@ -257,6 +258,7 @@ html:root {
                 }
 
                 $indicator_transform_time: .5s;
+
                 .indicator {
                     position: absolute;
 
@@ -294,6 +296,7 @@ html:root {
                         background-image: linear-gradient(to right, var(--modal-transfer-filelist), var(--modal-transfer-filelist));
                         @include transition(all $indicator_transform_time ease-in-out);
                     }
+
                     @include transition(all $indicator_transform_time ease-in-out);
 
                     @mixin define-indicator($color, $colorLight) {

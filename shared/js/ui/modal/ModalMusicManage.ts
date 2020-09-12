@@ -1,18 +1,17 @@
-import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {MusicClientEntry} from "tc-shared/tree/Client";
-import {Registry} from "tc-shared/events";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
-import {tra} from "tc-shared/i18n/localize";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import { modal } from "tc-shared/events";
-import * as i18nc from "tc-shared/i18n/country";
-import {find} from "tc-shared/permission/PermissionManager";
+import {createErrorModal, createModal} from "../../ui/elements/Modal";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {MusicClientEntry} from "../../tree/Client";
+import {modal, Registry} from "../../events";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import {tra} from "../../i18n/localize";
+import * as tooltip from "../../ui/elements/Tooltip";
+import * as i18nc from "../../i18n/country";
+import {find} from "../../permission/PermissionManager";
+import * as htmltags from "../../ui/htmltags";
+import {ErrorCode} from "../../connection/ErrorCode";
 import ServerGroup = find.ServerGroup;
-import * as htmltags from "tc-shared/ui/htmltags";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
 
 export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry) {
     const ev_registry = new Registry<modal.music_manage>();
@@ -22,7 +21,7 @@ export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry
 
     let modal = createModal({
         header: tr(tr("Playlist Manage")),
-        body:  () => build_modal(ev_registry),
+        body: () => build_modal(ev_registry),
         footer: null,
 
         min_width: "35em",
@@ -40,13 +39,13 @@ export function openMusicManage(client: ConnectionHandler, bot: MusicClientEntry
 
 function permission_controller(event_registry: Registry<modal.music_manage>, bot: MusicClientEntry, client: ConnectionHandler) {
     const error_msg = error => {
-        if(error instanceof CommandResult) {
-            if(error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+        if (error instanceof CommandResult) {
+            if (error.id === ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 const permission = client.permissions.resolveInfo(error.json["failed_permid"]);
                 return tr("failed on permission ") + (permission ? permission.name : tr("unknown"));
             }
             return error.extra_message || error.message;
-        } else if(typeof error === "string")
+        } else if (typeof error === "string")
             return error;
         else
             return tr("command error");
@@ -85,14 +84,14 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
             };
 
             Promise.resolve().then(() => {
-                if(event.key === "notify_song_change") {
+                if (event.key === "notify_song_change") {
                     return client.serverConnection.send_command("clientedit", {
                         clid: bot.clientId(),
                         client_flag_notify_song_change: event.value
                     });
                 } else {
                     const property = property_map[event.key];
-                    if(!property) return Promise.reject(tr("unknown property"));
+                    if (!property) return Promise.reject(tr("unknown property"));
 
                     const data = {
                         playlist_id: playlist_id
@@ -158,7 +157,7 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
 
             Promise.resolve().then(() => {
                 const property = property_map[event.key];
-                if(!property) return Promise.reject(tr("unknown property"));
+                if (!property) return Promise.reject(tr("unknown property"));
 
                 const data = {
                     clid: bot.clientId()
@@ -188,8 +187,8 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
             const playlist_id = bot.properties.client_playlist_id;
             client.permissions.requestPlaylistPermissions(playlist_id).then(result => {
                 const permissions = {};
-                for(const permission of result)
-                    if(permission.hasValue())
+                for (const permission of result)
+                    if (permission.hasValue())
                         permissions[permission.type.name] = permission.value;
                 event_registry.fire("general_permissions", {
                     status: "success",
@@ -234,8 +233,8 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
             const client_id = event.client_database_id;
             client.permissions.requestPlaylistClientPermissions(playlist_id, client_id).then(result => {
                 const permissions = {};
-                for(const permission of result)
-                    if(permission.hasValue())
+                for (const permission of result)
+                    if (permission.hasValue())
                         permissions[permission.type.name] = permission.value;
                 event_registry.fire("client_permissions", {
                     status: "success",
@@ -307,24 +306,25 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
         });
 
         event_registry.on("search_client", event => {
-            if(!event.text) return;
+            if (!event.text) return;
 
             const text = event.text;
             Promise.resolve().then(() => {
                 let is_uuid = false;
                 try {
                     is_uuid = atob(text).length === 32;
-                } catch(e) {}
-                if(is_uuid) {
+                } catch (e) {
+                }
+                if (is_uuid) {
                     return client.serverConnection.command_helper.getInfoFromUniqueId(text);
-                } else if(text.match(/^[0-9]{1,7}$/) && !isNaN(parseInt(text))) {
+                } else if (text.match(/^[0-9]{1,7}$/) && !isNaN(parseInt(text))) {
                     return client.serverConnection.command_helper.getInfoFromClientDatabaseId(parseInt(text));
                 } else {
                     //TODO: Database name lookup?
                     return Promise.reject("no results");
                 }
             }).then(result => {
-                if(result.length) {
+                if (result.length) {
                     const client = result[0];
                     event_registry.fire("search_client_result", {
                         status: "success",
@@ -351,11 +351,11 @@ function permission_controller(event_registry: Registry<modal.music_manage>, bot
         event_registry.on("query_group_permissions", event => {
             client.permissions.find_permission(event.permission_name).then(result => {
                 let groups = [];
-                for(const e of result) {
-                    if(e.type !== "server_group") continue;
+                for (const e of result) {
+                    if (e.type !== "server_group") continue;
 
                     const group = client.groups.findServerGroup((e as ServerGroup).group_id);
-                    if(!group) continue;
+                    if (!group) continue;
 
                     groups.push({
                         name: group.name,
@@ -511,7 +511,7 @@ function dummy_controller(event_registry: Registry<modal.music_manage>) {
 }
 
 
-function build_modal(event_registry: Registry<modal.music_manage>) : JQuery<HTMLElement> {
+function build_modal(event_registry: Registry<modal.music_manage>): JQuery<HTMLElement> {
     const tag = $("#tmpl_music_manage").renderTag();
 
     const container_settings = tag.find(".body > .category-settings");
@@ -532,8 +532,8 @@ function build_modal(event_registry: Registry<modal.music_manage>) : JQuery<HTML
             container_permissions.toggleClass("hidden", data.container !== "permissions");
         });
         category_permissions.on('click', event => {
-            if(shown_container === "permissions") return;
-            event_registry.fire("show_container", { container: "permissions" });
+            if (shown_container === "permissions") return;
+            event_registry.fire("show_container", {container: "permissions"});
         });
 
         const category_settings = header.find(".category-settings");
@@ -542,8 +542,8 @@ function build_modal(event_registry: Registry<modal.music_manage>) : JQuery<HTML
             container_settings.toggleClass("hidden", data.container !== "settings");
         });
         category_settings.on('click', event => {
-            if(shown_container === "settings") return;
-            event_registry.fire("show_container", { container: "settings" });
+            if (shown_container === "settings") return;
+            event_registry.fire("show_container", {container: "settings"});
         });
 
         event_registry.on("show_container", data => shown_container = data.container);
@@ -554,13 +554,13 @@ function build_modal(event_registry: Registry<modal.music_manage>) : JQuery<HTML
         const input = event.target as HTMLInputElement;
         const max = parseInt(input.getAttribute("maxlength"));
         const text = input.value;
-        if(!isNaN(max) && text && text.length > max)
+        if (!isNaN(max) && text && text.length > max)
             //input.value = text.substr(text.length - max);
             input.value = text.substr(0, max);
     });
 
     /* initialize */
-    event_registry.fire("show_container", { container: "settings" });
+    event_registry.fire("show_container", {container: "settings"});
     return tag.children();
 }
 
@@ -587,7 +587,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("bot_status", event => {
-                if(event.status === "error")
+                if (event.status === "error")
                     input
                         .prop("disabled", true)
                         .val(null)
@@ -600,9 +600,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_bot_status_result", event => {
-                if(event.key !== "name") return;
+                if (event.key !== "name") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to set bot name"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -616,8 +616,8 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             input.on("keyup", event => event.key === "Enter" && input.trigger("focusout"));
             input.on("focusout", event => {
                 const value = input.val() as string;
-                if(value === last_value) return;
-                if(!value) {
+                if (value === last_value) return;
+                if (!value) {
                     input.val(last_value);
                     return;
                 }
@@ -643,8 +643,8 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             const update_country_code = input => {
                 input = input || fallback_country || "ts";
                 flag.each((_, e) => {
-                    for(const [index, klass] of e.classList.entries())
-                        if(klass.startsWith("flag-"))
+                    for (const [index, klass] of e.classList.entries())
+                        if (klass.startsWith("flag-"))
                             e.classList.remove(klass);
                 });
                 flag.addClass("flag-" + input.toLowerCase());
@@ -661,7 +661,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("bot_status", event => {
-                if(event.status === "error")
+                if (event.status === "error")
                     input
                         .prop("disabled", true)
                         .val(null)
@@ -677,9 +677,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_bot_status_result", event => {
-                if(event.key !== "country_code") return;
+                if (event.key !== "country_code") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to set bots country"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -699,8 +699,8 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             input.on("keyup", event => event.key === "Enter" && input.trigger("focusout"));
             input.on("focusout", event => {
                 const value = input.val() as string;
-                if(value === last_value) return;
-                if(value && value.length != 2) {
+                if (value === last_value) return;
+                if (value && value.length != 2) {
                     input.firstParent(".input-boxed").addClass("is-invalid");
                     return;
                 }
@@ -734,7 +734,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("bot_status", event => {
-                if(event.status === "error") {
+                if (event.status === "error") {
                     label.addClass("disabled");
                     input
                         .prop("checked", false)
@@ -748,9 +748,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_bot_status_result", event => {
-                if(event.key !== "channel_commander") return;
+                if (event.key !== "channel_commander") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to change channel commander state"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -788,7 +788,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("bot_status", event => {
-                if(event.status === "error") {
+                if (event.status === "error") {
                     label.addClass("disabled");
                     input
                         .prop("checked", false)
@@ -802,9 +802,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_bot_status_result", event => {
-                if(event.key !== "priority_speaker") return;
+                if (event.key !== "priority_speaker") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to change priority speaker state"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -842,7 +842,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
 
         /* set status timeout */
         {
-            let timeouts: {[key: string]:any} = {};
+            let timeouts: { [key: string]: any } = {};
             event_registry.on("set_bot_status", event => {
                 clearTimeout(timeouts[event.key]);
                 timeouts[event.key] = setTimeout(() => {
@@ -870,11 +870,11 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             let last_value = undefined;
 
             const update_value = text => {
-                if(text) {
+                if (text) {
                     input.prop("disabled", true).addClass("disabled");
                     input.val("-1");
                     input.find("option[value=-1]").text(text);
-                } else if(last_value >= 0 && last_value <= 3) {
+                } else if (last_value >= 0 && last_value <= 3) {
                     input
                         .prop("disabled", false)
                         .removeClass("disabled");
@@ -890,7 +890,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("playlist_status", event => {
-                if(event.status === "error") {
+                if (event.status === "error") {
                     update_value(event.error_msg || tr("error while loading"));
                 } else {
                     last_value = event.data.replay_mode;
@@ -899,9 +899,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_playlist_status_result", event => {
-                if(event.key !== "replay_mode") return;
+                if (event.key !== "replay_mode") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to change replay mode"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -912,7 +912,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             input.on("change", event => {
                 const value = parseInt(input.val() as string);
                 console.log(value);
-                if(isNaN(value)) return;
+                if (isNaN(value)) return;
 
                 update_value(tr("applying..."));
                 event_registry.fire("set_playlist_status", {
@@ -937,7 +937,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("playlist_status", event => {
-                if(event.status === "error")
+                if (event.status === "error")
                     input
                         .prop("disabled", true)
                         .val(null)
@@ -952,9 +952,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_playlist_status_result", event => {
-                if(event.key !== "max_size") return;
+                if (event.key !== "max_size") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to change max playlist size"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -970,12 +970,12 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             input.on("keyup", event => event.key === "Enter" && input.trigger("focusout"));
             input.on("focusout", event => {
                 const value = input.val() as string;
-                if(value === last_value) return;
-                if(value === "") {
+                if (value === last_value) return;
+                if (value === "") {
                     input.val(last_value);
                     return;
                 }
-                if(isNaN(parseInt(value))) {
+                if (isNaN(parseInt(value))) {
                     input.parentsUntil(".input-boxed").addClass("is-invalid");
                     return;
                 }
@@ -1010,7 +1010,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("playlist_status", event => {
-                if(event.status === "error") {
+                if (event.status === "error") {
                     label.addClass("disabled");
                     input
                         .prop("checked", false)
@@ -1024,9 +1024,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_playlist_status_result", event => {
-                if(event.key !== "delete_played") return;
+                if (event.key !== "delete_played") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to change delete state"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -1064,7 +1064,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("playlist_status", event => {
-                if(event.status === "error") {
+                if (event.status === "error") {
                     label.addClass("disabled");
                     input
                         .prop("checked", false)
@@ -1078,9 +1078,9 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
             });
 
             event_registry.on("set_playlist_status_result", event => {
-                if(event.key !== "notify_song_change") return;
+                if (event.key !== "notify_song_change") return;
 
-                if(event.status !== "success")
+                if (event.status !== "success")
                     show_change_error(tr("Failed to change notify state"), event.error_msg || tr("timeout"));
                 else
                     last_value = event.value;
@@ -1118,7 +1118,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
 
         /* set status timeout */
         {
-            let timeouts: {[key: string]:any} = {};
+            let timeouts: { [key: string]: any } = {};
             event_registry.on("set_playlist_status", event => {
                 clearTimeout(timeouts[event.key]);
                 timeouts[event.key] = setTimeout(() => {
@@ -1162,7 +1162,7 @@ function build_settings_container(event_registry: Registry<modal.music_manage>, 
     {
         let initialized = false;
         event_registry.on("show_container", event => {
-            if(event.container !== "settings" || initialized) return;
+            if (event.container !== "settings" || initialized) return;
             initialized = true;
 
             event_registry.fire("query_bot_status");
@@ -1203,15 +1203,15 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             let last_query;
             input_search.on('keyup', event => {
                 const text = input_search.val() as string;
-                if(text === last_query) return;
+                if (text === last_query) return;
 
-                if(text)
-                    event_registry.fire("filter_client_list", { filter: text });
+                if (text)
+                    event_registry.fire("filter_client_list", {filter: text});
                 else
-                    event_registry.fire("filter_client_list", { filter: undefined });
+                    event_registry.fire("filter_client_list", {filter: undefined});
 
                 input_search.toggleClass("is-invalid", !list_shown && text === last_query);
-                if(!list_shown) {
+                if (!list_shown) {
                     button_search.prop("disabled", !text || !!search_timeout);
                 } else {
                     last_query = text;
@@ -1219,7 +1219,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             });
 
             input_search.on('keydown', event => {
-                if(event.key === "Enter" && !list_shown && !button_search.prop("disabled"))
+                if (event.key === "Enter" && !list_shown && !button_search.prop("disabled"))
                     button_search.trigger("click");
             });
 
@@ -1252,10 +1252,10 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                 search_timeout = 0;
 
                 button_search.prop("disabled", !input_search.val());
-                if(event.status === "timeout") {
+                if (event.status === "timeout") {
                     createErrorModal(tr("Client search failed"), tr("Failed to perform client search.<br>Search resulted in a timeout.")).open();
                     return;
-                } else if(event.status === "error" || event.status === "empty") {
+                } else if (event.status === "error" || event.status === "empty") {
                     //TODO: Display the error somehow?
                     input_search.addClass("is-invalid");
                     return;
@@ -1280,18 +1280,18 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             event_registry.on("special_client_list", data => {
                 button_refresh.prop("disabled", false);
                 container.find(".overlay").addClass("hidden");
-                if(data.status === "error-permission") {
+                if (data.status === "error-permission") {
                     const overlay = container.find(".overlay-query-error-permissions");
                     overlay.find("a").text(tr("Insufficient permissions"));
                     overlay.removeClass("hidden");
-                } else if(data.status === "success") {
+                } else if (data.status === "success") {
                     container_entries.find(".client").remove(); /* clear  */
 
-                    if(!data.clients.length) {
+                    if (!data.clients.length) {
                         const overlay = container.find(".overlay-empty-list");
                         overlay.removeClass("hidden");
                     } else {
-                        for(const client of data.clients) {
+                        for (const client of data.clients) {
                             const tag = $.spawn("div").addClass("client").append(
                                 htmltags.generate_client_object({
                                     add_braces: false,
@@ -1301,7 +1301,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                                     client_unique_id: client.unique_id
                                 })
                             );
-                            tag.on('dblclick', event => event_registry.fire("special_client_set", { client: client }));
+                            tag.on('dblclick', event => event_registry.fire("special_client_set", {client: client}));
                             tag.attr("x-filter", client.database_id + "_" + client.name + "_" + client.unique_id);
                             container_entries.append(tag);
                         }
@@ -1339,7 +1339,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             {
                 let shown;
                 event_registry.on('show_client_list', event => {
-                    if(shown) return;
+                    if (shown) return;
                     shown = true;
 
                     event_registry.fire("query_special_clients");
@@ -1355,7 +1355,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                     let shown = 0, hidden = 0;
                     container_entries.find(".client").each(function () {
                         const text = this.getAttribute("x-filter");
-                        if(!filter || text.toLowerCase().indexOf(filter) != -1) {
+                        if (!filter || text.toLowerCase().indexOf(filter) != -1) {
                             this.classList.remove("hidden");
                             shown++;
                         } else {
@@ -1363,7 +1363,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                             hidden++;
                         }
                     });
-                    if(shown == 0 && hidden == 0) return;
+                    if (shown == 0 && hidden == 0) return;
                     overlay.toggleClass("hidden", shown != 0);
                 };
 
@@ -1386,7 +1386,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
         const container = tag.find(".table-head .column-client-specific .client-info");
 
         container.find(".button-client-deselect").on("click", event => {
-            event_registry.fire("special_client_set", { client: undefined });
+            event_registry.fire("special_client_set", {client: undefined});
         });
 
         event_registry.on("special_client_set", event => {
@@ -1394,7 +1394,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
 
             const client_container = container.find(".container-selected-client");
             client_container.find(".htmltag-client").remove();
-            if(event.client) {
+            if (event.client) {
                 client_container.append(htmltags.generate_client_object({
                     client_unique_id: event.client.unique_id,
                     client_name: event.client.name,
@@ -1432,7 +1432,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                 const elem = $(_e) as JQuery<HTMLDivElement>;
 
                 const permission_name = elem.attr("x-permission");
-                if(!permission_name) return;
+                if (!permission_name) return;
 
                 const input = elem.find("input");
                 input.attr("maxlength", 6);
@@ -1446,9 +1446,9 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
 
                 event_registry.on("general_permissions", event => {
                     input.prop("disabled", true).val(null);
-                    if(event.status === "timeout") {
+                    if (event.status === "timeout") {
                         input.attr("placeholder", tr("load timeout"));
-                    } else if(event.status === "success") {
+                    } else if (event.status === "success") {
                         input.prop("disabled", false); //TODO: Check permissions?
                         input.attr("placeholder", null);
                         const value = event.permissions ? event.permissions[permission_name] || 0 : 0;
@@ -1460,24 +1460,24 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                 });
 
                 event_registry.on("set_general_permission_result", event => {
-                    if(event.key !== permission_name) return;
+                    if (event.key !== permission_name) return;
 
                     input.prop("disabled", false); //TODO: Check permissions?
                     input.attr("placeholder", null);
-                    if(event.status === "success") {
+                    if (event.status === "success") {
                         input.val(event.value);
                         last_sync_value = event.value;
-                    } else if(event.status === "error") {
-                        if(typeof last_sync_value === "number") input.val(last_sync_value);
+                    } else if (event.status === "error") {
+                        if (typeof last_sync_value === "number") input.val(last_sync_value);
                         createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:{:br:}{}", event.error_msg)).open();
                     }
                 });
 
                 input.on("focusout", event => {
-                    if(input.prop("disabled")) return;
+                    if (input.prop("disabled")) return;
 
                     const value = parseInt(input.val() as string);
-                    if(value === last_sync_value) return;
+                    if (value === last_sync_value) return;
 
                     input.prop("disabled", true).val(null);
                     input.attr("placeholder", tr("applying..."));
@@ -1496,10 +1496,10 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                 const elem = $(_e) as JQuery<HTMLDivElement>;
 
                 const permission_name = elem.attr("x-permission");
-                if(!permission_name) return;
+                if (!permission_name) return;
 
                 const required_power = needed_power_map[permission_name];
-                if(!required_power) return;
+                if (!required_power) return;
 
                 let last_sync_value = undefined;
                 let current_tag: JQuery;
@@ -1516,14 +1516,14 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                 };
 
                 event_registry.on("general_permissions", event => {
-                    if(event.status === "success")
+                    if (event.status === "success")
                         last_sync_value = event.permissions ? event.permissions[permission_name] || 0 : 0;
                 });
 
                 event_registry.on("set_general_permission_result", event => {
-                    if(event.key !== permission_name) return;
+                    if (event.key !== permission_name) return;
 
-                    if(event.status === "success")
+                    if (event.status === "success")
                         last_sync_value = event.value;
                 });
 
@@ -1532,26 +1532,26 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                 });
 
                 const show_query_result = () => {
-                    if(!current_tag) return;
+                    if (!current_tag) return;
 
                     const container_groups = current_tag.find(".container-groups");
                     container_groups.children().remove();
                     current_tag.find(".container-status").addClass("hidden");
 
-                    if(loading) {
+                    if (loading) {
                         current_tag.find(".status-loading").removeClass("hidden");
-                    } else if(!query_result || query_result.status === "error") {
+                    } else if (!query_result || query_result.status === "error") {
                         current_tag
                             .find(".status-error").removeClass("hidden")
                             .text((query_result ? query_result.error_msg : "") || tr("failed to query data"));
-                    } else if(query_result.status === "timeout") {
+                    } else if (query_result.status === "timeout") {
                         current_tag
                             .find(".status-error").removeClass("hidden")
                             .text(tr("timeout while loading"));
                     } else {
                         let count = 0;
-                        for(const group of (query_result.groups || [])) {
-                            if(group.value !== -1 && group.value < last_sync_value) continue;
+                        for (const group of (query_result.groups || [])) {
+                            if (group.value !== -1 && group.value < last_sync_value) continue;
 
                             count++;
                             container_groups.append($.spawn("div").addClass("group").text(
@@ -1559,7 +1559,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                             ));
                         }
 
-                        if(count === 0) current_tag.find(".status-no-groups").removeClass("hidden");
+                        if (count === 0) current_tag.find(".status-no-groups").removeClass("hidden");
                     }
                 };
 
@@ -1567,7 +1567,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                     on_show(tag: JQuery<HTMLElement>) {
                         current_tag = tag;
 
-                        if(!query_result && !loading) {
+                        if (!query_result && !loading) {
                             event_registry.fire("query_group_permissions", {
                                 permission_name: required_power
                             });
@@ -1581,7 +1581,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
                 });
 
                 event_registry.on("group_permissions", event => {
-                    if(event.permission_name !== required_power) return;
+                    if (event.permission_name !== required_power) return;
 
                     loading = false;
                     query_result = event;
@@ -1598,9 +1598,9 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
 
         /* permission set timeout */
         {
-            let permission_timers: {[key: string]:any} = {};
+            let permission_timers: { [key: string]: any } = {};
             event_registry.on("set_general_permission", event => {
-                if(permission_timers[event.key])
+                if (permission_timers[event.key])
                     clearTimeout(permission_timers[event.key]);
                 permission_timers[event.key] = setTimeout(() => {
                     event_registry.fire("set_general_permission_result", {
@@ -1619,9 +1619,9 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
 
         /* group query timeout */
         {
-            let timers: {[key: string]:any} = {};
+            let timers: { [key: string]: any } = {};
             event_registry.on("query_group_permissions", event => {
-                if(timers[event.permission_name])
+                if (timers[event.permission_name])
                     clearTimeout(timers[event.permission_name]);
                 timers[event.permission_name] = setTimeout(() => {
                     event_registry.fire("group_permissions", {
@@ -1700,12 +1700,12 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
         const container = tag.find(".column-client-specific");
 
         let client_database_id = 0;
-        let needed_permissions: {[key: string]:number} = {};
+        let needed_permissions: { [key: string]: number } = {};
 
         /* needed permissions updater */
         {
             event_registry.on("general_permissions", event => {
-                if(event.status !== "success") return;
+                if (event.status !== "success") return;
 
                 needed_permissions = event.permissions;
             });
@@ -1721,8 +1721,8 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             client_database_id = event.client ? event.client.database_id : 0;
             container.find(".client-permission").toggleClass("hidden", !event.client);
 
-            if(client_database_id)
-                event_registry.fire("query_client_permissions", { client_database_id: client_database_id });
+            if (client_database_id)
+                event_registry.fire("query_client_permissions", {client_database_id: client_database_id});
         });
 
         const enabled_class = "client-apply";
@@ -1740,7 +1740,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             let last_sync_value = undefined;
             let hide_indicator = false;
 
-            if(typeof permission_needed_name !== "string") {
+            if (typeof permission_needed_name !== "string") {
                 log.warn(LogCategory.GENERAL, tr("Missing permission needed mapping for %s"), permission_name);
                 return;
             }
@@ -1759,15 +1759,15 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             });
             event_registry.on("general_permissions", event => update_indicator());
             event_registry.on("set_general_permission_result", event => {
-                if(event.key !== permission_needed_name) return;
-                if(event.status !== "success") return;
+                if (event.key !== permission_needed_name) return;
+                if (event.status !== "success") return;
 
                 update_indicator();
             });
 
             /* loading the permission */
             event_registry.on("query_client_permissions", event => {
-                if(event.client_database_id !== client_database_id) return;
+                if (event.client_database_id !== client_database_id) return;
 
                 last_sync_value = undefined;
                 hide_indicator = true;
@@ -1777,13 +1777,13 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             });
 
             event_registry.on('client_permissions', event => {
-                if(event.client_database_id !== client_database_id) return;
+                if (event.client_database_id !== client_database_id) return;
 
                 hide_indicator = false;
                 input.prop("disabled", true).val(null);
-                if(event.status === "timeout") {
+                if (event.status === "timeout") {
                     input.attr("placeholder", tr("load timeout"));
-                } else if(event.status === "success") {
+                } else if (event.status === "success") {
                     input.prop("disabled", false); //TODO: Check permissions?
                     input.attr("placeholder", null);
                     const value = event.permissions ? event.permissions[permission_name] || 0 : 0;
@@ -1798,10 +1798,10 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             /* permission editing */
             input.attr("maxlength", 6);
             input.on("focusout", event => {
-                if(!client_database_id) return;
+                if (!client_database_id) return;
 
                 const value = parseInt(input.val() as string);
-                if(value === last_sync_value) return;
+                if (value === last_sync_value) return;
 
                 input.prop("disabled", true).val(null);
                 input.attr("placeholder", tr("applying..."));
@@ -1818,15 +1818,15 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
             input.on("keyup", event => event.key === "Enter" && input.blur());
 
             event_registry.on("set_client_permission_result", event => {
-                if(event.key !== permission_name) return;
+                if (event.key !== permission_name) return;
 
                 input.prop("disabled", false); //TODO: Check permissions?
                 input.attr("placeholder", null);
-                if(event.status === "success") {
+                if (event.status === "success") {
                     input.val(event.value);
                     last_sync_value = event.value;
-                } else if(event.status === "error") {
-                    if(typeof last_sync_value === "number") input.val(last_sync_value);
+                } else if (event.status === "error") {
+                    if (typeof last_sync_value === "number") input.val(last_sync_value);
                     createErrorModal(tr("Failed to change permission"), tra("Failed to change permission:{:br:}{}", event.error_msg)).open();
                 }
                 hide_indicator = false;
@@ -1836,9 +1836,9 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
 
         /* client permission query timeout */
         {
-            let timeout: {[key: number]: any} = {};
+            let timeout: { [key: number]: any } = {};
             event_registry.on("query_client_permissions", event => {
-                if(timeout[event.client_database_id])
+                if (timeout[event.client_database_id])
                     clearTimeout(timeout[event.client_database_id]);
                 timeout[event.client_database_id] = setTimeout(() => {
                     event_registry.fire("client_permissions", {
@@ -1855,10 +1855,10 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
 
         /* client permission set timeout */
         {
-            let timeout: {[key: string]: any} = {};
+            let timeout: { [key: string]: any } = {};
             event_registry.on("set_client_permission", event => {
                 const key = event.client_database_id + "_" + event.key;
-                if(timeout[key])
+                if (timeout[key])
                     clearTimeout(timeout[key]);
 
                 timeout[key] = setTimeout(() => {
@@ -1873,7 +1873,7 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
 
             event_registry.on("set_client_permission_result", event => {
                 const key = event.client_database_id + "_" + event.key;
-                if(timeout[key]) {
+                if (timeout[key]) {
                     clearTimeout(timeout[key]);
                     delete timeout[key];
                 }
@@ -1881,8 +1881,8 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
         }
 
         event_registry.on("refresh_permissions", event => {
-            if(client_database_id)
-                event_registry.fire("query_client_permissions", { client_database_id: client_database_id });
+            if (client_database_id)
+                event_registry.fire("query_client_permissions", {client_database_id: client_database_id});
         });
         tooltip.initialize(container);
     }
@@ -1896,10 +1896,10 @@ function build_permission_container(event_registry: Registry<modal.music_manage>
     {
         let initialized = false;
         event_registry.on("show_container", event => {
-            if(event.container !== "permissions" || initialized) return;
+            if (event.container !== "permissions" || initialized) return;
             initialized = true;
 
-            event_registry.fire("special_client_set", { client: undefined });
+            event_registry.fire("special_client_set", {client: undefined});
             event_registry.fire("query_general_permissions", {});
         });
     }

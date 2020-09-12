@@ -1,7 +1,7 @@
-import {createErrorModal, createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {TeaSpeakIdentity} from "tc-shared/profiles/identities/TeamSpeakIdentity";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import {formatMessage} from "tc-shared/ui/frames/chat";
+import {createErrorModal, createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
+import {TeaSpeakIdentity} from "../../profiles/identities/TeamSpeakIdentity";
+import * as tooltip from "../../ui/elements/Tooltip";
+import {formatMessage} from "../../ui/frames/chat";
 
 export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: string): Modal {
     let modal: Modal;
@@ -125,7 +125,7 @@ export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: 
 export function spawnTeamSpeakIdentityImport(callback: (identity: TeaSpeakIdentity) => any): Modal {
     let modal: Modal;
     let selected_type: string;
-    let identities: {[key: string]: TeaSpeakIdentity} = {};
+    let identities: { [key: string]: TeaSpeakIdentity } = {};
 
     modal = createModal({
         header: tr("Import identity"),
@@ -141,7 +141,7 @@ export function spawnTeamSpeakIdentityImport(callback: (identity: TeaSpeakIdenti
 
             const set_status = (message: string | undefined, type: "error" | "loading" | "success") => {
                 container_status.toggleClass("hidden", !message);
-                if(message) {
+                if (message) {
                     container_status.toggleClass("error", type === "error");
                     container_status.toggleClass("loading", type === "loading");
                     container_status.find("a").text(message);
@@ -173,7 +173,7 @@ export function spawnTeamSpeakIdentityImport(callback: (identity: TeaSpeakIdenti
                 });
             };
 
-             /* file select button */
+            /* file select button */
             input_file.on('change', event => {
                 const element = event.target as HTMLInputElement;
                 const file_reader = new FileReader();
@@ -195,12 +195,12 @@ export function spawnTeamSpeakIdentityImport(callback: (identity: TeaSpeakIdenti
 
             input_text.on('change keyup', event => {
                 const text = input_text.val() as string;
-                if(!text) {
+                if (!text) {
                     set_status("", "success");
                     return;
                 }
 
-                if(text.indexOf('V') == -1) {
+                if (text.indexOf('V') == -1) {
                     set_status(tr("Invalid identity string"), "error");
                     return;
                 }

@@ -3,12 +3,12 @@ import {
     HandshakeCommandHandler,
     IdentitifyType,
     Identity
-} from "tc-shared/profiles/Identity";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {HandshakeIdentityHandler} from "tc-shared/connection/HandshakeHandler";
+} from "../../profiles/Identity";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import {AbstractServerConnection} from "../../connection/ConnectionBase";
+import {HandshakeIdentityHandler} from "../../connection/HandshakeHandler";
 import * as forum from "./teaspeak-forum";
 
 class TeaForumHandshakeHandler extends AbstractHandshakeIdentityHandler {

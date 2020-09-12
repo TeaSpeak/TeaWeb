@@ -1,8 +1,8 @@
-import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {Registry} from "tc-shared/events";
-import {VoiceClient} from "tc-shared/voice/VoiceClient";
-import {WhisperSession, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
+import {RecorderProfile} from "../voice/RecorderProfile";
+import {AbstractServerConnection} from "../connection/ConnectionBase";
+import {Registry} from "../events";
+import {VoiceClient} from "../voice/VoiceClient";
+import {WhisperSession, WhisperTarget} from "../voice/VoiceWhisper";
 
 export enum VoiceConnectionStatus {
     ClientUnsupported,

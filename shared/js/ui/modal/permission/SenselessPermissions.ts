@@ -1,4 +1,4 @@
-import PermissionType from "tc-shared/permission/PermissionType";
+import PermissionType from "../../../permission/PermissionType";
 
 export const senseless_server_group_permissions: PermissionType[] = [
     PermissionType.B_CHANNEL_GROUP_INHERITANCE_END
@@ -66,6 +66,6 @@ export const senseless_channel_permissions: PermissionType[] = [
     PermissionType.B_CHANNEL_IGNORE_DESCRIPTION_VIEW_POWER
 ];
 
-export const senseless_client_permissions: PermissionType[] = [ ];
+export const senseless_client_permissions: PermissionType[] = [];
 
-export const senseless_client_channel_permissions: PermissionType[] = [ ];
+export const senseless_client_channel_permissions: PermissionType[] = [];

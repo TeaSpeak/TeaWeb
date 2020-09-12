@@ -3,14 +3,14 @@ import * as ipc from "../../../ipc/BrowserIPC";
 import * as i18n from "../../../i18n/localize";
 
 import {Stage} from "tc-loader";
-import {AbstractModal, ModalRenderer} from "tc-shared/ui/react-elements/ModalDefinitions";
-import {Settings, SettingsKey} from "tc-shared/settings";
+import {AbstractModal, ModalRenderer} from "../../../ui/react-elements/ModalDefinitions";
+import {Settings, SettingsKey} from "../../../settings";
 import {getPopoutController} from "./PopoutController";
-import {findPopoutHandler} from "tc-shared/ui/react-elements/external-modal/PopoutRegistry";
-import {Registry} from "tc-shared/events";
-import {WebModalRenderer} from "tc-shared/ui/react-elements/external-modal/PopoutRendererWeb";
-import {ClientModalRenderer} from "tc-shared/ui/react-elements/external-modal/PopoutRendererClient";
-import {setupJSRender} from "tc-shared/ui/jsrender";
+import {findPopoutHandler} from "../../../ui/react-elements/external-modal/PopoutRegistry";
+import {Registry} from "../../../events";
+import {WebModalRenderer} from "../../../ui/react-elements/external-modal/PopoutRendererWeb";
+import {ClientModalRenderer} from "../../../ui/react-elements/external-modal/PopoutRendererClient";
+import {setupJSRender} from "../../../ui/jsrender";
 
 let modalRenderer: ModalRenderer;
 let modalInstance: AbstractModal;

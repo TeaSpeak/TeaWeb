@@ -26,7 +26,7 @@ export function spawnEchoTestModal(connection: ConnectionHandler) {
         renderBody(): React.ReactElement {
             return (
                 <EchoTestEventRegistry.Provider value={events}>
-                    <EchoTestModal />
+                    <EchoTestModal/>
                 </EchoTestEventRegistry.Provider>
             );
         }
@@ -50,10 +50,10 @@ export function spawnEchoTestModal(connection: ConnectionHandler) {
 }
 
 function initializeController(connection: ConnectionHandler, events: Registry<EchoTestEvents>) {
-    let testState: TestState = { state: "stopped" };
+    let testState: TestState = {state: "stopped"};
 
     events.on("action_open_microphone_settings", () => {
-        global_client_actions.fire("action_open_window_settings", { defaultCategory: "audio-microphone" });
+        global_client_actions.fire("action_open_window_settings", {defaultCategory: "audio-microphone"});
     });
 
     events.on("action_toggle_tests", event => {
@@ -61,57 +61,57 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
     });
 
     events.on("query_test_state", () => {
-        events.fire_async("notify_tests_toggle", { enabled: settings.global(Settings.KEY_VOICE_ECHO_TEST_ENABLED) });
+        events.fire_async("notify_tests_toggle", {enabled: settings.global(Settings.KEY_VOICE_ECHO_TEST_ENABLED)});
     });
 
     events.on("notify_destroy", settings.globalChangeListener(Settings.KEY_VOICE_ECHO_TEST_ENABLED, value => {
-        events.fire_async("notify_tests_toggle", { enabled: value });
+        events.fire_async("notify_tests_toggle", {enabled: value});
     }));
 
     events.on("action_test_result", event => {
-        if(event.status === "success") {
+        if (event.status === "success") {
             events.fire("action_close");
         } else {
             events.fire("action_stop_test");
-            events.fire("notify_test_phase", { phase: "troubleshooting" });
+            events.fire("notify_test_phase", {phase: "troubleshooting"});
         }
     });
 
     events.on("action_troubleshooting_finished", event => {
-        if(event.status === "aborted") {
+        if (event.status === "aborted") {
             events.fire("action_close");
         } else {
-            events.fire("notify_test_phase", { phase: "testing" });
+            events.fire("notify_test_phase", {phase: "testing"});
             events.fire("action_start_test");
         }
     });
 
     const reportVoiceConnectionState = (state: VoiceConnectionStatus) => {
-        if(state === VoiceConnectionStatus.Connected) {
+        if (state === VoiceConnectionStatus.Connected) {
             beginTest();
         } else {
             endTest();
         }
         switch (state) {
             case VoiceConnectionStatus.Connected:
-                events.fire("notify_voice_connection_state", { state: "connected" });
+                events.fire("notify_voice_connection_state", {state: "connected"});
                 break;
 
             case VoiceConnectionStatus.Disconnected:
             case VoiceConnectionStatus.Disconnecting:
-                events.fire("notify_voice_connection_state", { state: "disconnected" });
+                events.fire("notify_voice_connection_state", {state: "disconnected"});
                 break;
 
             case VoiceConnectionStatus.Connecting:
-                events.fire("notify_voice_connection_state", { state: "connecting" });
+                events.fire("notify_voice_connection_state", {state: "connecting"});
                 break;
 
             case VoiceConnectionStatus.ClientUnsupported:
-                events.fire("notify_voice_connection_state", { state: "unsupported-client" });
+                events.fire("notify_voice_connection_state", {state: "unsupported-client"});
                 break;
 
             case VoiceConnectionStatus.ServerUnsupported:
-                events.fire("notify_voice_connection_state", { state: "unsupported-server" });
+                events.fire("notify_voice_connection_state", {state: "unsupported-server"});
                 break;
 
         }
@@ -124,7 +124,7 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
     events.on("query_voice_connection_state", () => reportVoiceConnectionState(connection.getServerConnection().getVoiceConnection().getConnectionState()));
 
     events.on("query_test_state", () => {
-        events.fire_async("notify_test_state", { state: testState });
+        events.fire_async("notify_test_state", {state: testState});
     });
 
     events.on("action_start_test", () => {
@@ -133,51 +133,51 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
 
     const setTestState = (state: TestState) => {
         testState = state;
-        events.fire("notify_test_state", { state: state });
+        events.fire("notify_test_state", {state: state});
     }
 
     let testId = 0;
     const beginTest = () => {
-        if(testState.state === "initializing" || testState.state === "running") {
+        if (testState.state === "initializing" || testState.state === "running") {
             return;
-        } else if(!connection.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
-            setTestState({ state: "unsupported" });
+        } else if (!connection.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
+            setTestState({state: "unsupported"});
             return;
         }
 
-        setTestState({ state: "initializing" });
+        setTestState({state: "initializing"});
 
 
         const currentTestId = ++testId;
         connection.startEchoTest().then(() => {
-            if(currentTestId !== testId) {
+            if (currentTestId !== testId) {
                 return;
             }
 
-            setTestState({ state: "running" });
+            setTestState({state: "running"});
         }).catch(error => {
-            if(currentTestId !== testId) {
+            if (currentTestId !== testId) {
                 return;
             }
 
             let message;
-            if(error instanceof CommandResult) {
+            if (error instanceof CommandResult) {
                 message = error.formattedMessage();
-            } else if(error instanceof Error) {
+            } else if (error instanceof Error) {
                 message = error.message;
-            } else if(typeof error === "string") {
+            } else if (typeof error === "string") {
                 message = error;
             } else {
                 message = tr("lookup the console");
                 logError(LogCategory.AUDIO, tr("Failed to begin echo testing: %o"), error);
             }
 
-            setTestState({ state: "start-failed", error: message });
+            setTestState({state: "start-failed", error: message});
         });
     }
 
     const endTest = () => {
-        setTestState({ state: "stopped" });
+        setTestState({state: "stopped"});
         connection.stopEchoTest();
     }
 

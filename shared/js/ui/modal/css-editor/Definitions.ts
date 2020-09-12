@@ -15,7 +15,7 @@ export interface CssEditorEvents {
     action_select_entry: { variable: CssVariable },
     action_override_toggle: { variableName: string, enabled: boolean, value?: string }
     action_change_override_value: { variableName: string, value: string },
-    action_reset: { },
+    action_reset: {},
     action_randomize: {},
 
     action_export: { allValues: boolean },

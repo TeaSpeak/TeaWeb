@@ -1,6 +1,6 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import {KeyCode} from "tc-shared/PPTListener";
+import {KeyCode} from "../../PPTListener";
 import * as $ from "jquery";
 
 export enum ElementType {

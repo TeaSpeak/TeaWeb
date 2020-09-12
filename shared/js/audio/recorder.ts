@@ -1,5 +1,5 @@
-import {AbstractInput, LevelMeter} from "tc-shared/voice/RecorderBase";
-import {Registry} from "tc-shared/events";
+import {AbstractInput, LevelMeter} from "../voice/RecorderBase";
+import {Registry} from "../events";
 
 export type DeviceQueryResult = {}
 

@@ -1,5 +1,5 @@
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {AbstractServerConnection} from "../connection/ConnectionBase";
+import {ConnectionHandler} from "../ConnectionHandler";
 
 export interface ServerConnectionFactory {
     create(client: ConnectionHandler) : AbstractServerConnection;

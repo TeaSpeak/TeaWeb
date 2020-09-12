@@ -1,23 +1,23 @@
-import {ClientEntry} from "tc-shared/tree/Client";
-import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
-import {EventHandler, Registry} from "tc-shared/events";
+import {ClientEntry} from "../../../tree/Client";
+import {ConnectionHandler, ConnectionState} from "../../../ConnectionHandler";
+import {EventHandler, Registry} from "../../../events";
 import {
     PrivateConversationInfo,
     PrivateConversationUIEvents
-} from "tc-shared/ui/frames/side/PrivateConversationDefinitions";
+} from "../../../ui/frames/side/PrivateConversationDefinitions";
 import * as ReactDOM from "react-dom";
 import * as React from "react";
-import {PrivateConversationsPanel} from "tc-shared/ui/frames/side/PrivateConversationUI";
+import {PrivateConversationsPanel} from "../../../ui/frames/side/PrivateConversationUI";
 import {
     ChatEvent,
     ChatMessage,
     ConversationHistoryResponse,
     ConversationUIEvents
-} from "tc-shared/ui/frames/side/ConversationDefinitions";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {queryConversationEvents, registerConversationEvent} from "tc-shared/ui/frames/side/PrivateConversationHistory";
-import {AbstractChat, AbstractChatManager} from "tc-shared/ui/frames/side/AbstractConversion";
+} from "../../../ui/frames/side/ConversationDefinitions";
+import * as log from "../../../log";
+import {LogCategory} from "../../../log";
+import {queryConversationEvents, registerConversationEvent} from "../../../ui/frames/side/PrivateConversationHistory";
+import {AbstractChat, AbstractChatManager} from "../../../ui/frames/side/AbstractConversion";
 
 export type OutOfViewClient = {
     nickname: string,

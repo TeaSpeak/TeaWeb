@@ -1,7 +1,7 @@
-import {Registry} from "tc-shared/events";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {tr} from "tc-shared/i18n/localize";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {Registry} from "../events";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {tr} from "../i18n/localize";
+import {ErrorCode} from "../connection/ErrorCode";
 
 /* Transfer source types */
 export enum TransferSourceType {

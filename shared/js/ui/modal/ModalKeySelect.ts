@@ -1,11 +1,11 @@
-import {createModal} from "tc-shared/ui/elements/Modal";
-import {EventType, key_description, KeyEvent} from "tc-shared/PPTListener";
+import {createModal} from "../../ui/elements/Modal";
+import {EventType, key_description, KeyEvent} from "../../PPTListener";
 import * as ppt from "tc-backend/ppt";
 
 export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
     let modal = createModal({
         header: tr("Select a key"),
-        body:  () => $("#tmpl_key_select").renderTag().children(),
+        body: () => $("#tmpl_key_select").renderTag().children(),
         footer: null,
 
         width: "",
@@ -20,7 +20,7 @@ export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
     let last_key: KeyEvent;
     let current_key: KeyEvent;
     const listener = (event: KeyEvent) => {
-        if(event.type === EventType.KEY_PRESS) {
+        if (event.type === EventType.KEY_PRESS) {
             //console.log(tr("Key select got key press for %o"), event);
             last_key = current_key;
             current_key = event;
@@ -33,9 +33,9 @@ export function spawnKeySelect(callback: (key?: KeyEvent) => void) {
 
 
     button_save.on('click', () => {
-        if(__build.version !== "web") {
+        if (__build.version !== "web") {
             /* Because pressing the close button is also a mouse action */
-            if(current_key_age + 1000 > Date.now() && current_key.key_code == "MOUSE1")
+            if (current_key_age + 1000 > Date.now() && current_key.key_code == "MOUSE1")
                 current_key = last_key;
         }
 

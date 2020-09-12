@@ -1,14 +1,14 @@
-import {Settings, settings} from "tc-shared/settings";
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
+import {Settings, settings} from "../../settings";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
 import * as loader from "tc-loader";
-import {createModal} from "tc-shared/ui/elements/Modal";
-import {ConnectionProfile, default_profile, find_profile, profiles} from "tc-shared/profiles/ConnectionProfile";
-import {KeyCode} from "tc-shared/PPTListener";
-import * as i18nc from "tc-shared/i18n/country";
-import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {icon_cache_loader, IconManager} from "tc-shared/file/Icons";
+import {createModal} from "../../ui/elements/Modal";
+import {ConnectionProfile, default_profile, find_profile, profiles} from "../../profiles/ConnectionProfile";
+import {KeyCode} from "../../PPTListener";
+import * as i18nc from "../../i18n/country";
+import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
+import {server_connections} from "../../ui/frames/connection_handlers";
+import {icon_cache_loader, IconManager} from "../../file/Icons";
 
 //FIXME: Move this shit out of this file!
 export namespace connection_log {
@@ -36,9 +36,10 @@ export namespace connection_log {
     }
 
     let _history: ConnectionEntry[] = [];
+
     export function log_connect(address: { hostname: string; port: number }) {
         let entry = _history.find(e => e.address.hostname.toLowerCase() == address.hostname.toLowerCase() && e.address.port == address.port);
-        if(!entry) {
+        if (!entry) {
             _history.push(entry = {
                 last_timestamp: Date.now(),
                 first_timestamp: Date.now(),
@@ -62,8 +63,8 @@ export namespace connection_log {
 
     export function update_address_info(address: { hostname: string; port: number }, data: ConnectionData) {
         _history.filter(e => e.address.hostname.toLowerCase() == address.hostname.toLowerCase() && e.address.port == address.port).forEach(e => {
-            for(const key of Object.keys(data)) {
-                if(typeof(data[key]) !== "undefined") {
+            for (const key of Object.keys(data)) {
+                if (typeof (data[key]) !== "undefined") {
                     e[key] = data[key];
                 }
             }
@@ -82,7 +83,7 @@ export namespace connection_log {
         settings.changeGlobal(Settings.KEY_CONNECT_HISTORY, JSON.stringify(_history));
     }
 
-    export function history() : ConnectionEntry[] {
+    export function history(): ConnectionEntry[] {
         return _history.sort((a, b) => b.last_timestamp - a.last_timestamp);
     }
 
@@ -98,7 +99,7 @@ export namespace connection_log {
             _history = [];
             try {
                 _history = JSON.parse(settings.global(Settings.KEY_CONNECT_HISTORY, "[]"));
-            } catch(error) {
+            } catch (error) {
                 log.warn(LogCategory.CLIENT, tr("Failed to load connection history: {}"), error);
             }
         }
@@ -106,9 +107,13 @@ export namespace connection_log {
 }
 
 declare const native_client;
+
 export function spawnConnectModal(options: {
     default_connect_new_tab?: boolean /* default false */
-}, defaultHost: { url: string, enforce: boolean} = { url: "ts.TeaSpeak.de", enforce: false}, connect_profile?: { profile: ConnectionProfile, enforce: boolean}) {
+}, defaultHost: { url: string, enforce: boolean } = {
+    url: "ts.TeaSpeak.de",
+    enforce: false
+}, connect_profile?: { profile: ConnectionProfile, enforce: boolean }) {
     let selected_profile: ConnectionProfile;
 
     const random_id = (() => {
@@ -124,7 +129,7 @@ export function spawnConnectModal(options: {
             forum_path: "https://forum.teaspeak.de/",
             password_id: random_id,
             multi_tab: !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
-            default_connect_new_tab: typeof(options.default_connect_new_tab) === "boolean" && options.default_connect_new_tab
+            default_connect_new_tab: typeof (options.default_connect_new_tab) === "boolean" && options.default_connect_new_tab
         }),
         footer: () => undefined,
         min_width: "28em"
@@ -162,7 +167,7 @@ export function spawnConnectModal(options: {
         const input_password = body.find(".container-password input");
 
         let updateFields = (reset_current_data: boolean) => {
-            if(reset_current_data) {
+            if (reset_current_data) {
                 current_connect_data = undefined;
                 container_last_server_body.find(".selected").removeClass("selected");
             }
@@ -172,7 +177,7 @@ export function spawnConnectModal(options: {
             let flag_address = !!address.match(Regex.IP_V4) || !!address.match(Regex.IP_V6) || !!address.match(Regex.DOMAIN);
 
             let nickname = input_nickname.val().toString();
-            if(nickname)
+            if (nickname)
                 settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, nickname);
             else
                 nickname = input_nickname.attr("placeholder") || "";
@@ -190,7 +195,7 @@ export function spawnConnectModal(options: {
         input_address
             .on("keyup", () => updateFields(true))
             .on('keydown', event => {
-                if(event.keyCode == KeyCode.KEY_ENTER && !event.shiftKey)
+                if (event.keyCode == KeyCode.KEY_ENTER && !event.shiftKey)
                     button_connect.trigger('click');
             });
         button_manage.on('click', event => {
@@ -203,7 +208,7 @@ export function spawnConnectModal(options: {
 
         /* Connect Profiles */
         {
-            for(const profile of profiles()) {
+            for (const profile of profiles()) {
                 input_profile.append(
                     $.spawn("option").text(profile.profile_name).val(profile.id)
                 );
@@ -229,7 +234,7 @@ export function spawnConnectModal(options: {
         }
 
         const last_nickname = settings.static_global(Settings.KEY_CONNECT_USERNAME, undefined);
-        if(last_nickname) /* restore */
+        if (last_nickname) /* restore */
             settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, last_nickname);
 
         input_nickname.val(last_nickname);
@@ -238,7 +243,7 @@ export function spawnConnectModal(options: {
 
         const server_address = () => {
             let address = input_address.val().toString();
-            if(address.match(Regex.IP_V6) && !address.startsWith("["))
+            if (address.match(Regex.IP_V6) && !address.startsWith("["))
                 return "[" + address + "]";
             return address;
         };
@@ -246,14 +251,17 @@ export function spawnConnectModal(options: {
             modal.close();
 
             const connection = server_connections.active_connection();
-            if(connection) {
+            if (connection) {
                 connection.startConnection(
                     current_connect_data ? current_connect_data.address.hostname + ":" + current_connect_data.address.port : server_address(),
                     selected_profile,
                     true,
                     {
-                        nickname: input_nickname.val().toString() ||  input_nickname.attr("placeholder"),
-                        password: (current_connect_data && current_connect_data.password_hash) ? {password: current_connect_data.password_hash, hashed: true} : {password: input_password.val().toString(), hashed: false}
+                        nickname: input_nickname.val().toString() || input_nickname.attr("placeholder"),
+                        password: (current_connect_data && current_connect_data.password_hash) ? {
+                            password: current_connect_data.password_hash,
+                            hashed: true
+                        } : {password: input_password.val().toString(), hashed: false}
                     }
                 );
             } else {
@@ -266,12 +274,15 @@ export function spawnConnectModal(options: {
             const connection = server_connections.spawn_server_connection();
             server_connections.set_active_connection(connection);
             connection.startConnection(
-                current_connect_data ? current_connect_data.address.hostname + ":" + current_connect_data.address.port :  server_address(),
+                current_connect_data ? current_connect_data.address.hostname + ":" + current_connect_data.address.port : server_address(),
                 selected_profile,
                 true,
                 {
-                    nickname: input_nickname.val().toString() ||  input_nickname.attr("placeholder"),
-                    password: (current_connect_data && current_connect_data.password_hash) ? {password: current_connect_data.password_hash, hashed: true} : {password: input_password.val().toString(), hashed: false}
+                    nickname: input_nickname.val().toString() || input_nickname.attr("placeholder"),
+                    password: (current_connect_data && current_connect_data.password_hash) ? {
+                        password: current_connect_data.password_hash,
+                        hashed: true
+                    } : {password: input_password.val().toString(), hashed: false}
                 }
             );
         });
@@ -279,7 +290,7 @@ export function spawnConnectModal(options: {
 
         /* connect history show */
         {
-            for(const entry of connection_log.history().slice(0, 10)) {
+            for (const entry of connection_log.history().slice(0, 10)) {
                 $.spawn("div").addClass("row").append(
                     $.spawn("div").addClass("column delete").append($.spawn("div").addClass("icon_em client-delete")).on('click', event => {
                         event.preventDefault();
@@ -310,7 +321,7 @@ export function spawnConnectModal(options: {
                 ).append(
                     $.spawn("div").addClass("column connections").text(entry.total_connection + "")
                 ).on('click', event => {
-                    if(event.isDefaultPrevented())
+                    if (event.isDefaultPrevented())
                         return;
 
                     event.preventDefault();

@@ -1,7 +1,9 @@
 import {createErrorModal, createInfoModal, createInputModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {sliderfy} from "tc-shared/ui/elements/Slider";
 import {settings, Settings} from "tc-shared/settings";
+import * as sound from "tc-shared/sound/Sounds";
 import {manager, set_master_volume, Sound} from "tc-shared/sound/Sounds";
+import * as profiles from "tc-shared/profiles/ConnectionProfile";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
 import {IdentitifyType} from "tc-shared/profiles/Identity";
 import {TeaForumIdentity} from "tc-shared/profiles/identities/TeaForumIdentity";
@@ -9,15 +11,13 @@ import {TeaSpeakIdentity} from "tc-shared/profiles/identities/TeamSpeakIdentity"
 import {NameIdentity} from "tc-shared/profiles/identities/NameIdentity";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import * as profiles from "tc-shared/profiles/ConnectionProfile";
+import * as i18n from "tc-shared/i18n/localize";
 import {RepositoryTranslation, TranslationRepository} from "tc-shared/i18n/localize";
+import * as events from "tc-shared/events";
 import {Registry} from "tc-shared/events";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import * as i18n from "tc-shared/i18n/localize";
 import * as i18nc from "tc-shared/i18n/country";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import * as events from "tc-shared/events";
-import * as sound from "tc-shared/sound/Sounds";
 import * as forum from "tc-shared/profiles/identities/teaspeak-forum";
 import {formatMessage, set_icon_size} from "tc-shared/ui/frames/chat";
 import {spawnTeamSpeakIdentityImport, spawnTeamSpeakIdentityImprove} from "tc-shared/ui/modal/ModalIdentity";
@@ -30,7 +30,7 @@ import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 
-export function spawnSettingsModal(default_page?: string) : Modal {
+export function spawnSettingsModal(default_page?: string): Modal {
     let modal: Modal;
     modal = createModal({
         header: tr("Settings"),
@@ -47,7 +47,7 @@ export function spawnSettingsModal(default_page?: string) : Modal {
                     left.find(".selected").removeClass("selected");
 
                     const target = entry.attr("container");
-                    if(!target) return;
+                    if (!target) return;
 
                     right.find("> .container." + target).removeClass("hidden");
                     entry.addClass("selected");
@@ -79,7 +79,7 @@ export function spawnSettingsModal(default_page?: string) : Modal {
     settings_identity_forum(modal.htmlTag.find(".right .container.identity-forum"), modal, update_profiles as any);
 
     modal.close_listener.push(() => {
-        if(profiles.requires_save())
+        if (profiles.requires_save())
             profiles.save();
     });
 
@@ -93,7 +93,7 @@ function settings_general_application(container: JQuery, modal: Modal) {
         const option = container.find(".option-hostbanner-background") as JQuery<HTMLInputElement>;
         option.on('change', event => {
             settings.changeGlobal(Settings.KEY_HOSTBANNER_BACKGROUND, option[0].checked);
-            for(const sc of server_connections.all_connections())
+            for (const sc of server_connections.all_connections())
                 sc.hostbanner.update();
         }).prop("checked", settings.static_global(Settings.KEY_HOSTBANNER_BACKGROUND));
     }
@@ -103,7 +103,7 @@ function settings_general_application(container: JQuery, modal: Modal) {
         const current_size = parseInt(getComputedStyle(document.body).fontSize); //settings.static_global(Settings.KEY_FONT_SIZE, 12);
         const select = container.find(".option-font-size");
 
-        if(select.find("option[value='" + current_size + "']").length)
+        if (select.find("option[value='" + current_size + "']").length)
             select.find("option[value='" + current_size + "']").prop("selected", true);
         else
             select.find("option[value='-1']").prop("selected", true);
@@ -204,9 +204,9 @@ function settings_general_language(container: JQuery, modal: Modal) {
 
         let current_translation: RepositoryTranslation;
         i18n.iterate_repositories(repository => {
-            if(current_translation) return;
-            for(const entry of repository.translations)
-                if(i18n.config.translation_config().current_translation_path == entry.path) {
+            if (current_translation) return;
+            for (const entry of repository.translations)
+                if (i18n.config.translation_config().current_translation_path == entry.path) {
                     current_translation = entry;
                     return;
                 }
@@ -273,13 +273,13 @@ function settings_general_language(container: JQuery, modal: Modal) {
                     container_entries.append(repo_tag);
                 }
 
-                for(const translation of repo.translations) {
+                for (const translation of repo.translations) {
                     const tag = template.renderTag({
                         type: "translation",
                         name: translation.name || translation.path,
                         id: repo.unique_id,
                         country_code: translation.country_code,
-                        selected:  i18n.config.translation_config().current_translation_path == translation.path,
+                        selected: i18n.config.translation_config().current_translation_path == translation.path,
                         fallback_country_name: i18nc.country_name('gb'),
                         country_name: i18nc.country_name((translation.country_code || "XX").toLowerCase()),
                     });
@@ -313,7 +313,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
                 try {
                     new URL(text);
                     return true;
-                } catch(error) {
+                } catch (error) {
                     return false;
                 }
             }, url => {
@@ -332,7 +332,7 @@ function settings_general_language(container: JQuery, modal: Modal) {
     }
 
     container.find(".button-restart").on('click', () => {
-        if(__build.target === "web") {
+        if (__build.target === "web") {
             location.reload();
         } else {
             createErrorModal(tr("Not implemented"), tr("Client restart isn't implemented.<br>Please do it manually!")).open();
@@ -344,13 +344,13 @@ function settings_general_language(container: JQuery, modal: Modal) {
 }
 
 function settings_general_keymap(container: JQuery, modal: Modal) {
-    const entry = <KeyMapSettings />;
+    const entry = <KeyMapSettings/>;
     ReactDOM.render(entry, container[0]);
     modal.close_listener.push(() => ReactDOM.unmountComponentAtNode(container[0]));
 }
 
 function settings_general_notifications(container: JQuery, modal: Modal) {
-    const entry = <NotificationSettings />;
+    const entry = <NotificationSettings/>;
     ReactDOM.render(entry, container[0]);
     modal.close_listener.push(() => ReactDOM.unmountComponentAtNode(container[0]));
 }
@@ -370,7 +370,7 @@ function settings_general_chat(container: JQuery, modal: Modal) {
             option_colloquial
                 .prop("disabled", option_fixed[0].checked)
                 .parents("label").toggleClass("disabled", option_fixed[0].checked);
-            if(option_fixed[0].checked) {
+            if (option_fixed[0].checked) {
                 option_colloquial.prop("checked", false);
             } else {
                 option_colloquial.prop("checked", settings.static_global(Settings.KEY_CHAT_COLLOQUIAL_TIMESTAMPS));
@@ -443,7 +443,7 @@ function settings_audio_microphone(container: JQuery, modal: Modal) {
     const registry = new Registry<MicrophoneSettingsEvents>();
     initialize_audio_microphone_controller(registry);
 
-    const entry = <MicrophoneSettings events={registry} />;
+    const entry = <MicrophoneSettings events={registry}/>;
     ReactDOM.render(entry, container[0]);
     modal.close_listener.push(() => {
         ReactDOM.unmountComponentAtNode(container[0]);
@@ -478,7 +478,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
 
             const current_selected = aplayer.current_device();
             const generate_device = (device: Device | undefined) => {
-                const selected = device === current_selected || (typeof(current_selected) !== "undefined" && typeof(device) !== "undefined" && current_selected.device_id == device.device_id);
+                const selected = device === current_selected || (typeof (current_selected) !== "undefined" && typeof (device) !== "undefined" && current_selected.device_id == device.device_id);
 
                 const tag = $.spawn("div").addClass("device").toggleClass("selected", selected).append(
                     $.spawn("div").addClass("container-selected").append(
@@ -495,7 +495,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                 );
 
                 tag.on('click', event => {
-                    if(tag.hasClass("selected"))
+                    if (tag.hasClass("selected"))
                         return;
 
                     const _old = container_devices.find(".selected");
@@ -521,7 +521,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
                 contianer_error.text("").hide();
                 result.forEach(e => generate_device(e).appendTo(container_devices));
             }).catch(error => {
-                if(typeof(error) === "string")
+                if (typeof (error) === "string")
                     contianer_error.text(error).show();
 
                 console.log(tr("Failed to query available speaker devices: %o"), error);
@@ -535,7 +535,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             button_update.prop("disabled", true);
             try {
                 update_devices();
-            } catch(error) {
+            } catch (error) {
                 console.error(tr("Failed to build new speaker device list: %o"), error);
             }
             button_update.prop("disabled", false);
@@ -558,7 +558,7 @@ function settings_audio_speaker(container: JQuery, modal: Modal) {
             slider.on('change', event => {
                 const volume = parseInt(slider.attr('value'));
 
-                if(aplayer.set_master_volume)
+                if (aplayer.set_master_volume)
                     aplayer.set_master_volume(volume / 100);
                 settings.changeGlobal(Settings.KEY_SOUND_MASTER, volume);
             });
@@ -624,7 +624,7 @@ function settings_audio_sounds(contianer: JQuery, modal: Modal) {
             );
 
             tag_play_pause.on('click', event => {
-                if(tag_pause.is(":visible"))
+                if (tag_pause.is(":visible"))
                     return;
                 tag_play.hide();
                 tag_pause.show();
@@ -659,7 +659,7 @@ function settings_audio_sounds(contianer: JQuery, modal: Modal) {
         };
 
         //container-sounds
-        for(const sound_key in Sound)
+        for (const sound_key in Sound)
             generate_sound(Sound[sound_key as any] as any).appendTo(scrollbar ? scrollbar.getContentElement() : container_sounds);
 
         /* the filter */
@@ -693,8 +693,13 @@ export namespace modal_settings {
     export interface ProfileViewSettings {
         forum_setuppable: boolean
     }
+
     export function initialize_identity_profiles_controller(event_registry: Registry<events.modal.settings.profiles>) {
-        const send_error = (event, profile, text) => event_registry.fire_async(event, { status: "error", profile_id: profile, error: text });
+        const send_error = (event, profile, text) => event_registry.fire_async(event, {
+            status: "error",
+            profile_id: profile,
+            error: text
+        });
         event_registry.on("create-profile", event => {
             const profile = profiles.create_new_profile(event.name);
             profiles.mark_need_save();
@@ -707,14 +712,14 @@ export namespace modal_settings {
 
         event_registry.on("delete-profile", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("delete-profile-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
             profiles.delete_profile(profile);
-            event_registry.fire_async("delete-profile-result", { status: "success", profile_id: event.profile_id });
+            event_registry.fire_async("delete-profile-result", {status: "success", profile_id: event.profile_id});
         });
 
         const build_profile_info = (profile: ConnectionProfile) => {
@@ -742,35 +747,46 @@ export namespace modal_settings {
             }
         };
         event_registry.on("query-profile-list", event => {
-            event_registry.fire_async("query-profile-list-result", { status: "success", profiles: profiles.profiles().map(e => build_profile_info(e)) });
+            event_registry.fire_async("query-profile-list-result", {
+                status: "success",
+                profiles: profiles.profiles().map(e => build_profile_info(e))
+            });
         });
 
         event_registry.on("query-profile", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-profile-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
-            event_registry.fire_async("query-profile-result", { status: "success", profile_id: event.profile_id, info: build_profile_info(profile)});
+            event_registry.fire_async("query-profile-result", {
+                status: "success",
+                profile_id: event.profile_id,
+                info: build_profile_info(profile)
+            });
         });
 
         event_registry.on("set-default-profile", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-default-profile-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
             const old = profiles.set_default_profile(profile);
-            event_registry.fire_async("set-default-profile-result", { status: "success", old_profile_id: event.profile_id, new_profile_id: old.id });
+            event_registry.fire_async("set-default-profile-result", {
+                status: "success",
+                old_profile_id: event.profile_id,
+                new_profile_id: old.id
+            });
         });
 
         event_registry.on("set-profile-name", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-profile-name-result", event.profile_id, tr("Unknown profile"));
                 return;
@@ -778,12 +794,16 @@ export namespace modal_settings {
 
             profile.profile_name = event.name;
             profiles.mark_need_save();
-            event_registry.fire_async("set-profile-name-result", { name: event.name, profile_id: event.profile_id, status: "success" });
+            event_registry.fire_async("set-profile-name-result", {
+                name: event.name,
+                profile_id: event.profile_id,
+                status: "success"
+            });
         });
 
         event_registry.on("set-default-name", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-default-name-result", event.profile_id, tr("Unknown profile"));
                 return;
@@ -791,53 +811,73 @@ export namespace modal_settings {
 
             profile.default_username = event.name;
             profiles.mark_need_save();
-            event_registry.fire_async("set-default-name-result", { name: event.name, profile_id: event.profile_id, status: "success" });
+            event_registry.fire_async("set-default-name-result", {
+                name: event.name,
+                profile_id: event.profile_id,
+                status: "success"
+            });
         });
 
         event_registry.on("set-identity-name-name", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-identity-name-name-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
             let identity = profile.selected_identity(IdentitifyType.NICKNAME) as NameIdentity;
-            if(!identity)
+            if (!identity)
                 profile.set_identity(IdentitifyType.NICKNAME, identity = new NameIdentity());
             identity.set_name(event.name);
             profiles.mark_need_save();
 
-            event_registry.fire_async("set-identity-name-name-result", { name: event.name, profile_id: event.profile_id, status: "success" });
+            event_registry.fire_async("set-identity-name-name-result", {
+                name: event.name,
+                profile_id: event.profile_id,
+                status: "success"
+            });
         });
 
         event_registry.on("query-profile-validity", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-profile-validity-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
-            event_registry.fire_async("query-profile-validity-result", { status: "success", profile_id: event.profile_id, valid: profile.valid() });
+            event_registry.fire_async("query-profile-validity-result", {
+                status: "success",
+                profile_id: event.profile_id,
+                valid: profile.valid()
+            });
         });
 
         event_registry.on("query-identity-teamspeak", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
             const ts = profile.selected_identity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
-            if(!ts) {
-                event_registry.fire_async("query-identity-teamspeak-result", { status: "error", profile_id: event.profile_id, error: tr("Missing identity") });
+            if (!ts) {
+                event_registry.fire_async("query-identity-teamspeak-result", {
+                    status: "error",
+                    profile_id: event.profile_id,
+                    error: tr("Missing identity")
+                });
                 return;
             }
 
             ts.level().then(level => {
-                event_registry.fire_async("query-identity-teamspeak-result", { status: "success", level: level, profile_id: event.profile_id });
+                event_registry.fire_async("query-identity-teamspeak-result", {
+                    status: "success",
+                    level: level,
+                    profile_id: event.profile_id
+                });
             }).catch(error => {
                 send_error("query-identity-teamspeak-result", event.profile_id, tr("failed to calculate level"));
             })
@@ -845,7 +885,7 @@ export namespace modal_settings {
 
         event_registry.on("select-identity-type", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
@@ -854,9 +894,9 @@ export namespace modal_settings {
             profiles.mark_need_save();
         });
 
-        event_registry.on("generate-identity-teamspeak", event =>  {
+        event_registry.on("generate-identity-teamspeak", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("generate-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
                 return;
@@ -885,7 +925,7 @@ export namespace modal_settings {
 
         event_registry.on("import-identity-teamspeak", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
@@ -909,7 +949,7 @@ export namespace modal_settings {
 
         event_registry.on("improve-identity-teamspeak-level", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
@@ -921,7 +961,10 @@ export namespace modal_settings {
                 profiles.mark_need_save();
 
                 identity.level().then(level => {
-                    event_registry.fire_async("improve-identity-teamspeak-level-update", { profile_id: event.profile_id, new_level: level });
+                    event_registry.fire_async("improve-identity-teamspeak-level-update", {
+                        profile_id: event.profile_id,
+                        new_level: level
+                    });
                 }).catch(error => {
                     log.error(LogCategory.CLIENT, tr("Failed to calculate identity level after improvement (%o)"), error);
                 });
@@ -930,7 +973,7 @@ export namespace modal_settings {
 
         event_registry.on("export-identity-teamspeak", event => {
             const profile = profiles.find_profile(event.profile_id);
-            if(!profile) {
+            if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
@@ -953,6 +996,7 @@ export namespace modal_settings {
             });
         });
     }
+
     export function initialize_identity_profiles_view(container: JQuery, event_registry: Registry<events.modal.settings.profiles>, settings: ProfileViewSettings) {
         /* profile list */
         {
@@ -978,11 +1022,11 @@ export namespace modal_settings {
                 );
                 tag_avatar.hide(); /* no avatars yet */
 
-                tag.on('click', event => event_registry.fire("select-profile", { profile_id: profile.id }));
+                tag.on('click', event => event_registry.fire("select-profile", {profile_id: profile.id}));
                 tag.toggleClass("selected", selected);
                 tag_default.toggle(profile.id === "default");
 
-                event_registry.fire("query-profile-validity", { profile_id: profile.id });
+                event_registry.fire("query-profile-validity", {profile_id: profile.id});
                 return tag;
             };
 
@@ -999,14 +1043,14 @@ export namespace modal_settings {
 
             event_registry.on("query-profile-list-result", event => {
                 container_profiles.find(".overlay").hide();
-                if(event.status === "error") {
+                if (event.status === "error") {
                     overlay_error.show().find(".error").text(event.error || tr("unknown error"));
                     return;
-                } else if(event.status === "timeout") {
+                } else if (event.status === "timeout") {
                     overlay_timeout.show();
                     return;
                 }
-                if(!event.profiles.length) {
+                if (!event.profiles.length) {
                     overlay_empty.show();
                     return;
                 }
@@ -1017,28 +1061,28 @@ export namespace modal_settings {
             });
 
             event_registry.on("delete-profile-result", event => {
-                if(event.status !== "success") return;
+                if (event.status !== "success") return;
 
                 //TODO: Animate removal?
                 container_profiles.find(".profile[profile-id='" + event.profile_id + "']").remove();
             });
 
             event_registry.on('create-profile-result', event => {
-                if(event.status !== "success") return;
+                if (event.status !== "success") return;
 
                 event_registry.fire("query-profile-list");
-                event_registry.one("query-profile-list-result", e => event_registry.fire("select-profile", { profile_id: event.profile_id }));
+                event_registry.one("query-profile-list-result", e => event_registry.fire("select-profile", {profile_id: event.profile_id}));
             });
 
             event_registry.on("set-profile-name-result", event => {
-                if(event.status !== "success") return;
+                if (event.status !== "success") return;
 
                 const profile = container_profiles.find(".profile[profile-id='" + event.profile_id + "']");
                 profile.find(".profile-name").text(event.name || tr("Unnamed"));
             });
 
             event_registry.on("set-default-profile-result", event => {
-                if(event.status !== "success") return;
+                if (event.status !== "success") return;
 
                 const old_profile = container_profiles.find(".profile[profile-id='default']");
                 const new_profile = container_profiles.find(".profile[profile-id='" + event.old_profile_id + "']");
@@ -1047,7 +1091,7 @@ export namespace modal_settings {
             });
 
             event_registry.on("select-identity-type", event => {
-                if(!event.identity_type) return;
+                if (!event.identity_type) return;
 
                 const profile = container_profiles.find(".profile[profile-id='" + event.profile_id + "']");
                 profile.find(".identity-type").text(event.identity_type.toUpperCase() || tr("Type unset"));
@@ -1064,20 +1108,20 @@ export namespace modal_settings {
 
             /* status indicator updaters */
             event_registry.on("select-identity-type", event => {
-                if(!event.profile_id) return;
+                if (!event.profile_id) return;
 
                 /* we need a short delay so everything could apply*/
                 setTimeout(() => {
-                    event_registry.fire("query-profile-validity", { profile_id: event.profile_id });
+                    event_registry.fire("query-profile-validity", {profile_id: event.profile_id});
                 }, 100);
             });
             event_registry.on(["set-default-name-result", "set-profile-name-result", "set-identity-name-name-result", "generate-identity-teamspeak-result"], event => {
-                if(!('status' in event) ||!('profile_id' in event)) {
+                if (!('status' in event) || !('profile_id' in event)) {
                     log.warn(LogCategory.CLIENT, tr("Profile status watcher encountered an unuseal event!"));
                     return;
                 }
-                if((event as any).status !== "success") return;
-                event_registry.fire("query-profile-validity", { profile_id: (event as any).profile_id });
+                if ((event as any).status !== "success") return;
+                event_registry.fire("query-profile-validity", {profile_id: (event as any).profile_id});
             })
         }
 
@@ -1098,14 +1142,14 @@ export namespace modal_settings {
                 const button = container.find(".button-set-default");
                 let current_profile;
 
-                button.on('click', event => event_registry.fire("set-default-profile", { profile_id: current_profile }));
+                button.on('click', event => event_registry.fire("set-default-profile", {profile_id: current_profile}));
                 event_registry.on("select-profile", event => {
                     current_profile = event.profile_id;
                     button.prop("disabled", !event.profile_id || event.profile_id === "default");
                 });
 
                 event_registry.on("set-default-profile-result", event => {
-                    if(event.status === "success") return;
+                    if (event.status === "success") return;
 
                     createErrorModal(tr("Failed to set default profile"), tr("Failed to set default profile:") + "<br>" + (event.status === "timeout" ? tr("request timeout") : (event.error || tr("unknown error")))).open();
                 });
@@ -1118,16 +1162,16 @@ export namespace modal_settings {
                 let current_profile;
 
                 button.on('click', event => {
-                    if(!current_profile || current_profile === "default") return;
+                    if (!current_profile || current_profile === "default") return;
 
                     spawnYesNo(tr("Are you sure?"), tr("Do you really want to delete this profile?"), result => {
                         if (result)
-                            event_registry.fire("delete-profile", { profile_id: current_profile });
+                            event_registry.fire("delete-profile", {profile_id: current_profile});
                     });
                 });
 
                 event_registry.on("delete-profile-result", event => {
-                    if(event.status === "success") return;
+                    if (event.status === "success") return;
 
                     createErrorModal(tr("Failed to delete profile"), tr("Failed to delete profile:") + "<br>" + (event.status === "timeout" ? tr("request timeout") : (event.error || tr("unknown error")))).open();
                 });
@@ -1145,15 +1189,15 @@ export namespace modal_settings {
                 button.on('click', event => {
                     createInputModal(tr("Please enter a name"), tr("Please enter a name for the new profile:"), text => text.length >= 3 && !profiles.find_profile_by_name(text), value => {
                         if (value)
-                            event_registry.fire("create-profile", { name: value as string });
+                            event_registry.fire("create-profile", {name: value as string});
                     }).open();
                 });
 
                 event_registry.on('create-profile', event => button.prop("disabled", true));
                 event_registry.on("create-profile-result", event => {
                     button.prop("disabled", false);
-                    if(event.status === "success") {
-                        event_registry.fire("select-profile", { profile_id: event.profile_id });
+                    if (event.status === "success") {
+                        event_registry.fire("select-profile", {profile_id: event.profile_id});
                         return;
                     }
 
@@ -1176,25 +1220,25 @@ export namespace modal_settings {
                     let last_name;
 
                     const update_name = () => input.prop("disabled", false)
-                                                .val(last_name)
-                                                .attr("placeholder", tr("Profile name"))
-                                                .parent().removeClass("is-invalid");
+                        .val(last_name)
+                        .attr("placeholder", tr("Profile name"))
+                        .parent().removeClass("is-invalid");
 
                     const info_name = text => input.prop("disabled", true)
-                                                .val(null)
-                                                .attr("placeholder", text)
-                                                .parent().removeClass("is-invalid");
+                        .val(null)
+                        .attr("placeholder", text)
+                        .parent().removeClass("is-invalid");
 
                     event_registry.on("query-profile", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
                         info_name(tr("loading"));
                     });
 
                     event_registry.on("query-profile-result", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
-                        if(event.status === "success") {
+                        if (event.status === "success") {
                             last_name = event.info.name;
                             update_name();
                         } else {
@@ -1203,13 +1247,13 @@ export namespace modal_settings {
                     });
 
                     event_registry.on("set-profile-name", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
                         info_name(tr("saving"));
                     });
 
                     event_registry.on("set-profile-name-result", event => {
-                        if(event.status !== "success") {
+                        if (event.status !== "success") {
                             createErrorModal(tr("Failed to change profile name"), tr("Failed to create apply new name:") + "<br>" + error_text(event)).open();
                         } else {
                             last_name = event.name;
@@ -1224,9 +1268,9 @@ export namespace modal_settings {
                     }).on('change', event => {
                         const text = input.val() as string;
                         const profile = profiles.find_profile_by_name(text);
-                        if(text.length < 3 || (profile && profile.id != current_profile)) return;
+                        if (text.length < 3 || (profile && profile.id != current_profile)) return;
 
-                        event_registry.fire("set-profile-name", { profile_id: current_profile, name: text });
+                        event_registry.fire("set-profile-name", {profile_id: current_profile, name: text});
                     });
                 }
 
@@ -1236,24 +1280,24 @@ export namespace modal_settings {
                     let last_name = null, fallback_names = {}, current_identity_type = "";
 
                     const update_name = () => input.prop("disabled", false)
-                                                .val(last_name)
-                                                .attr("placeholder", fallback_names[current_identity_type] || tr("Another TeaSpeak user"))
-                                                .parent().removeClass("is-invalid");
+                        .val(last_name)
+                        .attr("placeholder", fallback_names[current_identity_type] || tr("Another TeaSpeak user"))
+                        .parent().removeClass("is-invalid");
 
                     const info_name = text => input.prop("disabled", true)
-                                                .val(null)
-                                                .attr("placeholder", text)
-                                                .parent().removeClass("is-invalid");
+                        .val(null)
+                        .attr("placeholder", text)
+                        .parent().removeClass("is-invalid");
 
                     event_registry.on("query-profile", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
                         input.prop("disabled", true).val(null).attr("placeholder", tr("loading"));
                     });
 
                     event_registry.on("query-profile-result", event => {
-                        if(event.profile_id !== current_profile) return;
-                        if(event.status === "success") {
+                        if (event.profile_id !== current_profile) return;
+                        if (event.status === "success") {
                             current_identity_type = event.info.identity_type;
                             fallback_names["nickname"] = event.info.identity_nickname ? event.info.identity_nickname.fallback_name : undefined;
                             fallback_names["teaforo"] = event.info.identity_forum ? event.info.identity_forum.fallback_name : undefined;
@@ -1274,13 +1318,13 @@ export namespace modal_settings {
                     });
 
                     event_registry.on("set-default-name", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
                         info_name(tr("saving"));
                     });
 
                     event_registry.on("set-default-name-result", event => {
-                        if(event.status !== "success") {
+                        if (event.status !== "success") {
                             createErrorModal(tr("Failed to change nickname"), tr("Failed to create apply new nickname:") + "<br>" + error_text(event)).open();
                         } else {
                             last_name = event.name;
@@ -1293,9 +1337,9 @@ export namespace modal_settings {
                         input.parent().toggleClass("is-invalid", text.length != 0 && text.length < 3);
                     }).on('change', event => {
                         const text = input.val() as string;
-                        if(text.length != 0 && text.length < 3) return;
+                        if (text.length != 0 && text.length < 3) return;
 
-                        event_registry.fire("set-default-name", { profile_id: current_profile, name: text });
+                        event_registry.fire("set-default-name", {profile_id: current_profile, name: text});
                     });
                 }
 
@@ -1304,40 +1348,46 @@ export namespace modal_settings {
                     const select_identity_type = container.find(".profile-identity-type");
 
                     const show_message = (text, is_invalid) => select_identity_type
-                                                    .toggleClass("is-invalid", is_invalid)
-                                                    .prop("disabled", true)
-                                                    .find("option[value=error]")
-                                                    .text(text)
-                                                    .prop("selected", true);
+                        .toggleClass("is-invalid", is_invalid)
+                        .prop("disabled", true)
+                        .find("option[value=error]")
+                        .text(text)
+                        .prop("selected", true);
 
                     const set_type = type => select_identity_type
-                                                .toggleClass("is-invalid", type === "unset")
-                                                .prop("disabled", false)
-                                                .find("option[value=" + type + "]")
-                                                .prop("selected", true);
+                        .toggleClass("is-invalid", type === "unset")
+                        .prop("disabled", false)
+                        .find("option[value=" + type + "]")
+                        .prop("selected", true);
 
                     event_registry.on("query-profile", event => show_message(tr("loading"), false));
 
                     event_registry.on("select-identity-type", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
                         set_type(event.identity_type || "unset");
                     });
 
                     event_registry.on("query-profile-result", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
-                        if(event.status === "success")
-                            event_registry.fire("select-identity-type", { profile_id: event.profile_id, identity_type: event.info.identity_type });
+                        if (event.status === "success")
+                            event_registry.fire("select-identity-type", {
+                                profile_id: event.profile_id,
+                                identity_type: event.info.identity_type
+                            });
                         else
                             show_message(error_text(event), false);
                     });
 
                     select_identity_type.on('change', event => {
                         const type = (select_identity_type.val() as string).toLowerCase();
-                        if(type === "error" || type == "unset") return;
+                        if (type === "error" || type == "unset") return;
 
-                        event_registry.fire("select-identity-type", { profile_id: current_profile, identity_type: type as any });
+                        event_registry.fire("select-identity-type", {
+                            profile_id: current_profile,
+                            identity_type: type as any
+                        });
                     });
                 }
 
@@ -1365,7 +1415,7 @@ export namespace modal_settings {
                 let is_profile_generated = false;
 
                 event_registry.on("select-identity-type", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
 
                     container_settings.toggle(event.identity_type === "teamspeak");
                 });
@@ -1381,7 +1431,7 @@ export namespace modal_settings {
                 });
 
                 const update_identity = (state: "not-created" | "created", unique_id?: string, level?: number) => {
-                    if(state === "not-created") {
+                    if (state === "not-created") {
                         container_invalid.show();
                         container_valid.hide();
 
@@ -1392,8 +1442,8 @@ export namespace modal_settings {
                         container_valid.show();
 
                         input_unique_id.val(unique_id).attr("placeholder", null);
-                        if(typeof level !== "number")
-                            event_registry.fire("query-identity-teamspeak", { profile_id: current_profile });
+                        if (typeof level !== "number")
+                            event_registry.fire("query-identity-teamspeak", {profile_id: current_profile});
                         else
                             input_current_level.val(level).attr("placeholder", null);
 
@@ -1410,23 +1460,23 @@ export namespace modal_settings {
                 };
 
                 event_registry.on("query-profile-result", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
 
-                    if(event.status !== "success") {
+                    if (event.status !== "success") {
                         input_unique_id.val(null).attr("placeholder", error_text(event));
                         return;
                     }
 
-                    if(!event.info.identity_teamspeak)
+                    if (!event.info.identity_teamspeak)
                         update_identity("not-created");
                     else
                         update_identity("created", event.info.identity_teamspeak.unique_id);
                 });
 
                 event_registry.on("query-identity-teamspeak-result", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
 
-                    if(event.status === "success") {
+                    if (event.status === "success") {
                         input_current_level.val(event.level).attr("placeholder", null);
                     } else {
                         input_current_level.val(null).attr("placeholder", error_text(event));
@@ -1436,19 +1486,19 @@ export namespace modal_settings {
                 /* the new button */
                 {
                     button_new.on('click', event => {
-                        if(is_profile_generated) {
+                        if (is_profile_generated) {
                             spawnYesNo(tr("Are you sure"), tr("Do you really want to generate a new identity and override the old identity?"), result => {
-                                if (result) event_registry.fire("generate-identity-teamspeak", { profile_id: current_profile });
+                                if (result) event_registry.fire("generate-identity-teamspeak", {profile_id: current_profile});
                             });
                         } else {
-                            event_registry.fire("generate-identity-teamspeak", { profile_id: current_profile });
+                            event_registry.fire("generate-identity-teamspeak", {profile_id: current_profile});
                         }
                     });
 
                     event_registry.on("generate-identity-teamspeak-result", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
-                        if(event.status !== "success") {
+                        if (event.status !== "success") {
                             createErrorModal(tr("Failed to generate a new identity"), tr("Failed to create a new identity:") + "<br>" + error_text(event)).open();
                             return;
                         }
@@ -1461,25 +1511,25 @@ export namespace modal_settings {
                 /* the import identity */
                 {
                     button_import.on('click', event => {
-                        if(is_profile_generated) {
+                        if (is_profile_generated) {
                             spawnYesNo(tr("Are you sure"), tr("Do you really want to import a new identity and override the old identity?"), result => {
-                                if (result) event_registry.fire("import-identity-teamspeak", { profile_id: current_profile });
+                                if (result) event_registry.fire("import-identity-teamspeak", {profile_id: current_profile});
                             });
                         } else {
-                            event_registry.fire("import-identity-teamspeak", { profile_id: current_profile });
+                            event_registry.fire("import-identity-teamspeak", {profile_id: current_profile});
                         }
                     });
 
                     event_registry.on("improve-identity-teamspeak-level-update", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
                         input_current_level.val(event.new_level).attr("placeholder", null);
                     });
 
                     event_registry.on("import-identity-teamspeak-result", event => {
-                        if(event.profile_id !== current_profile) return;
+                        if (event.profile_id !== current_profile) return;
 
-                        event_registry.fire_async("query-profile", { profile_id: event.profile_id }); /* we do it like this so the default nickname changes as well */
+                        event_registry.fire_async("query-profile", {profile_id: event.profile_id}); /* we do it like this so the default nickname changes as well */
                         createInfoModal(tr("Identity imported"), tr("Your identity had been successfully imported generated")).open();
                     });
                 }
@@ -1489,13 +1539,16 @@ export namespace modal_settings {
                     button_export.on('click', event => {
                         createInputModal(tr("File name"), tr("Please enter the file name"), text => !!text, name => {
                             if (name)
-                                event_registry.fire("export-identity-teamspeak", { profile_id: current_profile, filename: name as string });
+                                event_registry.fire("export-identity-teamspeak", {
+                                    profile_id: current_profile,
+                                    filename: name as string
+                                });
                         }).open();
                     });
                 }
 
                 /* the improve button */
-                button_improve.on('click', event =>  event_registry.fire("improve-identity-teamspeak-level", { profile_id: current_profile }));
+                button_improve.on('click', event => event_registry.fire("improve-identity-teamspeak-level", {profile_id: current_profile}));
             }
 
             /* special info TeaSpeak - Forum */
@@ -1507,7 +1560,7 @@ export namespace modal_settings {
                 const button_setup = container_settings.find(".button-setup");
 
                 event_registry.on("select-identity-type", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
 
                     container_settings.toggle(event.identity_type === "teaforo");
                 });
@@ -1518,7 +1571,7 @@ export namespace modal_settings {
                 });
 
                 event_registry.on("query-profile-result", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
 
                     const valid = event.status === "success" && event.info.identity_forum && event.info.identity_forum.valid;
                     container_valid.toggle(!!valid);
@@ -1548,15 +1601,15 @@ export namespace modal_settings {
                 event_registry.on("select-identity-type", event => event.profile_id === current_profile && container_settings.toggle(event.identity_type === "nickname"));
 
                 event_registry.on("query-profile", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
 
                     show_info(tr("loading"));
                 });
 
                 event_registry.on("query-profile-result", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
 
-                    if(event.status === "success") {
+                    if (event.status === "success") {
                         last_name = event.info.identity_nickname ? event.info.identity_nickname.name : null;
                         update_name();
                     } else {
@@ -1565,12 +1618,12 @@ export namespace modal_settings {
                 });
 
                 event_registry.on("set-identity-name-name", event => {
-                    if(event.profile_id !== current_profile) return;
+                    if (event.profile_id !== current_profile) return;
                     show_info(tr("saving"));
                 });
 
                 event_registry.on("set-identity-name-name-result", event => {
-                    if(event.status !== "success") {
+                    if (event.status !== "success") {
                         createErrorModal(tr("Failed to change name"), tr("Failed to create new name:") + "<br>" + error_text(event)).open();
                     } else {
                         last_name = event.name;
@@ -1585,9 +1638,9 @@ export namespace modal_settings {
                 }).on('change', event => {
                     const text = input_nickname.val() as string;
                     const profile = profiles.find_profile_by_name(text);
-                    if(text.length < 3 || (profile && profile.id != current_profile)) return;
+                    if (text.length < 3 || (profile && profile.id != current_profile)) return;
 
-                    event_registry.fire("set-identity-name-name", { profile_id: current_profile, name: text });
+                    event_registry.fire("set-identity-name-name", {profile_id: current_profile, name: text});
                 });
             }
             event_registry.on("select-profile", e => current_profile = e.profile_id);
@@ -1598,7 +1651,7 @@ export namespace modal_settings {
             /* profile list */
             {
                 let timeout;
-                event_registry.on("query-profile-list", event => timeout = setTimeout(() => event_registry.fire("query-profile-list-result", { status: "timeout" }), 5000));
+                event_registry.on("query-profile-list", event => timeout = setTimeout(() => event_registry.fire("query-profile-list-result", {status: "timeout"}), 5000));
                 event_registry.on("query-profile-list-result", event => {
                     clearTimeout(timeout);
                     timeout = undefined;
@@ -1611,7 +1664,7 @@ export namespace modal_settings {
                 event_registry.on("create-profile", event => {
                     clearTimeout(timeouts[event.name]);
                     timeouts[event.name] = setTimeout(() => {
-                        event_registry.fire("create-profile-result", { name: event.name, status: "timeout" });
+                        event_registry.fire("create-profile-result", {name: event.name, status: "timeout"});
                     }, 5000);
                 });
 
@@ -1627,7 +1680,10 @@ export namespace modal_settings {
                 event_registry.on("set-default-profile", event => {
                     clearTimeout(timeouts[event.profile_id]);
                     timeouts[event.profile_id] = setTimeout(() => {
-                        event_registry.fire("set-default-profile-result", { old_profile_id: event.profile_id, status: "timeout" });
+                        event_registry.fire("set-default-profile-result", {
+                            old_profile_id: event.profile_id,
+                            status: "timeout"
+                        });
                     }, 5000);
                 });
 
@@ -1642,7 +1698,7 @@ export namespace modal_settings {
                 event_registry.on(event, event => {
                     clearTimeout(timeouts[event[key]]);
                     timeouts[event[key]] = setTimeout(() => {
-                        const timeout_event = { status: "timeout" };
+                        const timeout_event = {status: "timeout"};
                         timeout_event[key] = event[key];
                         event_registry.fire(response_event, timeout_event as any);
                     }, 5000);
@@ -1668,25 +1724,25 @@ export namespace modal_settings {
         {
             let selected_profile;
             event_registry.on("delete-profile-result", event => {
-                if(event.status !== "success") return;
-                if(event.profile_id !== selected_profile) return;
+                if (event.status !== "success") return;
+                if (event.profile_id !== selected_profile) return;
 
                 /* the selected profile has been deleted, so we need to select another one */
-                event_registry.fire("select-profile", { profile_id: "default" });
+                event_registry.fire("select-profile", {profile_id: "default"});
             });
 
             /* reselect the default profile or the new default profile */
             event_registry.on("set-default-profile-result", event => {
-                if(event.status !== "success") return;
-                if(selected_profile === "default")
-                    event_registry.fire("select-profile", { profile_id: event.new_profile_id });
-                else if(selected_profile === event.old_profile_id)
-                    event_registry.fire("select-profile", { profile_id: "default" });
+                if (event.status !== "success") return;
+                if (selected_profile === "default")
+                    event_registry.fire("select-profile", {profile_id: event.new_profile_id});
+                else if (selected_profile === event.old_profile_id)
+                    event_registry.fire("select-profile", {profile_id: "default"});
             });
 
             event_registry.on("select-profile", event => {
                 selected_profile = event.profile_id;
-                event_registry.fire("query-profile", { profile_id: event.profile_id });
+                event_registry.fire("query-profile", {profile_id: event.profile_id});
             });
 
             event_registry.on("reload-profile", event => {
@@ -1696,8 +1752,8 @@ export namespace modal_settings {
         }
 
         event_registry.fire("query-profile-list");
-        event_registry.fire("select-profile", { profile_id: "default" });
-        event_registry.fire("select-identity-type", { profile_id: "default", identity_type: undefined });
+        event_registry.fire("select-profile", {profile_id: "default"});
+        event_registry.fire("select-identity-type", {profile_id: "default", identity_type: undefined});
     }
 }
 
@@ -1710,7 +1766,7 @@ function settings_identity_forum(container: JQuery, modal: Modal, update_profile
         containers_connected.toggle(logged_in);
         containers_disconnected.toggle(!logged_in);
 
-        if(logged_in) {
+        if (logged_in) {
             container.find(".forum-username").text(forum.data().name());
             container.find(".forum-premium").text(forum.data().is_premium() ? tr("Yes") : tr("No"));
         }
@@ -1730,7 +1786,7 @@ function settings_identity_forum(container: JQuery, modal: Modal, update_profile
             let enabled = true;
             enabled = enabled && !!input_password.val();
             enabled = enabled && !!input_username.val();
-            enabled = enabled && (typeof(captcha) === "boolean" ? !captcha : !!captcha);
+            enabled = enabled && (typeof (captcha) === "boolean" ? !captcha : !!captcha);
             button_login.prop("disabled", !enabled);
         };
 
@@ -1746,23 +1802,23 @@ function settings_identity_forum(container: JQuery, modal: Modal, update_profile
             button_login.prop("disabled", true);
             container_error.removeClass("shown");
 
-            forum.login(input_username.val() as string, input_password.val() as string, typeof(captcha) === "string" ? captcha : undefined).then(state => {
+            forum.login(input_username.val() as string, input_password.val() as string, typeof (captcha) === "string" ? captcha : undefined).then(state => {
                 captcha = false;
 
                 console.debug(tr("Forum login result: %o"), state);
-                if(state.status === "success") {
+                if (state.status === "success") {
                     update_state();
                     update_profiles();
                     return;
                 }
 
                 setTimeout(() => {
-                    if(!!state.error_message) /* clear password if we have an error */
+                    if (!!state.error_message) /* clear password if we have an error */
                         input_password.val("");
                     input_password.focus();
                     update_button_state();
                 }, 0);
-                if(state.status === "captcha") {
+                if (state.status === "captcha") {
                     //TODO Works currently only with localhost!
                     button_login.hide();
                     container_error.text(state.error_message || tr("Captcha required")).addClass("shown");

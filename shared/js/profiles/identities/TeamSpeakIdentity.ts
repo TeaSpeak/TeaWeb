@@ -1,18 +1,18 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import * as asn1 from "tc-shared/crypto/asn1";
-import * as sha from "tc-shared/crypto/sha";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import * as asn1 from "../../crypto/asn1";
+import * as sha from "../../crypto/sha";
 
 import {
     AbstractHandshakeIdentityHandler,
     HandshakeCommandHandler,
     IdentitifyType,
     Identity
-} from "tc-shared/profiles/Identity";
-import {arrayBufferBase64, base64_encode_ab, str2ab8} from "tc-shared/utils/buffers";
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {HandshakeIdentityHandler} from "tc-shared/connection/HandshakeHandler";
+} from "../../profiles/Identity";
+import {arrayBufferBase64, base64_encode_ab, str2ab8} from "../../utils/buffers";
+import {AbstractServerConnection} from "../../connection/ConnectionBase";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import {HandshakeIdentityHandler} from "../../connection/HandshakeHandler";
 
 export namespace CryptoHelper {
     export function base64_url_encode(str){

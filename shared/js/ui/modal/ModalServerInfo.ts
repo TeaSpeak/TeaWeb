@@ -2,18 +2,18 @@ import {
     openServerInfoBandwidth,
     RequestInfoStatus,
     ServerBandwidthInfoUpdateCallback
-} from "tc-shared/ui/modal/ModalServerInfoBandwidth";
-import {ServerEntry} from "tc-shared/tree/Server";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {createErrorModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import * as i18nc from "tc-shared/i18n/country";
-import {format_time, formatMessage} from "tc-shared/ui/frames/chat";
-import {Hostbanner} from "tc-shared/ui/frames/hostbanner";
+} from "../../ui/modal/ModalServerInfoBandwidth";
+import {ServerEntry} from "../../tree/Server";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import {createErrorModal, createModal, Modal} from "../../ui/elements/Modal";
+import * as log from "../../log";
+import {LogCategory} from "../../log";
+import * as tooltip from "../../ui/elements/Tooltip";
+import * as i18nc from "../../i18n/country";
+import {format_time, formatMessage} from "../../ui/frames/chat";
+import {Hostbanner} from "../../ui/frames/hostbanner";
 import * as moment from "moment";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {ErrorCode} from "../../connection/ErrorCode";
 
 export function openServerInfo(server: ServerEntry) {
     let modal: Modal;
@@ -41,7 +41,7 @@ export function openServerInfo(server: ServerEntry) {
                     update_values();
                 }).catch(error => {
                     log.warn(LogCategory.CLIENT, tr("Failed to refresh server properties: %o"), error);
-                    if(error instanceof CommandResult)
+                    if (error instanceof CommandResult)
                         error = error.extra_message || error.message;
                     createErrorModal(tr("Refresh failed"), formatMessage(tr("Failed to refresh server properties.{:br:}Error: {}"), error)).open();
                 }).then(() => {
@@ -59,7 +59,7 @@ export function openServerInfo(server: ServerEntry) {
 
     const updater = setInterval(() => {
         server.request_connection_info().then(info => update_callbacks.forEach(e => e(RequestInfoStatus.SUCCESS, info))).catch(error => {
-            if(error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
+            if (error instanceof CommandResult && error.id == ErrorCode.SERVER_INSUFFICIENT_PERMISSIONS) {
                 update_callbacks.forEach(e => e(RequestInfoStatus.NO_PERMISSION));
                 return;
             }
@@ -71,7 +71,9 @@ export function openServerInfo(server: ServerEntry) {
     modal.htmlTag.find(".button-close").on('click', event => modal.close());
     modal.htmlTag.find(".button-show-bandwidth").on('click', event => {
         const custom_callbacks = [];
-        const custom_callback_caller = (status, info) => { custom_callbacks.forEach(e => e(status, info)); };
+        const custom_callback_caller = (status, info) => {
+            custom_callbacks.forEach(e => e(status, info));
+        };
 
         update_callbacks.push(custom_callback_caller);
         openServerInfoBandwidth(server, custom_callbacks).close_listener.push(() => {
@@ -92,7 +94,7 @@ function apply_hostbanner(server: ServerEntry, tag: JQuery) {
 
     const htag = Hostbanner.generate_tag(server.properties.virtualserver_hostbanner_gfx_url, server.properties.virtualserver_hostbanner_gfx_interval, server.properties.virtualserver_hostbanner_mode);
     htag.then(t => {
-        if(!t) return;
+        if (!t) return;
 
         tag.removeClass("hidden");
         container.append(t);
@@ -120,11 +122,11 @@ function apply_category_1(server: ServerEntry, tag: JQuery, update_callbacks: Se
         const container = tag.find(".server-slots");
 
         let text = server.properties.virtualserver_clientsonline + "/" + server.properties.virtualserver_maxclients;
-        if(server.properties.virtualserver_queryclientsonline)
+        if (server.properties.virtualserver_queryclientsonline)
             text += " +" + (server.properties.virtualserver_queryclientsonline > 1 ?
-                                server.properties.virtualserver_queryclientsonline + " " + tr("Queries") :
-                                server.properties.virtualserver_queryclientsonline + " " + tr("Query"));
-        if(server.properties.virtualserver_reserved_slots)
+                server.properties.virtualserver_queryclientsonline + " " + tr("Queries") :
+                server.properties.virtualserver_queryclientsonline + " " + tr("Query"));
+        if (server.properties.virtualserver_reserved_slots)
             text += " (" + server.properties.virtualserver_reserved_slots + " " + tr("Reserved") + ")";
 
         container.text(text);
@@ -184,9 +186,9 @@ function apply_category_2(server: ServerEntry, tag: JQuery, update_callbacks: Se
         const container = tag.find(".server-ping");
         container.text(tr("calculating..."));
         update_callbacks.push((status, data) => {
-            if(status === RequestInfoStatus.SUCCESS)
+            if (status === RequestInfoStatus.SUCCESS)
                 container.text(data.connection_ping.toFixed(0) + " " + "ms");
-            else if(status === RequestInfoStatus.NO_PERMISSION)
+            else if (status === RequestInfoStatus.NO_PERMISSION)
                 container.text(tr("No Permissions"));
             else
                 container.text(tr("receiving..."));
@@ -198,9 +200,9 @@ function apply_category_2(server: ServerEntry, tag: JQuery, update_callbacks: Se
         const container = tag.find(".server-packet-loss");
         container.text(tr("receiving..."));
         update_callbacks.push((status, data) => {
-            if(status === RequestInfoStatus.SUCCESS)
+            if (status === RequestInfoStatus.SUCCESS)
                 container.text(data.connection_packetloss_total.toFixed(2) + "%");
-            else if(status === RequestInfoStatus.NO_PERMISSION)
+            else if (status === RequestInfoStatus.NO_PERMISSION)
                 container.text(tr("No Permissions"));
             else
                 container.text(tr("receiving..."));
@@ -218,9 +220,9 @@ function apply_category_3(server: ServerEntry, tag: JQuery, update_callbacks: Se
     /* voice encryption */
     {
         const container = tag.find(".server-voice-encryption");
-        if(server.properties.virtualserver_codec_encryption_mode == 0)
+        if (server.properties.virtualserver_codec_encryption_mode == 0)
             container.text(tr("Globally off"));
-        else if(server.properties.virtualserver_codec_encryption_mode == 1)
+        else if (server.properties.virtualserver_codec_encryption_mode == 1)
             container.text(tr("Individually configured per channel"));
         else
             container.text(tr("Globally on"));

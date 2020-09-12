@@ -2,14 +2,14 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import * as log from "../../../log";
 import {LogCategory} from "../../../log";
-import {EventClient, EventServerAddress, EventType, TypeInfo} from "tc-shared/ui/frames/log/Definitions";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {renderBBCodeAsText} from "tc-shared/text/bbcode";
-import {format_time} from "tc-shared/ui/frames/chat";
-import {ViewReasonId} from "tc-shared/ConnectionHandler";
-import {findLogDispatcher} from "tc-shared/ui/frames/log/DispatcherLog";
-import {formatDate} from "tc-shared/MessageFormatter";
-import {Settings, settings} from "tc-shared/settings";
+import {EventClient, EventServerAddress, EventType, TypeInfo} from "../../../ui/frames/log/Definitions";
+import {server_connections} from "../../../ui/frames/connection_handlers";
+import {renderBBCodeAsText} from "../../../text/bbcode";
+import {format_time} from "../../../ui/frames/chat";
+import {ViewReasonId} from "../../../ConnectionHandler";
+import {findLogDispatcher} from "../../../ui/frames/log/DispatcherLog";
+import {formatDate} from "../../../MessageFormatter";
+import {Settings, settings} from "../../../settings";
 
 export type DispatcherLog<T extends keyof TypeInfo> = (data: TypeInfo[T], handlerId: string, eventType: T) => void;
 

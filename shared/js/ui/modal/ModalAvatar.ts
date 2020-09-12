@@ -1,7 +1,7 @@
 //TODO: Test if we could render this image and not only the browser by knowing the type.
-import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
-import {tra} from "tc-shared/i18n/localize";
-import {arrayBufferBase64} from "tc-shared/utils/buffers";
+import {createErrorModal, createModal} from "../../ui/elements/Modal";
+import {tra} from "../../i18n/localize";
+import {arrayBufferBase64} from "../../utils/buffers";
 
 export function spawnAvatarUpload(callback_data: (data: ArrayBuffer | undefined | null) => any) {
     const modal = createModal({
@@ -20,7 +20,7 @@ export function spawnAvatarUpload(callback_data: (data: ArrayBuffer | undefined 
     });
 
     modal.htmlTag.find(".button-delete").on('click', () => {
-        if(_data_submitted)
+        if (_data_submitted)
             return;
         _data_submitted = true;
         modal.close();
@@ -54,7 +54,7 @@ export function spawnAvatarUpload(callback_data: (data: ArrayBuffer | undefined 
         (async () => {
             const data = await read_file(input_node.files[0]);
 
-            if(!data.startsWith("data:image/")) {
+            if (!data.startsWith("data:image/")) {
                 console.error(tr("Failed to load file %s: Invalid data media type (%o)"), input_node.files[0].name, data);
                 createErrorModal(tr("Icon upload failed"), tra("Failed to select avatar {}.<br>File is not an image", input_node.files[0].name)).open();
                 return;

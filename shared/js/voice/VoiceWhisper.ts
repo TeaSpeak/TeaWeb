@@ -1,5 +1,5 @@
-import {Registry} from "tc-shared/events";
-import {VoicePlayer} from "tc-shared/voice/VoicePlayer";
+import {Registry} from "../events";
+import {VoicePlayer} from "../voice/VoicePlayer";
 
 export interface WhisperTargetChannelClients {
     target: "channel-clients",

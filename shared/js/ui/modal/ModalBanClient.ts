@@ -1,13 +1,14 @@
-import PermissionType from "tc-shared/permission/PermissionType";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {createModal} from "tc-shared/ui/elements/Modal";
-import {duration_data} from "tc-shared/ui/modal/ModalBanList";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
+import PermissionType from "../../permission/PermissionType";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {createModal} from "../../ui/elements/Modal";
+import {duration_data} from "../../ui/modal/ModalBanList";
+import * as tooltip from "../../ui/elements/Tooltip";
 
 export type BanEntry = {
     name?: string;
     unique_id: string;
 }
+
 export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | BanEntry[], callback: (data: {
     length: number,
     reason: string,
@@ -58,8 +59,8 @@ export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | Ba
                     const disabled = input_duration_type.prop("disabled");
 
                     input_duration_value.prop("disabled", type === "perm" || disabled).firstParent(".input-boxed").toggleClass("disabled", type === "perm" || disabled);
-                    if(type !== "perm") {
-                        if(input_duration_value.attr("x-saved-value")) {
+                    if (type !== "perm") {
+                        if (input_duration_value.attr("x-saved-value")) {
                             input_duration_value.val(parseInt(input_duration_value.attr("x-saved-value")));
                             input_duration_value.attr("x-saved-value", null);
                         }
@@ -68,18 +69,18 @@ export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | Ba
                         const max = parseInt(selected_option.attr("duration-max"));
 
                         input_duration_value.attr("max", max);
-                        if((value > max && max != -1) || value < 1) {
+                        if ((value > max && max != -1) || value < 1) {
                             input_duration_value.firstParent(".input-boxed").addClass("is-invalid");
                         } else {
                             input_duration_value.firstParent(".input-boxed").removeClass("is-invalid");
                         }
 
-                        if(max != -1)
+                        if (max != -1)
                             tooltip_duration_max.html(tr("You're allowed to ban a maximum of ") + "<b>" + max + " " + duration_data[type][max == 1 ? "1-text" : "text"] + "</b>");
                         else
                             tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
                     } else {
-                        if(value && !Number.isNaN(value))
+                        if (value && !Number.isNaN(value))
                             input_duration_value.attr("x-saved-value", value);
                         input_duration_value.attr("placeholder", tr("for ever")).val(null);
                         tooltip_duration_max.html(tr("You're allowed to ban <b>permanent</b>."));
@@ -88,15 +89,17 @@ export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | Ba
                 };
 
                 /* initialize ban time */
-                Promise.resolve(max_ban_time).catch(error => { /* TODO: Error handling? */ return 0; }).then(max_time => {
+                Promise.resolve(max_ban_time).catch(error => { /* TODO: Error handling? */
+                    return 0;
+                }).then(max_time => {
                     let unlimited = max_time == 0 || max_time == -1;
-                    if(unlimited || typeof(max_time) === "undefined") max_time = 0;
+                    if (unlimited || typeof (max_time) === "undefined") max_time = 0;
 
-                    for(const value of Object.keys(duration_data)) {
+                    for (const value of Object.keys(duration_data)) {
                         input_duration_type.find("option[value='" + value + "']")
                             .prop("disabled", !unlimited && max_time >= duration_data[value].scale)
                             .attr("duration-scale", duration_data[value].scale)
-                            .attr("duration-max", unlimited ? -1 : Math.floor(max_time  / duration_data[value].scale));
+                            .attr("duration-max", unlimited ? -1 : Math.floor(max_time / duration_data[value].scale));
                     }
 
                     input_duration_type.find("option[value='perm']")
@@ -114,7 +117,7 @@ export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | Ba
                 const input = container_reason.find("textarea");
 
                 const insert_tag = (open: string, close: string) => {
-                    if(input.prop("disabled"))
+                    if (input.prop("disabled"))
                         return;
 
                     const node = input[0] as HTMLTextAreaElement;
@@ -145,7 +148,7 @@ export function spawnBanClient(client: ConnectionHandler, entries: BanEntry | Ba
             {
                 button_cancel.on('click', event => modal.close());
                 button_ok.on('click', event => {
-                    const duration = input_duration_type.val() === "perm" ? 0 : (1000 * parseInt(input_duration_type.find("option[value='" +  input_duration_type.val() + "']").attr("duration-scale")) * parseInt(input_duration_value.val() as string));
+                    const duration = input_duration_type.val() === "perm" ? 0 : (1000 * parseInt(input_duration_type.find("option[value='" + input_duration_type.val() + "']").attr("duration-scale")) * parseInt(input_duration_value.val() as string));
 
                     modal.close();
                     callback({

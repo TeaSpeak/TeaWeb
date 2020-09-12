@@ -1,13 +1,13 @@
 import {
     AbstractVoiceConnection,
     VoiceConnectionStatus, WhisperSessionInitializer
-} from "tc-shared/connection/VoiceConnection";
-import {RecorderProfile} from "tc-shared/voice/RecorderProfile";
-import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
-import {VoiceClient} from "tc-shared/voice/VoiceClient";
-import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "tc-shared/voice/VoicePlayer";
-import {WhisperSession, WhisperTarget} from "tc-shared/voice/VoiceWhisper";
-import {Registry} from "tc-shared/events";
+} from "../connection/VoiceConnection";
+import {RecorderProfile} from "../voice/RecorderProfile";
+import {AbstractServerConnection} from "../connection/ConnectionBase";
+import {VoiceClient} from "../voice/VoiceClient";
+import {VoicePlayerEvents, VoicePlayerLatencySettings, VoicePlayerState} from "../voice/VoicePlayer";
+import {WhisperSession, WhisperTarget} from "../voice/VoiceWhisper";
+import {Registry} from "../events";
 
 class DummyVoiceClient implements VoiceClient {
     readonly events: Registry<VoicePlayerEvents>;

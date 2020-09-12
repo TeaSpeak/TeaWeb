@@ -1,27 +1,27 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {Registry} from "tc-shared/events";
+import {ConnectionHandler} from "../../../ConnectionHandler";
+import {Registry} from "../../../events";
 import {
     FileTransfer,
     FileTransferDirection,
     FileTransferState,
     TransferProgress,
     TransferProperties
-} from "tc-shared/file/Transfer";
+} from "../../../file/Transfer";
 import {
     avatarsPathPrefix,
     channelPathPrefix,
     iconPathPrefix,
     TransferStatus
-} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
-import {Settings, settings} from "tc-shared/settings";
-import {TransferInfoData, TransferInfoEvents} from "tc-shared/ui/modal/transfer/TransferInfo";
+} from "../../../ui/modal/transfer/ModalFileTransfer";
+import {Settings, settings} from "../../../settings";
+import {TransferInfoData, TransferInfoEvents} from "../../../ui/modal/transfer/TransferInfo";
 
 export const initializeTransferInfoController = (connection: ConnectionHandler, events: Registry<TransferInfoEvents>) => {
     const generateTransferPath = (properties: TransferProperties) => {
         let path;
-        if(properties.channel_id !== 0) {
+        if (properties.channel_id !== 0) {
             path = "/" + channelPathPrefix + properties.channel_id + properties.path;
-        } else if(properties.name.startsWith("/avatar_")) {
+        } else if (properties.name.startsWith("/avatar_")) {
             path = "/" + avatarsPathPrefix + "/";
         } else {
             path = "/" + iconPathPrefix + "/";
@@ -29,7 +29,7 @@ export const initializeTransferInfoController = (connection: ConnectionHandler, 
         return path;
     };
 
-    const getTransferStatus = (transfer: FileTransfer) : TransferStatus => {
+    const getTransferStatus = (transfer: FileTransfer): TransferStatus => {
         switch (transfer.transferState()) {
             case FileTransferState.INITIALIZING:
             case FileTransferState.PENDING:
@@ -106,22 +106,26 @@ export const initializeTransferInfoController = (connection: ConnectionHandler, 
                 status: "transferring",
             });
 
-            const progressListener = (event: {progress: TransferProgress}) => fireProgress(event.progress);
+            const progressListener = (event: { progress: TransferProgress }) => fireProgress(event.progress);
 
             transfer.events.on("notify_progress", progressListener);
 
             transfer.events.on("notify_state_updated", () => {
                 const status = getTransferStatus(transfer);
-                if(transfer.lastProgressInfo()) fireProgress(transfer.lastProgressInfo()); /* fire the progress info at least once */
-                events.fire("notify_transfer_status", { id: transfer.clientTransferId, status: status, error: transfer.currentErrorMessage() });
+                if (transfer.lastProgressInfo()) fireProgress(transfer.lastProgressInfo()); /* fire the progress info at least once */
+                events.fire("notify_transfer_status", {
+                    id: transfer.clientTransferId,
+                    status: status,
+                    error: transfer.currentErrorMessage()
+                });
 
-                if(transfer.isFinished()) {
+                if (transfer.isFinished()) {
                     unregisterEvents();
                     return;
                 }
             });
 
-            events.fire("notify_transfer_registered", { transfer: generateTransferInfo(transfer) });
+            events.fire("notify_transfer_registered", {transfer: generateTransferInfo(transfer)});
 
             const closeListener = () => unregisterEvents();
             events.on("notify_modal_closed", closeListener);

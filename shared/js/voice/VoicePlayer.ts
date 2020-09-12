@@ -1,4 +1,4 @@
-import {Registry} from "tc-shared/events";
+import {Registry} from "../events";
 
 export enum VoicePlayerState {
     INITIALIZING,

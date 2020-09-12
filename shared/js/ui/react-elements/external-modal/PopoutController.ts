@@ -1,10 +1,10 @@
-import {ChannelMessage, getInstance as getIPCInstance, IPCChannel} from "tc-shared/ipc/BrowserIPC";
-import {Settings, SettingsKey} from "tc-shared/settings";
+import {ChannelMessage, getInstance as getIPCInstance, IPCChannel} from "../../../ipc/BrowserIPC";
+import {Settings, SettingsKey} from "../../../settings";
 import {
     Controller2PopoutMessages, EventControllerBase,
     PopoutIPCMessage
-} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
-import {Registry} from "tc-shared/events";
+} from "../../../ui/react-elements/external-modal/IPCMessage";
+import {Registry} from "../../../events";
 
 const kSettingIPCChannel: SettingsKey<string> = {
     key: "ipc-channel",

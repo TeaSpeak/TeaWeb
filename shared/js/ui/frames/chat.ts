@@ -1,6 +1,6 @@
-import {LogCategory} from "tc-shared/log";
-import {settings, Settings} from "tc-shared/settings";
-import * as log from "tc-shared/log";
+import {LogCategory} from "../../log";
+import {settings, Settings} from "../../settings";
+import * as log from "../../log";
 import * as loader from "tc-loader";
 
 export enum ChatType {

@@ -1,8 +1,8 @@
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {ChatEvent} from "tc-shared/ui/frames/side/ConversationDefinitions";
+import * as log from "../../../log";
+import {LogCategory} from "../../../log";
+import {ChatEvent} from "../../../ui/frames/side/ConversationDefinitions";
 
 const clientUniqueId2StoreName = uniqueId => "conversation-" + uniqueId;
 

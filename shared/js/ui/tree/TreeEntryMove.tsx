@@ -2,6 +2,7 @@ import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {ChannelTreeView} from "tc-shared/ui/tree/View";
+
 const moveStyle = require("./TreeEntryMove.scss");
 
 export interface TreeEntryMoveProps {
@@ -29,19 +30,19 @@ export class TreeEntryMove extends ReactComponentBase<TreeEntryMoveProps, TreeEn
         this.ref_container = React.createRef();
         this.domContainer = document.getElementById("mouse-move");
         this.document_mouse_out_listener = (e: MouseEvent) => {
-            if(e.type === "mouseup") {
-                if(e.button !== 0) return;
+            if (e.type === "mouseup") {
+                if (e.button !== 0) return;
 
-                this.props.onMoveEnd({ x: e.pageX, y: e.pageY });
+                this.props.onMoveEnd({x: e.pageX, y: e.pageY});
             }
 
             this.disableEntryMove();
         };
 
         this.document_mouse_listener = (e: MouseEvent) => {
-            this.current = { x: e.pageX, y: e.pageY };
+            this.current = {x: e.pageX, y: e.pageY};
             const container = this.ref_container.current;
-            if(!container) return;
+            if (!container) return;
 
             container.style.top = e.pageY + "px";
             container.style.left = e.pageX + "px";
@@ -73,22 +74,25 @@ export class TreeEntryMove extends ReactComponentBase<TreeEntryMoveProps, TreeEn
     protected defaultState(): TreeEntryMoveState {
         return {
             tree_view: null,
-            begin: { x: 0, y: 0},
+            begin: {x: 0, y: 0},
             description: ""
         }
     }
 
-    isActive() { return !!this.state.tree_view; }
+    isActive() {
+        return !!this.state.tree_view;
+    }
 
     render() {
-        if(!this.state.tree_view)
+        if (!this.state.tree_view)
             return null;
 
         return ReactDOM.createPortal(this.renderPortal(), this.domContainer);
     }
 
     private renderPortal() {
-        return <div style={{ top: this.current.y, left: this.current.x }} className={moveStyle.moveContainer} ref={this.ref_container} >
+        return <div style={{top: this.current.y, left: this.current.x}} className={moveStyle.moveContainer}
+                    ref={this.ref_container}>
             {this.state.description}
         </div>;
     }

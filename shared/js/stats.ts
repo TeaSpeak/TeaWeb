@@ -1,5 +1,5 @@
-import {LogCategory} from "tc-shared/log";
-import * as log from "tc-shared/log";
+import {LogCategory} from "./log";
+import * as log from "./log";
 
 enum CloseCodes {
     UNSET = 3000,

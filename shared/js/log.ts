@@ -1,4 +1,4 @@
-import {Settings, settings} from "tc-shared/settings";
+import {Settings, settings} from "./settings";
 import * as loader from "tc-loader";
 
 export enum LogCategory {

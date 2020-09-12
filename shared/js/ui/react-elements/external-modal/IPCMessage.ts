@@ -1,5 +1,5 @@
-import {ChannelMessage, IPCChannel} from "tc-shared/ipc/BrowserIPC";
-import {EventReceiver, Registry} from "tc-shared/events";
+import {ChannelMessage, IPCChannel} from "../../../ipc/BrowserIPC";
+import {EventReceiver, Registry} from "../../../events";
 
 export interface PopoutIPCMessage {
     "hello-popout": { version: string },

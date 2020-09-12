@@ -1,13 +1,13 @@
-import {LaterPromise} from "tc-shared/utils/LaterPromise";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {PermissionManager, PermissionValue} from "tc-shared/permission/PermissionManager";
-import {ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ConnectionEvents, ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
-import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
-import {Registry} from "tc-shared/events";
-import {tr} from "tc-shared/i18n/localize";
+import {LaterPromise} from "../utils/LaterPromise";
+import * as log from "../log";
+import {LogCategory} from "../log";
+import {PermissionManager, PermissionValue} from "../permission/PermissionManager";
+import {ServerCommand} from "../connection/ConnectionBase";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {ConnectionEvents, ConnectionHandler, ConnectionState} from "../ConnectionHandler";
+import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
+import {Registry} from "../events";
+import {tr} from "../i18n/localize";
 
 export enum GroupType {
     QUERY,

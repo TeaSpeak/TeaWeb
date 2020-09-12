@@ -1,8 +1,8 @@
-import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {ClientEntry} from "tc-shared/tree/Client";
-import {Slider, sliderfy} from "tc-shared/ui/elements/Slider";
-import * as htmltags from "tc-shared/ui/htmltags";
-import {VoicePlayerLatencySettings} from "tc-shared/voice/VoicePlayer";
+import {createModal, Modal} from "../../ui/elements/Modal";
+import {ClientEntry} from "../../tree/Client";
+import {Slider, sliderfy} from "../../ui/elements/Slider";
+import * as htmltags from "../../ui/htmltags";
+import {VoicePlayerLatencySettings} from "../../voice/VoicePlayer";
 
 let modalInstance: Modal;
 export function spawnChangeLatency(client: ClientEntry, current: VoicePlayerLatencySettings, reset: () => VoicePlayerLatencySettings, apply: (settings: VoicePlayerLatencySettings) => void, callback_flush?: () => any) {

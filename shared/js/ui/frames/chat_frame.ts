@@ -1,14 +1,14 @@
 /* the bar on the right with the chats (Channel & Client) */
-import {ClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ChannelEntry} from "tc-shared/tree/Channel";
-import {ServerEntry} from "tc-shared/tree/Server";
-import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
-import {formatMessage} from "tc-shared/ui/frames/chat";
-import {ClientInfo} from "tc-shared/ui/frames/side/client_info";
-import {MusicInfo} from "tc-shared/ui/frames/side/music_info";
-import {ConversationManager} from "tc-shared/ui/frames/side/ConversationManager";
-import {PrivateConversationManager} from "tc-shared/ui/frames/side/PrivateConversationManager";
+import {ClientEntry, MusicClientEntry} from "../../tree/Client";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {ChannelEntry} from "../../tree/Channel";
+import {ServerEntry} from "../../tree/Server";
+import {openMusicManage} from "../../ui/modal/ModalMusicManage";
+import {formatMessage} from "../../ui/frames/chat";
+import {ClientInfo} from "../../ui/frames/side/client_info";
+import {MusicInfo} from "../../ui/frames/side/music_info";
+import {ConversationManager} from "../../ui/frames/side/ConversationManager";
+import {PrivateConversationManager} from "../../ui/frames/side/PrivateConversationManager";
 
 export enum InfoFrameMode {
     NONE = "none",

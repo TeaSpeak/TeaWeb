@@ -1,5 +1,12 @@
-export type VoiceConnectionState = "connecting" | "connected" | "disconnected" | "unsupported-client" | "unsupported-server";
-export type TestState = { state: "initializing" | "running" | "stopped" | "microphone-invalid" | "unsupported" } | { state: "start-failed", error: string };
+export type VoiceConnectionState =
+    "connecting"
+    | "connected"
+    | "disconnected"
+    | "unsupported-client"
+    | "unsupported-server";
+export type TestState =
+    { state: "initializing" | "running" | "stopped" | "microphone-invalid" | "unsupported" }
+    | { state: "start-failed", error: string };
 
 export interface EchoTestEvents {
     action_troubleshooting_finished: { status: "test-again" | "aborted" }

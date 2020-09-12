@@ -1,4 +1,4 @@
-import {settings, Settings} from "tc-shared/settings";
+import {settings, Settings} from "../../settings";
 import * as loader from "tc-loader";
 import * as fidentity from "./TeaForumIdentity";
 import * as log from "../../log";

@@ -1,4 +1,4 @@
-import {spawnBookmarkModal} from "tc-shared/ui/modal/ModalBookmarks";
+import {spawnBookmarkModal} from "../../ui/modal/ModalBookmarks";
 import {
     add_server_to_bookmarks,
     Bookmark,
@@ -6,25 +6,25 @@ import {
     BookmarkType,
     boorkmak_connect,
     DirectoryBookmark
-} from "tc-shared/bookmarks";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {Sound} from "tc-shared/sound/Sounds";
-import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
-import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {PermissionType} from "tc-shared/permission/PermissionType";
-import {openBanList} from "tc-shared/ui/modal/ModalBanList";
-import {spawnQueryManage} from "tc-shared/ui/modal/ModalQueryManage";
-import {spawnQueryCreate} from "tc-shared/ui/modal/ModalQuery";
-import {spawnSettingsModal} from "tc-shared/ui/modal/ModalSettings";
-import {spawnAbout} from "tc-shared/ui/modal/ModalAbout";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+} from "../../bookmarks";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {Sound} from "../../sound/Sounds";
+import {spawnConnectModal} from "../../ui/modal/ModalConnect";
+import {createErrorModal, createInfoModal, createInputModal} from "../../ui/elements/Modal";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import {PermissionType} from "../../permission/PermissionType";
+import {openBanList} from "../../ui/modal/ModalBanList";
+import {spawnQueryManage} from "../../ui/modal/ModalQueryManage";
+import {spawnQueryCreate} from "../../ui/modal/ModalQuery";
+import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
+import {spawnAbout} from "../../ui/modal/ModalAbout";
+import {server_connections} from "../../ui/frames/connection_handlers";
 import * as loader from "tc-loader";
-import {formatMessage} from "tc-shared/ui/frames/chat";
-import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
-import {icon_cache_loader, IconManager, LocalIcon} from "tc-shared/file/Icons";
-import {spawnPermissionEditorModal} from "tc-shared/ui/modal/permission/ModalPermissionEditor";
-import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
+import {formatMessage} from "../../ui/frames/chat";
+import {control_bar_instance} from "../../ui/frames/control-bar";
+import {icon_cache_loader, IconManager, LocalIcon} from "../../file/Icons";
+import {spawnPermissionEditorModal} from "../../ui/modal/permission/ModalPermissionEditor";
+import {spawnModalCssVariableEditor} from "../../ui/modal/css-editor/Controller";
 
 export interface HRItem { }
 

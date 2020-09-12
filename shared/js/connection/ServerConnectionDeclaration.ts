@@ -1,4 +1,4 @@
-import {LaterPromise} from "tc-shared/utils/LaterPromise";
+import {LaterPromise} from "../utils/LaterPromise";
 
 export class CommandResult {
     success: boolean;

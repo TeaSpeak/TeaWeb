@@ -1,4 +1,4 @@
-import {ConversationUIEvents} from "tc-shared/ui/frames/side/ConversationDefinitions";
+import {ConversationUIEvents} from "../../../ui/frames/side/ConversationDefinitions";
 
 export type PrivateConversationInfo = {
     nickname: string;

@@ -1,10 +1,10 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {ChannelEntry} from "tc-shared/tree/Channel";
-import {ClientEntry} from "tc-shared/tree/Client";
-import {htmlEscape} from "tc-shared/ui/frames/chat";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {guid} from "tc-shared/crypto/uid";
+import * as log from "../log";
+import {LogCategory} from "../log";
+import {ChannelEntry} from "../tree/Channel";
+import {ClientEntry} from "../tree/Client";
+import {htmlEscape} from "../ui/frames/chat";
+import {server_connections} from "../ui/frames/connection_handlers";
+import {guid} from "../crypto/uid";
 
 let mouse_coordinates: {x: number, y: number} = {x: 0, y: 0};
 

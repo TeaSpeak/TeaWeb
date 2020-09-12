@@ -1,7 +1,7 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {Settings, settings} from "tc-shared/settings";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import * as log from "../log";
+import {LogCategory} from "../log";
+import {Settings, settings} from "../settings";
+import {ConnectionHandler} from "../ConnectionHandler";
 import * as sbackend from "tc-backend/audio/sounds";
 
 export enum Sound {

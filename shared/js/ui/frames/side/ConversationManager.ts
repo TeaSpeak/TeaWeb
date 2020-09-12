@@ -1,21 +1,21 @@
 import * as React from "react";
-import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
-import {EventHandler, Registry} from "tc-shared/events";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {Settings} from "tc-shared/settings";
-import {traj} from "tc-shared/i18n/localize";
-import {createErrorModal} from "tc-shared/ui/elements/Modal";
+import {ConnectionHandler, ConnectionState} from "../../../ConnectionHandler";
+import {EventHandler, Registry} from "../../../events";
+import * as log from "../../../log";
+import {LogCategory} from "../../../log";
+import {CommandResult} from "../../../connection/ServerConnectionDeclaration";
+import {ServerCommand} from "../../../connection/ConnectionBase";
+import {Settings} from "../../../settings";
+import {traj} from "../../../i18n/localize";
+import {createErrorModal} from "../../../ui/elements/Modal";
 import ReactDOM = require("react-dom");
 import {
     ChatMessage, ConversationHistoryResponse,
     ConversationUIEvents
-} from "tc-shared/ui/frames/side/ConversationDefinitions";
-import {ConversationPanel} from "tc-shared/ui/frames/side/ConversationUI";
+} from "../../../ui/frames/side/ConversationDefinitions";
+import {ConversationPanel} from "../../../ui/frames/side/ConversationUI";
 import {AbstractChat, AbstractChatManager, kMaxChatFrameMessageSize} from "./AbstractConversion";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {ErrorCode} from "../../../connection/ErrorCode";
 
 const kSuccessQueryThrottle = 5 * 1000;
 const kErrorQueryThrottle = 30 * 1000;

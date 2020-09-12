@@ -1,10 +1,10 @@
-import {ServerConnectionInfo, ServerEntry} from "tc-shared/tree/Server";
-import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {Graph} from "tc-shared/ui/elements/NetGraph";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import {network} from "tc-shared/ui/frames/chat";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {ServerConnectionInfo, ServerEntry} from "../../tree/Server";
+import {createModal, Modal} from "../../ui/elements/Modal";
+import {CommandResult} from "../../connection/ServerConnectionDeclaration";
+import {Graph} from "../../ui/elements/NetGraph";
+import * as tooltip from "../../ui/elements/Tooltip";
+import {network} from "../../ui/frames/chat";
+import {ErrorCode} from "../../connection/ErrorCode";
 
 export enum RequestInfoStatus {
     SUCCESS,

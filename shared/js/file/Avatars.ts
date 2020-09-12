@@ -1,5 +1,5 @@
-import {Registry} from "tc-shared/events";
-import * as hex from "tc-shared/crypto/hex";
+import {Registry} from "../events";
+import * as hex from "../crypto/hex";
 
 export const kIPCAvatarChannel = "avatars";
 export const kLoadingAvatarImage = "img/loading_image.svg";

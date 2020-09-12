@@ -1,4 +1,4 @@
-import {Settings, settings} from "tc-shared/settings";
+import {Settings, settings} from "../settings";
 
 export enum ColloquialFormat {
     YESTERDAY,

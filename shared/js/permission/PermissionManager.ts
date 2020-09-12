@@ -1,14 +1,14 @@
-import * as log from "tc-shared/log";
-import {LogCategory, LogType} from "tc-shared/log";
-import {PermissionType} from "tc-shared/permission/PermissionType";
-import {LaterPromise} from "tc-shared/utils/LaterPromise";
-import {ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
-import {Registry} from "tc-shared/events";
-import {tr} from "tc-shared/i18n/localize";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import * as log from "../log";
+import {LogCategory, LogType} from "../log";
+import {PermissionType} from "../permission/PermissionType";
+import {LaterPromise} from "../utils/LaterPromise";
+import {ServerCommand} from "../connection/ConnectionBase";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {ConnectionHandler} from "../ConnectionHandler";
+import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
+import {Registry} from "../events";
+import {tr} from "../i18n/localize";
+import {ErrorCode} from "../connection/ErrorCode";
 
 export class PermissionInfo {
     name: string;

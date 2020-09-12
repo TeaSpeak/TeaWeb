@@ -139,6 +139,7 @@
     }
 
     $animation_length: .3s;
+
     .containerGroupList {
         flex-grow: 1;
         flex-shrink: 1;
@@ -156,6 +157,7 @@
         &.hidden {
             @include transform(translateX(-100%));
         }
+
         @include transition($animation_length ease-in-out);
     }
 
@@ -244,6 +246,7 @@
         &.hidden {
             @include transform(translateX(100%));
         }
+
         @include transition($animation_length ease-in-out);
     }
 }

@@ -1,7 +1,7 @@
-import {PermissionInfo} from "tc-shared/permission/PermissionManager";
-import {ViewReasonId} from "tc-shared/ConnectionHandler";
+import {PermissionInfo} from "../../../permission/PermissionManager";
+import {ViewReasonId} from "../../../ConnectionHandler";
 import * as React from "react";
-import {ServerEventLog} from "tc-shared/ui/frames/log/ServerEventLog";
+import {ServerEventLog} from "../../../ui/frames/log/ServerEventLog";
 
 export enum EventType {
     CONNECTION_BEGIN = "connection.begin",

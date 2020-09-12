@@ -1,4 +1,4 @@
-import {VoicePlayer} from "tc-shared/voice/VoicePlayer";
+import {VoicePlayer} from "../voice/VoicePlayer";
 
 export interface VoiceClient extends VoicePlayer {
     getClientId() : number;

@@ -1,13 +1,12 @@
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
-import {Registry} from "tc-shared/events";
+import {modal as emodal, Registry} from "tc-shared/events";
 import {modal_settings} from "tc-shared/ui/modal/ModalSettings";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { modal as emodal } from "tc-shared/events";
 
 export interface EventModalNewcomer {
     "show_step": {
@@ -25,25 +24,25 @@ export interface EventModalNewcomer {
     }
 }
 
-const next_step: {[key: string]:string} = {
+const next_step: { [key: string]: string } = {
     "welcome": "microphone",
     //"microphone": app.is_web() ? "identity" : "speaker", /* speaker setup only for the native client! */
     "microphone": "identity",
     "speaker": "identity",
     "identity": "finish"
 };
-const last_step: {[key: string]:string} = (() => {
+const last_step: { [key: string]: string } = (() => {
     const result = {};
-    for(const key of Object.keys(next_step))
-        if(!result[next_step[key]])
+    for (const key of Object.keys(next_step))
+        if (!result[next_step[key]])
             result[next_step[key]] = key;
     return result;
 })();
 
-export function openModalNewcomer() : Modal {
+export function openModalNewcomer(): Modal {
     let modal = createModal({
         header: tra("Welcome to the {}", __build.version === "web" ? "TeaSpeak - Web client" : "TeaSpeak - Client"),
-        body:  () => $("#tmpl_newcomer").renderTag({
+        body: () => $("#tmpl_newcomer").renderTag({
             is_web: __build.version === "web"
         }).children(),
         footer: null,
@@ -64,9 +63,9 @@ export function openModalNewcomer() : Modal {
     initializeStepFinish(modal.htmlTag.find(".container-body .step.step-finish"), event_registry);
 
     event_registry.on("exit_guide", event => {
-        if(event.ask_yesno) {
+        if (event.ask_yesno) {
             spawnYesNo(tr("Are you sure?"), tr("Do you really want to skip the basic setup guide?"), result => {
-                if(result)
+                if (result)
                     event_registry.fire("exit_guide", {ask_yesno: false});
             });
         } else {
@@ -101,23 +100,23 @@ function initializeBasicFunctionality(tag: JQuery, event_registry: Registry<Even
         let allowNextStep = true;
 
         button_last_step.on('click', () => {
-            if(last_step[current_step])
-                event_registry.fire("show_step", { step: last_step[current_step] as any });
+            if (last_step[current_step])
+                event_registry.fire("show_step", {step: last_step[current_step] as any});
             else
                 event_registry.fire("exit_guide", {ask_yesno: true});
         });
 
         let current_step;
         button_next_step.on('click', event => {
-            if(!allowNextStep) {
+            if (!allowNextStep) {
                 event_registry.fire("action-next-help");
                 return;
             }
 
-            if(next_step[current_step]) {
-                event_registry.fire("show_step", { step: next_step[current_step] as any });
+            if (next_step[current_step]) {
+                event_registry.fire("show_step", {step: next_step[current_step] as any});
             } else {
-                event_registry.fire("exit_guide", { ask_yesno: false });
+                event_registry.fire("exit_guide", {ask_yesno: false});
             }
         });
 
@@ -137,17 +136,17 @@ function initializeBasicFunctionality(tag: JQuery, event_registry: Registry<Even
 
 function initializeStepWelcome(tag: JQuery, event_registry: Registry<EventModalNewcomer>) {
     event_registry.on("show_step", e => {
-        if(e.step !== "welcome") return;
+        if (e.step !== "welcome") return;
 
-        event_registry.fire_async("step-status", { allowNextStep: true, allowPreviousStep: true });
+        event_registry.fire_async("step-status", {allowNextStep: true, allowPreviousStep: true});
     });
 }
 
 function initializeStepFinish(tag: JQuery, event_registry: Registry<EventModalNewcomer>) {
     event_registry.on("show_step", e => {
-        if(e.step !== "finish") return;
+        if (e.step !== "finish") return;
 
-        event_registry.fire_async("step-status", {allowNextStep: true, allowPreviousStep: true });
+        event_registry.fire_async("step-status", {allowNextStep: true, allowPreviousStep: true});
     });
 }
 
@@ -155,17 +154,20 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<EventModal
     const profile_events = new Registry<emodal.settings.profiles>();
     profile_events.enableDebug("settings-identity");
     modal_settings.initialize_identity_profiles_controller(profile_events);
-    modal_settings.initialize_identity_profiles_view(tag, profile_events, { forum_setuppable: false });
+    modal_settings.initialize_identity_profiles_view(tag, profile_events, {forum_setuppable: false});
 
     let stepShown = false;
     let help_animation_done = false;
     const update_step_status = () => {
-        event_registry.fire_async("step-status", { allowNextStep: help_animation_done, allowPreviousStep: help_animation_done });
+        event_registry.fire_async("step-status", {
+            allowNextStep: help_animation_done,
+            allowPreviousStep: help_animation_done
+        });
     };
     profile_events.on("query-profile-validity-result", event => stepShown && event.status === "success" && event.valid && update_step_status());
     event_registry.on("show_step", e => {
         stepShown = e.step === "identity";
-        if(!stepShown) return;
+        if (!stepShown) return;
 
         update_step_status();
     });
@@ -187,7 +189,7 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<EventModal
         };
 
         event_registry.on("show_step", event => {
-            if(helpStep > 0 || event.step !== "identity") {
+            if (helpStep > 0 || event.step !== "identity") {
                 document.body.removeEventListener("mousedown", listenerClick);
                 return;
             }
@@ -323,12 +325,12 @@ function initializeStepIdentity(tag: JQuery, event_registry: Registry<EventModal
 
         const listenerClick = () => event_registry.fire("action-next-help");
         event_registry.on("action-next-help", () => {
-            if(!stepShown) {
+            if (!stepShown) {
                 return;
             }
 
             const fn = steps[helpStep++];
-            if(typeof fn === "function") {
+            if (typeof fn === "function") {
                 fn();
             }
             update_step_status();
@@ -342,21 +344,21 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<EventMod
     let stepShown = false;
 
     const settingEvents = new Registry<MicrophoneSettingsEvents>();
-    settingEvents.on("query_help", () => settingEvents.fire_async("notify_highlight", { field: helpStep <= 2 ? ("hs-" + helpStep) as any : undefined }));
+    settingEvents.on("query_help", () => settingEvents.fire_async("notify_highlight", {field: helpStep <= 2 ? ("hs-" + helpStep) as any : undefined}));
     settingEvents.on("action_help_click", () => {
-        if(!stepShown) {
+        if (!stepShown) {
             return;
         }
 
         helpStep++;
         settingEvents.fire("query_help");
 
-        event_registry.fire_async("step-status", { allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2 })
+        event_registry.fire_async("step-status", {allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2})
     });
     event_registry.on("action-next-help", () => settingEvents.fire("action_help_click"));
 
     initialize_audio_microphone_controller(settingEvents);
-    ReactDOM.render(<MicrophoneSettings events={settingEvents} />, tag[0]);
+    ReactDOM.render(<MicrophoneSettings events={settingEvents}/>, tag[0]);
 
     modal.close_listener.push(() => {
         settingEvents.fire("notify_destroy");
@@ -366,10 +368,10 @@ function initializeStepMicrophone(tag: JQuery, event_registry: Registry<EventMod
 
     event_registry.on("show_step", event => {
         stepShown = event.step === "microphone";
-        if(!stepShown) {
+        if (!stepShown) {
             return;
         }
 
-        event_registry.fire_async("step-status", { allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2 });
+        event_registry.fire_async("step-status", {allowNextStep: helpStep > 2, allowPreviousStep: helpStep > 2});
     });
 }

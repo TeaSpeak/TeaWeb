@@ -1,6 +1,6 @@
-import {IDevice} from "tc-shared/audio/recorder";
-import {Registry} from "tc-shared/events";
-import {Filter, FilterType, FilterTypeClass} from "tc-shared/voice/Filter";
+import {IDevice} from "../audio/recorder";
+import {Registry} from "../events";
+import {Filter, FilterType, FilterTypeClass} from "../voice/Filter";
 
 export enum InputConsumerType {
     CALLBACK,

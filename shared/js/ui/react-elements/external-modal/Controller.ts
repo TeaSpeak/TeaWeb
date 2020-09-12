@@ -1,14 +1,14 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import * as ipc from "tc-shared/ipc/BrowserIPC";
-import {ChannelMessage} from "tc-shared/ipc/BrowserIPC";
-import {Registry} from "tc-shared/events";
+import * as log from "../../../log";
+import {LogCategory} from "../../../log";
+import * as ipc from "../../../ipc/BrowserIPC";
+import {ChannelMessage} from "../../../ipc/BrowserIPC";
+import {Registry} from "../../../events";
 import {
     EventControllerBase,
     Popout2ControllerMessages,
     PopoutIPCMessage
-} from "tc-shared/ui/react-elements/external-modal/IPCMessage";
-import {ModalController, ModalEvents, ModalOptions, ModalState} from "tc-shared/ui/react-elements/ModalDefinitions";
+} from "../../../ui/react-elements/external-modal/IPCMessage";
+import {ModalController, ModalEvents, ModalOptions, ModalState} from "../../../ui/react-elements/ModalDefinitions";
 
 export abstract class AbstractExternalModalController extends EventControllerBase<"controller"> implements ModalController {
     public readonly modalType: string;

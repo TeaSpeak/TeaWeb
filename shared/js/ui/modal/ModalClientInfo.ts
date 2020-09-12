@@ -1,13 +1,14 @@
-import {ClientConnectionInfo, ClientEntry} from "tc-shared/tree/Client";
-import PermissionType from "tc-shared/permission/PermissionType";
-import {createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {copy_to_clipboard} from "tc-shared/utils/helpers";
-import * as i18nc from "tc-shared/i18n/country";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
+import {ClientConnectionInfo, ClientEntry} from "../../tree/Client";
+import PermissionType from "../../permission/PermissionType";
+import {createInfoModal, createModal, Modal} from "../../ui/elements/Modal";
+import {copy_to_clipboard} from "../../utils/helpers";
+import * as i18nc from "../../i18n/country";
+import * as tooltip from "../../ui/elements/Tooltip";
 import * as moment from "moment";
-import {format_number, network} from "tc-shared/ui/frames/chat";
+import {format_number, network} from "../../ui/frames/chat";
 
 type InfoUpdateCallback = (info: ClientConnectionInfo) => any;
+
 export function openClientInfo(client: ClientEntry) {
     let modal: Modal;
     let update_callbacks: InfoUpdateCallback[] = [];
@@ -64,31 +65,31 @@ const TIME_WEEK = 7 * TIME_DAY;
 
 function format_time(time: number, default_value: string) {
     let result = "";
-    if(time > TIME_WEEK) {
+    if (time > TIME_WEEK) {
         const amount = Math.floor(time / TIME_WEEK);
         result += " " + amount + " " + (amount > 1 ? tr("Weeks") : tr("Week"));
         time -= amount * TIME_WEEK;
     }
 
-    if(time > TIME_DAY) {
+    if (time > TIME_DAY) {
         const amount = Math.floor(time / TIME_DAY);
         result += " " + amount + " " + (amount > 1 ? tr("Days") : tr("Day"));
         time -= amount * TIME_DAY;
     }
 
-    if(time > TIME_HOUR) {
+    if (time > TIME_HOUR) {
         const amount = Math.floor(time / TIME_HOUR);
         result += " " + amount + " " + (amount > 1 ? tr("Hours") : tr("Hour"));
         time -= amount * TIME_HOUR;
     }
 
-    if(time > TIME_MINUTE) {
+    if (time > TIME_MINUTE) {
         const amount = Math.floor(time / TIME_MINUTE);
         result += " " + amount + " " + (amount > 1 ? tr("Minutes") : tr("Minute"));
         time -= amount * TIME_MINUTE;
     }
 
-    if(time > TIME_SECOND) {
+    if (time > TIME_SECOND) {
         const amount = Math.floor(time / TIME_SECOND);
         result += " " + amount + " " + (amount > 1 ? tr("Seconds") : tr("Second"));
         time -= amount * TIME_SECOND;
@@ -99,7 +100,10 @@ function format_time(time: number, default_value: string) {
 
 function apply_static_info(client: ClientEntry, tag: JQuery, modal: Modal, callbacks: InfoUpdateCallback[]) {
     tag.find(".container-avatar").append(
-        client.channelTree.client.fileManager.avatars.generate_chat_tag({database_id: client.properties.client_database_id, id: client.clientId()}, client.properties.client_unique_identifier)
+        client.channelTree.client.fileManager.avatars.generate_chat_tag({
+            database_id: client.properties.client_database_id,
+            id: client.clientId()
+        }, client.properties.client_unique_identifier)
     );
 
     tag.find(".container-name").append(
@@ -120,7 +124,7 @@ function apply_client_status(client: ClientEntry, tag: JQuery, modal: Modal, cal
 
 
     tag.find(".status-away").toggle(client.properties.client_away);
-    if(client.properties.client_away_message) {
+    if (client.properties.client_away_message) {
         tag.find(".container-away-message").show().find("a").text(client.properties.client_away_message);
     } else {
         tag.find(".container-away-message").hide();
@@ -145,15 +149,15 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
     {
         const container = tag.find(".property-teaforo .value").empty();
 
-        if(client.properties.client_teaforo_id) {
+        if (client.properties.client_teaforo_id) {
             container.children().remove();
 
             let text = client.properties.client_teaforo_name;
-            if((client.properties.client_teaforo_flags & 0x01) > 0)
+            if ((client.properties.client_teaforo_flags & 0x01) > 0)
                 text += " (" + tr("Banned") + ")";
-            if((client.properties.client_teaforo_flags & 0x02) > 0)
+            if ((client.properties.client_teaforo_flags & 0x02) > 0)
                 text += " (" + tr("Stuff") + ")";
-            if((client.properties.client_teaforo_flags & 0x04) > 0)
+            if ((client.properties.client_teaforo_flags & 0x04) > 0)
                 text += " (" + tr("Premium") + ")";
 
             $.spawn("a")
@@ -186,7 +190,7 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
             timestamp = parseInt(ts);
             return "";
         });
-        if(timestamp > 0) {
+        if (timestamp > 0) {
             container_timestamp.find(".value-timestamp").text(moment(timestamp * 1000).format('MMMM Do YYYY, h:mm:ss a'));
             container_timestamp.show();
         } else {
@@ -248,7 +252,7 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
         const container = tag.find(".property-online-since");
 
         const node = container.find(".value a")[0];
-        if(node) {
+        if (node) {
             const update = () => {
                 node.innerText = format_time(client.calculateOnlineTime() * 1000, tr("0 Seconds"));
             };
@@ -262,7 +266,7 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
     {
         const container = tag.find(".property-idle-time");
         const node = container.find(".value a")[0];
-        if(node) {
+        if (node) {
             callbacks.push(info => {
                 node.innerText = format_time(info.connection_idle_time, tr("Currently active"));
             });
@@ -275,11 +279,11 @@ function apply_basic_info(client: ClientEntry, tag: JQuery, modal: Modal, callba
         const container = tag.find(".property-ping");
         const node = container.find(".value a")[0];
 
-        if(node) {
+        if (node) {
             callbacks.push(info => {
-                if(info.connection_ping >= 0)
+                if (info.connection_ping >= 0)
                     node.innerText = info.connection_ping.toFixed(0) + "ms ± " + info.connection_ping_deviation.toFixed(2) + "ms";
-                else if(info.connection_ping == -1 && info.connection_ping_deviation == -1)
+                else if (info.connection_ping == -1 && info.connection_ping_deviation == -1)
                     node.innerText = tr("Not calculated");
                 else
                     node.innerText = tr("loading...");
@@ -299,12 +303,12 @@ function apply_groups(client: ClientEntry, tag: JQuery, modal: Modal, callbacks:
             container_entries.empty();
             container_empty.show();
 
-            for(const group_id of client.assignedServerGroupIds()) {
-                if(group_id == client.channelTree.server.properties.virtualserver_default_server_group)
+            for (const group_id of client.assignedServerGroupIds()) {
+                if (group_id == client.channelTree.server.properties.virtualserver_default_server_group)
                     continue;
 
                 const group = client.channelTree.client.groups.findServerGroup(group_id);
-                if(!group) continue; //This shall never happen!
+                if (!group) continue; //This shall never happen!
 
                 container_empty.hide();
                 container_entries.append($.spawn("div").addClass("entry").append(
@@ -339,14 +343,14 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
         const node_downstream = container.find(".downstream .value")[0];
         const node_upstream = container.find(".upstream .value")[0];
 
-        if(node_downstream) {
+        if (node_downstream) {
             callbacks.push(info => {
                 node_downstream.innerText = info.connection_server2client_packetloss_control < 0 ? tr("Not calculated") : (info.connection_server2client_packetloss_control || 0).toFixed();
             });
             node_downstream.innerText = tr("loading...");
         }
 
-        if(node_upstream) {
+        if (node_upstream) {
             callbacks.push(info => {
                 node_upstream.innerText = info.connection_client2server_packetloss_total < 0 ? tr("Not calculated") : (info.connection_client2server_packetloss_total || 0).toFixed();
             });
@@ -360,13 +364,13 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
         const node_downstream = container.find(".downstream .value")[0];
         const node_upstream = container.find(".upstream .value")[0];
 
-        if(node_downstream) {
+        if (node_downstream) {
             callbacks.push(info => {
                 let packets = 0;
                 packets += info.connection_packets_received_speech > 0 ? info.connection_packets_received_speech : 0;
                 packets += info.connection_packets_received_control > 0 ? info.connection_packets_received_control : 0;
                 packets += info.connection_packets_received_keepalive > 0 ? info.connection_packets_received_keepalive : 0;
-                if(packets == 0 && info.connection_packets_received_keepalive == -1)
+                if (packets == 0 && info.connection_packets_received_keepalive == -1)
                     node_downstream.innerText = tr("Not calculated");
                 else
                     node_downstream.innerText = format_number(packets, {unit: "Packets"});
@@ -374,13 +378,13 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
             node_downstream.innerText = tr("loading...");
         }
 
-        if(node_upstream) {
+        if (node_upstream) {
             callbacks.push(info => {
                 let packets = 0;
                 packets += info.connection_packets_sent_speech > 0 ? info.connection_packets_sent_speech : 0;
                 packets += info.connection_packets_sent_control > 0 ? info.connection_packets_sent_control : 0;
                 packets += info.connection_packets_sent_keepalive > 0 ? info.connection_packets_sent_keepalive : 0;
-                if(packets == 0 && info.connection_packets_sent_keepalive == -1)
+                if (packets == 0 && info.connection_packets_sent_keepalive == -1)
                     node_upstream.innerText = tr("Not calculated");
                 else
                     node_upstream.innerText = format_number(packets, {unit: "Packets"});
@@ -395,13 +399,13 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
         const node_downstream = container.find(".downstream .value")[0];
         const node_upstream = container.find(".upstream .value")[0];
 
-        if(node_downstream) {
+        if (node_downstream) {
             callbacks.push(info => {
                 let bytes = 0;
                 bytes += info.connection_bytes_received_speech > 0 ? info.connection_bytes_received_speech : 0;
                 bytes += info.connection_bytes_received_control > 0 ? info.connection_bytes_received_control : 0;
                 bytes += info.connection_bytes_received_keepalive > 0 ? info.connection_bytes_received_keepalive : 0;
-                if(bytes == 0 && info.connection_bytes_received_keepalive == -1)
+                if (bytes == 0 && info.connection_bytes_received_keepalive == -1)
                     node_downstream.innerText = tr("Not calculated");
                 else
                     node_downstream.innerText = network.format_bytes(bytes);
@@ -409,13 +413,13 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
             node_downstream.innerText = tr("loading...");
         }
 
-        if(node_upstream) {
+        if (node_upstream) {
             callbacks.push(info => {
                 let bytes = 0;
                 bytes += info.connection_bytes_sent_speech > 0 ? info.connection_bytes_sent_speech : 0;
                 bytes += info.connection_bytes_sent_control > 0 ? info.connection_bytes_sent_control : 0;
                 bytes += info.connection_bytes_sent_keepalive > 0 ? info.connection_bytes_sent_keepalive : 0;
-                if(bytes == 0 && info.connection_bytes_sent_keepalive == -1)
+                if (bytes == 0 && info.connection_bytes_sent_keepalive == -1)
                     node_upstream.innerText = tr("Not calculated");
                 else
                     node_upstream.innerText = network.format_bytes(bytes);
@@ -430,27 +434,27 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
         const node_downstream = container.find(".downstream .value")[0];
         const node_upstream = container.find(".upstream .value")[0];
 
-        if(node_downstream) {
+        if (node_downstream) {
             callbacks.push(info => {
                 let bytes = 0;
                 bytes += info.connection_bandwidth_received_last_second_speech > 0 ? info.connection_bandwidth_received_last_second_speech : 0;
                 bytes += info.connection_bandwidth_received_last_second_control > 0 ? info.connection_bandwidth_received_last_second_control : 0;
                 bytes += info.connection_bandwidth_received_last_second_keepalive > 0 ? info.connection_bandwidth_received_last_second_keepalive : 0;
-                if(bytes == 0 && info.connection_bandwidth_received_last_second_keepalive == -1)
+                if (bytes == 0 && info.connection_bandwidth_received_last_second_keepalive == -1)
                     node_downstream.innerText = tr("Not calculated");
                 else
                     node_downstream.innerText = network.format_bytes(bytes, {time: "s"});
-        });
+            });
             node_downstream.innerText = tr("loading...");
         }
 
-        if(node_upstream) {
+        if (node_upstream) {
             callbacks.push(info => {
                 let bytes = 0;
                 bytes += info.connection_bandwidth_sent_last_second_speech > 0 ? info.connection_bandwidth_sent_last_second_speech : 0;
                 bytes += info.connection_bandwidth_sent_last_second_control > 0 ? info.connection_bandwidth_sent_last_second_control : 0;
                 bytes += info.connection_bandwidth_sent_last_second_keepalive > 0 ? info.connection_bandwidth_sent_last_second_keepalive : 0;
-                if(bytes == 0 && info.connection_bandwidth_sent_last_second_keepalive == -1)
+                if (bytes == 0 && info.connection_bandwidth_sent_last_second_keepalive == -1)
                     node_upstream.innerText = tr("Not calculated");
                 else
                     node_upstream.innerText = network.format_bytes(bytes, {time: "s"});
@@ -465,13 +469,13 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
         const node_downstream = container.find(".downstream .value")[0];
         const node_upstream = container.find(".upstream .value")[0];
 
-        if(node_downstream) {
+        if (node_downstream) {
             callbacks.push(info => {
                 let bytes = 0;
                 bytes += info.connection_bandwidth_received_last_minute_speech > 0 ? info.connection_bandwidth_received_last_minute_speech : 0;
                 bytes += info.connection_bandwidth_received_last_minute_control > 0 ? info.connection_bandwidth_received_last_minute_control : 0;
                 bytes += info.connection_bandwidth_received_last_minute_keepalive > 0 ? info.connection_bandwidth_received_last_minute_keepalive : 0;
-                if(bytes == 0 && info.connection_bandwidth_received_last_minute_keepalive == -1)
+                if (bytes == 0 && info.connection_bandwidth_received_last_minute_keepalive == -1)
                     node_downstream.innerText = tr("Not calculated");
                 else
                     node_downstream.innerText = network.format_bytes(bytes, {time: "s"});
@@ -479,13 +483,13 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
             node_downstream.innerText = tr("loading...");
         }
 
-        if(node_upstream) {
+        if (node_upstream) {
             callbacks.push(info => {
                 let bytes = 0;
                 bytes += info.connection_bandwidth_sent_last_minute_speech > 0 ? info.connection_bandwidth_sent_last_minute_speech : 0;
                 bytes += info.connection_bandwidth_sent_last_minute_control > 0 ? info.connection_bandwidth_sent_last_minute_control : 0;
                 bytes += info.connection_bandwidth_sent_last_minute_keepalive > 0 ? info.connection_bandwidth_sent_last_minute_keepalive : 0;
-                if(bytes == 0 && info.connection_bandwidth_sent_last_minute_keepalive == -1)
+                if (bytes == 0 && info.connection_bandwidth_sent_last_minute_keepalive == -1)
                     node_upstream.innerText = tr("Not calculated");
                 else
                     node_upstream.innerText = network.format_bytes(bytes, {time: "s"});
@@ -500,7 +504,7 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
         const node_downstream = container.find(".downstream .value")[0];
         const node_upstream = container.find(".upstream .value")[0];
 
-        if(node_downstream) {
+        if (node_downstream) {
             client.updateClientVariables().then(info => {
                 //TODO: Test for own client info and if so then show the max quota (needed permission)
                 node_downstream.innerText = network.format_bytes(client.properties.client_month_bytes_downloaded, {exact: false});
@@ -508,7 +512,7 @@ function apply_packets(client: ClientEntry, tag: JQuery, modal: Modal, callbacks
             node_downstream.innerText = tr("loading...");
         }
 
-        if(node_upstream) {
+        if (node_upstream) {
             client.updateClientVariables().then(info => {
                 //TODO: Test for own client info and if so then show the max quota (needed permission)
                 node_upstream.innerText = network.format_bytes(client.properties.client_month_bytes_uploaded, {exact: false});

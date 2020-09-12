@@ -3,7 +3,7 @@ import {WorkerMessage} from "./Protocol";
 import {GenericCommandMapping, GenericCommands, GenericNotify} from "./Definitions";
 import {tr} from "../i18n/localize";
 import {Registry} from "../events";
-import {WorkerCommunication} from "tc-shared/workers/Worker";
+import {WorkerCommunication} from "../workers/Worker";
 
 export interface WorkerEvents {
     notify_worker_died: {}

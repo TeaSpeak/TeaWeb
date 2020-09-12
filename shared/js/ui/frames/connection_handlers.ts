@@ -1,7 +1,7 @@
-import {ConnectionHandler, DisconnectReason} from "tc-shared/ConnectionHandler";
-import {Settings, settings} from "tc-shared/settings";
+import {ConnectionHandler, DisconnectReason} from "../../ConnectionHandler";
+import {Settings, settings} from "../../settings";
 import * as top_menu from "./MenuBar";
-import {Registry} from "tc-shared/events";
+import {Registry} from "../../events";
 
 export let server_connections: ConnectionManager;
 export function initialize() {

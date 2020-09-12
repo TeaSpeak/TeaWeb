@@ -1,7 +1,7 @@
 import * as loader from "tc-loader";
 import * as moment from "moment";
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
+import * as log from "../log";
+import {LogCategory} from "../log";
 
 export function setupJSRender() : boolean {
     if(!$.views) {

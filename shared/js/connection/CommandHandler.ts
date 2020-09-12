@@ -1,9 +1,9 @@
-import * as log from "tc-shared/log";
-import {LogCategory} from "tc-shared/log";
-import {AbstractServerConnection, CommandOptions, ServerCommand} from "tc-shared/connection/ConnectionBase";
-import {Sound} from "tc-shared/sound/Sounds";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {createErrorModal, createInfoModal, createInputModal, createModal} from "tc-shared/ui/elements/Modal";
+import * as log from "../log";
+import {LogCategory} from "../log";
+import {AbstractServerConnection, CommandOptions, ServerCommand} from "../connection/ConnectionBase";
+import {Sound} from "../sound/Sounds";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {createErrorModal, createInfoModal, createInputModal, createModal} from "../ui/elements/Modal";
 import {
     ClientConnectionInfo,
     ClientEntry,
@@ -11,19 +11,19 @@ import {
     LocalClientEntry,
     MusicClientEntry,
     SongInfo
-} from "tc-shared/tree/Client";
-import {ChannelEntry} from "tc-shared/tree/Channel";
-import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "tc-shared/ConnectionHandler";
-import {formatMessage} from "tc-shared/ui/frames/chat";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {spawnPoke} from "tc-shared/ui/modal/ModalPoke";
-import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
-import {batch_updates, BatchUpdateType, flush_batched_updates} from "tc-shared/ui/react-elements/ReactComponentBase";
-import {OutOfViewClient} from "tc-shared/ui/frames/side/PrivateConversationManager";
-import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
-import {tr} from "tc-shared/i18n/localize";
-import {EventClient, EventType} from "tc-shared/ui/frames/log/Definitions";
-import {ErrorCode} from "tc-shared/connection/ErrorCode";
+} from "../tree/Client";
+import {ChannelEntry} from "../tree/Channel";
+import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "../ConnectionHandler";
+import {formatMessage} from "../ui/frames/chat";
+import {server_connections} from "../ui/frames/connection_handlers";
+import {spawnPoke} from "../ui/modal/ModalPoke";
+import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "../connection/AbstractCommandHandler";
+import {batch_updates, BatchUpdateType, flush_batched_updates} from "../ui/react-elements/ReactComponentBase";
+import {OutOfViewClient} from "../ui/frames/side/PrivateConversationManager";
+import {renderBBCodeAsJQuery} from "../text/bbcode";
+import {tr} from "../i18n/localize";
+import {EventClient, EventType} from "../ui/frames/log/Definitions";
+import {ErrorCode} from "../connection/ErrorCode";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {

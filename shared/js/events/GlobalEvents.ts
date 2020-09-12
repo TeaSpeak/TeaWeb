@@ -1,5 +1,5 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {Registry} from "tc-shared/events";
+import {ConnectionHandler} from "../ConnectionHandler";
+import {Registry} from "../events";
 
 export interface ClientGlobalControlEvents {
     /* open a basic window */

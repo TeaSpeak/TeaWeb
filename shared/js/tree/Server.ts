@@ -1,22 +1,22 @@
 import {ChannelTree} from "./ChannelTree";
-import {Settings, settings} from "tc-shared/settings";
-import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
-import * as log from "tc-shared/log";
-import {LogCategory, LogType} from "tc-shared/log";
-import {Sound} from "tc-shared/sound/Sounds";
-import * as bookmarks from "tc-shared/bookmarks";
-import {spawnInviteEditor} from "tc-shared/ui/modal/ModalInvite";
-import {openServerInfo} from "tc-shared/ui/modal/ModalServerInfo";
-import {createServerModal} from "tc-shared/ui/modal/ModalServerEdit";
-import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
-import {spawnAvatarList} from "tc-shared/ui/modal/ModalAvatarList";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {connection_log} from "tc-shared/ui/modal/ModalConnect";
+import {Settings, settings} from "../settings";
+import * as contextmenu from "../ui/elements/ContextMenu";
+import * as log from "../log";
+import {LogCategory, LogType} from "../log";
+import {Sound} from "../sound/Sounds";
+import * as bookmarks from "../bookmarks";
+import {spawnInviteEditor} from "../ui/modal/ModalInvite";
+import {openServerInfo} from "../ui/modal/ModalServerInfo";
+import {createServerModal} from "../ui/modal/ModalServerEdit";
+import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
+import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
+import {server_connections} from "../ui/frames/connection_handlers";
+import {connection_log} from "../ui/modal/ModalConnect";
 import * as top_menu from "../ui/frames/MenuBar";
-import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
+import {control_bar_instance} from "../ui/frames/control-bar";
 import { ServerEntry as ServerEntryView } from "../ui/tree/Server";
 import * as React from "react";
-import {Registry} from "tc-shared/events";
+import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 
 export class ServerProperties {

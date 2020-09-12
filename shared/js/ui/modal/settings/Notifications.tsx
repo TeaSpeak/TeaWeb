@@ -1,5 +1,5 @@
 import * as React from "react";
-import {useEffect, useRef, useState} from "react";
+import {useRef, useState} from "react";
 import {Registry} from "tc-shared/events";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {FlatInputField} from "tc-shared/ui/react-elements/InputField";
@@ -69,7 +69,7 @@ const EventTableHeader = (props: { focus: boolean }) => {
                         <Translatable>Draw focus to the window when the event occurs</Translatable>
                     )}>
                         <div className={cssStyle.tooltip}>
-                            <img src="img/icon_tooltip_notifications.svg" />
+                            <img src="img/icon_tooltip_notifications.svg"/>
                         </div>
                     </Tooltip>
                 </div>
@@ -80,7 +80,7 @@ const EventTableHeader = (props: { focus: boolean }) => {
                     <Translatable>Sending out a system notification</Translatable>
                 )}>
                     <div className={cssStyle.tooltip}>
-                        <img src="img/icon_tooltip_notifications.svg" />
+                        <img src="img/icon_tooltip_notifications.svg"/>
                     </div>
                 </Tooltip>
             </div>
@@ -90,7 +90,7 @@ const EventTableHeader = (props: { focus: boolean }) => {
                     <Translatable>Log the event within the client server log</Translatable>
                 )}>
                     <div className={cssStyle.tooltip}>
-                        <img src="img/icon_tooltip_notifications.svg" />
+                        <img src="img/icon_tooltip_notifications.svg"/>
                     </div>
                 </Tooltip>
             </div>
@@ -99,20 +99,20 @@ const EventTableHeader = (props: { focus: boolean }) => {
 };
 
 const EventTableEntry = React.memo((props: { events: Registry<NotificationSettingsEvents>, event: string, depth: number, focusEnabled: boolean }) => {
-    const [ name, setName ] = useState(() => {
-        props.events.fire_async("query_event_info", { key: props.event });
+    const [name, setName] = useState(() => {
+        props.events.fire_async("query_event_info", {key: props.event});
         return undefined;
     });
-    const [ notificationState, setNotificationState ] = useState<NotificationState>("unavailable");
-    const [ logState, setLogState ] = useState<NotificationState>("unavailable");
-    const [ focusState, setFocusState ] = useState<NotificationState>("unavailable");
+    const [notificationState, setNotificationState] = useState<NotificationState>("unavailable");
+    const [logState, setLogState] = useState<NotificationState>("unavailable");
+    const [focusState, setFocusState] = useState<NotificationState>("unavailable");
 
-    const [ notificationApplying, setNotificationApplying ] = useState(false);
-    const [ logApplying, setLogApplying ] = useState(false);
-    const [ focusApplying, setFocusApplying ] = useState(false);
+    const [notificationApplying, setNotificationApplying] = useState(false);
+    const [logApplying, setLogApplying] = useState(false);
+    const [focusApplying, setFocusApplying] = useState(false);
 
     props.events.reactUse("notify_event_info", event => {
-        if(event.key !== props.event)
+        if (event.key !== props.event)
             return;
 
         setName(event.name);
@@ -122,7 +122,7 @@ const EventTableEntry = React.memo((props: { events: Registry<NotificationSettin
     });
 
     props.events.reactUse("action_set_state", event => {
-        if(event.key !== props.event)
+        if (event.key !== props.event)
             return;
 
         switch (event.state) {
@@ -141,7 +141,7 @@ const EventTableEntry = React.memo((props: { events: Registry<NotificationSettin
     });
 
     props.events.reactUse("notify_set_state_result", event => {
-        if(event.key !== props.event)
+        if (event.key !== props.event)
             return;
 
         switch (event.state) {
@@ -163,38 +163,50 @@ const EventTableEntry = React.memo((props: { events: Registry<NotificationSettin
     });
 
     let notificationElement, logElement, focusElement;
-    if(notificationState === "unavailable") {
+    if (notificationState === "unavailable") {
         notificationElement = null;
     } else {
         notificationElement = (
             <Checkbox key={"notification"} value={notificationState === "enabled"} onChange={value => {
-                props.events.fire("action_set_state", { key: props.event, state: "notification", value: value ? "enabled" : "disabled"});
-            }} disabled={notificationApplying} />
+                props.events.fire("action_set_state", {
+                    key: props.event,
+                    state: "notification",
+                    value: value ? "enabled" : "disabled"
+                });
+            }} disabled={notificationApplying}/>
         );
     }
 
-    if(logState === "unavailable") {
+    if (logState === "unavailable") {
         logElement = null;
     } else {
         logElement = (
             <Checkbox key={"notification"} value={logState === "enabled"} onChange={value => {
-                props.events.fire("action_set_state", { key: props.event, state: "log", value: value ? "enabled" : "disabled"});
-            }} disabled={logApplying} />
+                props.events.fire("action_set_state", {
+                    key: props.event,
+                    state: "log",
+                    value: value ? "enabled" : "disabled"
+                });
+            }} disabled={logApplying}/>
         );
     }
 
-    if(focusState === "unavailable") {
+    if (focusState === "unavailable") {
         focusElement = null;
     } else {
         focusElement = (
             <Checkbox key={"focus"} value={focusState === "enabled"} onChange={value => {
-                props.events.fire("action_set_state", { key: props.event, state: "focus", value: value ? "enabled" : "disabled"});
-            }} disabled={focusApplying} />
+                props.events.fire("action_set_state", {
+                    key: props.event,
+                    state: "focus",
+                    value: value ? "enabled" : "disabled"
+                });
+            }} disabled={focusApplying}/>
         );
     }
 
     return (
-        <div className={cssStyle.tableEntry} style={{ paddingLeft: props.depth + "em" }}>
+        <div className={cssStyle.tableEntry} style={{paddingLeft: props.depth + "em"}}>
             <div className={cssStyle.column + " " + cssStyle.columnKey}>{name || props.event}</div>
             {!props.focusEnabled ? undefined :
                 <div className={cssStyle.column + " " + cssStyle.columnFocus}>
@@ -212,27 +224,36 @@ const EventTableEntry = React.memo((props: { events: Registry<NotificationSettin
 });
 
 const EventTableGroupEntry = (props: { events: Registry<NotificationSettingsEvents>, group: EventGroup, depth: number, focusEnabled: boolean }) => {
-    const [ collapsed, setCollapsed ] = useState(false);
+    const [collapsed, setCollapsed] = useState(false);
 
     props.events.reactUse("action_toggle_group", event => {
-        if(event.groupKey !== props.group.key)
+        if (event.groupKey !== props.group.key)
             return;
 
         setCollapsed(event.collapsed);
     });
 
     return <>
-        <div className={cssStyle.tableEntry + " " + cssStyle.groupEntry} style={{ paddingLeft: props.depth + "em" }}>
+        <div className={cssStyle.tableEntry + " " + cssStyle.groupEntry} style={{paddingLeft: props.depth + "em"}}>
             <div className={cssStyle.column + " " + cssStyle.columnKey}>
-                <div className={"arrow " + (collapsed ? "right" : "down")} onClick={() => props.events.fire("action_toggle_group", { collapsed: !collapsed, groupKey: props.group.key})} />
+                <div className={"arrow " + (collapsed ? "right" : "down")}
+                     onClick={() => props.events.fire("action_toggle_group", {
+                         collapsed: !collapsed,
+                         groupKey: props.group.key
+                     })}/>
                 <a>{props.group.name}</a>
             </div>
-            {props.focusEnabled ? <div key={"focus"} className={cssStyle.column + " " + cssStyle.columnFocus} /> : undefined}
-            <div className={cssStyle.column + " " + cssStyle.columnNotification} />
-            <div className={cssStyle.column + " " + cssStyle.columnLog} />
+            {props.focusEnabled ?
+                <div key={"focus"} className={cssStyle.column + " " + cssStyle.columnFocus}/> : undefined}
+            <div className={cssStyle.column + " " + cssStyle.columnNotification}/>
+            <div className={cssStyle.column + " " + cssStyle.columnLog}/>
         </div>
-        {!collapsed && props.group.events?.map(e => <EventTableEntry key={e} events={props.events} event={e} depth={props.depth + 1} focusEnabled={props.focusEnabled} />)}
-        {!collapsed && props.group.subgroups?.map(e => <EventTableGroupEntry key={e.key} events={props.events} group={e} depth={props.depth + 1} focusEnabled={props.focusEnabled} />)}
+        {!collapsed && props.group.events?.map(e => <EventTableEntry key={e} events={props.events} event={e}
+                                                                     depth={props.depth + 1}
+                                                                     focusEnabled={props.focusEnabled}/>)}
+        {!collapsed && props.group.subgroups?.map(e => <EventTableGroupEntry key={e.key} events={props.events} group={e}
+                                                                             depth={props.depth + 1}
+                                                                             focusEnabled={props.focusEnabled}/>)}
     </>;
 };
 
@@ -244,7 +265,7 @@ const NoFilterResultsEmpty = (props: { shown: boolean }) => (
 
 const EventTableBody = (props: { events: Registry<NotificationSettingsEvents>, focusEnabled: boolean }) => {
     const refContainer = useRef<HTMLDivElement>();
-    const [ events, setEvents ] = useState<"loading" | EventGroup[]>(() => {
+    const [events, setEvents] = useState<"loading" | EventGroup[]>(() => {
         props.events.fire("query_events");
         return "loading";
     });
@@ -254,25 +275,26 @@ const EventTableBody = (props: { events: Registry<NotificationSettingsEvents>, f
     return (
         <div className={cssStyle.tableBody} ref={refContainer}>
             {events === "loading" ? undefined :
-                events.map(e => <EventTableGroupEntry events={props.events} group={e} key={"event-" + e.key} depth={0} focusEnabled={props.focusEnabled} />)
+                events.map(e => <EventTableGroupEntry events={props.events} group={e} key={"event-" + e.key} depth={0}
+                                                      focusEnabled={props.focusEnabled}/>)
             }
-            <NoFilterResultsEmpty shown={events !== "loading" && events.length === 0} />
+            <NoFilterResultsEmpty shown={events !== "loading" && events.length === 0}/>
         </div>
     )
 };
 
 const EventTable = (props: { events: Registry<NotificationSettingsEvents> }) => {
-    const [ focusEnabled, setFocusEnabled] = useState(__build.target === "client");
+    const [focusEnabled, setFocusEnabled] = useState(__build.target === "client");
 
     props.events.reactUse("notify_events", event => {
-        if(event.focusEnabled !== focusEnabled)
+        if (event.focusEnabled !== focusEnabled)
             setFocusEnabled(event.focusEnabled);
     });
 
     return (
         <div className={cssStyle.containerTable}>
-            <EventTableHeader focus={focusEnabled} />
-            <EventTableBody events={props.events} focusEnabled={focusEnabled} />
+            <EventTableHeader focus={focusEnabled}/>
+            <EventTableBody events={props.events} focusEnabled={focusEnabled}/>
         </div>
     );
 };
@@ -284,7 +306,7 @@ const EventFilter = (props: { events: Registry<NotificationSettingsEvents> }) =>
                 className={cssStyle.input}
                 label={<Translatable>Filter Events</Translatable>}
                 labelType={"floating"}
-                onChange={text => props.events.fire_async("action_set_filter", { filter: text })}
+                onChange={text => props.events.fire_async("action_set_filter", {filter: text})}
             />
         </div>
     )
@@ -293,7 +315,7 @@ const EventFilter = (props: { events: Registry<NotificationSettingsEvents> }) =>
 export const NotificationSettings = () => {
     const events = useRef<Registry<NotificationSettingsEvents>>(undefined);
 
-    if(events.current === undefined) {
+    if (events.current === undefined) {
         events.current = new Registry<NotificationSettingsEvents>();
         initializeController(events.current);
     }
@@ -303,8 +325,8 @@ export const NotificationSettings = () => {
             <a><Translatable>Notifications</Translatable></a>
         </div>
         <div key={"body"} className={cssStyle.body}>
-            <EventTable events={events.current} />
-            <EventFilter events={events.current} />
+            <EventTable events={events.current}/>
+            <EventFilter events={events.current}/>
         </div>
     </>);
 };
@@ -359,7 +381,7 @@ const knownEventGroups: EventGroup[] = [
     }
 ];
 
-const groupNames: {[key: string]: string} = { };
+const groupNames: { [key: string]: string } = {};
 groupNames[EventType.CLIENT_POKE_RECEIVED] = tr("You received a poke");
 groupNames[EventType.CLIENT_POKE_SEND] = tr("You send a poke");
 groupNames[EventType.PRIVATE_MESSAGE_SEND] = tr("You received a private message");
@@ -387,20 +409,20 @@ function initializeController(events: Registry<NotificationSettingsEvents>) {
     let filter = undefined;
 
     events.on(["query_events", "action_set_filter"], event => {
-        if(event.type === "action_set_filter")
+        if (event.type === "action_set_filter")
             filter = event.as<"action_set_filter">().filter;
 
         const groupMapper = (group: EventGroup) => {
             const result = {
                 name: group.name,
                 events: group.events?.filter(e => {
-                    if(!filter)
+                    if (!filter)
                         return true;
 
-                    if(e.toLowerCase().indexOf(filter) !== -1)
+                    if (e.toLowerCase().indexOf(filter) !== -1)
                         return true;
 
-                    if(!groupNames[e])
+                    if (!groupNames[e])
                         return false;
 
                     return groupNames[e].indexOf(filter) !== -1;
@@ -409,7 +431,7 @@ function initializeController(events: Registry<NotificationSettingsEvents>) {
                 subgroups: group.subgroups?.map(groupMapper).filter(e => !!e)
             } as EventGroup;
 
-            if(!result.subgroups?.length && !result.events?.length)
+            if (!result.subgroups?.length && !result.events?.length)
                 return undefined;
 
             return result;

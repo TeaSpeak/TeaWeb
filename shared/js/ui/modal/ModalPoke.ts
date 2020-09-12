@@ -1,13 +1,14 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import * as htmltags from "tc-shared/ui/htmltags";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {createModal, Modal} from "../../ui/elements/Modal";
+import * as htmltags from "../../ui/htmltags";
 import * as moment from "moment";
-import {renderBBCodeAsJQuery} from "tc-shared/text/bbcode";
+import {renderBBCodeAsJQuery} from "../../text/bbcode";
 
 let global_modal: PokeModal;
 
 export interface ServerEntry {
     source: ConnectionHandler;
+
     add_message(invoker: PokeInvoker, message: string);
 }
 
@@ -29,15 +30,18 @@ class PokeModal {
         this._handle.close_listener.push(() => this._handle_close());
     }
 
-    modal() { return this._handle; }
+    modal() {
+        return this._handle;
+    }
+
     add_poke(source: ConnectionHandler, invoker: PokeInvoker, message: string) {
         let handler: ServerEntry;
-        for(const entry of this.source_map)
-            if(entry.source === source) {
+        for (const entry of this.source_map)
+            if (entry.source === source) {
                 handler = entry;
                 break;
             }
-        if(!handler) {
+        if (!handler) {
             const html_tag = $.spawn("div").addClass("server");
             const poke_list = $.spawn("div").addClass("poke-list");
             $.spawn("div")
@@ -58,9 +62,9 @@ class PokeModal {
                         client_name: invoker.name,
                         client_unique_id: invoker.unique_id
                     }))).appendTo(container);
-                    if(message) {
+                    if (message) {
                         $.spawn("div").addClass("text").text(tr("pokes you:")).appendTo(container);
-                        $.spawn("div").addClass("poke-message").append(...renderBBCodeAsJQuery(message, { convertSingleUrls: false })).appendTo(container);
+                        $.spawn("div").addClass("poke-message").append(...renderBBCodeAsJQuery(message, {convertSingleUrls: false})).appendTo(container);
                     } else {
                         $.spawn("div").addClass("text").text(tr("pokes you.")).appendTo(container);
                     }
@@ -87,7 +91,7 @@ export type PokeInvoker = {
 };
 
 export function spawnPoke(source: ConnectionHandler, invoker: PokeInvoker, message: string) {
-    if(!global_modal)
+    if (!global_modal)
         global_modal = new PokeModal();
     global_modal.add_poke(source, invoker, message);
     global_modal.modal().open();

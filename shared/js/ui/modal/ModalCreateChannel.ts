@@ -1,15 +1,15 @@
-import PermissionType from "tc-shared/permission/PermissionType";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
-import {PermissionManager, PermissionValue} from "tc-shared/permission/PermissionManager";
-import {LogCategory} from "tc-shared/log";
-import {createModal} from "tc-shared/ui/elements/Modal";
-import * as log from "tc-shared/log";
-import {Settings, settings} from "tc-shared/settings";
-import * as tooltip from "tc-shared/ui/elements/Tooltip";
-import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
-import {hashPassword} from "tc-shared/utils/helpers";
-import {sliderfy} from "tc-shared/ui/elements/Slider";
+import PermissionType from "../../permission/PermissionType";
+import {ConnectionHandler} from "../../ConnectionHandler";
+import {ChannelEntry, ChannelProperties} from "../../tree/Channel";
+import {PermissionManager, PermissionValue} from "../../permission/PermissionManager";
+import {LogCategory} from "../../log";
+import {createModal} from "../../ui/elements/Modal";
+import * as log from "../../log";
+import {Settings, settings} from "../../settings";
+import * as tooltip from "../../ui/elements/Tooltip";
+import {spawnIconSelect} from "../../ui/modal/ModalIconSelect";
+import {hashPassword} from "../../utils/helpers";
+import {sliderfy} from "../../ui/elements/Slider";
 
 export function createChannelModal(connection: ConnectionHandler, channel: ChannelEntry | undefined, parent: ChannelEntry | undefined, permissions: PermissionManager, callback: (properties?: ChannelProperties, permissions?: PermissionValue[]) => any) {
     let properties: ChannelProperties = { } as ChannelProperties; //The changes properties

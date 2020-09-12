@@ -1,7 +1,7 @@
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {AbstractCommandHandler} from "tc-shared/connection/AbstractCommandHandler";
-import {AbstractServerConnection, ServerCommand} from "tc-shared/connection/ConnectionBase";
+import {ConnectionHandler} from "../ConnectionHandler";
+import {CommandResult} from "../connection/ServerConnectionDeclaration";
+import {AbstractCommandHandler} from "../connection/AbstractCommandHandler";
+import {AbstractServerConnection, ServerCommand} from "../connection/ConnectionBase";
 
 export interface PluginCommandInvoker {
     clientId: number;

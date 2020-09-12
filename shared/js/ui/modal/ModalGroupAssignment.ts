@@ -1,9 +1,9 @@
-import {LogCategory} from "tc-shared/log";
-import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import * as log from "tc-shared/log";
-import {ClientEntry} from "tc-shared/tree/Client";
-import {GroupManager, GroupType} from "tc-shared/permission/GroupManager";
-import PermissionType from "tc-shared/permission/PermissionType";
+import {LogCategory} from "../../log";
+import {createModal, Modal} from "../../ui/elements/Modal";
+import * as log from "../../log";
+import {ClientEntry} from "../../tree/Client";
+import {GroupManager, GroupType} from "../../permission/GroupManager";
+import PermissionType from "../../permission/PermissionType";
 
 let current_modal: Modal;
 export function createServerGroupAssignmentModal(client: ClientEntry, callback: (groups: number[], flag: boolean) => Promise<boolean>) {

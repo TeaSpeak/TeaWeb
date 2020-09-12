@@ -1,15 +1,11 @@
 import * as React from "react";
 import {useEffect, useRef, useState} from "react";
 import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
-import {
-    TransferStatus
-} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
+import {TransferStatus} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
 import {ProgressBar} from "tc-shared/ui/react-elements/ProgressBar";
-import {
-    TransferProgress,
-} from "tc-shared/file/Transfer";
+import {TransferProgress,} from "tc-shared/file/Transfer";
 import {tra} from "tc-shared/i18n/localize";
 import {format_time, network} from "tc-shared/ui/frames/chat";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
@@ -69,18 +65,19 @@ export interface TransferInfoData {
     transferredBytes: number;
 }
 
-const ExpendState = (props: { extended: boolean, events: Registry<TransferInfoEvents>}) => {
+const ExpendState = (props: { extended: boolean, events: Registry<TransferInfoEvents> }) => {
     const [expended, setExpended] = useState(props.extended);
 
     props.events.reactUse("action_toggle_expansion", event => setExpended(event.visible));
-    return <div className={cssStyle.expansionContainer + (expended ? " " + cssStyle.expended : "")} onClick={() => props.events.fire("action_toggle_expansion", { visible: !expended })}>
+    return <div className={cssStyle.expansionContainer + (expended ? " " + cssStyle.expended : "")}
+                onClick={() => props.events.fire("action_toggle_expansion", {visible: !expended})}>
         <HTMLRenderer purify={false}>{iconArrow}</HTMLRenderer>
     </div>;
 };
 
 const ToggleFinishedTransfersCheckbox = (props: { events: Registry<TransferInfoEvents> }) => {
     const ref = useRef<Checkbox>(null);
-    const [state, setState] = useState({ disabled: true, checked: false });
+    const [state, setState] = useState({disabled: true, checked: false});
     props.events.reactUse("action_toggle_finished_transfers", event => {
         setState({
             checked: event.visible,
@@ -93,7 +90,7 @@ const ToggleFinishedTransfersCheckbox = (props: { events: Registry<TransferInfoE
     });
 
     props.events.reactUse("query_transfer_result", event => {
-        if(event.status !== "success")
+        if (event.status !== "success")
             return;
 
         setState({
@@ -111,8 +108,8 @@ const ToggleFinishedTransfersCheckbox = (props: { events: Registry<TransferInfoE
             ref={ref}
             initialValue={state.checked}
             disabled={state.disabled}
-            onChange={state => props.events.fire("action_toggle_finished_transfers", { visible: state })}
-            label={<Translatable>Show finished transfers</Translatable>} />
+            onChange={state => props.events.fire("action_toggle_finished_transfers", {visible: state})}
+            label={<Translatable>Show finished transfers</Translatable>}/>
     );
 };
 
@@ -138,19 +135,19 @@ class RunningTransfersInfo extends React.Component<{ events: Registry<TransferIn
     }
 
     render() {
-        if(this.state.state === "querying") {
+        if (this.state.state === "querying") {
             return (
                 <div key={"querying"} className={cssStyle.overlay + " " + cssStyle.querying}>
-                    <a><Translatable>loading</Translatable> <LoadingDots maxDots={3} /></a>
+                    <a><Translatable>loading</Translatable> <LoadingDots maxDots={3}/></a>
                 </div>
             );
-        } else if(this.state.state === "error") {
+        } else if (this.state.state === "error") {
             return (
                 <div key={"query-error"} className={cssStyle.overlay + " " + cssStyle.error}>
                     <a><Translatable>query error</Translatable></a>
                 </div>
             );
-        } else if(this.runningTransfers.length === 0) {
+        } else if (this.runningTransfers.length === 0) {
             return (
                 <div key={"no-transfers"} className={cssStyle.overlay + " " + cssStyle.noTransfers}>
                     <a><Translatable>No running transfers</Translatable></a>
@@ -159,20 +156,21 @@ class RunningTransfersInfo extends React.Component<{ events: Registry<TransferIn
         }
 
         const stats = this.currentStatistic();
-        const totalBytes = network.format_bytes(stats.totalBytes, { unit: "B", time: "", exact: false });
-        const currentOffset = network.format_bytes(stats.currentOffset, { unit: "B", time: "", exact: false });
-        const speed = network.format_bytes(stats.speed, { unit: "B", time: "second", exact: false });
+        const totalBytes = network.format_bytes(stats.totalBytes, {unit: "B", time: "", exact: false});
+        const currentOffset = network.format_bytes(stats.currentOffset, {unit: "B", time: "", exact: false});
+        const speed = network.format_bytes(stats.speed, {unit: "B", time: "second", exact: false});
 
         return (
             <div key={"running-transfers"} className={cssStyle.overlay + " " + cssStyle.runningTransfers}>
-                <ProgressBar value={stats.currentOffset * 100 / stats.totalBytes} type={"normal"} text={tra("Transferred {0} out of {1} total bytes ({2})", currentOffset, totalBytes, speed)} />
+                <ProgressBar value={stats.currentOffset * 100 / stats.totalBytes} type={"normal"}
+                             text={tra("Transferred {0} out of {1} total bytes ({2})", currentOffset, totalBytes, speed)}/>
             </div>
         );
     }
 
     @EventHandler<TransferInfoEvents>("query_transfers")
     private handleQueryTransfers() {
-        this.setState({ state: "querying" });
+        this.setState({state: "querying"});
     }
 
     @EventHandler<TransferInfoEvents>("query_transfer_result")
@@ -191,16 +189,16 @@ class RunningTransfersInfo extends React.Component<{ events: Registry<TransferIn
 
     @EventHandler<TransferInfoEvents>("notify_transfer_registered")
     private handleTransferRegistered(event: TransferInfoEvents["notify_transfer_registered"]) {
-        this.runningTransfers.push({ transfer: event.transfer, progress: undefined });
+        this.runningTransfers.push({transfer: event.transfer, progress: undefined});
         this.forceUpdate();
     }
 
     @EventHandler<TransferInfoEvents>("notify_transfer_status")
     private handleTransferStatus(event: TransferInfoEvents["notify_transfer_status"]) {
         const index = this.runningTransfers.findIndex(e => e.transfer.id === event.id);
-        if(index === -1) return;
+        if (index === -1) return;
 
-        if(event.status === "finished" || event.status === "errored")
+        if (event.status === "finished" || event.status === "errored")
             this.runningTransfers.splice(index, 1);
         this.forceUpdate();
     }
@@ -208,7 +206,7 @@ class RunningTransfersInfo extends React.Component<{ events: Registry<TransferIn
     @EventHandler<TransferInfoEvents>("notify_transfer_progress")
     private handleTransferProgress(event: TransferInfoEvents["notify_transfer_progress"]) {
         const index = this.runningTransfers.findIndex(e => e.transfer.id === event.id);
-        if(index === -1) return;
+        if (index === -1) return;
 
         this.runningTransfers[index].progress = event.progress;
         this.forceUpdate();
@@ -222,9 +220,9 @@ const BottomTransferInfo = (props: { events: Registry<TransferInfoEvents> }) => 
 
     return (
         <div className={cssStyle.info}>
-            <RunningTransfersInfo events={props.events} />
-            <div className={cssStyle.overlay + (extendedInfo ? "" : " " + cssStyle.hidden) + " " + cssStyle.extended} >
-                <ToggleFinishedTransfersCheckbox events={props.events} />
+            <RunningTransfersInfo events={props.events}/>
+            <div className={cssStyle.overlay + (extendedInfo ? "" : " " + cssStyle.hidden) + " " + cssStyle.extended}>
+                <ToggleFinishedTransfersCheckbox events={props.events}/>
             </div>
         </div>
     )
@@ -232,8 +230,8 @@ const BottomTransferInfo = (props: { events: Registry<TransferInfoEvents> }) => 
 
 const BottomBar = (props: { events: Registry<TransferInfoEvents> }) => (
     <div className={cssStyle.bottomContainer}>
-        <BottomTransferInfo events={props.events} />
-        <ExpendState extended={false} events={props.events} />
+        <BottomTransferInfo events={props.events}/>
+        <ExpendState extended={false} events={props.events}/>
     </div>
 );
 
@@ -251,8 +249,16 @@ const TransferEntry = (props: { transfer: TransferInfoData, events: Registry<Tra
 
             case "finished":
                 const neededTime = format_time(props.transfer.timestampEnd - props.transfer.timestampBegin, tr("less than a second"));
-                const totalBytes = network.format_bytes(props.transfer.transferredBytes, { unit: "B", time: "", exact: false });
-                const speed = network.format_bytes(props.transfer.transferredBytes * 1000 / Math.max(props.transfer.timestampEnd - props.transfer.timestampBegin, 1000), { unit: "B", time: "second", exact: false });
+                const totalBytes = network.format_bytes(props.transfer.transferredBytes, {
+                    unit: "B",
+                    time: "",
+                    exact: false
+                });
+                const speed = network.format_bytes(props.transfer.transferredBytes * 1000 / Math.max(props.transfer.timestampEnd - props.transfer.timestampBegin, 1000), {
+                    unit: "B",
+                    time: "second",
+                    exact: false
+                });
                 return tra("transferred {0} in {1} ({2})", totalBytes, format_time(props.transfer.timestampEnd - props.transfer.timestampBegin, neededTime), speed);
 
             case "pending":
@@ -262,13 +268,21 @@ const TransferEntry = (props: { transfer: TransferInfoData, events: Registry<Tra
                 return tr("invalid state!");
 
             case "transferring": {
-                if(!info) {
+                if (!info) {
                     return tr("awaiting info");
                 }
 
-                const currentBytes = network.format_bytes(info.file_current_offset, { unit: "B", time: "", exact: false });
-                const totalBytes = network.format_bytes(info.file_total_size, { unit: "B", time: "", exact: false });
-                const speed = network.format_bytes(info.network_current_speed, { unit: "B", time: "second", exact: false });
+                const currentBytes = network.format_bytes(info.file_current_offset, {
+                    unit: "B",
+                    time: "",
+                    exact: false
+                });
+                const totalBytes = network.format_bytes(info.file_total_size, {unit: "B", time: "", exact: false});
+                const speed = network.format_bytes(info.network_current_speed, {
+                    unit: "B",
+                    time: "second",
+                    exact: false
+                });
 
                 return tra("transferred {0} out of {1} ({2})", currentBytes, totalBytes, speed);
             }
@@ -288,11 +302,11 @@ const TransferEntry = (props: { transfer: TransferInfoData, events: Registry<Tra
     };
 
     props.events.reactUse("notify_transfer_status", event => {
-        if(event.id !== props.transfer.id)
+        if (event.id !== props.transfer.id)
             return;
 
         setTransferState(event.status);
-        if(!progressBar.current)
+        if (!progressBar.current)
             return;
 
         const pbState = {
@@ -300,17 +314,17 @@ const TransferEntry = (props: { transfer: TransferInfoData, events: Registry<Tra
             type: progressBarMode(event.status)
         } as any;
 
-        if(event.status === "errored" || event.status === "finished") {
+        if (event.status === "errored" || event.status === "finished") {
             pbState.value = 100;
 
-        } else if(event.status === "none" || event.status === "pending")
+        } else if (event.status === "none" || event.status === "pending")
             pbState.value = 0;
 
         progressBar.current.setState(pbState);
     });
 
     props.events.reactUse("notify_transfer_progress", event => {
-        if(event.id !== props.transfer.id || !progressBar.current)
+        if (event.id !== props.transfer.id || !progressBar.current)
             return;
 
         const pb = progressBar.current;
@@ -324,9 +338,9 @@ const TransferEntry = (props: { transfer: TransferInfoData, events: Registry<Tra
     props.events.reactUse("action_toggle_finished_transfers", event => setFinishedShown(event.visible));
 
     useEffect(() => {
-        if(finishAnimationFinished)
+        if (finishAnimationFinished)
             return;
-        if(transferState !== "finished" && transferState !== "errored")
+        if (transferState !== "finished" && transferState !== "errored")
             return;
 
         const id = setTimeout(() => setFinishAnimationFinished(true), 1500);
@@ -337,13 +351,15 @@ const TransferEntry = (props: { transfer: TransferInfoData, events: Registry<Tra
     return <div className={cssStyle.transferEntryContainer + (hidden ? " " + cssStyle.hidden : "")}>
         <div className={cssStyle.transferEntry}>
             <div className={cssStyle.image}>
-                <HTMLRenderer purify={false}>{props.transfer.direction === "upload" ? iconTransferUpload : iconTransferDownload}</HTMLRenderer>
+                <HTMLRenderer
+                    purify={false}>{props.transfer.direction === "upload" ? iconTransferUpload : iconTransferDownload}</HTMLRenderer>
             </div>
             <div className={cssStyle.info}>
                 <a className={cssStyle.name}>{props.transfer.name}</a>
                 <a className={cssStyle.path}>{props.transfer.path}</a>
                 <div className={cssStyle.status}>
-                    <ProgressBar ref={progressBar} value={props.transfer.progress * 100} type={progressBarMode(transferState)} text={progressBarText(transferState)} />
+                    <ProgressBar ref={progressBar} value={props.transfer.progress * 100}
+                                 type={progressBarMode(transferState)} text={progressBarText(transferState)}/>
                 </div>
             </div>
         </div>
@@ -366,15 +382,19 @@ class TransferList extends React.PureComponent<{ events: Registry<TransferInfoEv
     render() {
         const entries = [];
 
-        if(this.state.state === "error") {
-            entries.push(<div key={"query-error"} className={cssStyle.queryError}><a><Translatable>Failed to query the file transfers:</Translatable><br/>{this.state.error}</a></div>);
-        } else if(this.state.state === "loading") {
-            entries.push(<div key={"loading"} className={cssStyle.querying}><a><Translatable>loading</Translatable> <LoadingDots maxDots={3}/></a></div>);
+        if (this.state.state === "error") {
+            entries.push(<div key={"query-error"} className={cssStyle.queryError}><a><Translatable>Failed to query the
+                file transfers:</Translatable><br/>{this.state.error}</a></div>);
+        } else if (this.state.state === "loading") {
+            entries.push(<div key={"loading"} className={cssStyle.querying}><a><Translatable>loading</Translatable>
+                <LoadingDots maxDots={3}/></a></div>);
         } else {
             this.transfers.forEach(e => {
-                entries.push(<TransferEntry finishedShown={this.showFinishedTransfers} key={"transfer-" + e.id} transfer={e} events={this.props.events} />);
+                entries.push(<TransferEntry finishedShown={this.showFinishedTransfers} key={"transfer-" + e.id}
+                                            transfer={e} events={this.props.events}/>);
             });
-            entries.push(<div key={"no-transfers"} className={cssStyle.noTransfers}><a><Translatable>No transfers</Translatable></a></div>);
+            entries.push(<div key={"no-transfers"} className={cssStyle.noTransfers}><a><Translatable>No
+                transfers</Translatable></a></div>);
         }
 
         return (
@@ -400,7 +420,7 @@ class TransferList extends React.PureComponent<{ events: Registry<TransferInfoEv
 
     @EventHandler<TransferInfoEvents>("query_transfers")
     private handleQueryTransfers() {
-        this.setState({ state: "loading" });
+        this.setState({state: "loading"});
     }
 
     @EventHandler<TransferInfoEvents>("query_transfer_result")
@@ -409,7 +429,7 @@ class TransferList extends React.PureComponent<{ events: Registry<TransferInfoEv
             state: event.status === "success" ? "normal" : "error",
             error: event.status === "timeout" ? tr("Request timed out") : event.error || tr("unknown error")
         });
-        if(event.status === "success")
+        if (event.status === "success")
             this.showFinishedTransfers = event.showFinished;
 
         this.transfers = event.transfers || [];
@@ -425,7 +445,7 @@ class TransferList extends React.PureComponent<{ events: Registry<TransferInfoEv
     @EventHandler<TransferInfoEvents>("notify_transfer_status")
     private handleTransferStatus(event: TransferInfoEvents["notify_transfer_status"]) {
         const transfer = this.transfers.find(e => e.id === event.id);
-        if(!transfer) return;
+        if (!transfer) return;
 
         switch (event.status) {
             case "finished":
@@ -435,7 +455,7 @@ class TransferList extends React.PureComponent<{ events: Registry<TransferInfoEv
                 break;
 
             case "transferring":
-                if(transfer.timestampBegin === 0)
+                if (transfer.timestampBegin === 0)
                     transfer.timestampBegin = Date.now();
         }
         transfer.status = event.status;
@@ -445,7 +465,7 @@ class TransferList extends React.PureComponent<{ events: Registry<TransferInfoEv
     @EventHandler<TransferInfoEvents>("notify_transfer_progress")
     private handleTransferProgress(event: TransferInfoEvents["notify_transfer_progress"]) {
         const transfer = this.transfers.find(e => e.id === event.id);
-        if(!transfer) return;
+        if (!transfer) return;
 
         transfer.progress = event.progress.file_current_offset / event.progress.file_total_size;
         transfer.status = event.status;
@@ -461,18 +481,21 @@ const ExtendedInfo = (props: { events: Registry<TransferInfoEvents> }) => {
     props.events.reactUse("action_toggle_finished_transfers", event => setFinishedShown(event.visible));
     props.events.reactUse("query_transfer_result", event => event.status === "success" && setFinishedShown(event.showFinished));
 
-    return <div className={cssStyle.expendedContainer + (expended ? "" : " " + cssStyle.hidden)} >
+    return <div className={cssStyle.expendedContainer + (expended ? "" : " " + cssStyle.hidden)}>
         <div className={cssStyle.header}>
-            <a>{finishedShown ? <Translatable key={"file-transfers"}>File transfers</Translatable> : <Translatable key={"running-file-transfers"}>Running file transfers</Translatable>}</a>
-            <Button disabled={!finishedShown} color={"blue"} onClick={() => props.events.fire("action_remove_finished")}><Translatable>Remove finished</Translatable></Button>
+            <a>{finishedShown ? <Translatable key={"file-transfers"}>File transfers</Translatable> :
+                <Translatable key={"running-file-transfers"}>Running file transfers</Translatable>}</a>
+            <Button disabled={!finishedShown} color={"blue"}
+                    onClick={() => props.events.fire("action_remove_finished")}><Translatable>Remove
+                finished</Translatable></Button>
         </div>
-        <TransferList events={props.events} />
+        <TransferList events={props.events}/>
     </div>;
 };
 
 export const TransferInfo = (props: { events: Registry<TransferInfoEvents> }) => (
-    <div className={cssStyle.container} >
-        <ExtendedInfo events={props.events} />
-        <BottomBar events={props.events} />
+    <div className={cssStyle.container}>
+        <ExtendedInfo events={props.events}/>
+        <BottomBar events={props.events}/>
     </div>
 );

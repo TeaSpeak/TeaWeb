@@ -1,7 +1,7 @@
 import * as React from "react";
 import {ReactElement} from "react";
-import {Registry} from "tc-shared/events";
-import {Translatable} from "tc-shared/ui/react-elements/i18n";
+import {Registry} from "../../events";
+import {Translatable} from "../../ui/react-elements/i18n";
 
 export type ModalType = "error" | "warning" | "info" | "none";
 
