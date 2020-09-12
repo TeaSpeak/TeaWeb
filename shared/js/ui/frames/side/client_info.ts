@@ -1,11 +1,11 @@
 import {GroupManager} from "tc-shared/permission/GroupManager";
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
-import {ClientEntry, LocalClientEntry} from "tc-shared/ui/client";
 import {openClientInfo} from "tc-shared/ui/modal/ModalClientInfo";
 import * as htmltags from "tc-shared/ui/htmltags";
 import * as image_preview from "../image_preview";
-import {format} from "tc-shared/ui/frames/side/chat_helper";
 import * as i18nc from "tc-shared/i18n/country";
+import {ClientEntry, LocalClientEntry} from "tc-shared/tree/Client";
+import {format_online_time} from "tc-shared/utils/TimeUtils";
 
 export class ClientInfo {
     readonly handle: Frame;
@@ -94,7 +94,7 @@ export class ClientInfo {
         /* updating the info fields */
         {
             const online_time = this._html_tag.find(".client-online-time");
-            online_time.text(format.time.format_online_time(client ? client.calculateOnlineTime() : 0));
+            online_time.text(format_online_time(client ? client.calculateOnlineTime() : 0));
             if(this._online_time_updater) {
                 clearInterval(this._online_time_updater);
                 this._online_time_updater = 0;
@@ -109,7 +109,7 @@ export class ClientInfo {
                     }
 
                     if(client.currentChannel()) /* If he has no channel then he might be disconnected */
-                        online_time.text(format.time.format_online_time(client.calculateOnlineTime()));
+                        online_time.text(format_online_time(client.calculateOnlineTime()));
                     else {
                         online_time.text(online_time.text() + tr(" (left view)"));
                         clearInterval(this._online_time_updater);

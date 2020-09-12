@@ -15,7 +15,7 @@ import {
 } from "tc-shared/file/Transfer";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
-import {ClientEntry} from "tc-shared/ui/client";
+import {ClientEntry} from "tc-shared/tree/Client";
 import {tr} from "tc-shared/i18n/localize";
 import {
     AbstractAvatarManager,

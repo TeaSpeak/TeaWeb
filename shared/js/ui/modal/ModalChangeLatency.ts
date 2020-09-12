@@ -1,5 +1,5 @@
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {ClientEntry} from "tc-shared/ui/client";
+import {ClientEntry} from "tc-shared/tree/Client";
 import {Slider, sliderfy} from "tc-shared/ui/elements/Slider";
 import * as htmltags from "tc-shared/ui/htmltags";
 import {VoicePlayerLatencySettings} from "tc-shared/voice/VoicePlayer";

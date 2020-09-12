@@ -2,7 +2,6 @@ import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {tra} from "tc-shared/i18n/localize";
 import {Registry} from "tc-shared/events";
 import {modal_settings} from "tc-shared/ui/modal/ModalSettings";
-import {profiles} from "tc-shared/profiles/ConnectionProfile";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";

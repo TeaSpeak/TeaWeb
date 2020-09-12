@@ -1,7 +1,7 @@
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
-import {ChannelEntry} from "tc-shared/ui/channel";
-import {ClientEntry} from "tc-shared/ui/client";
+import {ChannelEntry} from "tc-shared/tree/Channel";
+import {ClientEntry} from "tc-shared/tree/Client";
 import {htmlEscape} from "tc-shared/ui/frames/chat";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {guid} from "tc-shared/crypto/uid";

@@ -1,5 +1,4 @@
 import {Frame, FrameContent} from "tc-shared/ui/frames/chat_frame";
-import {ClientEvents, MusicClientEntry, MusicClientPlayerState, SongInfo} from "tc-shared/ui/client";
 import {LogCategory} from "tc-shared/log";
 import {CommandResult, PlaylistSong} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createInputModal} from "tc-shared/ui/elements/Modal";
@@ -7,7 +6,7 @@ import * as log from "tc-shared/log";
 import * as image_preview from "../image_preview";
 import {Registry} from "tc-shared/events";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
-import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
+import {ClientEvents, MusicClientEntry, SongInfo} from "tc-shared/tree/Client";
 
 export interface MusicSidebarEvents {
     "open": {}, /* triggers when frame should be shown */

@@ -1,4 +1,4 @@
-import {ClientEntry} from "tc-shared/ui/client";
+import {ClientEntry} from "tc-shared/tree/Client";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {EventHandler, Registry} from "tc-shared/events";
 import {

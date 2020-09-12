@@ -1,5 +1,4 @@
 import {LaterPromise} from "tc-shared/utils/LaterPromise";
-import {ErrorCode} from "./ErrorCode";
 
 export class CommandResult {
     success: boolean;

@@ -1,4 +1,4 @@
-import {ServerConnectionInfo, ServerEntry} from "tc-shared/ui/server";
+import {ServerConnectionInfo, ServerEntry} from "tc-shared/tree/Server";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {Graph} from "tc-shared/ui/elements/NetGraph";

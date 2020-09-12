@@ -1,5 +1,5 @@
 import {ReactComponentBase} from "tc-shared/ui/react-elements/ReactComponentBase";
-import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
+import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/tree/ChannelTreeEntry";
 import * as React from "react";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 

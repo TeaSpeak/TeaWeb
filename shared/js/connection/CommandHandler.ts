@@ -11,8 +11,8 @@ import {
     LocalClientEntry,
     MusicClientEntry,
     SongInfo
-} from "tc-shared/ui/client";
-import {ChannelEntry} from "tc-shared/ui/channel";
+} from "tc-shared/tree/Client";
+import {ChannelEntry} from "tc-shared/tree/Channel";
 import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "tc-shared/ConnectionHandler";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
@@ -606,7 +606,7 @@ export class ConnectionCommandHandler extends AbstractCommandHandler {
         tree.moveClient(client, channel_to);
 
         if(self) {
-            this.connection_handler.update_voice_status(channel_to);
+            this.connection_handler.update_voice_status();
 
             for(const entry of client.channelTree.clientsByChannel(channelFrom)) {
                 entry.getVoiceClient()?.abortReplay();

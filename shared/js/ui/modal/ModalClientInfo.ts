@@ -1,4 +1,4 @@
-import {ClientConnectionInfo, ClientEntry} from "tc-shared/ui/client";
+import {ClientConnectionInfo, ClientEntry} from "tc-shared/tree/Client";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";

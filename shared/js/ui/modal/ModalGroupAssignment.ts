@@ -1,7 +1,7 @@
 import {LogCategory} from "tc-shared/log";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import * as log from "tc-shared/log";
-import {ClientEntry} from "tc-shared/ui/client";
+import {ClientEntry} from "tc-shared/tree/Client";
 import {GroupManager, GroupType} from "tc-shared/permission/GroupManager";
 import PermissionType from "tc-shared/permission/PermissionType";
 

@@ -1,5 +1,5 @@
 import {createInfoModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {ChannelEntry} from "tc-shared/ui/channel";
+import {ChannelEntry} from "tc-shared/tree/Channel";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import * as tooltip from "tc-shared/ui/elements/Tooltip";
 import {formatMessage} from "tc-shared/ui/frames/chat";

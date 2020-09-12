@@ -1,6 +1,6 @@
 import PermissionType from "tc-shared/permission/PermissionType";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ChannelEntry, ChannelProperties} from "tc-shared/ui/channel";
+import {ChannelEntry, ChannelProperties} from "tc-shared/tree/Channel";
 import {PermissionManager, PermissionValue} from "tc-shared/permission/PermissionManager";
 import {LogCategory} from "tc-shared/log";
 import {createModal} from "tc-shared/ui/elements/Modal";

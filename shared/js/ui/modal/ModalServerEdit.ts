@@ -1,4 +1,4 @@
-import {ServerEntry, ServerProperties} from "tc-shared/ui/server";
+import {ServerEntry, ServerProperties} from "tc-shared/tree/Server";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import PermissionType from "tc-shared/permission/PermissionType";
 import {GroupManager} from "tc-shared/permission/GroupManager";

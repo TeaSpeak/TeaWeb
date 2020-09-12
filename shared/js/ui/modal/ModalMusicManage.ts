@@ -1,6 +1,6 @@
 import {createErrorModal, createModal} from "tc-shared/ui/elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {MusicClientEntry} from "tc-shared/ui/client";
+import {MusicClientEntry} from "tc-shared/tree/Client";
 import {Registry} from "tc-shared/events";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {LogCategory} from "tc-shared/log";

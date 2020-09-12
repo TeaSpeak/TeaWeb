@@ -10,7 +10,6 @@ export enum ChatType {
     CLIENT
 }
 
-declare const xbbcode: any;
 export function htmlEscape(message: string) : string[] {
     const div = document.createElement('div');
     div.innerText = message;

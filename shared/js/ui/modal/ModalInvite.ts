@@ -1,7 +1,7 @@
 import {settings, Settings} from "tc-shared/settings";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ServerAddress} from "tc-shared/ui/server";
+import {ServerAddress} from "tc-shared/tree/Server";
 
 type URLGeneratorSettings = {
     flag_direct: boolean,

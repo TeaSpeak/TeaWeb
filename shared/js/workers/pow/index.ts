@@ -2,7 +2,6 @@ declare function postMessage(message: any): void;
 
 const prefix = "[POWWorker] ";
 
-let initialized = false;
 let memory: WebAssembly.Memory;
 let memory_u8: Uint8Array;
 let wasm_object: WebAssembly.WebAssemblyInstantiatedSource;

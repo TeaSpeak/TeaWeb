@@ -3,7 +3,6 @@ import {EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
 import {ChatBox} from "tc-shared/ui/frames/side/ChatBox";
 import {Ref, useEffect, useRef, useState} from "react";
 import {AvatarRenderer} from "tc-shared/ui/react-elements/Avatar";
-import {format} from "tc-shared/ui/frames/side/chat_helper";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {LoadingDots} from "tc-shared/ui/react-elements/LoadingDots";
 import {Countdown} from "tc-shared/ui/react-elements/Countdown";
@@ -22,6 +21,7 @@ import {
 import {TimestampRenderer} from "tc-shared/ui/react-elements/TimestampRenderer";
 import {BBCodeRenderer} from "tc-shared/text/bbcode";
 import {getGlobalAvatarManagerFactory} from "tc-shared/file/Avatars";
+import {ColloquialFormat, date_format, format_date_general, formatDayTime} from "tc-shared/utils/DateUtils";
 
 const cssStyle = require("./ConversationUI.scss");
 
@@ -86,18 +86,18 @@ const ChatEventMessageRenderer = React.memo((props: {
 
 
 const TimestampEntry = (props: { timestamp: Date, refDiv: React.Ref<HTMLDivElement> }) => {
-    const diff = format.date.date_format(props.timestamp, new Date());
+    const diff = date_format(props.timestamp, new Date());
     let formatted;
     let update: boolean;
 
-    if(diff == format.date.ColloquialFormat.YESTERDAY) {
+    if(diff == ColloquialFormat.YESTERDAY) {
         formatted = <Translatable key={"yesterday"}>Yesterday</Translatable>;
         update = true;
-    } else if(diff == format.date.ColloquialFormat.TODAY) {
+    } else if(diff == ColloquialFormat.TODAY) {
         formatted = <Translatable key={"today"}>Today</Translatable>;
         update = true;
-    } else if(diff == format.date.ColloquialFormat.GENERAL) {
-        formatted = <>{format.date.format_date_general(props.timestamp, false)}</>;
+    } else if(diff == ColloquialFormat.GENERAL) {
+        formatted = <>{format_date_general(props.timestamp, false)}</>;
         update = false;
     }
 
@@ -194,7 +194,7 @@ const ChatEventLocalUserSwitchRenderer = (props: { event: ChatEventLocalUserSwit
             <a>
                 {props.event.mode === "join" ? <Translatable>You joined at</Translatable> : <Translatable>You left at</Translatable>}
                 &nbsp;
-                {format.date.formatDayTime(new Date(props.timestamp))}
+                {formatDayTime(new Date(props.timestamp))}
             </a>
             <div />
         </div>

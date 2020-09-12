@@ -2,7 +2,7 @@
 
 import {sliderfy} from "tc-shared/ui/elements/Slider";
 import {createModal, Modal} from "tc-shared/ui/elements/Modal";
-import {ClientEntry} from "tc-shared/ui/client";
+import {ClientEntry} from "tc-shared/tree/Client";
 import * as htmltags from "tc-shared/ui/htmltags";
 
 let modal: Modal;

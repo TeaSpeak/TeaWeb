@@ -1,19 +1,15 @@
-import {ChannelTree} from "tc-shared/ui/view";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
 import {PermissionManager} from "tc-shared/permission/PermissionManager";
 import {GroupManager} from "tc-shared/permission/GroupManager";
 import {ServerSettings, Settings, settings, StaticSettings} from "tc-shared/settings";
 import {Sound, SoundManager} from "tc-shared/sound/Sounds";
-import {LocalClientEntry} from "tc-shared/ui/client";
 import {ConnectionProfile} from "tc-shared/profiles/ConnectionProfile";
-import {ServerAddress} from "tc-shared/ui/server";
 import * as log from "tc-shared/log";
 import {LogCategory, logError, logInfo, logWarn} from "tc-shared/log";
 import {createErrorModal, createInfoModal, createInputModal, Modal} from "tc-shared/ui/elements/Modal";
 import {hashPassword} from "tc-shared/utils/helpers";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
 import * as htmltags from "./ui/htmltags";
-import {ChannelEntry} from "tc-shared/ui/channel";
 import {FilterMode, InputStartResult, InputState} from "tc-shared/voice/RecorderBase";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "tc-shared/voice/RecorderProfile";
@@ -24,7 +20,6 @@ import {connection_log, Regex} from "tc-shared/ui/modal/ModalConnect";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {spawnAvatarUpload} from "tc-shared/ui/modal/ModalAvatar";
 import * as dns from "tc-backend/dns";
-import * as top_menu from "tc-shared/ui/frames/MenuBar";
 import {EventHandler, Registry} from "tc-shared/events";
 import {FileManager} from "tc-shared/file/FileManager";
 import {FileTransferState, TransferProvider} from "tc-shared/file/Transfer";
@@ -40,6 +35,9 @@ import {getServerConnectionFactory} from "tc-shared/connection/ConnectionFactory
 import {WhisperSession} from "tc-shared/voice/VoiceWhisper";
 import {spawnEchoTestModal} from "tc-shared/ui/modal/echo-test/Controller";
 import {ServerFeature, ServerFeatures} from "tc-shared/connection/ServerFeatures";
+import {ChannelTree} from "tc-shared/tree/ChannelTree";
+import {LocalClientEntry} from "tc-shared/tree/Client";
+import {ServerAddress} from "tc-shared/tree/Server";
 
 export enum InputHardwareState {
     MISSING,
@@ -794,7 +792,7 @@ export class ConnectionHandler {
     }
 
     private _last_record_error_popup: number = 0;
-    update_voice_status(targetChannel?: ChannelEntry) {
+    update_voice_status() {
         this.updateVoiceStatus();
         return;
     }

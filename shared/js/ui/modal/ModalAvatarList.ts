@@ -3,7 +3,7 @@ import {LogCategory} from "tc-shared/log";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {base64_encode_ab} from "tc-shared/utils/buffers";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
-import {ClientEntry} from "tc-shared/ui/client";
+import {ClientEntry} from "tc-shared/tree/Client";
 import * as log from "tc-shared/log";
 import * as moment from "moment";
 

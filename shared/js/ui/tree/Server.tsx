@@ -3,7 +3,7 @@ import {
     BatchUpdateType,
     ReactComponentBase
 } from "tc-shared/ui/react-elements/ReactComponentBase";
-import {ServerEntry as ServerEntryController, ServerEvents} from "../server";
+import {ServerEntry as ServerEntryController, ServerEvents} from "../../tree/Server";
 import * as React from "react";
 import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";

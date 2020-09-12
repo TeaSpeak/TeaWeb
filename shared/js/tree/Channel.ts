@@ -1,5 +1,5 @@
-import {ChannelTree} from "tc-shared/ui/view";
-import {ClientEntry, ClientEvents} from "tc-shared/ui/client";
+import {ChannelTree} from "./ChannelTree";
+import {ClientEntry, ClientEvents} from "./Client";
 import * as log from "tc-shared/log";
 import {LogCategory, LogType} from "tc-shared/log";
 import {PermissionType} from "tc-shared/permission/PermissionType";
@@ -9,7 +9,7 @@ import {MenuEntryType} from "tc-shared/ui/elements/ContextMenu";
 import {Sound} from "tc-shared/sound/Sounds";
 import {createErrorModal, createInfoModal, createInputModal} from "tc-shared/ui/elements/Modal";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import * as htmltags from "./htmltags";
+import * as htmltags from "../ui/htmltags";
 import {hashPassword} from "tc-shared/utils/helpers";
 import {openChannelInfo} from "tc-shared/ui/modal/ModalChannelInfo";
 import {createChannelModal} from "tc-shared/ui/modal/ModalCreateChannel";
@@ -17,8 +17,8 @@ import {formatMessage} from "tc-shared/ui/frames/chat";
 
 import * as React from "react";
 import {Registry} from "tc-shared/events";
-import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
-import {ChannelEntryView as ChannelEntryView} from "./tree/Channel";
+import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
+import {ChannelEntryView as ChannelEntryView} from "../ui/tree/Channel";
 import {spawnFileTransferModal} from "tc-shared/ui/modal/transfer/ModalFileTransfer";
 import {ViewReasonId} from "tc-shared/ConnectionHandler";
 import {EventChannelData} from "tc-shared/ui/frames/log/Definitions";

@@ -88,8 +88,6 @@ export class Graph {
     };
     private _max_space = 1.12;
     private _max_gap = 5;
-    private _listener_mouse_move;
-    private _listener_mouse_out;
     private _animate_loop;
 
     _time_span: TimeSpan = {

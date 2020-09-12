@@ -3,7 +3,7 @@ import {
     BatchUpdateType,
     ReactComponentBase
 } from "tc-shared/ui/react-elements/ReactComponentBase";
-import {ChannelTree, ChannelTreeEvents} from "tc-shared/ui/view";
+import {ChannelTree, ChannelTreeEvents} from "tc-shared/tree/ChannelTree";
 import ResizeObserver from 'resize-observer-polyfill';
 
 import * as React from "react";
@@ -14,9 +14,9 @@ import {ChannelEntryView as ChannelEntryView} from "./Channel";
 import {ServerEntry as ServerEntryView} from "./Server";
 import {ClientEntry as ClientEntryView} from "./Client";
 
-import {ChannelEntry, ChannelEvents} from "tc-shared/ui/channel";
-import {ServerEntry} from "tc-shared/ui/server";
-import {ClientEntry, ClientType} from "tc-shared/ui/client";
+import {ChannelEntry, ChannelEvents} from "tc-shared/tree/Channel";
+import {ServerEntry} from "tc-shared/tree/server";
+import {ClientEntry, ClientType} from "tc-shared/tree/Client";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import {ConnectionEvents} from "tc-shared/ConnectionHandler";

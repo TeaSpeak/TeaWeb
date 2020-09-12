@@ -1,8 +1,8 @@
 /* the bar on the right with the chats (Channel & Client) */
-import {ClientEntry, MusicClientEntry} from "tc-shared/ui/client";
+import {ClientEntry, MusicClientEntry} from "tc-shared/tree/Client";
 import {ConnectionHandler} from "tc-shared/ConnectionHandler";
-import {ChannelEntry} from "tc-shared/ui/channel";
-import {ServerEntry} from "tc-shared/ui/server";
+import {ChannelEntry} from "tc-shared/tree/Channel";
+import {ServerEntry} from "tc-shared/tree/Server";
 import {openMusicManage} from "tc-shared/ui/modal/ModalMusicManage";
 import {formatMessage} from "tc-shared/ui/frames/chat";
 import {ClientInfo} from "tc-shared/ui/frames/side/client_info";

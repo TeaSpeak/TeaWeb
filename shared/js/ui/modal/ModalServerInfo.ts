@@ -3,7 +3,7 @@ import {
     RequestInfoStatus,
     ServerBandwidthInfoUpdateCallback
 } from "tc-shared/ui/modal/ModalServerInfoBandwidth";
-import {ServerEntry} from "tc-shared/ui/server";
+import {ServerEntry} from "tc-shared/tree/Server";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
 import {createErrorModal, createModal, Modal} from "tc-shared/ui/elements/Modal";
 import {LogCategory} from "tc-shared/log";

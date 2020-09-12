@@ -1,7 +1,7 @@
 import {CommandHelper} from "tc-shared/connection/CommandHelper";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
-import {ServerAddress} from "tc-shared/ui/server";
+import {ServerAddress} from "tc-shared/tree/Server";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {AbstractCommandHandlerBoss} from "tc-shared/connection/AbstractCommandHandler";
 import {Registry} from "tc-shared/events";

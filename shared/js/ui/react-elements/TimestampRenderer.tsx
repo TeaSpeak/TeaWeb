@@ -1,9 +1,9 @@
-import {format} from "tc-shared/ui/frames/side/chat_helper";
 import {useEffect, useState} from "react";
 import * as React from "react";
+import {format_chat_time} from "tc-shared/utils/DateUtils";
 
 export const TimestampRenderer = (props: { timestamp: number }) => {
-    const time = format.date.format_chat_time(new Date(props.timestamp));
+    const time = format_chat_time(new Date(props.timestamp));
     const [ revision, setRevision ] = useState(0);
 
     useEffect(() => {

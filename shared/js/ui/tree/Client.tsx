@@ -11,7 +11,7 @@ import {
     ClientType,
     LocalClientEntry,
     MusicClientEntry
-} from "../client";
+} from "../../tree/Client";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Group, GroupEvents} from "tc-shared/permission/GroupManager";
 import {Settings, settings} from "tc-shared/settings";

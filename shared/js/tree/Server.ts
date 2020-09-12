@@ -1,4 +1,4 @@
-import {ChannelTree} from "tc-shared/ui/view";
+import {ChannelTree} from "./ChannelTree";
 import {Settings, settings} from "tc-shared/settings";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import * as log from "tc-shared/log";
@@ -12,12 +12,12 @@ import {spawnIconSelect} from "tc-shared/ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "tc-shared/ui/modal/ModalAvatarList";
 import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {connection_log} from "tc-shared/ui/modal/ModalConnect";
-import * as top_menu from "./frames/MenuBar";
+import * as top_menu from "../ui/frames/MenuBar";
 import {control_bar_instance} from "tc-shared/ui/frames/control-bar";
-import { ServerEntry as ServerEntryView } from "./tree/Server";
+import { ServerEntry as ServerEntryView } from "../ui/tree/Server";
 import * as React from "react";
 import {Registry} from "tc-shared/events";
-import {ChannelTreeEntry, ChannelTreeEntryEvents} from "tc-shared/ui/TreeEntry";
+import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
 
 export class ServerProperties {
     virtualserver_host: string = "";

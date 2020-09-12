@@ -1,17 +1,9 @@
-import * as log from "../log";
-import {LogCategory, logDebug, logWarn} from "../log";
-import {WorkerMessage, WorkerMessageCommand, WorkerMessageNotify} from "./Protocol";
-import {CommandResponseType, ExecuteResult, GenericCommandMapping, GenericCommands, GenericNotify} from "./Definitions";
+import {LogCategory, logDebug} from "../log";
+import {WorkerMessage} from "./Protocol";
+import {GenericCommandMapping, GenericCommands, GenericNotify} from "./Definitions";
 import {tr} from "../i18n/localize";
 import {Registry} from "../events";
 import {WorkerCommunication} from "tc-shared/workers/Worker";
-
-type PendingCommand = {
-    timeout?: any,
-
-    timestampSend: number,
-    callbackResolve: (_: ExecuteResult) => void;
-}
 
 export interface WorkerEvents {
     notify_worker_died: {}

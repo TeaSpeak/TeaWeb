@@ -4,7 +4,7 @@ import {
     ReactComponentBase
 } from "tc-shared/ui/react-elements/ReactComponentBase";
 import * as React from "react";
-import {ChannelEntry as ChannelEntryController, ChannelEvents, ChannelProperties} from "../channel";
+import {ChannelEntry as ChannelEntryController, ChannelEvents, ChannelProperties} from "../../tree/Channel";
 import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Settings, settings} from "tc-shared/settings";
