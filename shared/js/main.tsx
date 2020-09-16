@@ -47,6 +47,7 @@ import "./update/UpdaterWeb";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 
+let preventWelcomeUI = false;
 async function initialize() {
     try {
         await i18n.initialize();
@@ -126,8 +127,8 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
     const password = properties.password ? properties.password.value : "";
     const password_hashed = properties.password ? properties.password.hashed : false;
 
-    debugger;
     if(profile && profile.valid()) {
+        settings.changeGlobal(Settings.KEY_USER_IS_NEW, false);
         connection.startConnection(properties.address, profile, true, {
             nickname: username,
             password: password.length > 0 ? {
@@ -302,11 +303,9 @@ function main() {
     //setTimeout(() => spawnPermissionEditorModal(server_connections.active_connection()), 3000);
     //setTimeout(() => spawnGroupCreate(server_connections.active_connection(), "server"), 3000);
 
-    if(server_connections.active_connection().getServerConnection().getConnectionState() === ConnectionState.UNCONNECTED) {
-        if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
-            const modal = openModalNewcomer();
-            modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
-        }
+    if(settings.static_global(Settings.KEY_USER_IS_NEW) && !preventWelcomeUI) {
+        const modal = openModalNewcomer();
+        modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
 
     //spawnVideoPopout(server_connections.active_connection(), "https://www.youtube.com/watch?v=9683D18fyvs");
@@ -381,6 +380,7 @@ const task_connect_handler: loader.Task = {
                 }
             }
 
+            preventWelcomeUI = true;
             loader.register_task(loader.Stage.LOADED, {
                 priority: 0,
                 function: async () => handle_connect_request(connect_data, server_connections.active_connection() || server_connections.spawn_server_connection()),
@@ -394,6 +394,7 @@ const task_connect_handler: loader.Task = {
             };
 
             chandler.callback_execute = data => {
+                preventWelcomeUI = true;
                 handle_connect_request(data, server_connections.spawn_server_connection());
                 return true;
             }

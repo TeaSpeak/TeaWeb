@@ -715,7 +715,9 @@ export class ConnectionHandler {
         if(this.serverConnection.connected()) {
             let localClientUpdates: {
                 client_output_hardware?: boolean,
-                client_input_hardware?: boolean
+                client_input_hardware?: boolean,
+                client_input_muted?: boolean,
+                client_output_muted?: boolean
             } = {};
 
             const currentChannel = this.getClient().currentChannel();
@@ -749,6 +751,12 @@ export class ConnectionHandler {
                 }
 
                 shouldRecord = codecSupportEncode && !!voiceConnection.voiceRecorder()?.input;
+            }
+
+            localClientUpdates.client_output_muted = this.client_status.output_muted;
+            localClientUpdates.client_input_muted = this.client_status.input_muted;
+            if(localClientUpdates.client_input_muted || localClientUpdates.client_output_muted) {
+                shouldRecord = false;
             }
 
             /* update our owns client properties */
