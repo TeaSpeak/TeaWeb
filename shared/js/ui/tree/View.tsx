@@ -15,7 +15,7 @@ import {ServerEntry as ServerEntryView} from "./Server";
 import {ClientEntry as ClientEntryView} from "./Client";
 
 import {ChannelEntry, ChannelEvents} from "tc-shared/tree/Channel";
-import {ServerEntry} from "tc-shared/tree/server";
+import {ServerEntry} from "tc-shared/tree/server"; /* this is an update message for travis ;) */
 import {ClientEntry, ClientType} from "tc-shared/tree/Client";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
