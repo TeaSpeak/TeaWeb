@@ -787,7 +787,7 @@ export class ConnectionHandler {
         /* update the recorder state */
         const currentInput = voiceConnection.voiceRecorder()?.input;
         if(currentInput) {
-            if(shouldRecord) {
+            if(shouldRecord || this.echoTestRunning) {
                 if(this.getInputHardwareState() !== InputHardwareState.START_FAILED) {
                     this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {
                         this.event_registry.fire("notify_state_updated", { state: "microphone" });
@@ -1158,10 +1158,7 @@ export class ConnectionHandler {
     async startEchoTest() : Promise<void> {
         await this.serverConnection.getVoiceConnection().startWhisper({ target: "echo" });
 
-        /* TODO: store and later restore microphone status! */
-        this.client_status.input_muted = false;
         this.update_voice_status();
-
         try {
             this.echoTestRunning = true;
             const startResult = await this.startVoiceRecorder(false);
