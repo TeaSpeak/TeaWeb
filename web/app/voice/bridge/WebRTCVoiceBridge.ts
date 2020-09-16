@@ -1,7 +1,7 @@
 import * as aplayer from "tc-backend/web/audio/player";
+import * as log from "tc-shared/log";
 import {LogCategory, logDebug, logError, logInfo, logTrace, logWarn} from "tc-shared/log";
 import {tr} from "tc-shared/i18n/localize";
-import * as log from "tc-shared/log";
 import {VoiceBridge, VoiceBridgeConnectResult} from "./VoiceBridge";
 
 export abstract class WebRTCVoiceBridge extends VoiceBridge {
@@ -14,6 +14,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     private whisperDataChannel: RTCDataChannel;
 
     private cachedIceCandidates: RTCIceCandidateInit[];
+    private localIceCandidateCount: number;
 
     private callbackRtcAnswer: (answer: any) => void;
 
@@ -78,8 +79,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
         {
             let rtcConfig: RTCConfiguration = {};
             rtcConfig.iceServers = [];
-            rtcConfig.iceServers.push({ urls: 'stun:stun.l.google.com:19302' });
-            //rtcConfig.iceServers.push({ urls: "stun:stun.teaspeak.de:3478" });
+            rtcConfig.iceServers.push({ urls: ['stun:stun.l.google.com:19302'] });
 
             this.rtcConnection = new RTCPeerConnection(rtcConfig);
 
@@ -111,17 +111,23 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
             this.whisperDataChannel.binaryType = "arraybuffer";
         }
 
+        /* setting a dummy connect failed handler in case the rtc peer connection changes it's state to failed */
+        const connectFailedPromise = new Promise((resolve, reject) => this.callbackRtcConnectFailed = reject);
+        const wrapWithError = <T>(promise: Promise<T>) : Promise<T> => Promise.race([ promise, connectFailedPromise ]) as any;
+
         let offer: RTCSessionDescriptionInit;
         try {
-            offer = await this.rtcConnection.createOffer(this.generateRtpOfferOptions());
+            offer = await wrapWithError(this.rtcConnection.createOffer(this.generateRtpOfferOptions()));
             if(canceled.value) return;
         } catch (error) {
             logError(LogCategory.VOICE, tr("Failed to generate RTC offer: %o"), error);
             throw tr("failed to generate local offer");
         }
 
+        this.localIceCandidateCount = 0;
+
         try {
-            await this.rtcConnection.setLocalDescription(offer);
+            await wrapWithError(this.rtcConnection.setLocalDescription(offer));
             if(canceled.value) return;
         } catch (error) {
             logError(LogCategory.VOICE, tr("Failed to apply local description: %o"), error);
@@ -140,7 +146,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
                     sdp: offer.sdp
                 }
             });
-            answer = await new Promise((resolve, reject) => {
+            answer = await wrapWithError(new Promise((resolve, reject) => {
                 const timeout = setTimeout(() => {
                     if(canceled.value) {
                         resolve();
@@ -156,7 +162,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
                     clearTimeout(timeout);
                     resolve(answer);
                 };
-            });
+            }));
             if(canceled.value) return;
         }
 
@@ -165,7 +171,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
         }
 
         try {
-            await this.rtcConnection.setRemoteDescription(new RTCSessionDescription(answer.msg));
+            await wrapWithError(this.rtcConnection.setRemoteDescription(new RTCSessionDescription(answer.msg)));
             if(canceled.value) return;
         } catch (error) {
             const kParseErrorPrefix = "Failed to execute 'setRemoteDescription' on 'RTCPeerConnection': ";
@@ -176,9 +182,11 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
             throw tr("failed to apply remotes description");
         }
 
-        while(this.cachedIceCandidates.length > 0)
+        while(this.cachedIceCandidates.length > 0) {
             this.registerRemoteIceCandidate(this.cachedIceCandidates.pop_front());
+        }
 
+        /* ATTENTION: Do not use wrapWithError from now on (this.callbackRtcConnectFailed has been changed) */
         await new Promise((resolve, reject) => {
             if(this.rtcConnection.connectionState === "connected") {
                 resolve();
@@ -215,8 +223,8 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
         this.cleanupRtcResources();
         this.connectionState = "unconnected";
 
-        if(this.callback_disconnect)
-            this.callback_disconnect();
+        if(this.callbackDisconnect)
+            this.callbackDisconnect();
     }
 
     private abortConnectionAttempt() {
@@ -253,8 +261,9 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
         if(typeof this.voiceDataChannel === "undefined")
             throw tr("missing main data channel");
 
-        if(this.voiceDataChannel.readyState === "open")
+        if(this.voiceDataChannel.readyState === "open") {
             return;
+        }
 
         await new Promise((resolve, reject) => {
             const id = setTimeout(reject, timeout);
@@ -288,7 +297,7 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     }
 
     private handleRtcConnectionStateChange() {
-        log.debug(LogCategory.WEBRTC, tr("Connection state changed to %s"), this.rtcConnection.connectionState);
+        log.debug(LogCategory.WEBRTC, tr("Connection state changed to %s (Local connection state: %s)"), this.rtcConnection.connectionState, this.connectionState);
         switch (this.rtcConnection.connectionState) {
             case "connected":
                 if(this.callbackRtcConnected)
@@ -298,14 +307,14 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
             case "failed":
                 if(this.callbackRtcConnectFailed)
                     this.callbackRtcConnectFailed(tr("connect attempt failed"));
-                else if(this.callback_disconnect)
-                    this.callback_disconnect();
+                else if(this.callbackDisconnect)
+                    this.callbackDisconnect();
                 break;
 
             case "disconnected":
             case "closed":
-                if(this.callback_disconnect)
-                    this.callback_disconnect();
+                if(this.callbackDisconnect)
+                    this.callbackDisconnect();
                 break;
         }
     }
@@ -319,12 +328,22 @@ export abstract class WebRTCVoiceBridge extends VoiceBridge {
     }
 
     private handleIceCandidate(event: RTCPeerConnectionIceEvent) {
-        if(event.candidate && event.candidate.protocol !== "tcp")
+        if(event.candidate && event.candidate.protocol !== "tcp") {
             return;
+        }
 
         if(event.candidate) {
+            this.localIceCandidateCount++;
             log.debug(LogCategory.WEBRTC, tr("Gathered local ice candidate for stream %d: %s"), event.candidate.sdpMLineIndex, event.candidate.candidate);
             this.callback_send_control_data("ice", { msg: event.candidate.toJSON() });
+        } else if(this.localIceCandidateCount === 0) {
+            logError(LogCategory.WEBRTC, tr("Failed to gather any local ice candidates... This is a fatal error."));
+
+            /* we don't allow a reconnect here since it's most the times not fixable by just trying again */
+            this.allowReconnect = false;
+            if(this.callbackRtcConnectFailed) {
+                this.callbackRtcConnectFailed(tr("failed to gather any local ICE candidates"));
+            }
         } else {
             log.debug(LogCategory.WEBRTC, tr("Local ICE candidate gathering finish."));
             this.callback_send_control_data("ice_finish", {});

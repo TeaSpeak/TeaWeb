@@ -6,33 +6,36 @@ import {AbstractServerConnection} from "../connection/ConnectionBase";
 import {HandshakeIdentityHandler} from "../connection/HandshakeHandler";
 import {createErrorModal} from "../ui/elements/Modal";
 import {formatMessage} from "../ui/frames/chat";
+import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
+import {LogCategory, logDebug, logError} from "tc-shared/log";
 
 export class ConnectionProfile {
     id: string;
 
-    profile_name: string;
-    default_username: string;
-    default_password: string;
+    profileName: string;
+    defaultUsername: string;
+    defaultPassword: string;
 
-    selected_identity_type: string = "unset";
+    selectedIdentityType: string = "unset";
     identities: { [key: string]: Identity } = {};
 
     constructor(id: string) {
         this.id = id;
     }
 
-    connect_username(): string {
-        if (this.default_username && this.default_username !== "Another TeaSpeak user")
-            return this.default_username;
+    connectUsername(): string {
+        if (this.defaultUsername && this.defaultUsername !== "Another TeaSpeak user")
+            return this.defaultUsername;
 
-        let selected = this.selected_identity();
+        let selected = this.selectedIdentity();
         let name = selected ? selected.fallback_name() : undefined;
         return name || "Another TeaSpeak user";
     }
 
-    selected_identity(current_type?: IdentitifyType): Identity {
+    selectedIdentity(current_type?: IdentitifyType): Identity {
         if (!current_type)
-            current_type = this.selected_type();
+            current_type = this.selectedType();
 
         if (current_type === undefined)
             return undefined;
@@ -46,55 +49,58 @@ export class ConnectionProfile {
         return undefined;
     }
 
-    selected_type?(): IdentitifyType {
-        return this.selected_identity_type ? IdentitifyType[this.selected_identity_type.toUpperCase()] : undefined;
+    selectedType(): IdentitifyType | undefined {
+        return this.selectedIdentityType ? IdentitifyType[this.selectedIdentityType.toUpperCase()] : undefined;
     }
 
-    set_identity(type: IdentitifyType, identity: Identity) {
+    setIdentity(type: IdentitifyType, identity: Identity) {
         this.identities[IdentitifyType[type].toLowerCase()] = identity;
     }
 
-    spawn_identity_handshake_handler?(connection: AbstractServerConnection): HandshakeIdentityHandler {
-        const identity = this.selected_identity();
+    spawnIdentityHandshakeHandler(connection: AbstractServerConnection): HandshakeIdentityHandler | undefined {
+        const identity = this.selectedIdentity();
         if (!identity)
             return undefined;
         return identity.spawn_identity_handshake_handler(connection);
     }
 
-    encode?(): string {
+    encode(): string {
         const identity_data = {};
-        for (const key in this.identities)
-            if (this.identities[key])
+        for (const key in this.identities) {
+            if (this.identities[key]) {
                 identity_data[key] = this.identities[key].encode();
+            }
+        }
 
         return JSON.stringify({
             version: 1,
-            username: this.default_username,
-            password: this.default_password,
-            profile_name: this.profile_name,
-            identity_type: this.selected_identity_type,
+            username: this.defaultUsername,
+            password: this.defaultPassword,
+            profile_name: this.profileName,
+            identity_type: this.selectedIdentityType,
             identity_data: identity_data,
             id: this.id
         });
     }
 
     valid(): boolean {
-        const identity = this.selected_identity();
+        const identity = this.selectedIdentity();
 
         return !!identity && identity.valid();
     }
 }
 
-async function decode_profile(data): Promise<ConnectionProfile | string> {
-    data = JSON.parse(data);
-    if (data.version !== 1)
+async function decodeProfile(payload: string): Promise<ConnectionProfile | string> {
+    const data = JSON.parse(payload);
+    if (data.version !== 1) {
         return "invalid version";
+    }
 
     const result: ConnectionProfile = new ConnectionProfile(data.id);
-    result.default_username = data.username;
-    result.default_password = data.password;
-    result.profile_name = data.profile_name;
-    result.selected_identity_type = (data.identity_type || "").toLowerCase();
+    result.defaultUsername = data.username;
+    result.defaultPassword = data.password;
+    result.profileName = data.profile_name;
+    result.selectedIdentityType = (data.identity_type || "").toLowerCase();
 
     if (data.identity_data) {
         for (const key of Object.keys(data.identity_data)) {
@@ -117,20 +123,19 @@ interface ProfilesData {
     profiles: string[];
 }
 
-let available_profiles: ConnectionProfile[] = [];
+let availableProfiles_: ConnectionProfile[] = [];
 
-export async function load() {
-    available_profiles = [];
+async function loadConnectProfiles() {
+    availableProfiles_ = [];
 
     const profiles_json = localStorage.getItem("profiles");
     let profiles_data: ProfilesData = (() => {
         try {
             return profiles_json ? JSON.parse(profiles_json) : {version: 0} as any;
         } catch (error) {
-            debugger;
             console.error(tr("Invalid profile json! Resetting profiles :( (%o)"), profiles_json);
             createErrorModal(tr("Profile data invalid"), formatMessage(tr("The profile data is invalid.{:br:}This might cause data loss."))).open();
-            return {version: 0};
+            return { version: 0 };
         }
     })();
 
@@ -142,56 +147,58 @@ export async function load() {
     }
     if (profiles_data.version == 1) {
         for (const profile_data of profiles_data.profiles) {
-            const profile = await decode_profile(profile_data);
+            const profile = await decodeProfile(profile_data);
             if (typeof profile === "string") {
                 console.error(tr("Failed to load profile. Reason: %s, Profile data: %s"), profile, profiles_data);
             } else {
-                available_profiles.push(profile as ConnectionProfile);
+                availableProfiles_.push(profile as ConnectionProfile);
             }
         }
     }
 
-    if (!find_profile("default")) { //Create a default profile and teaforo profile
+    const defaultProfile = findConnectProfile("default");
+    if (!defaultProfile) { //Create a default profile and teaforo profile
         {
-            const profile = create_new_profile("default", "default");
-            profile.default_password = "";
-            profile.default_username = "";
-            profile.profile_name = "Default Profile";
+            const profile = createConnectProfile(tr("Default Profile"), "default");
+            profile.defaultPassword = "";
+            profile.defaultUsername = "";
+            profile.profileName = "Default Profile";
 
             /* generate default identity */
             try {
-                const identity = await TeaSpeakIdentity.generate_new();
-                let active = true;
-                setTimeout(() => {
-                    active = false;
-                }, 1000);
-                await identity.improve_level(8, 1, () => active);
-                profile.set_identity(IdentitifyType.TEAMSPEAK, identity);
-                profile.selected_identity_type = IdentitifyType[IdentitifyType.TEAMSPEAK];
+                const identity = await TeaSpeakIdentity.generateNew();
+                const begin = Date.now();
+
+                const newLevel = await identity.improveLevelJavascript(8, () => Date.now() - begin < 1000);
+                /* await identity.improveLevelNative(8, 1, () => doImprove); */
+                logDebug(LogCategory.IDENTITIES, tr("Improved the identity level to %d within %s milliseconds"), newLevel, Date.now() - begin);
+
+                profile.setIdentity(IdentitifyType.TEAMSPEAK, identity);
+                profile.selectedIdentityType = IdentitifyType[IdentitifyType.TEAMSPEAK];
             } catch (error) {
+                logError(LogCategory.GENERAL, tr("Failed to generate the default identity: %o"), error);
                 createErrorModal(tr("Failed to generate default identity"), tr("Failed to generate default identity!<br>Please manually generate the identity within your settings => profiles")).open();
             }
         }
 
         { /* forum identity (works only when connected to the forum) */
-            const profile = create_new_profile("TeaSpeak Forum", "teaforo");
-            profile.default_password = "";
-            profile.default_username = "";
-            profile.profile_name = "TeaSpeak Forum profile";
+            const profile = createConnectProfile(tr("TeaSpeak Forum Profile"), "teaforo");
+            profile.defaultPassword = "";
+            profile.defaultUsername = "";
 
-            profile.set_identity(IdentitifyType.TEAFORO, TeaForumIdentity.identity());
-            profile.selected_identity_type = IdentitifyType[IdentitifyType.TEAFORO];
+            profile.setIdentity(IdentitifyType.TEAFORO, TeaForumIdentity.identity());
+            profile.selectedIdentityType = IdentitifyType[IdentitifyType.TEAFORO];
         }
 
         save();
     }
 }
 
-export function create_new_profile(name: string, id?: string): ConnectionProfile {
+export function createConnectProfile(name: string, id?: string): ConnectionProfile {
     const profile = new ConnectionProfile(id || guid());
-    profile.profile_name = name;
-    profile.default_username = "";
-    available_profiles.push(profile);
+    profile.profileName = name;
+    profile.defaultUsername = "";
+    availableProfiles_.push(profile);
     return profile;
 }
 
@@ -199,8 +206,9 @@ let _requires_save = false;
 
 export function save() {
     const profiles: string[] = [];
-    for (const profile of available_profiles)
+    for (const profile of availableProfiles_) {
         profiles.push(profile.encode());
+    }
 
     const data = JSON.stringify({
         version: 1,
@@ -217,34 +225,36 @@ export function requires_save(): boolean {
     return _requires_save;
 }
 
-export function profiles(): ConnectionProfile[] {
-    return available_profiles;
+export function availableConnectProfiles(): ConnectionProfile[] {
+    return availableProfiles_;
 }
 
-export function find_profile(id: string): ConnectionProfile | undefined {
-    for (const profile of profiles())
-        if (profile.id == id)
+export function findConnectProfile(id: string): ConnectionProfile | undefined {
+    for (const profile of availableConnectProfiles()) {
+        if (profile.id == id) {
             return profile;
+        }
+    }
 
     return undefined;
 }
 
 export function find_profile_by_name(name: string): ConnectionProfile | undefined {
     name = name.toLowerCase();
-    for (const profile of profiles())
-        if ((profile.profile_name || "").toLowerCase() == name)
+    for (const profile of availableConnectProfiles())
+        if ((profile.profileName || "").toLowerCase() == name)
             return profile;
 
     return undefined;
 }
 
 
-export function default_profile(): ConnectionProfile {
-    return find_profile("default");
+export function defaultConnectProfile(): ConnectionProfile {
+    return findConnectProfile("default");
 }
 
 export function set_default_profile(profile: ConnectionProfile) {
-    const old_default = default_profile();
+    const old_default = defaultConnectProfile();
     if (old_default && old_default != profile) {
         old_default.id = guid();
     }
@@ -253,10 +263,19 @@ export function set_default_profile(profile: ConnectionProfile) {
 }
 
 export function delete_profile(profile: ConnectionProfile) {
-    available_profiles.remove(profile);
+    availableProfiles_.remove(profile);
 }
 
 window.addEventListener("beforeunload", event => {
-    if(requires_save())
+    if(requires_save()) {
         save();
+    }
 });
+
+loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
+    name: "Identity setup",
+    function: async () => {
+        await loadConnectProfiles();
+    },
+    priority: 30
+})

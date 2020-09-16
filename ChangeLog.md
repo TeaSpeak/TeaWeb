@@ -1,4 +1,12 @@
 # Changelog:
+* **16.09.20**
+    - Fixed the control bar microphone and speaker buttons
+    - Improved the default identity generation (no web worker required now)
+    - Improved voice connection error handling (especially for firefox)
+    - Adding a max reconnect limit for voice connection
+    - Don't show the newcomer guide when directly connection to a server
+    - Fixed default profile initialisation
+    
 * **07.09.20**
     - Fixed the web client for safari
     

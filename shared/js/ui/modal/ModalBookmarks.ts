@@ -11,7 +11,7 @@ import {
     save_bookmark
 } from "../../bookmarks";
 import {connection_log, Regex} from "../../ui/modal/ModalConnect";
-import {profiles} from "../../profiles/ConnectionProfile";
+import {availableConnectProfiles} from "../../profiles/ConnectionProfile";
 import {spawnYesNo} from "../../ui/modal/ModalYesNo";
 import {Settings, settings} from "../../settings";
 import * as log from "../../log";
@@ -203,11 +203,11 @@ export function spawnBookmarkModal() {
                         .text("")
                         .css("display", "none")
                 );
-                for (const profile of profiles()) {
+                for (const profile of availableConnectProfiles()) {
                     input_connect_profile.append(
                         $.spawn("option")
                             .attr("value", profile.id)
-                            .text(profile.profile_name)
+                            .text(profile.profileName)
                     );
                 }
             }
@@ -345,7 +345,7 @@ export function spawnBookmarkModal() {
 
                 input_connect_profile.on('change', event => {
                     const id = input_connect_profile.val() as string;
-                    const profile = profiles().find(e => e.id === id);
+                    const profile = availableConnectProfiles().find(e => e.id === id);
                     if (profile) {
                         (selected_bookmark as Bookmark).connect_profile = id;
                         save_bookmark(selected_bookmark);

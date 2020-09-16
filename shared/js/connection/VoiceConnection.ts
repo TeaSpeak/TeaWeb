@@ -11,7 +11,9 @@ export enum VoiceConnectionStatus {
     Connecting,
     Connected,
     Disconnecting,
-    Disconnected
+    Disconnected,
+
+    Failed
 }
 
 export interface VoiceConnectionEvents {
@@ -55,6 +57,7 @@ export abstract class AbstractVoiceConnection {
     }
 
     abstract getConnectionState() : VoiceConnectionStatus;
+    abstract getFailedMessage() : string;
 
     abstract encodingSupported(codec: number) : boolean;
     abstract decodingSupported(codec: number) : boolean;

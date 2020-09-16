@@ -2,7 +2,7 @@ import * as log from "./log";
 import {LogCategory} from "./log";
 import {guid} from "./crypto/uid";
 import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements/Modal";
-import {default_profile, find_profile} from "./profiles/ConnectionProfile";
+import {defaultConnectProfile, findConnectProfile} from "./profiles/ConnectionProfile";
 import {server_connections} from "./ui/frames/connection_handlers";
 import {spawnConnectModal} from "./ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
@@ -10,7 +10,7 @@ import {control_bar_instance} from "./ui/frames/control-bar";
 import {ConnectionHandler} from "./ConnectionHandler";
 
 export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
-    const profile = find_profile(mark.connect_profile) || default_profile();
+    const profile = findConnectProfile(mark.connect_profile) || defaultConnectProfile();
     if(profile.valid()) {
         const connection = (typeof(new_tab) !== "boolean" || !new_tab) ? server_connections.active_connection() : server_connections.spawn_server_connection();
         server_connections.set_active_connection(connection);
@@ -19,7 +19,7 @@ export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
             profile,
             true,
             {
-                nickname: mark.nickname === "Another TeaSpeak user" || !mark.nickname ? profile.connect_username() : mark.nickname,
+                nickname: mark.nickname === "Another TeaSpeak user" || !mark.nickname ? profile.connectUsername() : mark.nickname,
                 password: mark.server_properties.server_password_hash ? {
                     password: mark.server_properties.server_password_hash,
                     hashed: true

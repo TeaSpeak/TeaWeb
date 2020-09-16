@@ -3,7 +3,7 @@ import * as log from "../../log";
 import {LogCategory} from "../../log";
 import * as loader from "tc-loader";
 import {createModal} from "../../ui/elements/Modal";
-import {ConnectionProfile, default_profile, find_profile, profiles} from "../../profiles/ConnectionProfile";
+import {ConnectionProfile, defaultConnectProfile, findConnectProfile, availableConnectProfiles} from "../../profiles/ConnectionProfile";
 import {KeyCode} from "../../PPTListener";
 import * as i18nc from "../../i18n/country";
 import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
@@ -208,18 +208,18 @@ export function spawnConnectModal(options: {
 
         /* Connect Profiles */
         {
-            for (const profile of profiles()) {
+            for (const profile of availableConnectProfiles()) {
                 input_profile.append(
-                    $.spawn("option").text(profile.profile_name).val(profile.id)
+                    $.spawn("option").text(profile.profileName).val(profile.id)
                 );
             }
 
             input_profile.on('change', event => {
-                selected_profile = find_profile(input_profile.val() as string) || default_profile();
+                selected_profile = findConnectProfile(input_profile.val() as string) || defaultConnectProfile();
                 {
                     settings.changeGlobal(Settings.KEY_CONNECT_USERNAME, undefined);
                     input_nickname
-                        .attr('placeholder', selected_profile.connect_username() || "Another TeaSpeak user")
+                        .attr('placeholder', selected_profile.connectUsername() || "Another TeaSpeak user")
                         .val("");
                 }
 

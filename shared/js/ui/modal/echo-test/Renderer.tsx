@@ -20,11 +20,23 @@ const VoiceStateOverlay = () => {
         events.fire("query_voice_connection_state");
         return "loading";
     });
+    const [message, setMessage] = useState(undefined);
 
-    events.reactUse("notify_voice_connection_state", event => setState(event.state));
+    events.reactUse("notify_voice_connection_state", event => {
+        setState(event.state);
+        setMessage(event.message);
+    });
 
-    let inner, shown = true;
+    let inner, shown = true, error = false;
     switch (state) {
+        case "failed":
+            error = true;
+            inner = <a key={state}>
+                <Translatable>Voice connection establishment has been failed:</Translatable><br />
+                {message}
+            </a>;
+            break;
+
         case "disconnected":
             inner = <a key={state}><Translatable>Voice connection has been disconnected.</Translatable></a>;
             break;
@@ -57,7 +69,7 @@ const VoiceStateOverlay = () => {
     }
 
     return (
-        <div className={cssStyle.overlay + " " + (shown ? cssStyle.shown : "")}>
+        <div className={cssStyle.overlay + " " + (shown ? cssStyle.shown : "") + " " + (error ? cssStyle.error : "")}>
             {inner}
         </div>
     );

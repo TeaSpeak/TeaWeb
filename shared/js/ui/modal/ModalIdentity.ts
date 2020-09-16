@@ -52,7 +52,7 @@ export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: 
                 const threads = parseInt(input_threads.val() as string);
                 const target_level = parseInt(input_target_level.val() as string);
                 if (target_level == 0) {
-                    identity.improve_level(-1, threads, () => active, current_level => {
+                    identity.improveLevelNative(-1, threads, () => active, current_level => {
                         input_current_level.val(current_level);
                     }, hash_rate => {
                         input_hash_rate.val(hash_rate);
@@ -63,7 +63,7 @@ export function spawnTeamSpeakIdentityImprove(identity: TeaSpeakIdentity, name: 
                             button_start_stop.trigger('click');
                     });
                 } else {
-                    identity.improve_level(target_level, threads, () => active, current_level => {
+                    identity.improveLevelNative(target_level, threads, () => active, current_level => {
                         input_current_level.val(current_level);
                     }, hash_rate => {
                         input_hash_rate.val(hash_rate);

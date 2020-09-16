@@ -1,4 +1,6 @@
 import "webrtc-adapter";
+import "webcrypto-liner";
+
 import "./index.scss";
 import "./FileTransfer";
 

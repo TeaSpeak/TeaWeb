@@ -3,7 +3,8 @@ export type VoiceConnectionState =
     | "connected"
     | "disconnected"
     | "unsupported-client"
-    | "unsupported-server";
+    | "unsupported-server"
+    | "failed";
 export type TestState =
     { state: "initializing" | "running" | "stopped" | "microphone-invalid" | "unsupported" }
     | { state: "start-failed", error: string };
@@ -29,7 +30,8 @@ export interface EchoTestEvents {
         phase: "testing" | "troubleshooting"
     },
     notify_voice_connection_state: {
-        state: VoiceConnectionState
+        state: VoiceConnectionState,
+        message?: string
     },
     notify_test_state: {
         state: TestState

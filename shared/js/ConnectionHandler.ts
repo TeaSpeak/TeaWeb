@@ -781,11 +781,15 @@ export class ConnectionHandler {
         if(currentInput) {
             if(shouldRecord) {
                 if(this.getInputHardwareState() !== InputHardwareState.START_FAILED) {
-                    this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {});
+                    this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {
+                        this.event_registry.fire("notify_state_updated", { state: "microphone" });
+                    });
                 }
             } else {
                 currentInput.stop().catch(error => {
                     logWarn(LogCategory.AUDIO, tr("Failed to stop the microphone input recorder: %o"), error);
+                }).then(() => {
+                    this.event_registry.fire("notify_state_updated", { state: "microphone" });
                 });
             }
         }
@@ -888,7 +892,7 @@ export class ConnectionHandler {
     reconnect_properties(profile?: ConnectionProfile) : ConnectParameters {
         const name = (this.getClient() ? this.getClient().clientNickName() : "") ||
                         (this.serverConnection && this.serverConnection.handshake_handler() ? this.serverConnection.handshake_handler().parameters.nickname : "") ||
-                        StaticSettings.instance.static(Settings.KEY_CONNECT_USERNAME, profile ? profile.default_username : undefined) ||
+                        StaticSettings.instance.static(Settings.KEY_CONNECT_USERNAME, profile ? profile.defaultUsername : undefined) ||
                         "Another TeaSpeak user";
         const channel = (this.getClient() && this.getClient().currentChannel() ? this.getClient().currentChannel().channelId : 0) ||
                         (this.serverConnection && this.serverConnection.handshake_handler() ? (this.serverConnection.handshake_handler().parameters.channel || {} as any).target : "");
@@ -1048,6 +1052,7 @@ export class ConnectionHandler {
         this.client_status.input_muted = muted;
         this.sound.play(muted ? Sound.MICROPHONE_MUTED : Sound.MICROPHONE_ACTIVATED);
         this.update_voice_status();
+        this.event_registry.fire("notify_state_updated", { state: "microphone" });
     }
     toggleMicrophone() { this.setMicrophoneMuted(!this.isMicrophoneMuted()); }
 
@@ -1058,6 +1063,7 @@ export class ConnectionHandler {
         if(this.client_status.output_muted === muted) return;
         if(muted) this.sound.play(Sound.SOUND_MUTED); /* play the sound *before* we're setting the muted state */
         this.client_status.output_muted = muted;
+        this.event_registry.fire("notify_state_updated", { state: "speaker" });
         if(!muted) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
         this.update_voice_status();
     }

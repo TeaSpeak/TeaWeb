@@ -45,6 +45,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
     private readonly serverConnectionStateListener;
     private connectionType: VoiceEncodeType = VoiceEncodeType.NATIVE_ENCODE;
     private connectionState: VoiceConnectionStatus;
+    private failedConnectionMessage: string;
 
     private localAudioStarted = false;
     private connectionLostModalOpen = false;
@@ -65,6 +66,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     private encoderCodec: number = 5;
 
+    private lastConnectAttempt: number = 0;
+
     constructor(connection: ServerConnection) {
         super(connection);
 
@@ -83,6 +86,10 @@ export class VoiceConnection extends AbstractVoiceConnection {
         return this.connectionState;
     }
 
+    getFailedMessage(): string {
+        return this.failedConnectionMessage;
+    }
+
     destroy() {
         this.connection.events.off(this.serverConnectionStateListener);
         this.dropVoiceBridge();
@@ -96,6 +103,10 @@ export class VoiceConnection extends AbstractVoiceConnection {
             this.currentAudioSource = undefined;
         });
         this.events.destroy();
+    }
+
+    reset() {
+        this.dropVoiceBridge();
     }
 
     async acquireVoiceRecorder(recorder: RecorderProfile | undefined, enforce?: boolean) {
@@ -154,12 +165,14 @@ export class VoiceConnection extends AbstractVoiceConnection {
             return;
         }
 
-        if(this.connection.getConnectionState() !== ConnectionState.CONNECTED)
+        if(this.connection.getConnectionState() !== ConnectionState.CONNECTED) {
             return;
+        }
 
+        this.lastConnectAttempt = Date.now();
         this.connectAttemptCounter++;
         if(this.voiceBridge) {
-            this.voiceBridge.callback_disconnect = undefined;
+            this.voiceBridge.callbackDisconnect = undefined;
             this.voiceBridge.disconnect();
         }
 
@@ -172,7 +185,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 request: request
             }, payload)))
         };
-        this.voiceBridge.callback_disconnect = () => {
+        this.voiceBridge.callbackDisconnect = () => {
             this.connection.client.log.log(EventType.CONNECTION_VOICE_DROPPED, { });
             if(!this.connectionLostModalOpen) {
                 this.connectionLostModalOpen = true;
@@ -181,13 +194,14 @@ export class VoiceConnection extends AbstractVoiceConnection {
                 modal.open();
             }
             logInfo(LogCategory.WEBRTC, tr("Lost voice connection to target server. Trying to reconnect."));
-            this.startVoiceBridge();
+            this.executeVoiceBridgeReconnect();
         }
 
         this.connection.client.log.log(EventType.CONNECTION_VOICE_CONNECT, { attemptCount: this.connectAttemptCounter });
         this.setConnectionState(VoiceConnectionStatus.Connecting);
         this.voiceBridge.connect().then(result => {
             if(result.type === "success") {
+                this.lastConnectAttempt = 0;
                 this.connectAttemptCounter = 0;
 
                 this.connection.client.log.log(EventType.CONNECTION_VOICE_CONNECT_SUCCEEDED, { });
@@ -204,23 +218,32 @@ export class VoiceConnection extends AbstractVoiceConnection {
             } else if(result.type === "canceled") {
                 /* we've to do nothing here */
             } else if(result.type === "failed") {
-                logWarn(LogCategory.VOICE, tr("Failed to setup voice bridge: %s. Reconnect: %o"), result.message, result.allowReconnect);
+                let doReconnect = result.allowReconnect && this.connectAttemptCounter < 5;
+                logWarn(LogCategory.VOICE, tr("Failed to setup voice bridge: %s. Reconnect: %o"), result.message, doReconnect);
 
                 this.connection.client.log.log(EventType.CONNECTION_VOICE_CONNECT_FAILED, {
                     reason: result.message,
-                    reconnect_delay: result.allowReconnect ? 1 : 0
+                    reconnect_delay: doReconnect ? 1 : 0
                 });
 
-                if(result.allowReconnect) {
-                    this.startVoiceBridge();
+                if(doReconnect) {
+                    this.executeVoiceBridgeReconnect();
+                } else {
+                    this.failedConnectionMessage = result.message;
+                    this.setConnectionState(VoiceConnectionStatus.Failed);
                 }
             }
         });
     }
 
+    private executeVoiceBridgeReconnect() {
+        /* TODO: May some kind of incremental timeout? */
+        this.startVoiceBridge();
+    }
+
     private dropVoiceBridge() {
         if(this.voiceBridge) {
-            this.voiceBridge.callback_disconnect = undefined;
+            this.voiceBridge.callbackDisconnect = undefined;
             this.voiceBridge.disconnect();
             this.voiceBridge = undefined;
         }
@@ -296,6 +319,8 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(event.newState === ConnectionState.CONNECTED) {
             this.startVoiceBridge();
         } else {
+            this.connectAttemptCounter = 0;
+            this.lastConnectAttempt = 0;
             this.dropVoiceBridge();
         }
     }

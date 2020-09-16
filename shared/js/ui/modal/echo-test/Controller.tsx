@@ -114,6 +114,9 @@ function initializeController(connection: ConnectionHandler, events: Registry<Ec
                 events.fire("notify_voice_connection_state", {state: "unsupported-server"});
                 break;
 
+            case VoiceConnectionStatus.Failed:
+                events.fire("notify_voice_connection_state", {state: "failed", message: connection.getServerConnection().getVoiceConnection().getFailedMessage() });
+                break;
         }
     };
 

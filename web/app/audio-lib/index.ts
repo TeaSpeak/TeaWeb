@@ -17,14 +17,15 @@ export class AudioLibrary {
     private registeredClients: {[key: number]: AudioClient} = {};
 
     constructor() {
-        this.worker = new WorkerOwner(() => {
-            /*
-             * Attention don't use () => new Worker(...).
-             * This confuses the worker plugin and will not emit any modules
-             */
+        this.worker = new WorkerOwner(AudioLibrary.spawnNewWorker);
+    }
 
-            return new Worker("./worker/index.ts", { type: "module" });
-        });
+    private static spawnNewWorker() {
+        /*
+         * Attention don't use () => new Worker(...).
+         * This confuses the worker plugin and will not emit any modules
+         */
+        return new Worker("./worker/index.ts", { type: "module" });
     }
 
     async initialize() {

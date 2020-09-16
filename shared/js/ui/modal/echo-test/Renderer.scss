@@ -105,7 +105,7 @@
             pointer-events: none;
             opacity: 0;
 
-            background-color: #19191bcc;
+            background-color: #19191b;
 
             display: flex;
             flex-direction: column;
@@ -120,7 +120,12 @@
 
             &.shown {
                 pointer-events: all;
-                opacity: 1;
+                opacity: .87;
+            }
+
+            &.error {
+                opacity: .92;
+                color: #a10000;
             }
         }
     }

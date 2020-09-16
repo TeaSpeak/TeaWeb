@@ -1,13 +1,12 @@
 import * as loader from "tc-loader";
 import {settings, Settings} from "tc-shared/settings";
-import * as profiles from "tc-shared/profiles/ConnectionProfile";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
 import * as bipc from "./ipc/BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
 import {tra} from "./i18n/localize";
-import {ConnectionHandler} from "tc-shared/ConnectionHandler";
+import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
@@ -32,7 +31,6 @@ import {MenuEntryType, spawn_context_menu} from "tc-shared/ui/elements/ContextMe
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
 import {checkForUpdatedApp} from "tc-shared/update";
 import {setupJSRender} from "tc-shared/ui/jsrender";
-import ContextMenuEvent = JQuery.ContextMenuEvent;
 import "svg-sprites/client-icons";
 
 /* required import for init */
@@ -44,8 +42,10 @@ import "./connection/CommandHandler";
 import "./connection/ConnectionBase";
 import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "./video-viewer/Controller";
-
+import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
+import ContextMenuEvent = JQuery.ContextMenuEvent;
+import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 
 async function initialize() {
     try {
@@ -109,8 +109,6 @@ async function initialize_app() {
     });
     sound.set_master_volume(settings.global(Settings.KEY_SOUND_MASTER_SOUNDS) / 100);
 
-    await profiles.load();
-
     try {
         await ppt.initialize();
     } catch(error) {
@@ -120,57 +118,15 @@ async function initialize_app() {
     }
 }
 
-/*
-class TestProxy extends bipc.MethodProxy {
-    constructor(params: bipc.MethodProxyConnectParameters) {
-        super(bipc.get_handler(), params.channel_id && params.client_id ? params : undefined);
-
-        if(!this.is_slave()) {
-            this.register_method(this.add_slave);
-        }
-        if(!this.is_master()) {
-            this.register_method(this.say_hello);
-            this.register_method(this.add_master);
-        }
-    }
-
-    setup() {
-        super.setup();
-    }
-
-    protected on_connected() {
-        log.info(LogCategory.IPC, "Test proxy connected");
-    }
-
-    protected on_disconnected() {
-        log.info(LogCategory.IPC, "Test proxy disconnected");
-    }
-
-    private async say_hello() : Promise<void> {
-        log.info(LogCategory.IPC, "Hello World");
-    }
-
-    private async add_slave(a: number, b: number) : Promise<number> {
-        return a + b;
-    }
-
-    private async add_master(a: number, b: number) : Promise<number> {
-        return a * b;
-    }
-}
-interface Window {
-    proxy_instance: TestProxy & {url: () => string};
-}
-*/
-
 export function handle_connect_request(properties: ConnectRequestData, connection: ConnectionHandler) {
-    const profile_uuid = properties.profile || (profiles.default_profile() || {id: 'default'}).id;
-    const profile = profiles.find_profile(profile_uuid) || profiles.default_profile();
-    const username = properties.username || profile.connect_username();
+    const profile_uuid = properties.profile || (defaultConnectProfile() || { id: 'default' }).id;
+    const profile = findConnectProfile(profile_uuid) || defaultConnectProfile();
+    const username = properties.username || profile.connectUsername();
 
     const password = properties.password ? properties.password.value : "";
     const password_hashed = properties.password ? properties.password.hashed : false;
 
+    debugger;
     if(profile && profile.valid()) {
         connection.startConnection(properties.address, profile, true, {
             nickname: username,
@@ -192,21 +148,6 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
 }
 
 function main() {
-    /*
-    window.proxy_instance = new TestProxy({
-        client_id: settings.static_global<string>("proxy_client_id", undefined),
-        channel_id: settings.static_global<string>("proxy_channel_id", undefined)
-    }) as any;
-    if(window.proxy_instance.is_master()) {
-        window.proxy_instance.setup();
-        window.proxy_instance.url = () => {
-            const data = window.proxy_instance.generate_connect_parameters();
-            return "proxy_channel_id=" + data.channel_id + "&proxy_client_id=" + data.client_id;
-        };
-    }
-    */
-    //http://localhost:63343/Web-Client/index.php?_ijt=omcpmt8b9hnjlfguh8ajgrgolr&default_connect_url=true&default_connect_type=teamspeak&default_connect_url=localhost%3A9987&disableUnloadDialog=1&loader_ignore_age=1
-
     /* initialize font */
     {
         const font = settings.static_global(Settings.KEY_FONT_SIZE, 14); //parseInt(getComputedStyle(document.body).fontSize)
@@ -268,32 +209,6 @@ function main() {
     server_connections.set_active_connection(server_connections.all_connections()[0]);
     checkForUpdatedApp();
 
-    /*
-    (window as any).test_upload = (message?: string) => {
-        message = message || "Hello World";
-
-        const connection = server_connections.active_connection();
-        connection.fileManager.upload_file({
-            size: message.length,
-            overwrite: true,
-            channel: connection.getClient().currentChannel(),
-            name: '/HelloWorld.txt',
-            path: ''
-        }).then(key => {
-            const upload = new RequestFileUpload(key);
-
-            const buffer = new Uint8Array(message.length);
-            {
-                for(let index = 0; index < message.length; index++)
-                    buffer[index] = message.charCodeAt(index);
-            }
-
-            upload.put_data(buffer).catch(error => {
-                console.error(error);
-            });
-        })
-    };
-    */
     (window as any).test_download = async () => {
         const connection = server_connections.active_connection();
         const download = connection.fileManager.initializeFileDownload({
@@ -387,9 +302,11 @@ function main() {
     //setTimeout(() => spawnPermissionEditorModal(server_connections.active_connection()), 3000);
     //setTimeout(() => spawnGroupCreate(server_connections.active_connection(), "server"), 3000);
 
-    if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
-        const modal = openModalNewcomer();
-        modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
+    if(server_connections.active_connection().getServerConnection().getConnectionState() === ConnectionState.UNCONNECTED) {
+        if(settings.static_global(Settings.KEY_USER_IS_NEW)) {
+            const modal = openModalNewcomer();
+            modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
+        }
     }
 
     //spawnVideoPopout(server_connections.active_connection(), "https://www.youtube.com/watch?v=9683D18fyvs");

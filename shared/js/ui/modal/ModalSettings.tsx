@@ -701,7 +701,7 @@ export namespace modal_settings {
             error: text
         });
         event_registry.on("create-profile", event => {
-            const profile = profiles.create_new_profile(event.name);
+            const profile = profiles.createConnectProfile(event.name);
             profiles.mark_need_save();
             event_registry.fire_async("create-profile-result", {
                 status: "success",
@@ -711,7 +711,7 @@ export namespace modal_settings {
         });
 
         event_registry.on("delete-profile", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("delete-profile-result", event.profile_id, tr("Unknown profile"));
@@ -723,15 +723,15 @@ export namespace modal_settings {
         });
 
         const build_profile_info = (profile: ConnectionProfile) => {
-            const forum_data = profile.selected_identity(IdentitifyType.TEAFORO) as TeaForumIdentity;
-            const teamspeak_data = profile.selected_identity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
-            const nickname_data = profile.selected_identity(IdentitifyType.NICKNAME) as NameIdentity;
+            const forum_data = profile.selectedIdentity(IdentitifyType.TEAFORO) as TeaForumIdentity;
+            const teamspeak_data = profile.selectedIdentity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
+            const nickname_data = profile.selectedIdentity(IdentitifyType.NICKNAME) as NameIdentity;
 
             return {
                 id: profile.id,
-                name: profile.profile_name,
-                nickname: profile.default_username,
-                identity_type: profile.selected_identity_type as any,
+                name: profile.profileName,
+                nickname: profile.defaultUsername,
+                identity_type: profile.selectedIdentityType as any,
                 identity_forum: !forum_data ? undefined : {
                     valid: forum_data.valid(),
                     fallback_name: forum_data.fallback_name()
@@ -749,12 +749,12 @@ export namespace modal_settings {
         event_registry.on("query-profile-list", event => {
             event_registry.fire_async("query-profile-list-result", {
                 status: "success",
-                profiles: profiles.profiles().map(e => build_profile_info(e))
+                profiles: profiles.availableConnectProfiles().map(e => build_profile_info(e))
             });
         });
 
         event_registry.on("query-profile", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-profile-result", event.profile_id, tr("Unknown profile"));
@@ -769,7 +769,7 @@ export namespace modal_settings {
         });
 
         event_registry.on("set-default-profile", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-default-profile-result", event.profile_id, tr("Unknown profile"));
@@ -785,14 +785,14 @@ export namespace modal_settings {
         });
 
         event_registry.on("set-profile-name", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-profile-name-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
-            profile.profile_name = event.name;
+            profile.profileName = event.name;
             profiles.mark_need_save();
             event_registry.fire_async("set-profile-name-result", {
                 name: event.name,
@@ -802,14 +802,14 @@ export namespace modal_settings {
         });
 
         event_registry.on("set-default-name", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-default-name-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
-            profile.default_username = event.name;
+            profile.defaultUsername = event.name;
             profiles.mark_need_save();
             event_registry.fire_async("set-default-name-result", {
                 name: event.name,
@@ -819,16 +819,16 @@ export namespace modal_settings {
         });
 
         event_registry.on("set-identity-name-name", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("set-identity-name-name-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
-            let identity = profile.selected_identity(IdentitifyType.NICKNAME) as NameIdentity;
+            let identity = profile.selectedIdentity(IdentitifyType.NICKNAME) as NameIdentity;
             if (!identity)
-                profile.set_identity(IdentitifyType.NICKNAME, identity = new NameIdentity());
+                profile.setIdentity(IdentitifyType.NICKNAME, identity = new NameIdentity());
             identity.set_name(event.name);
             profiles.mark_need_save();
 
@@ -840,7 +840,7 @@ export namespace modal_settings {
         });
 
         event_registry.on("query-profile-validity", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-profile-validity-result", event.profile_id, tr("Unknown profile"));
@@ -855,14 +855,14 @@ export namespace modal_settings {
         });
 
         event_registry.on("query-identity-teamspeak", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("query-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
-            const ts = profile.selected_identity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
+            const ts = profile.selectedIdentity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
             if (!ts) {
                 event_registry.fire_async("query-identity-teamspeak-result", {
                     status: "error",
@@ -884,26 +884,31 @@ export namespace modal_settings {
         });
 
         event_registry.on("select-identity-type", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            if(!event.identity_type) {
+                /* dummy event for UI init */
+                return;
+            }
+
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
-            profile.selected_identity_type = event.identity_type;
+            profile.selectedIdentityType = event.identity_type;
             profiles.mark_need_save();
         });
 
         event_registry.on("generate-identity-teamspeak", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 send_error("generate-identity-teamspeak-result", event.profile_id, tr("Unknown profile"));
                 return;
             }
 
-            TeaSpeakIdentity.generate_new().then(identity => {
-                profile.set_identity(IdentitifyType.TEAMSPEAK, identity);
+            TeaSpeakIdentity.generateNew().then(identity => {
+                profile.setIdentity(IdentitifyType.TEAMSPEAK, identity);
                 profiles.mark_need_save();
 
                 identity.level().then(level => {
@@ -924,14 +929,14 @@ export namespace modal_settings {
         });
 
         event_registry.on("import-identity-teamspeak", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
             spawnTeamSpeakIdentityImport(identity => {
-                profile.set_identity(IdentitifyType.TEAMSPEAK, identity);
+                profile.setIdentity(IdentitifyType.TEAMSPEAK, identity);
                 profiles.mark_need_save();
 
                 identity.level().catch(error => {
@@ -948,16 +953,16 @@ export namespace modal_settings {
         });
 
         event_registry.on("improve-identity-teamspeak-level", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
-            const identity = profile.selected_identity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
+            const identity = profile.selectedIdentity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
             if (!identity) return;
 
-            spawnTeamSpeakIdentityImprove(identity, profile.profile_name).close_listener.push(() => {
+            spawnTeamSpeakIdentityImprove(identity, profile.profileName).close_listener.push(() => {
                 profiles.mark_need_save();
 
                 identity.level().then(level => {
@@ -972,13 +977,13 @@ export namespace modal_settings {
         });
 
         event_registry.on("export-identity-teamspeak", event => {
-            const profile = profiles.find_profile(event.profile_id);
+            const profile = profiles.findConnectProfile(event.profile_id);
             if (!profile) {
                 log.warn(LogCategory.CLIENT, tr("Received profile event with unknown profile id (event: %s, id: %s)"), event.type, event.profile_id);
                 return;
             }
 
-            const identity = profile.selected_identity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
+            const identity = profile.selectedIdentity(IdentitifyType.TEAMSPEAK) as TeaSpeakIdentity;
             if (!identity) return;
 
             identity.export_ts(true).then(data => {

@@ -1,5 +1,5 @@
 import * as log from "../../log";
-import {LogCategory} from "../../log";
+import {LogCategory, logDebug, logTrace} from "../../log";
 import * as asn1 from "../../crypto/asn1";
 import * as sha from "../../crypto/sha";
 
@@ -217,6 +217,7 @@ export namespace CryptoHelper {
         };
     }
 }
+import arraybuffer_to_string = CryptoHelper.arraybuffer_to_string;
 
 export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
     identity: TeaSpeakIdentity;
@@ -234,7 +235,7 @@ export class TeaSpeakHandshakeHandler extends AbstractHandshakeIdentityHandler {
         this.connection.send_command("handshakebegin", {
             intention: 0,
             authentication_method: this.identity.type(),
-            publicKey: this.identity.public_key
+            publicKey: this.identity.publicKey
         }).catch(error => {
             log.error(LogCategory.IDENTITIES, tr("Failed to initialize TeamSpeak based handshake. Error: %o"), error);
 
@@ -433,7 +434,7 @@ class IdentityPOWWorker {
 }
 
 export class TeaSpeakIdentity implements Identity {
-    static async generate_new() : Promise<TeaSpeakIdentity> {
+    static async generateNew() : Promise<TeaSpeakIdentity> {
         let key: CryptoKeyPair;
         try {
             key = await crypto.subtle.generateKey({name:'ECDH', namedCurve: 'P-256'}, true, ["deriveKey"]);
@@ -501,7 +502,7 @@ export class TeaSpeakIdentity implements Identity {
     private_key: string; /* base64 representation of the private key */
     _name: string;
 
-    public_key: string; /* only set when initialized */
+    publicKey: string; /* only set when initialized */
 
     private _initialized: boolean;
     private _crypto_key: CryptoKey;
@@ -569,21 +570,25 @@ export class TeaSpeakIdentity implements Identity {
     }
 
     async level() : Promise<number> {
-        if(!this._initialized || !this.public_key)
+        if(!this._initialized || !this.publicKey)
             throw "not initialized";
 
-        const hash = new Uint8Array(await sha.sha1(this.public_key + this.hash_number));
+        const hash = new Uint8Array(await sha.sha1(this.publicKey + this.hash_number));
 
+        return TeaSpeakIdentity.calculateLevel(hash);
+    }
+
+    private static calculateLevel(buffer: Uint8Array) : number {
         let level = 0;
-        while(level < hash.byteLength && hash[level] == 0)
+        while(level < buffer.byteLength && buffer[level] === 0)
             level++;
 
-        if(level >= hash.byteLength) {
+        if(level >= buffer.byteLength) {
             level = 256;
         } else {
-            let byte = hash[level];
+            let byte = buffer[level];
             level <<= 3;
-            while((byte & 0x1) == 0) {
+            while((byte & 0x1) === 0) {
                 level++;
                 byte >>= 1;
             }
@@ -597,7 +602,7 @@ export class TeaSpeakIdentity implements Identity {
      * @param {string} b
      * @description b must be smaller (in bytes) then a
      */
-    private string_add(a: string, b: string) {
+    private static string_add(a: string, b: string) {
         const char_result: number[] = [];
         const char_a = [...a].reverse().map(e => e.charCodeAt(0));
         const char_b = [...b].reverse().map(e => e.charCodeAt(0));
@@ -628,29 +633,34 @@ export class TeaSpeakIdentity implements Identity {
         let active = true;
         setTimeout(() => active = false, time);
 
-        return await this.improve_level(-1, threads, () => active);
+        return await this.improveLevelNative(-1, threads, () => active);
     }
 
-    async improve_level(target: number, threads: number, active_callback: () => boolean, callback_level?: (current: number) => any, callback_status?: (hash_rate: number) => any) : Promise<Boolean> {
-        if(!this._initialized || !this.public_key)
+    async improveLevelNative(target: number, threads: number, active_callback: () => boolean, callback_level?: (current: number) => any, callback_status?: (hash_rate: number) => any) : Promise<Boolean> {
+        if(!this._initialized || !this.publicKey) {
             throw "not initialized";
-        if(target == -1) /* get the highest level possible */
+        }
+
+        /* get the highest level possible */
+        if(target == -1) {
             target = 0;
-        else if(target <= await this.level())
+        } else if(target <= await this.level()) {
             return true;
+        }
 
         const workers: IdentityPOWWorker[] = [];
 
         const iterations = 100000;
         let current_hash;
         const next_hash = () => {
-            if(!current_hash)
+            if(!current_hash) {
                 return (current_hash = this.hash_number);
+            }
 
             if(current_hash.length < iterations.toString().length) {
-                current_hash = this.string_add(iterations.toString(), current_hash);
+                current_hash = TeaSpeakIdentity.string_add(iterations.toString(), current_hash);
             } else {
-                current_hash = this.string_add(current_hash, iterations.toString());
+                current_hash = TeaSpeakIdentity.string_add(current_hash, iterations.toString());
             }
             return current_hash;
         };
@@ -661,7 +671,7 @@ export class TeaSpeakIdentity implements Identity {
                 for (let index = 0; index < threads; index++) {
                     const worker = new IdentityPOWWorker();
                     workers.push(worker);
-                    initialize_promise.push(worker.initialize(this.public_key));
+                    initialize_promise.push(worker.initialize(this.publicKey));
                 }
 
                 try {
@@ -778,6 +788,63 @@ export class TeaSpeakIdentity implements Identity {
         throw "this should never be reached";
     }
 
+    /* Improve the identity within the current thread */
+    async improveLevelJavascript(target: number, activeCallback: () => boolean) : Promise<number> {
+        const publicKey = str2ab8(this.publicKey);
+        const buffer = new Uint8Array(publicKey.byteLength + 20); /* Max 20 append digest (Appendix is a number in range of [0;2^64]) -> log10(2^64) */
+
+        buffer.set(new Uint8Array(publicKey));
+        buffer.set(new Uint8Array(str2ab8(this.hash_number)), publicKey.byteLength);
+
+        const kChar9 = '9'.charCodeAt(0);
+        const kChar0 = '0'.charCodeAt(0);
+
+        let numberIndex = publicKey.byteLength + this.hash_number.length;
+        let bufferView = buffer.subarray(0, numberIndex);
+
+        const incrementCounter = () => {
+            let currentIndex = numberIndex - 1;
+            while(currentIndex > publicKey.byteLength && buffer[currentIndex] == kChar9) {
+                buffer[currentIndex--] = kChar0;
+            }
+
+            if(currentIndex > publicKey.byteLength) {
+                buffer[currentIndex]++;
+            } else {
+                /* yeah a new diget */
+                if(numberIndex >= buffer.byteLength) {
+                    throw "hash number got too big. use another identity";
+                }
+
+                buffer[numberIndex] = kChar0;
+                numberIndex++;
+                buffer[currentIndex] = '1'.charCodeAt(0);
+                bufferView = buffer.subarray(0, numberIndex);
+            }
+        };
+
+        let currentLevel = await this.level();
+        let iteration = 0;
+        const timeBegin = Date.now();
+
+        while(currentLevel < target) {
+            if((iteration++ % 1000) === 0 && !activeCallback()) {
+                break;
+            }
+
+            incrementCounter();
+            const newLevel = await TeaSpeakIdentity.calculateLevel(new Uint8Array(await crypto.subtle.digest("SHA-1", bufferView)));
+            if(newLevel > currentLevel) {
+                this.hash_number = arraybuffer_to_string(buffer.subarray(publicKey.byteLength, numberIndex));
+                logTrace(LogCategory.IDENTITIES, tr("Found a new identity level at %s. Previous level %d now %d (%d hashes/second)"),
+                    this.hash_number, currentLevel, newLevel, iteration * 1000 / (Date.now() - timeBegin));
+                currentLevel = newLevel;
+            }
+        }
+
+        return currentLevel;
+    }
+
     private async initialize() {
         if(!this.private_key)
             throw "Invalid private key";
@@ -806,8 +873,8 @@ export class TeaSpeakIdentity implements Identity {
         }
 
         try {
-            this.public_key = await CryptoHelper.export_ecc_key(this._crypto_key, true);
-            this._unique_id = base64_encode_ab(await sha.sha1(this.public_key));
+            this.publicKey = await CryptoHelper.export_ecc_key(this._crypto_key, true);
+            this._unique_id = base64_encode_ab(await sha.sha1(this.publicKey));
         } catch(error) {
             log.error(LogCategory.IDENTITIES, error);
             throw "failed to calculate unique id";

@@ -107,6 +107,7 @@
     "resize-observer-polyfill": "^1.5.1",
     "simplebar-react": "^2.2.0",
     "twemoji": "^13.0.0",
+    "webcrypto-liner": "^1.2.3",
     "webrtc-adapter": "^7.5.1"
   }
 }

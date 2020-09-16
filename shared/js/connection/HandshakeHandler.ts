@@ -32,17 +32,18 @@ export class HandshakeHandler {
     }
 
     initialize() {
-        this.handshake_handler = this.profile.spawn_identity_handshake_handler(this.connection);
+        this.handshake_handler = this.profile.spawnIdentityHandshakeHandler(this.connection);
         if(!this.handshake_handler) {
             this.handshake_failed("failed to create identity handler");
             return;
         }
 
         this.handshake_handler.register_callback((flag, message) => {
-            if(flag)
+            if(flag) {
                 this.handshake_finished();
-            else
+            } else {
                 this.handshake_failed(message);
+            }
         });
     }
 
@@ -55,7 +56,7 @@ export class HandshakeHandler {
     }
 
     on_teamspeak() {
-        const type = this.profile.selected_type();
+        const type = this.profile.selectedType();
         if(type == IdentitifyType.TEAMSPEAK)
             this.handshake_finished();
         else {
@@ -124,8 +125,8 @@ export class HandshakeHandler {
             data.client_platform = (os_mapping[os.platform()] || os.platform());
         }
 
-        if(this.profile.selected_type() === IdentitifyType.TEAMSPEAK)
-            data["client_key_offset"] = (this.profile.selected_identity() as TeaSpeakIdentity).hash_number;
+        if(this.profile.selectedType() === IdentitifyType.TEAMSPEAK)
+            data["client_key_offset"] = (this.profile.selectedIdentity() as TeaSpeakIdentity).hash_number;
 
         this.connection.send_command("clientinit", data).catch(error => {
             if(error instanceof CommandResult) {

@@ -31,7 +31,7 @@ export abstract class VoiceBridge {
     callback_incoming_voice: (packet: VoicePacket) => void;
     callback_incoming_whisper: (packet: VoiceWhisperPacket) => void;
 
-    callback_disconnect: () => void;
+    callbackDisconnect: () => void;
 
     setMuted(flag: boolean) {
         this.muted = flag;

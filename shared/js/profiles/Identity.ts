@@ -81,9 +81,9 @@ export class HandshakeCommandHandler<T extends AbstractHandshakeIdentityHandler>
 
 
     handle_command(command: ServerCommand): boolean {
-        if($.isFunction(this[command.command]))
+        if(typeof this[command.command] === "function") {
             this[command.command](command.arguments);
-        else if(command.command == "error") {
+        } else if(command.command == "error") {
             return false;
         } else {
             console.warn(tr("Received unknown command while handshaking (%o)"), command);
