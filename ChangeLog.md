@@ -1,4 +1,10 @@
 # Changelog:
+* **07.09.20**
+    - Fixed the web client for safari
+    
+* **05.09.20**
+    - Smoother voice playback start (web client only)
+    
 * **16.09.20**
     - Fixed the control bar microphone and speaker buttons
     - Improved the default identity generation (no web worker required now)
