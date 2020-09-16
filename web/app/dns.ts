@@ -1,7 +1,7 @@
-import {ServerAddress} from "tc-shared/ui/server";
 import {AddressTarget, default_options, ResolveOptions} from "tc-shared/dns";
 import {LogCategory} from "tc-shared/log";
 import * as log from "tc-shared/log";
+import {ServerAddress} from "tc-shared/tree/Server";
 
 export enum RRType {
     A = 1, // a host address,[RFC1035],

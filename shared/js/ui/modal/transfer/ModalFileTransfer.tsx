@@ -6,7 +6,7 @@ import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {FileBrowser, NavigationBar} from "tc-shared/ui/modal/transfer/FileBrowser";
 import {TransferInfo, TransferInfoEvents} from "tc-shared/ui/modal/transfer/TransferInfo";
 import {initializeRemoteFileBrowserController} from "tc-shared/ui/modal/transfer/RemoteFileBrowserController";
-import {ChannelEntry} from "tc-shared/ui/channel";
+import {ChannelEntry} from "tc-shared/tree/Channel";
 import {initializeTransferInfoController} from "tc-shared/ui/modal/transfer/TransferInfoController";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";

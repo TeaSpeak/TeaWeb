@@ -137,4 +137,8 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
     }
 
     stopWhisper() { }
+
+    getFailedMessage(): string {
+        return "";
+    }
 }

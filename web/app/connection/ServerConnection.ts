@@ -5,7 +5,6 @@ import {
     ConnectionStateListener,
 } from "tc-shared/connection/ConnectionBase";
 import {ConnectionHandler, ConnectionState, DisconnectReason} from "tc-shared/ConnectionHandler";
-import {ServerAddress} from "tc-shared/ui/server";
 import {HandshakeHandler} from "tc-shared/connection/HandshakeHandler";
 import {ConnectionCommandHandler, ServerConnectionCommandBoss} from "tc-shared/connection/CommandHandler";
 import {CommandResult} from "tc-shared/connection/ServerConnectionDeclaration";
@@ -20,6 +19,7 @@ import {WrappedWebSocket} from "tc-backend/web/connection/WrappedWebSocket";
 import {AbstractVoiceConnection} from "tc-shared/connection/VoiceConnection";
 import {DummyVoiceConnection} from "tc-shared/connection/DummyVoiceConnection";
 import {parseCommand} from "tc-backend/web/connection/CommandParser";
+import {ServerAddress} from "tc-shared/tree/Server";
 
 class ReturnListener<T> {
     resolve: (value?: T | PromiseLike<T>) => void;
