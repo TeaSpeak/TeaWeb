@@ -1,4 +1,13 @@
 # Changelog:
+* **17.09.20**
+    - Added a settings registry and some minor bug fixing
+    
+* **10.09.20**
+    - Implemented an echo test
+    - Added basic whisper support
+    - Removed the emscripten part and use rust now for the audio worker
+    - Heavily improved the audio decoding and playback part
+    
 * **07.09.20**
     - Fixed the web client for safari
     
