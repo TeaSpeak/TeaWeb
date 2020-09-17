@@ -4,10 +4,10 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "./events";
 
-type ConfigValueTypes = boolean | number | string | object;
-type ConfigValueTypeNames = "boolean" | "number" | "string" | "object";
+export type ConfigValueTypes = boolean | number | string | object;
+export type ConfigValueTypeNames = "boolean" | "number" | "string" | "object";
 
-type ValueTypeMapping<T> = T extends boolean ? "boolean" :
+export type ValueTypeMapping<T> = T extends boolean ? "boolean" :
                            T extends number ? "number" :
                            T extends string ? "string" :
                            T extends object ? "object" : never;
