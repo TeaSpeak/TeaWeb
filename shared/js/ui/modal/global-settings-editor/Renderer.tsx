@@ -22,8 +22,8 @@ const SettingEditor = () => {
 
     const [ isApplying, setApplying ] = useState(false);
     const [ currentValue, setCurrentValue ] = useState<string>();
-    const [ currentSetting, setCurrentSetting ] = useState<Setting | "not-found">(false);
-    const currentSettingKey = useRef();
+    const [ currentSetting, setCurrentSetting ] = useState<Setting | "not-found">(undefined);
+    const currentSettingKey = useRef<string>();
 
     events.reactUse("notify_selected_setting", event => {
         if(event.setting === currentSettingKey.current) {

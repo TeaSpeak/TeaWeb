@@ -1,10 +1,12 @@
+import {ConfigValueTypeNames} from "tc-shared/settings";
+
 export interface Setting {
     key: string;
 
     type: ConfigValueTypeNames;
 
     description: string | undefined;
-    defaultValue: string | undefined;
+    defaultValue: any | undefined;
 }
 
 export interface ModalGlobalSettingsEditorEvents {

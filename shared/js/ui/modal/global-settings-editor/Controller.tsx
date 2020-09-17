@@ -2,7 +2,7 @@ import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import {ModalGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Renderer";
 import {Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
-import {settings, Settings, SettingsKey} from "tc-shared/settings";
+import {ConfigValueTypes, settings, Settings, SettingsKey} from "tc-shared/settings";
 
 export function spawnGlobalSettingsEditor() {
     const events = new Registry<ModalGlobalSettingsEditorEvents>();
@@ -41,7 +41,7 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
         const setting = Settings.KEYS.map(setting => Settings[setting] as SettingsKey<ConfigValueTypes>).find(e => e.key === event.setting);
         if(typeof setting === "undefined") {
             events.fire("notify_setting", {
-                key: event.setting,
+                setting: event.setting,
                 status: "not-found"
             });
             return;
@@ -56,7 +56,7 @@ function initializeController(events: Registry<ModalGlobalSettingsEditorEvents>)
                 type: setting.valueType,
                 defaultValue: setting.defaultValue
             },
-            value: settings.global(setting)
+            value: settings.global(setting, undefined)
         });
     });
 
