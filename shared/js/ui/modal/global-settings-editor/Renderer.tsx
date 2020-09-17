@@ -89,9 +89,9 @@ const SettingEditor = () => {
                 <Translatable>Value</Translatable>
                 <FlatInputField
                     className={cssStyle.input}
-                    value={isApplying ? "" : currentValue ? currentValue : " "}
+                    value={isApplying ? "" : typeof currentValue !== "undefined" ? currentValue + "" : ""}
                     editable={!isApplying}
-                    placeholder={isApplying ? tr("applying...") : tr("setting unset")}
+                    placeholder={isApplying ? tr("applying...") : tr("unset")}
                     onChange={text => {
                         setCurrentValue(text);
                     }}

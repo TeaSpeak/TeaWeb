@@ -7,7 +7,8 @@ import {
 
 declare global {
     interface Window {
-        detectedBrowser: BrowserInfo
+        detectedBrowser: BrowserInfo,
+        removeLoaderContextMenuHook: () => void
     }
 }
 
@@ -43,6 +44,9 @@ if(__build.target === "web") {
 }
 
 /* directly disable all context menus */
-if(!location.search.match(/(.*[?&]|^)disableGlobalContextMenu=1($|&.*)/)) {
-    document.addEventListener("contextmenu", event => event.preventDefault());
+if(!location.search.match(/(.*[?&]|^)disableGlobalContextMenu=0($|&.*)/)) {
+    const callback = event => event.preventDefault();
+
+    document.addEventListener("contextmenu", callback);
+    window.removeLoaderContextMenuHook = () => document.removeEventListener("contextmenu", callback);
 }

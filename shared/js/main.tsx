@@ -161,8 +161,9 @@ function main() {
 
     /* context menu prevent */
     $(document).on('contextmenu', (event: ContextMenuEvent) => {
-        if(event.isDefaultPrevented())
+        if(event.isDefaultPrevented()) {
             return;
+        }
 
         if(event.target instanceof HTMLInputElement) {
             if((!!event.target.value || __build.target === "client") && !event.target.disabled && !event.target.readOnly && event.target.type !== "number") {
@@ -189,9 +190,11 @@ function main() {
             return;
         }
 
-        if(!settings.static_global(Settings.KEY_DISABLE_GLOBAL_CONTEXT_MENU))
+        if(settings.static_global(Settings.KEY_DISABLE_GLOBAL_CONTEXT_MENU)) {
             event.preventDefault();
+        }
     });
+    window.removeLoaderContextMenuHook();
 
     top_menu.initialize();
 

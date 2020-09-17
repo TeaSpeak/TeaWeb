@@ -1,5 +1,5 @@
 import * as log from "./log";
-import {LogCategory} from "./log";
+import {LogCategory, logTrace} from "./log";
 import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {Registry} from "./events";
@@ -196,8 +196,8 @@ export class Settings extends StaticSettings {
 
     static readonly KEY_DISABLE_GLOBAL_CONTEXT_MENU: ValuedSettingsKey<boolean> = {
         key: 'disableGlobalContextMenu',
-        description: 'Disable the general context menu prevention',
-        defaultValue: false,
+        description: 'Disable the general context menu',
+        defaultValue: true,
         valueType: "boolean",
     };
 
@@ -672,6 +672,8 @@ export class Settings extends StaticSettings {
             setting: key.key,
             newCastedValue: value
         });
+        logTrace(LogCategory.GENERAL, tr("Changing global setting %s to %o"), key.key, value);
+
         if(Settings.UPDATE_DIRECT)
             this.save();
     }
