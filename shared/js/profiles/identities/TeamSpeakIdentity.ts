@@ -1,5 +1,5 @@
 import * as log from "../../log";
-import {LogCategory, logDebug, logTrace} from "../../log";
+import {LogCategory, logTrace, logWarn} from "../../log";
 import * as asn1 from "../../crypto/asn1";
 import * as sha from "../../crypto/sha";
 
@@ -467,14 +467,22 @@ export class TeaSpeakIdentity implements Identity {
             let identity: string, name: string;
 
             for(const line of ts_string.split("\n")) {
-                if(line.startsWith("identity="))
+                if(line.startsWith("identity=")) {
                     identity = line.substr(9);
-                else if(line.startsWith("nickname="))
+                } else if(line.startsWith("nickname=")) {
                     name = line.substr(9);
+                }
             }
 
             if(!identity) throw "missing identity keyword";
-            identity = identity.match(/^"?([0-9]+V[0-9a-zA-Z+\/]+[=]+)"?$/)[1];
+
+            const match = identity.match(/^[" ]*([0-9]+V[0-9a-zA-Z+\/]+[=]+)[" \r]*$/);
+            if(!match) {
+                logWarn(LogCategory.GENERAL, tr("Identity string '%s' seems to be invalid"), identity);
+                throw "identity string seems to be in an invalid format";
+            }
+
+            identity = match[1];
             if(!identity) throw "invalid identity key value";
 
             const result = parse_string(identity);
@@ -491,7 +499,7 @@ export class TeaSpeakIdentity implements Identity {
             log.error(LogCategory.IDENTITIES, tr("Failed to decode given base64 data (%s)"), data);
             throw "failed to base data (base64 decode failed)";
         }
-        const key64 = await CryptoHelper.decrypt_ts_identity(new Uint8Array(arrayBufferBase64(data)));
+        const key64 = await CryptoHelper.decrypt_ts_identity(buffer);
 
         const identity = new TeaSpeakIdentity(key64, hash, name, false);
         await identity.initialize();
