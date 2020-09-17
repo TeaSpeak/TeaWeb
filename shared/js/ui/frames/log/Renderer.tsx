@@ -54,8 +54,16 @@ export const ServerLogRenderer = (props: { events: Registry<ServerLogUIEvents>, 
     });
 
     props.events.reactUse("notify_log_add", event => {
-        if(logs === "loading")
+        if(logs === "loading") {
             return;
+        }
+
+        if(__build.mode === "debug") {
+            const index = logs.findIndex(e => e.uniqueId === event.event.uniqueId);
+            if(index !== -1) {
+                debugger;
+            }
+        }
 
         logs.push(event.event);
         logs.splice(0, Math.max(0, logs.length - 100));

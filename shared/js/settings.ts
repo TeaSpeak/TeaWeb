@@ -439,7 +439,7 @@ export class Settings extends StaticSettings {
     static readonly KEY_FONT_SIZE: ValuedSettingsKey<number> = {
         key: "font_size",
         valueType: "number",
-        defaultValue: 14
+        defaultValue: 14  //parseInt(getComputedStyle(document.body).fontSize)
     };
 
     static readonly KEY_ICON_SIZE: ValuedSettingsKey<number> = {

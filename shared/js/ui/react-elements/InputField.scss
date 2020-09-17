@@ -157,15 +157,15 @@ html:root {
 .containerFlat {
     position: relative;
 
-    padding-top: 1.75rem; /* the label above (might be floating) */
-    margin-bottom: 1rem; /* for invalid label/help label */
+    padding-top: 1.75em; /* the label above (might be floating) */
+    margin-bottom: 1em; /* for invalid label/help label */
 
     label {
         color: #999999;
 
-        top: 1rem;
+        top: 1em;
         left: 0;
-        font-size: .75rem;
+        font-size: .75em;
 
         position: absolute;
         pointer-events: none;
@@ -182,13 +182,13 @@ html:root {
         &.type-floating {
             will-change: left, top, contents;
             color: #999999;
-            top: 2.42rem;
-            font-size: 1rem;
+            top: 2.42em;
+            font-size: 1em;
         }
 
         &.type-static {
-            top: 1rem;
-            font-size: .75rem;
+            top: 1em;
+            font-size: .75em;
         }
 
         @include transition(color $button_hover_animation_time ease-in-out, top $button_hover_animation_time ease-in-out, font-size $button_hover_animation_time ease-in-out);
@@ -199,8 +199,8 @@ html:root {
             color: #3c74a2;
 
             &.type-floating {
-                font-size: .75rem;
-                top: 1rem;
+                font-size: .75em;
+                top: 1em;
             }
         }
     }
@@ -211,7 +211,7 @@ html:root {
         height: 2.25em;
         width: 100%;
 
-        font-size: 1rem;
+        font-size: 1em;
         line-height: 1.5;
 
         color: #cdd1d0;
@@ -226,7 +226,7 @@ html:root {
         box-shadow: none;
 
         transition: background 0s ease-out;
-        padding: .4375rem 0;
+        padding: .4375em 0;
 
         @include transition(all .15s ease-in-out);
 
@@ -248,7 +248,7 @@ html:root {
         position: absolute;
         opacity: 0;
         width: 100%;
-        margin-top: .25rem;
+        margin-top: .25em;
         font-size: 80%;
         color: #f44336;
 
@@ -274,7 +274,7 @@ html:root {
         position: absolute;
         opacity: 0;
         width: 100%;
-        margin-top: .25rem;
+        margin-top: .25em;
 
         font-size: .75em;
 

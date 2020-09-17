@@ -103,17 +103,16 @@ function settings_general_application(container: JQuery, modal: Modal) {
         const current_size = parseInt(getComputedStyle(document.body).fontSize); //settings.static_global(Settings.KEY_FONT_SIZE, 12);
         const select = container.find(".option-font-size");
 
-        if (select.find("option[value='" + current_size + "']").length)
+        if (select.find("option[value='" + current_size + "']").length) {
             select.find("option[value='" + current_size + "']").prop("selected", true);
-        else
+        } else {
             select.find("option[value='-1']").prop("selected", true);
+        }
 
         select.on('change', event => {
             const value = parseInt(select.val() as string);
             settings.changeGlobal(Settings.KEY_FONT_SIZE, value);
             console.log("Changed font size to %dpx", value);
-
-            $(document.body).css("font-size", value + "px");
         });
     }
 

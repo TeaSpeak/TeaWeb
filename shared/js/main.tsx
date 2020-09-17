@@ -46,6 +46,7 @@ import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
+import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -151,8 +152,11 @@ export function handle_connect_request(properties: ConnectRequestData, connectio
 function main() {
     /* initialize font */
     {
-        const font = settings.static_global(Settings.KEY_FONT_SIZE, 14); //parseInt(getComputedStyle(document.body).fontSize)
+        const font = settings.static_global(Settings.KEY_FONT_SIZE);
         $(document.body).css("font-size", font + "px");
+        settings.globalChangeListener(Settings.KEY_FONT_SIZE, value => {
+            $(document.body).css("font-size", value + "px");
+        })
     }
 
     /* context menu prevent */
@@ -308,6 +312,7 @@ function main() {
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
 
+    spawnGlobalSettingsEditor();
     //spawnVideoPopout(server_connections.active_connection(), "https://www.youtube.com/watch?v=9683D18fyvs");
 }
 

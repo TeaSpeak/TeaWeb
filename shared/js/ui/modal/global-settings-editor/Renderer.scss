@@ -1,0 +1,198 @@
+@import "../../../../css/static/mixin";
+@import "../../../../css/static/properties";
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: stretch;
+
+    flex-grow: 1;
+    flex-shrink: 1;
+
+    padding: .5em;
+
+    width: 50em;
+    max-width: 50em;
+    min-width: 20em;
+
+    height: 30em;
+
+    @include user-select(none);
+
+    .subContainer {
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        /* allocate as much space as we can get */
+        width: 100vw;
+
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        .header {
+            flex-grow: 0;
+            flex-shrink: 0;
+
+            font-weight: bold;
+            color: #e0e0e0;
+
+            @include text-dotdotdot();
+        }
+
+        .body {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            min-height: 5em;
+        }
+
+        &.containerList {
+            max-width: 20em;
+            min-width: 6em;
+        }
+
+        &.containerEdit {
+            min-width: 10em;
+        }
+    }
+
+    .list {
+        flex-grow: 1;
+        flex-shrink: 1;
+
+        margin-right: 1em;
+        min-height: 6.5em;
+
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: stretch;
+
+        border: 1px #161616 solid;
+        border-radius: 0.2em;
+        background-color: #28292b;
+
+        .entries {
+            flex-grow: 1;
+            flex-shrink: 1;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: stretch;
+
+            overflow-x: hidden;
+            overflow-y: auto;
+
+            min-height: 3em;
+
+            @include chat-scrollbar-vertical();
+
+            .entry {
+                flex-grow: 0;
+                flex-shrink: 0;
+
+                padding-left: .5em;
+                padding-right: .5em;
+
+                display: flex;
+                flex-direction: row;
+                justify-content: stretch;
+
+                height: 1.5em;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #2c2d2f;
+                }
+
+                &.selected {
+                    background-color: #1a1a1b;
+                }
+            }
+        }
+
+        .filter {
+            border-top: 1px #161616 solid;
+
+            display: flex;
+            flex-direction: row;
+            justify-content: stretch;
+
+            .input {
+                flex-grow: 1;
+                flex-shrink: 1;
+
+                margin: 0;
+                padding: .5em 1em;
+
+                min-width: 3em;
+            }
+        }
+
+        .overlay {
+            position: absolute;
+
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+
+            z-index: 1;
+            background-color: #28292b;
+
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+
+            &.shown {
+                display: flex;
+            }
+
+            a {
+                text-align: center;
+                font-size: 1.2em;
+            }
+        }
+    }
+
+    .editor {
+        .info {
+            flex-shrink: 0;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+
+            margin-bottom: 1em;
+
+            .title {
+                text-transform: uppercase;
+                color: var(--modal-query-key);
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis
+            }
+
+            .value {
+                user-select: text;
+                @include text-dotdotdot();
+            }
+        }
+
+        .infoDescription {
+            .value {
+                white-space: pre-wrap!important;
+                height: 3.2em!important;
+            }
+        }
+
+        .infoValue {
+            .input {
+                padding: 0;
+                margin: 0;
+            }
+        }
+    }
+}

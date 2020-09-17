@@ -111,6 +111,8 @@ export class BoxedInputField extends React.Component<BoxedInputFieldProperties, 
 
 export interface FlatInputFieldProperties {
     defaultValue?: string;
+    value?: string;
+
     placeholder?: string;
 
     className?: string;
@@ -165,6 +167,7 @@ export class FlatInputField extends React.Component<FlatInputFieldProperties, Fl
         const disabled = typeof this.state.disabled === "boolean" ? this.state.disabled : typeof this.props.disabled === "boolean" ? this.props.disabled : false;
         const readOnly = typeof this.state.editable === "boolean" ? !this.state.editable : typeof this.props.editable === "boolean" ? !this.props.editable : false;
         const placeholder = typeof this.state.placeholder === "string" ? this.state.placeholder : typeof this.props.placeholder === "string" ? this.props.placeholder : undefined;
+
         return (
             <div className={cssStyle.containerFlat + " " + (this.state.isInvalid ? cssStyle.isInvalid : "") + " " + (this.state.filled ? cssStyle.isFilled : "") + " " + (this.props.className || "")}>
                 {this.props.label ?
@@ -174,6 +177,8 @@ export class FlatInputField extends React.Component<FlatInputFieldProperties, Fl
                         (this.props.labelFloatingClassName && this.state.filled ? this.props.labelFloatingClassName : "")}>{this.props.label}</label> : undefined}
                 <input
                     defaultValue={this.props.defaultValue}
+                    value={this.props.value}
+
                     type={"text"}
                     ref={this.refInput}
                     readOnly={readOnly}

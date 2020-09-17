@@ -6,6 +6,8 @@ export interface ClientGlobalControlEvents {
     action_open_window: {
         window:
             "settings" | /* use action_open_window_settings! */
+            "settings-registry" |
+            "css-variable-editor" |
             "bookmark-manage" |
             "query-manage" |
             "query-create" |

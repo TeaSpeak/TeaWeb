@@ -25,6 +25,7 @@ import {control_bar_instance} from "../../ui/frames/control-bar";
 import {icon_cache_loader, IconManager, LocalIcon} from "../../file/Icons";
 import {spawnPermissionEditorModal} from "../../ui/modal/permission/ModalPermissionEditor";
 import {spawnModalCssVariableEditor} from "../../ui/modal/css-editor/Controller";
+import {global_client_actions} from "tc-shared/events/GlobalEvents";
 
 export interface HRItem { }
 
@@ -523,11 +524,16 @@ export function initialize() {
         menu.append_hr();
 
         item = menu.append_item(tr("Modify CSS variables"));
-        item.click(() => spawnModalCssVariableEditor());
+        item.click(() => global_client_actions.fire("action_open_window", { window: "css-variable-editor" }));
+
+        item = menu.append_item(tr("Open Registry"));
+        item.click(() => global_client_actions.fire("action_open_window", { window: "settings-registry" }));
+
+        menu.append_hr();
 
         item = menu.append_item(tr("Settings"));
         item.icon("client-settings");
-        item.click(() => spawnSettingsModal());
+        item.click(() => global_client_actions.fire("action_open_window_settings"));
     }
 
     {

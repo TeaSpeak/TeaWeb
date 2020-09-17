@@ -4,7 +4,6 @@ import {Sound} from "../sound/Sounds";
 import {ConnectionHandler} from "../ConnectionHandler";
 import {server_connections} from "../ui/frames/connection_handlers";
 import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
-import {settings} from "../settings";
 import {spawnConnectModal} from "../ui/modal/ModalConnect";
 import PermissionType from "../permission/PermissionType";
 import {spawnQueryCreate} from "../ui/modal/ModalQuery";
@@ -14,6 +13,8 @@ import {CommandResult} from "../connection/ServerConnectionDeclaration";
 import {spawnSettingsModal} from "../ui/modal/ModalSettings";
 import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermissionEditor";
 import {tr} from "../i18n/localize";
+import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
+import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {
@@ -137,8 +138,16 @@ export function initialize(event_registry: Registry<ClientGlobalControlEvents>) 
                 }).open();
                 break;
 
+            case "css-variable-editor":
+                spawnModalCssVariableEditor();
+                break;
+
             case "settings":
                 spawnSettingsModal();
+                break;
+
+            case "settings-registry":
+                spawnGlobalSettingsEditor();
                 break;
 
             default:
