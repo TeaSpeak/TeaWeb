@@ -312,7 +312,7 @@ function main() {
         modal.close_listener.push(() => settings.changeGlobal(Settings.KEY_USER_IS_NEW, false));
     }
 
-    spawnGlobalSettingsEditor();
+    //spawnGlobalSettingsEditor();
     //spawnVideoPopout(server_connections.active_connection(), "https://www.youtube.com/watch?v=9683D18fyvs");
 }
 
