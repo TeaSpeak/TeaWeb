@@ -69,7 +69,7 @@ export class WebVoicePlayer implements VoicePlayer {
     }
 
     getState(): VoicePlayerState {
-        return undefined;
+        return this.playerState;
     }
 
     getVolume(): number {
@@ -118,6 +118,7 @@ export class WebVoicePlayer implements VoicePlayer {
     destroy() {
         this.audioClient?.destroy();
         this.audioClient = undefined;
+        this.events.destroy();
     }
 
     private initializeAudio() : Promise<void> {
@@ -252,6 +253,7 @@ export class WebVoicePlayer implements VoicePlayer {
         } else if(this.playerState === VoicePlayerState.PLAYING) {
             logDebug(LogCategory.VOICE, tr("Voice player has a buffer underflow. Changing state to buffering."));
             this.setPlayerState(VoicePlayerState.BUFFERING);
+            this.resetBufferTimeout(true);
         }
     }
 

@@ -67,7 +67,7 @@ export const config = async (target: "web" | "client"): Promise<Configuration> =
     devtool: isDevelopment ? "inline-source-map" : undefined,
     mode: isDevelopment ? "development" : "production",
     plugins: [
-        new CleanWebpackPlugin(),
+        //new CleanWebpackPlugin(),
         new MiniCssExtractPlugin({
             filename: isDevelopment ? '[name].css' : '[name].[hash].css',
             chunkFilename: isDevelopment ? '[id].css' : '[id].[hash].css'

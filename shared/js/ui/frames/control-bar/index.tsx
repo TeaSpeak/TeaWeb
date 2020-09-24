@@ -434,12 +434,12 @@ export class ControlBar extends React.Component<ControlBarProperties, {}> {
     }
 
     private handleActiveConnectionHandlerChanged(event: ConnectionManagerEvents["notify_active_handler_changed"]) {
-        if(event.old_handler)
-            this.unregisterConnectionHandlerEvents(event.old_handler);
+        if(event.oldHandler)
+            this.unregisterConnectionHandlerEvents(event.oldHandler);
 
-        this.connection = event.new_handler;
-        if(event.new_handler)
-            this.registerConnectionHandlerEvents(event.new_handler);
+        this.connection = event.newHandler;
+        if(event.newHandler)
+            this.registerConnectionHandlerEvents(event.newHandler);
 
         this.event_registry.fire("set_connection_handler", { handler: this.connection });
         this.event_registry.fire("update_state_all");

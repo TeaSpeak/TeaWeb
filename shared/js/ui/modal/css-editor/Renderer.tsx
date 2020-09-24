@@ -217,16 +217,17 @@ const OverrideVariableInfo = (props: { events: Registry<CssEditorEvents> }) => {
 
         selectedVariable.overwriteValue = event.enabled;
         setOverwriteEnabled(event.enabled);
-        if (event.enabled)
+        if (event.enabled) {
             setOverwriteValue(event.value);
-    });
+        }
+    }, true, [selectedVariable]);
 
     props.events.reactUse("action_change_override_value", event => {
         if (event.variableName !== selectedVariable?.name)
             return;
 
         setOverwriteValue(event.value);
-    });
+    }, true, [selectedVariable]);
 
     return (<>
         <div className={cssStyle.detail}>

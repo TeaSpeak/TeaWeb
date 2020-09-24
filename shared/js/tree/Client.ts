@@ -264,6 +264,38 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         return this._properties;
     }
 
+    getStatusIcon() : ClientIcon {
+        if (this.properties.client_type_exact == ClientType.CLIENT_QUERY) {
+            return ClientIcon.ServerQuery;
+        } else if (this.properties.client_away) {
+            return ClientIcon.Away;
+        } else if (!this.getVoiceClient() && !(this instanceof LocalClientEntry)) {
+            return ClientIcon.InputMutedLocal;
+        } else if (!this.properties.client_output_hardware) {
+            return ClientIcon.HardwareOutputMuted;
+        } else if (this.properties.client_output_muted) {
+            return ClientIcon.OutputMuted;
+        } else if (!this.properties.client_input_hardware) {
+            return ClientIcon.HardwareInputMuted;
+        } else if (this.properties.client_input_muted) {
+            return ClientIcon.InputMuted;
+        } else {
+            if (this.isSpeaking()) {
+                if (this.properties.client_is_channel_commander) {
+                    return ClientIcon.PlayerCommanderOn;
+                } else {
+                    return ClientIcon.PlayerOn;
+                }
+            } else {
+                if (this.properties.client_is_channel_commander) {
+                    return ClientIcon.PlayerCommanderOff;
+                } else {
+                    return ClientIcon.PlayerOff;
+                }
+            }
+        }
+    }
+
     currentChannel() : ChannelEntry { return this._channel; }
     clientNickName(){ return this.properties.client_nickname; }
     clientUid(){ return this.properties.client_unique_identifier; }

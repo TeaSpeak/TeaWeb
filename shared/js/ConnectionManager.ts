@@ -2,12 +2,11 @@ import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
 import {Settings, settings} from "./settings";
 import {Registry} from "./events";
 import * as top_menu from "./ui/frames/MenuBar";
+import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
 
 export let server_connections: ConnectionManager;
-export function initializeServerConnections() {
-    if(server_connections) throw tr("Connection manager has already been initialized");
-    server_connections = new ConnectionManager($("#connection-handlers"));
-}
+
 export class ConnectionManager {
     private readonly event_registry: Registry<ConnectionManagerEvents>;
     private connection_handlers: ConnectionHandler[] = [];
@@ -63,7 +62,7 @@ export class ConnectionManager {
         this._tag.toggleClass("shown", this.connection_handlers.length > 1);
         this._update_scroll();
 
-        this.event_registry.fire("notify_handler_created", { handler: handler });
+        this.event_registry.fire("notify_handler_created", { handler: handler, handlerId: handler.handlerId });
         return handler;
     }
 
@@ -86,7 +85,7 @@ export class ConnectionManager {
 
         if(handler === this.active_handler)
             this.set_active_connection_(this.connection_handlers[0]);
-        this.event_registry.fire("notify_handler_deleted", { handler: handler });
+        this.event_registry.fire("notify_handler_deleted", { handler: handler, handlerId: handler.handlerId });
 
         /* destroy all elements */
         handler.destroy();
@@ -118,8 +117,11 @@ export class ConnectionManager {
         const old_handler = this.active_handler;
         this.active_handler = handler;
         this.event_registry.fire("notify_active_handler_changed", {
-            old_handler: old_handler,
-            new_handler: handler
+            oldHandler: old_handler,
+            newHandler: handler,
+
+            oldHandlerId: old_handler?.handlerId,
+            newHandlerId: handler?.handlerId
         });
         old_handler?.events().fire("notify_visibility_changed", { visible: false });
         handler?.events().fire("notify_visibility_changed", { visible: true });
@@ -173,18 +175,31 @@ export class ConnectionManager {
 
 export interface ConnectionManagerEvents {
     notify_handler_created: {
+        handlerId: string,
         handler: ConnectionHandler
     },
 
     /* This will also trigger when a connection gets deleted. So if you're just interested to connect event handler to the active connection,
         unregister them from the old handler and register them for the new handler every time */
     notify_active_handler_changed: {
-        old_handler: ConnectionHandler | undefined,
-        new_handler: ConnectionHandler | undefined
+        oldHandler: ConnectionHandler | undefined,
+        newHandler: ConnectionHandler | undefined,
+
+        oldHandlerId: string | undefined,
+        newHandlerId: string | undefined
     },
 
     /* Will never fire on an active connection handler! */
     notify_handler_deleted: {
+        handlerId: string,
         handler: ConnectionHandler
     }
 }
+
+loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
+    name: "server manager init",
+    function: async () => {
+        server_connections = new ConnectionManager($("#connection-handlers"));
+    },
+    priority: 80
+});

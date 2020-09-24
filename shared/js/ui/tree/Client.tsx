@@ -20,85 +20,37 @@ import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import * as DOMPurify from "dompurify";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
+import {useState} from "react";
 
 const clientStyle = require("./Client.scss");
 const viewStyle = require("./View.scss");
 
-interface ClientIconProperties {
-    client: ClientEntryController;
-}
+const IconUpdateKeys: (keyof ClientProperties)[] = [
+    "client_away",
+    "client_input_hardware",
+    "client_output_hardware",
+    "client_output_muted",
+    "client_input_muted",
+    "client_is_channel_commander",
+    "client_talk_power"
+];
 
-@ReactEventHandler<ClientSpeakIcon>(e => e.props.client.events)
-@BatchUpdateAssignment(BatchUpdateType.CHANNEL_TREE)
-class ClientSpeakIcon extends ReactComponentBase<ClientIconProperties, {}> {
-    private static readonly IconUpdateKeys: (keyof ClientProperties)[] = [
-        "client_away",
-        "client_input_hardware",
-        "client_output_hardware",
-        "client_output_muted",
-        "client_input_muted",
-        "client_is_channel_commander",
-        "client_talk_power"
-    ];
+export const ClientStatusIndicator = (props: { client: ClientEntryController, renderer?: (icon: ClientIcon) => React.ReactElement }) => {
+    const [ revision, setRevision ] = useState(0);
 
-    render() {
-        const client = this.props.client;
-        const properties = client.properties;
-
-        let icon: ClientIcon;
-        if (properties.client_type_exact == ClientType.CLIENT_QUERY) {
-            icon = ClientIcon.ServerQuery;
-        } else {
-            if (properties.client_away) {
-                icon = ClientIcon.Away;
-            } else if (!client.getVoiceClient() && !(this instanceof LocalClientEntry)) {
-                icon = ClientIcon.InputMutedLocal;
-            } else if (!properties.client_output_hardware) {
-                icon = ClientIcon.HardwareOutputMuted;
-            } else if (properties.client_output_muted) {
-                icon = ClientIcon.OutputMuted;
-            } else if (!properties.client_input_hardware) {
-                icon = ClientIcon.HardwareInputMuted;
-            } else if (properties.client_input_muted) {
-                icon = ClientIcon.InputMuted;
-            } else {
-                if (client.isSpeaking()) {
-                    if (properties.client_is_channel_commander) {
-                        icon = ClientIcon.PlayerCommanderOn;
-                    } else {
-                        icon = ClientIcon.PlayerOn;
-                    }
-                } else {
-                    if (properties.client_is_channel_commander) {
-                        icon = ClientIcon.PlayerCommanderOff;
-                    } else {
-                        icon = ClientIcon.PlayerOff;
-                    }
-                }
-            }
-        }
-
-        return <ClientIconRenderer icon={icon}/>
-    }
-
-    @EventHandler<ClientEvents>("notify_properties_updated")
-    private handlePropertiesUpdated(event: ClientEvents["notify_properties_updated"]) {
-        for (const key of ClientSpeakIcon.IconUpdateKeys)
+    props.client.events.reactUse("notify_properties_updated", event => {
+        for (const key of IconUpdateKeys) {
             if (key in event.updated_properties) {
-                this.forceUpdate();
+                setRevision(revision + 1);
                 return;
             }
-    }
+        }
+    });
 
-    @EventHandler<ClientEvents>("notify_mute_state_change")
-    private handleMuteStateChange() {
-        this.forceUpdate();
-    }
+    props.client.events.reactUse("notify_mute_state_change", () => setRevision(revision + 1));
+    props.client.events.reactUse("notify_speak_state_change", () => setRevision(revision + 1));
 
-    @EventHandler<ClientEvents>("notify_speak_state_change")
-    private handleSpeakStateChange() {
-        this.forceUpdate();
-    }
+    return props.renderer ? props.renderer(props.client.getStatusIcon()) : <ClientIconRenderer icon={props.client.getStatusIcon()} />;
 }
 
 interface ClientServerGroupIconsProperties {
@@ -390,7 +342,7 @@ export class ClientEntry extends TreeEntry<ClientEntryProperties, ClientEntrySta
                 onContextMenu={e => this.onContextMenu(e)}
             >
                 <UnreadMarker entry={this.props.client}/>
-                <ClientSpeakIcon client={this.props.client}/>
+                <ClientStatusIndicator client={this.props.client}/>
                 {this.state.rename ?
                     <ClientNameEdit key={"rename"} editFinished={name => this.onEditFinished(name)}
                                     initialName={this.state.renameInitialName || this.props.client.properties.client_nickname}/> :

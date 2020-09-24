@@ -46,7 +46,7 @@ export function load_default_states(event_registry: Registry<ClientGlobalControl
 
 export function initialize(event_registry: Registry<ClientGlobalControlEvents>) {
     let current_connection_handler: ConnectionHandler | undefined;
-    server_connections.events().on("notify_active_handler_changed", event => current_connection_handler = event.new_handler);
+    server_connections.events().on("notify_active_handler_changed", event => current_connection_handler = event.newHandler);
     //initialize_sounds(event_registry);
 
     event_registry.on("action_open_window", event => {

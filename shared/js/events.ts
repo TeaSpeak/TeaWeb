@@ -114,7 +114,13 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
 
 
     /* special helper methods for react components */
-    reactUse<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void, condition?: boolean) {
+    /**
+     * @param event
+     * @param handler
+     * @param condition
+     * @param reactEffectDependencies
+     */
+    reactUse<T extends keyof Events>(event: T, handler: (event?: Events[T] & Event<Events, T>) => void, condition?: boolean, reactEffectDependencies?: any[]) {
         if(typeof condition === "boolean" && !condition) {
             useEffect(() => {});
             return;
@@ -123,7 +129,7 @@ export class Registry<Events extends { [key: string]: any } = { [key: string]: a
         useEffect(() => {
             handlers.push(handler);
             return () => handlers.remove(handler);
-        });
+        }, reactEffectDependencies);
     }
 
     connectAll<EOther, T extends keyof Events & keyof EOther>(target: EventReceiver<Events>) {

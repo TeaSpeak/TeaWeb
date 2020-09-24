@@ -1,4 +1,5 @@
 import * as loader from "tc-loader";
+import {Stage} from "tc-loader";
 import {settings, Settings} from "tc-shared/settings";
 import * as log from "tc-shared/log";
 import {LogCategory} from "tc-shared/log";
@@ -6,7 +7,7 @@ import * as bipc from "./ipc/BrowserIPC";
 import * as sound from "./sound/Sounds";
 import * as i18n from "./i18n/localize";
 import {tra} from "./i18n/localize";
-import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
+import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
@@ -42,10 +43,10 @@ import {ConnectRequestData} from "tc-shared/ipc/ConnectHandler";
 import "./video-viewer/Controller";
 import "./profiles/ConnectionProfile";
 import "./update/UpdaterWeb";
-import ContextMenuEvent = JQuery.ContextMenuEvent;
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
-import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
-import {initializeServerConnections, server_connections} from "tc-shared/ConnectionManager";
+import {server_connections} from "tc-shared/ConnectionManager";
+import {initializeConnectionUIList} from "tc-shared/ui/frames/connection-handler-list/Controller";
+import ContextMenuEvent = JQuery.ContextMenuEvent;
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -61,20 +62,8 @@ async function initialize() {
 }
 
 async function initialize_app() {
-    try { //Initialize main template
-        const main = $("#tmpl_main").renderTag({
-            multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
-            app_version: __build.version
-        }).dividerfy();
+    initializeConnectionUIList();
 
-        $("body").append(main);
-    } catch(error) {
-        log.error(LogCategory.GENERAL, error);
-        loader.critical_error(tr("Failed to setup main page!"));
-        return;
-    }
-
-    initializeServerConnections();
     global_ev_handler.initialize(global_client_actions);
     {
         const bar = (
@@ -83,6 +72,7 @@ async function initialize_app() {
 
         ReactDOM.render(bar, $(".container-control-bar")[0]);
     }
+
     /*
     loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
         name: "settings init",
@@ -201,6 +191,16 @@ function main() {
     const initial_handler = server_connections.spawn_server_connection();
     initial_handler.acquireInputHardware().then(() => {});
     server_connections.set_active_connection(initial_handler);
+
+    /* Just a test */
+    {
+        server_connections.spawn_server_connection();
+        server_connections.spawn_server_connection();
+        server_connections.spawn_server_connection();
+        server_connections.spawn_server_connection();
+        server_connections.spawn_server_connection();
+    }
+
     /** Setup the XF forum identity **/
     fidentity.update_forum();
     keycontrol.initialize();
@@ -476,7 +476,7 @@ loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
             return;
         }
     },
-    priority: 100
+    priority: 110
 });
 
 loader.register_task(loader.Stage.JAVASCRIPT_INITIALIZING, {
@@ -511,4 +511,23 @@ loader.register_task(loader.Stage.LOADED, {
         }
     },
     priority: 20
+});
+
+loader.register_task(Stage.JAVASCRIPT_INITIALIZING,{
+    name: "app init",
+    function: async () => {
+        try { //Initialize main template
+            const main = $("#tmpl_main").renderTag({
+                multi_session:  !settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION),
+                app_version: __build.version
+            }).dividerfy();
+
+            $("body").append(main);
+        } catch(error) {
+            log.error(LogCategory.GENERAL, error);
+            loader.critical_error(tr("Failed to setup main page!"));
+            return;
+        }
+    },
+    priority: 100
 });
