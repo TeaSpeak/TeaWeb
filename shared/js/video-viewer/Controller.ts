@@ -7,9 +7,9 @@ import {ConnectionHandler} from "../ConnectionHandler";
 import {W2GPluginCmdHandler, W2GWatcher, W2GWatcherFollower} from "../video-viewer/W2GPlugin";
 import {settings, Settings} from "../settings";
 import {global_client_actions} from "../events/GlobalEvents";
-import {server_connections} from "../ui/frames/connection_handlers";
 import {createErrorModal} from "../ui/elements/Modal";
 import {ModalController} from "../ui/react-elements/ModalDefinitions";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 const parseWatcherId = (id: string): { clientId: number, clientUniqueId: string} => {
     const [ clientIdString, clientUniqueId ] = id.split(" - ");

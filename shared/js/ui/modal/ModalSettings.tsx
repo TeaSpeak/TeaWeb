@@ -17,7 +17,6 @@ import * as events from "tc-shared/events";
 import {Registry} from "tc-shared/events";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
 import * as i18nc from "tc-shared/i18n/country";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import * as forum from "tc-shared/profiles/identities/teaspeak-forum";
 import {formatMessage, set_icon_size} from "tc-shared/ui/frames/chat";
 import {spawnTeamSpeakIdentityImport, spawnTeamSpeakIdentityImprove} from "tc-shared/ui/modal/ModalIdentity";
@@ -29,6 +28,7 @@ import * as ReactDOM from "react-dom";
 import {NotificationSettings} from "tc-shared/ui/modal/settings/Notifications";
 import {initialize_audio_microphone_controller, MicrophoneSettingsEvents} from "tc-shared/ui/modal/settings/Microphone";
 import {MicrophoneSettings} from "tc-shared/ui/modal/settings/MicrophoneRenderer";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export function spawnSettingsModal(default_page?: string): Modal {
     let modal: Modal;

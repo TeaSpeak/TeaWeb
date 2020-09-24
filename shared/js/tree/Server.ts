@@ -10,7 +10,6 @@ import {openServerInfo} from "../ui/modal/ModalServerInfo";
 import {createServerModal} from "../ui/modal/ModalServerEdit";
 import {spawnIconSelect} from "../ui/modal/ModalIconSelect";
 import {spawnAvatarList} from "../ui/modal/ModalAvatarList";
-import {server_connections} from "../ui/frames/connection_handlers";
 import {connection_log} from "../ui/modal/ModalConnect";
 import * as top_menu from "../ui/frames/MenuBar";
 import {control_bar_instance} from "../ui/frames/control-bar";
@@ -18,6 +17,7 @@ import { ServerEntry as ServerEntryView } from "../ui/tree/Server";
 import * as React from "react";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export class ServerProperties {
     virtualserver_host: string = "";

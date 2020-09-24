@@ -2,7 +2,6 @@ import {Registry} from "../events";
 import {ClientGlobalControlEvents} from "../events/GlobalEvents";
 import {Sound} from "../sound/Sounds";
 import {ConnectionHandler} from "../ConnectionHandler";
-import {server_connections} from "../ui/frames/connection_handlers";
 import {createErrorModal, createInfoModal, createInputModal} from "../ui/elements/Modal";
 import {spawnConnectModal} from "../ui/modal/ModalConnect";
 import PermissionType from "../permission/PermissionType";
@@ -15,6 +14,7 @@ import {spawnPermissionEditorModal} from "../ui/modal/permission/ModalPermission
 import {tr} from "../i18n/localize";
 import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
 import {spawnModalCssVariableEditor} from "tc-shared/ui/modal/css-editor/Controller";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 /*
 function initialize_sounds(event_registry: Registry<ClientGlobalControlEvents>) {

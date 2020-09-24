@@ -15,7 +15,6 @@ import {
 import {ChannelEntry} from "../tree/Channel";
 import {ConnectionHandler, ConnectionState, DisconnectReason, ViewReasonId} from "../ConnectionHandler";
 import {formatMessage} from "../ui/frames/chat";
-import {server_connections} from "../ui/frames/connection_handlers";
 import {spawnPoke} from "../ui/modal/ModalPoke";
 import {AbstractCommandHandler, AbstractCommandHandlerBoss} from "../connection/AbstractCommandHandler";
 import {batch_updates, BatchUpdateType, flush_batched_updates} from "../ui/react-elements/ReactComponentBase";
@@ -24,6 +23,7 @@ import {renderBBCodeAsJQuery} from "../text/bbcode";
 import {tr} from "../i18n/localize";
 import {EventClient, EventType} from "../ui/frames/log/Definitions";
 import {ErrorCode} from "../connection/ErrorCode";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export class ServerConnectionCommandBoss extends AbstractCommandHandlerBoss {
     constructor(connection: AbstractServerConnection) {

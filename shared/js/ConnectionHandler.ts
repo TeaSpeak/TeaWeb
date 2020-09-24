@@ -15,7 +15,6 @@ import {CommandResult} from "./connection/ServerConnectionDeclaration";
 import {defaultRecorder, RecorderProfile} from "./voice/RecorderProfile";
 import {Frame} from "./ui/frames/chat_frame";
 import {Hostbanner} from "./ui/frames/hostbanner";
-import {server_connections} from "./ui/frames/connection_handlers";
 import {connection_log, Regex} from "./ui/modal/ModalConnect";
 import {formatMessage} from "./ui/frames/chat";
 import {spawnAvatarUpload} from "./ui/modal/ModalAvatar";
@@ -38,6 +37,7 @@ import {ServerFeature, ServerFeatures} from "./connection/ServerFeatures";
 import {ChannelTree} from "./tree/ChannelTree";
 import {LocalClientEntry} from "./tree/Client";
 import {ServerAddress} from "./tree/Server";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export enum InputHardwareState {
     MISSING,

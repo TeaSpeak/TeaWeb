@@ -10,9 +10,9 @@ import {
     FileTransferState, ResponseTransferTarget, TransferProvider,
     TransferTargetType
 } from "tc-shared/file/Transfer";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {tr} from "tc-shared/i18n/localize";
 import {ErrorCode} from "tc-shared/connection/ErrorCode";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 const icon_cache: ImageCache = new ImageCache("icons");
 export interface IconManagerEvents {

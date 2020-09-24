@@ -3,7 +3,6 @@ import {ConnectionHandler} from "tc-shared/ConnectionHandler";
 import * as React from "react";
 import {useState} from "react";
 import {ContextDivider} from "tc-shared/ui/react-elements/ContextDivider";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {Registry} from "tc-shared/events";
 import {
@@ -347,9 +346,6 @@ export function spawnPermissionEditorModal(connection: ConnectionHandler, defaul
     const modal = spawnReactModal(PermissionEditorModal, connection, defaultTab, values);
     modal.show();
 }
-
-const spawn = () => spawnPermissionEditorModal(server_connections.active_connection());
-(window as any).spawn_permissions = spawn;
 
 function initializePermissionModalResultHandlers(events: Registry<PermissionModalEvents>) {
     events.on("action_rename_group_result", event => {

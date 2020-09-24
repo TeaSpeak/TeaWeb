@@ -8,8 +8,8 @@ import {HTMLRenderer} from "tc-shared/ui/react-elements/HTMLRenderer";
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {spawn_context_menu} from "tc-shared/ui/elements/ContextMenu";
 import {copy_to_clipboard} from "tc-shared/utils/helpers";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 const playIcon = require("./yt-play-button.svg");
 const cssStyle = require("./youtube.scss");

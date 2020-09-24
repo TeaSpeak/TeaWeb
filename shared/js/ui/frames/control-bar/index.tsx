@@ -9,7 +9,6 @@ import {
     ConnectionStateUpdateType
 } from "tc-shared/ConnectionHandler";
 import {Event, EventHandler, ReactEventHandler, Registry} from "tc-shared/events";
-import {ConnectionManagerEvents, server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {Settings, settings} from "tc-shared/settings";
 import {
     add_server_to_bookmarks,
@@ -24,6 +23,7 @@ import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {icon_cache_loader} from "tc-shared/file/Icons";
+import {ConnectionManagerEvents, server_connections} from "tc-shared/ConnectionManager";
 
 const cssStyle = require("./index.scss");
 const cssButtonStyle = require("./button.scss");

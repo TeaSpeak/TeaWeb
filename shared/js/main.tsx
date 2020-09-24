@@ -11,8 +11,6 @@ import {createInfoModal} from "tc-shared/ui/elements/Modal";
 import * as stats from "./stats";
 import * as fidentity from "./profiles/identities/TeaForumIdentity";
 import {defaultRecorder, RecorderProfile, setDefaultRecorder} from "tc-shared/voice/RecorderProfile";
-import * as cmanager from "tc-shared/ui/frames/connection_handlers";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {spawnConnectModal} from "tc-shared/ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
 import {spawnYesNo} from "tc-shared/ui/modal/ModalYesNo";
@@ -47,6 +45,7 @@ import "./update/UpdaterWeb";
 import ContextMenuEvent = JQuery.ContextMenuEvent;
 import {defaultConnectProfile, findConnectProfile} from "tc-shared/profiles/ConnectionProfile";
 import {spawnGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-editor/Controller";
+import {initializeServerConnections, server_connections} from "tc-shared/ConnectionManager";
 
 let preventWelcomeUI = false;
 async function initialize() {
@@ -74,7 +73,8 @@ async function initialize_app() {
         loader.critical_error(tr("Failed to setup main page!"));
         return;
     }
-    cmanager.initialize();
+
+    initializeServerConnections();
     global_ev_handler.initialize(global_client_actions);
     {
         const bar = (
@@ -200,7 +200,7 @@ function main() {
 
     const initial_handler = server_connections.spawn_server_connection();
     initial_handler.acquireInputHardware().then(() => {});
-    cmanager.server_connections.set_active_connection(initial_handler);
+    server_connections.set_active_connection(initial_handler);
     /** Setup the XF forum identity **/
     fidentity.update_forum();
     keycontrol.initialize();

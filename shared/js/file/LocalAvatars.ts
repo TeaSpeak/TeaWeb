@@ -14,7 +14,6 @@ import {
     TransferTargetType
 } from "../file/Transfer";
 import {CommandResult} from "../connection/ServerConnectionDeclaration";
-import {server_connections} from "../ui/frames/connection_handlers";
 import {ClientEntry} from "../tree/Client";
 import {tr} from "../i18n/localize";
 import {
@@ -30,6 +29,7 @@ import {
 import {IPCChannel} from "../ipc/BrowserIPC";
 import {ConnectionHandler} from "../ConnectionHandler";
 import {ErrorCode} from "../connection/ErrorCode";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 /* FIXME: Retry avatar download after some time! */
 

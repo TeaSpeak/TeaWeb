@@ -16,16 +16,14 @@ import {PermissionType} from "../../permission/PermissionType";
 import {openBanList} from "../../ui/modal/ModalBanList";
 import {spawnQueryManage} from "../../ui/modal/ModalQueryManage";
 import {spawnQueryCreate} from "../../ui/modal/ModalQuery";
-import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
 import {spawnAbout} from "../../ui/modal/ModalAbout";
-import {server_connections} from "../../ui/frames/connection_handlers";
 import * as loader from "tc-loader";
 import {formatMessage} from "../../ui/frames/chat";
 import {control_bar_instance} from "../../ui/frames/control-bar";
 import {icon_cache_loader, IconManager, LocalIcon} from "../../file/Icons";
 import {spawnPermissionEditorModal} from "../../ui/modal/permission/ModalPermissionEditor";
-import {spawnModalCssVariableEditor} from "../../ui/modal/css-editor/Controller";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export interface HRItem { }
 

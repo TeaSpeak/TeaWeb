@@ -3,8 +3,8 @@ import {LogCategory} from "../log";
 import {ChannelEntry} from "../tree/Channel";
 import {ClientEntry} from "../tree/Client";
 import {htmlEscape} from "../ui/frames/chat";
-import {server_connections} from "../ui/frames/connection_handlers";
 import {guid} from "../crypto/uid";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 let mouse_coordinates: {x: number, y: number} = {x: 0, y: 0};
 

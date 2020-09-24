@@ -7,8 +7,8 @@ import {ConnectionProfile, defaultConnectProfile, findConnectProfile, availableC
 import {KeyCode} from "../../PPTListener";
 import * as i18nc from "../../i18n/country";
 import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
-import {server_connections} from "../../ui/frames/connection_handlers";
 import {icon_cache_loader, IconManager} from "../../file/Icons";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 //FIXME: Move this shit out of this file!
 export namespace connection_log {

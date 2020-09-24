@@ -3,7 +3,6 @@ import {IdentitifyType} from "../profiles/Identity";
 import {TeaSpeakIdentity} from "../profiles/identities/TeamSpeakIdentity";
 import {AbstractServerConnection} from "../connection/ConnectionBase";
 import {ConnectionProfile} from "../profiles/ConnectionProfile";
-import {settings} from "../settings";
 import {ConnectParameters, DisconnectReason} from "../ConnectionHandler";
 import {tr} from "../i18n/localize";
 

@@ -3,6 +3,7 @@ import {ModalGlobalSettingsEditor} from "tc-shared/ui/modal/global-settings-edit
 import {Registry} from "tc-shared/events";
 import {ModalGlobalSettingsEditorEvents, Setting} from "tc-shared/ui/modal/global-settings-editor/Definitions";
 import {ConfigValueTypes, settings, Settings, SettingsKey} from "tc-shared/settings";
+import {key} from "tc-shared/KeyControl";
 
 export function spawnGlobalSettingsEditor() {
     const events = new Registry<ModalGlobalSettingsEditorEvents>();

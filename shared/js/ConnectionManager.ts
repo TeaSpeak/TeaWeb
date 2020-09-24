@@ -1,10 +1,10 @@
-import {ConnectionHandler, DisconnectReason} from "../../ConnectionHandler";
-import {Settings, settings} from "../../settings";
-import * as top_menu from "./MenuBar";
-import {Registry} from "../../events";
+import {ConnectionHandler, DisconnectReason} from "./ConnectionHandler";
+import {Settings, settings} from "./settings";
+import {Registry} from "./events";
+import * as top_menu from "./ui/frames/MenuBar";
 
 export let server_connections: ConnectionManager;
-export function initialize() {
+export function initializeServerConnections() {
     if(server_connections) throw tr("Connection manager has already been initialized");
     server_connections = new ConnectionManager($("#connection-handlers"));
 }
@@ -30,8 +30,9 @@ export class ConnectionManager {
 
         this._tag = tag;
 
-        if(settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION, false))
+        if(settings.static_global(Settings.KEY_DISABLE_MULTI_SESSION, false)) {
             this._tag.hide();
+        }
 
         this._tag_connection_entries = this._tag.find(".connection-handlers");
         this._tag_buttons_scoll = this._tag.find(".container-scroll");

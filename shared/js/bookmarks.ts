@@ -3,11 +3,11 @@ import {LogCategory} from "./log";
 import {guid} from "./crypto/uid";
 import {createErrorModal, createInfoModal, createInputModal} from "./ui/elements/Modal";
 import {defaultConnectProfile, findConnectProfile} from "./profiles/ConnectionProfile";
-import {server_connections} from "./ui/frames/connection_handlers";
 import {spawnConnectModal} from "./ui/modal/ModalConnect";
 import * as top_menu from "./ui/frames/MenuBar";
 import {control_bar_instance} from "./ui/frames/control-bar";
 import {ConnectionHandler} from "./ConnectionHandler";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export const boorkmak_connect = (mark: Bookmark, new_tab?: boolean) => {
     const profile = findConnectProfile(mark.connect_profile) || defaultConnectProfile();

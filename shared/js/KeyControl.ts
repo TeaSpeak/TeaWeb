@@ -1,9 +1,9 @@
-import {server_connections} from "./ui/frames/connection_handlers";
 import {EventType, KeyDescriptor, KeyEvent, KeyHook} from "./PPTListener";
 import * as ppt from "tc-backend/ppt";
 import {Settings, settings} from "./settings";
 import * as log from "./log";
 import {LogCategory} from "./log";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 export interface KeyControl {
     category: string;

@@ -1,5 +1,5 @@
 import {Settings, settings} from "tc-shared/settings";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 window.addEventListener("beforeunload", event => {
     if(settings.static(Settings.KEY_DISABLE_UNLOAD_DIALOG))

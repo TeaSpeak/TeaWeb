@@ -2,7 +2,6 @@ import {spawnReactModal} from "tc-shared/ui/react-elements/Modal";
 import * as React from "react";
 import {FileType} from "tc-shared/file/FileManager";
 import {Registry} from "tc-shared/events";
-import {server_connections} from "tc-shared/ui/frames/connection_handlers";
 import {FileBrowser, NavigationBar} from "tc-shared/ui/modal/transfer/FileBrowser";
 import {TransferInfo, TransferInfoEvents} from "tc-shared/ui/modal/transfer/TransferInfo";
 import {initializeRemoteFileBrowserController} from "tc-shared/ui/modal/transfer/RemoteFileBrowserController";
@@ -10,6 +9,7 @@ import {ChannelEntry} from "tc-shared/tree/Channel";
 import {initializeTransferInfoController} from "tc-shared/ui/modal/transfer/TransferInfoController";
 import {Translatable} from "tc-shared/ui/react-elements/i18n";
 import {InternalModal} from "tc-shared/ui/react-elements/internal-modal/Controller";
+import {server_connections} from "tc-shared/ConnectionManager";
 
 const cssStyle = require("./ModalFileTransfer.scss");
 export const channelPathPrefix = tr("Channel") + " ";
