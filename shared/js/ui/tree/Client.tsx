@@ -25,32 +25,11 @@ import {useState} from "react";
 const clientStyle = require("./Client.scss");
 const viewStyle = require("./View.scss");
 
-const IconUpdateKeys: (keyof ClientProperties)[] = [
-    "client_away",
-    "client_input_hardware",
-    "client_output_hardware",
-    "client_output_muted",
-    "client_input_muted",
-    "client_is_channel_commander",
-    "client_talk_power"
-];
+const ClientStatusIndicator = (props: { client: ClientEntryController }) => {
+    const [ icon, setIcon ] = useState<ClientIcon>(props.client.getStatusIcon());
+    props.client.events.reactUse("notify_status_icon_changed", event => setIcon(event.newIcon));
 
-export const ClientStatusIndicator = (props: { client: ClientEntryController, renderer?: (icon: ClientIcon) => React.ReactElement }) => {
-    const [ revision, setRevision ] = useState(0);
-
-    props.client.events.reactUse("notify_properties_updated", event => {
-        for (const key of IconUpdateKeys) {
-            if (key in event.updated_properties) {
-                setRevision(revision + 1);
-                return;
-            }
-        }
-    });
-
-    props.client.events.reactUse("notify_mute_state_change", () => setRevision(revision + 1));
-    props.client.events.reactUse("notify_speak_state_change", () => setRevision(revision + 1));
-
-    return props.renderer ? props.renderer(props.client.getStatusIcon()) : <ClientIconRenderer icon={props.client.getStatusIcon()} />;
+    return <ClientIconRenderer icon={icon} />;
 }
 
 interface ClientServerGroupIconsProperties {
@@ -252,6 +231,9 @@ class ClientName extends ReactComponentBase<ClientNameProperties, ClientNameStat
 
         state.group_prefix = suffix_groups.map(e => "[" + e + "]").join("");
         state.group_suffix = prefix_groups.map(e => "[" + e + "]").join("");
+
+        state.group_prefix = state.group_prefix ? " " + state.group_prefix : "";
+        state.group_suffix = state.group_suffix ? " " + state.group_suffix : "";
     }
 
     private updateAwayMessage(state: ClientNameState) {
