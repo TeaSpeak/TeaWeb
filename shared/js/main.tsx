@@ -192,15 +192,6 @@ function main() {
     initial_handler.acquireInputHardware().then(() => {});
     server_connections.set_active_connection(initial_handler);
 
-    /* Just a test */
-    {
-        server_connections.spawn_server_connection();
-        server_connections.spawn_server_connection();
-        server_connections.spawn_server_connection();
-        server_connections.spawn_server_connection();
-        server_connections.spawn_server_connection();
-    }
-
     /** Setup the XF forum identity **/
     fidentity.update_forum();
     keycontrol.initialize();

@@ -48,7 +48,7 @@ const ConnectionHandler = (props: { handlerId: string, active: boolean }) => {
                 break;
 
             case "connecting":
-                displayedName = <Translatable key={"connecting"}>Connecting to server <LoadingDots /></Translatable>;
+                displayedName = <><Translatable key={"connecting"}>Connecting to server</Translatable> <LoadingDots /></>;
                 break;
 
             case "disconnected":
