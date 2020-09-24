@@ -1074,6 +1074,7 @@ export class ConnectionHandler {
         this.event_registry.fire("notify_state_updated", { state: "speaker" });
         if(!muted) this.sound.play(Sound.SOUND_ACTIVATED); /* play the sound *after* we're setting we've unmuted the sound */
         this.update_voice_status();
+        this.serverConnection.getVoiceConnection().stopAllVoiceReplays();
     }
 
     toggleSpeakerMuted() { this.setSpeakerMuted(!this.isSpeakerMuted()); }

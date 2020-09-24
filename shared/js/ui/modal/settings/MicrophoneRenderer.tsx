@@ -78,7 +78,7 @@ const ActivityBar = (props: { events: Registry<MicrophoneSettingsEvents>, device
                 setStatus({mode: "error", message: device.error + ""});
             }
         }
-    });
+    }, true, [status]);
 
 
     let error;

@@ -32,6 +32,10 @@ export interface VoiceConnectionEvents {
     },
     "notify_whisper_destroyed": {
         session: WhisperSession
+    },
+
+    "notify_voice_replay_state_change": {
+        replaying: boolean
     }
 }
 
@@ -71,6 +75,9 @@ export abstract class AbstractVoiceConnection {
 
     abstract getEncoderCodec() : number;
     abstract setEncoderCodec(codec: number);
+
+    abstract stopAllVoiceReplays();
+    abstract isReplayingVoice() : boolean;
 
     /* the whisper API */
     abstract getWhisperSessions() : WhisperSession[];

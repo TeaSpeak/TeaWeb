@@ -1,26 +1,26 @@
 import * as React from "react";
 import {LocalIcon} from "tc-shared/file/Icons";
 
-export interface IconProperties {
+export const IconRenderer = (props: {
     icon: string | LocalIcon;
     title?: string;
-}
-
-export class IconRenderer extends React.Component<IconProperties, {}> {
-    render() {
-        if(!this.props.icon)
-            return <div className={"icon-container icon-empty"} title={this.props.title} />;
-        else if(typeof this.props.icon === "string")
-            return <div className={"icon " + this.props.icon} title={this.props.title} />;
-        else if(this.props.icon instanceof LocalIcon)
-            return <LocalIconRenderer icon={this.props.icon} title={this.props.title} />;
-        else throw "JQuery icons are not longer supported";
+    className?: string;
+}) => {
+    if(!props.icon) {
+        return <div className={"icon-container icon-empty " + props.className} title={props.title} />;
+    } else if(typeof props.icon === "string") {
+        return <div className={"icon " + props.icon + " " + props.className} title={props.title} />;
+    } else if(props.icon instanceof LocalIcon) {
+        return <LocalIconRenderer icon={props.icon} title={props.title} className={props.className} />;
+    } else {
+        throw "JQuery icons are not longer supported";
     }
 }
 
 export interface LoadedIconRenderer {
     icon: LocalIcon;
     title?: string;
+    className?: string;
 }
 
 export class LocalIconRenderer extends React.Component<LoadedIconRenderer, {}> {
@@ -39,18 +39,18 @@ export class LocalIconRenderer extends React.Component<LoadedIconRenderer, {}> {
     render() {
         const icon = this.props.icon;
         if(!icon || icon.status === "empty" || icon.status === "destroyed")
-            return <div key={"empty"} className={"icon-container icon-empty"} title={this.props.title} />;
+            return <div key={"empty"} className={"icon-container icon-empty " + this.props.className} title={this.props.title} />;
         else if(icon.status === "loaded") {
             if(icon.icon_id >= 0 && icon.icon_id <= 1000) {
                 if(icon.icon_id === 0)
                     return <div key={"loaded-empty"} className={"icon-container icon-empty"} title={this.props.title} />;
                 return <div key={"loaded"} className={"icon_em client-group_" + icon.icon_id} />;
             }
-            return <div key={"icon"} className={"icon-container"}><img style={{ maxWidth: "100%", maxHeight: "100%" }} src={icon.loaded_url} alt={this.props.title || ("icon " + icon.icon_id)} /></div>;
+            return <div key={"icon"} className={"icon-container " + this.props.className}><img style={{ maxWidth: "100%", maxHeight: "100%" }} src={icon.loaded_url} alt={this.props.title || ("icon " + icon.icon_id)} /></div>;
         } else if(icon.status === "loading")
-            return <div key={"loading"} className={"icon-container"} title={this.props.title}><div className={"icon_loading"} /></div>;
+            return <div key={"loading"} className={"icon-container " + this.props.className} title={this.props.title}><div className={"icon_loading"} /></div>;
         else if(icon.status === "error")
-            return <div key={"error"} className={"icon client-warning"} title={icon.error_message || tr("Failed to load icon")} />;
+            return <div key={"error"} className={"icon client-warning " + this.props.className} title={icon.error_message || tr("Failed to load icon")} />;
     }
 
     componentDidMount(): void {

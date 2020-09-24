@@ -25,6 +25,7 @@ import {
 } from "tc-shared/voice/VoiceWhisper";
 import {VoiceClient} from "tc-shared/voice/VoiceClient";
 import {WebWhisperSession} from "tc-backend/web/voice/VoiceWhisper";
+import {VoicePlayerState} from "tc-shared/voice/VoicePlayer";
 
 export enum VoiceEncodeType {
     JS_ENCODE,
@@ -68,6 +69,10 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
     private lastConnectAttempt: number = 0;
 
+    private currentlyReplayingVoice: boolean = false;
+    private readonly voiceClientStateChangedEventListener;
+    private readonly whisperSessionStateChangedEventListener;
+
     constructor(connection: ServerConnection) {
         super(connection);
 
@@ -80,6 +85,9 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
         this.connection.events.on("notify_connection_state_changed",
             this.serverConnectionStateListener = this.handleServerConnectionStateChanged.bind(this));
+
+        this.voiceClientStateChangedEventListener = this.handleVoiceClientStateChange.bind(this);
+        this.whisperSessionStateChangedEventListener = this.handleWhisperSessionStateChange.bind(this);
     }
 
     getConnectionState(): VoiceConnectionStatus {
@@ -341,6 +349,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(!(client instanceof VoiceClientController))
             throw "Invalid client type";
 
+        client.events.off("notify_state_changed", this.voiceClientStateChangedEventListener);
         delete this.voiceClients[client.getClientId()];
         client.destroy();
     }
@@ -352,6 +361,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
 
         const client = new VoiceClientController(clientId);
         this.voiceClients[clientId] = client;
+        client.events.on("notify_state_changed", this.voiceClientStateChangedEventListener);
         return client;
     }
 
@@ -371,6 +381,41 @@ export class VoiceConnection extends AbstractVoiceConnection {
         this.encoderCodec = codec;
     }
 
+    stopAllVoiceReplays() {
+        this.availableVoiceClients().forEach(e => e.abortReplay());
+        /* TODO: Whisper sessions as well */
+    }
+
+    isReplayingVoice(): boolean {
+        return this.currentlyReplayingVoice;
+    }
+
+    private handleVoiceClientStateChange(/* event: VoicePlayerEvents["notify_state_changed"] */) {
+        this.updateVoiceReplaying();
+    }
+
+    private handleWhisperSessionStateChange() {
+        this.updateVoiceReplaying();
+    }
+
+    private updateVoiceReplaying() {
+        let replaying = false;
+        if(this.connectionState === VoiceConnectionStatus.Connected) {
+            let index = this.availableVoiceClients().findIndex(client => client.getState() === VoicePlayerState.PLAYING || client.getState() === VoicePlayerState.BUFFERING);
+            replaying = index !== -1;
+
+            if(!replaying) {
+                index = this.getWhisperSessions().findIndex(session => session.getSessionState() === WhisperSessionState.PLAYING);
+                replaying = index !== -1;
+            }
+        }
+
+        if(this.currentlyReplayingVoice !== replaying) {
+            this.currentlyReplayingVoice = replaying;
+            this.events.fire_async("notify_voice_replay_state_change", { replaying: replaying });
+        }
+    }
+
     protected handleWhisperPacket(packet: VoiceWhisperPacket) {
         const clientId = packet.clientId;
 
@@ -378,6 +423,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
         if(typeof session !== "object") {
             logDebug(LogCategory.VOICE, tr("Received new whisper from %d (%s)"), packet.clientId, packet.clientNickname);
             session = (this.whisperSessions[clientId] = new WebWhisperSession(packet));
+            session.events.on("notify_state_changed", this.whisperSessionStateChangedEventListener);
             this.whisperSessionInitializer(session).then(result => {
                 session.initializeFromData(result).then(() => {
                     if(this.whisperSessions[clientId] !== session) {
@@ -413,6 +459,7 @@ export class VoiceConnection extends AbstractVoiceConnection {
             throw tr("Session isn't an instance of the web whisper system");
         }
 
+        session.events.off("notify_state_changed", this.whisperSessionStateChangedEventListener);
         delete this.whisperSessions[session.getClientId()];
         session.destroy();
     }

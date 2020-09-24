@@ -141,4 +141,10 @@ export class DummyVoiceConnection extends AbstractVoiceConnection {
     getFailedMessage(): string {
         return "";
     }
+
+    isReplayingVoice(): boolean {
+        return false;
+    }
+
+    stopAllVoiceReplays() { }
 }

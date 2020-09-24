@@ -1,4 +1,13 @@
 # Changelog:
+* **24.09.20**
+    - Improved the server tab menu
+        - Better scroll handling
+        - Automatic update on server state changes
+        - Added an audio playback indicator
+        - Rendering the server icon
+    - Changing the favicon according to the clients status
+    - Aborting all replaying audio streams when client mutes himself
+    
 * **17.09.20**
     - Added a settings registry and some minor bug fixing
     
