@@ -154,6 +154,7 @@ export interface ClientEvents extends ChannelTreeEntryEvents {
     notify_mute_state_change: { muted: boolean }
     notify_speak_state_change: { speaking: boolean },
     notify_audio_level_changed: { newValue: number },
+    notify_status_icon_changed: { newIcon: ClientIcon },
 
     music_status_update: {
         player_buffered_index: number,
@@ -169,6 +170,16 @@ export interface ClientEvents extends ChannelTreeEntryEvents {
     playlist_song_reorder: { song_id: number, previous_song_id: number },
     playlist_song_loaded: { song_id: number, success: boolean, error_msg?: string, metadata?: string },
 }
+
+const StatusIconUpdateKeys: (keyof ClientProperties)[] = [
+    "client_away",
+    "client_input_hardware",
+    "client_output_hardware",
+    "client_output_muted",
+    "client_input_muted",
+    "client_is_channel_commander",
+    "client_talk_power"
+];
 
 export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
     readonly events: Registry<ClientEvents>;
@@ -207,6 +218,16 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         this._channel = null;
 
         this.voiceCallbackStateChanged = this.handleVoiceStateChange.bind(this);
+
+        this.events.on(["notify_speak_state_change", "notify_mute_state_change"], () => this.events.fire_async("notify_status_icon_changed", { newIcon: this.getStatusIcon() }));
+        this.events.on("notify_properties_updated", event => {
+            for (const key of StatusIconUpdateKeys) {
+                if (key in event.updated_properties) {
+                    this.events.fire_async("notify_status_icon_changed", { newIcon: this.getStatusIcon() })
+                    return;
+                }
+            }
+        });
     }
 
     destroy() {
@@ -218,6 +239,7 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
         }
 
         this._channel = undefined;
+        this.events.destroy();
     }
 
     setVoiceClient(handle: VoiceClient) {
@@ -596,8 +618,6 @@ export class ClientEntry extends ChannelTreeEntry<ClientEvents> {
                 callback: () => {
                     createInputModal(tr("Change client description"), tr("New description:<br>"), () => true, result => {
                         if(typeof(result) === "string") {
-                            //TODO tr
-                            console.log("Changing " + this.clientNickName() + "'s description to " + result);
                             this.channelTree.client.serverConnection.send_command("clientedit", {
                                 clid: this.clientId(),
                                 client_description: result

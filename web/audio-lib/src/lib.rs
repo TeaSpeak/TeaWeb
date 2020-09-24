@@ -52,7 +52,6 @@ pub fn audio_client_create() -> AudioClientId {
     client.client_id
 }
 
-/// Let the audio client say hi (mutable).
 /// If an error occurs or the client isn't known an exception will be thrown.
 #[wasm_bindgen]
 pub fn audio_client_enqueue_buffer(client_id: AudioClientId, buffer: &[u8], packet_id: u16, codec: u8, is_head_packet: bool) -> Result<(), JsValue> {

@@ -2,9 +2,8 @@ import * as loader from "tc-loader";
 import {Stage} from "tc-loader";
 import {ConnectionHandler, ConnectionState} from "tc-shared/ConnectionHandler";
 import * as React from "react";
-import {useState} from "react";
 import * as ReactDOM from "react-dom";
-import {ClientStatusIndicator} from "tc-shared/ui/tree/Client";
+import {useState} from "react";
 import {server_connections} from "tc-shared/ConnectionManager";
 
 import {
@@ -67,12 +66,11 @@ const HandlerFaviconRenderer = (props: { connection: ConnectionHandler }) => {
     const [ showClientStatus, setShowClientStatus ] = useState(props.connection.connection_state === ConnectionState.CONNECTED);
     props.connection.events().reactUse("notify_connection_state_changed", event => setShowClientStatus(event.new_state === ConnectionState.CONNECTED));
 
+    const [ statusIcon, setStatusIcon ] = useState<ClientIcon>(props.connection.getClient().getStatusIcon());
+    props.connection.getClient().events.reactUse("notify_status_icon_changed", event => setStatusIcon(event.newIcon));
+
     if(showClientStatus) {
-        return <ClientStatusIndicator
-            client={props.connection.getClient()}
-            renderer={icon => <ClientIconFaviconRenderer icon={icon} key={icon} />}
-            key={"server"}
-        />;
+        return <ClientIconFaviconRenderer icon={statusIcon} key={"server"} />;
     } else {
         return <DefaultFaviconRenderer key={"default"} />;
     }

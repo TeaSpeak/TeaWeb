@@ -7,6 +7,7 @@
         - Rendering the server icon
     - Changing the favicon according to the clients status
     - Aborting all replaying audio streams when client mutes himself
+    - Fixed issue [#139](https://github.com/TeaSpeak/TeaWeb/issues/139)
     
 * **17.09.20**
     - Added a settings registry and some minor bug fixing
