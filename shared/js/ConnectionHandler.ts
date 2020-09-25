@@ -212,25 +212,6 @@ export class ConnectionHandler {
         this.groups = new GroupManager(this);
         this._local_client = new LocalClientEntry(this);
 
-        /* initialize connection handler tab entry */
-        {
-            this.tag_connection_handler = $.spawn("div").addClass("connection-container");
-            $.spawn("div").addClass("server-icon icon client-server_green").appendTo(this.tag_connection_handler);
-            $.spawn("div").addClass("server-name").appendTo(this.tag_connection_handler);
-            $.spawn("div").addClass("button-close icon client-tab_close_button").appendTo(this.tag_connection_handler);
-            this.tag_connection_handler.on('click', event => {
-                if(event.isDefaultPrevented())
-                    return;
-
-                server_connections.set_active_connection(this);
-            });
-            this.tag_connection_handler.find(".button-close").on('click', event => {
-                server_connections.destroy_server_connection(this);
-                event.preventDefault();
-            });
-            this.tab_set_name(tr("Not connected"));
-        }
-
         this.event_registry.register_handler(this);
         this.events().fire("notify_handler_initialized");
 
@@ -251,16 +232,10 @@ export class ConnectionHandler {
         return this.event_registry;
     }
 
-    tab_set_name(name: string) {
-        this.tag_connection_handler.toggleClass('cutoff-name', name.length > 30);
-        this.tag_connection_handler.find(".server-name").text(name);
-    }
-
     async startConnection(addr: string, profile: ConnectionProfile, user_action: boolean, parameters: ConnectParameters) {
         this.cancel_reconnect(false);
         this._reconnect_attempt = parameters.auto_reconnect_attempt || false;
         this.handleDisconnect(DisconnectReason.REQUESTED);
-        this.tab_set_name(tr("Connecting"));
 
         let server_address: ServerAddress = {
             host: "",
@@ -470,7 +445,6 @@ export class ConnectionHandler {
     handleDisconnect(type: DisconnectReason, data: any = {}) {
         this._connect_initialize_id++;
 
-        this.tab_set_name(tr("Not connected"));
         let auto_reconnect = false;
         switch (type) {
             case DisconnectReason.REQUESTED:
@@ -1013,9 +987,6 @@ export class ConnectionHandler {
     destroy() {
         this.event_registry.unregister_handler(this);
         this.cancel_reconnect(true);
-
-        this.tag_connection_handler?.remove();
-        this.tag_connection_handler = undefined;
 
         this.hostbanner?.destroy();
         this.hostbanner = undefined;

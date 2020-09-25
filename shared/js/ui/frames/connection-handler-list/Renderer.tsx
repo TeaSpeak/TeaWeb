@@ -232,6 +232,7 @@ export const ConnectionHandlerList = (props: { events: Registry<ConnectionListUI
         container.scrollLeft = scrollLeft;
         updateScrollButtons(scrollLeft);
     }, true, [scrollShown]);
+
     return (
         <Events.Provider value={props.events}>
             <div className={cssStyle.container + " " + (shown ? cssStyle.shown : "") + " " + (scrollShown ? cssStyle.scrollShown : "")} ref={refContainer}>

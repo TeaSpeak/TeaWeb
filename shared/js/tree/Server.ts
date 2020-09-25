@@ -17,7 +17,6 @@ import { ServerEntry as ServerEntryView } from "../ui/tree/Server";
 import * as React from "react";
 import {Registry} from "../events";
 import {ChannelTreeEntry, ChannelTreeEntryEvents} from "./ChannelTreeEntry";
-import {server_connections} from "tc-shared/ConnectionManager";
 
 export class ServerProperties {
     virtualserver_host: string = "";
@@ -291,10 +290,7 @@ export class ServerEntry extends ChannelTreeEntry<ServerEvents> {
         for(let variable of variables) {
             JSON.map_field_to(this.properties, variable.value, variable.key);
 
-            if(variable.key == "virtualserver_name") {
-                this.channelTree.client.tag_connection_handler.find(".server-name").text(variable.value);
-                server_connections.update_ui();
-            } else if(variable.key == "virtualserver_icon_id") {
+            if(variable.key == "virtualserver_icon_id") {
                 /* For more detail lookup client::updateVariables and client_icon_id!
                  * ATTENTION: This is required!
                  */
