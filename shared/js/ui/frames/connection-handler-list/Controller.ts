@@ -11,7 +11,7 @@ import {LocalIcon} from "tc-shared/file/Icons";
 export function initializeConnectionUIList() {
     const container = document.getElementById("connection-handler-list");
     const events = new Registry<ConnectionListUIEvents>();
-    events.enableDebug("Handler-List");
+    //events.enableDebug("Handler-List");
     initializeController(events);
 
     ReactDOM.render(React.createElement(ConnectionHandlerList, { events: events }), container);
