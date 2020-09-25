@@ -1,7 +1,6 @@
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/properties.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/main-layout.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/general.scss"
-import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/connection_handlers.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/context_menu.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/frame-chat.scss"
 import "!style-loader!css-loader?url=false!sass-loader?sourceMap=true!./static/server-log.scss"
