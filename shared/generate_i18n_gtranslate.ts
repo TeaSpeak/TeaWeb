@@ -5,6 +5,14 @@ import {TranslationServiceClient} from "@google-cloud/translate";
 const translation_project_id = "luminous-shadow-92008";
 const translation_location = "global";
 const translation_client = new TranslationServiceClient();
+
+const kExposedToUIFlag = "ui-visible";
+const UserUITags = [
+    "jsx-translatable",
+    "jsx-variadic-translatable",
+    "js-template"
+]
+
 async function run_translate(messages: string[], source_language: string, target_language: string) : Promise<(string | undefined)[]> {
     let messages_left = messages.slice(0);
     let result = [];
@@ -35,6 +43,14 @@ async function run_translate(messages: string[], source_language: string, target
     return result;
 }
 
+interface TranslationEntry {
+    translated: string,
+    flags: string[],
+    key: {
+        message: string
+    }
+}
+
 interface TranslationFile {
     info: {
         name: string,
@@ -43,13 +59,7 @@ interface TranslationFile {
             email: string
         }[]
     },
-    translations: {
-        translated: string,
-        flags: string[],
-        key: {
-            message: string
-        }
-    }[]
+    translations: TranslationEntry[]
 }
 
 interface InputFile {
@@ -57,6 +67,21 @@ interface InputFile {
     line: number;
     character: number;
     filename: string;
+    type: string;
+}
+
+function updateUIFlag(entry: TranslationEntry, type: string) {
+    const uiVisible = UserUITags.indexOf(type) !== -1;
+    if(uiVisible) {
+        if(entry.flags.indexOf(kExposedToUIFlag) === -1) {
+            entry.flags.push(kExposedToUIFlag);
+        }
+    } else {
+        const index = entry.flags.indexOf(kExposedToUIFlag);
+        if(index !== -1) {
+            entry.flags.splice(index, 1);
+        }
+    }
 }
 
 async function translate_messages(input_file: string, output_file: string, source_language: string, target_language: string) {
@@ -96,7 +121,16 @@ async function translate_messages(input_file: string, output_file: string, sourc
     }
 
     const original_messages = messages_to_translate.length;
-    messages_to_translate = messages_to_translate.filter(e => output_data.translations.findIndex(f => e.message === f.key.message) === -1);
+    messages_to_translate = messages_to_translate.filter(e => {
+        const entry = output_data.translations.find(f => e.message === f.key.message);
+        if(!entry) {
+            /* needs translation */
+            return true;
+        }
+
+        /* update ui status */
+        updateUIFlag(entry, e.type);
+    });
     console.log("Messages to translate: %d out of %d", messages_to_translate.length, original_messages);
 
     const response = await run_translate(messages_to_translate.map(e => e.message), source_language, target_language);
@@ -109,7 +143,7 @@ async function translate_messages(input_file: string, output_file: string, sourc
             continue;
         }
 
-        output_data.translations.push({
+        let translated = {
             key: {
                 message: messages_to_translate[index].message
             },
@@ -117,7 +151,9 @@ async function translate_messages(input_file: string, output_file: string, sourc
             flags: [
                 "google-translated"
             ]
-        });
+        } as TranslationEntry;
+        updateUIFlag(translated, messages_to_translate[index].type);
+        output_data.translations.push(translated);
     }
 
     await fs.writeJSON(output_file, output_data, {
