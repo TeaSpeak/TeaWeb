@@ -7,8 +7,9 @@ import {ConnectionProfile, defaultConnectProfile, findConnectProfile, availableC
 import {KeyCode} from "../../PPTListener";
 import * as i18nc from "../../i18n/country";
 import {spawnSettingsModal} from "../../ui/modal/ModalSettings";
-import {icon_cache_loader, IconManager} from "../../file/Icons";
+import {icon_cache_loader, IconManager} from "../../file/IconsOld";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {generateIconJQueryTag, getIconManager} from "tc-shared/file/Icons";
 
 //FIXME: Move this shit out of this file!
 export namespace connection_log {
@@ -290,6 +291,7 @@ export function spawnConnectModal(options: {
 
         /* connect history show */
         {
+
             for (const entry of connection_log.history().slice(0, 10)) {
                 $.spawn("div").addClass("row").append(
                     $.spawn("div").addClass("column delete").append($.spawn("div").addClass("icon_em client-delete")).on('click', event => {
@@ -304,7 +306,7 @@ export function spawnConnectModal(options: {
                     })
                 ).append(
                     $.spawn("div").addClass("column name").append([
-                        IconManager.generate_tag(icon_cache_loader.load_icon(entry.icon_id, entry.server_unique_id)),
+                        generateIconJQueryTag(getIconManager().resolveIcon(entry.icon_id, entry.server_unique_id), {animate: false}),
                         $.spawn("a").text(entry.name)
                     ])
                 ).append(

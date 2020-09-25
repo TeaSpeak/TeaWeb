@@ -22,7 +22,6 @@ import {
 import * as contextmenu from "tc-shared/ui/elements/ContextMenu";
 import {createInputModal} from "tc-shared/ui/elements/Modal";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
-import {icon_cache_loader} from "tc-shared/file/Icons";
 import {ConnectionManagerEvents, server_connections} from "tc-shared/ConnectionManager";
 
 const cssStyle = require("./index.scss");
@@ -121,7 +120,7 @@ class BookmarkButton extends ReactComponentBase<{ event_registry: Registry<Inter
     private renderBookmark(bookmark: Bookmark) {
         return (
             <DropdownEntry key={bookmark.unique_id}
-                           icon={icon_cache_loader.load_icon(bookmark.last_icon_id, bookmark.last_icon_server_id)}
+                           icon={{ iconId: bookmark.last_icon_id, serverUniqueId: bookmark.last_icon_server_id }}
                            text={bookmark.display_name}
                            onClick={BookmarkButton.onBookmarkClick.bind(undefined, bookmark.unique_id)}
                            onContextMenu={this.onBookmarkContextMenu.bind(this, bookmark.unique_id)}/>

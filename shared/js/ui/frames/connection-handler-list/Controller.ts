@@ -6,7 +6,8 @@ import {ConnectionHandlerList} from "tc-shared/ui/frames/connection-handler-list
 import {server_connections} from "tc-shared/ConnectionManager";
 import {LogCategory, logWarn} from "tc-shared/log";
 import {ConnectionState} from "tc-shared/ConnectionHandler";
-import {LocalIcon} from "tc-shared/file/Icons";
+import {LocalIcon} from "../../../file/IconsOld";
+import {RemoteIconInfo} from "tc-shared/file/Icons";
 
 export function initializeConnectionUIList() {
     const container = document.getElementById("connection-handler-list");
@@ -119,19 +120,13 @@ function initializeController(events: Registry<ConnectionListUIEvents>) {
                 break;
         }
 
-        let icon: LocalIcon | undefined;
-        let iconId = handler.channelTree.server.properties.virtualserver_icon_id;
-        if(iconId !== 0) {
-            icon = handler.fileManager.icons.load_icon(handler.channelTree.server.properties.virtualserver_icon_id);
-        }
-
         events.fire_async("notify_handler_status", {
             handlerId: event.handlerId,
             status: {
                 handlerName: handler.channelTree.server.properties.virtualserver_name,
                 connectionState: state,
                 voiceReplaying: handler.getServerConnection().getVoiceConnection().isReplayingVoice(),
-                serverIcon: icon
+                serverIcon: { iconId: handler.channelTree.server.properties.virtualserver_icon_id, serverUniqueId: handler.getCurrentServerUniqueId() }
             }
         });
     });

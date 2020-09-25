@@ -20,10 +20,11 @@ import {spawnAbout} from "../../ui/modal/ModalAbout";
 import * as loader from "tc-loader";
 import {formatMessage} from "../../ui/frames/chat";
 import {control_bar_instance} from "../../ui/frames/control-bar";
-import {icon_cache_loader, IconManager, LocalIcon} from "../../file/Icons";
+import {icon_cache_loader, IconManager, LocalIcon} from "../../file/IconsOld";
 import {spawnPermissionEditorModal} from "../../ui/modal/permission/ModalPermissionEditor";
 import {global_client_actions} from "tc-shared/events/GlobalEvents";
 import {server_connections} from "tc-shared/ConnectionManager";
+import {generateIconJQueryTag, getIconManager, RemoteIcon} from "tc-shared/file/Icons";
 
 export interface HRItem { }
 
@@ -33,7 +34,7 @@ export interface MenuItem {
     delete_item(item: MenuItem | HRItem);
     items() : (MenuItem | HRItem)[];
 
-    icon(klass?: string | LocalIcon) : string; //FIXME: Native client must work as well!
+    icon(klass?: string | RemoteIcon) : string;
     label(value?: string) : string;
     visible(value?: boolean) : boolean;
     disabled(value?: boolean) : boolean;
@@ -179,12 +180,13 @@ namespace html {
             return this;
         }
 
-        icon(klass?: string | LocalIcon): string {
+        icon(klass?: string | RemoteIcon): string {
             this._label_icon_tag.children().remove();
-            if(typeof(klass) === "string")
+            if(typeof(klass) === "string") {
                 $.spawn("div").addClass("icon_em " + klass).appendTo(this._label_icon_tag);
-            else
-                IconManager.generate_tag(klass).appendTo(this._label_icon_tag);
+            } else {
+                generateIconJQueryTag(klass).appendTo(this._label_icon_tag);
+            }
             return "";
         }
 
@@ -290,7 +292,7 @@ export function rebuild_bookmarks() {
             const bookmark = entry as Bookmark;
             const item = root.append_item(bookmark.display_name);
 
-            item.icon(icon_cache_loader.load_icon(bookmark.last_icon_id, bookmark.last_icon_server_id));
+            item.icon(getIconManager().resolveIcon(bookmark.last_icon_id, bookmark.last_icon_server_id));
             item.click(() => boorkmak_connect(bookmark));
         }
     };

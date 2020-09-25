@@ -1159,6 +1159,10 @@ export class ConnectionHandler {
         this.getVoiceRecorder()?.input?.setFilterMode(FilterMode.Filter);
         this.update_voice_status();
     }
+
+    getCurrentServerUniqueId() {
+        return this.channelTree.server.properties.virtualserver_unique_identifier;
+    }
 }
 
 export type ConnectionStateUpdateType = "microphone" | "speaker" | "away" | "subscribe" | "query";

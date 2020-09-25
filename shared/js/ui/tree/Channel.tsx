@@ -5,7 +5,7 @@ import {
 } from "tc-shared/ui/react-elements/ReactComponentBase";
 import * as React from "react";
 import {ChannelEntry as ChannelEntryController, ChannelEvents, ChannelProperties} from "../../tree/Channel";
-import {LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
+import {RemoteIconRenderer} from "tc-shared/ui/react-elements/Icon";
 import {EventHandler, ReactEventHandler} from "tc-shared/events";
 import {Settings, settings} from "tc-shared/settings";
 import {TreeEntry, UnreadMarker} from "tc-shared/ui/tree/TreeEntry";
@@ -14,6 +14,7 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 import {ClientIcon} from "svg-sprites/client-icons";
 import {VoiceConnectionStatus} from "tc-shared/connection/VoiceConnection";
 import {AbstractServerConnection} from "tc-shared/connection/ConnectionBase";
+import {getIconManager} from "tc-shared/file/Icons";
 
 const channelStyle = require("./Channel.scss");
 const viewStyle = require("./View.scss");
@@ -84,25 +85,33 @@ class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, 
         if (!this.state.icons_shown)
             return null;
 
-        if (this.state.is_default)
+        if (this.state.is_default) {
             icons.push(<ClientIconRenderer key={"icon-default"} icon={ClientIcon.ChannelDefault}
                                            title={tr("Default channel")}/>);
+        }
 
-        if (this.state.is_password_protected)
+        if (this.state.is_password_protected) {
             icons.push(<ClientIconRenderer key={"icon-protected"} icon={ClientIcon.Register}
                                            title={tr("The channel is password protected")}/>);
+        }
 
-        if (this.state.is_music_quality)
+        if (this.state.is_music_quality) {
             icons.push(<ClientIconRenderer key={"icon-music"} icon={ClientIcon.Music} title={tr("Music quality")}/>);
+        }
 
-        if (this.state.is_moderated)
+        if (this.state.is_moderated) {
             icons.push(<ClientIconRenderer key={"icon-moderated"} icon={ClientIcon.Moderated}
                                            title={tr("Channel is moderated")}/>);
+        }
 
-        if (this.state.custom_icon_id)
-            icons.push(<LocalIconRenderer key={"icon-custom"}
-                                          icon={this.props.channel.channelTree.client.fileManager.icons.load_icon(this.state.custom_icon_id)}
-                                          title={tr("Client icon")}/>);
+        if (this.state.custom_icon_id) {
+            const connection = this.props.channel.channelTree.client;
+
+            icons.push(<RemoteIconRenderer
+                            key={"icon-custom"}
+                            title={tr("Client icon")}
+                            icon={getIconManager().resolveIcon(this.state.custom_icon_id, connection.getCurrentServerUniqueId(), connection.handlerId)} />);
+        }
 
         if (!this.state.is_codec_supported) {
             icons.push(<div key={"icon-unsupported"} className={channelStyle.icon_no_sound}>
@@ -112,9 +121,11 @@ class ChannelEntryIcons extends ReactComponentBase<ChannelEntryIconsProperties, 
             </div>);
         }
 
-        return <span className={channelStyle.icons}>
-            {icons}
-        </span>
+        return (
+            <span className={channelStyle.icons}>
+                {icons}
+            </span>
+        );
     }
 
     @EventHandler<ChannelEvents>("notify_properties_updated")

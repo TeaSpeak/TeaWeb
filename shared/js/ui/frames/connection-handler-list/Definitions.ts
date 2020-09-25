@@ -1,4 +1,4 @@
-import {LocalIcon} from "tc-shared/file/Icons";
+import {RemoteIconInfo} from "tc-shared/file/Icons";
 
 export type MouseMoveCoordinates = { x: number, y: number, xOffset: number };
 export type HandlerConnectionState = "disconnected" | "connecting" | "connected";
@@ -7,7 +7,7 @@ export type HandlerStatus = {
     connectionState: HandlerConnectionState,
     handlerName: string,
     voiceReplaying: boolean,
-    serverIcon: LocalIcon | undefined
+    serverIcon: RemoteIconInfo | undefined
 }
 
 export interface ConnectionListUIEvents {

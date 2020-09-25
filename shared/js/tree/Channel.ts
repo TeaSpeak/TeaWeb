@@ -740,8 +740,10 @@ export class ChannelEntry extends ChannelTreeEntry<ChannelEvents> {
     }
 
     set collapsed(flag: boolean) {
-        if(this._flag_collapsed === flag)
+        if(this._flag_collapsed === flag) {
             return;
+        }
+
         this._flag_collapsed = flag;
         this.events.fire("notify_collapsed_state_changed", { collapsed: flag });
         this.view.current?.forceUpdate();
