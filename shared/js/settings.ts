@@ -8,9 +8,9 @@ export type ConfigValueTypes = boolean | number | string | object;
 export type ConfigValueTypeNames = "boolean" | "number" | "string" | "object";
 
 export type ValueTypeMapping<T> = T extends boolean ? "boolean" :
-                           T extends number ? "number" :
-                           T extends string ? "string" :
-                           T extends object ? "object" : never;
+                                   T extends number ? "number" :
+                                   T extends string ? "string" :
+                                   T extends object ? "object" : never;
 
 export interface SettingsKey<ValueType extends ConfigValueTypes> {
     key: string;
