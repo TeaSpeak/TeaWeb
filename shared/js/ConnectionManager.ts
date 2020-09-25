@@ -70,6 +70,20 @@ export class ConnectionManager {
         this.set_active_connection_(handler);
     }
 
+    swapHandlerOrder(handlerA: ConnectionHandler, handlerB: ConnectionHandler) {
+        const indexA = this.connection_handlers.findIndex(handler => handlerA === handler);
+        const indexB = this.connection_handlers.findIndex(handler => handlerB === handler);
+
+        if(indexA === -1 || indexB === -1 || indexA === indexB) {
+            return;
+        }
+
+        let temp = this.connection_handlers[indexA];
+        this.connection_handlers[indexA] = this.connection_handlers[indexB];
+        this.connection_handlers[indexB] = temp;
+        this.events().fire("notify_handler_order_changed");
+    }
+
     private set_active_connection_(handler: ConnectionHandler) {
         this._container_channel_tree.children().detach();
         this._container_chat.children().detach();
@@ -130,7 +144,9 @@ export interface ConnectionManagerEvents {
     notify_handler_deleted: {
         handlerId: string,
         handler: ConnectionHandler
-    }
+    },
+
+    notify_handler_order_changed: { }
 }
 
 loader.register_task(Stage.JAVASCRIPT_INITIALIZING, {
