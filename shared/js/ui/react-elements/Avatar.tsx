@@ -29,6 +29,7 @@ export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loadi
                         event.preventDefault();
                         image_preview.preview_image(imageUrl, undefined);
                     }}
+                    draggable={false}
                 />;
                 break;
 
@@ -46,15 +47,16 @@ export const AvatarRenderer = React.memo((props: { avatar: ClientAvatar | "loadi
                         event.preventDefault();
                         image_preview.preview_image(imageUrl, undefined);
                     }}
+                    draggable={false}
                 />;
                 break;
 
             case "errored":
-                image = <img key={"error"} alt={typeof props.alt === "string" ? props.alt : tr("error")} title={tr("avatar failed to load:\n") + props.avatar.getLoadError()} src={imageUrl} style={ImageStyle} />;
+                image = <img draggable={false} key={"error"} alt={typeof props.alt === "string" ? props.alt : tr("error")} title={tr("avatar failed to load:\n") + props.avatar.getLoadError()} src={imageUrl} style={ImageStyle} />;
                 break;
 
             case "loading":
-                image = <img key={"loading"} alt={typeof props.alt === "string" ? props.alt : tr("loading")} title={tr("loading avatar")} src={kLoadingAvatarImage} style={ImageStyle} />;
+                image = <img draggable={false} key={"loading"} alt={typeof props.alt === "string" ? props.alt : tr("loading")} title={tr("loading avatar")} src={kLoadingAvatarImage} style={ImageStyle} />;
                 break;
 
             case undefined:
