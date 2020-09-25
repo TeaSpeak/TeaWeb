@@ -415,14 +415,16 @@ export class ConnectionHandler {
                 logError(LogCategory.CLIENT, tr("Failed to start local echo: %o"), error);
             });
              */
-            this.serverFeatures.awaitFeatures().then(result => {
-                if(!result) {
-                    return;
-                }
-                if(this.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
-                    spawnEchoTestModal(this);
-                }
-            });
+            if(__build.target === "web") {
+                this.serverFeatures.awaitFeatures().then(result => {
+                    if(!result) {
+                        return;
+                    }
+                    if(this.serverFeatures.supportsFeature(ServerFeature.WHISPER_ECHO)) {
+                        spawnEchoTestModal(this);
+                    }
+                });
+            }
         } else {
             this.setInputHardwareState(this.getVoiceRecorder() ? InputHardwareState.VALID : InputHardwareState.MISSING);
         }
@@ -726,6 +728,8 @@ export class ConnectionHandler {
                 /* Don't update the voice state, firstly await for us to be fully connected */
             } else if(voiceConnection.getConnectionState() !== VoiceConnectionStatus.Connected) {
                 /* We're currently not having a valid voice connection. We need to await that. */
+                localClientUpdates.client_input_hardware = false;
+                localClientUpdates.client_output_hardware = false;
             } else {
                 let codecSupportEncode = voiceConnection.encodingSupported(currentChannel.properties.channel_codec);
                 let codecSupportDecode = voiceConnection.decodingSupported(currentChannel.properties.channel_codec);
@@ -753,6 +757,7 @@ export class ConnectionHandler {
                 shouldRecord = codecSupportEncode && !!voiceConnection.voiceRecorder()?.input;
             }
 
+            localClientUpdates.client_input_hardware = localClientUpdates.client_input_hardware && this.inputHardwareState === InputHardwareState.VALID;
             localClientUpdates.client_output_muted = this.client_status.output_muted;
             localClientUpdates.client_input_muted = this.client_status.input_muted;
             if(localClientUpdates.client_input_muted || localClientUpdates.client_output_muted) {
@@ -787,6 +792,7 @@ export class ConnectionHandler {
         /* update the recorder state */
         const currentInput = voiceConnection.voiceRecorder()?.input;
         if(currentInput) {
+            console.error("Should record: %o | %o", shouldRecord, this.getInputHardwareState());
             if(shouldRecord || this.echoTestRunning) {
                 if(this.getInputHardwareState() !== InputHardwareState.START_FAILED) {
                     this.startVoiceRecorder(Date.now() - this._last_record_error_popup > 10 * 1000).then(() => {
@@ -847,10 +853,14 @@ export class ConnectionHandler {
 
     async startVoiceRecorder(notifyError: boolean) : Promise<{ state: "success" | "no-input" } | { state: "error", message: string }> {
         const input = this.getVoiceRecorder()?.input;
+        console.error("Input: %o", input);
         if(!input) {
+            console.error("NO - INPUT");
             return { state: "no-input" };
         }
 
+        console.error("XXX");
+        console.log("Input statuis: %o", input.currentState());
         if(input.currentState() === InputState.PAUSED && this.connection_state === ConnectionState.CONNECTED) {
             try {
                 const result = await input.start();

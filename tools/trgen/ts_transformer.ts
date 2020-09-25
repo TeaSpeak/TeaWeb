@@ -27,8 +27,9 @@ export default function(program: ts.Program, config?: Config) : (context: ts.Tra
 
         const target = path.isAbsolute(process_config.target_file) ? process_config.target_file : path.join(base_path, process_config.target_file);
         if(process_config.target_file) {
-            if(process_config.verbose)
+            if(process_config.verbose) {
                 console.log("Writing translation file to " + target);
+            }
 
             mkdirp.sync(path.dirname(target));
             writeFileSync(target, JSON.stringify(translations, null, 2));
