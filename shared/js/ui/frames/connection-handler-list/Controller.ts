@@ -57,6 +57,19 @@ function initializeController(events: Registry<ConnectionListUIEvents>) {
         events.fire_async("query_handler_list");
     }));
 
+    events.on("notify_destroy", server_connections.events().on("notify_handler_order_changed", () => events.fire_async("query_handler_list")));
+    events.on("action_swap_handler", event => {
+        const handlerA = server_connections.findConnection(event.handlerIdOne);
+        const handlerB = server_connections.findConnection(event.handlerIdTwo);
+
+        if(!handlerA || !handlerB) {
+            logWarn(LogCategory.CLIENT, tr("Tried to switch handler %s with %s, but one of them does not exists"), event.handlerIdOne, event.handlerIdTwo);
+            return;
+        }
+
+        server_connections.swapHandlerOrder(handlerA, handlerB);
+    });
+
 
     events.on("action_set_active_handler", event => {
         const handler = server_connections.findConnection(event.handlerId);

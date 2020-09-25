@@ -1,5 +1,9 @@
 import {Registry} from "tc-shared/events";
-import {ConnectionListUIEvents, HandlerStatus} from "tc-shared/ui/frames/connection-handler-list/Definitions";
+import {
+    ConnectionListUIEvents,
+    HandlerStatus,
+    MouseMoveCoordinates
+} from "tc-shared/ui/frames/connection-handler-list/Definitions";
 import * as React from "react";
 import {useContext, useEffect, useRef, useState} from "react";
 import {IconRenderer, LocalIconRenderer} from "tc-shared/ui/react-elements/Icon";
@@ -13,8 +17,8 @@ import {ClientIconRenderer} from "tc-shared/ui/react-elements/Icons";
 const cssStyle = require("./Renderer.scss");
 const Events = React.createContext<Registry<ConnectionListUIEvents>>(undefined);
 
-
-const ConnectionHandler = (props: { handlerId: string, active: boolean }) => {
+type ConnectionHandlerMode = "normal" | "active" | "spacer";
+const ConnectionHandler = React.memo((props: { handlerId: string, mode: ConnectionHandlerMode, refContainer?: React.Ref<HTMLDivElement> }) => {
     const events = useContext(Events);
 
     const [ status, setStatus ] = useState<HandlerStatus | "loading">(() => {
@@ -53,19 +57,22 @@ const ConnectionHandler = (props: { handlerId: string, active: boolean }) => {
 
             case "disconnected":
                 displayedName = <Translatable key={"not connected"}>Not connected</Translatable>;
+                displayedName = props.handlerId;
                 break;
         }
     }
 
     return (
-        <div className={cssStyle.handler + " " + (props.active ? cssStyle.active : "") + " " + (cutoffName ? cssStyle.cutoffName : "") + " " + (voiceReplaying ? cssStyle.audioPlayback : "")}
+        <div className={cssStyle.handler + " " + cssStyle["mode-" + props.mode] + " " + (cutoffName ? cssStyle.cutoffName : "") + " " + (voiceReplaying ? cssStyle.audioPlayback : "")}
              onClick={() => {
-                 if(props.active) {
-                    return;
+                 if(props.mode !== "normal") {
+                     return;
                  }
 
                  events.fire("action_set_active_handler", { handlerId: props.handlerId });
              }}
+             ref={props.refContainer}
+             x-handler-id={props.handlerId}
         >
             <div className={cssStyle.icon}>
                 {icon}
@@ -78,9 +85,190 @@ const ConnectionHandler = (props: { handlerId: string, active: boolean }) => {
             </div>
         </div>
     );
-}
+})
 
-const HandlerList = (props: { refContainer: React.Ref<HTMLDivElement>, refSpacer: React.Ref<HTMLDivElement> }) => {
+const MoveableConnectionHandler = (props: { handlerId: string, mode: ConnectionHandlerMode }) => {
+    const events = useContext(Events);
+    const refContainer = useRef<HTMLDivElement>();
+
+    useEffect(() => {
+        if(!refContainer.current) {
+            return;
+        }
+
+        const attached = { status: false };
+        const basePoint = { x: 0, y: 0 };
+
+        const mouseDownListener = (event: MouseEvent) => {
+            basePoint.x = event.pageX;
+            basePoint.y = event.pageY;
+            attachListener();
+        };
+
+        const mouseMoveListener = (event: MouseEvent) => {
+            const diffXSqrt = Math.abs(basePoint.x - event.pageX);
+            if(diffXSqrt > 10) {
+                events.fire("action_move_handler", {
+                    handlerId: props.handlerId,
+                    mouse: { x: event.pageX, y: event.pageY, xOffset: basePoint.x + refContainer.current.parentElement.scrollLeft - refContainer.current.offsetLeft }
+                });
+                detachListener();
+            }
+        };
+
+        const mouseUpListener = () => detachListener;
+
+        const attachListener = () => {
+            if(attached.status) { return; }
+            attached.status = true;
+
+            document.addEventListener("mousemove", mouseMoveListener);
+            document.addEventListener("mouseup", mouseUpListener);
+            document.addEventListener("mouseleave", mouseUpListener);
+        };
+
+        const detachListener = () => {
+            if(!attached.status) { return; }
+            attached.status = false;
+
+            document.removeEventListener("mousemove", mouseMoveListener);
+            document.removeEventListener("mouseup", mouseUpListener);
+            document.removeEventListener("mouseleave", mouseUpListener);
+        }
+
+        refContainer.current.addEventListener("mousedown", mouseDownListener);
+
+        return () => {
+            refContainer.current.removeEventListener("mousedown", mouseDownListener);
+            detachListener();
+        }
+    });
+
+    return <ConnectionHandler handlerId={props.handlerId} mode={props.mode} refContainer={refContainer} />
+};
+
+const MovingConnectionHandler = React.memo((props: { handlerId: string, handlerActive: boolean, initialMouse: MouseMoveCoordinates }) => {
+    const events = useContext(Events);
+
+    const refContainer = useRef<HTMLDivElement>();
+    const offsetX = useRef<number>(0);
+    const mouseXRef = useRef<number>(props.initialMouse.x);
+
+    const scrollValue = useRef<number>(0);
+    const scrollIntervalReference = useRef<number>(0);
+
+    useEffect(() => {
+        if(!refContainer.current ||!refContainer.current.parentElement) { return; }
+
+        refContainer.current.style.display = "flex";
+
+        let lastMovingEventPositionX = 0;
+
+        const executeUpdate = () => {
+            if(!refContainer.current?.parentElement) { return; }
+            const parentElement = refContainer.current.parentElement;
+
+            updateContainerPosition(mouseXRef.current, parentElement, false);
+            updateScroll(mouseXRef.current, parentElement);
+        }
+
+        const updateScroll = (mouseX: number, parentElement: HTMLElement) => {
+            if(mouseX >= parentElement.offsetLeft + parentElement.clientWidth - 100) {
+                scrollValue.current = +2;
+            } else if(mouseX <= refContainer.current.parentElement.offsetLeft + 100) {
+                scrollValue.current = -2;
+            } else {
+                scrollValue.current = 0;
+            }
+
+            if(scrollValue.current) {
+                if(!scrollIntervalReference.current) {
+                    scrollIntervalReference.current = setInterval(() => {
+                        if(!scrollValue.current) {
+                            logWarn(LogCategory.CLIENT, tr("Scroll interval called, but no scroll direction set"));
+                            return;
+                        }
+
+                        const targetScrollLeft = parentElement.scrollLeft + scrollValue.current;
+                        const cancelScroll = targetScrollLeft < 0 || Math.ceil(targetScrollLeft + parentElement.clientWidth) + 1 >= parentElement.scrollWidth;
+                        if(cancelScroll) {
+                            clearInterval(scrollIntervalReference.current);
+                            scrollIntervalReference.current = -1; /* set, but inactive, needs to be re triggered */
+                        } else {
+                            parentElement.scrollLeft = targetScrollLeft;
+                        }
+                        updateContainerPosition(mouseXRef.current, parentElement, cancelScroll);
+                    }, 5);
+                    parentElement.classList.add(cssStyle.hardScroll);
+                }
+            } else {
+                if(scrollIntervalReference.current) {
+                    clearInterval(scrollIntervalReference.current);
+                    scrollIntervalReference.current = 0;
+
+                    /* stop the scroll ( + 1 - 1 has been appended for the ide...) */
+                    parentElement.scrollLeft = parentElement.scrollLeft + 1 - 1;
+                    parentElement.classList.remove(cssStyle.hardScroll);
+                }
+            }
+        }
+
+        const updateContainerPosition = (mouseX: number, parentElement: HTMLElement, forceFirePositionUpdate: boolean) => {
+            offsetX.current = (mouseX - parentElement.offsetLeft) - props.initialMouse.xOffset + parentElement.scrollLeft;
+            if(offsetX.current + props.initialMouse.xOffset < 0) { return; }
+            if(Math.ceil(offsetX.current + refContainer.current.clientWidth) + 1 >= parentElement.scrollWidth) { return; }
+
+            refContainer.current.style.left = offsetX.current + "px";
+
+            if(Math.abs(lastMovingEventPositionX - offsetX.current) > 30 || forceFirePositionUpdate) {
+                lastMovingEventPositionX = offsetX.current;
+                fireMovingPositionEvent();
+            }
+        };
+
+        const fireMovingPositionEvent = () => {
+            events.fire("action_set_moving_position", { offsetX: offsetX.current , width: refContainer.current.clientWidth });
+        };
+
+        const listenerMove = (event: MouseEvent) => {
+            mouseXRef.current = event.pageX;
+            executeUpdate();
+        }
+
+        const listenerUp = () => {
+            events.fire("action_move_handler", { handlerId: undefined });
+        }
+
+        executeUpdate();
+
+        document.addEventListener("mousemove", listenerMove);
+        document.addEventListener("mouseup", listenerUp);
+        document.addEventListener("mouseleave", listenerUp);
+
+        return () => {
+            clearInterval(scrollIntervalReference.current);
+            if(refContainer.current?.parentElement) {
+                const parentElement = refContainer.current?.parentElement;
+                parentElement.classList.remove(cssStyle.hardScroll);
+
+                /* stop the scroll ( + 1 - 1 has been appended for the ide...) */
+                parentElement.scrollLeft = parentElement.scrollLeft + 1 - 1;
+            }
+
+            document.removeEventListener("mouseup", listenerUp);
+            document.removeEventListener("mouseleave", listenerUp);
+            document.removeEventListener("mousemove", listenerMove);
+        };
+    });
+
+    return (
+        <div className={cssStyle.moveContainer} ref={refContainer}>
+            <ConnectionHandler handlerId={props.handlerId} mode={props.handlerActive ? "active" : "normal"} />
+        </div>
+    );
+});
+
+const HandlerList = (props: { refContainer: React.RefObject<HTMLDivElement>, refSpacer: React.Ref<HTMLDivElement> }) => {
     const events = useContext(Events);
 
     const [ handlers, setHandlers ] = useState<string[] | "loading">(() => {
@@ -89,18 +277,73 @@ const HandlerList = (props: { refContainer: React.Ref<HTMLDivElement>, refSpacer
     });
 
     const [ activeHandler, setActiveHandler ] = useState<string>();
+    const [ movingHandler, setMovingHandler ] = useState<{ handlerId: string, mouse: MouseMoveCoordinates} | undefined>();
+    const switchRequestTimestamp = useRef(0);
 
     events.reactUse("notify_handler_list", event => {
         setHandlers(event.handlerIds.slice());
         setActiveHandler(event.activeHandlerId);
     });
     events.reactUse("notify_active_handler", event => setActiveHandler(event.handlerId));
+    events.reactUse("action_move_handler", event => {
+        if(typeof event.handlerId === "undefined") {
+            setMovingHandler(undefined);
+        } else {
+            setMovingHandler({ handlerId: event.handlerId, mouse: event.mouse });
+        }
+    });
+
+    events.reactUse("action_set_moving_position", event => {
+        if(!movingHandler || handlers === "loading" || (Date.now() - switchRequestTimestamp.current) < 1000) { return; }
+
+        const centerCurrent = event.offsetX + event.width / 2;
+
+        /* get the target element */
+        const children = [...props.refContainer.current.childNodes.values()] as HTMLElement[];
+        const element = children.find(element => element.offsetLeft <= centerCurrent && centerCurrent <= element.offsetLeft + element.clientWidth);
+        const handlerId = element?.getAttribute("x-handler-id");
+        if(handlerId === movingHandler.handlerId || !handlerId) { return; }
+
+        const oldIndex = handlers.findIndex(handler => handler === movingHandler.handlerId);
+        const newIndex = handlers.findIndex(handler => handler === handlerId);
+
+        const centerTarget = element.offsetLeft + element.clientWidth / 2;
+        if(oldIndex < newIndex) {
+            if(event.offsetX + event.width < centerTarget) {
+                return;
+            }
+        } else {
+            if(event.offsetX > centerTarget) {
+                return;
+            }
+        }
+
+        events.fire("action_swap_handler", { handlerIdOne: handlers[oldIndex], handlerIdTwo: handlers[newIndex] });
+        switchRequestTimestamp.current = Date.now();
+    });
+
+    /* no switch pending, everything has been rendered */
+    useEffect(() => { switchRequestTimestamp.current = 0; });
 
     return (
         <div className={cssStyle.handlerList} ref={props.refContainer}>
             {handlers === "loading" ? undefined :
-                handlers.map(handlerId => <ConnectionHandler handlerId={handlerId} key={handlerId} active={handlerId === activeHandler} />)
+                handlers.map(handlerId => (
+                    <MoveableConnectionHandler
+                        handlerId={handlerId}
+                        key={handlerId}
+                        mode={handlerId === movingHandler?.handlerId ? "spacer" : handlerId === activeHandler ? "active" : "normal"}
+                    />
+                ))
             }
+            { movingHandler ? (
+                <MovingConnectionHandler
+                    handlerId={movingHandler.handlerId}
+                    key={"moving-" + movingHandler.handlerId}
+                    handlerActive={movingHandler.handlerId === activeHandler}
+                    initialMouse={movingHandler.mouse}
+                />
+            ) : undefined}
             <div className={cssStyle.scrollSpacer} ref={props.refSpacer} />
         </div>
     )
@@ -143,6 +386,7 @@ export const ConnectionHandlerList = (props: { events: Registry<ConnectionListUI
     const updateScrollButtons = (scrollLeft: number) => {
         const container = refHandlerContainer.current;
         if(!container) { return; }
+
         props.events.fire_async("notify_scroll_status", { right: Math.ceil(scrollLeft + container.clientWidth + 2) < container.scrollWidth, left: scrollLeft !== 0 });
     }
 
@@ -193,6 +437,8 @@ export const ConnectionHandlerList = (props: { events: Registry<ConnectionListUI
         }
 
         const container = refHandlerContainer.current;
+        let scrollLeft;
+
         const scrollContainer = refScrollSpacer.current;
         const getChildAt = (width: number) => {
             let currentChild: HTMLDivElement;
@@ -206,7 +452,6 @@ export const ConnectionHandlerList = (props: { events: Registry<ConnectionListUI
             return currentChild;
         }
 
-        let scrollLeft;
         if(event.direction === "right") {
             const currentLeft = container.scrollLeft;
             const target = getChildAt(currentLeft + container.clientWidth + 5 - scrollContainer.clientWidth);
